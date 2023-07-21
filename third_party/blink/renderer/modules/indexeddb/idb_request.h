@@ -35,6 +35,7 @@
 #include "base/dcheck_is_on.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
+#include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink-forward.h"
@@ -73,6 +74,41 @@ class MODULES_EXPORT IDBRequest : public EventTarget,
  public:
   using Source = V8UnionIDBCursorOrIDBIndexOrIDBObjectStore;
 
+  // A type that can be used to identify this request for tracing or UMA.
+  enum class TypeForMetrics {
+    kCursorAdvance,
+    kCursorContinue,
+    kCursorContinuePrimaryKey,
+    kCursorDelete,
+
+    kFactoryOpen,
+    kFactoryDeleteDatabase,
+
+    kIndexOpenCursor,
+    kIndexCount,
+    kIndexOpenKeyCursor,
+    kIndexGet,
+    kIndexGetAll,
+    kIndexBatchGetAll,
+    kIndexGetAllKeys,
+    kIndexGetKey,
+
+    kObjectStoreGet,
+    kObjectStoreGetKey,
+    kObjectStoreGetAll,
+    kObjectStoreBatchGetAll,
+    kObjectStoreGetAllKeys,
+    kObjectStoreDelete,
+    kObjectStoreClear,
+    kObjectStoreCreateIndex,
+    kObjectStorePut,
+    kObjectStoreAdd,
+    kObjectStoreUpdate,
+    kObjectStoreOpenCursor,
+    kObjectStoreOpenKeyCursor,
+    kObjectStoreCount,
+  };
+
   // Container for async tracing state.
   //
   // The documentation for TRACE_EVENT_NESTABLE_ASYNC_{BEGIN,END} suggests
@@ -107,26 +143,22 @@ class MODULES_EXPORT IDBRequest : public EventTarget,
     AsyncTraceState(const AsyncTraceState&) = delete;
     AsyncTraceState& operator=(const AsyncTraceState&) = delete;
 
-    // Creates an instance that produces begin/end events with the given name.
-    //
-    // The string pointed to by tracing_name argument must live for the entire
-    // application. The easiest way to meet this requirement is to have it be a
-    // string literal.
-    explicit AsyncTraceState(const char* trace_event_name);
+    // Creates an instance that produces begin/end events of the given type.
+    explicit AsyncTraceState(TypeForMetrics type);
     ~AsyncTraceState();
 
     // Used to transfer the trace end event state to an IDBRequest.
     AsyncTraceState(AsyncTraceState&& other) {
       DCHECK(IsEmpty());
-      trace_event_name_ = other.trace_event_name_;
+      type_ = other.type_;
       id_ = other.id_;
-      other.trace_event_name_ = nullptr;
+      other.type_.reset();
     }
     AsyncTraceState& operator=(AsyncTraceState&& rhs) {
       DCHECK(IsEmpty());
-      trace_event_name_ = rhs.trace_event_name_;
+      type_ = rhs.type_;
       id_ = rhs.id_;
-      rhs.trace_event_name_ = nullptr;
+      rhs.type_.reset();
       return *this;
     }
 
@@ -135,7 +167,7 @@ class MODULES_EXPORT IDBRequest : public EventTarget,
     // An instance is cleared when RecordAndReset() is called on it, or when its
     // state is moved into a different instance. Empty instances are also
     // produced by the AsyncStateTrace() constructor.
-    bool IsEmpty() const { return !trace_event_name_; }
+    bool IsEmpty() const { return !type_; }
 
     // Records the trace end event whose information is stored in this instance.
     //
@@ -144,23 +176,15 @@ class MODULES_EXPORT IDBRequest : public EventTarget,
     void RecordAndReset();
 
    protected:  // For testing
-    const char* trace_event_name() const { return trace_event_name_; }
+    absl::optional<TypeForMetrics> type() const { return type_; }
     size_t id() const { return id_; }
-
-    // Populates the instance with state for a new async trace.
-    //
-    // The method uses the given even name and generates a new unique ID. The
-    // newly generated unique ID is returned.
-    size_t PopulateForNewEvent(const char* trace_event_name);
 
    private:
     friend class IDBRequest;
 
-    // The name of the async trace events tracked by this instance.
-    //
-    // Null is used to signal that the instance is empty, so the event name
-    // cannot be null.
-    const char* trace_event_name_ = nullptr;
+    absl::optional<TypeForMetrics> type_;
+    base::TimeTicks start_time_;
+
     // Uniquely generated ID that ties an async trace's begin and end events.
     size_t id_ = 0;
   };
@@ -208,22 +232,22 @@ class MODULES_EXPORT IDBRequest : public EventTarget,
 
   const String& readyState() const;
 
-  // Returns a new WebIDBCallbacks for this request.
+  // Returns a new WebIDBCallbacksImpl for this request.
   //
   // Each call must be paired with a WebCallbacksDestroyed() call. Most requests
-  // have a single WebIDBCallbacks instance created for them.
+  // have a single WebIDBCallbacksImpl instance created for them.
   //
   // Requests used to open and iterate cursors are special, because they are
   // reused between openCursor() and continue() / advance() calls. These
-  // requests have a new WebIDBCallbacks instance created for each of the
+  // requests have a new WebIDBCallbacksImpl instance created for each of the
   // above-mentioned calls that they are involved in.
-  std::unique_ptr<WebIDBCallbacks> CreateWebCallbacks();
+  std::unique_ptr<WebIDBCallbacksImpl> CreateWebCallbacks();
   void WebCallbacksDestroyed() {
     DCHECK(web_callbacks_);
     web_callbacks_ = nullptr;
   }
 #if DCHECK_IS_ON()
-  WebIDBCallbacks* WebCallbacks() const { return web_callbacks_; }
+  WebIDBCallbacksImpl* WebCallbacks() const { return web_callbacks_; }
 #endif  // DCHECK_IS_ON()
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(success, kSuccess)
@@ -262,7 +286,7 @@ class MODULES_EXPORT IDBRequest : public EventTarget,
   //
   // Some types of requests, such as indexedDB.openDatabase(), cannot be issued
   // after a request that needs Blob processing, so their results are handled by
-  // having WebIDBCallbacksImpl call directly into EnqueueResponse(),
+  // having WebIDBCallbacksImplImpl call directly into EnqueueResponse(),
   // EnqueueBlocked(), or EnqueueUpgradeNeeded().
 
   void HandleResponse(DOMException*);
@@ -281,6 +305,7 @@ class MODULES_EXPORT IDBRequest : public EventTarget,
   void OnClear(bool success);
   void OnDelete(bool success);
   void OnCount(bool success, uint32_t count);
+  void OnPut(mojom::blink::IDBTransactionPutResultPtr result);
   void OnGet(mojom::blink::IDBDatabaseGetResultPtr result);
   void OnGetAll(bool key_only,
                 mojo::PendingReceiver<mojom::blink::IDBDatabaseGetAllResultSink>
@@ -288,6 +313,8 @@ class MODULES_EXPORT IDBRequest : public EventTarget,
   void OnBatchGetAll(mojom::blink::IDBDatabaseBatchGetAllResultPtr result);
   void OnOpenCursor(mojom::blink::IDBDatabaseOpenCursorResultPtr result);
   void OnAdvanceCursor(mojom::blink::IDBCursorResultPtr result);
+  void OnGotKeyGeneratorCurrentNumber(int64_t number,
+                                      mojom::blink::IDBErrorPtr error);
 
   // Only IDBOpenDBRequest instances should receive these:
   virtual void EnqueueBlocked(int64_t old_version) { NOTREACHED(); }
@@ -432,9 +459,9 @@ class MODULES_EXPORT IDBRequest : public EventTarget,
   bool prevent_propagation_ = false;
   bool result_dirty_ = true;
 
-  // Pointer back to the WebIDBCallbacks that holds a persistent reference to
-  // this object.
-  WebIDBCallbacks* web_callbacks_ = nullptr;
+  // Pointer back to the WebIDBCallbacksImpl that holds a persistent reference
+  // to this object.
+  WebIDBCallbacksImpl* web_callbacks_ = nullptr;
 
   // Non-null while this request is queued behind other requests that are still
   // getting post-processed.

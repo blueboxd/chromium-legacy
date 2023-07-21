@@ -5,6 +5,7 @@
 #ifndef ASH_GAME_DASHBOARD_GAME_DASHBOARD_CONTEXT_H_
 #define ASH_GAME_DASHBOARD_GAME_DASHBOARD_CONTEXT_H_
 
+#include "ash/game_dashboard/game_dashboard_widget.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/views/widget/unique_widget_ptr.h"
 #include "ui/views/widget/widget.h"
@@ -26,7 +27,7 @@ class GameDashboardContext {
 
   aura::Window* game_window() { return game_window_.get(); }
 
-  views::Widget* main_menu_button_widget() {
+  GameDashboardWidget* main_menu_button_widget() {
     return main_menu_button_widget_.get();
   }
 
@@ -41,11 +42,14 @@ class GameDashboardContext {
   void ToggleMainMenu();
 
   // Toggles the creation/deletion of the toolbar within the game window.
-  void ToggleToolbar();
+  // Returns the toolbar visibility state.
+  bool ToggleToolbar();
 
   // Conditionally, updates the toolbar widget's bounds and location, relative
   // to the `game_window_`.
   void MaybeUpdateToolbarWidgetBounds();
+
+  bool IsToolbarVisible() const;
 
  private:
   // Indicator for the 4 quadrants that the toolbar is able to be placed.
@@ -72,13 +76,13 @@ class GameDashboardContext {
   const raw_ptr<aura::Window, ExperimentalAsh> game_window_;
 
   // Main menu button widget for the Game Dashboard.
-  std::unique_ptr<views::Widget> main_menu_button_widget_;
+  std::unique_ptr<GameDashboardWidget> main_menu_button_widget_;
 
   // Expanded main menu for the Game Dashboard.
   views::UniqueWidgetPtr main_menu_widget_;
 
   // The toolbar for the Game Dashboard.
-  std::unique_ptr<views::Widget> toolbar_widget_;
+  std::unique_ptr<GameDashboardWidget> toolbar_widget_;
 
   // The indicator of the current corner that the toolbar is placed.
   ToolbarSnapLocation toolbar_snap_location_;

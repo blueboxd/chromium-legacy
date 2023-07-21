@@ -30,8 +30,10 @@ export class SharePasswordNoMembersDialogElement extends I18nMixin
   }
 
   static get properties() {
-    return {title: {type: String}};
+    return {dialogTitle: {type: String}};
   }
+
+  dialogTitle: string;
 
   private onClickActionButton_() {
     this.dispatchEvent(

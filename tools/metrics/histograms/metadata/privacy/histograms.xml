@@ -282,15 +282,17 @@ reviewer.
   </summary>
 </histogram>
 
-<histogram name="Privacy.DIPS.DeletionLatency" units="ms"
+<histogram name="Privacy.DIPS.DeletionLatency2" units="ms"
     expires_after="2023-12-31">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
     The amount of time it takes to complete the DIPS deletion process.
 
-    This is recorded each time after the DIPS timer fires and triggers deletion
-    of DIPS-eligible sites. This metric will be the result of |time when DIPS
+    This is recorded each time the deletion of DIPS-eligible sites begins. For
+    the case where the deletion is posted to the UI thread, this is the creation
+    time of the StateClearer; otherwise, it is before the call to
+    DIPSStorage::RemoveRows. This metric will be the result of |time when DIPS
     deletion completed - time when DIPS deletion begins|.
   </summary>
 </histogram>
@@ -310,7 +312,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DIPSErrorCodes" enum="DIPSErrorCode"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -467,7 +469,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.KeyFetcher.HttpResponseOrNetErrorCode"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="M117">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-01-13">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -560,7 +562,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.ScheduledRequests.NumRetriesBeforeSuccess"
-    units="retries" expires_after="2023-11-12">
+    units="retries" expires_after="2024-01-14">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -571,7 +573,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.AggregationService.ScheduledRequests.Status"
-    enum="AggregationServiceObserverReportStatus" expires_after="2023-11-12">
+    enum="AggregationServiceObserverReportStatus" expires_after="2024-01-14">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -621,7 +623,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.Storage.Sql.StoreRequestHasCapacity"
-    enum="Boolean" expires_after="2023-11-12">
+    enum="Boolean" expires_after="2024-01-14">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -632,13 +634,28 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.AggregationService.UnscheduledRequests.Status"
-    enum="AggregationServiceObserverReportStatus" expires_after="2023-11-12">
+    enum="AggregationServiceObserverReportStatus" expires_after="2024-01-14">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
     Records the final status of an *unscheduled* report request, i.e. whether it
     was successfully sent and, if not, the type of failure. These are typically
     debug reports.
+  </summary>
+</histogram>
+
+<histogram name="PrivacySandbox.Attestations.InitializationDuration.Parsing"
+    units="microseconds" expires_after="M122">
+  <owner>shivanisha@chromium.org</owner>
+  <owner>xiaochenzh@chromium.org</owner>
+  <summary>
+    Records the amount of time taken to parse the attestations file from disk.
+    The parsing is done on a thread pool thread, not on the main UI thread. The
+    measurement starts from the invocation of the protobuf parsing function and
+    ends when the function returns. Note this metric is recorded only if the
+    parsing succeeds.
+
+    Note: This histogram is not recorded on low-resolution clock clients.
   </summary>
 </histogram>
 
@@ -719,7 +736,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.PrivateAggregation.BudgetStorage.ShutdownBeforeFinishingInitialization"
-    enum="Boolean" expires_after="2023-11-12">
+    enum="Boolean" expires_after="2024-01-14">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>

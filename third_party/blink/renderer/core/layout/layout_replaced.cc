@@ -413,28 +413,11 @@ void LayoutReplaced::ComputeIntrinsicSizingInfo(
   NOT_DESTROYED();
   DCHECK(!ShouldApplySizeContainment());
 
-  auto view_box_size = ComputeObjectViewBoxSizeForIntrinsicSizing();
-  if (view_box_size) {
+  if (auto view_box_size = ComputeObjectViewBoxSizeForIntrinsicSizing()) {
     intrinsic_sizing_info.size = *view_box_size;
-    if (!IsHorizontalWritingMode())
-      intrinsic_sizing_info.size.Transpose();
   } else {
-    intrinsic_sizing_info.size = gfx::SizeF(IntrinsicLogicalWidth().ToFloat(),
-                                            IntrinsicLogicalHeight().ToFloat());
+    intrinsic_sizing_info.size = gfx::SizeF(IntrinsicSize());
   }
-
-  const StyleAspectRatio& aspect_ratio = StyleRef().AspectRatio();
-  if (!aspect_ratio.IsAuto()) {
-    intrinsic_sizing_info.aspect_ratio.set_width(
-        aspect_ratio.GetRatio().width());
-    intrinsic_sizing_info.aspect_ratio.set_height(
-        aspect_ratio.GetRatio().height());
-    if (!IsHorizontalWritingMode())
-      intrinsic_sizing_info.aspect_ratio.Transpose();
-  }
-  if (aspect_ratio.GetType() == EAspectRatioType::kRatio)
-    return;
-  // Otherwise, let the intrinsic aspect ratio take precedence, below.
 
   // Figure out if we need to compute an intrinsic ratio.
   if (!LayoutObjectHasIntrinsicAspectRatio(this))

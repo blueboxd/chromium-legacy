@@ -576,6 +576,8 @@ source_set("browser") {
     "blob_storage/blob_registry_wrapper.h",
     "blob_storage/chrome_blob_storage_context.cc",
     "blob_storage/chrome_blob_storage_context.h",
+    "blob_storage/file_backed_blob_factory_impl.cc",
+    "blob_storage/file_backed_blob_factory_impl.h",
     "bluetooth/bluetooth_adapter_factory_wrapper.cc",
     "bluetooth/bluetooth_adapter_factory_wrapper.h",
     "bluetooth/bluetooth_allowed_devices.cc",
@@ -948,14 +950,14 @@ source_set("browser") {
     "file_system_access/file_system_access_file_writer_impl.h",
     "file_system_access/file_system_access_handle_base.cc",
     "file_system_access/file_system_access_handle_base.h",
+    "file_system_access/file_system_access_lock_manager.cc",
+    "file_system_access/file_system_access_lock_manager.h",
     "file_system_access/file_system_access_manager_impl.cc",
     "file_system_access/file_system_access_manager_impl.h",
     "file_system_access/file_system_access_safe_move_helper.cc",
     "file_system_access/file_system_access_safe_move_helper.h",
     "file_system_access/file_system_access_transfer_token_impl.cc",
     "file_system_access/file_system_access_transfer_token_impl.h",
-    "file_system_access/file_system_access_write_lock_manager.cc",
-    "file_system_access/file_system_access_write_lock_manager.h",
     "file_system_access/file_system_chooser.cc",
     "file_system_access/file_system_chooser.h",
     "file_system_access/fixed_file_system_access_permission_grant.cc",
@@ -1152,6 +1154,8 @@ source_set("browser") {
     "interest_group/debuggable_auction_worklet.h",
     "interest_group/debuggable_auction_worklet_tracker.cc",
     "interest_group/debuggable_auction_worklet_tracker.h",
+    "interest_group/header_direct_from_seller_signals.cc",
+    "interest_group/header_direct_from_seller_signals.h",
     "interest_group/interest_group_auction.cc",
     "interest_group/interest_group_auction.h",
     "interest_group/interest_group_auction_reporter.cc",
@@ -2610,8 +2614,8 @@ source_set("browser") {
       "renderer_host/text_input_client_mac.mm",
       "renderer_host/text_input_host_impl.h",
       "renderer_host/text_input_host_impl.mm",
-      "renderer_host/webmenurunner_mac.h",
-      "renderer_host/webmenurunner_mac.mm",
+      "renderer_host/web_menu_runner_mac.h",
+      "renderer_host/web_menu_runner_mac.mm",
       "sandbox_parameters_mac.h",
       "sandbox_parameters_mac.mm",
       "sandbox_support_mac_impl.h",
@@ -2651,6 +2655,8 @@ source_set("browser") {
   } else if (is_ios) {
     sources += [
       "child_process_launcher_helper_ios.cc",
+      "date_time_chooser/ios/date_time_chooser_ios.h",
+      "date_time_chooser/ios/date_time_chooser_ios.mm",
       "devtools/protocol/native_input_event_builder_ios.mm",
       "renderer_host/browser_compositor_ios.h",
       "renderer_host/browser_compositor_ios.mm",
@@ -2966,6 +2972,13 @@ source_set("browser") {
     configs += [ "//build/config/linux/pangocairo" ]
   }
 
+  if (is_android || is_ios) {
+    sources += [
+      "date_time_chooser/date_time_chooser.cc",
+      "date_time_chooser/date_time_chooser.h",
+    ]
+  }
+
   if (is_android) {
     sources += [
       "accessibility/accessibility_tree_formatter_android.cc",
@@ -3004,8 +3017,6 @@ source_set("browser") {
       "android/content_url_loader_factory.cc",
       "android/content_url_loader_factory.h",
       "android/content_view_statics.cc",
-      "android/date_time_chooser_android.cc",
-      "android/date_time_chooser_android.h",
       "android/devtools_auth.cc",
       "android/dialog_overlay_impl.cc",
       "android/dialog_overlay_impl.h",
@@ -3085,6 +3096,8 @@ source_set("browser") {
       "child_process_launcher_helper_android.cc",
       "contacts/contacts_provider_android.cc",
       "contacts/contacts_provider_android.h",
+      "date_time_chooser/android/date_time_chooser_android.cc",
+      "date_time_chooser/android/date_time_chooser_android.h",
       "font_unique_name_lookup/font_unique_name_lookup.cc",
       "font_unique_name_lookup/font_unique_name_lookup.h",
       "font_unique_name_lookup/font_unique_name_lookup_service.cc",
@@ -3250,6 +3263,7 @@ source_set("browser") {
     deps += [
       "//components/speech:speech",
       "//components/vector_icons",
+      "//components/webauthn/json",
       "//content/browser/tracing:resources",
     ]
   }
@@ -3366,11 +3380,16 @@ source_set("browser") {
       "xr/service/xr_permission_results.h",
       "xr/service/xr_runtime_manager_impl.cc",
       "xr/service/xr_runtime_manager_impl.h",
+      "xr/webxr_internals/webxr_internals_handler_impl.cc",
+      "xr/webxr_internals/webxr_internals_handler_impl.h",
+      "xr/webxr_internals/webxr_internals_ui.cc",
+      "xr/webxr_internals/webxr_internals_ui.h",
       "xr/xr_utils.cc",
       "xr/xr_utils.h",
     ]
 
     deps += [
+      "//content/browser/xr/webxr_internals/mojom:mojo_bindings",
       "//device/vr/buildflags",
       "//device/vr/orientation",
       "//services/metrics/public/cpp:ukm_builders",

@@ -490,14 +490,14 @@ ScriptValue XMLHttpRequest::response(ScriptState* script_state,
       if (exception_state.HadException()) {
         return ScriptValue();
       }
-      return ScriptValue(isolate,
-                         ToV8Traits<Document>::ToV8(script_state, document));
+      return ScriptValue(isolate, ToV8Traits<IDLNullable<Document>>::ToV8(
+                                      script_state, document));
     }
     case kResponseTypeBlob:
       return ScriptValue(isolate,
                          ToV8Traits<Blob>::ToV8(script_state, ResponseBlob()));
     case kResponseTypeArrayBuffer:
-      return ScriptValue(isolate, ToV8Traits<DOMArrayBuffer>::ToV8(
+      return ScriptValue(isolate, ToV8Traits<IDLNullable<DOMArrayBuffer>>::ToV8(
                                       script_state, ResponseArrayBuffer()));
     default:
       NOTREACHED();
@@ -1747,12 +1747,6 @@ void XMLHttpRequest::DidFail(uint64_t, const ResourceError& error) {
     return;
   }
 
-  if (error.TrustTokenOperationError() !=
-      network::mojom::TrustTokenOperationStatus::kOk) {
-    trust_token_operation_error_ =
-        TrustTokenErrorToDOMException(error.TrustTokenOperationError());
-  }
-
   HandleNetworkError();
 }
 
@@ -2131,7 +2125,6 @@ void XMLHttpRequest::Trace(Visitor* visitor) const {
   visitor->Trace(upload_);
   visitor->Trace(blob_loader_);
   visitor->Trace(response_text_);
-  visitor->Trace(trust_token_operation_error_);
   XMLHttpRequestEventTarget::Trace(visitor);
   ThreadableLoaderClient::Trace(visitor);
   DocumentParserClient::Trace(visitor);

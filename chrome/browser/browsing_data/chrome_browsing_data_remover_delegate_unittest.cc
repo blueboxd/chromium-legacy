@@ -30,6 +30,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/test_future.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
@@ -52,6 +53,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
+#include "chrome/browser/media/webrtc/media_device_salt_service_factory.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/permissions/permission_actions_history_factory.h"
@@ -113,6 +115,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/language/core/browser/url_language_histogram.h"
+#include "components/media_device_salt/media_device_salt_service.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/zero_suggest_cache_service.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -521,7 +524,8 @@ class RemoveUkmDataTester {
       OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT;
 
   RemoveUkmDataTester() : test_utils_(&ukm_recorder_) {
-    test_utils_.PreProfileInit({kSegmentId});
+    test_utils_.PreProfileInit(
+        {{kSegmentId, test_utils_.GetSamplePageLoadMetadata("SELECT 1")}});
     segmentation_platform::UkmDatabaseClient::GetInstance().PreProfileInit();
   }
 
@@ -549,8 +553,7 @@ class RemoveUkmDataTester {
     test_utils_.set_history_service(history_service_);
 
     // Run model overrides to start storing UKM metrics.
-    test_utils_.WaitForModelRequestAndUpdateWith(
-        kSegmentId, test_utils_.GetSamplePageLoadMetadata("SELECT 1"));
+    test_utils_.WaitForUkmObserverRegistration();
 
     return true;
   }
@@ -2972,6 +2975,9 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveFledgeJoinSettings) {
   auto* privacy_sandbox_settings =
       PrivacySandboxSettingsFactory::GetForProfile(GetProfile());
+  privacy_sandbox_settings->SetAllPrivacySandboxAllowedForTesting();
+
+  auto auction_party = url::Origin::Create(GURL("https://auction-party.com"));
 
   const std::string etld_one = "example.com";
   base::Time setting_time_one = base::Time::Now();
@@ -2987,35 +2993,44 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveFledgeJoinSettings) {
   base::Time setting_time_three = base::Time::Now();
   privacy_sandbox_settings->SetFledgeJoiningAllowed(etld_three, false);
 
-  EXPECT_FALSE(privacy_sandbox_settings->IsFledgeJoiningAllowed(
-      url::Origin::Create(GURL("https://www.example.com"))));
-  EXPECT_FALSE(privacy_sandbox_settings->IsFledgeJoiningAllowed(
-      url::Origin::Create(GURL("https://another-example.com"))));
-  EXPECT_FALSE(privacy_sandbox_settings->IsFledgeJoiningAllowed(
-      url::Origin::Create(GURL("http://different-example.com"))));
+  EXPECT_FALSE(privacy_sandbox_settings->IsFledgeAllowed(
+      url::Origin::Create(GURL("https://www.example.com")), auction_party,
+      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+  EXPECT_FALSE(privacy_sandbox_settings->IsFledgeAllowed(
+      url::Origin::Create(GURL("https://another-example.com")), auction_party,
+      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+  EXPECT_FALSE(privacy_sandbox_settings->IsFledgeAllowed(
+      url::Origin::Create(GURL("http://different-example.com")), auction_party,
+      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
 
   // Apply a deletion targeting the second setting.
   BlockUntilBrowsingDataRemoved(setting_time_two - base::Seconds(1),
                                 setting_time_two + base::Seconds(1),
                                 constants::DATA_TYPE_CONTENT_SETTINGS, false);
 
-  EXPECT_FALSE(privacy_sandbox_settings->IsFledgeJoiningAllowed(
-      url::Origin::Create(GURL("https://www.example.com"))));
-  EXPECT_TRUE(privacy_sandbox_settings->IsFledgeJoiningAllowed(
-      url::Origin::Create(GURL("https://another-example.com"))));
-  EXPECT_FALSE(privacy_sandbox_settings->IsFledgeJoiningAllowed(
-      url::Origin::Create(GURL("http://different-example.com"))));
+  EXPECT_FALSE(privacy_sandbox_settings->IsFledgeAllowed(
+      url::Origin::Create(GURL("https://www.example.com")), auction_party,
+      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+  EXPECT_TRUE(privacy_sandbox_settings->IsFledgeAllowed(
+      url::Origin::Create(GURL("https://another-example.com")), auction_party,
+      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+  EXPECT_FALSE(privacy_sandbox_settings->IsFledgeAllowed(
+      url::Origin::Create(GURL("http://different-example.com")), auction_party,
+      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
 
   // Apply a deletion targeting the remaining settings.
   BlockUntilBrowsingDataRemoved(setting_time_one, setting_time_three,
                                 constants::DATA_TYPE_CONTENT_SETTINGS, false);
 
-  EXPECT_TRUE(privacy_sandbox_settings->IsFledgeJoiningAllowed(
-      url::Origin::Create(GURL("https://www.example.com"))));
-  EXPECT_TRUE(privacy_sandbox_settings->IsFledgeJoiningAllowed(
-      url::Origin::Create(GURL("https://another-example.com"))));
-  EXPECT_TRUE(privacy_sandbox_settings->IsFledgeJoiningAllowed(
-      url::Origin::Create(GURL("http://different-example.com"))));
+  EXPECT_TRUE(privacy_sandbox_settings->IsFledgeAllowed(
+      url::Origin::Create(GURL("https://www.example.com")), auction_party,
+      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+  EXPECT_TRUE(privacy_sandbox_settings->IsFledgeAllowed(
+      url::Origin::Create(GURL("https://another-example.com")), auction_party,
+      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+  EXPECT_TRUE(privacy_sandbox_settings->IsFledgeAllowed(
+      url::Origin::Create(GURL("http://different-example.com")), auction_party,
+      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveTopicSettings) {
@@ -3864,4 +3879,137 @@ TEST_F(ChromeBrowsingDataRemoverDelegateOriginTrialsTest,
                                                 /*partition_origin=*/origin,
                                                 kPersistentOriginTrialValidTime)
                   .empty());
+}
+
+class ChromeBrowsingDataRemoverDelegateMediaDeviceSaltTest
+    : public ChromeBrowsingDataRemoverDelegateTest {
+ public:
+  ChromeBrowsingDataRemoverDelegateMediaDeviceSaltTest() {
+    feature_list_.InitWithFeatures(
+        {media_device_salt::kMediaDeviceIdPartitioning,
+         media_device_salt::kMediaDeviceIdRandomSaltsPerStorageKey},
+        {});
+  }
+
+  void SetUp() override {
+    ChromeBrowsingDataRemoverDelegateTest::SetUp();
+    media_device_salt_service_ =
+        MediaDeviceSaltServiceFactory::GetInstance()->GetForBrowserContext(
+            GetProfile());
+  }
+
+  void TearDown() override {
+    media_device_salt_service_ = nullptr;
+    ChromeBrowsingDataRemoverDelegateTest::TearDown();
+  }
+
+ protected:
+  std::string GetSalt(const blink::StorageKey& key) {
+    base::test::TestFuture<const std::string&> future;
+    media_device_salt_service_->GetSalt(key, future.GetCallback());
+    return future.Get();
+  }
+
+  static blink::StorageKey StorageKey1() {
+    return blink::StorageKey::CreateFromStringForTesting(
+        "https://example1.com");
+  }
+
+  static blink::StorageKey StorageKey2() {
+    return blink::StorageKey::CreateFromStringForTesting(
+        "https://example2.com");
+  }
+
+  static blink::StorageKey StorageKey3() {
+    return blink::StorageKey::CreateFromStringForTesting(
+        "https://example3.com");
+  }
+
+ private:
+  raw_ptr<media_device_salt::MediaDeviceSaltService>
+      media_device_salt_service_ = nullptr;
+};
+
+TEST_F(ChromeBrowsingDataRemoverDelegateMediaDeviceSaltTest, RemoveAllSalts) {
+  std::string salt1 = GetSalt(StorageKey1());
+  std::string salt2 = GetSalt(StorageKey2());
+  std::string salt3 = GetSalt(StorageKey3());
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                content::BrowsingDataRemover::DATA_TYPE_COOKIES,
+                                false);
+  EXPECT_NE(GetSalt(StorageKey1()), salt1);
+  EXPECT_NE(GetSalt(StorageKey2()), salt2);
+  EXPECT_NE(GetSalt(StorageKey3()), salt3);
+  // Salts are different from each other
+  EXPECT_NE(GetSalt(StorageKey1()), GetSalt(StorageKey2()));
+  EXPECT_NE(GetSalt(StorageKey2()), GetSalt(StorageKey3()));
+  EXPECT_NE(GetSalt(StorageKey1()), GetSalt(StorageKey3()));
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateMediaDeviceSaltTest, PreserveOneSalt) {
+  std::string salt1 = GetSalt(StorageKey1());
+  std::string salt2 = GetSalt(StorageKey2());
+  std::string salt3 = GetSalt(StorageKey3());
+
+  std::unique_ptr<BrowsingDataFilterBuilder> filter(
+      BrowsingDataFilterBuilder::Create(
+          BrowsingDataFilterBuilder::Mode::kPreserve));
+  filter->AddRegisterableDomain(StorageKey1().origin().host());
+  BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
+                              content::BrowsingDataRemover::DATA_TYPE_COOKIES,
+                              std::move(filter));
+  EXPECT_EQ(GetSalt(StorageKey1()), salt1);
+  EXPECT_NE(GetSalt(StorageKey2()), salt2);
+  EXPECT_NE(GetSalt(StorageKey3()), salt3);
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateMediaDeviceSaltTest, RemoveOneSalt) {
+  std::string salt1 = GetSalt(StorageKey1());
+  std::string salt2 = GetSalt(StorageKey2());
+  std::string salt3 = GetSalt(StorageKey3());
+
+  std::unique_ptr<BrowsingDataFilterBuilder> filter(
+      BrowsingDataFilterBuilder::Create(
+          BrowsingDataFilterBuilder::Mode::kDelete));
+  filter->AddRegisterableDomain(StorageKey1().origin().host());
+  BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
+                              content::BrowsingDataRemover::DATA_TYPE_COOKIES,
+                              std::move(filter));
+  EXPECT_NE(GetSalt(StorageKey1()), salt1);
+  EXPECT_EQ(GetSalt(StorageKey2()), salt2);
+  EXPECT_EQ(GetSalt(StorageKey3()), salt3);
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateMediaDeviceSaltTest,
+       RemoveBasedOnTime) {
+  base::Time time1 = base::Time::Now();
+  std::string salt1 = GetSalt(StorageKey1());
+  task_environment()->FastForwardBy(base::Seconds(1));
+  std::string salt2 = GetSalt(StorageKey2());
+  task_environment()->FastForwardBy(base::Seconds(1));
+  base::Time time3 = base::Time::Now();
+  std::string salt3 = GetSalt(StorageKey3());
+
+  // Remove salt for StorageKey3()
+  BlockUntilBrowsingDataRemoved(time3, base::Time::Max(),
+                                content::BrowsingDataRemover::DATA_TYPE_COOKIES,
+                                false);
+  std::string salt1b = GetSalt(StorageKey1());
+  std::string salt2b = GetSalt(StorageKey2());
+  std::string salt3b = GetSalt(StorageKey3());
+  EXPECT_EQ(salt1b, salt1);
+  EXPECT_EQ(salt2b, salt2);
+  EXPECT_NE(salt3b, salt3);
+
+  // Remove salt for StorageKey1()
+  BlockUntilBrowsingDataRemoved(base::Time(), time1,
+                                content::BrowsingDataRemover::DATA_TYPE_COOKIES,
+                                false);
+  std::string salt1c = GetSalt(StorageKey1());
+  std::string salt2c = GetSalt(StorageKey2());
+  std::string salt3c = GetSalt(StorageKey3());
+  EXPECT_NE(salt1c, salt1b);
+  EXPECT_EQ(salt2c, salt2b);
+  EXPECT_EQ(salt3c, salt3b);
 }

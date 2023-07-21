@@ -62,9 +62,7 @@ net::CookieOptions MakeOptionsForSet(
     mojom::RestrictedCookieManagerRole role,
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    const net::IsolationInfo& isolation_info,
-    const CookieSettings& cookie_settings,
-    const net::FirstPartySetMetadata& first_party_set_metadata) {
+    const CookieSettings& cookie_settings) {
   net::CookieOptions options;
   bool force_ignore_site_for_cookies =
       cookie_settings.ShouldIgnoreSameSiteRestrictions(url, site_for_cookies);
@@ -80,14 +78,6 @@ net::CookieOptions MakeOptionsForSet(
         net::cookie_util::ComputeSameSiteContextForSubresource(
             url, site_for_cookies, force_ignore_site_for_cookies));
   }
-  options.set_same_party_context(first_party_set_metadata.context());
-  if (isolation_info.party_context().has_value()) {
-    // Count the top-frame site since it's not in the party_context.
-    options.set_full_party_context_size(isolation_info.party_context()->size() +
-                                        1);
-  }
-  options.set_is_in_nontrivial_first_party_set(
-      first_party_set_metadata.frame_entry().has_value());
 
   return options;
 }
@@ -96,9 +86,7 @@ net::CookieOptions MakeOptionsForGet(
     mojom::RestrictedCookieManagerRole role,
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    const net::IsolationInfo& isolation_info,
-    const CookieSettings& cookie_settings,
-    const net::FirstPartySetMetadata& first_party_set_metadata) {
+    const CookieSettings& cookie_settings) {
   // TODO(https://crbug.com/925311): Wire initiator here.
   net::CookieOptions options;
   bool force_ignore_site_for_cookies =
@@ -116,14 +104,6 @@ net::CookieOptions MakeOptionsForGet(
         net::cookie_util::ComputeSameSiteContextForSubresource(
             url, site_for_cookies, force_ignore_site_for_cookies));
   }
-  options.set_same_party_context(first_party_set_metadata.context());
-  if (isolation_info.party_context().has_value()) {
-    // Count the top-frame site since it's not in the party_context.
-    options.set_full_party_context_size(isolation_info.party_context()->size() +
-                                        1);
-  }
-  options.set_is_in_nontrivial_first_party_set(
-      first_party_set_metadata.frame_entry().has_value());
 
   return options;
 }
@@ -232,8 +212,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
            bool has_storage_access,
            const absl::optional<net::CookiePartitionKey>& cookie_partition_key,
            net::CookieOptions options,
-           mojo::PendingRemote<mojom::CookieChangeListener> mojo_listener,
-           bool same_party_attribute_enabled)
+           mojo::PendingRemote<mojom::CookieChangeListener> mojo_listener)
       : cookie_store_(cookie_store),
         restricted_cookie_manager_(restricted_cookie_manager),
         url_(url),
@@ -241,8 +220,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
         top_frame_origin_(top_frame_origin),
         has_storage_access_(has_storage_access),
         options_(options),
-        mojo_listener_(std::move(mojo_listener)),
-        same_party_attribute_enabled_(same_party_attribute_enabled) {
+        mojo_listener_(std::move(mojo_listener)) {
     // TODO(pwnall): add a constructor w/options to net::CookieChangeDispatcher.
     cookie_store_subscription_ =
         cookie_store->GetChangeDispatcher().AddCallbackForUrl(
@@ -278,16 +256,11 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
 
     // CookieChangeDispatcher doesn't check for inclusion against `options_`, so
     // we need to double-check that.
-    net::CookieSamePartyStatus same_party_status =
-        net::cookie_util::GetSamePartyStatus(change.cookie, options_,
-                                             same_party_attribute_enabled_);
-
     if (!change.cookie
              .IncludeForRequestURL(
                  url_, options_,
                  net::CookieAccessParams{change.access_result.access_semantics,
-                                         delegate_treats_url_as_trustworthy,
-                                         same_party_status})
+                                         delegate_treats_url_as_trustworthy})
              .status.IsInclude()) {
       return;
     }
@@ -299,7 +272,8 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
     if (!restricted_cookie_manager_->cookie_settings().IsCookieAccessible(
             change.cookie, url_, site_for_cookies_, top_frame_origin_,
             restricted_cookie_manager_->GetCookieSettingOverrides(
-                has_storage_access_))) {
+                has_storage_access_),
+            /*cookie_inclusion_status=*/nullptr)) {
       return;
     }
 
@@ -337,8 +311,6 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
 
   mojo::Remote<mojom::CookieChangeListener> mojo_listener_;
 
-  bool same_party_attribute_enabled_;
-
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
@@ -365,8 +337,6 @@ RestrictedCookieManager::RestrictedCookieManager(
       cookie_partition_key_collection_(
           net::CookiePartitionKeyCollection::FromOptional(
               cookie_partition_key_)),
-      same_party_attribute_enabled_(base::FeatureList::IsEnabled(
-          net::features::kSamePartyAttributeEnabled)),
       receiver_(this),
       metrics_updater_(metrics_updater),
       cookies_access_timer_(
@@ -467,8 +437,7 @@ void RestrictedCookieManager::GetAllForUrl(
   // TODO(morlovich): Try to validate site_for_cookies as well.
 
   net::CookieOptions net_options =
-      MakeOptionsForGet(role_, url, site_for_cookies, isolation_info_,
-                        cookie_settings(), first_party_set_metadata_);
+      MakeOptionsForGet(role_, url, site_for_cookies, cookie_settings());
   // TODO(https://crbug.com/977040): remove set_return_excluded_cookies() once
   // removing deprecation warnings.
   net_options.set_return_excluded_cookies();
@@ -615,7 +584,7 @@ void RestrictedCookieManager::SetCanonicalCookie(
   // TODO(morlovich): Try to validate site_for_cookies as well.
   bool blocked = !cookie_settings_->IsCookieAccessible(
       cookie, url, site_for_cookies, top_frame_origin,
-      GetCookieSettingOverrides(has_storage_access));
+      GetCookieSettingOverrides(has_storage_access), &status);
 
   if (blocked)
     status.AddExclusionReason(
@@ -720,8 +689,7 @@ void RestrictedCookieManager::SetCanonicalCookie(
 
   net::CanonicalCookie cookie_copy = *sanitized_cookie;
   net::CookieOptions options =
-      MakeOptionsForSet(role_, url, site_for_cookies, isolation_info_,
-                        cookie_settings(), first_party_set_metadata_);
+      MakeOptionsForSet(role_, url, site_for_cookies, cookie_settings());
 
   net::CookieAccessResult cookie_access_result(status);
   cookie_store_->SetCanonicalCookieAsync(
@@ -771,12 +739,11 @@ void RestrictedCookieManager::AddChangeListener(
   }
 
   net::CookieOptions net_options =
-      MakeOptionsForGet(role_, url, site_for_cookies, isolation_info_,
-                        cookie_settings(), first_party_set_metadata_);
+      MakeOptionsForGet(role_, url, site_for_cookies, cookie_settings());
   auto listener = std::make_unique<Listener>(
       cookie_store_, this, url, site_for_cookies, top_frame_origin,
       has_storage_access, cookie_partition_key_, net_options,
-      std::move(mojo_listener), same_party_attribute_enabled_);
+      std::move(mojo_listener));
 
   listener->mojo_listener().set_disconnect_handler(
       base::BindOnce(&RestrictedCookieManager::RemoveChangeListener,

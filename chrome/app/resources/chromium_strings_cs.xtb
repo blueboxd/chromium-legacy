@@ -7,12 +7,12 @@
 <translation id="1065672644894730302">Nelze číst vaše nastavení.
 
 Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</translation>
+<translation id="1083934481477628225">Tvůj rodič pro prohlížeč Chromium vypnul možnost Oprávnění pro weby, aplikace a rozšíření</translation>
 <translation id="1098170124587656448">Chromium vás pomáhá chránit před porušeními zabezpečení údajů, škodlivými rozšířeními a dalšími hrozbami</translation>
 <translation id="1104942323762546749">Chromium chce exportovat vaše hesla. Tato akce vyžaduje zadání hesla systému Windows.</translation>
 <translation id="113122355610423240">Chromium je vaším výchozím prohlížečem</translation>
 <translation id="1131805035311359397">Chcete-li zkontrolovat, zda jsou hesla v bezpečí před porušením zabezpečení údajů a ostatními bezpečnostními hrozbami, <ph name="BEGIN_LINK" />přihlaste se do prohlížeče Chromium<ph name="END_LINK" />.</translation>
 <translation id="1153368717515616349">Klikněte na nabídku Chromium</translation>
-<translation id="1157106475430165622">{NUM_DEVICES,plural, =0{Rozšíření prohlížeče Chromium používala zařízení HID}=1{Rozšíření prohlížeče Chromium používají zařízení HID}few{Rozšíření prohlížeče Chromium používají # zařízení HID}many{Rozšíření prohlížeče Chromium používají # zařízení HID}other{Rozšíření prohlížeče Chromium používají # zařízení HID}}</translation>
 <translation id="1185134272377778587">O prohlížeči Chromium</translation>
 <translation id="1203500561924088507">Děkujeme za instalaci aplikace <ph name="BUNDLE_NAME" />. Před jejím použitím je potřeba restartovat prohlížeč.</translation>
 <translation id="1261119230216066228">Prohlížeč Chromium byl zrychlen pomocí Spořiče paměti</translation>
@@ -61,6 +61,7 @@ Na tento účet se mohou vztahovat oprávnění, která jste již udělili webů
 <translation id="2359808026110333948">Pokračovat</translation>
 <translation id="2384373936468275798">ChromiumOS nemůže synchronizovat data, protože vaše přihlašovací údaje k účtu jsou zastaralé.</translation>
 <translation id="2396765026452590966">Rozšíření <ph name="EXTENSION_NAME" /> změnilo stránku, která se zobrazí při spuštění prohlížeče Chromium.</translation>
+<translation id="2398377054246527950">{NUM_DEVICES,plural, =0{1 zařízení HID bylo používáno jedním nebo více rozšířeními prohlížeče Chromium}=1{1 zařízení HID je používáno jedním nebo více rozšířeními prohlížeče Chromium}few{# zařízení HID jsou používána jedním nebo více rozšířeními prohlížeče Chromium}many{# zařízení HID je používáno jedním nebo více rozšířeními prohlížeče Chromium}other{# zařízení HID je používáno jedním nebo více rozšířeními prohlížeče Chromium}}</translation>
 <translation id="2401032172288869980">Chromium pro tento web potřebuje přístup k fotoaparátu a mikrofonu</translation>
 <translation id="2451727308784734061">Pomocí zástupce se rychle dostanete do Správce hesel. Zástupce můžete přesunout na plochu počítače nebo do spouštěče aplikací.</translation>
 <translation id="2478295928299953161">Chromium se brzy zavře</translation>
@@ -93,6 +94,7 @@ Na tento účet se mohou vztahovat oprávnění, která jste již udělili webů
 <translation id="3032787606318309379">Přidávání do prohlížeče Chromium...</translation>
 <translation id="3038232873781883849">Čekání na instalaci…</translation>
 <translation id="3068515742935458733">Pomozte aplikaci Chromium zlepšovat tím, že budete společnosti Google zasílat zprávy o selhání a <ph name="UMA_LINK" />.</translation>
+<translation id="3079753320517721795">{NUM_DEVICES,plural, =0{1 zařízení USB bylo používáno jedním nebo více rozšířeními prohlížeče Chromium}=1{1 zařízení USB je používáno jedním nebo více rozšířeními prohlížeče Chromium}few{# zařízení USB jsou používána jedním nebo více rozšířeními prohlížeče Chromium}many{# zařízení USB je používáno jedním nebo více rozšířeními prohlížeče Chromium}other{# zařízení USB je používáno jedním nebo více rozšířeními prohlížeče Chromium}}</translation>
 <translation id="3101560983689755071">Vaše historie prohlížení ovlivňuje zobrazované reklamy a odhadované zájmy uvedené níže. Aby Chromium chránil vaše soukromí, vaše zájmy každý měsíc pravidelně maže. Zájmy se mohou obnovovat, dokud je neodstraníte.</translation>
 <translation id="3103660991484857065">Instalačnímu programu se nepodařilo rozbalit archiv. Stáhněte prosím Chromium znovu.</translation>
 <translation id="3130323860337406239">Chromium používá váš mikrofon.</translation>
@@ -155,6 +157,7 @@ Na tento účet se mohou vztahovat oprávnění, která jste již udělili webů
 <translation id="4222932583846282852">Rušení...</translation>
 <translation id="4230135487732243613">Opravdu chcete propojit údaje prohlížeče Chromium s tímto účtem?</translation>
 <translation id="4271805377592243930">Pomoc s prohlížečem Chromium</translation>
+<translation id="4281844954008187215">Smluvní podmínky</translation>
 <translation id="4285930937574705105">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je prohlížeč Chromium právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
 <translation id="4304713468139749426">Správce hesel</translation>
 <translation id="4334294535648607276">Stahování bylo dokončeno.</translation>
@@ -298,6 +301,7 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="7025789849649390912">Instalace byla zastavena.</translation>
 <translation id="705851970750939768">Aktualizovat Chromium</translation>
 <translation id="7067091210845072982">Pokud obrázek nemá užitečný popis, Chromium se vám jej pokusí poskytnout. Za účelem vytváření popisů jsou obrázky odesílány do Googlu.</translation>
+<translation id="7141270731789036260">Přizpůsobit Chrome for Testing</translation>
 <translation id="7173822816570314652">Když prohlížeč Chromium <ph name="TIMEOUT_DURATION" /> není používán, vaše organizace smaže jeho data. To může zahrnovat historii, automatické vyplňování a stažené soubory.</translation>
 <translation id="718435575166326686">Chromium pro tento web potřebuje přístup k fotoaparátu</translation>
 <translation id="7196312274710523067">Chromium nelze spustit. Zkuste to znovu.</translation>
@@ -372,7 +376,6 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="8619360774459241877">Spouštění prohlížeče Chromium...</translation>
 <translation id="8621669128220841554">Instalace se z neznámého důvodu nezdařila. Stáhněte prosím Chromium znovu.</translation>
 <translation id="8648201657708811153">Google Chrome for Testing nelze nastavit jako výchozí prohlížeč.</translation>
-<translation id="867492205098279939">{NUM_DEVICES,plural, =0{Rozšíření prohlížeče Chromium používalo zařízení HID}=1{Rozšíření prohlížeče Chromium používá 1 zařízení HID}few{Rozšíření prohlížeče Chromium používají # zařízení HID}many{Rozšíření prohlížeče Chromium používá # zařízení HID}other{Rozšíření prohlížeče Chromium používá # zařízení HID}}</translation>
 <translation id="8697124171261953979">Také řídí, která stránka se zobrazí po spuštění prohlížeče Chromium nebo při vyhledávání v omniboxu.</translation>
 <translation id="8704119203788522458">Toto je váš prohlížeč Chromium</translation>
 <translation id="8796602469536043152">Chromium pro tento web potřebuje oprávnění k přístupu k fotoaparátu a mikrofonu</translation>

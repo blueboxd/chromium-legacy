@@ -70,6 +70,7 @@ const EnrollTriageMethod = {
  */
 const UserAction = {
   SIGNIN: 'signin',
+  SIGNIN_TRIAGE: 'signin-triage',
   ADD_CHILD: 'add-child',
   ENROLL: 'enroll',
   TRIAGE: 'triage',
@@ -233,6 +234,7 @@ class UserCreation extends UserCreationScreenElementBase {
     if (this.uiStep === UserCreationUIState.ENROLL_TRIAGE ||
         this.uiStep === UserCreationUIState.CHILD_SETUP) {
       this.setUIStep(UserCreationUIState.CREATE);
+      Oobe.getInstance().setOobeUIState(OOBE_UI_STATE.USER_CREATION);
     } else {
       this.userActed(UserAction.CANCEL);
     }
@@ -268,13 +270,14 @@ class UserCreation extends UserCreationScreenElementBase {
 
   setChildSetupStep() {
     this.setUIStep(UserCreationUIState.CHILD_SETUP);
+    Oobe.getInstance().setOobeUIState(OOBE_UI_STATE.SETUP_CHILD);
   }
 
   onTriageNextClicked_() {
     if (this.selectedEnrollTriageMethod === EnrollTriageMethod.ENROLL) {
       this.userActed(UserAction.ENROLL);
     } else if (this.selectedEnrollTriageMethod === EnrollTriageMethod.SIGNIN) {
-      this.userActed(UserAction.SIGNIN);
+      this.userActed(UserAction.SIGNIN_TRIAGE);
     }
   }
 

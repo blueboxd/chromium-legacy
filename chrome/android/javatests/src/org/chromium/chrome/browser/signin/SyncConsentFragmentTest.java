@@ -22,7 +22,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.accounts.Account;
 import android.app.Activity;
 import android.os.Bundle;
 
@@ -94,9 +93,9 @@ public class SyncConsentFragmentTest {
     // TODO(https://crbug.com/1414078): Use ALL_SELECTABLE_TYPES defined in {@link SyncServiceImpl}
     // here.
     private static final Set<Integer> ALL_CLANK_SYNCABLE_DATA_TYPES = Set.of(
-            UserSelectableType.AUTOFILL, UserSelectableType.BOOKMARKS, UserSelectableType.PASSWORDS,
-            UserSelectableType.PREFERENCES, UserSelectableType.TABS, UserSelectableType.HISTORY,
-            UserSelectableType.READING_LIST);
+            UserSelectableType.AUTOFILL, UserSelectableType.PAYMENTS, UserSelectableType.BOOKMARKS,
+            UserSelectableType.PASSWORDS, UserSelectableType.PREFERENCES, UserSelectableType.TABS,
+            UserSelectableType.HISTORY, UserSelectableType.READING_LIST);
     private static final Set<Integer> HISTORY_SYNC_DATA_TYPES =
             Set.of(UserSelectableType.HISTORY, UserSelectableType.TABS);
 
@@ -117,8 +116,8 @@ public class SyncConsentFragmentTest {
         }
 
         @Override
-        protected void updateAccounts(List<Account> accounts) {
-            super.updateAccounts(accounts);
+        protected void updateAccounts(List<CoreAccountInfo> coreAccountInfos) {
+            super.updateAccounts(coreAccountInfos);
             mIsUpdateAccountCalled = true;
         }
     }
@@ -1101,7 +1100,7 @@ public class SyncConsentFragmentTest {
     @Test
     @LargeTest
     @DisableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
-    @DisabledTest(message = "crbug.com/1459984")
+    @DisabledTest(message = "crbug.com/1462981")
     public void testAutomotiveDevice_tryNavigateViaClickableSpan_deviceLockCreated() {
         mAutoTestRule.setIsAutomotive(true);
         mChromeActivityTestRule.startMainActivityOnBlankPage();

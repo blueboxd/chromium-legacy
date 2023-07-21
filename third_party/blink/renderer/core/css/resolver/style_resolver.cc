@@ -124,10 +124,6 @@ namespace {
 
 scoped_refptr<const ComputedStyle> BuildInitialStyleForImg(
     const scoped_refptr<const ComputedStyle>& initial_style) {
-  if (!RuntimeEnabledFeatures::CSSOverflowForReplacedElementsEnabled()) {
-    return initial_style;
-  }
-
   // This matches the img {} declarations in html.css to avoid copy-on-write
   // when only UA styles apply for these properties. See crbug.com/1369454
   // for details.
@@ -822,13 +818,16 @@ void StyleResolver::ForEachUARulesForElement(const Element& element,
   }
 
   const auto pseudo_id = GetPseudoId(element, collector);
-  if (pseudo_id != kPseudoIdNone) {
-    if (IsTransitionPseudoElement(pseudo_id)) {
-      func(GetDocument().GetStyleEngine().DefaultViewTransitionStyle());
-    } else if (auto* rule_set =
-                   default_style_sheets.DefaultPseudoElementStyleOrNull()) {
-      func(rule_set);
-    }
+  if (pseudo_id == kPseudoIdNone) {
+    return;
+  }
+
+  auto* rule_set =
+      IsTransitionPseudoElement(pseudo_id)
+          ? GetDocument().GetStyleEngine().DefaultViewTransitionStyle()
+          : default_style_sheets.DefaultPseudoElementStyleOrNull();
+  if (rule_set) {
+    func(rule_set);
   }
 }
 
@@ -1031,8 +1030,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::ResolveStyle(
           state.StyleBuilder().GetCurrentColor());
     }
 
-    if (RuntimeEnabledFeatures::MathMLCoreEnabled() &&
-        IsA<MathMLElement>(element)) {
+    if (IsA<MathMLElement>(element)) {
       ApplyMathMLCustomStyleProperties(element, state);
     }
   } else if (IsHighlightPseudoElement(style_request.pseudo_id)) {
@@ -1184,8 +1182,7 @@ void StyleResolver::InitStyleAndApplyInheritance(
 void StyleResolver::ApplyMathMLCustomStyleProperties(
     Element* element,
     StyleResolverState& state) {
-  DCHECK(RuntimeEnabledFeatures::MathMLCoreEnabled() &&
-         IsA<MathMLElement>(element));
+  DCHECK(IsA<MathMLElement>(element));
   ComputedStyleBuilder& builder = state.StyleBuilder();
   if (auto* space = DynamicTo<MathMLSpaceElement>(*element)) {
     space->AddMathBaselineIfNeeded(builder, state.CssToLengthConversionData());

@@ -21,6 +21,7 @@ import './os_printing_page/os_printing_page.js';
 import './os_reset_page/os_reset_page.js';
 /** Subpages */
 import './device_page/customize_mouse_buttons_subpage.js';
+import './device_page/customize_pen_buttons_subpage.js';
 import './device_page/customize_tablet_buttons_subpage.js';
 import './internet_page/apn_subpage.js';
 import './internet_page/hotspot_subpage.js';
@@ -81,6 +82,7 @@ import './os_apps_page/app_management_page/app_item.js';
 import './os_apps_page/app_management_page/arc_detail_view.js';
 import './os_apps_page/app_management_page/borealis_page/borealis_detail_view.js';
 import './os_apps_page/app_management_page/chrome_app_detail_view.js';
+import './os_apps_page/app_management_page/permission_heading.js';
 import './os_apps_page/app_management_page/pin_to_shelf_item.js';
 import './os_apps_page/app_management_page/plugin_vm_page/plugin_vm_detail_view.js';
 import './os_apps_page/app_management_page/pwa_detail_view.js';
@@ -133,6 +135,7 @@ export {TimeZoneBrowserProxy, TimeZoneBrowserProxyImpl} from './date_time_page/t
 export {TimezoneSelectorElement} from './date_time_page/timezone_selector.js';
 export {TimezoneSubpageElement} from './date_time_page/timezone_subpage.js';
 export {SettingsCustomizeMouseButtonsSubpageElement} from './device_page/customize_mouse_buttons_subpage.js';
+export {SettingsCustomizePenButtonsSubpageElement} from './device_page/customize_pen_buttons_subpage.js';
 export {SettingsCustomizeTabletButtonsSubpageElement} from './device_page/customize_tablet_buttons_subpage.js';
 export {CROSTINI_TYPE, GuestOsBrowserProxy, GuestOsBrowserProxyImpl, GuestOsSharedUsbDevice, PLUGIN_VM_TYPE} from './guest_os/guest_os_browser_proxy.js';
 export {SettingsGuestOsSharedPathsElement} from './guest_os/guest_os_shared_paths.js';
@@ -177,6 +180,7 @@ export {AppManagementBorealisDetailViewElement} from './os_apps_page/app_managem
 export {AppManagementChromeAppDetailViewElement} from './os_apps_page/app_management_page/chrome_app_detail_view.js';
 export {AppManagementDomSwitchElement} from './os_apps_page/app_management_page/dom_switch.js';
 export {AppManagementMainViewElement} from './os_apps_page/app_management_page/main_view.js';
+export {AppManagementPermissionHeadingElement} from './os_apps_page/app_management_page/permission_heading.js';
 export {AppManagementPinToShelfItemElement} from './os_apps_page/app_management_page/pin_to_shelf_item.js';
 export {AppManagementPluginVmDetailViewElement} from './os_apps_page/app_management_page/plugin_vm_page/plugin_vm_detail_view.js';
 export {AppManagementPwaDetailViewElement} from './os_apps_page/app_management_page/pwa_detail_view.js';

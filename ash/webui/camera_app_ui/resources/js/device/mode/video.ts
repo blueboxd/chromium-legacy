@@ -17,6 +17,7 @@ import {Filenamer} from '../../models/file_namer.js';
 import * as loadTimeData from '../../models/load_time_data.js';
 import {
   GifSaver,
+  TimeLapseEncoderArgs,
   TimeLapseSaver,
   VideoSaver,
 } from '../../models/video_saver.js';
@@ -183,6 +184,12 @@ export interface VideoHandler {
   createVideoSaver(): Promise<VideoSaver>;
 
   /**
+   * Creates TimeLapseSaver to save time-lapse capture result.
+   */
+  createTimeLapseSaver(encoderArgs: TimeLapseEncoderArgs, speed: number):
+      Promise<TimeLapseSaver>;
+
+  /**
    * Handles the result video snapshot.
    */
   handleVideoSnapshot(videoSnapshotResult: PhotoResult): Promise<void>;
@@ -248,12 +255,6 @@ export class Video extends ModeBase {
    * The ongoing video snapshot.
    */
   private snapshotting: Promise<void>|null = null;
-
-  /**
-   * Promise for process of toggling video pause/resume. Sets to null if CCA
-   * is already paused or resumed.
-   */
-  private togglePausedInternal: Promise<void>|null = null;
 
   /**
    * Whether current recording ever paused/resumed before it ended.
@@ -421,17 +422,11 @@ export class Video extends ModeBase {
     if (!state.get(state.State.RECORDING)) {
       return;
     }
-    if (this.togglePausedInternal !== null) {
-      return this.togglePausedInternal;
-    }
     this.everPaused = true;
 
     if (this.recordingType === RecordType.TIME_LAPSE) {
       return this.togglePausedTimeLapse();
     }
-
-    const waitable = new WaitableEvent();
-    this.togglePausedInternal = waitable.wait();
 
     assert(this.mediaRecorder !== null);
     assert(this.mediaRecorder.state !== 'inactive');
@@ -439,17 +434,14 @@ export class Video extends ModeBase {
     const toggledEvent = toBePaused ? 'pause' : 'resume';
 
     if (!toBePaused && !(await this.resumeMonitorStorage())) {
-      // Keep |togglePausedInternal| non-null to prevent pause/resume while
-      // stopping the recording.
-      waitable.signal();
       return;
     }
 
+    const waitable = new WaitableEvent();
     const onToggled = () => {
       assert(this.mediaRecorder !== null);
       this.mediaRecorder.removeEventListener(toggledEvent, onToggled);
       state.set(state.State.RECORDING_PAUSED, toBePaused);
-      this.togglePausedInternal = null;
       waitable.signal();
     };
 
@@ -468,12 +460,9 @@ export class Video extends ModeBase {
   }
 
   private async togglePausedTimeLapse(): Promise<void> {
-    const toggleDone = new WaitableEvent();
-    this.togglePausedInternal = toggleDone.wait();
     const toBePaused = !state.get(state.State.RECORDING_PAUSED);
 
     if (!toBePaused && !(await this.resumeMonitorStorage())) {
-      toggleDone.signal();
       return;
     }
 
@@ -488,9 +477,6 @@ export class Video extends ModeBase {
       this.recordTime.resume();
       state.set(state.State.RECORDING_PAUSED, false);
     }
-
-    toggleDone.signal();
-    this.togglePausedInternal = null;
   }
 
   private async playPauseEffect(toBePaused: boolean): Promise<void> {
@@ -558,7 +544,6 @@ export class Video extends ModeBase {
 
   async start(): Promise<[Promise<void>]> {
     assert(this.snapshotting === null);
-    this.togglePausedInternal = null;
     this.everPaused = false;
     this.autoStopped = false;
     this.stopped = false;
@@ -811,8 +796,12 @@ export class Video extends ModeBase {
     const encoderConfig = getVideoEncoderConfig(param, this.captureResolution);
 
     // Creates a saver given the initial speed.
-    const saver = await TimeLapseSaver.create(
-        encoderConfig, this.captureResolution, this.frameRate,
+    const saver = await this.handler.createTimeLapseSaver(
+        {
+          encoderConfig,
+          fps: this.frameRate,
+          resolution: this.captureResolution,
+        },
         TIME_LAPSE_INITIAL_SPEED);
 
     // Creates a frame reader from track processor.

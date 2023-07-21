@@ -17,7 +17,6 @@ import android.view.View;
 
 import androidx.test.filters.LargeTest;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +28,7 @@ import org.mockito.Mockito;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -89,11 +89,6 @@ public class ClearBrowsingDataFragmentBasicTest {
         SyncServiceFactory.setInstanceForTesting(mMockSyncService);
         setSyncable(false);
         mActivityTestRule.startMainActivityOnBlankPage();
-    }
-
-    @After
-    public void tearDown() {
-        TemplateUrlServiceFactory.setInstanceForTesting(null);
     }
 
     private void setSyncable(boolean syncable) {
@@ -230,6 +225,7 @@ public class ClearBrowsingDataFragmentBasicTest {
     @Test
     @LargeTest
     @Feature({"RenderTest"})
+    @DisabledTest(message = "Flaky because the rendered page doesn't always finish loading ")
     public void testRenderSearchHistoryLinkSignedOutUnknownNonGoogleDSE() throws IOException {
         configureMockSearchEngine();
         Mockito.doReturn(false).when(mMockTemplateUrlService).isDefaultSearchEngineGoogle();

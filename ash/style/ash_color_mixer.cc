@@ -512,6 +512,9 @@ void ReverseMapSysColors(ui::ColorMixer& mixer, bool dark_mode) {
       dark_mode ? ui::ColorTransform(cros_tokens::kCrosSysHighlightShape)
                 : ui::SetAlpha(gfx::kGoogleBlue600, 31);  // 12% opacity
 
+  // Remap the base color used in illustrations.
+  mixer[cros_tokens::kCrosSysAppBaseShaded] = {cros_tokens::kBgColor};
+
   // Remap illo tokens to GM2 equivilants so GM3 assets will render reasonably
   // if the jelly flag is flipped off for launch.
   mixer[cros_tokens::kCrosSysIlloColor1] = {cros_tokens::kIllustrationColor1};
@@ -692,6 +695,12 @@ void AddAshColorMixer(ui::ColorProvider* provider,
 
   mixer[kColorAshEcheIconColorStreaming] = {ui::ColorTransform(SK_ColorGREEN)};
 
+  mixer[kColorAshSystemInfoBarChartColorBackground] =
+      use_dark_color ? ui::ColorTransform(gfx::kGoogleGrey500)
+                     : ui::ColorTransform(gfx::kGoogleGrey400);
+
+  mixer[kColorAshSystemInfoBarChartColorForeground] = {gfx::kGoogleBlue300};
+
   mixer[kColorAshMultiSelectTextColor] =
       use_dark_color ? ui::ColorTransform(gfx::kGoogleBlue100)
                      : ui::ColorTransform(gfx::kGoogleBlue800);
@@ -711,6 +720,11 @@ void AddAshColorMixer(ui::ColorProvider* provider,
       ui::SetAlpha(cros_tokens::kCrosSysPrimary, kAlpha25);
   mixer[kColorAshWindowHeaderStrokeColor] =
       ui::SetAlpha(cros_tokens::kCrosRefNeutral0, kAlpha8);
+
+  // Color for the scrollable user view on login.
+  mixer[kColorAshLoginScrollableUserListBackground] = {
+      use_dark_color ? cros_tokens::kCrosRefNeutral20
+                     : cros_tokens::kCrosRefNeutral80};
 
   if (is_jelly_enabled) {
     mixer[ui::kColorRadioButtonForegroundChecked] = {

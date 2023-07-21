@@ -982,13 +982,12 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
   auto AddCaptionResult = [&](const CaptionResult& caption,
                               LayoutUnit* block_offset) -> void {
     NGBlockNode node = caption.node;
-    node.StoreMargins(
-        caption.margins.ConvertToPhysical(table_writing_direction));
 
     *block_offset += caption.margins.block_start;
     container_builder_.AddResult(
         *caption.layout_result,
-        LogicalOffset(caption.margins.inline_start, *block_offset));
+        LogicalOffset(caption.margins.inline_start, *block_offset),
+        caption.margins);
 
     *block_offset += NGFragment(table_writing_direction,
                                 caption.layout_result->PhysicalFragment())
@@ -1618,7 +1617,7 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
   }
   container_builder_.SetFragmentsTotalBlockSize(block_size);
 
-  if (RuntimeEnabledFeatures::MathMLCoreEnabled() && Node().GetDOMNode() &&
+  if (Node().GetDOMNode() &&
       Node().GetDOMNode()->HasTagName(mathml_names::kMtableTag)) {
     container_builder_.SetBaselines(
         MathTableBaseline(Style(), child_block_offset));

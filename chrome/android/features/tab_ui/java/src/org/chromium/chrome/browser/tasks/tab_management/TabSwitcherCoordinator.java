@@ -104,6 +104,7 @@ public class TabSwitcherCoordinator
     private final boolean mUsesTabGridDialogCoordinator;
     @Nullable
     private TabGridDialogCoordinator mTabGridDialogCoordinator;
+    private final BrowserControlsStateProvider mBrowserControlsStateProvider;
     private final TabModelSelector mTabModelSelector;
     private final @TabListCoordinator.TabListMode int mMode;
     private final MessageCardProviderCoordinator mMessageCardProviderCoordinator;
@@ -126,6 +127,7 @@ public class TabSwitcherCoordinator
     private final ViewGroup mRootView;
     private TabContentManager mTabContentManager;
     private IncognitoReauthPromoMessageService mIncognitoReauthPromoMessageService;
+    private boolean mHasEmptyView;
     /**
      * TODO(crbug.com/1227656): Refactor this to pass a supplier instead to ensure we re-use the
      * same instance of {@link IncognitoReauthManager} across the codebase.
@@ -158,6 +160,7 @@ public class TabSwitcherCoordinator
         try (TraceEvent e = TraceEvent.scoped("TabSwitcherCoordinator.constructor")) {
             mActivity = activity;
             mMode = mode;
+            mBrowserControlsStateProvider = browserControls;
             mTabModelSelector = tabModelSelector;
             mContainer = container;
             mCoordinatorView = activity.findViewById(R.id.coordinator);
@@ -175,7 +178,10 @@ public class TabSwitcherCoordinator
             mTabSelectionEditorSnackbarManager = new SnackbarManager(activity, mRootView, null);
 
             PropertyModel containerViewModel =
-                    new PropertyModel(TabListContainerProperties.ALL_KEYS);
+                    new PropertyModel.Builder(TabListContainerProperties.ALL_KEYS)
+                            .with(TabListContainerProperties.BROWSER_CONTROLS_STATE_PROVIDER,
+                                    mBrowserControlsStateProvider)
+                            .build();
 
             OneshotSupplier<TabGridDialogMediator.DialogController> dialogControllerSupplier = null;
             if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled(activity)) {
@@ -230,12 +236,12 @@ public class TabSwitcherCoordinator
             mMediator = new TabSwitcherMediator(activity, this, containerViewModel,
                     tabModelSelector, browserControls, container, tabContentManager, this, this,
                     multiWindowModeStateDispatcher, mode, incognitoReauthControllerSupplier,
-                    backPressManager, dialogControllerSupplier);
+                    backPressManager, dialogControllerSupplier, this::onTabSwitcherShown);
 
             mTabSwitcherCustomViewManager = new TabSwitcherCustomViewManager(mMediator);
 
-            mMultiThumbnailCardProvider =
-                    new MultiThumbnailCardProvider(activity, tabContentManager, tabModelSelector);
+            mMultiThumbnailCardProvider = new MultiThumbnailCardProvider(
+                    activity, mBrowserControlsStateProvider, tabContentManager, tabModelSelector);
 
             PseudoTab.TitleProvider titleProvider = (context, tab) -> {
                 int numRelatedTabs =
@@ -246,10 +252,33 @@ public class TabSwitcherCoordinator
             };
 
             long startTimeMs = SystemClock.uptimeMillis();
-            mTabListCoordinator = new TabListCoordinator(mode, activity, tabModelSelector,
-                    mMultiThumbnailCardProvider, titleProvider, true, mMediator, null,
-                    TabProperties.UiType.CLOSABLE, null, this, container, true, COMPONENT_NAME,
-                    mRootView, null, ChromeFeatureList.sEmptyStates.isEnabled());
+
+            mHasEmptyView = ChromeFeatureList.sEmptyStates.isEnabled()
+                    && (mMode == TabListMode.GRID || mMode == TabListMode.LIST);
+
+            if (mHasEmptyView) {
+                int emptyImageResId =
+                        DeviceFormFactor.isNonMultiDisplayContextOnTablet(mRootView.getContext())
+                        ? R.drawable.tablet_tab_switcher_empty_state_illustration
+                        : R.drawable.phone_tab_switcher_empty_state_illustration;
+                int emptyHeadingStringResId = R.string.tabswitcher_no_tabs_empty_state;
+                int emptySubheadingStringResId =
+                        R.string.tabswitcher_no_tabs_open_to_visit_different_pages;
+
+                mTabListCoordinator = new TabListCoordinator(mode, activity,
+                        mBrowserControlsStateProvider, tabModelSelector,
+                        mMultiThumbnailCardProvider, titleProvider, true, mMediator, null,
+                        TabProperties.UiType.CLOSABLE, null, this, container, true, COMPONENT_NAME,
+                        mRootView, null, mHasEmptyView, emptyImageResId, emptyHeadingStringResId,
+                        emptySubheadingStringResId);
+            } else {
+                mTabListCoordinator =
+                        new TabListCoordinator(mode, activity, mBrowserControlsStateProvider,
+                                tabModelSelector, mMultiThumbnailCardProvider, titleProvider, true,
+                                mMediator, null, TabProperties.UiType.CLOSABLE, null, this,
+                                container, true, COMPONENT_NAME, mRootView, null);
+            }
+
             mTabListCoordinator.setOnLongPressTabItemEventListener(this);
             mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                     mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
@@ -331,6 +360,13 @@ public class TabSwitcherCoordinator
         }
     }
 
+    // @Todo(crbug.com/1464841) can use VisibilityListener instead of this callback.
+    public void onTabSwitcherShown() {
+        if (mHasEmptyView) {
+            mTabListCoordinator.attachEmptyView();
+        }
+    }
+
     /**
      * @return false if already initialized or true when first initialized.
      */
@@ -338,12 +374,12 @@ public class TabSwitcherCoordinator
         assert mUsesTabGridDialogCoordinator;
         if (mTabGridDialogCoordinator != null) return false;
 
-        mTabGridDialogCoordinator =
-                new TabGridDialogCoordinator(mActivity, mTabModelSelector, mTabContentManager,
-                        mTabCreatorManager, mCoordinatorView, TabSwitcherCoordinator.this,
-                        mMediator, TabSwitcherCoordinator.this::getTabGridDialogAnimationSourceView,
-                        mGridDialogScrimCoordinator, mTabListCoordinator.getTabGroupTitleEditor(),
-                        mRootView);
+        mTabGridDialogCoordinator = new TabGridDialogCoordinator(mActivity,
+                mBrowserControlsStateProvider, mTabModelSelector, mTabContentManager,
+                mTabCreatorManager, mCoordinatorView, TabSwitcherCoordinator.this, mMediator,
+                TabSwitcherCoordinator.this::getTabGridDialogAnimationSourceView,
+                mGridDialogScrimCoordinator, mTabListCoordinator.getTabGroupTitleEditor(),
+                mRootView);
         return true;
     }
 
@@ -424,8 +460,9 @@ public class TabSwitcherCoordinator
             // style.
             int selectionEditorMode = mMode == TabListMode.CAROUSEL ? TabListMode.GRID : mMode;
             mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(mActivity,
-                    mCoordinatorView, mTabModelSelector, mTabContentManager,
-                    mTabListCoordinator::setRecyclerViewPosition, selectionEditorMode, mRootView,
+                    mCoordinatorView, mBrowserControlsStateProvider, mTabModelSelector,
+                    mTabContentManager, mTabListCoordinator::setRecyclerViewPosition,
+                    selectionEditorMode, mRootView,
                     /*displayGroups=*/true, mTabSelectionEditorSnackbarManager);
             mMediator.setTabSelectionEditorController(
                     mTabSelectionEditorCoordinator.getController());
@@ -547,6 +584,9 @@ public class TabSwitcherCoordinator
 
     @Override
     public void postHiding() {
+        if (mHasEmptyView) {
+            mTabListCoordinator.destroyEmptyView();
+        }
         mTabListCoordinator.postHiding();
         mMediator.postHiding();
     }

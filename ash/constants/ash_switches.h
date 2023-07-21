@@ -44,7 +44,9 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableTtsCache[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcDisableUreadahead[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kArcHostUreadaheadGeneration[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcUseDevCaches[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcErofs[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcForceEnableApkCache[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcForceShowOptInUi[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcGeneratePlayAutoInstall[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -94,7 +96,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kChildWallpaperLarge[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kChildWallpaperSmall[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCrosRegion[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kCryptohomeRecoveryReauthUrl[];
+extern const char kCryptohomeRecoveryServiceBaseUrl[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kCryptohomeRecoveryUseTestEnvironment[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCryptohomeUseAuthSession[];

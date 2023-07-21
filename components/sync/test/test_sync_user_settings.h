@@ -34,11 +34,10 @@ class TestSyncUserSettings : public SyncUserSettings {
   bool IsSyncEverythingEnabled() const override;
   UserSelectableTypeSet GetSelectedTypes() const override;
   bool IsTypeManagedByPolicy(UserSelectableType type) const override;
+  bool IsTypeManagedByCustodian(UserSelectableType type) const override;
   void SetSelectedTypes(bool sync_everything,
                         UserSelectableTypeSet types) override;
   void SetSelectedType(UserSelectableType type, bool is_type_on) override;
-  bool IsPaymentsIntegrationEnabled() const override;
-  void SetPaymentsIntegrationEnabled(bool enabled) override;
   void KeepAccountSettingsPrefsOnlyForUsers(
       const std::vector<signin::GaiaIdHash>& available_gaia_ids) override;
 #if BUILDFLAG(IS_IOS)
@@ -73,7 +72,7 @@ class TestSyncUserSettings : public SyncUserSettings {
   bool IsTrustedVaultRecoverabilityDegraded() const override;
   bool IsUsingExplicitPassphrase() const override;
   base::Time GetExplicitPassphraseTime() const override;
-  PassphraseType GetPassphraseType() const override;
+  absl::optional<PassphraseType> GetPassphraseType() const override;
 
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
@@ -105,7 +104,6 @@ class TestSyncUserSettings : public SyncUserSettings {
 
   bool initial_sync_feature_setup_complete_ = true;
   bool sync_everything_enabled_ = true;
-  bool is_payments_integration_enabled_ = true;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   bool sync_all_os_types_enabled_ = true;
 #endif

@@ -238,6 +238,7 @@ ts_files = [
   "file_manager/common/js/tslib_shim.ts",
   "file_manager/common/js/trash.ts",
   "file_manager/common/js/entry_utils.ts",
+  "file_manager/common/js/trusted_script_url_policy_util.ts",
 
   # Lib.
   "file_manager/lib/actions_producer.ts",
@@ -298,6 +299,7 @@ ts_files = [
   "file_manager/widgets/xf_select.ts",
   "file_manager/widgets/xf_splitter.ts",
   "file_manager/widgets/xf_pie_progress.ts",
+  "file_manager/widgets/xf_inline_status.ts",
   "file_manager/foreground/js/ui/search_autocomplete_list.ts",
   "file_manager/widgets/xf_cloud_panel.ts",
   "file_manager/widgets/xf_tree.ts",
@@ -343,7 +345,10 @@ ts_files = [
 # Isolate Polymer TS to avoid sending them to Closure via the rule `js_from_ts`.
 # Closure is failing to recognize the generated JS from the TS.
 # JS targets should rely on externs to type check the Polymer elements from TS.
-ts_polymer = [ "file_manager/foreground/elements/files_toast.ts" ]
+ts_polymer = [
+  "file_manager/foreground/elements/files_toast.ts",
+  "file_manager/foreground/elements/files_tooltip.ts",
+]
 
 # HTML template files that are used to generate the ".html.ts"
 ts_templates = [
@@ -427,7 +432,6 @@ ts_test_files = [
   "file_manager/foreground/js/banner_controller_unittest.ts",
   "file_manager/foreground/js/banner_util_unittest.ts",
   "file_manager/foreground/js/file_tasks_unittest.ts",
-  "file_manager/foreground/js/guest_os_controller_unittest.ts",
   "file_manager/foreground/js/task_controller_unittest.ts",
   "file_manager/foreground/js/metadata/dlp_metadata_provider_unittest.ts",
   "file_manager/foreground/js/ui/banners/state_banner_unittest.ts",
@@ -442,8 +446,10 @@ foreach(_t, ts_templates) {
 }
 
 # Generated in foregorund/elements folder.
-ts_generated_templates +=
-    [ "file_manager/foreground/elements/files_toast.html.ts" ]
+ts_generated_templates += [
+  "file_manager/foreground/elements/files_toast.html.ts",
+  "file_manager/foreground/elements/files_tooltip.html.ts",
+]
 
 # d.ts. files that are automatically generated from the JS file.
 generate_definitions_js_files = [
@@ -481,7 +487,6 @@ generated_js_files = [
   "file_manager/foreground/elements/files_quick_view.js",
   "file_manager/foreground/elements/files_safe_media.js",
   "file_manager/foreground/elements/files_spinner.js",
-  "file_manager/foreground/elements/files_tooltip.js",
   "file_manager/foreground/elements/icons.js",
   "file_manager/foreground/elements/xf_button.js",
   "file_manager/foreground/elements/xf_circular_progress.js",

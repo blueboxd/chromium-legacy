@@ -85,12 +85,16 @@ void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
       ui::kColorSysOnSurfaceSubtle};
 
   /* Customize Chrome */
+  mixer[kColorSidePanelCustomizeChromeClassicChromeTileBorder] = {
+      ui::kColorSysTonalContainer};
   mixer[kColorSidePanelCustomizeChromeColorPickerCheckmarkBackground] = {
       ui::kColorSysOnSurface};
   mixer[kColorSidePanelCustomizeChromeColorPickerCheckmarkForeground] = {
       ui::kColorSysInverseOnSurface};
   mixer[kColorSidePanelCustomizeChromeColorPickerOptionBackground] = {
       ui::kColorSysNeutralContainer};
+  mixer[kColorSidePanelCustomizeChromeCornerNtpBackground] = {
+      ui::kColorSysTonalContainer};
   mixer[kColorSidePanelCustomizeChromeCustomOptionBackground] = {
       ui::kColorSysTertiaryContainer};
   mixer[kColorSidePanelCustomizeChromeCustomOptionForeground] = {
@@ -119,7 +123,7 @@ void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
       ui::kColorSysOnPrimary};
   mixer[kColorSidePanelCustomizeChromeThemeSnapshotBackground] = {
       ui::kColorSysTonalContainer};
-  mixer[kColorSidePanelCustomizeChromeWebStoreOptionBorder] = {
+  mixer[kColorSidePanelCustomizeChromeWebStoreBorder] = {
       ui::kColorSysNeutralOutline};
 
   // Note anything below here will only apply if themes aren't being used.

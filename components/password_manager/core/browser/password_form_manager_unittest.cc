@@ -31,7 +31,6 @@
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
-#include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/mock_password_change_success_tracker.h"
 #include "components/password_manager/core/browser/mock_webauthn_credentials_delegate.h"
@@ -178,7 +177,6 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
               (override));
   MOCK_METHOD(SyncState, GetPasswordSyncState, (), (const, override));
   MOCK_METHOD(bool, IsCommittedMainFrameSecure, (), (const, override));
-  MOCK_METHOD(FieldInfoManager*, GetFieldInfoManager, (), (const, override));
   MOCK_METHOD(signin::IdentityManager*, GetIdentityManager, (), (override));
   MOCK_METHOD(PrefService*, GetPrefs, (), (const, override));
   MOCK_METHOD(const GURL&, GetLastCommittedURL, (), (const, override));
@@ -321,20 +319,6 @@ class MockFormSaver : public StubFormSaver {
   }
 };
 
-class MockFieldInfoManager : public FieldInfoManager {
- public:
-  MOCK_METHOD(void,
-              AddFieldType,
-              (autofill::FormSignature,
-               autofill::FieldSignature,
-               ServerFieldType),
-              (override));
-  MOCK_METHOD(ServerFieldType,
-              GetFieldType,
-              (autofill::FormSignature, autofill::FieldSignature),
-              (const override));
-};
-
 class PasswordFormManagerTest : public testing::Test,
                                 public testing::WithParamInterface<bool> {
  public:
@@ -419,7 +403,7 @@ class PasswordFormManagerTest : public testing::Test,
     saved_match_.username_element = u"field1";
     saved_match_.password_value = u"test1";
     saved_match_.password_element = u"field2";
-    saved_match_.is_public_suffix_match = false;
+    saved_match_.match_type = PasswordForm::MatchType::kExact;
     saved_match_.scheme = PasswordForm::Scheme::kHtml;
     saved_match_.in_store = PasswordForm::Store::kProfileStore;
 
@@ -427,7 +411,7 @@ class PasswordFormManagerTest : public testing::Test,
     psl_saved_match_.url = psl_origin;
     psl_saved_match_.action = psl_action;
     psl_saved_match_.signon_realm = "https://myaccounts.google.com/";
-    psl_saved_match_.is_public_suffix_match = true;
+    psl_saved_match_.match_type = PasswordForm::MatchType::kPSL;
 
     parsed_observed_form_ = saved_match_;
     parsed_observed_form_.form_data = observed_form_;
@@ -855,7 +839,7 @@ TEST_P(PasswordFormManagerTest, CreatePendingCredentialsPSLMatchSaved) {
 
   saved_match_.url = GURL("https://m.accounts.google.com/auth");
   saved_match_.signon_realm = "https://m.accounts.google.com/";
-  saved_match_.is_public_suffix_match = true;
+  saved_match_.match_type = PasswordForm::MatchType::kPSL;
 
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
@@ -2372,12 +2356,6 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlow) {
         /*autocomplete_attribute_has_username=*/false);
     possible_username_data.form_predictions = MakeSingleUsernamePredictions();
 
-    MockFieldInfoManager mock_field_manager;
-    ON_CALL(mock_field_manager, GetFieldType(_, _))
-        .WillByDefault(Return(UNKNOWN_TYPE));
-    ON_CALL(client_, GetFieldInfoManager())
-        .WillByDefault(Return(&mock_field_manager));
-
     // Simulate submitting a form without a username. Data from
     // |possible_username_data| will be taken for setting username.
     FormData submitted_form = observed_form_only_password_fields_;
@@ -2474,11 +2452,6 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowWithPrefilledUsername) {
       /*autocomplete_attribute_has_username=*/false);
   possible_username_data.form_predictions = MakeSingleUsernamePredictions();
 
-  MockFieldInfoManager mock_field_manager;
-  ON_CALL(mock_field_manager, GetFieldType).WillByDefault(Return(UNKNOWN_TYPE));
-  ON_CALL(client_, GetFieldInfoManager)
-      .WillByDefault(Return(&mock_field_manager));
-
   ASSERT_TRUE(form_manager_->ProvisionallySave(submitted_form_, &driver_,
                                                &possible_username_data));
 
@@ -2549,11 +2522,6 @@ TEST_P(PasswordFormManagerTest, NegativeUsernameFirstFlowVotes) {
   constexpr char16_t kUsernameFieldName[] = u"username_field";
   constexpr autofill::FormSignature kUsernameFormSignature(1000);
   constexpr autofill::FieldSignature kUsernameFieldSignature(123);
-
-  MockFieldInfoManager mock_field_manager;
-  ON_CALL(mock_field_manager, GetFieldType).WillByDefault(Return(UNKNOWN_TYPE));
-  ON_CALL(client_, GetFieldInfoManager)
-      .WillByDefault(Return(&mock_field_manager));
 
   CreateFormManager(observed_form_only_password_fields_);
   fetcher_->NotifyFetchCompleted();
@@ -2658,12 +2626,6 @@ TEST_P(PasswordFormManagerTest, UsernameFirstFlowVotesNamelessField) {
       possible_username, base::Time::Now(), /*driver_id=*/0,
       /*autocomplete_attribute_has_username=*/false);
   possible_username_data.form_predictions = MakeSingleUsernamePredictions();
-
-  MockFieldInfoManager mock_field_manager;
-  ON_CALL(mock_field_manager, GetFieldType(_, _))
-      .WillByDefault(Return(UNKNOWN_TYPE));
-  ON_CALL(client_, GetFieldInfoManager())
-      .WillByDefault(Return(&mock_field_manager));
 
   // Simulate submission a form without username. Data from
   // |possible_username_data| will be taken for setting username.

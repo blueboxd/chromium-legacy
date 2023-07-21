@@ -1,8 +1,8 @@
 Name: MediaPipe
 Short Name: mediapipe
 URL: https://github.com/google/mediapipe
-Version: 201b2d739d994c51bb1b72336a09b8a93ed982d2
-Date: 2023/05/23
+Version: 723e91cec10ecd50d05427ef09c735addb709e6f
+Date: 2023/07/14
 License: Apache 2.0
 License File: LICENSE
 Security Critical: Yes
@@ -14,3 +14,58 @@ MediaPipe Tasks provides the core programming interface of the MediaPipe
 Solutions suite, including a set of libraries for deploying innovative ML
 solutions onto devices with a minimum of code. It supports multiple platforms,
 including Android, Web / JavaScript, Python, and support for iOS is coming soon.
+
+To update this library
+======================
+
+1) Change the `Version` and `Date` lines above.
+
+2) Run the `update.sh` script in this directory.
+
+3) Fix the build and get everything compiling and `component_unittests` passing
+  with the gn arg `build_with_mediapipe_lib = true`.
+
+
+To make a new patch file
+========================
+
+1) Make changes in //third_party/mediapipe/src/
+
+2) `git commit` those changes.
+
+  Note: This works best when you are only making a single patch in your git
+  branch.
+
+3) Run this command (or one like it):
+
+  ```
+  git format-patch origin/main third_party/mediapipe/src/ -o third_party/mediapipe/patches
+  ```
+
+  Note: git format-patch takes arguments in the same style as git diff. See the
+  man page for git-format-patch for help.
+
+4) Rename the added patch file and change the subject line as needed.
+
+
+Patches which can be low-friction upstreamed
+============================================
+* set-executable-bit-for-files-with-shebang.patch - `chmod +x` on all files that
+  have a shebang, per Chromium presubmit checks.
+* remove-mediapipe-op-resolver-default-value.patch - Removes the
+MediaPipeOpResolver from being always constructed in base_options.h. Chromium
+does not use it anyways, and building all those ops is not necessary.
+
+
+Patches which need to be upstreamed differently than they are patched
+=====================================================================
+* remove-usage-of-absl-flags.patch - Completely removes any `ABSL_FLAG`
+declaration and replaces it with non-functionality. None of these code paths are
+used by Chromium. In order to upstream this patch, each flag would need to be
+moved to a separate .cc file containing nothing but the flag declaration. Then,
+Chromium could use a good default value given by upstream or write our own logic
+to determine the best flag value.
+* remove-xnnpack-from-cpu-delegate.patch - Removes references to XNNPACK from
+the CPU inference delegate. Not sure why this is here, but it is not needed in
+Chromium because we conditionally add the XNNPACK delegate when the platform
+supports it.

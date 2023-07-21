@@ -201,6 +201,12 @@ export interface PasswordManagerProxy {
       Promise<void>;
 
   /**
+   * Fetches family members (password share recipients).
+   * @return A promise that resolves the FamilyFetchResults.
+   */
+  fetchFamilyMembers(): Promise<chrome.passwordsPrivate.FamilyFetchResults>;
+
+  /**
    * Updates the given credential. Not all parameters can be updated.
    * @param credential the credential to update.
    * @return A promise that resolves if the credential was found and updated,
@@ -288,11 +294,6 @@ export interface PasswordManagerProxy {
    */
   removePasswordsFileExportProgressListener(
       listener: PasswordsFileExportProgressListener): void;
-
-  /**
-   * Cancels the export in progress.
-   */
-  cancelExportPasswords(): void;
 
   /**
    * Switches Biometric authentication before filling state after
@@ -498,6 +499,10 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
     chrome.passwordsPrivate.undoRemoveSavedPasswordOrException();
   }
 
+  fetchFamilyMembers() {
+    return chrome.passwordsPrivate.fetchFamilyMembers();
+  }
+
   importPasswords(toStore: chrome.passwordsPrivate.PasswordStoreSet) {
     return chrome.passwordsPrivate.importPasswords(toStore);
   }
@@ -527,10 +532,6 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
       listener: PasswordsFileExportProgressListener) {
     chrome.passwordsPrivate.onPasswordsFileExportProgress.removeListener(
         listener);
-  }
-
-  cancelExportPasswords() {
-    chrome.passwordsPrivate.cancelExportPasswords();
   }
 
   switchBiometricAuthBeforeFillingState() {

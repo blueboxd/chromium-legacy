@@ -35,8 +35,7 @@ class ScriptTimingInfo : public GarbageCollected<ScriptTimingInfo> {
   struct ScriptSourceLocation {
     WTF::String url;
     WTF::String function_name;
-    unsigned int line_number = 0;
-    unsigned int column_number = 0;
+    int start_position = 0;
   };
 
   ScriptTimingInfo(ExecutionContext* context,
@@ -69,7 +68,11 @@ class ScriptTimingInfo : public GarbageCollected<ScriptTimingInfo> {
   }
   void SetSourceLocation(const ScriptSourceLocation& location) {
     source_location_ = location;
+    if (KURL(location.url).ProtocolIsData()) {
+      source_location_.url = "data:";
+    }
   }
+
   const AtomicString& ClassLikeName() const { return class_like_name_; }
   void SetClassLikeName(const AtomicString& name) { class_like_name_ = name; }
   const AtomicString& PropertyLikeName() const { return property_like_name_; }

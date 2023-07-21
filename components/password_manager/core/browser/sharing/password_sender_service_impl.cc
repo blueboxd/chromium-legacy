@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/sharing/password_sender_service_impl.h"
 
 #include "components/password_manager/core/browser/sharing/outgoing_password_sharing_invitation_sync_bridge.h"
+#include "components/sync/model/model_type_controller_delegate.h"
 
 namespace password_manager {
 
@@ -16,10 +17,15 @@ PasswordSenderServiceImpl::PasswordSenderServiceImpl(
 
 PasswordSenderServiceImpl::~PasswordSenderServiceImpl() = default;
 
-void PasswordSenderServiceImpl::SendPassword(
-    const CredentialUIEntry& credential_ui_entry,
+void PasswordSenderServiceImpl::SendPasswords(
+    const std::vector<PasswordForm>& passwords,
     const PasswordRecipient& recipient) {
   // TODO(crbug.com/1455407): Implement.
+}
+
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
+PasswordSenderServiceImpl::GetControllerDelegate() {
+  return sync_bridge_->change_processor()->GetControllerDelegate();
 }
 
 void PasswordSenderServiceImpl::Shutdown() {}

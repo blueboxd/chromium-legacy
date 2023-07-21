@@ -27,6 +27,7 @@
 #include "chrome/browser/new_tab_page/modules/new_tab_page_modules.h"
 #include "chrome/browser/new_tab_page/modules/photos/photos_handler.h"
 #include "chrome/browser/new_tab_page/modules/recipes/recipes_handler.h"
+#include "chrome/browser/new_tab_page/modules/v2/history_clusters/history_clusters_page_handler_v2.h"
 #include "chrome/browser/new_tab_page/new_tab_page_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_custom_background_service_factory.h"
@@ -240,8 +241,8 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
                      base::FeatureList::IsEnabled(
                          ntp_features::kNtpHistoryClustersModuleLoad) &&
                          HasCredentials(profile));
-  source->AddBoolean("historyClustersTextOnlyEnabled",
-                     base::FeatureList::IsEnabled(
+  source->AddBoolean("historyClustersImagesEnabled",
+                     !base::FeatureList::IsEnabled(
                          ntp_features::kNtpHistoryClustersModuleTextOnly));
 
   static constexpr webui::LocalizedString kStrings[] = {
@@ -262,7 +263,7 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"linkEditedMsg", IDS_NTP_CONFIRM_MSG_SHORTCUT_EDITED},
       {"linkRemove", IDS_NTP_CUSTOM_LINKS_REMOVE},
       {"linkRemovedMsg", IDS_NTP_CONFIRM_MSG_SHORTCUT_REMOVED},
-      {"moreActions", IDS_SETTINGS_MORE_ACTIONS},
+      {"shortcutMoreActions", IDS_NTP_CUSTOM_LINKS_MORE_ACTIONS},
       {"nameField", IDS_NTP_CUSTOM_LINKS_NAME},
       {"restoreDefaultLinks", IDS_NTP_CONFIRM_MSG_RESTORE_DEFAULTS},
       {"restoreThumbnailsShort", IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK},
@@ -496,6 +497,7 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
        IDS_NTP_MODULES_QUEST_CART_TILE_LABEL_SINGULAR},
       {"modulesJourneysCartTileLabelDefault",
        IDS_NTP_MODULES_QUEST_CART_TILE_LABEL_DEFAULT},
+      {"modulesMoreActions", IDS_NTP_MODULES_MORE_ACTIONS},
 
       // Middle slot promo.
       {"undoDismissPromoButtonToast", IDS_NTP_UNDO_DISMISS_PROMO_BUTTON_TOAST},
@@ -656,15 +658,7 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
 
   // Populates the load time data with basic info.
   OnColorProviderChanged();
-  if (base::FeatureList::IsEnabled(
-          ntp_features::kNtpBackgroundImageErrorDetection)) {
-    // The frontend expects a value for |backgroundImageUrl| at startup. We
-    // initialize it here then update the value after we verify the URL
-    // works using NtpCustomBackgroundService::VerifyCustomBackgroundImageURL.
-    source->AddString("backgroundImageUrl", "");
-  } else {
-    OnCustomBackgroundImageUpdated();
-  }
+  OnCustomBackgroundImageUpdated();
   OnLoad();
 }
 
@@ -821,6 +815,13 @@ void NewTabPageUI::BindInterface(
     mojo::PendingReceiver<ntp::history_clusters::mojom::PageHandler>
         pending_page_handler) {
   history_clusters_handler_ = std::make_unique<HistoryClustersPageHandler>(
+      std::move(pending_page_handler), web_contents());
+}
+
+void NewTabPageUI::BindInterface(
+    mojo::PendingReceiver<ntp::history_clusters_v2::mojom::PageHandler>
+        pending_page_handler) {
+  history_clusters_handler_v2_ = std::make_unique<HistoryClustersPageHandlerV2>(
       std::move(pending_page_handler), web_contents());
 }
 

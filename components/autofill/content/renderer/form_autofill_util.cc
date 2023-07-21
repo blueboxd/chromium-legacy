@@ -42,6 +42,7 @@
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_autofill_state.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_element_collection.h"
@@ -1104,7 +1105,7 @@ std::vector<WebFormControlElement> ForEachMatchingFormFieldCommon(
 
     if (!element.IsEnabled() || element.IsReadOnly() ||
         (!IsWebElementFocusableForAutofill(element) &&
-         !IsSelectOrSelectMenuElement(element))) {
+         !IsSelectElement(element))) {
       continue;
     }
 
@@ -1124,6 +1125,11 @@ std::vector<WebFormControlElement> ForEachMatchingFormFieldCommon(
               features::kAutofillHighlightOnlyChangedValuesInPreviewMode)) {
         callback(data.fields[i], is_initiating_element, &element);
       }
+      continue;
+    }
+
+    // Skip the field if there's nothing to fill or preview from the browser.
+    if (data.fields[i].value.empty() || !data.fields[i].is_autofilled) {
       continue;
     }
 
@@ -1241,13 +1247,6 @@ std::vector<WebFormControlElement> ForEachMatchingUnownedFormField(
 void FillFormField(const FormFieldData& data,
                    bool is_initiating_node,
                    blink::WebFormControlElement* field) {
-  // Nothing to fill.
-  if (data.value.empty())
-    return;
-
-  if (!data.is_autofilled)
-    return;
-
   WebInputElement input_element = field->DynamicTo<WebInputElement>();
 
   if (IsCheckableElement(input_element)) {
@@ -1331,13 +1330,6 @@ void UndoFormField(const FormFieldData& data,
 void PreviewFormField(const FormFieldData& data,
                       bool is_initiating_node,
                       blink::WebFormControlElement* field) {
-  // Nothing to preview.
-  if (data.value.empty())
-    return;
-
-  if (!data.is_autofilled)
-    return;
-
   // Preview input, textarea and select fields. For input fields, excludes
   // checkboxes and radio buttons, as there is no provision for
   // setSuggestedCheckedValue in WebInputElement.
@@ -1347,10 +1339,9 @@ void PreviewFormField(const FormFieldData& data,
     // returns the default maxlength value.
     input_element.SetSuggestedValue(blink::WebString::FromUTF16(
         data.value.substr(0, input_element.MaxLength())));
-  } else if (IsTextAreaElement(*field) || IsSelectElement(*field)) {
+  } else if (IsTextAreaElement(*field) || IsSelectOrSelectMenuElement(*field)) {
     field->SetSuggestedValue(blink::WebString::FromUTF16(data.value));
   }
-  // TODO(crbug.com/1336051): Support preview for selectmenu.
 
   if (is_initiating_node &&
       (IsTextInput(input_element) || IsTextAreaElement(*field))) {
@@ -2069,11 +2060,8 @@ bool IsTextAreaElementOrTextInput(const WebFormControlElement& element) {
 
 bool IsCheckableElement(const WebFormControlElement& element) {
   WebInputElement input_element = element.DynamicTo<WebInputElement>();
-  if (input_element.IsNull()) {
-    return false;
-  }
-
-  return input_element.IsCheckbox() || input_element.IsRadioButton();
+  return !input_element.IsNull() &&
+         (input_element.IsCheckbox() || input_element.IsRadioButton());
 }
 
 bool IsCheckableElement(const WebElement& element) {
@@ -2104,15 +2092,10 @@ bool IsElementEditable(const WebInputElement& element) {
 }
 
 bool IsWebElementFocusableForAutofill(const WebElement& element) {
-  if (element.IsFocusable()) {
-    return true;
-  }
-
-  if (IsSelectMenuElement(element.DynamicTo<WebFormControlElement>())) {
-    // The <selectmenu> shadow root is not focusable.
-    return element.To<WebSelectMenuElement>().HasFocusableChild();
-  }
-  return false;
+  return element.IsFocusable() ||
+         // The <selectmenu> shadow root is not focusable.
+         (IsSelectMenuElement(element.DynamicTo<WebFormControlElement>()) &&
+          element.To<WebSelectMenuElement>().HasFocusableChild());
 }
 
 bool IsWebElementVisible(const blink::WebElement& element) {
@@ -2634,15 +2617,8 @@ void ClearPreviewedElements(
   }
 
   for (WebFormControlElement& control_element : previewed_elements) {
-    if (control_element.IsNull())
-      continue;
-
-    // Only clear previewed fields.
-    if (control_element.GetAutofillState() != WebAutofillState::kPreviewed)
-      continue;
-
-    if (control_element.SuggestedValue().IsEmpty())
-      continue;
+    // We do not add null elements to `previewed_elements_` in AutofillAgent.
+    DCHECK(!control_element.IsNull());
 
     // Clear the suggested value. For the initiating node, also restore the
     // original value.

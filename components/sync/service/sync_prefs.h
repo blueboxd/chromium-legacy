@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/prefs/pref_member.h"
+#include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/user_selectable_type.h"
 
 class PrefRegistrySimple;
@@ -107,6 +108,10 @@ class SyncPrefs {
   // Returns whether `type` is "managed" i.e. controlled by enterprise policy.
   bool IsTypeManagedByPolicy(UserSelectableType type) const;
 
+  // Returns whether `type` is "managed" i.e. controlled by a custodian (i.e.
+  // parent/guardian of a child account).
+  bool IsTypeManagedByCustodian(UserSelectableType type) const;
+
   // Sets the selection state for all |registered_types| and "keep everything
   // synced" flag.
   // |keep_everything_synced| indicates that all current and future types
@@ -131,11 +136,6 @@ class SyncPrefs {
   // passed-in |available_gaia_ids|.
   void KeepAccountSettingsPrefsOnlyForUsers(
       const std::vector<signin::GaiaIdHash>& available_gaia_ids);
-
-  // For historic reasons, payments is not listed as UserSelectableType
-  // and uses a separate API.
-  bool IsPaymentsIntegrationEnabled() const;
-  void SetPaymentsIntegrationEnabled(bool enabled);
 
 #if BUILDFLAG(IS_IOS)
   // Sets the opt-in for bookmarks & reading list in transport mode.
@@ -190,8 +190,20 @@ class SyncPrefs {
   static void SetTypeDisabledByPolicy(PrefValueMap* policy_prefs,
                                       UserSelectableType type);
 
+  // Sets |type| as disabled in the given |supervised_user_prefs|, which should
+  // correspond to the custodian-controlled pref store (i.e. controlled by
+  // parent/guardian of a child account).
+  static void SetTypeDisabledByCustodian(PrefValueMap* supervised_user_prefs,
+                                         UserSelectableType type);
+
   // Gets the local sync backend enabled state.
   bool IsLocalSyncEnabled() const;
+
+  // The user's passphrase type, determined the first time the engine is
+  // successfully initialized.
+  absl::optional<PassphraseType> GetCachedPassphraseType() const;
+  void SetCachedPassphraseType(PassphraseType passphrase_type);
+  void ClearCachedPassphraseType();
 
   // The encryption bootstrap token is used for explicit passphrase users
   // (usually custom passphrase) and represents a user-entered passphrase.
@@ -209,17 +221,21 @@ class SyncPrefs {
   // syncing users, no migration is necessary - this also covers new users (or
   // more precisely, new profiles).
   // This should be called early during browser startup.
-  void MaybeMigratePrefsForSyncToSigninPart1(SyncAccountState account_state);
+  void MaybeMigratePrefsForSyncToSigninPart1(SyncAccountState account_state,
+                                             signin::GaiaIdHash gaia_id_hash);
 
   // Second part of the above migration, which depends on the user's passphrase
   // type, which isn't known yet during browser startup. This should be called
   // as soon as the passphrase type is known, and will only do any migration if
   // the above method has flagged that it's necessary.
-  void MaybeMigratePrefsForSyncToSigninPart2(bool is_using_explicit_passphrase);
+  void MaybeMigratePrefsForSyncToSigninPart2(signin::GaiaIdHash gaia_id_hash,
+                                             bool is_using_explicit_passphrase);
 
   // Should be called when Sync gets disabled / the user signs out. Clears any
   // temporary state from the above migration.
   void MarkPartialSyncToSigninMigrationFullyDone();
+
+  static void MigrateAutofillWalletImportEnabledPref(PrefService* pref_service);
 
  private:
   static void RegisterTypeSelectedPref(PrefRegistrySimple* prefs,

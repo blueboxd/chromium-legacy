@@ -52,6 +52,7 @@
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "components/password_manager/content/browser/bad_message.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/content/browser/form_meta_data.h"
 #include "components/password_manager/content/browser/password_change_success_tracker_factory.h"
 #include "components/password_manager/content/browser/password_manager_log_router_factory.h"
@@ -404,7 +405,8 @@ void ChromePasswordManagerClient::ShowPasswordManagerErrorMessage(
 
 void ChromePasswordManagerClient::ShowKeyboardReplacingSurface(
     password_manager::PasswordManagerDriver* driver,
-    autofill::mojom::SubmissionReadinessState submission_readiness,
+    const password_manager::SubmissionReadinessParams&
+        submission_readiness_params,
     bool is_webauthn_form) {
   if (base::FeatureList::IsEnabled(
           password_manager::features::kPasswordSuggestionBottomSheetV2) &&
@@ -421,7 +423,7 @@ void ChromePasswordManagerClient::ShowKeyboardReplacingSurface(
   if (GetOrCreateCredManController()->Show(
           GetWebAuthnCredManDelegateForDriver(driver),
           std::make_unique<password_manager::PasswordCredentialFillerImpl>(
-              driver->AsWeakPtr(), submission_readiness),
+              driver->AsWeakPtr(), submission_readiness_params),
           render_widget_host, is_webauthn_form)) {
     return;
   }
@@ -434,7 +436,7 @@ void ChromePasswordManagerClient::ShowKeyboardReplacingSurface(
   }
   auto filler =
       std::make_unique<password_manager::PasswordCredentialFillerImpl>(
-          driver->AsWeakPtr(), submission_readiness);
+          driver->AsWeakPtr(), submission_readiness_params);
   auto ttf_controller_autofill_delegate =
       std::make_unique<TouchToFillControllerAutofillDelegate>(
           this, GetDeviceAuthenticator(), webauthn_delegate->AsWeakPtr(),
@@ -475,7 +477,7 @@ void ChromePasswordManagerClient::GeneratePassword(
           driver.get());
 #else
   password_manager::ContentPasswordManagerDriver* content_driver =
-      driver_factory_->GetDriverForFrame(web_contents()->GetFocusedFrame());
+      GetDriverFactory()->GetDriverForFrame(web_contents()->GetFocusedFrame());
   if (!content_driver)
     return;
 #endif
@@ -947,8 +949,11 @@ void ChromePasswordManagerClient::NavigateToManagePasswordsPage(
   password_manager_launcher::ShowPasswordSettings(web_contents(), referrer,
                                                   /*manage_passkeys=*/false);
 #else
-  ::NavigateToManagePasswordsPage(
-      chrome::FindBrowserWithWebContents(web_contents()), referrer);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (!browser) {
+    browser = chrome::FindLastActive();
+  }
+  ::NavigateToManagePasswordsPage(browser, referrer);
 #endif
 }
 
@@ -1029,7 +1034,7 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
   }
 #if BUILDFLAG(IS_ANDROID)
   password_manager::ContentPasswordManagerDriver* driver =
-      driver_factory_->GetDriverForFrame(rfh);
+      GetDriverFactory()->GetDriverForFrame(rfh);
   // This method is called over Mojo via a RenderFrameHostReceiverSet; the
   // current target frame must be live.
   // TODO(crbug.com/1294378): Remove reference to nested frames once
@@ -1052,7 +1057,7 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
       base::AsWeakPtr(driver), ui_data, element_bounds_in_screen_space);
 #else
   password_manager::ContentPasswordManagerDriver* driver =
-      driver_factory_->GetDriverForFrame(rfh);
+      GetDriverFactory()->GetDriverForFrame(rfh);
   // This method is called over Mojo via a RenderFrameHostReceiverSet; the
   // current target frame must be live.
   // TODO(crbug.com/1294378): Remove reference to nested frames once
@@ -1092,7 +1097,7 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
     const std::u16string& password_value) {
   content::RenderFrameHost* rfh =
       password_generation_driver_receivers_.GetCurrentTargetFrame();
-  auto* driver = driver_factory_->GetDriverForFrame(rfh);
+  auto* driver = GetDriverFactory()->GetDriverForFrame(rfh);
   // This method is called over Mojo via a RenderFrameHostReceiverSet; the
   // current target frame must be live.
   // TODO(crbug.com/1294378): Remove reference to nested frames once
@@ -1135,7 +1140,7 @@ void ChromePasswordManagerClient::PresaveGeneratedPassword(
 
   content::RenderFrameHost* rfh =
       password_generation_driver_receivers_.GetCurrentTargetFrame();
-  PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(rfh);
+  PasswordManagerDriver* driver = GetDriverFactory()->GetDriverForFrame(rfh);
   // This method is called over Mojo via a RenderFrameHostReceiverSet; the
   // current target frame must be live.
   // TODO(crbug.com/1294378): Remove reference to nested frames once
@@ -1155,7 +1160,7 @@ void ChromePasswordManagerClient::PasswordNoLongerGenerated(
     const autofill::FormData& form_data) {
   content::RenderFrameHost* rfh =
       password_generation_driver_receivers_.GetCurrentTargetFrame();
-  PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(rfh);
+  PasswordManagerDriver* driver = GetDriverFactory()->GetDriverForFrame(rfh);
   // This method is called over Mojo via a RenderFrameHostReceiverSet; the
   // current target frame must be live.
   // TODO(crbug.com/1294378): Remove reference to nested frames once
@@ -1302,7 +1307,6 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
                                 g_browser_process->local_state(),
                                 SyncServiceFactory::GetForProfile(profile_)),
       httpauth_manager_(this),
-      driver_factory_(nullptr),
       content_credential_manager_(this),
       password_generation_driver_receivers_(web_contents, this),
       observer_(nullptr),
@@ -1329,16 +1333,15 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       helper_(this) {
   ContentPasswordManagerDriverFactory::CreateForWebContents(web_contents, this,
                                                             autofill_client);
-  driver_factory_ =
-      ContentPasswordManagerDriverFactory::FromWebContents(web_contents);
+  ContentPasswordManagerDriverFactory* driver_factory = GetDriverFactory();
   log_manager_ = autofill::LogManager::Create(
       password_manager::PasswordManagerLogRouterFactory::GetForBrowserContext(
           profile_),
       base::BindRepeating(
           &ContentPasswordManagerDriverFactory::RequestSendLoggingAvailability,
-          base::Unretained(driver_factory_)));
+          base::Unretained(driver_factory)));
 
-  driver_factory_->RequestSendLoggingAvailability();
+  driver_factory->RequestSendLoggingAvailability();
 #if BUILDFLAG(IS_ANDROID)
   // `this` is tab-scoped, however the local passwords migration warning
   // should only be launched on startup.
@@ -1378,19 +1381,6 @@ void ChromePasswordManagerClient::PrimaryPageChanged(content::Page& page) {
   HideFillingUI();
 }
 
-void ChromePasswordManagerClient::RenderFrameDeleted(
-    content::RenderFrameHost* render_frame_host) {
-#if BUILDFLAG(IS_ANDROID)
-  PasswordGenerationController* generation_controller =
-      PasswordGenerationController::GetIfExisting(web_contents());
-  // If the render frame for which the password generation was offered is
-  // deleted then hide the UI.
-  if (generation_controller) {
-    generation_controller->RenderFrameDeleted(render_frame_host);
-  }
-#endif  // BUILDFLAG(IS_ANDROID)
-}
-
 void ChromePasswordManagerClient::WebContentsDestroyed() {
   // crbug/1090011
   // Drop the connection before the WebContentsObserver destructors are invoked.
@@ -1406,6 +1396,12 @@ void ChromePasswordManagerClient::WebContentsDestroyed() {
             messages::DismissReason::TAB_DESTROYED);
   }
 #endif
+}
+
+password_manager::ContentPasswordManagerDriverFactory*
+ChromePasswordManagerClient::GetDriverFactory() const {
+  return password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
+      web_contents());
 }
 
 gfx::RectF ChromePasswordManagerClient::GetBoundsInScreenSpace(

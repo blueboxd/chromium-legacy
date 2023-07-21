@@ -368,6 +368,23 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
       reinterpret_cast<GpuDataManagerImpl*>(gpu_data_manager);
   DCHECK(manager);
 
+  // Notification about "GPU switches" is only necessary on macOS when
+  // using ANGLE's OpenGL backend. Short-circuit the dispatches for
+  // all other backends.
+  gpu::GPUInfo info = manager->GetGPUInfo();
+  gl::GLImplementationParts parts = info.gl_implementation_parts;
+  if (!(parts.gl == gl::kGLImplementationEGLANGLE &&
+        parts.angle == gl::ANGLEImplementation::kOpenGL)) {
+    return;
+  }
+
+  // Notification is only necessary if the machine actually has more
+  // than one GPU - nowadays, defined by it being AMD switchable.
+  if (!info.amd_switchable) {
+    return;
+  }
+
+  // Dispatch the notification through the system.
   manager->HandleGpuSwitch();
 }
 #endif  // BUILDFLAG(IS_MAC)
@@ -1181,9 +1198,9 @@ void GpuDataManagerImplPrivate::TerminateInfoCollectionGpuProcess() {
 #endif
 
 void GpuDataManagerImplPrivate::PostCreateThreads() {
-  // TODO(crubg.com/1464122): Skip info collection on Linux, where some Vulkan
-  // drivers are producing spurious debug messages.
-#if !BUILDFLAG(IS_LINUX)
+  // TODO(crbug.com/1465064): Skip info collection on Windows, where some Vulkan
+  // drivers are crashing in amdvlk64.dll
+#if !BUILDFLAG(IS_WIN)
   // Launch the info collection GPU process to collect Dawn info.
   // Not to affect Chrome startup, this is done in a delayed mode, i.e., 120
   // seconds after Chrome startup.

@@ -40,6 +40,8 @@ component("fido") {
     "fido_parsing_utils.h",
     "fido_transport_protocol.cc",
     "fido_transport_protocol.h",
+    "json_request.cc",
+    "json_request.h",
     "opaque_attestation_statement.cc",
     "opaque_attestation_statement.h",
     "p256_public_key.cc",
@@ -144,6 +146,14 @@ component("fido") {
       "device_public_key_extension.h",
       "device_response_converter.cc",
       "device_response_converter.h",
+      "enclave/enclave_authenticator.cc",
+      "enclave/enclave_authenticator.h",
+      "enclave/enclave_discovery.cc",
+      "enclave/enclave_discovery.h",
+      "enclave/enclave_http_client.cc",
+      "enclave/enclave_http_client.h",
+      "enclave/enclave_protocol_utils.cc",
+      "enclave/enclave_protocol_utils.h",
       "fido_authenticator.cc",
       "fido_authenticator.h",
       "fido_device.cc",
@@ -209,6 +219,7 @@ component("fido") {
     ]
 
     deps += [
+      "//components/sync/protocol:protocol",
       "//services/device/public/cpp/hid",
       "//services/device/public/cpp/usb",
       "//services/device/public/mojom",
@@ -487,33 +498,10 @@ if (is_mac) {
   }
 }
 
-if (!is_android && !is_ios && !is_chromeos) {
-  # This is being prototyped and is only being built into a test harness.
-  # It will be moved into the fido component later.
-  static_library("enclave_device") {
-    testonly = true
-    sources = [
-      "enclave/authenticator_json_conversions.cc",
-      "enclave/authenticator_json_conversions.h",
-      "enclave/enclave_authenticator.cc",
-      "enclave/enclave_authenticator.h",
-      "enclave/enclave_http_client.cc",
-      "enclave/enclave_http_client.h",
-    ]
-    deps = [
-      ":fido",
-      "//base",
-      "//components/cbor",
-      "//components/device_event_log",
-      "//net",
-    ]
-  }
-
+if (is_win || is_linux || is_mac) {
   static_library("enclave_service") {
     testonly = true
     sources = [
-      "enclave/authenticator_json_conversions.cc",
-      "enclave/authenticator_json_conversions.h",
       "enclave/test/enclave_http_server.cc",
       "enclave/test/enclave_http_server.h",
     ]
@@ -521,6 +509,7 @@ if (!is_android && !is_ios && !is_chromeos) {
       ":fido",
       "//base",
       "//components/cbor",
+      "//components/sync/protocol:protocol",
       "//mojo/public/cpp/bindings",
       "//net",
       "//net:test_support",

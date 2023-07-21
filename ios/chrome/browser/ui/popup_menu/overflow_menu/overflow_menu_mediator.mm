@@ -744,6 +744,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
       [[OverflowMenuActionGroup alloc] initWithGroupName:@"page_actions"
                                                  actions:@[]
                                                   footer:nil];
+  self.menuOrderer.pageActionsGroup = self.pageActionsGroup;
 
   // Footer and actions vary based on state, so they're set in -updateModel.
   self.helpActionsGroup =
@@ -994,7 +995,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 
   self.appActionsGroup.actions = appActions;
 
-  self.pageActionsGroup.actions = [self.menuOrderer pageActions];
+  [self.menuOrderer updatePageActions];
 
   NSMutableArray<OverflowMenuAction*>* helpActions =
       [[NSMutableArray alloc] init];
@@ -1747,8 +1748,12 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(
 
 // Dismisses the menu and opens history.
 - (void)openHistory {
-  _engagementTracker->NotifyEvent(
-      feature_engagement::events::kHistoryOnOverflowMenuUsed);
+  if (base::FeatureList::IsEnabled(
+          feature_engagement::kIPHiOSHistoryOnOverflowMenuFeature) &&
+      _engagementTracker) {
+    _engagementTracker->NotifyEvent(
+        feature_engagement::events::kHistoryOnOverflowMenuUsed);
+  }
   [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher showHistory];
 }

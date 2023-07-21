@@ -48,11 +48,10 @@ void AddMaterialTabStripColorMixer(ui::ColorProvider* provider,
   mixer[kColorTabBackgroundHoverFrameInactive] = {
       ui::kColorSysStateHoverOnSubtle};
 
-  mixer[kColorTabBackgroundSelectedFrameActive] = {ui::GetResultingPaintColor(
-      ui::kColorSysStateRippleNeutralOnSubtle, ui::kColorSysStateHeaderHover)};
+  mixer[kColorTabBackgroundSelectedFrameActive] = {
+      ui::kColorSysStateHeaderSelect};
   mixer[kColorTabBackgroundSelectedFrameInactive] = {
-      ui::GetResultingPaintColor(ui::kColorSysStateRippleNeutralOnSubtle,
-                                 ui::kColorSysStateHoverOnSubtle)};
+      kColorTabBackgroundSelectedFrameActive};
 
   /* WebUI Tab Strip colors. */
   mixer[kColorWebUiTabStripBackground] = {ui::kColorSysHeader};
@@ -71,14 +70,18 @@ void AddMaterialTabStripColorMixer(ui::ColorProvider* provider,
   mixer[kColorTabDividerFrameActive] = {ui::kColorSysOnHeaderDivider};
   mixer[kColorTabDividerFrameInactive] = {ui::kColorSysOnHeaderDividerInactive};
 
-  // Tabstrip Button colors.
+  // Tabstrip Control Button colors.
   mixer[kColorNewTabButtonCRForegroundFrameActive] = {
-      ui::kColorSysOnSurfacePrimary};
+      ui::kColorSysOnSurfaceSubtle};
   mixer[kColorNewTabButtonCRForegroundFrameInactive] = {
-      ui::kColorSysOnSurfacePrimaryInactive};
+      ui::kColorSysOnSurfaceSubtle};
   mixer[kColorNewTabButtonCRBackgroundFrameActive] = {
       ui::kColorSysHeaderContainer};
   mixer[kColorNewTabButtonCRBackgroundFrameInactive] = {
       ui::kColorSysHeaderContainerInactive};
-  // MISSING 2
+
+  mixer[kColorTabSearchButtonCRForegroundFrameActive] = {
+      ui::kColorSysOnSurfacePrimary};
+  mixer[kColorTabSearchButtonCRForegroundFrameInactive] = {
+      ui::kColorSysOnSurfacePrimaryInactive};
 }

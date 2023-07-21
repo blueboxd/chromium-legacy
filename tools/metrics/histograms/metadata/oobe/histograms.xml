@@ -38,6 +38,7 @@ chromium-metrics-reviews@google.com.
   <variant name="Autolaunch"/>
   <variant name="Choobe"/>
   <variant name="Consolidated-consent"/>
+  <variant name="Consumer-update"/>
   <variant name="Cryptohome-recovery"/>
   <variant name="Cryptohome-recovery-setup"/>
   <variant name="Debugging"/>
@@ -139,6 +140,11 @@ chromium-metrics-reviews@google.com.
   <variant name="Consolidated-consent.AcceptedDemo"/>
   <variant name="Consolidated-consent.AcceptedRegular"/>
   <variant name="Consolidated-consent.BackDemo"/>
+  <variant name="Consumer-update.Updated"/>
+  <variant name="Consumer-update.UpdateDeclineCellular"/>
+  <variant name="Consumer-update.UpdateError"/>
+  <variant name="Consumer-update.UpdateNotRequired"/>
+  <variant name="Consumer-update.UpdateSkipped"/>
   <variant name="Cryptohome-recovery-setup.Done"/>
   <variant name="Cryptohome-recovery-setup.Skipped"/>
   <variant name="Cryptohome-recovery.GaiaLogin"/>
@@ -237,11 +243,13 @@ chromium-metrics-reviews@google.com.
       replacing this one.
     </obsolete>
   </variant>
+  <variant name="User-creation.SignInTriage"/>
   <variant name="Wrong-hwid.Next"/>
 </variants>
 
 <variants name="OOBEScreenShownBeforeNetworkError">
   <variant name="AddChild" summary="Add Child Screen"/>
+  <variant name="ConsumerUpdate" summary="Consumer Update Screen"/>
   <variant name="Enrollment" summary="Enrollment or Autoenrollment"/>
   <variant name="Signin" summary="Signin Screen"/>
   <variant name="Update" summary="Update Screen"/>
@@ -280,6 +288,21 @@ chromium-metrics-reviews@google.com.
     Tracks all user actions on the ArcTermsOfService screen. Recorded when user
     clicks on buttons on the ArcTermsOfService screen.
   </summary>
+</histogram>
+
+<histogram name="OOBE.BootToOOBECompleted.{CompletedOobeFlowType}" units="ms"
+    expires_after="2023-12-31">
+  <owner>osamafathy@chromium.org</owner>
+  <owner>cros-oobe@google.com</owner>
+  <summary>
+    Time from boot until pre-login OOBE is completed. If the device was rebooted
+    during OOBE, the time is calculated since the last boot.
+  </summary>
+  <token key="CompletedOobeFlowType">
+    <variant name="AutoEnrollment"/>
+    <variant name="Demo"/>
+    <variant name="Regular"/>
+  </token>
 </histogram>
 
 <histogram name="OOBE.BootToSignInCompleted" units="ms"

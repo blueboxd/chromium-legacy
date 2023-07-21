@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <array>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/sticky_keys/sticky_keys_controller.h"
+#include "ash/accessibility/ui/accessibility_confirmation_dialog.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
@@ -6524,6 +6526,12 @@ TEST_P(DesksTest, VisibleOnAllDesksGlobalBounds) {
 // Tests that the z-ordering of windows that are visible on all desks respects
 // its global MRU ordering.
 TEST_P(DesksTest, VisibleOnAllDesksGlobalZOrder) {
+  if (features::IsPerDeskZOrderEnabled()) {
+    // Z-ordering of windows is changed when this flag is enabled. The test
+    // below is written to expect the legacy behavior.
+    return;
+  }
+
   auto* controller = DesksController::Get();
   NewDesk();
   const Desk* desk_1 = controller->GetDeskAtIndex(0);
@@ -7480,29 +7488,30 @@ TEST_P(DesksTest, ClickTargetLocationOfDroppedDesk) {
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
 
   auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  const auto* desks_bar_view = overview_grid->desks_bar_view();
+  DeskBarViewBase* desk_bar_view = overview_grid->desks_bar_view();
 
   // Add a desk.
   NewDesk();
 
   // Cache the second desk's mini view.
-  DeskMiniView* mini_view = desks_bar_view->mini_views()[1];
+  DeskMiniView* mini_view = desk_bar_view->mini_views()[1];
 
   auto* event_generator = GetEventGenerator();
 
   // Drag the second desk away from the desk bar.
   StartDragDeskPreview(mini_view, event_generator);
-  EXPECT_TRUE(desks_bar_view->IsDraggingDesk());
+  EXPECT_TRUE(desk_bar_view->IsDraggingDesk());
 
-  event_generator->MoveMouseBy(0, desks_bar_view->height());
+  event_generator->MoveMouseBy(0, desk_bar_view->height());
 
   ui::ScopedAnimationDurationScaleMode normal_anim(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
   // Drop the desk and click on the mini view.
   event_generator->ReleaseLeftButton();
-  EXPECT_TRUE(desks_bar_view->IsDraggingDesk());
+  EXPECT_TRUE(desk_bar_view->IsDraggingDesk());
   DeskSwitchAnimationWaiter waiter;
   ClickOnView(mini_view, event_generator);
+  DesksTestApi::WaitForDeskBarUiUpdate(desk_bar_view);
   waiter.Wait();
 }
 
@@ -7859,13 +7868,35 @@ TEST_P(DesksTest, TestCustomDeskNameMetricsRecording) {
   }
 }
 
-// Tests that no crash when entering overview in guest mode. This is a
-// regression test for b/287376870.
-TEST_P(DesksTest, EnterOverviewInGuestMode) {
+// Tests that no crash when entering overview  and clicking on the new desk
+// button in guest mode. This is a regression test for b/287376870 and
+// b/291718574.
+TEST_P(DesksTest, EnterOverviewAndAddDeskInGuestMode) {
   // Simulate a guest user logging in, where the session is ephemeral.
   SimulateGuestLogin();
 
+  // Verify no crash while entering overview mode.
   EnterOverview();
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
+
+  auto* event_generator = GetEventGenerator();
+  auto* new_desk_button = GetZeroStateNewDeskButton(desks_bar_view);
+  // Verify no crash while clicking on the new desk button.
+  ClickOnView(new_desk_button, event_generator);
+
+  // Verify that desk bar is transformed to the expanded state from zero state.
+  ASSERT_FALSE(desks_bar_view->IsZeroState());
+  new_desk_button = GetExpandedStateInnerNewDeskButton(desks_bar_view);
+  // Click on the expanded new desk button to add one more desk, verify no
+  // crash.
+  ClickOnView(new_desk_button, event_generator);
+
+  // Verify that there're 3 desks in total now.
+  EXPECT_EQ(3u, DesksController::Get()->desks().size());
 }
 
 // A test class that uses a mock time test environment.
@@ -9157,6 +9188,8 @@ class DeskBarTest
     // Wait for the desk model to have completed its initialization. Not doing
     // this would lead to flaky tests.
     ash_test_helper()->saved_desk_test_helper()->WaitForDeskModels();
+
+    SetShowDeskButtonInShelfPref(GetPrimaryUserPrefService(), true);
   }
 
   void TearDown() override {
@@ -9233,18 +9266,15 @@ class DeskBarTest
     }
   }
 
-  void WaitForDeskBarAnimation(
+  // TODO(yongshun): Rely on a callback to know when the desk bar is created.
+  void WaitForDeskBar(
       aura::Window* root = Shell::Get()->GetPrimaryRootWindow()) {
-    WaitForDeskBarAnimation(root, bar_type_);
+    WaitForDeskBar(root, bar_type_);
   }
 
-  void WaitForDeskBarAnimation(aura::Window* root,
-                               DeskBarViewBase::Type bar_type) {
-    // TODO(yongshun): Find a better way to wait for animation.
+  void WaitForDeskBar(aura::Window* root, DeskBarViewBase::Type bar_type) {
     int wait_time = 1000;
-    while (wait_time > 0 &&
-           (!GetDeskBarView(root, bar_type) ||
-            GetDeskBarView(root, bar_type)->is_bounds_animation_on_going())) {
+    while (wait_time > 0 && !GetDeskBarView(root, bar_type)) {
       WaitForMilliseconds(100);
       wait_time -= 100;
     }
@@ -9309,7 +9339,7 @@ class DeskBarTest
     }
   }
 
-  void CheckFocus(views::View* view, bool focused) {
+  void CheckFocus(const views::View* view, bool focused) {
     if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
       ASSERT_EQ(view->HasFocus(), focused);
     }
@@ -9327,11 +9357,52 @@ class DeskBarTest
     // Run the context menu command for closing a desk with all of its windows.
     auto* menu_controller =
         DesksTestApi::GetContextMenuForDesk(bar_type, index);
-    menu_controller->ExecuteCommand(
-        static_cast<int>(close_all
-                             ? DeskActionContextMenu::CommandId::kCloseAll
-                             : DeskActionContextMenu::CommandId::kCombineDesks),
-        /*event_flags=*/0);
+
+    const int command_id = static_cast<int>(
+        close_all ? DeskActionContextMenu::CommandId::kCloseAll
+                  : DeskActionContextMenu::CommandId::kCombineDesks);
+    if (bar_type == DeskBarViewBase::Type::kDeskButton &&
+        desks_bar_view->mini_views()[index]->desk()->is_active()) {
+      DeskSwitchAnimationWaiter waiter;
+      menu_controller->ExecuteCommand(command_id,
+                                      /*event_flags=*/0);
+      waiter.Wait();
+    } else {
+      menu_controller->ExecuteCommand(command_id,
+                                      /*event_flags=*/0);
+    }
+  }
+
+  // Closes the desk at `index` with the selected method, using the context menu
+  // if we are using touch gestures.
+  void CloseDeskWithButton(size_t index,
+                           bool close_all,
+                           aura::Window* root,
+                           DeskBarViewBase::Type bar_type) {
+    if (use_touch_gestures_) {
+      ExecuteContextMenuDeskActionForDesk(index, close_all, root, bar_type);
+    } else {
+      const auto* desk_bar_view = GetDeskBarView(root, bar_type);
+      ASSERT_LT(index, desk_bar_view->mini_views().size());
+      auto* target_mini_view = desk_bar_view->mini_views()[index];
+      auto* event_generator = GetEventGenerator();
+      event_generator->MoveMouseTo(
+          target_mini_view->desk_preview()->GetBoundsInScreen().CenterPoint());
+      auto* target_button =
+          close_all
+              ? target_mini_view->desk_action_view()->close_all_button()
+              : target_mini_view->desk_action_view()->combine_desks_button();
+      ASSERT_TRUE(target_button->GetVisible());
+
+      if (bar_type == DeskBarViewBase::Type::kDeskButton &&
+          target_mini_view->desk()->is_active()) {
+        DeskSwitchAnimationWaiter waiter;
+        ClickOnView(target_button, event_generator);
+        waiter.Wait();
+      } else {
+        ClickOnView(target_button, event_generator);
+      }
+    }
   }
 
   bool use_touch_gestures_;
@@ -9620,12 +9691,21 @@ TEST_P(DeskBarTest, HoverBasic) {
   for (int i = 0; i < desks_controller->GetNumberOfDesks(); i++) {
     auto* event_generator = GetEventGenerator();
     auto* mini_view = GetDeskBarView()->mini_views()[i];
+
+    EXPECT_FALSE(DesksTestApi::IsDeskShortcutViewVisible(mini_view));
     event_generator->MoveMouseTo(
         mini_view->desk_preview()->GetBoundsInScreen().CenterPoint());
     EXPECT_TRUE(
         mini_view->desk_action_view()->combine_desks_button()->GetVisible());
     EXPECT_TRUE(
         mini_view->desk_action_view()->close_all_button()->GetVisible());
+
+    // The shortcut view only appears on the first 8 desks in the desk button
+    // desk bar.
+    const bool expected_visibility =
+        i <= 7 && bar_type_ == DeskBarViewBase::Type::kDeskButton;
+    EXPECT_EQ(DesksTestApi::IsDeskShortcutViewVisible(mini_view),
+              expected_visibility);
   }
 
   CloseDeskBar();
@@ -9704,14 +9784,21 @@ TEST_P(DeskBarTest, LibraryButton) {
 
   auto test_library_button = [&](const std::string& trace_message) {
     SCOPED_TRACE(trace_message);
-    OpenDeskBar();
-    WaitForDeskBarAnimation();
-    EnterLibrary();
-    WaitForDeskBarAnimation();
 
-    // Overview desk bar will show up once we enter library page.
+    OpenDeskBar();
+    if (bar_type_ == DeskBarViewBase::Type::kOverview) {
+      WaitForDeskBar();
+    }
+
+    EnterLibrary();
     auto* root = Shell::GetPrimaryRootWindow();
-    WaitForDeskBarAnimation(root, DeskBarViewBase::Type::kOverview);
+    if (bar_type_ == DeskBarViewBase::Type::kOverview) {
+      // Clicking on library button in zero state overview desk bar would
+      // trigger a bar bounds animation.
+      DesksTestApi::WaitForDeskBarUiUpdate(
+          GetDeskBarView(root, DeskBarViewBase::Type::kOverview));
+    }
+
     CloseDeskBar(root, DeskBarViewBase::Type::kOverview);
   };
 
@@ -9928,8 +10015,13 @@ TEST_P(DeskBarTest, DeskRenameKeyShiftTab) {
   EXPECT_FALSE(desk_name_view->HasFocus());
   EXPECT_TRUE(desk->is_name_set_by_user());
   EXPECT_THAT(desk_name_view->GetText(), u"D1");
-  CheckHighlight(mini_view->desk_preview(), true);
-  CheckFocus(mini_view->desk_preview(), true);
+
+  if (bar_type_ == DeskBarViewBase::Type::kOverview) {
+    CheckHighlight(mini_view->desk_preview(), true);
+    CheckFocus(mini_view->desk_preview(), true);
+  } else {
+    CheckFocus(mini_view->desk_action_view()->close_all_button(), true);
+  }
 
   CloseDeskBar();
 }
@@ -10028,19 +10120,51 @@ TEST_P(DeskBarTest, ForwardTabbing) {
   auto* desk_controller = DesksController::Get();
   ASSERT_EQ(desk_controller->GetNumberOfDesks(),
             static_cast<int>(desks_util::GetMaxNumberOfDesks()) - 1);
+  const auto& window = CreateAppWindow();
+  desk_controller->SendToDeskAtIndex(window.get(), 0);
 
   OpenDeskBar();
   auto* desk_bar_view = GetDeskBarView();
   ASSERT_TRUE(desk_bar_view);
 
+  // Tab through the first window if we are in overview.
+  if (bar_type_ == DeskBarViewBase::Type::kOverview) {
+    SendKey(ui::VKEY_TAB);
+  }
+
   // Tab through all desks.
   for (int i = 0; i < desk_controller->GetNumberOfDesks(); i++) {
+    auto* mini_view = desk_bar_view->mini_views()[i];
+
     SendKey(ui::VKEY_TAB);
-    CheckHighlight(desk_bar_view->mini_views()[i]->desk_preview(), true);
-    CheckFocus(desk_bar_view->mini_views()[i]->desk_preview(), true);
+    CheckHighlight(mini_view->desk_preview(), true);
+    CheckFocus(mini_view->desk_preview(), true);
+    // The shortcut view only appears on the first 8 desks in the desk button
+    // desk bar.
+    const bool expected_visibility =
+        i <= 7 && bar_type_ == DeskBarViewBase::Type::kDeskButton;
+    EXPECT_EQ(DesksTestApi::IsDeskShortcutViewVisible(mini_view),
+              expected_visibility);
+
+    if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
+      if (i == 0) {
+        SendKey(ui::VKEY_TAB);
+        CheckFocus(mini_view->desk_action_view()->combine_desks_button(), true);
+      }
+
+      SendKey(ui::VKEY_TAB);
+      CheckFocus(mini_view->desk_action_view()->close_all_button(), true);
+      // The shortcut view only appears on the first 8 desks in the desk button
+      // desk bar.
+      EXPECT_EQ(DesksTestApi::IsDeskShortcutViewVisible(mini_view),
+                expected_visibility);
+    }
+
     SendKey(ui::VKEY_TAB);
-    CheckHighlight(desk_bar_view->mini_views()[i]->desk_name_view(), true);
-    CheckFocus(desk_bar_view->mini_views()[i]->desk_name_view(), true);
+    CheckHighlight(mini_view->desk_name_view(), true);
+    CheckFocus(mini_view->desk_name_view(), true);
+    EXPECT_FALSE(DesksTestApi::IsDeskShortcutViewVisible(
+        desk_bar_view->mini_views()[i]));
   }
 
   // Tab through new desk button.
@@ -10085,10 +10209,17 @@ TEST_P(DeskBarTest, ReverseTabbing) {
   auto* desk_controller = DesksController::Get();
   ASSERT_EQ(desk_controller->GetNumberOfDesks(),
             static_cast<int>(desks_util::GetMaxNumberOfDesks()) - 1);
+  const auto& window = CreateAppWindow();
+  desk_controller->SendToDeskAtIndex(window.get(), 0);
 
   OpenDeskBar();
   auto* desk_bar_view = GetDeskBarView();
   ASSERT_TRUE(desk_bar_view);
+
+  // If in overview, tab through the save desk for later button.
+  if (bar_type_ == DeskBarViewBase::Type::kOverview) {
+    SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  }
 
   // Tab through library button.
   SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
@@ -10118,12 +10249,39 @@ TEST_P(DeskBarTest, ReverseTabbing) {
 
   // Tab through all desks.
   for (int i = desk_controller->GetNumberOfDesks() - 1; i >= 0; i--) {
+    auto* mini_view = desk_bar_view->mini_views()[i];
+
     SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-    CheckHighlight(desk_bar_view->mini_views()[i]->desk_name_view(), true);
-    CheckFocus(desk_bar_view->mini_views()[i]->desk_name_view(), true);
+    CheckHighlight(mini_view->desk_name_view(), true);
+    CheckFocus(mini_view->desk_name_view(), true);
+    EXPECT_FALSE(DesksTestApi::IsDeskShortcutViewVisible(
+        desk_bar_view->mini_views()[i]));
+
+    if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
+      SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+      CheckFocus(mini_view->desk_action_view()->close_all_button(), true);
+
+      if (i == 0) {
+        SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+        CheckFocus(mini_view->desk_action_view()->combine_desks_button(), true);
+      }
+      // The shortcut view only appears on the first 8 desks in the desk button
+      // desk bar.
+      const bool expected_visibility =
+          i <= 7 && bar_type_ == DeskBarViewBase::Type::kDeskButton;
+      EXPECT_EQ(DesksTestApi::IsDeskShortcutViewVisible(mini_view),
+                expected_visibility);
+    }
+
     SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-    CheckHighlight(desk_bar_view->mini_views()[i]->desk_preview(), true);
-    CheckFocus(desk_bar_view->mini_views()[i]->desk_preview(), true);
+    CheckHighlight(mini_view->desk_preview(), true);
+    CheckFocus(mini_view->desk_preview(), true);
+    // The shortcut view only appears on the first 8 desks in the desk button
+    // desk bar.
+    const bool expected_visibility =
+        i <= 7 && bar_type_ == DeskBarViewBase::Type::kDeskButton;
+    EXPECT_EQ(DesksTestApi::IsDeskShortcutViewVisible(mini_view),
+              expected_visibility);
   }
 
   CloseDeskBar();
@@ -10146,12 +10304,14 @@ TEST_P(DeskBarTest, CloseActiveDesk) {
   auto* desk_bar_view = GetDeskBarView();
   ASSERT_TRUE(desk_bar_view);
 
-  // Highlight desk #1. For `kOverview` bar, it requires one more tab since
-  // there is an overview item.
-  const int tab_count = (bar_type_ == DeskBarViewBase::Type::kOverview ? 4 : 3);
-  for (int i = 0; i < tab_count; i++) {
+  // Highlight desk #1. For both `kOverview` and `kDeskButton` bars, we will
+  // need the same number of tabs because, while there is an overview item for
+  // the overview bar, the desk close button is added to the tab order for the
+  // first mini view.
+  for (int i = 0; i < 4; i++) {
     SendKey(ui::VKEY_TAB);
   }
+
   CheckHighlight(desk_bar_view->mini_views()[1]->desk_preview(), true);
   CheckFocus(desk_bar_view->mini_views()[1]->desk_preview(), true);
 
@@ -10195,12 +10355,14 @@ TEST_P(DeskBarTest, MergeActiveDesk) {
   auto* desk_bar_view = GetDeskBarView();
   ASSERT_TRUE(desk_bar_view);
 
-  // Highlight desk #1. For `kOverview` bar, it requires one more tab since
-  // there is an overview item.
-  const int tab_count = (bar_type_ == DeskBarViewBase::Type::kOverview ? 4 : 3);
-  for (int i = 0; i < tab_count; i++) {
+  // Highlight desk #1. For both `kOverview` and `kDeskButton` bars, we will
+  // need the same number of tabs because, while there is an overview item for
+  // the overview bar, the desk close button is added to the tab order for the
+  // first mini view.
+  for (int i = 0; i < 4; i++) {
     SendKey(ui::VKEY_TAB);
   }
+
   CheckHighlight(desk_bar_view->mini_views()[1]->desk_preview(), true);
   CheckFocus(desk_bar_view->mini_views()[1]->desk_preview(), true);
 
@@ -10247,6 +10409,11 @@ TEST_P(DeskBarTest, CloseNonActiveDesk) {
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
+
+  if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
+    SendKey(ui::VKEY_TAB);
+  }
+
   CheckHighlight(desk_bar_view->mini_views()[1]->desk_preview(), true);
   CheckFocus(desk_bar_view->mini_views()[1]->desk_preview(), true);
 
@@ -10283,6 +10450,11 @@ TEST_P(DeskBarTest, MergeNonActiveDesk) {
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
+
+  if (bar_type_ == DeskBarViewBase::Type::kDeskButton) {
+    SendKey(ui::VKEY_TAB);
+  }
+
   CheckHighlight(desk_bar_view->mini_views()[1]->desk_preview(), true);
   CheckFocus(desk_bar_view->mini_views()[1]->desk_preview(), true);
 
@@ -10326,11 +10498,7 @@ TEST_P(DeskBarTest, DeskBarActionMetrics) {
     auto* desk_bar_view = GetDeskBarView(root_window, bar_type);
 
     // Add new desk.
-    ClickOrPressOnView(
-        enable_jellyroll_
-            ? static_cast<views::View*>(desk_bar_view->new_desk_button())
-            : static_cast<views::View*>(
-                  desk_bar_view->expanded_state_new_desk_button()));
+    ClickOrPressOnView(GetExpandedStateInnerNewDeskButton(desk_bar_view));
     histogram_tester.ExpectTotalCount(kDeskBarNewDeskHistogramName, 1);
 
     // Set desk name.
@@ -10352,45 +10520,16 @@ TEST_P(DeskBarTest, DeskBarActionMetrics) {
     histogram_tester.ExpectTotalCount(kDeskBarReorderDeskHistogramName, 1);
 
     // Close desk with windows.
-    if (use_touch_gestures_) {
-      ExecuteContextMenuDeskActionForDesk(1, /*close_all=*/true,
-                                          Shell::Get()->GetPrimaryRootWindow(),
-                                          bar_type);
-    } else {
-      auto* target_mini_view = mini_views[1];
-      event_generator->MoveMouseTo(
-          target_mini_view->desk_preview()->GetBoundsInScreen().CenterPoint());
-      auto* close_all_button =
-          target_mini_view->desk_action_view()->close_all_button();
-      ASSERT_TRUE(close_all_button->GetVisible());
-      ClickOnView(close_all_button, event_generator);
-    }
-
+    CloseDeskWithButton(/*index=*/1, /*close_all=*/true, root_window, bar_type);
     histogram_tester.ExpectTotalCount(kDeskBarCloseDeskHistogramName, 1);
 
     // Combine desks.
-    if (use_touch_gestures_) {
-      ExecuteContextMenuDeskActionForDesk(1, /*close_all=*/false,
-                                          Shell::Get()->GetPrimaryRootWindow(),
-                                          bar_type);
-    } else {
-      auto* target_mini_view = mini_views[1];
-      ASSERT_FALSE(target_mini_view->desk()->windows().empty());
-      event_generator->MoveMouseTo(
-          target_mini_view->desk_preview()->GetBoundsInScreen().CenterPoint());
-      EXPECT_TRUE(target_mini_view->desk_action_view()
-                      ->close_all_button()
-                      ->GetVisible());
-      auto* combine_desks_button =
-          target_mini_view->desk_action_view()->combine_desks_button();
-      ASSERT_TRUE(combine_desks_button->GetVisible());
-      ClickOnView(combine_desks_button, event_generator);
-    }
-
+    CloseDeskWithButton(/*index=*/1, /*close_all=*/false, root_window,
+                        bar_type);
     histogram_tester.ExpectTotalCount(kDeskBarCombineDesksHistogramName, 1);
 
     // Open library.
-    EnterLibrary(Shell::Get()->GetPrimaryRootWindow(), bar_type);
+    EnterLibrary(root_window, bar_type);
     histogram_tester.ExpectTotalCount(kDeskBarOpenLibraryHistogramName, 1);
   };
 
@@ -10403,6 +10542,96 @@ TEST_P(DeskBarTest, DeskBarActionMetrics) {
   desks_controller->SendToDeskAtIndex(window.window(), 3);
   EnterOverview();
   validate_actions(DeskBarViewBase::Type::kOverview);
+}
+
+// Tests that metrics are correctly separated for desk switches between the
+// overview desk bar and the desk button desk bar.
+TEST_P(DeskBarTest, DeskBarSwitchMetrics) {
+  NewDesk();
+  NewDesk();
+
+  base::HistogramTester histogram_tester;
+
+  // Create an app window on the first desk.
+  WindowHolder window(CreateAppWindow());
+  auto* desks_controller = DesksController::Get();
+  desks_controller->SendToDeskAtIndex(window.window(), 0);
+
+  OpenDeskBar();
+
+  DeskSwitchAnimationWaiter waiter;
+  ClickOrPressOnView(GetDeskBarView()->mini_views()[1]->desk_preview());
+  waiter.Wait();
+  ASSERT_TRUE(desks_controller->desks()[1]->is_active());
+  histogram_tester.ExpectBucketCount(
+      kDeskSwitchHistogramName,
+      bar_type_ == DeskBarViewBase::Type::kDeskButton
+          ? DesksSwitchSource::kDeskButtonMiniViewButton
+          : DesksSwitchSource::kMiniViewButton,
+      1);
+
+  OpenDeskBar();
+
+  auto* root_window = Shell::Get()->GetPrimaryRootWindow();
+  CloseDeskWithButton(/*index=*/1, /*close_all=*/true, root_window, bar_type_);
+  histogram_tester.ExpectBucketCount(
+      kDeskSwitchHistogramName,
+      bar_type_ == DeskBarViewBase::Type::kDeskButton
+          ? DesksSwitchSource::kDeskButtonDeskRemoved
+          : DesksSwitchSource::kDeskRemoved,
+      1);
+
+  OpenDeskBar();
+
+  CloseDeskWithButton(/*index=*/0, /*close_all=*/false, root_window, bar_type_);
+  histogram_tester.ExpectBucketCount(
+      kDeskSwitchHistogramName,
+      bar_type_ == DeskBarViewBase::Type::kDeskButton
+          ? DesksSwitchSource::kDeskButtonDeskRemoved
+          : DesksSwitchSource::kDeskRemoved,
+      2);
+}
+
+// Tests that metrics are correctly separated for desk creation and removal
+// between the overview desk bar and the desk button desk bar.
+TEST_P(DeskBarTest, DeskCreationRemovalMetrics) {
+  NewDesk();
+
+  base::HistogramTester histogram_tester;
+
+  WindowHolder window(CreateAppWindow());
+  auto* desks_controller = DesksController::Get();
+  desks_controller->SendToDeskAtIndex(window.window(), 0);
+
+  OpenDeskBar();
+  auto* desk_bar = GetDeskBarView();
+
+  ClickOrPressOnView(GetExpandedStateInnerNewDeskButton(desk_bar));
+  histogram_tester.ExpectBucketCount(
+      kNewDeskHistogramName,
+      bar_type_ == DeskBarViewBase::Type::kDeskButton
+          ? DesksCreationRemovalSource::kDeskButtonDeskBarButton
+          : DesksCreationRemovalSource::kButton,
+      1);
+
+  auto* root_window = Shell::Get()->GetPrimaryRootWindow();
+  CloseDeskWithButton(/*index=*/1, /*close_all=*/true, root_window, bar_type_);
+  histogram_tester.ExpectBucketCount(
+      kRemoveDeskHistogramName,
+      bar_type_ == DeskBarViewBase::Type::kDeskButton
+          ? DesksCreationRemovalSource::kDeskButtonDeskBarButton
+          : DesksCreationRemovalSource::kButton,
+      1);
+
+  OpenDeskBar();
+
+  CloseDeskWithButton(/*index=*/0, /*close_all=*/false, root_window, bar_type_);
+  histogram_tester.ExpectBucketCount(
+      kRemoveDeskHistogramName,
+      bar_type_ == DeskBarViewBase::Type::kDeskButton
+          ? DesksCreationRemovalSource::kDeskButtonDeskBarButton
+          : DesksCreationRemovalSource::kButton,
+      2);
 }
 
 namespace {
@@ -10429,9 +10658,12 @@ class DeskButtonTest
     AshTestBase::SetUp();
     shelf_test_api_ = std::make_unique<ShelfViewTestAPI>(
         GetPrimaryShelf()->GetShelfViewForTesting());
-    Shelf::ForWindow(Shell::GetPrimaryRootWindow())
-        ->SetAlignment(GetParam().alignment);
+    GetPrimaryShelf()->SetAlignment(GetParam().alignment);
     SetShowDeskButtonInShelfPref(GetPrimaryUserPrefService(), true);
+    // Set the shelf alignment pref to the desired alignment because if a test
+    // updates the display size the shelf alignment will be reset from the pref.
+    SetShelfAlignmentPref(GetPrimaryUserPrefService(), GetPrimaryDisplay().id(),
+                          GetParam().alignment);
   }
 
   DeskButtonWidget* GetDeskButtonWidget() {
@@ -10499,6 +10731,21 @@ class DeskButtonTest
   void UnhoverDeskButton() {
     auto* event_generator = GetEventGenerator();
     event_generator->MoveMouseTo(0, 0);
+  }
+
+  void OpenDeskBar() {
+    DesksController::Get()->desk_bar_controller()->OpenDeskBar(
+        Shell::Get()->GetPrimaryRootWindow());
+  }
+
+  void CloseDeskBar() {
+    DesksController::Get()->desk_bar_controller()->CloseDeskBar(
+        Shell::Get()->GetPrimaryRootWindow());
+  }
+
+  DeskBarViewBase* GetDeskBarView() {
+    return DesksController::Get()->desk_bar_controller()->GetDeskBarView(
+        Shell::Get()->GetPrimaryRootWindow());
   }
 
  private:
@@ -10729,6 +10976,164 @@ TEST_P(DeskButtonTest, DeskButtonPressMetrics) {
   histogram_tester.ExpectTotalCount(kDeskButtonPressesHistogramName, 1);
   ClickDeskButton();
   histogram_tester.ExpectTotalCount(kDeskButtonPressesHistogramName, 2);
+}
+
+// Tests that the desk button shows up in the correct position in RTL.
+TEST_P(DeskButtonTest, PositionInRTL) {
+  // Set the display size since this test tests the location of elements in the
+  // display.
+  UpdateDisplay("1200x800");
+
+  // Turn on RTL mode.
+  const bool default_rtl = base::i18n::IsRTL();
+  base::i18n::SetRTLForTesting(true);
+  EXPECT_TRUE(base::i18n::IsRTL());
+
+  auto* desk_button = GetDeskButton();
+  ASSERT_TRUE(desk_button);
+
+  if (GetParam().alignment == ShelfAlignment::kBottom) {
+    EXPECT_EQ(gfx::Rect(494, 758, 96, 36), desk_button->GetBoundsInScreen());
+  } else if (GetParam().alignment == ShelfAlignment::kLeft) {
+    EXPECT_EQ(gfx::Rect(6, 354, 36, 36), desk_button->GetBoundsInScreen());
+  } else if (GetParam().alignment == ShelfAlignment::kRight) {
+    EXPECT_EQ(gfx::Rect(1158, 354, 36, 36), desk_button->GetBoundsInScreen());
+  }
+
+  // Recover to default RTL mode.
+  base::i18n::SetRTLForTesting(default_rtl);
+}
+
+TEST_P(DeskButtonTest, BarBoundsWithDeviceSacleFactorChange) {
+  // Test both upscaling and downscaling.
+  for (auto key : {ui::VKEY_OEM_MINUS, ui::VKEY_OEM_PLUS}) {
+    OpenDeskBar();
+    SendKey(key, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+    ASSERT_TRUE(GetDeskBarView());
+    gfx::Rect bounds = GetDeskBarView()->GetWidget()->GetWindowBoundsInScreen();
+    CloseDeskBar();
+    OpenDeskBar();
+    gfx::Rect expected_bounds =
+        GetDeskBarView()->GetWidget()->GetWindowBoundsInScreen();
+    CloseDeskBar();
+    EXPECT_EQ(bounds, expected_bounds);
+  }
+}
+
+TEST_P(DeskButtonTest, BarBoundsWithScreenRotationChange) {
+  const int control_and_shift = ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN;
+
+  // Accept the dialog once so later on it does not pop up.
+  auto* accessibility_controller = Shell::Get()->accessibility_controller();
+  SendKey(ui::VKEY_BROWSER_REFRESH, control_and_shift);
+  if (auto* confirm_dialog =
+          accessibility_controller->GetConfirmationDialogForTest()) {
+    confirm_dialog->AcceptDialog();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  // Test with all four screen rotations.
+  for (int i = 0; i < 4; i++) {
+    OpenDeskBar();
+    SendKey(ui::VKEY_BROWSER_REFRESH, control_and_shift);
+    ASSERT_TRUE(GetDeskBarView());
+    gfx::Rect bounds = GetDeskBarView()->GetWidget()->GetWindowBoundsInScreen();
+    CloseDeskBar();
+    OpenDeskBar();
+    gfx::Rect expected_bounds =
+        GetDeskBarView()->GetWidget()->GetWindowBoundsInScreen();
+    CloseDeskBar();
+    EXPECT_EQ(bounds, expected_bounds);
+  }
+}
+
+TEST_P(DeskButtonTest, BarBoundsWithWorkAreaChangeChromevox) {
+  const int control_and_alt = ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN;
+
+  // Test with chromevox on and off.
+  OpenDeskBar();
+  SendKey(ui::VKEY_Z, control_and_alt);
+  ASSERT_TRUE(GetDeskBarView());
+  gfx::Rect bounds = GetDeskBarView()->GetWidget()->GetWindowBoundsInScreen();
+  CloseDeskBar();
+  OpenDeskBar();
+  gfx::Rect expected_bounds =
+      GetDeskBarView()->GetWidget()->GetWindowBoundsInScreen();
+  CloseDeskBar();
+  SendKey(ui::VKEY_Z, control_and_alt);
+  EXPECT_EQ(bounds, expected_bounds);
+}
+
+TEST_P(DeskButtonTest, BarBoundsWithWorkAreaChangeDockedMagnifier) {
+  // Set the display large enough for the docked magnifier and the desk bar.
+  UpdateDisplay("1024x768");
+
+  const int control_and_search = ui::EF_CONTROL_DOWN | ui::EF_COMMAND_DOWN;
+
+  // Accept the dialog once so later on it does not pop up.
+  auto* accessibility_controller = Shell::Get()->accessibility_controller();
+  SendKey(ui::VKEY_D, control_and_search);
+  if (auto* confirm_dialog =
+          accessibility_controller->GetConfirmationDialogForTest()) {
+    confirm_dialog->AcceptDialog();
+    base::RunLoop().RunUntilIdle();
+  }
+  SendKey(ui::VKEY_D, control_and_search);
+
+  // Test with docked magnifier on and off.
+  OpenDeskBar();
+  SendKey(ui::VKEY_D, control_and_search);
+  ASSERT_TRUE(GetDeskBarView());
+  gfx::Rect bounds = GetDeskBarView()->GetWidget()->GetWindowBoundsInScreen();
+  CloseDeskBar();
+  OpenDeskBar();
+  gfx::Rect expected_bounds =
+      GetDeskBarView()->GetWidget()->GetWindowBoundsInScreen();
+  CloseDeskBar();
+  SendKey(ui::VKEY_D, control_and_search);
+  EXPECT_EQ(bounds, expected_bounds);
+}
+
+// Tests that desk button tab order is correct in the shelf.
+TEST_P(DeskButtonTest, TabOrder) {
+  NewDesk();
+  NewDesk();
+  auto* desks_controller = DesksController::Get();
+  ASSERT_THAT(desks_controller->desks().size(), 3);
+  ASSERT_THAT(desks_controller->GetActiveDeskIndex(), 0);
+
+  // Tabbing once should focus the shelf navigation widget.
+  SendKey(ui::VKEY_TAB);
+
+  // One more tab should focus the desk button, then the next desk button. There
+  // should be no previous desk button since we're on the first desk
+  SendKey(ui::VKEY_TAB);
+  ASSERT_TRUE(GetDeskButton()->HasFocus());
+  SendKey(ui::VKEY_TAB);
+  ASSERT_TRUE(GetDeskButton()->next_desk_button()->HasFocus());
+
+  // Tabbing in the other direction should work too.
+  SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  ASSERT_TRUE(GetDeskButton()->HasFocus());
+  SendKey(ui::VKEY_TAB);
+  ASSERT_TRUE(GetDeskButton()->next_desk_button()->HasFocus());
+
+  // Pressing the next desk button should take us to the next desk, and
+  // immediately pressing enter again should take us to the last desk.
+  DeskSwitchAnimationWaiter waiter;
+  SendKey(ui::VKEY_RETURN);
+  waiter.Wait();
+  ASSERT_THAT(desks_controller->GetActiveDeskIndex(), 1);
+  ASSERT_TRUE(GetDeskButton()->prev_desk_button()->GetEnabled());
+  ASSERT_TRUE(GetDeskButton()->next_desk_button()->GetEnabled());
+  DeskSwitchAnimationWaiter waiter2;
+  SendKey(ui::VKEY_RETURN);
+  waiter2.Wait();
+  ASSERT_THAT(desks_controller->GetActiveDeskIndex(), 2);
+
+  // Focus should have been passed to the hotseat widget now that the next desk
+  // button isn't visible.
+  ASSERT_FALSE(GetDeskButton()->next_desk_button()->GetEnabled());
 }
 
 // TODO(afakhry): Add more tests:

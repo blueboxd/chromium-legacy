@@ -27,6 +27,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_policy_constants.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -86,6 +87,9 @@ const int kNoActionForFileHelpNumber = 1700055;
 
 #define SET_STRING(id, idr) dict->Set(id, l10n_util::GetStringUTF16(idr))
 
+#define SET_STRING_PLURAL(id, idr, n) \
+  dict->Set(id, l10n_util::GetPluralStringFUTF16(idr, n))
+
 void AddStringsForFileTypes(base::Value::Dict* dict) {
   // TODO(crbug.com/438921): Rename string IDs to something like
   // FILE_TYPE_WHATEVER.
@@ -132,8 +136,8 @@ void AddStringsForDrive(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_BULK_PINNING_BUTTON_LABEL_ISSUE);
   SET_STRING("BULK_PINNING_BUTTON_LABEL_OFFLINE",
              IDS_FILE_BROWSER_BULK_PINNING_BUTTON_LABEL_OFFLINE);
-  SET_STRING("BULK_PINNING_BUTTON_LABEL_ON",
-             IDS_FILE_BROWSER_BULK_PINNING_BUTTON_LABEL_ON);
+  SET_STRING("BULK_PINNING_FILE_SYNC_ON",
+             IDS_FILE_BROWSER_BULK_PINNING_FILE_SYNC_ON);
   SET_STRING("BULK_PINNING_BUTTON_LABEL_PAUSED",
              IDS_FILE_BROWSER_BULK_PINNING_BUTTON_LABEL_PAUSED);
   SET_STRING("BULK_PINNING_BUTTON_LABEL_SYNCING",
@@ -224,8 +228,6 @@ void AddStringsForDrive(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_GOOGLE_DRIVE_MULTIPLE_FILES_SYNCING_LABEL);
   SET_STRING("DRIVE_SINGLE_FILE_SYNCING",
              IDS_FILE_BROWSER_GOOGLE_DRIVE_SINGLE_FILE_SYNCING_LABEL);
-  SET_STRING("DRIVE_ALL_FILES_SYNCED",
-             IDS_FILE_BROWSER_GOOGLE_DRIVE_ALL_FILES_SYNCED_LABEL);
   SET_STRING("DRIVE_BULK_PINNING_BATTERY_SAVER",
              IDS_FILE_BROWSER_BULK_PINNING_BATTERY_SAVER_LABEL);
   SET_STRING("DRIVE_BULK_PINNING_OFFLINE",
@@ -1110,6 +1112,19 @@ void AddStringsGeneric(base::Value::Dict* dict) {
   SET_STRING("DLP_COMPONENT_VM", IDS_FILE_BROWSER_DLP_COMPONENT_VM);
   SET_STRING("DLP_COMPONENT_MICROSOFT_ONEDRIVE",
              IDS_FILE_BROWSER_DLP_COMPONENT_MICROSOFT_ONEDRIVE);
+  SET_STRING("DLP_FILES_MOVE_REVIEW_TITLE",
+             IDS_POLICY_DLP_FILES_MOVE_REVIEW_TITLE);
+  SET_STRING("DLP_FILES_COPY_REVIEW_TITLE",
+             IDS_POLICY_DLP_FILES_COPY_REVIEW_TITLE);
+  SET_STRING("DLP_FILES_MOVE_WARN_CONTINUE_BUTTON",
+             IDS_POLICY_DLP_FILES_MOVE_WARN_CONTINUE_BUTTON);
+  SET_STRING("DLP_FILES_COPY_WARN_CONTINUE_BUTTON",
+             IDS_POLICY_DLP_FILES_COPY_WARN_CONTINUE_BUTTON);
+  SET_STRING_PLURAL("DLP_FILES_WARN_MESSAGE_SINGLE",
+                    IDS_POLICY_DLP_FILES_WARN_MESSAGE, 1);
+  SET_STRING_PLURAL("DLP_FILES_WARN_MESSAGE_MULTIPLE",
+                    IDS_POLICY_DLP_FILES_WARN_MESSAGE, 2);
+  SET_STRING("DLP_FILES_REVIEW_BUTTON", IDS_POLICY_DLP_FILES_REVIEW_BUTTON);
   SET_STRING("ONE_DRIVE_MOVED_FILE_NUDGE",
              IDS_FILE_BROWSER_ONE_DRIVE_MOVED_FILE_NUDGE);
   SET_STRING("DRIVE_MOVED_FILE_NUDGE", IDS_FILE_BROWSER_DRIVE_MOVED_FILE_NUDGE);
@@ -1202,6 +1217,7 @@ base::Value::Dict GetFileManagerStrings() {
   dict.Set("GOOGLE_DRIVE_ROOT_URL", kGoogleDriveRootUrl);
   dict.Set("NO_TASK_FOR_FILE_URL",
            base::StringPrintf(kHelpURLFormat, kNoActionForFileHelpNumber));
+  dict.Set("DLP_HELP_URL", policy::dlp::kDlpLearnMoreUrl);
 
   webui::SetLoadTimeDataDefaults(g_browser_process->GetApplicationLocale(),
                                  &dict);

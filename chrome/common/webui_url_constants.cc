@@ -16,6 +16,7 @@
 #include "components/password_manager/content/common/web_ui_constants.h"
 #include "components/safe_browsing/core/common/web_ui_constants.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 
@@ -127,6 +128,8 @@ const char kChromeUIInvalidationsUrl[] = "chrome://invalidations";
 const char kChromeUIKillHost[] = "kill";
 const char kChromeUILauncherInternalsHost[] = "launcher-internals";
 const char kChromeUILauncherInternalsURL[] = "chrome://launcher-internals";
+const char kChromeUISensorInfoHost[] = "sensor-info";
+const char kChromeUISensorInfoURL[] = "chrome://sensor-info/";
 const char kChromeUILocalStateHost[] = "local-state";
 const char kChromeUILocationInternalsHost[] = "location-internals";
 const char kChromeUIManagementHost[] = "management";
@@ -287,6 +290,7 @@ const char kChromeUIOmniboxPopupURL[] = "chrome://omnibox-popup.top-chrome/";
 const char kChromeUISuggestInternalsHost[] = "suggest-internals";
 const char kChromeUISuggestInternalsURL[] = "chrome://suggest-internals/";
 const char kChromeUIWebAppInternalsHost[] = "web-app-internals";
+const char kChromeUIWebAppInternalsURL[] = "chrome://web-app-internals";
 const char kChromeUIWebUITestHost[] = "webui-test";
 #endif
 
@@ -729,6 +733,9 @@ const char* const kChromeHostURLs[] = {
 #endif
     content::kChromeUIUkmHost,
     content::kChromeUIWebRTCInternalsHost,
+#if BUILDFLAG(ENABLE_VR)
+    content::kChromeUIWebXrInternalsHost,
+#endif
 #if !BUILDFLAG(IS_ANDROID)
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     kChromeUIAppLauncherPageHost,

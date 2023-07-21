@@ -219,8 +219,7 @@ def _parse_proxy_natives(type_resolver, contents):
             native_class_name=annotations.get('NativeClassQualifiedName')))
   if not ret.methods:
     raise SyntaxError('Found no methods within @NativeMethod interface.')
-  # TODO(agrieve): Enable sorting.
-  # ret.methods.sort()
+  ret.methods.sort()
   return ret
 
 
@@ -281,8 +280,7 @@ def _do_parse(filename, *, package_prefix):
 
   # TODO(crbug.com/1406605): Remove circular dep.
   import jni_generator
-  non_proxy_natives = jni_generator.ExtractNatives(type_resolver, contents,
-                                                   'long')
+  non_proxy_natives = jni_generator.ExtractNatives(type_resolver, contents)
   called_by_natives = jni_generator.ExtractCalledByNatives(
       type_resolver, contents)
 

@@ -21,6 +21,7 @@ namespace ash {
 namespace {
 
 constexpr char kUserActionSignIn[] = "signin";
+constexpr char kUserActionSignInTriage[] = "signin-triage";
 constexpr char kUserActionAddChild[] = "add-child";
 constexpr char kUserActionCancel[] = "cancel";
 
@@ -40,6 +41,8 @@ std::string UserCreationScreen::GetResultString(Result result) {
   switch (result) {
     case Result::SIGNIN:
       return "SignIn";
+    case Result::SIGNIN_TRIAGE:
+      return "SignInTriage";
     case Result::ADD_CHILD:
       return "AddChild";
     case Result::ENTERPRISE_ENROLL:
@@ -127,6 +130,13 @@ void UserCreationScreen::HideImpl() {
   error_screen_->Hide();
 }
 
+void UserCreationScreen::SetChildSetupStep() {
+  if (!view_) {
+    return;
+  }
+  view_->SetChildSetupStep();
+}
+
 void UserCreationScreen::OnUserAction(const base::Value::List& args) {
   const std::string& action_id = args[0].GetString();
   if (action_id == kUserActionSignIn) {
@@ -145,6 +155,8 @@ void UserCreationScreen::OnUserAction(const base::Value::List& args) {
     } else {
       view_->SetTriageStep();
     }
+  } else if (action_id == kUserActionSignInTriage) {
+    RunExitCallback(Result::SIGNIN_TRIAGE);
   } else if (action_id == kUserActionChildSetup) {
     view_->SetChildSetupStep();
   } else {
@@ -166,8 +178,8 @@ bool UserCreationScreen::HandleAccelerator(LoginAcceleratorAction action) {
 
 void UserCreationScreen::UpdateState(NetworkError::ErrorReason reason) {
   NetworkStateInformer::State state = network_state_informer_->state();
-  const bool is_online = NetworkStateInformer::IsOnline(state, reason);
-  if (!is_online) {
+  if (state != NetworkStateInformer::ONLINE ||
+      reason == NetworkError::ERROR_REASON_LOADING_TIMEOUT) {
     error_screen_visible_ = true;
     error_screen_->SetParentScreen(UserCreationView::kScreenId);
     error_screen_->ShowNetworkErrorMessage(state, reason);

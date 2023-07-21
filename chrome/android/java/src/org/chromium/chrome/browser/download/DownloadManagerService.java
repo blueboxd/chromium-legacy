@@ -27,6 +27,7 @@ import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
@@ -39,7 +40,6 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
-import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.OTRProfileID;
@@ -93,7 +93,6 @@ public class DownloadManagerService implements DownloadController.Observer,
     private static boolean sIsNetworkListenerDisabled;
     private static boolean sIsNetworkMetered;
 
-    private final SharedPreferencesManager mSharedPrefs;
     private final HashMap<String, DownloadProgress> mDownloadProgressMap =
             new HashMap<String, DownloadProgress>(4, 0.75f);
 
@@ -224,7 +223,6 @@ public class DownloadManagerService implements DownloadController.Observer,
     protected DownloadManagerService(
             DownloadNotifier downloadNotifier, Handler handler, long updateDelayInMillis) {
         Context applicationContext = ContextUtils.getApplicationContext();
-        mSharedPrefs = SharedPreferencesManager.getInstance();
         mDownloadNotifier = downloadNotifier;
         mUpdateDelayInMillis = updateDelayInMillis;
         mHandler = handler;
@@ -240,8 +238,6 @@ public class DownloadManagerService implements DownloadController.Observer,
     @VisibleForTesting
     protected void init() {
         DownloadController.setDownloadNotificationService(this);
-        // Clean up unused shared prefs. TODO(qinmin): remove this after M84.
-        mSharedPrefs.removeKey(ChromePreferenceKeys.DOWNLOAD_UMA_ENTRY);
     }
 
     /**
@@ -269,7 +265,9 @@ public class DownloadManagerService implements DownloadController.Observer,
 
     /** For testing only. */
     public void setInfoBarControllerForTesting(DownloadMessageUiController infoBarController) {
+        var oldValue = mMessageUiController;
         mMessageUiController = infoBarController;
+        ResettersForTesting.register(() -> mMessageUiController = oldValue);
     }
 
     // Deprecated after new download backend.
@@ -1170,7 +1168,6 @@ public class DownloadManagerService implements DownloadController.Observer,
     /**
      * Called by tests to disable listening to network connection changes.
      */
-    @VisibleForTesting
     static void disableNetworkListenerForTest() {
         sIsNetworkListenerDisabled = true;
     }
@@ -1179,9 +1176,10 @@ public class DownloadManagerService implements DownloadController.Observer,
      * Called by tests to set the network type.
      * @isNetworkMetered Whether the network should appear to be metered.
      */
-    @VisibleForTesting
     static void setIsNetworkMeteredForTest(boolean isNetworkMetered) {
+        var oldValue = sIsNetworkMetered;
         sIsNetworkMetered = isNetworkMetered;
+        ResettersForTesting.register(() -> sIsNetworkMetered = oldValue);
     }
 
     /**

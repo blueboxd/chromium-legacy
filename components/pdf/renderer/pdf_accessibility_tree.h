@@ -13,9 +13,11 @@
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "content/public/renderer/plugin_ax_tree_source.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "pdf/accessibility_structs.h"
 #include "pdf/pdf_accessibility_data_handler.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_source.h"
@@ -23,21 +25,16 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "base/containers/queue.h"
+#include "base/sequence_checker.h"
+#include "components/services/screen_ai/public/mojom/screen_ai_service.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/accessibility/ax_node_data.h"
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 namespace chrome_pdf {
 
 class PdfAccessibilityActionHandler;
-struct AccessibilityActionData;
-struct AccessibilityCharInfo;
-struct AccessibilityDocInfo;
-struct AccessibilityImageInfo;
-struct AccessibilityPageInfo;
-struct AccessibilityPageObjects;
-struct AccessibilityTextRunInfo;
-struct AccessibilityViewportInfo;
-struct PageCharacterIndex;
 
 }  // namespace chrome_pdf
 
@@ -52,14 +49,63 @@ class Transform;
 
 namespace pdf {
 
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-class PdfOcrService;
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-
 class PdfAccessibilityTree : public content::PluginAXTreeSource,
                              public content::RenderFrameObserver,
                              public chrome_pdf::PdfAccessibilityDataHandler {
  public:
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  // Used for storing OCR requests either before performing an OCR job, or after
+  // the results have been received. This is for scheduling the work on another
+  // thread in patches in order to unblock the user from reading a partially
+  // OCRed PDF.
+  struct PdfOcrRequest {
+    PdfOcrRequest(const ui::AXNodeID& image_node_id,
+                  const chrome_pdf::AccessibilityImageInfo& image,
+                  const ui::AXNodeID& parent_node_id);
+
+    const ui::AXNodeID image_node_id;
+    const chrome_pdf::AccessibilityImageInfo image;
+    const ui::AXNodeID parent_node_id;
+  };
+
+  // Manages the connection to the OCR Service via Mojo, and ensures that
+  // requests are sent in order and that responses are batched.
+  class PdfOcrService final {
+   public:
+    using OnOcrDataReceivedCallback = base::RepeatingCallback<void(
+        const ui::AXNodeID& image_node_id,
+        const chrome_pdf::AccessibilityImageInfo& image,
+        const ui::AXNodeID& parent_node_id,
+        const ui::AXTreeUpdate& tree_update)>;
+
+    PdfOcrService(content::RenderFrame& render_frame,
+                  OnOcrDataReceivedCallback callback);
+
+    PdfOcrService(const PdfOcrService&) = delete;
+    PdfOcrService& operator=(const PdfOcrService&) = delete;
+
+    ~PdfOcrService();
+
+    void ScheduleOcrRequests(base::queue<PdfOcrRequest> requests);
+    bool IsOcrReady() const;
+    bool IsQueueEmpty() const;
+    void SetScreenAIAnnotatorForTesting(
+        mojo::PendingRemote<screen_ai::mojom::ScreenAIAnnotator>
+            screen_ai_annotator);
+
+   private:
+    void ScheduleNextQueuedTask();
+    void ReceiveOcrResultsForRequest(const PdfOcrRequest& request,
+                                     const ui::AXTreeUpdate& tree_update);
+
+    base::queue<PdfOcrRequest> queued_requests_;
+    OnOcrDataReceivedCallback callback_;
+    mojo::Remote<screen_ai::mojom::ScreenAIAnnotator> screen_ai_annotator_;
+    SEQUENCE_CHECKER(sequence_checker_);
+    base::WeakPtrFactory<PdfOcrService> weak_ptr_factory_{this};
+  };
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+
   PdfAccessibilityTree(
       content::RenderFrame* render_frame,
       chrome_pdf::PdfAccessibilityActionHandler* action_handler);
@@ -127,17 +173,18 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   void OnDestruct() override;
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  void CreateOcrService();
+  PdfOcrService* CreateOcrService();
 
   // Removes the image node in the accessibility tree with the specified ID, and
   // adds a page node and its child nodes built from OCR results. OCR results
   // are provided in the format of AXTreeUpdate, which is used for storing both
   // the page id and the new nodes built from OCR results; this AXTreeUpdate
   // shouldn't be unserialized directly.
-  void OnOcrDataReceived(const ui::AXNodeID& image_node_id,
-                         const chrome_pdf::AccessibilityImageInfo& image,
-                         const ui::AXNodeID& parent_node_id,
-                         const ui::AXTreeUpdate& tree_update);
+  virtual void OnOcrDataReceived(
+      const ui::AXNodeID& image_node_id,
+      const chrome_pdf::AccessibilityImageInfo& image,
+      const ui::AXNodeID& parent_node_id,
+      const ui::AXTreeUpdate& tree_update);
 
   const ui::AXTree& tree_for_testing() const { return tree_; }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)

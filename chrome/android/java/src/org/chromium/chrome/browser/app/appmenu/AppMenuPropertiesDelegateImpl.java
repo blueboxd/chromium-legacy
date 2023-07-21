@@ -30,6 +30,7 @@ import com.google.common.primitives.UnsignedLongs;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.CallbackController;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
@@ -1174,12 +1175,11 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         return IncognitoUtils.isIncognitoModeEnabled();
     }
 
-    @VisibleForTesting
     static void setPageBookmarkedForTesting(Boolean bookmarked) {
         sItemBookmarkedForTesting = bookmarked;
+        ResettersForTesting.register(() -> sItemBookmarkedForTesting = null);
     }
 
-    @VisibleForTesting
     void setStartSurfaceStateForTesting(@StartSurfaceState int state) {
         mStartSurfaceState = state;
     }

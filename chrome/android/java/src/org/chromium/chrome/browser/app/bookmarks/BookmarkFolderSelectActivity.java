@@ -19,7 +19,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.ViewCompat;
@@ -34,7 +33,6 @@ import org.chromium.chrome.browser.bookmarks.BookmarkModelObserver;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowDisplayPref;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.read_later.ReadingListUtils;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.browser_ui.util.TraceEventVectorDrawableCompat;
@@ -288,13 +286,9 @@ public class BookmarkFolderSelectActivity
     }
 
     private void moveBookmarksAndFinish(List<BookmarkId> bookmarks, BookmarkId parent) {
-        List<BookmarkId> movedBookmarks = new ArrayList<>();
-        ReadingListUtils.typeSwapBookmarksIfNecessary(
-                mModel, mBookmarksToMove, movedBookmarks, parent);
-        mModel.moveBookmarks(mBookmarksToMove, parent);
-        movedBookmarks.addAll(mBookmarksToMove);
+        BookmarkUtils.moveBookmarksToViewedParent(mModel, bookmarks, parent);
         BookmarkUtils.setLastUsedParent(this, parent);
-        finishActivity(movedBookmarks);
+        finishActivity(bookmarks);
     }
 
     private void finishActivity(List<BookmarkId> bookmarks) {
@@ -443,7 +437,6 @@ public class BookmarkFolderSelectActivity
         }
     }
 
-    @VisibleForTesting
     int getFolderPositionForTesting(BookmarkId bookmarkId) {
         for (int i = 0; i < mBookmarkIdsAdapter.mEntryList.size(); i++) {
             FolderListEntry entry = mBookmarkIdsAdapter.mEntryList.get(i);
@@ -452,7 +445,6 @@ public class BookmarkFolderSelectActivity
         return -1;
     }
 
-    @VisibleForTesting
     void performClickForTesting(int adapterPosition) {
         onItemClick(mBookmarkIdsList, null, adapterPosition, adapterPosition);
     }

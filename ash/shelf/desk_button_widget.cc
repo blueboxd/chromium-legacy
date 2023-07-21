@@ -9,11 +9,13 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/scrollable_shelf_view.h"
+#include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desk_button/desk_button.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "base/i18n/rtl.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
@@ -53,6 +55,9 @@ class DeskButtonWidget::DelegateView : public views::WidgetDelegateView {
   // views::WidgetDelegateView:
   bool CanActivate() const override;
 
+  // views::View:
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+
   // Notifies the `desk_button_` to update layout and values based on the new
   // expanded state.
   void OnExpandedStateUpdate(bool expanded);
@@ -74,12 +79,20 @@ void DeskButtonWidget::DelegateView::Init(
   desk_button_ = GetContentsView()->AddChildView(
       std::make_unique<DeskButton>(desk_button_widget_));
   OnExpandedStateUpdate(desk_button_widget->is_expanded());
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
 bool DeskButtonWidget::DelegateView::CanActivate() const {
   // We don't want mouse clicks to activate us, but we need to allow
   // activation when the user is using the keyboard (FocusCycler).
   return Shell::Get()->focus_cycler()->widget_activating() == GetWidget();
+}
+
+bool DeskButtonWidget::DelegateView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  CHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
+  GetWidget()->Deactivate();
+  return true;
 }
 
 void DeskButtonWidget::DelegateView::OnExpandedStateUpdate(bool expanded) {
@@ -136,6 +149,29 @@ gfx::Rect DeskButtonWidget::GetTargetExpandedBounds() const {
   }
 
   return current_bounds;
+}
+
+void DeskButtonWidget::MaybeFocusOut(bool reverse) {
+  // The focus order is the previous desk button, the desk button, then the next
+  // desk button.
+  views::View* views[] = {GetDeskButton()->prev_desk_button(), GetDeskButton(),
+                          GetDeskButton()->next_desk_button()};
+  views::View* focused_view = GetFocusManager()->GetFocusedView();
+
+  const int count = std::size(views);
+  int focused = base::ranges::find(views, focused_view) - std::begin(views);
+  // This method is only called if the desk button widget already has focus.
+  CHECK(focused != count);
+
+  int next = focused + (reverse ? -1 : 1);
+  // Only the previous and next desk buttons can be disabled. If they are next,
+  // the current focus is on the desk button and focus should leave the desk
+  // button widget.
+  if (next < 0 || next >= count || !views[next]->GetEnabled()) {
+    FocusOut(reverse);
+    return;
+  }
+  views[next]->RequestFocus();
 }
 
 bool DeskButtonWidget::ShouldBeVisible() const {
@@ -246,7 +282,11 @@ gfx::Point DeskButtonWidget::GetCenteredOrigin() const {
   if (is_horizontal_shelf_) {
     // TODO(b/272383056): We might want to find a better way of calculating this
     // because shelf_padding is not sufficient.
-    return gfx::Point(navigation_bounds.right() + shelf_padding.left(),
+    const int shelf_padding_offset =
+        base::i18n::IsRTL() ? -navigation_bounds.width() -
+                                  shelf_padding.right() - GetPreferredLength()
+                            : shelf_padding.left();
+    return gfx::Point(navigation_bounds.right() + shelf_padding_offset,
                       navigation_bounds.y() + kDeskButtonInsets);
   }
 
@@ -255,6 +295,29 @@ gfx::Point DeskButtonWidget::GetCenteredOrigin() const {
   return gfx::Point(
       navigation_bounds.x() + kDeskButtonInsets,
       navigation_bounds.y() + navigation_bounds.height() + shelf_padding.top());
+}
+
+void DeskButtonWidget::FocusOut(bool reverse) {
+  GetDeskButton()->MaybeContract();
+  shelf_->shelf_focus_cycler()->FocusOut(reverse, SourceView::kDeskButton);
+}
+
+bool DeskButtonWidget::OnNativeWidgetActivationChanged(bool active) {
+  if (!Widget::OnNativeWidgetActivationChanged(active)) {
+    return false;
+  }
+  if (active) {
+    if (default_last_focusable_child_ &&
+        GetDeskButton()->next_desk_button()->GetEnabled()) {
+      GetDeskButton()->next_desk_button()->RequestFocus();
+    } else if (!default_last_focusable_child_ &&
+               GetDeskButton()->prev_desk_button()->GetEnabled()) {
+      GetDeskButton()->prev_desk_button()->RequestFocus();
+    } else {
+      GetDeskButton()->RequestFocus();
+    }
+  }
+  return true;
 }
 
 }  // namespace ash

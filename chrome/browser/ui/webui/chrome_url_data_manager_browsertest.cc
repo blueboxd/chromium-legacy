@@ -177,8 +177,6 @@ class ChromeURLDataManagerWebUITrustedTypesTest
     enabled_features.push_back(history_clusters::kSidePanelJourneys);
     enabled_features.push_back(features::kSupportTool);
     enabled_features.push_back(ntp_features::kCustomizeChromeSidePanel);
-    enabled_features.push_back(
-        password_manager::features::kPasswordManagerRedesign);
     enabled_features.push_back(features::kReadAnything);
     enabled_features.push_back(user_notes::kUserNotes);
 
@@ -403,6 +401,7 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://account-migration-welcome",
     "chrome://add-supervision/",
     "chrome://app-disabled",
+    "chrome://camera-app/views/main.html",
     "chrome://assistant-optin/",
     "chrome://bluetooth-pairing",
     "chrome://certificate-manager/",
@@ -418,6 +417,7 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://drive-internals",
     "chrome://emoji-picker",
     "chrome://family-link-user-internals",
+    "chrome://file-manager",
     "chrome://guest-os-installer",
     "chrome://help-app",
     "chrome://linux-proxy-config",

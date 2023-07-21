@@ -313,18 +313,20 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
             maximizeButtonStub.inflate();
             maximizeButton = (ImageButton) findViewById(R.id.custom_tabs_sidepanel_maximize);
         }
-        // The visibility will get updated after the location bar completes its layout.
-        maximizeButton.setVisibility(View.GONE);
+        // The visibility will set after the location bar completes its layout.
         mMaximizeButtonEnabled = true;
         setMaximizeButtonDrawable(maximizedOnInit);
         maximizeButton.setOnClickListener((v) -> setMaximizeButtonDrawable(callback.onClick()));
     }
 
     private void setMaximizeButtonVisibility() {
-        if (!mMaximizeButtonEnabled) return;
         var maximizeButton = (ImageButton) findViewById(R.id.custom_tabs_sidepanel_maximize);
         if (maximizeButton == null) return;
 
+        if (!mMaximizeButtonEnabled) {
+            maximizeButton.setVisibility(View.GONE);
+            return;
+        }
         // Find the title/url width threshold that turns the maximize button visible.
         int containerWidthPx = mLocationBar.mTitleUrlContainer.getWidth();
         if (containerWidthPx == 0) return;
@@ -394,12 +396,10 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
      * @return The custom action button with the given {@code index}. For test purpose only.
      * @param index The index of the custom action button to return.
      */
-    @VisibleForTesting
     public ImageButton getCustomActionButtonForTest(int index) {
         return (ImageButton) mCustomActionButtons.getChildAt(index);
     }
 
-    @VisibleForTesting
     public ImageButton getMaximizeButtonForTest() {
         return (ImageButton) findViewById(R.id.custom_tabs_sidepanel_maximize);
     }
@@ -956,6 +956,8 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
             mSecurityButton = container.findViewById(R.id.security_button);
             mAnimDelegate = new CustomTabToolbarAnimationDelegate(
                     mSecurityButton, mTitleUrlContainer, R.dimen.location_bar_icon_width);
+            mTitleUrlContainer.addOnLayoutChangeListener(
+                    (v, l, t, r, b, ol, ot, or, ob) -> setMaximizeButtonVisibility());
         }
 
         public void init(LocationBarDataProvider locationBarDataProvider,
@@ -1356,18 +1358,15 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
             return false;
         }
 
-        @VisibleForTesting
         void setAnimDelegateForTesting(CustomTabToolbarAnimationDelegate animDelegate) {
             mAnimDelegate = animDelegate;
         }
 
-        @VisibleForTesting
         void setTitleUrlContainerForTesting(View titleUrlContainer) {
             mTitleUrlContainer = titleUrlContainer;
         }
     }
 
-    @VisibleForTesting
     boolean isMaximizeButtonEnabledForTesting() {
         return mMaximizeButtonEnabled;
     }

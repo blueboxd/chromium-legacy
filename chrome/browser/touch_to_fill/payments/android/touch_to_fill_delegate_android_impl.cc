@@ -15,11 +15,15 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/form_types.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/ui/fast_checkout_client.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_internals/log_message.h"
+#include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/autofill/core/common/logging/log_macros.h"
 
 namespace autofill {
 
@@ -118,7 +122,8 @@ TouchToFillDelegateAndroidImpl::DryRun(FormGlobalId form_id,
   // before the actual card.
   std::vector<autofill::CreditCard> real_and_virtual_cards;
   for (const CreditCard& card : cards_to_suggest) {
-    if (card.virtual_card_enrollment_state() == CreditCard::ENROLLED &&
+    if (card.virtual_card_enrollment_state() ==
+            CreditCard::VirtualCardEnrollmentState::kEnrolled &&
         base::FeatureList::IsEnabled(
             features::kAutofillVirtualCardsOnTouchToFillAndroid)) {
       real_and_virtual_cards.push_back(CreditCard::CreateVirtualCard(card));
@@ -132,7 +137,13 @@ bool TouchToFillDelegateAndroidImpl::IntendsToShowTouchToFill(
     FormGlobalId form_id,
     FieldGlobalId field_id) {
   // optional_received_form is not available to pass here.
-  return DryRun(form_id, field_id).outcome == TriggerOutcome::kShown;
+  TriggerOutcome outcome = DryRun(form_id, field_id).outcome;
+  LOG_AF(manager_->client()->GetLogManager())
+      << LoggingScope::kTouchToFill << LogMessage::kTouchToFill
+      << "dry run before parsing for form " << form_id << " and field "
+      << field_id << " was " << (outcome == TriggerOutcome::kShown ? "" : "un")
+      << "successful (" << base::to_underlying(outcome) << ")";
+  return outcome == TriggerOutcome::kShown;
 }
 
 bool TouchToFillDelegateAndroidImpl::TryToShowTouchToFill(
@@ -153,6 +164,12 @@ bool TouchToFillDelegateAndroidImpl::TryToShowTouchToFill(
     base::UmaHistogramEnumeration(kUmaTouchToFillCreditCardTriggerOutcome,
                                   dry_run.outcome);
   }
+  LOG_AF(manager_->client()->GetLogManager())
+      << LoggingScope::kTouchToFill << LogMessage::kTouchToFill
+      << "dry run after parsing for form " << form.global_id() << " and field "
+      << field.global_id() << " was "
+      << (dry_run.outcome == TriggerOutcome::kShown ? "" : "un")
+      << "successful (" << base::to_underlying(dry_run.outcome) << ")";
   if (dry_run.outcome != TriggerOutcome::kShown) {
     return false;
   }

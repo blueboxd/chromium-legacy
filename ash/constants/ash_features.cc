@@ -173,10 +173,16 @@ BASE_FEATURE(kAssistantNativeIcons,
              "AssistantNativeIcons",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Controls whether document scanners are discovered with the synchronous
+// ListScanners API or the new asynchronous StartScannerDiscovery API.
+BASE_FEATURE(kAsynchronousScannerDiscovery,
+             "AsynchronousScannerDiscovery",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables warning in the quick settings when NBS device is in use.
 BASE_FEATURE(kAudioHFPNbsWarning,
              "AudioHFPNbsWarning",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables Peripheral volume change by hardware reported steps
 BASE_FEATURE(kAudioPeripheralVolumeGranularity,
@@ -382,6 +388,11 @@ BASE_FEATURE(kClipboardHistoryLongpress,
 BASE_FEATURE(kConsumerAutoUpdateToggleAllowed,
              "ConsumerAutoUpdateToggleAllowed",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables a smooth overview mode transition based on the gesture position.
+BASE_FEATURE(kContinuousOverviewScrollAnimation,
+             "ContinuousOverviewScrollAnimation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables Privacy Hub for ChromeOS.
 BASE_FEATURE(kCrosPrivacyHub,
@@ -674,6 +685,12 @@ BASE_FEATURE(kEcheMetricsRevamp,
 BASE_FEATURE(kEnableBackgroundBlur,
              "EnableBackgroundBlur",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables exporting of the selected Preferences so that they can be accessed
+// early in the sign-in flow, before loading Profile.
+BASE_FEATURE(kEnableEarlyPrefs,
+             "EnableEarlyPrefs",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables external keyboard testers in the diagnostics app.
 BASE_FEATURE(kEnableExternalKeyboardsInDiagnostics,
@@ -1230,12 +1247,6 @@ BASE_FEATURE(kProductivityLauncherImageSearch,
              "ProductivityLauncherImageSearch",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables a privacy improvement that removes wrongly configured hidden
-// networks and mitigates the creation of these networks. crbug/1327803.
-BASE_FEATURE(kHiddenNetworkMigration,
-             "HiddenNetworkMigration",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables a warning about connecting to hidden WiFi networks.
 // https://crbug.com/903908
 BASE_FEATURE(kHiddenNetworkWarning,
@@ -1265,13 +1276,6 @@ BASE_FEATURE(kHindiInscriptLayout,
 // Enables Camera app integration with holding space.
 BASE_FEATURE(kHoldingSpaceCameraAppIntegration,
              "HoldingSpaceCameraAppIntegration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables in-progress downloads notification suppression with the productivity
-// feature that aims to reduce context switching by enabling users to collect
-// content and transfer or access it later.
-BASE_FEATURE(kHoldingSpaceInProgressDownloadsNotificationSuppression,
-             "HoldingSpaceInProgressNotificationSuppression",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables holding space icon to be permanently displayed with extended file
@@ -1530,6 +1534,12 @@ BASE_FEATURE(kLinkCrossDeviceDogfoodFeedback,
              "LinkCrossDeviceDogFoodFeedback",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables local password as an option for local authentication.
+// (This feature is only available for consumer users)
+BASE_FEATURE(kLocalPasswordForConsumers,
+             "LocalPasswordForConsumers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Supports the feature to hide sensitive content in notifications on the lock
 // screen. This option is effective when |kLockScreenNotification| is enabled.
 BASE_FEATURE(kLockScreenHideSensitiveNotificationsSupport,
@@ -1704,7 +1714,7 @@ BASE_FEATURE(kOobeChoobe, "OobeChoobe", base::FEATURE_ENABLED_BY_DEFAULT);
 // the new user onboarding flow.
 BASE_FEATURE(kOobeDrivePinning,
              "OobeDrivePinning",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, Consumer Software Screen will be shown during OOBE.
 BASE_FEATURE(kOobeSoftwareUpdate,
@@ -1847,17 +1857,18 @@ BASE_FEATURE(kPasspointSettings,
              "PasspointSettings",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// This feature allows usage of passwordless flow in GAIA.
+// (This feature is only available for consumer users)
+BASE_FEATURE(kPasswordlessGaiaForConsumers,
+             "PasswordlessGaiaForConsumers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables a notification warning users that their Thunderbolt device is not
 // supported on their CrOS device.
 // TODO(crbug/1254930): Revisit this flag when there is a way to query billboard
 // devices correctly.
 BASE_FEATURE(kPcieBillboardNotification,
              "PcieBillboardNotification",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// More permissive USB passthrough to Crostini, Chrome tabs, etc.
-BASE_FEATURE(kPermissiveUsbPassthrough,
-             "Permissive USB Passthrough",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Limits the items on the shelf to the ones associated with windows the
@@ -1899,6 +1910,32 @@ BASE_FEATURE(kPhoneHubMonochromeNotificationIcons,
 BASE_FEATURE(kPhoneHubNudge,
              "PhoneHubNudge",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<
+    PhoneHubNotifierParam>::Option phone_hub_notifier_options[] = {
+    {PhoneHubNotifierParam::kNotificationWithTextA, "notification_with_text_A"},
+    {PhoneHubNotifierParam::kNotificationWithTextB, "notification_with_text_B"},
+    {PhoneHubNotifierParam::kNudgeWithTextA, "nudge_with_text_A"},
+    {PhoneHubNotifierParam::kNudgeWithTextB, "nudge_with_text_B"},
+};
+const base::FeatureParam<PhoneHubNotifierParam> kPhoneHubNotifierParam{
+    &kPhoneHubNudge, "notifier_type", PhoneHubNotifierParam::kNudgeWithTextA,
+    &phone_hub_notifier_options};
+
+// The length of time passing till we display nudge to users again
+const base::FeatureParam<base::TimeDelta> kPhoneHubNudgeDelay{
+    &kPhoneHubNudge, "nudge_delay", base::Hours(24)};
+
+// Number of times nudge should be shown to user.
+const base::FeatureParam<int> kPhoneHubNudgeTotalAppearancesAllowed{
+    &kPhoneHubNudge, "nudge_total_appearances_allowed", 3};
+
+// Determines up to how many minutes into user session multdevice setup
+// notification can be shown.
+const base::FeatureParam<base::TimeDelta>
+    kMultiDeviceSetupNotificationTimeLimit{
+        &kPhoneHubNudge, "MultiDeviceSetupNotificationTimitLimit",
+        base::Minutes(5)};
 
 BASE_FEATURE(kPhoneHubPingOnBubbleOpen,
              "PhoneHubPingOnBubbleOpen",
@@ -2070,6 +2107,12 @@ BASE_FEATURE(kRenderArcNotificationsByChrome,
              "RenderArcNotificationsByChrome",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Allows the OS to unpin apps that were pinned by PinnedLauncherApps policy
+// but are no longer a part of it from shelf under specific conditions.
+BASE_FEATURE(kRemoveStalePolicyPinnedAppsFromShelf,
+             "RemoveStalePolicyPinnedAppsFromShelf",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables ChromeOS scalable IPH.
 BASE_FEATURE(kScalableIph, "ScalableIph", base::FEATURE_DISABLED_BY_DEFAULT);
 
@@ -2199,6 +2242,11 @@ BASE_FEATURE(kSuspendToDisk,
 
 const base::FeatureParam<int> kHibernateAfterTimeHours{
     &kSuspendToDisk, "HibernateAfterTimeHours", 8};
+
+// Allow the system to transition to S4 rather than S5.
+BASE_FEATURE(kSuspendToDiskAllowS4,
+             "CrOSSuspendToDiskAllowS4",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables custom Demo Mode behavior on feature-aware devices, as controlled by
 // the feature management module.
@@ -2464,6 +2512,11 @@ BASE_FEATURE(kVirtualKeyboardMultitouch,
 // Enable or disable round corners for virtual keyboard on ChromeOS.
 BASE_FEATURE(kVirtualKeyboardRoundCorners,
              "VirtualKeyboardRoundCorners",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable or disable Nacl for virtual keyboard on ChromeOS.
+BASE_FEATURE(kVirtualKeyboardRemoveNacl,
+             "VirtualKeyboardRemoveNacl",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables a per-boot host GPU cache generation for VMs. On default, the cache
@@ -2736,6 +2789,10 @@ bool IsAssistantNativeIconsEnabled() {
   return base::FeatureList::IsEnabled(kAssistantNativeIcons);
 }
 
+bool IsAsynchronousScannerDiscoveryEnabled() {
+  return base::FeatureList::IsEnabled(kAsynchronousScannerDiscovery);
+}
+
 bool IsAutoNightLightEnabled() {
   return base::FeatureList::IsEnabled(kAutoNightLight);
 }
@@ -2788,6 +2845,11 @@ bool IsCheckPasswordsAgainstCryptohomeHelperEnabled() {
 
 bool IsClipboardHistoryLongpressEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryLongpress);
+}
+
+bool IsContinuousOverviewScrollAnimationEnabled() {
+  return base::FeatureList::IsEnabled(kContinuousOverviewScrollAnimation) &&
+         chromeos::features::IsJellyEnabled();
 }
 
 bool IsCryptauthAttestationSyncingEnabled() {
@@ -2941,6 +3003,10 @@ bool IsFastPairDebugMetadataEnabled() {
   return base::FeatureList::IsEnabled(kFastPairDebugMetadata);
 }
 
+bool IsFastPairDevicesBluetoothSettingsEnabled() {
+  return base::FeatureList::IsEnabled(kFastPairDevicesBluetoothSettings);
+}
+
 bool IsFastPairHandshakeRefactorEnabled() {
   return base::FeatureList::IsEnabled(kFastPairHandshakeRefactor);
 }
@@ -3070,11 +3136,6 @@ bool IsHideShelfControlsInTabletModeEnabled() {
 
 bool IsHoldingSpaceCameraAppIntegrationEnabled() {
   return base::FeatureList::IsEnabled(kHoldingSpaceCameraAppIntegration);
-}
-
-bool IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled() {
-  return base::FeatureList::IsEnabled(
-      kHoldingSpaceInProgressDownloadsNotificationSuppression);
 }
 
 bool IsHoldingSpacePredictabilityEnabled() {
@@ -3230,6 +3291,10 @@ bool IsLicensePackagedOobeFlowEnabled() {
 
 bool IsLinkCrossDeviceDogfoodFeedbackEnabled() {
   return base::FeatureList::IsEnabled(kLinkCrossDeviceDogfoodFeedback);
+}
+
+bool AreLocalPasswordsEnabledForConsumers() {
+  return base::FeatureList::IsEnabled(kLocalPasswordForConsumers);
 }
 
 bool IsLockScreenHideSensitiveNotificationsSupported() {
@@ -3459,6 +3524,10 @@ bool IsPasspointSettingsEnabled() {
          base::FeatureList::IsEnabled(kPasspointARCSupport);
 }
 
+bool IsPasswordlessGaiaEnabledForConsumers() {
+  return base::FeatureList::IsEnabled(kPasswordlessGaiaForConsumers);
+}
+
 bool IsPcieBillboardNotificationEnabled() {
   return base::FeatureList::IsEnabled(kPcieBillboardNotification);
 }
@@ -3581,6 +3650,10 @@ bool IsPerDeskZOrderEnabled() {
 
 bool IsRenderArcNotificationsByChromeEnabled() {
   return base::FeatureList::IsEnabled(kRenderArcNotificationsByChrome);
+}
+
+bool IsRemoveStalePolicyPinnedAppsFromShelfEnabled() {
+  return base::FeatureList::IsEnabled(kRemoveStalePolicyPinnedAppsFromShelf);
 }
 
 bool IsSameAppWindowCycleEnabled() {

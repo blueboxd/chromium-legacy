@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_SHARED_IMAGE_BACKING_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_SHARED_IMAGE_BACKING_H_
 
-#include <dawn/webgpu.h>
+#include <dawn/webgpu_cpp.h>
 
 #include <memory>
 
@@ -74,7 +74,7 @@ enum class SharedImageBackingType {
   kEGLImage = 3,
   kAHardwareBuffer = 4,
   kAngleVulkan = 5,
-  kGLImage = 6,
+  // kGLImage = 6, // no longer used after GLImage removal
   kGLTexture = 7,
   kOzone = 8,
   kRawDraw = 9,
@@ -265,9 +265,9 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   virtual std::unique_ptr<DawnImageRepresentation> ProduceDawn(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
-      WGPUDevice device,
-      WGPUBackendType backend_type,
-      std::vector<WGPUTextureFormat> view_formats);
+      const wgpu::Device& device,
+      wgpu::BackendType backend_type,
+      std::vector<wgpu::TextureFormat> view_formats);
   virtual std::unique_ptr<OverlayImageRepresentation> ProduceOverlay(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker);

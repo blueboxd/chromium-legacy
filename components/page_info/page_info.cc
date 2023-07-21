@@ -200,21 +200,21 @@ const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
     {ContentSettingsType::USB_CHOOSER_DATA,
      IDS_PAGE_INFO_USB_DEVICE_SECONDARY_LABEL,
      IDS_PAGE_INFO_USB_DEVICE_ALLOWED_BY_POLICY_LABEL,
-     IDS_PAGE_INFO_DELETE_USB_DEVICE},
+     IDS_PAGE_INFO_DELETE_USB_DEVICE_WITH_NAME},
 #if !BUILDFLAG(IS_ANDROID)
     {ContentSettingsType::HID_CHOOSER_DATA,
      IDS_PAGE_INFO_HID_DEVICE_SECONDARY_LABEL,
      IDS_PAGE_INFO_HID_DEVICE_ALLOWED_BY_POLICY_LABEL,
-     IDS_PAGE_INFO_DELETE_HID_DEVICE},
+     IDS_PAGE_INFO_DELETE_HID_DEVICE_WITH_NAME},
     {ContentSettingsType::SERIAL_CHOOSER_DATA,
      IDS_PAGE_INFO_SERIAL_PORT_SECONDARY_LABEL,
      IDS_PAGE_INFO_SERIAL_PORT_ALLOWED_BY_POLICY_LABEL,
-     IDS_PAGE_INFO_DELETE_SERIAL_PORT},
+     IDS_PAGE_INFO_DELETE_SERIAL_PORT_WITH_NAME},
 #endif
     {ContentSettingsType::BLUETOOTH_CHOOSER_DATA,
      IDS_PAGE_INFO_BLUETOOTH_DEVICE_SECONDARY_LABEL,
      /*allowed_by_policy_description_string_id=*/-1,
-     IDS_PAGE_INFO_DELETE_BLUETOOTH_DEVICE},
+     IDS_PAGE_INFO_DELETE_BLUETOOTH_DEVICE_WITH_NAME},
 };
 
 void LogTimeOpenHistogram(const std::string& name, base::TimeTicks start_time) {
@@ -272,6 +272,7 @@ PageInfo::PageInfo(std::unique_ptr<PageInfoDelegate> delegate,
   if (web_contents) {
     controller_ = delegate_->CreateCookieControlsController();
     observation_.Observe(controller_.get());
+    old_observation_.Observe(controller_.get());
 
     // TODO(crbug.com/1430440): SetCookiesInfo is called twice, once from here
     // and once from InitializeUiState. This should be cleaned up.
@@ -317,6 +318,8 @@ PageInfo::~PageInfo() {
                                                   safety_tip_info_.status),
         start_time_);
   }
+
+  base::RecordAction(base::UserMetricsAction("PageInfo.Closed"));
 }
 
 void PageInfo::OnStatusChanged(CookieControlsStatus status,
@@ -335,6 +338,36 @@ void PageInfo::OnCookiesCountChanged(int allowed_cookies, int blocked_cookies) {
 
 void PageInfo::OnStatefulBounceCountChanged(int bounce_count) {}
 
+void PageInfo::OnStatusChanged(CookieControlsStatus status,
+                               CookieControlsEnforcement enforcement,
+                               base::Time expiration) {
+  if (status != status_ || enforcement != enforcement_ ||
+      expiration != cookie_exception_expiration_) {
+    status_ = status;
+    enforcement_ = enforcement;
+    cookie_exception_expiration_ = expiration;
+    PresentSiteData(base::DoNothing());
+  }
+}
+
+void PageInfo::OnSitesCountChanged(int allowed_third_party_sites_count,
+                                   int blocked_third_party_sites_count) {
+  if (allowed_third_party_sites_count_ != allowed_third_party_sites_count ||
+      blocked_third_party_sites_count_ != blocked_third_party_sites_count) {
+    allowed_third_party_sites_count_ = allowed_third_party_sites_count;
+    blocked_third_party_sites_count_ = blocked_third_party_sites_count;
+    PresentSiteData(base::DoNothing());
+  }
+}
+
+void PageInfo::OnBreakageConfidenceLevelChanged(
+    CookieControlsBreakageConfidenceLevel level) {
+  if (cookie_controls_confidence_ != level) {
+    cookie_controls_confidence_ = level;
+    PresentSiteData(base::DoNothing());
+  }
+}
+
 void PageInfo::OnThirdPartyToggleClicked(bool block_third_party_cookies) {
   DCHECK(status_ != CookieControlsStatus::kDisabled);
   DCHECK(status_ != CookieControlsStatus::kUninitialized);
@@ -342,6 +375,7 @@ void PageInfo::OnThirdPartyToggleClicked(bool block_third_party_cookies) {
                            ? PAGE_INFO_COOKIES_BLOCKED_FOR_SITE
                            : PAGE_INFO_COOKIES_ALLOWED_FOR_SITE);
   controller_->OnCookieBlockingEnabledForSite(block_third_party_cookies);
+  show_info_bar_ = true;
 }
 
 // static
@@ -1361,11 +1395,16 @@ void PageInfo::PresentSiteDataInternal(base::OnceClosure done) {
   if (!web_contents_ || web_contents_->IsBeingDestroyed())
     return;
 
-  // Add allowed sites count.
   PageInfoUI::CookiesNewInfo cookies_info;
   cookies_info.allowed_sites_count = GetSitesWithAllowedCookiesAccessCount();
-  cookies_info.blocked_sites_count =
-      GetThirdPartySitesWithBlockedCookiesAccessCount(site_url_);
+  // TODO(crbug.com/1446230): Clean up and remove the fallback after the feature
+  // was launched. If blocked_third_party_sites_count_ isn't set, use fallback
+  // and count the sites.
+  cookies_info.blocked_third_party_sites_count =
+      blocked_third_party_sites_count_.value_or(
+          GetThirdPartySitesWithBlockedCookiesAccessCount(site_url_));
+  cookies_info.allowed_third_party_sites_count =
+      allowed_third_party_sites_count_.value_or(0);
 
 #if !BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(
@@ -1380,6 +1419,8 @@ void PageInfo::PresentSiteDataInternal(base::OnceClosure done) {
 
   cookies_info.status = status_;
   cookies_info.enforcement = enforcement_;
+  cookies_info.expiration = cookie_exception_expiration_;
+  cookies_info.confidence = cookie_controls_confidence_;
   ui_->SetCookieInfo(cookies_info);
 
   std::move(done).Run();
@@ -1602,24 +1643,6 @@ int PageInfo::GetFirstPartyBlockedCookiesCount(const GURL& site_url) {
 
   return settings->blocked_local_shared_objects().GetObjectCountForDomain(
       site_url);
-}
-
-int PageInfo::GetThirdPartyAllowedCookiesCount(const GURL& site_url) {
-  auto* settings = GetPageSpecificContentSettings();
-  if (!settings)
-    return 0;
-
-  return settings->allowed_local_shared_objects().GetObjectCount() -
-         GetFirstPartyAllowedCookiesCount(site_url);
-}
-
-int PageInfo::GetThirdPartyBlockedCookiesCount(const GURL& site_url) {
-  auto* settings = GetPageSpecificContentSettings();
-  if (!settings)
-    return 0;
-
-  return settings->blocked_local_shared_objects().GetObjectCount() -
-         GetFirstPartyBlockedCookiesCount(site_url);
 }
 
 bool PageInfo::IsIsolatedWebApp() const {

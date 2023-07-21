@@ -48,10 +48,12 @@
 #include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "components/viz/common/features.h"
 #include "content/browser/about_url_loader_factory.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/render_accessibility_host.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/blob_storage/file_backed_blob_factory_impl.h"
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/broadcast_channel/broadcast_channel_service.h"
@@ -1900,6 +1902,16 @@ void RenderFrameHostImpl::DidEnterBackForwardCache() {
   DCHECK(IsBackForwardCacheEnabled());
   DCHECK(IsInPrimaryMainFrame());
 
+  if (base::FeatureList::IsEnabled(
+          features::kInvalidateLocalSurfaceIdPreCommit)) {
+    // Notifies the View that the page is stored in the `BackForwardCache`.
+    //
+    // We shouldn't BFCache a renderer without a View.
+    CHECK(GetView());
+    static_cast<RenderWidgetHostViewBase*>(GetView())
+        ->DidEnterBackForwardCache();
+  }
+
   DidEnterBackForwardCacheInternal();
   // Pages in the back-forward cache are automatically evicted after a certain
   // time.
@@ -3035,10 +3047,9 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
     // the browser directly (omnibox, bookmarks, ...).
     PolicyContainerPolicies policies;
 
-    // Main frames created by the browser are treated as belonging the
-    // `loopback` address space, so that they can make requests to any address
-    // space unimpeded. The only way to execute code in such a context is to
-    // inject it
+    // Main frames created by the browser are treated as belonging the `local`
+    // address space, so that they can make requests to any address space
+    // unimpeded. The only way to execute code in such a context is to inject it
     // via DevTools, WebView APIs, or extensions; it is impossible to do so with
     // Web Platform means only.
     //
@@ -3053,7 +3064,7 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
     DCHECK(IsOutermostMainFrame());
     if (!renderer_initiated_creation_of_main_frame &&
         lifecycle_state_ != LifecycleStateImpl::kPrerendering) {
-      policies.ip_address_space = network::mojom::IPAddressSpace::kLoopback;
+      policies.ip_address_space = network::mojom::IPAddressSpace::kLocal;
     }
 
     SetPolicyContainerHost(
@@ -5603,6 +5614,13 @@ void RenderFrameHostImpl::MaybeStartOutermostMainFrameNavigation(
   TRACE_EVENT0("navigation",
                "RenderFrameHostImpl::MaybeStartOutermostMainFrameNavigation");
 
+  // Disallow service worker start-up nor warm-up when there are other
+  // windows that might script with this frame to mitigate security and
+  // privacy concerns.
+  if (site_instance_->GetRelatedActiveContentsCount() > 1u) {
+    return;
+  }
+
   ServiceWorkerContextWrapper* context =
       GetStoragePartition()->GetServiceWorkerContext();
 
@@ -5613,9 +5631,8 @@ void RenderFrameHostImpl::MaybeStartOutermostMainFrameNavigation(
   for (const auto& url : urls) {
     GURL filtered_url(url);
 
-    GetProcess()->FilterURL(/*empty_allowed=*/false, &filtered_url);
-
-    if (filtered_url.spec() == kBlockedURL) {
+    if (GetProcess()->FilterURL(/*empty_allowed=*/false, &filtered_url) ==
+        RenderProcessHost::FilterURLResult::kBlocked) {
       continue;
     }
 
@@ -8516,6 +8533,9 @@ void RenderFrameHostImpl::MaybeSendFencedFrameReportingBeacon(
         /*from_renderer=*/false, info->attribution_reporting_runtime_features,
         GetFrameTreeNodeId(), navigation_request.GetNavigationId());
   }
+
+  initiator_rfh->frame_tree_node()
+      ->MaybeResetFencedFrameAutomaticBeaconReportEventData();
 }
 
 void RenderFrameHostImpl::SendFencedFrameReportingBeaconInternal(
@@ -8598,7 +8618,8 @@ void RenderFrameHostImpl::SetFencedFrameAutomaticBeaconReportEventData(
     const std::string& event_data,
     const std::vector<blink::FencedFrame::ReportingDestination>& destinations,
     network::AttributionReportingRuntimeFeatures
-        attribution_reporting_runtime_features) {
+        attribution_reporting_runtime_features,
+    bool once) {
   if (event_data.length() > blink::kFencedFrameMaxBeaconLength) {
     mojo::ReportBadMessage(
         "The data provided to SetFencedFrameAutomaticBeaconReportEventData() "
@@ -8619,7 +8640,7 @@ void RenderFrameHostImpl::SetFencedFrameAutomaticBeaconReportEventData(
   CHECK(owner_);  // See `owner_` invariants about `IsActive()`.
 
   owner_->SetFencedFrameAutomaticBeaconReportEventData(
-      event_data, destinations, attribution_reporting_runtime_features);
+      event_data, destinations, attribution_reporting_runtime_features, once);
 }
 
 void RenderFrameHostImpl::OnViewTransitionOptInChanged(
@@ -12226,8 +12247,27 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   // renderer to load the URL and grant the renderer the privileges to request
   // the URL.  To prevent this attack, we block the renderer from inserting
   // banned URLs into the navigation controller in the first place.
-  process->FilterURL(false, &params->url);
+  const RenderProcessHost::FilterURLResult url_filter_result =
+      process->FilterURL(false, &params->url);
   process->FilterURL(true, &params->referrer->url);
+
+  if (is_same_document_navigation &&
+      url_filter_result == RenderProcessHost::FilterURLResult::kBlocked) {
+    // For same-document navigations, keeping about:blank#blocked can lead to
+    // some really strange results with navigating back/forward and session
+    // restore. So if the URL was filtered, replace it with the current URL:
+    // this still ends up not quite matching the state in the renderer, but at
+    // least the current URL is in the current origin, and will result in less
+    // confusion in the browser process.
+    //
+    // Note that this would be unsafe for cross-document navigations, which can
+    // be cross-origin.
+    //
+    // TODO(crbug.com/1464018): It would be nice to catch and block this in the
+    // renderer process, so the browser process could just treat this as a 'bad
+    // message received' situation.
+    params->url = GetLastCommittedURL();
+  }
 
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.
@@ -15552,6 +15592,13 @@ bool RenderFrameHostImpl::LoadedWithCacheControlNoStoreHeader() {
   return GetBackForwardCacheDisablingFeatures().Has(
       blink::scheduler::WebSchedulerTrackedFeature::
           kMainResourceHasCacheControlNoStore);
+}
+
+void RenderFrameHostImpl::BindFileBackedBlobFactory(
+    mojo::PendingAssociatedReceiver<blink::mojom::FileBackedBlobFactory>
+        receiver) {
+  FileBackedBlobFactoryImpl::CreateForCurrentDocument(this,
+                                                      std::move(receiver));
 }
 
 }  // namespace content

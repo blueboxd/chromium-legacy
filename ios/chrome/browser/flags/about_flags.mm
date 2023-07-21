@@ -572,19 +572,6 @@ const FeatureEntry::FeatureVariation kEnableExpKitTextClassifierVariations[] = {
     {"Enabled for One Tap mode", kEnableExpKitTextClassifierOneTap,
      std::size(kEnableExpKitTextClassifierOneTap), nullptr}};
 
-const FeatureEntry::FeatureParam kFollowingFeedSortTypeGroupedByPublisher[] = {
-    {kFollowingFeedDefaultSortTypeGroupedByPublisher, "true"},
-    {kFollowingFeedDefaultSortTypeSortByLatest, "false"}};
-const FeatureEntry::FeatureParam kFollowingFeedSortTypeSortByLatest[] = {
-    {kFollowingFeedDefaultSortTypeGroupedByPublisher, "false"},
-    {kFollowingFeedDefaultSortTypeSortByLatest, "true"}};
-
-const FeatureEntry::FeatureVariation kFollowingFeedDefaultSortTypeVariations[] =
-    {{"Grouped by Publisher", kFollowingFeedSortTypeGroupedByPublisher,
-      std::size(kFollowingFeedSortTypeGroupedByPublisher), nullptr},
-     {"Sort by Latest", kFollowingFeedSortTypeSortByLatest,
-      std::size(kFollowingFeedSortTypeSortByLatest), nullptr}};
-
 const FeatureEntry::FeatureParam kTabInactivityThresholdOneWeek[] = {
     {kTabInactivityThresholdParameterName,
      kTabInactivityThresholdOneWeekParam}};
@@ -976,9 +963,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(commerce::kCommercePriceTracking,
                                     commerce::kCommercePriceTrackingVariations,
                                     "CommercePriceTracking")},
-    {"web-feed-ios", flag_descriptions::kEnableWebChannelsName,
-     flag_descriptions::kEnableWebChannelsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kEnableWebChannels)},
     {"ntp-view-hierarchy-repair",
      flag_descriptions::kNTPViewHierarchyRepairName,
      flag_descriptions::kNTPViewHierarchyRepairDescription, flags_ui::kOsIos,
@@ -1275,13 +1259,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableRefineDataSourceReloadReportingDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableRefineDataSourceReloadReporting)},
-    {"enable-default-following-feed-sort-type",
-     flag_descriptions::kFollowingFeedDefaultSortTypeName,
-     flag_descriptions::kFollowingFeedDefaultSortTypeDescription,
-     flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFollowingFeedDefaultSortType,
-                                    kFollowingFeedDefaultSortTypeVariations,
-                                    "EnableFollowingFeedDefaultSortType")},
     {"tab-grid-recency-sort", flag_descriptions::kTabGridRecencySortName,
      flag_descriptions::kTabGridRecencySortDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kTabGridRecencySort)},
@@ -1365,6 +1342,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableFeedSyntheticCapabilitiesName,
      flag_descriptions::kEnableFeedSyntheticCapabilitiesDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableFeedSyntheticCapabilities)},
+    {"enable-friendlier-safe-browsing-settings",
+     flag_descriptions::kEnableFriendlierSafeBrowsingSettingsName,
+     flag_descriptions::kEnableFriendlierSafeBrowsingSettingsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(safe_browsing::kFriendlierSafeBrowsingSettings)},
     {"show-inactive-tabs-count", flag_descriptions::kShowInactiveTabsCountName,
      flag_descriptions::kShowInactiveTabsCountDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kShowInactiveTabsCount)},
@@ -1604,6 +1586,17 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"tab-resumption", flag_descriptions::kTabResumptionName,
      flag_descriptions::kTabResumptionDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kTabResumption)},
+    {"ios-lens-use-direct-upload",
+     flag_descriptions::kIOSLensUseDirectUploadName,
+     flag_descriptions::kIOSLensUseDirectUploadDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIOSLensUseDirectUpload)},
+    {"autofill-enable-payments-mandatory-reauth-on-bling",
+     flag_descriptions::kAutofillEnablePaymentsMandatoryReauthOnBlingName,
+     flag_descriptions::
+         kAutofillEnablePaymentsMandatoryReauthOnBlingDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnablePaymentsMandatoryReauthOnBling)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_adjuster.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css/style_containment_scope_tree.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/css_toggle_inference.h"
@@ -1460,14 +1461,14 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout) {
     LayoutObject* container = object->Container();
     if (!container && !IsA<LayoutView>(object))
       return;
+
     if (!last->IsTextOrSVGChild() && last->StyleRef().HasOutOfFlowPosition()) {
       object = last->ContainingBlock();
-      if (object->PosChildNeedsLayout())
-        return;
       container = object->Container();
-      object->SetPosChildNeedsLayout(true);
       simplified_normal_flow_layout = true;
-    } else if (simplified_normal_flow_layout) {
+    }
+
+    if (simplified_normal_flow_layout) {
       if (object->NeedsSimplifiedNormalFlowLayout())
         return;
       object->SetNeedsSimplifiedNormalFlowLayout(true);
@@ -2796,8 +2797,7 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
 
     if (visibility_changed || style_->IsInert() != new_style.IsInert()) {
       if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
-        cache->ChildrenChanged(Parent());
-        cache->ChildrenChanged(this);
+        cache->StyleChanged(this, /*visibility_or_inertness_changed*/ true);
       }
     }
 

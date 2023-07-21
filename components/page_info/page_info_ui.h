@@ -92,7 +92,10 @@ class PageInfoUI {
     ~CookiesNewInfo();
 
     // The number of third-party sites blocked.
-    int blocked_sites_count = -1;
+    int blocked_third_party_sites_count = -1;
+
+    // The number of third-party sites allowed.
+    int allowed_third_party_sites_count = -1;
 
     // The number of sites allowed to access cookies.
     int allowed_sites_count = -1;
@@ -104,6 +107,12 @@ class PageInfoUI {
     CookieControlsEnforcement enforcement;
 
     absl::optional<CookiesFpsInfo> fps_info;
+
+    // The expiration of the active third-party cookie exception.
+    base::Time expiration;
+
+    // The confidence level of site breakage related to third-party cookies.
+    CookieControlsBreakageConfidenceLevel confidence;
   };
 
   // |ChosenObjectInfo| contains information about a single |chooser_object| of

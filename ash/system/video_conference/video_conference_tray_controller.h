@@ -211,6 +211,9 @@ class ASH_EXPORT VideoConferenceTrayController
   // Records repeated shows metric when the timer is stop.
   void RecordRepeatedShows();
 
+  // Returns true if any of the VC nudges are visible on screen.
+  bool IsAnyVcNudgeShown();
+
   // The number of capturing apps, fetched from `VideoConferenceManagerAsh`.
   int capturing_apps_ = 0;
 
@@ -243,8 +246,15 @@ class ASH_EXPORT VideoConferenceTrayController
   // Registered observers.
   base::ObserverList<Observer> observer_list_;
 
-  // The last time speak-on-mute notification showed.
-  absl::optional<base::TimeTicks> last_speak_on_mute_notification_time_;
+  // Boolean flag to indicate whether or not a speak-on-mute notification should
+  // show. At most one notification can show per mute session, and it is reset
+  // if:
+  // - A new VC tray pops up.
+  // - The mic is muted.
+  bool should_show_speak_on_mute_notification = true;
+
+  // The last time mic is muted.
+  base::TimeTicks last_mic_muted_time_;
 
   // video_conference_manager_ should be valid after initialized_.
   // Currently, VideoConferenceTrayController is destroyed inside

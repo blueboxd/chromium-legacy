@@ -19,6 +19,10 @@
   }
 
   .entry-icon {
+    flex-basis: 40px;
+  }
+
+  :host([is-printer-settings-revamp-enabled_]) .entry-icon {
     flex-basis: 20px;
     padding-inline: 20px 16px;
   }
@@ -48,11 +52,17 @@
   .container {
     height: 64px;
   }
+
+  .row-button {
+    margin-inline-end: 20px;
+  }
 </style>
 <div class="container" focus-row-container>
-  <div id="entry" class="list-item" focus-row-control focus-type="entry">
-    <div class="printer-name text-elide">
-      <span class="entry-icon" aria-hidden="true"
+  <div id="entry" class="list-item" focus-row-control focus-type="entry"
+      aria-label$="[[getAriaLabel_(printerEntry.printerInfo.printerId,
+          numPrinters, focusRowIndex)]]">
+    <div class="printer-name text-elide" aria-hidden="true">
+      <span class="entry-icon"
           hidden="[[!showAnyIcon_(printerEntry.printerType,
               printerEntry.printerInfo)]]">
           <iron-icon
@@ -78,17 +88,17 @@
     </div>
     <template is="dom-if"
         if="[[showActionsMenu_(printerEntry.printerType)]]">
-      <cr-icon-button id="moreActions" class="icon-more-vert"
+      <cr-icon-button id="moreActions" class="icon-more-vert row-button"
           on-click="onOpenActionMenuClick_" title="$i18n{moreActions}"
-          aria-label="[[printerEntry.printerInfo.printerName]]"
+          aria-label="$i18n{moreActions}"
           focus-row-control focus-type="moreActions" tabindex$="[[tabindex]]">
       </cr-icon-button>
     </template>
     <template is="dom-if"
         if="[[isDiscoveredPrinter_(printerEntry.printerType)]]">
-      <cr-button id="setupPrinterButton"
+      <cr-button id="setupPrinterButton" class="row-button"
           on-click="onAddDiscoveredPrinterClick_"
-          aria-label$="[[getSetupButtonAria_()]]"
+          aria-label$="$i18n{setupPrinter}"
           focus-row-control
           focus-type="setupPrinterButton"
           disabled="[[isConfigureDisabled_(userPrintersAllowed,
@@ -98,9 +108,10 @@
     </template>
     <template is="dom-if"
         if="[[isAutomaticPrinter_(printerEntry.printerType)]]">
-      <cr-button id="automaticPrinterButton" class="save-printer-button"
+      <cr-button id="automaticPrinterButton"
+          class="save-printer-button row-button"
           on-click="onAddAutomaticPrinterClick_"
-          aria-label$="[[getSaveButtonAria_()]]"
+          aria-label$="$i18n{savePrinter}"
           focus-row-control
           focus-type="automaticPrinterButton"
           disabled="[[isConfigureDisabled_(userPrintersAllowed,
@@ -111,8 +122,9 @@
     <template is="dom-if"
         if="[[isPrintServerPrinter_(printerEntry.printerType)]]">
       <cr-button id="savePrinterButton"
-      class="save-printer-button" on-click="onAddServerPrinterClick_"
-          aria-label$="[[getSaveButtonAria_()]]"
+          class="save-printer-button row-button"
+          on-click="onAddServerPrinterClick_"
+          aria-label$="$i18n{savePrinter}"
           focus-row-control
           focus-type="savePrinterButton"
           disabled="[[isConfigureDisabled_(userPrintersAllowed,

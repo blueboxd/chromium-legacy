@@ -86,16 +86,16 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
   result.SetExpirationYear(card.exp_year());
   result.set_billing_address_id(card.billing_address_id());
 
-  CreditCard::Issuer issuer = CreditCard::ISSUER_UNKNOWN;
+  CreditCard::Issuer issuer = CreditCard::Issuer::kIssuerUnknown;
   switch (card.card_issuer().issuer()) {
     case sync_pb::CardIssuer::ISSUER_UNKNOWN:
-      issuer = CreditCard::ISSUER_UNKNOWN;
+      issuer = CreditCard::Issuer::kIssuerUnknown;
       break;
     case sync_pb::CardIssuer::GOOGLE:
-      issuer = CreditCard::GOOGLE;
+      issuer = CreditCard::Issuer::kGoogle;
       break;
     case sync_pb::CardIssuer::EXTERNAL_ISSUER:
-      issuer = CreditCard::EXTERNAL_ISSUER;
+      issuer = CreditCard::Issuer::kExternalIssuer;
       break;
   }
   result.set_card_issuer(issuer);
@@ -108,19 +108,19 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
   CreditCard::VirtualCardEnrollmentState state;
   switch (card.virtual_card_enrollment_state()) {
     case sync_pb::WalletMaskedCreditCard::UNENROLLED:
-      state = CreditCard::UNENROLLED;
+      state = CreditCard::VirtualCardEnrollmentState::kUnenrolled;
       break;
     case sync_pb::WalletMaskedCreditCard::ENROLLED:
-      state = CreditCard::ENROLLED;
+      state = CreditCard::VirtualCardEnrollmentState::kEnrolled;
       break;
     case sync_pb::WalletMaskedCreditCard::UNENROLLED_AND_NOT_ELIGIBLE:
-      state = CreditCard::UNENROLLED_AND_NOT_ELIGIBLE;
+      state = CreditCard::VirtualCardEnrollmentState::kUnenrolledAndNotEligible;
       break;
     case sync_pb::WalletMaskedCreditCard::UNENROLLED_AND_ELIGIBLE:
-      state = CreditCard::UNENROLLED_AND_ELIGIBLE;
+      state = CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible;
       break;
     case sync_pb::WalletMaskedCreditCard::UNSPECIFIED:
-      state = CreditCard::UNSPECIFIED;
+      state = CreditCard::VirtualCardEnrollmentState::kUnspecified;
       break;
   }
   result.set_virtual_card_enrollment_state(state);
@@ -131,13 +131,16 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
     CreditCard::VirtualCardEnrollmentType virtual_card_enrollment_type;
     switch (card.virtual_card_enrollment_type()) {
       case sync_pb::WalletMaskedCreditCard::TYPE_UNSPECIFIED:
-        virtual_card_enrollment_type = CreditCard::TYPE_UNSPECIFIED;
+        virtual_card_enrollment_type =
+            CreditCard::VirtualCardEnrollmentType::kTypeUnspecified;
         break;
       case sync_pb::WalletMaskedCreditCard::ISSUER:
-        virtual_card_enrollment_type = CreditCard::ISSUER;
+        virtual_card_enrollment_type =
+            CreditCard::VirtualCardEnrollmentType::kIssuer;
         break;
       case sync_pb::WalletMaskedCreditCard::NETWORK:
-        virtual_card_enrollment_type = CreditCard::NETWORK;
+        virtual_card_enrollment_type =
+            CreditCard::VirtualCardEnrollmentType::kNetwork;
         break;
     }
     result.set_virtual_card_enrollment_type(virtual_card_enrollment_type);
@@ -292,13 +295,13 @@ void SetAutofillWalletSpecificsFromServerCard(
 
   sync_pb::CardIssuer::Issuer issuer = sync_pb::CardIssuer::ISSUER_UNKNOWN;
   switch (card.card_issuer()) {
-    case CreditCard::ISSUER_UNKNOWN:
+    case CreditCard::Issuer::kIssuerUnknown:
       issuer = sync_pb::CardIssuer::ISSUER_UNKNOWN;
       break;
-    case CreditCard::GOOGLE:
+    case CreditCard::Issuer::kGoogle:
       issuer = sync_pb::CardIssuer::GOOGLE;
       break;
-    case CreditCard::EXTERNAL_ISSUER:
+    case CreditCard::Issuer::kExternalIssuer:
       issuer = sync_pb::CardIssuer::EXTERNAL_ISSUER;
       break;
   }
@@ -309,37 +312,38 @@ void SetAutofillWalletSpecificsFromServerCard(
 
   sync_pb::WalletMaskedCreditCard::VirtualCardEnrollmentState state;
   switch (card.virtual_card_enrollment_state()) {
-    case CreditCard::UNENROLLED:
+    case CreditCard::VirtualCardEnrollmentState::kUnenrolled:
       state = sync_pb::WalletMaskedCreditCard::UNENROLLED;
       break;
-    case CreditCard::ENROLLED:
+    case CreditCard::VirtualCardEnrollmentState::kEnrolled:
       state = sync_pb::WalletMaskedCreditCard::ENROLLED;
       break;
-    case CreditCard::UNENROLLED_AND_NOT_ELIGIBLE:
+    case CreditCard::VirtualCardEnrollmentState::kUnenrolledAndNotEligible:
       state = sync_pb::WalletMaskedCreditCard::UNENROLLED_AND_NOT_ELIGIBLE;
       break;
-    case CreditCard::UNENROLLED_AND_ELIGIBLE:
+    case CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible:
       state = sync_pb::WalletMaskedCreditCard::UNENROLLED_AND_ELIGIBLE;
       break;
-    case CreditCard::UNSPECIFIED:
+    case CreditCard::VirtualCardEnrollmentState::kUnspecified:
       state = sync_pb::WalletMaskedCreditCard::UNSPECIFIED;
       break;
   }
   wallet_card->set_virtual_card_enrollment_state(state);
 
   // We should only have a virtual card enrollment type for enrolled cards.
-  if (card.virtual_card_enrollment_state() == CreditCard::ENROLLED) {
+  if (card.virtual_card_enrollment_state() ==
+      CreditCard::VirtualCardEnrollmentState::kEnrolled) {
     sync_pb::WalletMaskedCreditCard::VirtualCardEnrollmentType
         virtual_card_enrollment_type;
     switch (card.virtual_card_enrollment_type()) {
-      case CreditCard::TYPE_UNSPECIFIED:
+      case CreditCard::VirtualCardEnrollmentType::kTypeUnspecified:
         virtual_card_enrollment_type =
             sync_pb::WalletMaskedCreditCard::TYPE_UNSPECIFIED;
         break;
-      case CreditCard::ISSUER:
+      case CreditCard::VirtualCardEnrollmentType::kIssuer:
         virtual_card_enrollment_type = sync_pb::WalletMaskedCreditCard::ISSUER;
         break;
-      case CreditCard::NETWORK:
+      case CreditCard::VirtualCardEnrollmentType::kNetwork:
         virtual_card_enrollment_type = sync_pb::WalletMaskedCreditCard::NETWORK;
         break;
     }

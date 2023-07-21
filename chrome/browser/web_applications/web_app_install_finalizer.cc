@@ -18,7 +18,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/single_thread_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/types/optional_ref.h"
 #include "base/values.h"
@@ -103,25 +103,6 @@ bool ShouldInstallOverwriteUserDisplayMode(
       return false;
     case InstallSource::COUNT:
       NOTREACHED();
-      return false;
-  }
-}
-
-bool IsExternalInstallSource(WebAppManagement::Type install_source) {
-  switch (install_source) {
-    case WebAppManagement::Type::kSystem:
-    case WebAppManagement::Type::kKiosk:
-    case WebAppManagement::Type::kPolicy:
-    case WebAppManagement::Type::kSubApp:
-    case WebAppManagement::Type::kWebAppStore:
-    case WebAppManagement::Type::kDefault:
-      return true;
-    case WebAppManagement::Type::kSync:
-    // TODO(crbug.com/1427340): These are classified incorrectly, this check
-    // isn't really useful and should be removed.
-    case WebAppManagement::Type::kOneDriveIntegration:
-    case WebAppManagement::Type::kCommandLine:
-    case WebAppManagement::Type::kOem:
       return false;
   }
 }
@@ -297,43 +278,6 @@ void WebAppInstallFinalizer::OnOriginAssociationValidated(
   }
 }
 
-void WebAppInstallFinalizer::UninstallExternalWebApp(
-    const AppId& app_id,
-    WebAppManagement::Type external_install_source,
-    webapps::WebappUninstallSource uninstall_source,
-    UninstallWebAppCallback callback) {
-  DCHECK(started_);
-  DCHECK(IsExternalInstallSource(external_install_source));
-
-  ScheduleUninstallCommand(app_id, external_install_source, uninstall_source,
-                           std::move(callback));
-}
-
-void WebAppInstallFinalizer::UninstallExternalWebAppByUrl(
-    const GURL& app_url,
-    WebAppManagement::Type external_install_source,
-    webapps::WebappUninstallSource uninstall_source,
-    UninstallWebAppCallback callback) {
-  DCHECK(IsExternalInstallSource(external_install_source));
-  provider_->command_manager().ScheduleCommand(
-      std::make_unique<WebAppUninstallCommand>(
-          std::make_unique<RemoveInstallUrlJob>(
-              uninstall_source, *profile_,
-              /*app_id=*/absl::nullopt, external_install_source, app_url),
-          std::move(callback)));
-}
-
-void WebAppInstallFinalizer::UninstallWebApp(
-    const AppId& app_id,
-    webapps::WebappUninstallSource webapp_uninstall_source,
-    UninstallWebAppCallback callback) {
-  DCHECK(started_);
-  // An external install source (or management type) is only required
-  // for apps that have been externally installed.
-  ScheduleUninstallCommand(app_id, /*external_install_source=*/absl::nullopt,
-                           webapp_uninstall_source, std::move(callback));
-}
-
 bool WebAppInstallFinalizer::CanReparentTab(const AppId& app_id,
                                             bool shortcut_created) const {
   // Reparent the web contents into its own window only if that is the
@@ -380,7 +324,7 @@ void WebAppInstallFinalizer::FinalizeUpdate(
   if (!existing_web_app ||
       existing_web_app->is_from_sync_and_pending_installation() ||
       app_id != existing_web_app->app_id()) {
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), AppId(),
                                   webapps::InstallResultCode::kWebAppDisabled,
                                   OsHooksErrors()));
@@ -514,17 +458,14 @@ void WebAppInstallFinalizer::CommitToSyncBridge(std::unique_ptr<WebApp> web_app,
 
   AppId app_id = web_app->app_id();
 
-  std::unique_ptr<WebAppRegistryUpdate> update =
-      provider_->sync_bridge_unsafe().BeginUpdate();
+  ScopedRegistryUpdate update =
+      provider_->sync_bridge_unsafe().BeginUpdate(std::move(commit_callback));
 
   WebApp* app_to_override = update->UpdateApp(app_id);
   if (app_to_override)
     *app_to_override = std::move(*web_app);
   else
     update->CreateApp(std::move(web_app));
-
-  provider_->sync_bridge_unsafe().CommitUpdate(std::move(update),
-                                               std::move(commit_callback));
 }
 
 void WebAppInstallFinalizer::OnDatabaseCommitCompletedForInstall(
@@ -732,27 +673,6 @@ void WebAppInstallFinalizer::WriteExternalConfigMapInfo(
                                                        std::move(policy_id));
     }
   }
-}
-
-// TODO(crbug.com/1427340): Remove this interface in favour of calling into the
-// WebAppCommandScheduler directly.
-void WebAppInstallFinalizer::ScheduleUninstallCommand(
-    const AppId& app_id,
-    absl::optional<WebAppManagement::Type> external_install_source,
-    webapps::WebappUninstallSource uninstall_source,
-    UninstallWebAppCallback callback) {
-  std::unique_ptr<UninstallJob> job;
-  if (external_install_source.has_value()) {
-    job = std::make_unique<RemoveInstallSourceJob>(
-        uninstall_source, *profile_, app_id, external_install_source.value());
-  } else {
-    job =
-        std::make_unique<RemoveWebAppJob>(uninstall_source, *profile_, app_id);
-  }
-
-  provider_->command_manager().ScheduleCommand(
-      std::make_unique<WebAppUninstallCommand>(std::move(job),
-                                               std::move(callback)));
 }
 
 FileHandlerUpdateAction WebAppInstallFinalizer::GetFileHandlerUpdateAction(

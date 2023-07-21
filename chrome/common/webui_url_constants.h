@@ -123,6 +123,8 @@ extern const char kChromeUIInvalidationsUrl[];
 extern const char kChromeUIKillHost[];
 extern const char kChromeUILauncherInternalsHost[];
 extern const char kChromeUILauncherInternalsURL[];
+extern const char kChromeUISensorInfoURL[];
+extern const char kChromeUISensorInfoHost[];
 extern const char kChromeUILocalStateHost[];
 extern const char kChromeUILocationInternalsHost[];
 extern const char kChromeUIManagementHost[];
@@ -266,6 +268,7 @@ extern const char kChromeUIUntrustedReadAnythingSidePanelURL[];
 extern const char kChromeUIUserNotesSidePanelHost[];
 extern const char kChromeUIUserNotesSidePanelURL[];
 extern const char kChromeUIWebAppInternalsHost[];
+extern const char kChromeUIWebAppInternalsURL[];
 extern const char kChromeUIWebUITestHost[];
 #endif  // BUILDFLAG(IS_ANDROID)
 

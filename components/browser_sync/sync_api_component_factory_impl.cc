@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/payments/autofill_wallet_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
+#include "components/autofill/core/browser/webdata/autofill_wallet_credential_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_offer_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
@@ -24,11 +25,14 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/contact_info_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/contact_info_sync_bridge.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/browser_sync/active_devices_provider_impl.h"
 #include "components/browser_sync/browser_sync_client.h"
 #include "components/history/core/browser/sync/history_delete_directives_model_type_controller.h"
 #include "components/history/core/browser/sync/history_model_type_controller.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/password_manager/core/browser/sharing/password_receiver_service.h"
+#include "components/password_manager/core/browser/sharing/password_sender_service.h"
 #include "components/password_manager/core/browser/sync/credential_model_type_controller.h"
 #include "components/power_bookmarks/core/power_bookmark_features.h"
 #include "components/power_bookmarks/core/power_bookmark_service.h"
@@ -89,6 +93,15 @@ base::WeakPtr<syncer::ModelTypeControllerDelegate>
 AutofillProfileDelegateFromDataService(
     autofill::AutofillWebDataService* service) {
   return autofill::AutofillProfileSyncBridge::FromWebDataService(service)
+      ->change_processor()
+      ->GetControllerDelegate();
+}
+
+base::WeakPtr<syncer::ModelTypeControllerDelegate>
+AutofillWalletCredentialDataDelegateFromDataService(
+    autofill::AutofillWebDataService* service) {
+  return autofill::AutofillWalletCredentialSyncBridge::FromWebDataService(
+             service)
       ->change_processor()
       ->GetControllerDelegate();
 }
@@ -287,6 +300,20 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
           base::BindRepeating(&AutofillWalletUsageDataDelegateFromDataService),
           sync_service, /*with_transport_mode_support=*/true));
     }
+
+    // Wallet credential data sync depends on Wallet data sync.
+    if (base::FeatureList::IsEnabled(
+            autofill::features::kAutofillEnableCvcStorageAndFilling) &&
+        base::FeatureList::IsEnabled(
+            syncer::kSyncAutofillWalletCredentialData) &&
+        !disabled_types.Has(syncer::AUTOFILL_WALLET_DATA) &&
+        !disabled_types.Has(syncer::AUTOFILL_WALLET_CREDENTIAL)) {
+      controllers.push_back(CreateWalletModelTypeController(
+          syncer::AUTOFILL_WALLET_CREDENTIAL,
+          base::BindRepeating(
+              &AutofillWalletCredentialDataDelegateFromDataService),
+          sync_service, /*with_transport_mode_support=*/true));
+    }
   }
 
   if (!disabled_types.Has(syncer::BOOKMARKS)) {
@@ -383,6 +410,35 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
                   : nullptr,
               sync_client_->GetPrefService(),
               sync_client_->GetIdentityManager(), sync_service));
+
+      // Couple password sharing invitations with password data type.
+      if (!disabled_types.Has(syncer::INCOMING_PASSWORD_SHARING_INVITATION) &&
+          sync_client_->GetPasswordReceiverService()) {
+        syncer::ModelTypeControllerDelegate* delegate =
+            sync_client_->GetPasswordReceiverService()
+                ->GetControllerDelegate()
+                .get();
+        controllers.push_back(std::make_unique<syncer::ModelTypeController>(
+            syncer::INCOMING_PASSWORD_SHARING_INVITATION,
+            std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+                delegate),
+            std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+                delegate)));
+      }
+
+      if (!disabled_types.Has(syncer::OUTGOING_PASSWORD_SHARING_INVITATION) &&
+          sync_client_->GetPasswordSenderService()) {
+        syncer::ModelTypeControllerDelegate* delegate =
+            sync_client_->GetPasswordSenderService()
+                ->GetControllerDelegate()
+                .get();
+        controllers.push_back(std::make_unique<syncer::ModelTypeController>(
+            syncer::OUTGOING_PASSWORD_SHARING_INVITATION,
+            std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+                delegate),
+            std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+                delegate)));
+      }
     }
   }
 

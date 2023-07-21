@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/containers/contains.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 
 namespace viz {
@@ -18,6 +19,23 @@ namespace {
 BASE_FEATURE(kForceMacVSyncTimerForDebugging,
              "ForceMacVSyncTimerForDebugging",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// "DisplayLinkResult" in src/tools/metrics/histograms/enums.xml.
+enum class DisplayLinkResult {
+  kSuccess = 0,
+  kFailedInvalidDisplayId = 1,
+  kFailedCreateDisplayLink = 2,
+  kFailedRegisterCallback = 3,
+  kMaxValue = kFailedRegisterCallback,
+};
+
+void RecordDisplayLinkCreateStatus(DisplayLinkResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Viz.ExternalBeginFrameSourceMac.DisplayLink",
+                            result);
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -27,6 +45,7 @@ ExternalBeginFrameSourceMac::ExternalBeginFrameSourceMac(uint32_t restart_id,
                                                          int64_t display_id)
     : ExternalBeginFrameSource(this, restart_id) {
   if (display_id == display::kInvalidDisplayId) {
+    RecordDisplayLinkCreateStatus(DisplayLinkResult::kFailedInvalidDisplayId);
     DLOG(ERROR)
         << "DisplayLinkMac ID is not available. "
            "Switch to DelayBasedTimeSource(Timer) for BeginFrameSource.";
@@ -70,8 +89,10 @@ void ExternalBeginFrameSourceMac::SetVSyncDisplayID(int64_t display_id) {
   display_link_mac_.reset();
 
   // Get DisplayLinkMac with the new CGDirectDisplayID.
-  display_link_mac_ = ui::DisplayLinkMac::GetForDisplay(
-      base::checked_cast<CGDirectDisplayID>(display_id));
+  if (display_id != display::kInvalidDisplayId) {
+    display_link_mac_ = ui::DisplayLinkMac::GetForDisplay(
+        base::checked_cast<CGDirectDisplayID>(display_id));
+  }
 
   // For debugging only. Use the timer for BeginFrameSource.
   if (base::FeatureList::IsEnabled(kForceMacVSyncTimerForDebugging)) {
@@ -85,9 +106,22 @@ void ExternalBeginFrameSourceMac::SetVSyncDisplayID(int64_t display_id) {
     } else {
       nominal_refresh_period_ = BeginFrameArgs::DefaultInterval();
     }
+
+    if (update_vsync_params_callback_) {
+      update_vsync_params_callback_.Run(display_link_mac_->GetCurrentTime(),
+                                        nominal_refresh_period_);
+    }
+
+    RecordDisplayLinkCreateStatus(DisplayLinkResult::kSuccess);
   } else {
-    DLOG(ERROR) << "Fail to create DisplayLinkMac for DisplayID: "
-                << display_id_ << ". Use the timer as BeginFrameSource";
+    DisplayLinkResult display_link_result =
+        display_id == display::kInvalidDisplayId
+            ? DisplayLinkResult::kFailedInvalidDisplayId
+            : DisplayLinkResult::kFailedCreateDisplayLink;
+    RecordDisplayLinkCreateStatus(display_link_result);
+
+    DLOG(ERROR) << "Fail to create DisplayLinkMac with DisplayID: "
+                << display_id_ << ". Switch to DelayBasedTimeSource.";
   }
 
   if (needs_begin_frames_) {
@@ -109,9 +143,10 @@ void ExternalBeginFrameSourceMac::StartBeginFrame() {
     }
 
     // Failed. Destroy DisplayLinkMac and switch to the timer.
+    display_link_mac_.reset();
+    RecordDisplayLinkCreateStatus(DisplayLinkResult::kFailedRegisterCallback);
     DLOG(ERROR) << "Fail to start CVDisplayLink callback for DisplayID: "
                 << display_id_ << ". Switch to the timer";
-    display_link_mac_.reset();
   }
 
   // Start the timer.
@@ -124,6 +159,7 @@ void ExternalBeginFrameSourceMac::StopBeginFrame() {
     DCHECK(vsync_callback_mac_);
     // Remove and unregister VSyncCallbackMac.
     vsync_callback_mac_.reset();
+    vsyncs_to_skip_ = 0;
     return;
   }
 
@@ -337,6 +373,16 @@ void DelayBasedBeginFrameSourceMac::OnTimeSourceParamsUpdate(
   time_source_next_update_time_ = base::TimeTicks::Now() + base::Seconds(10);
   time_source_updater_ = nullptr;
   OnUpdateVSyncParameters(params.display_timebase, params.display_interval);
+}
+
+void DelayBasedBeginFrameSourceMac::OnTimerTick() {
+  // The VSync parameters skew over time (astonishingly quickly -- 0.1 msec per
+  // second). If too much time has elapsed since the last time the vsync
+  // parameters were calculated, re-calculate them.
+  if (base::TimeTicks::Now() >= time_source_next_update_time_) {
+    RequestTimeSourceParamsUpdate();
+  }
+  DelayBasedBeginFrameSource::OnTimerTick();
 }
 
 }  // namespace viz

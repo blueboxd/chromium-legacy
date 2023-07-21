@@ -62,7 +62,7 @@
   }
 
   #header-image {
-    background-color: var(--cros-highlight-color);
+    background-color: var(--cros-sys-app_base_shaded);
     height: 236px;
     width: 512px;
   }
@@ -79,8 +79,8 @@
       --cros-illustration-elevation-base-color);
     --cros-illustration-secondary-color: var(
       --cros-illustration-elevation-secondary-color);
-    --cros-sys-illo-color1-1: var(--cros-sys-illo-elevated-color-1-1);
-    --cros-sys-illo-color1-2: var(--cros-sys-illo-elevated-color-1-2);
+    --cros-sys-illo-color1-1: var(--cros-sys-illo-elevated-color1-1);
+    --cros-sys-illo-color1-2: var(--cros-sys-illo-elevated-color1-2);
     --cros-sys-illo-base: var(--cros-sys-illo-elevated-base);
     --cros-sys-illo-secondary: var(--cros-sys-illo-elevated-secondary);
 
@@ -103,6 +103,26 @@
   div#footer {
     display: flex;
     margin-block-start: 32px;
+  }
+
+  div#dots {
+    align-items: center;
+    display: flex;
+    flex-grow: 1;
+    gap: 12px;
+    /* TODO(petermarshall): Remove dots or make visible again. */
+    visibility: hidden;
+  }
+
+  div#dots > div {
+    background-color: var(--cros-button-stroke-color-secondary);
+    border-radius: 50%;
+    height: 8px;
+    width: 8px;
+  }
+
+  div#dots > div.active {
+    background-color: var(--cros-icon-color-prominent);
   }
 
   :host-context([theme='refresh23']) cr-button {
@@ -162,6 +182,7 @@
       <slot name="body"></slot>
     </div>
     <div id="footer">
+      <div id="dots"></div>
       <slot name="button-container"></slot>
     </div>
   </div>

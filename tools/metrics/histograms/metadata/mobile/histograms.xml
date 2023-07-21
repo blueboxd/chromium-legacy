@@ -115,7 +115,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.ContextMenu.LensSupportStatus"
-    enum="IOSLensSupportStatus" expires_after="2023-11-19">
+    enum="IOSLensSupportStatus" expires_after="2024-07-17">
   <owner>hujasonx@google.com</owner>
   <owner>lens-in-bling-team@google.com</owner>
   <summary>
@@ -231,7 +231,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.Keyboard.LensSupportStatus" enum="IOSLensSupportStatus"
-    expires_after="2023-11-19">
+    expires_after="2024-07-17">
   <owner>hujasonx@google.com</owner>
   <owner>lens-in-bling-team@google.com</owner>
   <summary>
@@ -394,7 +394,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.NewTabPage.LensSupportStatus"
-    enum="IOSLensSupportStatus" expires_after="2023-08-26">
+    enum="IOSLensSupportStatus" expires_after="2024-07-17">
   <owner>hujasonx@google.com</owner>
   <owner>lens-in-bling-team@google.com</owner>
   <summary>
@@ -405,7 +405,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.PlusButton.LensSupportStatus"
-    enum="IOSLensSupportStatus" expires_after="2023-08-26">
+    enum="IOSLensSupportStatus" expires_after="2024-07-17">
   <owner>hujasonx@google.com</owner>
   <owner>lens-in-bling-team@google.com</owner>
   <summary>
@@ -426,7 +426,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.Share.EntryPoints" enum="IOSActivityScenario"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>ellyjones@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <owner>chrome-with-friends-robots@google.com</owner>
@@ -467,7 +467,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.Spotlight.LensSupportStatus"
-    enum="IOSLensSupportStatus" expires_after="2023-08-26">
+    enum="IOSLensSupportStatus" expires_after="2024-07-17">
   <owner>hujasonx@google.com</owner>
   <owner>lens-in-bling-team@google.com</owner>
   <summary>
@@ -878,7 +878,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileFre.NativeInitialized" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <summary>
@@ -1209,7 +1209,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.DailyLaunchCount" units="units"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1254,7 +1254,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.LaunchCause" enum="LaunchCause"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>mthiesse@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>

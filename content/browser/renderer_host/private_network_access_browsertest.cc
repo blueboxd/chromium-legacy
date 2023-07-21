@@ -392,9 +392,9 @@ class FakeAddressSpaceServer {
   static base::StringPiece IPAddressSpaceToSwitchValue(
       network::mojom::IPAddressSpace space) {
     switch (space) {
-      case network::mojom::IPAddressSpace::kLoopback:
-        return "local";
       case network::mojom::IPAddressSpace::kLocal:
+        return "local";
+      case network::mojom::IPAddressSpace::kPrivate:
         return "private";
       case network::mojom::IPAddressSpace::kPublic:
         return "public";
@@ -449,12 +449,12 @@ class PrivateNetworkAccessBrowserTestBase : public ContentBrowserTest {
       : insecure_local_server_(
             net::EmbeddedTestServer::TYPE_HTTP,
             net::test_server::HttpConnection::Protocol::kHttp1,
-            network::mojom::IPAddressSpace::kLoopback,
+            network::mojom::IPAddressSpace::kLocal,
             GetTestDataFilePath()),
         insecure_private_server_(
             net::EmbeddedTestServer::TYPE_HTTP,
             net::test_server::HttpConnection::Protocol::kHttp1,
-            network::mojom::IPAddressSpace::kLocal,
+            network::mojom::IPAddressSpace::kPrivate,
             GetTestDataFilePath()),
         insecure_public_server_(
             net::EmbeddedTestServer::TYPE_HTTP,
@@ -463,12 +463,12 @@ class PrivateNetworkAccessBrowserTestBase : public ContentBrowserTest {
             GetTestDataFilePath()),
         secure_local_server_(net::EmbeddedTestServer::TYPE_HTTPS,
                              net::test_server::HttpConnection::Protocol::kHttp1,
-                             network::mojom::IPAddressSpace::kLoopback,
+                             network::mojom::IPAddressSpace::kLocal,
                              GetTestDataFilePath()),
         secure_private_server_(
             net::EmbeddedTestServer::TYPE_HTTPS,
             net::test_server::HttpConnection::Protocol::kHttp1,
-            network::mojom::IPAddressSpace::kLocal,
+            network::mojom::IPAddressSpace::kPrivate,
             GetTestDataFilePath()),
         secure_public_server_(
             net::EmbeddedTestServer::TYPE_HTTPS,
@@ -764,7 +764,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
 
   // Browser-created empty main frames are trusted to access the local network,
   // if they execute code injected via DevTools, WebView APIs or extensions.
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -781,7 +781,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       root_frame_host()->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
   EXPECT_FALSE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -805,7 +805,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       root_frame_host()->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
   EXPECT_TRUE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -817,7 +817,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       root_frame_host()->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
   EXPECT_FALSE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -829,7 +829,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       root_frame_host()->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
   EXPECT_FALSE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPrivate,
             security_state->ip_address_space);
 }
 
@@ -853,7 +853,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       root_frame_host()->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
   EXPECT_TRUE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -865,7 +865,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       root_frame_host()->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
   EXPECT_TRUE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPrivate,
             security_state->ip_address_space);
 }
 
@@ -916,7 +916,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       root_frame_host()->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
   EXPECT_TRUE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -959,7 +959,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       root_frame_host()->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
   EXPECT_TRUE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -995,7 +995,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       root_frame_host()->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
   EXPECT_TRUE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPrivate,
             security_state->ip_address_space);
 }
 
@@ -1030,7 +1030,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       root_frame_host()->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
   EXPECT_FALSE(security_state->is_web_secure_context);
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPrivate,
             security_state->ip_address_space);
 }
 
@@ -1346,7 +1346,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1380,7 +1380,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1416,7 +1416,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       window->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1437,7 +1437,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       window->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1467,7 +1467,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1501,7 +1501,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1537,7 +1537,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       window->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1558,7 +1558,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       window->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1588,7 +1588,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1622,7 +1622,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1652,7 +1652,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1685,7 +1685,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1717,7 +1717,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1751,7 +1751,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       window->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1772,7 +1772,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       window->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1802,7 +1802,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1835,7 +1835,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1865,7 +1865,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       window->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1895,7 +1895,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -1929,7 +1929,7 @@ IN_PROC_BROWSER_TEST_F(
       child_frame->BuildClientSecurityState();
   ASSERT_FALSE(security_state.is_null());
 
-  EXPECT_EQ(network::mojom::IPAddressSpace::kLoopback,
+  EXPECT_EQ(network::mojom::IPAddressSpace::kLocal,
             security_state->ip_address_space);
 }
 
@@ -2627,7 +2627,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
 }
 
 // This test verifies that when sending preflights is enabled, the private
-// network request policy for non-secure contexts in the `kLocal` address
+// network request policy for non-secure contexts in the `kPrivate` address
 // space is `kWarn`.
 // This checks that as long as the "block from insecure private" feature flag
 // is not enabled, we will only show warnings for these requests.
@@ -2675,7 +2675,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestRespectPreflightResults,
 }
 
 // This test verifies that when enforcing preflights is enabled, the private
-// network request policy for non-secure contexts in the `kLocal` address
+// network request policy for non-secure contexts in the `kPrivate` address
 // space is `kPreflightBlock`.
 // This checks that as long as the "block from insecure private" feature flag
 // is not enabled, we will only show warnings for these requests.

@@ -586,6 +586,7 @@ _CONFIG = [
             'v8::.+',
             'v8_inspector::.+',
             'inspector_protocol_encoding::.+',
+            'snappy::.+',
 
             # Inspector instrumentation and protocol
             'probe::.+',
@@ -854,6 +855,12 @@ _CONFIG = [
             'viz::FrameSinkId',
             'viz::LocalSurfaceId',
             'viz::SurfaceId',
+        ],
+    },
+    {
+        'paths': ['third_party/blink/renderer/core/exported/web_view_impl.cc'],
+        'allowed': [
+            'base::TaskAnnotator',
         ],
     },
     {

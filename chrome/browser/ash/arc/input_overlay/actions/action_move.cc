@@ -14,6 +14,7 @@
 #include "chrome/browser/ash/arc/input_overlay/touch_id_manager.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_label.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/touch_point.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/ui_utils.h"
 #include "chrome/browser/ash/arc/input_overlay/util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -221,8 +222,8 @@ bool ActionMove::ParseFromJson(const base::Value::Dict& value) {
   }
 }
 
-bool ActionMove::InitFromEditor() {
-  if (!Action::InitFromEditor()) {
+bool ActionMove::InitByAddingNewAction() {
+  if (!Action::InitByAddingNewAction()) {
     return false;
   }
 
@@ -233,14 +234,13 @@ bool ActionMove::InitFromEditor() {
   return true;
 }
 
-void ActionMove::InitFromAction(Action* action) {
-  Action::InitFromAction(action);
+void ActionMove::InitByChangingActionType(Action* action) {
+  Action::InitByChangingActionType(action);
   auto keys = action->current_input()->keys();
   auto dom_code = keys.size() > 0 ? keys[0] : ui::DomCode::NONE;
   std::vector<ui::DomCode> keycodes{dom_code, ui::DomCode::NONE,
                                     ui::DomCode::NONE, ui::DomCode::NONE};
   current_input_ = InputElement::CreateActionMoveKeyElement(keycodes);
-  original_input_ = InputElement::CreateActionMoveKeyElement(keycodes);
 }
 
 bool ActionMove::ParseJsonFromKeyboard(const base::Value::Dict& value) {
@@ -342,7 +342,7 @@ bool ActionMove::RewriteEvent(const ui::Event& origin,
   LogEvent(origin);
 
   // Rewrite for key event.
-  const auto& content_bounds = touch_injector_->content_bounds();
+  const auto& content_bounds = touch_injector_->content_bounds_f();
   if (IsKeyboardBound(*current_input_)) {
     auto* key_event = origin.AsKeyEvent();
     bool rewritten = RewriteKeyEvent(key_event, content_bounds,
@@ -364,7 +364,7 @@ bool ActionMove::RewriteEvent(const ui::Event& origin,
 }
 
 gfx::PointF ActionMove::GetUICenterPosition() {
-  const auto& content_bounds = touch_injector_->content_bounds();
+  const auto& content_bounds = touch_injector_->content_bounds_f();
   if (original_positions().empty()) {
     DCHECK(IsMouseBound(*current_input_));
     return gfx::PointF(content_bounds.width() / 2, content_bounds.height() / 2);

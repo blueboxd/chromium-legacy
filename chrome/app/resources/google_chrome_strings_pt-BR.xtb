@@ -79,6 +79,7 @@
 <translation id="235650106824528204">Quaisquer dados do Chrome gerados quando este perfil estiver sendo usado (como a criação de favoritos, histórico, senhas e outras configurações) podem ser removidos pelo administrador do perfil de trabalho. <ph name="LEARN_MORE" /></translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2401189691232800402">Sistema ChromeOS</translation>
+<translation id="2409816192575564775">{NUM_DEVICES,plural, =0{unused plural form}=1{Uma ou mais extensões do Chrome estavam acessando 1 dispositivo HID}one{Uma ou mais extensões do Chrome estavam acessando # dispositivo HID}other{Uma ou mais extensões do Chrome estavam acessando # dispositivos HID}}</translation>
 <translation id="2424440923901031101">Esta extensão viola a política da Chrome Web Store e pode não ser segura. Remova do Chrome para que ela não apareça mais e altere seus dados nos sites que você visitar, incluindo suas informações pessoais.</translation>
 <translation id="2467438592969358367">O Google Chrome quer exportar suas senhas. Digite sua senha do Windows para permitir isso.</translation>
 <translation id="2472092250898121027">Esta extensão contém malware e não é segura. Remova do Chrome para que ela não apareça mais e altere seus dados nos sites que você visitar, incluindo suas informações pessoais.</translation>
@@ -116,7 +117,6 @@
 <translation id="2929907241665500097">A atualização do Chrome não foi concluída. Algo deu errado. <ph name="BEGIN_LINK" />Corrija as atualizações com falhas e os problemas de atualização do Chrome.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - Login na rede - Chrome</translation>
 <translation id="3019382870990049182">Reiniciar para atualizar o &amp;ChromeOS Flex</translation>
-<translation id="3033660625209020231">{NUM_DEVICES,plural, =0{As extensões do Google Chrome estavam acessando dispositivos HID}=1{As extensões do Google Chrome estão acessando 1 dispositivo HID}one{As extensões do Google Chrome estão acessando # dispositivo HID}other{As extensões do Google Chrome estão acessando # dispositivos HID}}</translation>
 <translation id="303514781271618814">O Chrome está explorando novos recursos que permitem que os sites ofereçam a mesma experiência de navegação usando menos dados</translation>
 <translation id="3037838751736561277">O Google Chrome está em modo de segundo plano.</translation>
 <translation id="3038232873781883849">Aguardando instalação...</translation>
@@ -224,7 +224,6 @@
 <translation id="4970947549776831107">O Chrome bloqueou o download porque esse tipo de arquivo é perigoso</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5003967926796347400">Clique em "Gerenciador de senhas do Google"</translation>
-<translation id="5005958605836556244">{NUM_DEVICES,plural, =0{Uma extensão do Google Chrome estava acessando dispositivos HID}=1{Uma extensão do Google Chrome está acessando 1 dispositivo HID}one{Uma extensão do Google Chrome está acessando # dispositivo HID}other{Uma extensão do Google Chrome está acessando # dispositivos HID}}</translation>
 <translation id="5098668839038261629">Quando essa opção for ativada, sua conta será desconectada do Chrome</translation>
 <translation id="5132929315877954718">Descubra ótimos aplicativos, jogos, extensões e temas para o Google Chrome.</translation>
 <translation id="5139423532931106058">Personalize seu perfil do Chrome</translation>
@@ -240,6 +239,7 @@
 <translation id="5394833366792865639">Compartilhar uma guia do Chrome</translation>
 <translation id="5412485296464121825">Sites podem armazenar informações sobre seus interesses com o Chrome. Por exemplo, se você visitar um site para comprar sapatos de maratona, ele pode definir "maratonas" como um dos seus interesses. Depois, se você visitar outro site para se inscrever em uma maratona, esse site pode mostrar um anúncio de sapatos de corrida com base nos seus interesses.</translation>
 <translation id="5430073640787465221">Seu arquivo de preferências está corrompido ou é inválido. O Google Chrome não foi capaz de recuperar suas configurações.</translation>
+<translation id="5521146392841465297">O Chrome recomenda que você revise essa extensão.</translation>
 <translation id="5524761631371622910">Quando os testes estão ativados e se o Chrome colocou você aleatoriamente em um teste ativo, seu histórico de navegação vai afetar os anúncios que você vê e os interesses estimados abaixo. Para proteger sua privacidade, o Chrome exclui seus interesses mais antigos do que um mês.</translation>
 <translation id="5530733413481476019">Deixe o Chrome mais rápido</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -277,6 +277,7 @@
 <translation id="624230925347970731">O Chrome será fechado em breve</translation>
 <translation id="6247557882553405851">Gerenciador de senhas do Google</translation>
 <translation id="6273793429163604305">Em suas marcas…</translation>
+<translation id="6277547788421725101">Seu familiar responsável desativou a opção "Permissões para sites, apps e extensões" no Chrome</translation>
 <translation id="6291089322031436445">Apps do Chrome Dev</translation>
 <translation id="6291549208091401781">O Google Chrome já está instalado para todos os usuários do seu computador.</translation>
 <translation id="6326175484149238433">Remover do Google Chrome</translation>
@@ -325,13 +326,14 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="7177959540995930968">Saiba mais sobre esses recursos nas configurações do Chrome.</translation>
 <translation id="7193885263065350793">Sua organização vai fechar o Chrome se ele não for usado por <ph name="TIMEOUT_DURATION" />.</translation>
 <translation id="7242029209006116544">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Google Chrome, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. Você tem a opção de criar um novo perfil para manter seus dados existentes do Google Chrome separados. <ph name="LEARN_MORE" /></translation>
-<translation id="7295052994004373688">Esse idioma é usado para exibir a IU do Google Chrome</translation>
+<translation id="7295052994004373688">Esse idioma é usado para exibir a interface do Google Chrome</translation>
 <translation id="7296210096911315575">Informações importantes sobre uso e segurança</translation>
 <translation id="7308322188646931570">O Chrome precisa de acesso para fazer o download e armazenar arquivos</translation>
 <translation id="7339898014177206373">Nova janela</translation>
 <translation id="7398801000654795464">Você estava conectado ao Google Chrome como <ph name="USER_EMAIL_ADDRESS" />. Use a mesma conta para fazer login novamente.</translation>
 <translation id="7410958280246779049">O Chrome bloqueou esse arquivo por ser perigoso</translation>
 <translation id="7412494426921990001">Clique no menu do Google Chrome</translation>
+<translation id="742463671275348370">{NUM_DEVICES,plural, =0{unused plural form}=1{Uma ou mais extensões do Chrome estão acessando 1 dispositivo USB}one{Uma ou mais extensões do Chrome estão acessando # dispositivo USB}other{Uma ou mais extensões do Chrome estão acessando # dispositivos USB}}</translation>
 <translation id="7426611252293106642">É possível que o Google Chrome não funcione corretamente, porque esta distribuição do Linux não tem mais suporte a ele</translation>
 <translation id="7449333426561673451">{COUNT,plural, =1{A organização vai fechar o Chrome automaticamente se ele não for usado por 1 minuto.}one{A organização vai fechar o Chrome automaticamente se ele não for usado por # minuto.}other{A organização vai fechar o Chrome automaticamente se ele não for usado por # minutos.}}</translation>
 <translation id="7452987490177144319">{COUNT,plural, =1{A organização exclui automaticamente os dados de navegação quando o Chrome não é usado por 1 minuto. Isso pode incluir o histórico, o preenchimento automático e os downloads. Suas guias vão permanecer abertas.}one{A organização exclui automaticamente os dados de navegação quando o Chrome não é usado por # minuto. Isso pode incluir o histórico, o preenchimento automático e os downloads. Suas guias vão permanecer abertas.}other{A organização exclui automaticamente os dados de navegação quando o Chrome não é usado por # minutos. Isso pode incluir o histórico, o preenchimento automático e os downloads. Suas guias vão permanecer abertas.}}</translation>

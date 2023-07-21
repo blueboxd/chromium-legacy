@@ -10,6 +10,9 @@
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_util.h"
+#include "chrome/browser/ui/views/location_bar/omnibox_chip_theme.h"
+#include "chrome/browser/ui/views/permissions/permission_prompt_style.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -57,6 +60,9 @@ OmniboxChipButton::OmniboxChipButton(PressedCallback callback)
     SetCustomPadding(gfx::Insets::VH(
         GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING),
         GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left()));
+  }
+  if (features::IsChromeRefresh2023()) {
+    label()->SetTextStyle(views::style::STYLE_BODY_4_EMPHASIS);
   }
   SetCornerRadius(GetCornerRadius());
   constexpr auto kAnimationDuration = base::Milliseconds(350);
@@ -160,8 +166,25 @@ void OmniboxChipButton::AnimationProgressed(const gfx::Animation* animation) {
     PreferredSizeChanged();
 }
 
+void OmniboxChipButton::SetUserDecision(
+    permissions::PermissionAction user_decision) {
+  user_decision_ = user_decision;
+  UpdateIconAndColors();
+}
+
 void OmniboxChipButton::SetTheme(OmniboxChipTheme theme) {
   theme_ = theme;
+  UpdateIconAndColors();
+}
+
+void OmniboxChipButton::SetBlockedIconShowing(bool should_show_blocked_icon) {
+  should_show_blocked_icon_ = should_show_blocked_icon;
+  UpdateIconAndColors();
+}
+
+void OmniboxChipButton::SetPermissionPromptStyle(
+    PermissionPromptStyle prompt_style) {
+  prompt_style_ = prompt_style;
   UpdateIconAndColors();
 }
 
@@ -171,7 +194,7 @@ void OmniboxChipButton::SetMessage(std::u16string message) {
 }
 
 ui::ImageModel OmniboxChipButton::GetIconImageModel() const {
-  return ui::ImageModel::FromVectorIcon(GetIcon(), GetTextAndIconColor(),
+  return ui::ImageModel::FromVectorIcon(GetIcon(), GetForegroundColor(),
                                         GetIconSize(), nullptr);
 }
 
@@ -181,6 +204,75 @@ const gfx::VectorIcon& OmniboxChipButton::GetIcon() const {
   }
 
   return gfx::kNoneIcon;
+}
+
+SkColor OmniboxChipButton::GetForegroundColor() const {
+  if (features::IsChromeRefresh2023()) {
+    // 1. Default to the system primary color.
+    SkColor text_and_icon_color = GetColorProvider()->GetColor(
+        kColorOmniboxChipForegroundNormalVisibility);
+
+    // 2. Then update the color if the quiet chip is showing.
+    if (GetPermissionPromptStyle() == PermissionPromptStyle::kQuietChip) {
+      text_and_icon_color = GetColorProvider()->GetColor(
+          kColorOmniboxChipForegroundLowVisibility);
+    }
+
+    // 3. Then update the color based on the user decision.
+    // TODO(dljames): There is potentially a bug here if there exists a case
+    // where a quiet chip can be shown on a GRANTED_ONCE permission action.
+    // In that case the color should stay kColorOmniboxChipTextDefaultCR23.
+    switch (GetUserDecision()) {
+      case permissions::PermissionAction::GRANTED:
+      case permissions::PermissionAction::GRANTED_ONCE:
+        text_and_icon_color = GetColorProvider()->GetColor(
+            kColorOmniboxChipForegroundNormalVisibility);
+        break;
+      case permissions::PermissionAction::DENIED:
+      case permissions::PermissionAction::DISMISSED:
+      case permissions::PermissionAction::IGNORED:
+      case permissions::PermissionAction::REVOKED:
+        text_and_icon_color = GetColorProvider()->GetColor(
+            kColorOmniboxChipForegroundLowVisibility);
+        break;
+      case permissions::PermissionAction::NUM:
+        break;
+    }
+
+    // 4. Then update the color based on if the icon is blocked or not.
+    if (ShouldShowBlockedIcon()) {
+      text_and_icon_color = GetColorProvider()->GetColor(
+          kColorOmniboxChipForegroundLowVisibility);
+    }
+
+    return text_and_icon_color;
+  }
+
+  if (GetOmniboxChipTheme() == OmniboxChipTheme::kIconStyle) {
+    return GetColorProvider()->GetColor(kColorOmniboxResultsIcon);
+  }
+
+  return GetColorProvider()->GetColor(
+      GetOmniboxChipTheme() == OmniboxChipTheme::kLowVisibility
+          ? kColorOmniboxChipForegroundLowVisibility
+          : kColorOmniboxChipForegroundNormalVisibility);
+}
+
+SkColor OmniboxChipButton::GetBackgroundColor() const {
+  DCHECK(theme_ != OmniboxChipTheme::kIconStyle);
+  return GetColorProvider()->GetColor(kColorOmniboxChipBackground);
+}
+
+void OmniboxChipButton::UpdateIconAndColors() {
+  if (!GetWidget()) {
+    return;
+  }
+  SetEnabledTextColors(GetForegroundColor());
+  SetImageModel(views::Button::STATE_NORMAL, GetIconImageModel());
+  if (features::IsChromeRefresh2023()) {
+    ConfigureInkDropForRefresh2023(this, kColorOmniboxChipInkDropHover,
+                                   kColorOmniboxChipInkDropRipple);
+  }
 }
 
 void OmniboxChipButton::ForceAnimateExpand() {
@@ -203,45 +295,6 @@ int OmniboxChipButton::GetIconSize() const {
   }
 
   return GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
-}
-
-void OmniboxChipButton::UpdateIconAndColors() {
-  if (!GetWidget())
-    return;
-  SetEnabledTextColors(GetTextAndIconColor());
-  SetImageModel(views::Button::STATE_NORMAL, GetIconImageModel());
-  if (features::IsChromeRefresh2023()) {
-    ConfigureInkDropForRefresh2023(this, kColorOmniboxChipInkDropHover,
-                                   kColorOmniboxChipInkDropRipple);
-  }
-}
-
-SkColor OmniboxChipButton::GetTextAndIconColor() const {
-  if (features::IsChromeRefresh2023()) {
-    // Use the same color as the content setting icons.
-    if (theme_ == OmniboxChipTheme::kIconStyle) {
-      return GetColorProvider()->GetColor(kColorOmniboxResultsIcon);
-    }
-
-    // The icon and label have the same color.
-    return GetColorProvider()->GetColor(kColorOmniboxIntentChipIcon);
-  }
-
-  if (theme_ == OmniboxChipTheme::kIconStyle)
-    return GetColorProvider()->GetColor(kColorOmniboxResultsIcon);
-
-  return GetColorProvider()->GetColor(
-      theme_ == OmniboxChipTheme::kLowVisibility
-          ? kColorOmniboxChipForegroundLowVisibility
-          : kColorOmniboxChipForegroundNormalVisibility);
-}
-
-SkColor OmniboxChipButton::GetBackgroundColor() const {
-  DCHECK(theme_ != OmniboxChipTheme::kIconStyle);
-  if (features::IsChromeRefresh2023()) {
-    return GetColorProvider()->GetColor(kColorOmniboxIntentChipBackground);
-  }
-  return GetColorProvider()->GetColor(kColorOmniboxChipBackground);
 }
 
 int OmniboxChipButton::GetCornerRadius() const {

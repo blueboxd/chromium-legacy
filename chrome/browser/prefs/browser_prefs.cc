@@ -17,6 +17,7 @@
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_ui.h"
 #include "chrome/browser/accessibility/invert_bubble_prefs.h"
+#include "chrome/browser/ash/notifications/update_notification_showing_controller.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/component_updater/component_updater_prefs.h"
@@ -132,6 +133,7 @@
 #include "components/permissions/pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/url_blocklist_manager.h"
+#include "components/policy/core/common/local_test_policy_provider.h"
 #include "components/policy/core/common/management/management_service.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_statistics_collector.h"
@@ -343,7 +345,6 @@
 #include "chrome/browser/ash/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_controller.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
-#include "chrome/browser/ash/crosapi/network_settings_service_ash.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/cryptauth/client_app_metadata_provider_service.h"
 #include "chrome/browser/ash/cryptauth/cryptauth_device_id_provider_impl.h"
@@ -376,6 +377,7 @@
 #include "chrome/browser/ash/login/users/avatar/user_image_sync_observer.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
+#include "chrome/browser/ash/net/ash_proxy_monitor.h"
 #include "chrome/browser/ash/net/network_throttling_observer.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
@@ -923,6 +925,19 @@ const char kPrefExplicitLanguageAskShown[] =
 const char kUnifiedConsentMigrationState[] = "unified_consent.migration_state";
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
+// Deprecated 07/2023.
+const char kPasswordsGroupingInfoRequested[] =
+    "password_manager.passwords_grouping_info_requested";
+
+// Deprecated 07/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kPowerMetricsIdleScreenOffCount[] =
+    "power.metrics.idle_screen_off_count";
+const char kPowerMetricsIdleSuspendCount[] = "power.metrics.idle_suspend_count";
+const char kPowerMetricsLidClosedSuspendCount[] =
+    "power.metrics.lid_closed_suspend_count";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -1331,6 +1346,16 @@ void RegisterProfilePrefsForMigration(
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterIntegerPref(kUnifiedConsentMigrationState, 0);
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Deprecated 07/2023
+  registry->RegisterBooleanPref(kPasswordsGroupingInfoRequested, false);
+
+// Deprecated 07/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterIntegerPref(kPowerMetricsIdleScreenOffCount, 0);
+  registry->RegisterIntegerPref(kPowerMetricsIdleSuspendCount, 0);
+  registry->RegisterIntegerPref(kPowerMetricsLidClosedSuspendCount, 0);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 }  // namespace
 
@@ -1406,6 +1431,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(policy::policy_prefs::kBackForwardCacheEnabled,
                                 true);
+  registry->RegisterBooleanPref(policy::policy_prefs::kReadAloudEnabled, true);
 #endif  // BUILDFLAG(IS_ANDROID)
 
   // Below this point is for platform-specific and compile-time conditional
@@ -1630,6 +1656,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   permissions::RegisterProfilePrefs(registry);
   PermissionBubbleMediaAccessHandler::RegisterProfilePrefs(registry);
   PlatformNotificationServiceImpl::RegisterProfilePrefs(registry);
+  policy::LocalTestPolicyProvider::RegisterProfilePrefs(registry);
   policy::URLBlocklistManager::RegisterProfilePrefs(registry);
   PolicyUI::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
@@ -1814,6 +1841,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ash::ApkWebAppService::RegisterProfilePrefs(registry);
   ash::app_time::AppActivityRegistry::RegisterProfilePrefs(registry);
   ash::app_time::AppTimeController::RegisterProfilePrefs(registry);
+  ash::AshProxyMonitor::RegisterProfilePrefs(registry);
   ash::assistant::prefs::RegisterProfilePrefs(registry);
   ash::auth::AuthFactorConfig::RegisterPrefs(registry);
   ash::bluetooth::DebugLogsManager::RegisterPrefs(registry);
@@ -1826,7 +1854,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ash::FamilyUserChromeActivityMetrics::RegisterProfilePrefs(registry);
   ash::FamilyUserMetricsService::RegisterProfilePrefs(registry);
   ash::FamilyUserSessionMetrics::RegisterProfilePrefs(registry);
-  crosapi::NetworkSettingsServiceAsh::RegisterProfilePrefs(registry);
   ash::InlineLoginHandlerImpl::RegisterProfilePrefs(registry);
   ash::first_run::RegisterProfilePrefs(registry);
   ash::file_system_provider::RegisterProfilePrefs(registry);
@@ -1854,6 +1881,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ash::ServicesCustomizationDocument::RegisterProfilePrefs(registry);
   ash::settings::OSSettingsUI::RegisterProfilePrefs(registry);
   ash::StartupUtils::RegisterOobeProfilePrefs(registry);
+  ash::UpdateNotificationShowingController::RegisterProfilePrefs(registry);
   ash::user_image::prefs::RegisterProfilePrefs(registry);
   ash::UserImageSyncObserver::RegisterProfilePrefs(registry);
   ChromeMetricsServiceClient::RegisterProfilePrefs(registry);
@@ -2479,6 +2507,17 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   profile_prefs->ClearPref(kUnifiedConsentMigrationState);
 #endif
+
+  // Added 07/2023.
+  profile_prefs->ClearPref(kPasswordsGroupingInfoRequested);
+
+  // Added 07/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  profile_prefs->ClearPref(kPowerMetricsIdleScreenOffCount);
+  profile_prefs->ClearPref(kPowerMetricsIdleSuspendCount);
+  profile_prefs->ClearPref(kPowerMetricsLidClosedSuspendCount);
+#endif
+  syncer::SyncPrefs::MigrateAutofillWalletImportEnabledPref(profile_prefs);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

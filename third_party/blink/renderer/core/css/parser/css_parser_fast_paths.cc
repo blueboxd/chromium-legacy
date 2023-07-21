@@ -1228,11 +1228,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kLuminance ||
              value_id == CSSValueID::kAlpha;
     case CSSPropertyID::kMathShift:
-      DCHECK(RuntimeEnabledFeatures::CSSMathShiftEnabled());
       return value_id == CSSValueID::kNormal ||
              value_id == CSSValueID::kCompact;
     case CSSPropertyID::kMathStyle:
-      DCHECK(RuntimeEnabledFeatures::CSSMathStyleEnabled());
       return value_id == CSSValueID::kNormal ||
              value_id == CSSValueID::kCompact;
     case CSSPropertyID::kObjectFit:
@@ -1360,10 +1358,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kGeometricprecision;
     case CSSPropertyID::kTextTransform:
       return (value_id >= CSSValueID::kCapitalize &&
-              value_id <= CSSValueID::kLowercase) ||
-             value_id == CSSValueID::kNone ||
-             (RuntimeEnabledFeatures::CSSMathVariantEnabled() &&
-              value_id == CSSValueID::kMathAuto);
+              value_id <= CSSValueID::kMathAuto) ||
+             value_id == CSSValueID::kNone;
     case CSSPropertyID::kUnicodeBidi:
       return value_id == CSSValueID::kNormal ||
              value_id == CSSValueID::kEmbed ||
@@ -1525,6 +1521,10 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kBefore || value_id == CSSValueID::kAfter;
     case CSSPropertyID::kRubyPosition:
       return value_id == CSSValueID::kOver || value_id == CSSValueID::kUnder;
+    case CSSPropertyID::kTextAutospace:
+      DCHECK(RuntimeEnabledFeatures::CSSTextAutoSpaceEnabled());
+      return value_id == CSSValueID::kNormal ||
+             value_id == CSSValueID::kNoAutospace;
     case CSSPropertyID::kWebkitTextCombine:
       return value_id == CSSValueID::kNone ||
              value_id == CSSValueID::kHorizontal;
@@ -1691,6 +1691,7 @@ CSSBitset CSSParserFastPaths::handled_by_keyword_fast_paths_properties_{{
     CSSPropertyID::kTextAlign,
     CSSPropertyID::kTextAlignLast,
     CSSPropertyID::kTextAnchor,
+    CSSPropertyID::kTextAutospace,
     CSSPropertyID::kTextCombineUpright,
     CSSPropertyID::kTextDecorationStyle,
     CSSPropertyID::kTextDecorationSkipInk,

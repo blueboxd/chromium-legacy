@@ -31,6 +31,7 @@
 #include "chrome/browser/password_manager/passwords_navigation_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/login/login_handler_test_utils.h"
@@ -54,6 +55,7 @@
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/http_auth_observer.h"
@@ -63,7 +65,6 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/test_password_store.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -195,14 +196,10 @@ class PasswordManagerBackForwardCacheBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // TODO(https://crbug.com/1158630): Remove this and below after confirming
-    // whether setup is completing.
-    LOG(INFO) << "SetUpCommandLine started.";
     scoped_feature_list_.InitWithFeaturesAndParameters(
         content::GetDefaultEnabledBackForwardCacheFeaturesForTesting(),
         content::GetDefaultDisabledBackForwardCacheFeaturesForTesting());
     PasswordManagerBrowserTest::SetUpCommandLine(command_line);
-    LOG(INFO) << "SetUpCommandLine complete.";
   }
 
  private:
@@ -3970,6 +3967,27 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_TRUE(prompt_observer.IsSavePromptAvailable());
 }
 
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       ShowPasswordManagerNoBrowser) {
+  // Create a WebContent without tab helpers so it has no associated browser.
+  std::unique_ptr<content::WebContents> new_web_contents =
+      content::WebContents::Create(
+          content::WebContents::CreateParams(browser()->profile()));
+
+  // Verify that there is no browser.
+  ASSERT_FALSE(chrome::FindBrowserWithWebContents(new_web_contents.get()));
+
+  // Create ChromePasswordManagerClient for newly created web_contents.
+  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
+      new_web_contents.get(), /*autofill_client=*/nullptr);
+
+  ChromePasswordManagerClient* client =
+      ChromePasswordManagerClient::FromWebContents(new_web_contents.get());
+  ASSERT_TRUE(client);
+  ASSERT_NO_FATAL_FAILURE(client->NavigateToManagePasswordsPage(
+      password_manager::ManagePasswordsReferrer::kPasswordsGoogleWebsite));
+}
+
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // This test suite only applies to Gaia signin page, and checks that the
 // signin interception bubble and the password bubbles never conflict.
@@ -4207,6 +4225,9 @@ class MockPrerenderPasswordManagerDriver
   MOCK_METHOD(void,
               ShowPasswordSuggestions,
               (autofill::FieldRendererId element_id,
+               const autofill::FormData& form,
+               uint64_t username_field_index,
+               uint64_t password_field_index,
                base::i18n::TextDirection text_direction,
                const std::u16string& typed_username,
                int options,
@@ -4280,11 +4301,16 @@ class MockPrerenderPasswordManagerDriver
         });
     ON_CALL(*this, ShowPasswordSuggestions)
         .WillByDefault([this](autofill::FieldRendererId element_id,
+                              const autofill::FormData& form,
+                              uint64_t username_field_index,
+                              uint64_t password_field_index,
                               base::i18n::TextDirection text_direction,
                               const std::u16string& typed_username, int options,
                               const gfx::RectF& bounds) {
-          impl_->ShowPasswordSuggestions(element_id, text_direction,
-                                         typed_username, options, bounds);
+          const autofill::FormData form_data;
+          impl_->ShowPasswordSuggestions(element_id, form_data, 0, 0,
+                                         text_direction, typed_username,
+                                         options, bounds);
         });
 #if BUILDFLAG(IS_ANDROID)
     ON_CALL(*this, ShowKeyboardReplacingSurface)
@@ -4337,8 +4363,8 @@ class MockPrerenderPasswordManagerDriver
   }
   base::OnceClosure quit_closure_;
   uint32_t wait_type_ = WAIT_FOR_NOTHING;
-  raw_ptr<autofill::mojom::PasswordManagerDriver, DanglingAcrossTasks> impl_ =
-      nullptr;
+  raw_ptr<autofill::mojom::PasswordManagerDriver, AcrossTasksDanglingUntriaged>
+      impl_ = nullptr;
 };
 
 class MockPrerenderPasswordManagerDriverInjector

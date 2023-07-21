@@ -8,8 +8,10 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
+#include "components/sync/protocol/webauthn_credential_specifics.pb.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/cable/v2_constants.h"
 #include "device/fido/ctap_get_assertion_request.h"
@@ -27,11 +29,17 @@ class Crypter;
 class HandshakeInitiator;
 }  // namespace cablev2
 
-class EnclaveAuthenticator : public FidoAuthenticator {
+namespace enclave {
+
+// TODO(kenrb): Remove the export directive when it is no longer used by the
+// client stand-alone app.
+class COMPONENT_EXPORT(DEVICE_FIDO) EnclaveAuthenticator
+    : public FidoAuthenticator {
  public:
   EnclaveAuthenticator(
       const GURL& service_url,
-      base::span<const uint8_t, device::kP256X962Length> peer_identity);
+      base::span<const uint8_t, device::kP256X962Length> peer_identity,
+      std::vector<sync_pb::WebauthnCredentialSpecifics> passkeys);
   ~EnclaveAuthenticator() override;
 
   EnclaveAuthenticator(const EnclaveAuthenticator&) = delete;
@@ -77,12 +85,16 @@ class EnclaveAuthenticator : public FidoAuthenticator {
   absl::optional<std::array<uint8_t, 32>> handshake_hash_;
   std::unique_ptr<cablev2::Crypter> crypter_;
 
-  // GetAssertion arguments while waiting the connection to be established.
-  std::string pending_json_request_;
+  // GetAssertion arguments while waiting for the connection to be established.
+  std::string pending_request_body_;
   GetAssertionCallback pending_get_assertion_callback_;
+
+  std::vector<sync_pb::WebauthnCredentialSpecifics> available_passkeys_;
 
   base::WeakPtrFactory<EnclaveAuthenticator> weak_factory_{this};
 };
+
+}  // namespace enclave
 
 }  // namespace device
 

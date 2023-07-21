@@ -222,6 +222,7 @@ Sachez que, sur <ph name="MS_WIN_NAME" />, <ph name="MAC_OS_NAME" /> et <ph name
 
       Si cette règle est définie sur "False" ou qu'elle n'est pas configurée, les pages Web peuvent accéder à l'API WebGL, et les plug-ins peuvent utiliser l'API Pepper 3D. Toutefois, il peut quand même être nécessaire d'ajouter des arguments de ligne de commande aux paramètres par défaut du navigateur pour utiliser ces API.</translation>
 <translation id="1198458955128279215">Utiliser le comportement par défaut selon le calendrier de déploiement des fonctionnalités</translation>
+<translation id="119943715168319757">Paramètres MIDI</translation>
 <translation id="1202216683470826356">Afficher les fiches sur la page Nouvel onglet</translation>
 <translation id="120314092766637918">Si cette règle est activée ou n'est pas configurée, la protection contre l'hameçonnage côté client est contrôlée par <ph name="SAFE_BROWSING_PROTECTION_LEVEL_POLICY_NAME" /> pour <ph name="PRODUCT_NAME" />. Si <ph name="SAFE_BROWSING_PROTECTION_LEVEL_POLICY_NAME" /> est défini sur <ph name="SAFE_BROWSING_PROTECTION_LEVEL_VALUE_STANDARD" /> ou <ph name="SAFE_BROWSING_PROTECTION_LEVEL_VALUE_ENHANCED" />, la protection contre l'hameçonnage côté client exécute un modèle local pour vérifier si une page est une tentative d'hameçonnage. Si le modèle considère que la page est une tentative d'hameçonnage, <ph name="PRODUCT_NAME" /> envoie une demande de verdict à Google.
 Si cette règle est désactivée, la protection contre l'hameçonnage côté client n'effectue aucune opération de protection et n'envoie pas de données à Google pour obtenir des verdicts.</translation>
@@ -1690,7 +1691,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 <translation id="2467181864598429837">Comportement par défaut du navigateur</translation>
 <translation id="2467896267442150508">Intervalle d'une semaine (au maximum). Si l'heure de début est postérieure à l'heure de fin, l'heure de fin sera décalée au jour suivant.</translation>
 <translation id="2476249479201711962">Activer l'accès au menu contextuel du moteur de recherche par défaut</translation>
-<translation id="247658312644322296">Destination "Enregistrer au format PDF"</translation>
 <translation id="2478756867046106663">Autoriser les sites aux expériences abusives à ouvrir de nouvelles fenêtres ou de nouveaux onglets</translation>
 <translation id="2480971699591919564">Cette règle active la fonctionnalité Click to Call, qui autorise les utilisateurs à envoyer des numéros de téléphone depuis leur ordinateur équipé de Chrome vers un appareil Android lorsqu'ils sont connectés. Pour plus d'informations, consultez cet article du centre d'aide : https://support.google.com/chrome/answer/9430554?hl=fr.
 
@@ -1846,6 +1846,7 @@ Remarque : Si vous ne renseignez pas un champ, toutes les valeurs seront prises
 <translation id="2608887839902987727">Empêcher l'authentification du portail captif d'ignorer les paramètres proxy</translation>
 <translation id="2608985885792348429">Paramètre de presse-papiers par défaut</translation>
 <translation id="2615240493030733717">Transmettre le fuseau horaire</translation>
+<translation id="2619258867868873629">Destinations "Enregistrer au format PDF" et "Enregistrer dans Google Drive" sur les appareils <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="2621290137818374425">Permet de désactiver l'application des exigences de divulgation stipulées dans les règles de transparence des certificats pour les noms d'hôte dans la liste d'URL spécifiées. Même si cela complique la détection des certificats qui ne sont pas émis correctement, les hôtes peuvent continuer d'utiliser des certificats qui ne seraient sinon pas jugés fiables (pour ne pas avoir été communiqués au public comme il se doit).
 
       Si cette règle n'est pas configurée, cela signifie que si les certificats ne sont pas communiqués tel que le prévoient les règles de transparence des certificats, <ph name="PRODUCT_NAME" /> considère alors qu'ils ne sont pas fiables.
@@ -2599,6 +2600,7 @@ Si cette règle n'est pas configurée, le nouveau comportement sera utilisé tou
 <translation id="3278042410658310805">Désactiver les commentaires audio sur l'écran de connexion et autoriser l'utilisateur à les activer temporairement</translation>
 <translation id="328347261792478720">Par défaut, le navigateur propose à l'utilisateur des recommandations personnalisées de contenus multimédias. Si cette règle est désactivée, l'utilisateur ne bénéficie pas de ces recommandations. Si cette règle est activée ou qu'elle n'est pas configurée, l'utilisateur peut voir ces recommandations.</translation>
 <translation id="3284094172359247914">Contrôler l'utilisation de l'API WebUSB</translation>
+<translation id="3284658508278342293">Accorder l'autorisation MIDI sur ces sites</translation>
 <translation id="3286159327013237833">Activer les clics automatiques sur l'écran de connexion</translation>
 <translation id="3288595667065905535">Version disponible</translation>
 <translation id="3294430356898755483">Cette règle permet aux administrateurs de configurer une liste d'imprimantes pour leurs utilisateurs. La sélection de l'imprimante est effectuée la première fois que l'utilisateur lance une impression.
@@ -3038,6 +3040,11 @@ Si le modèle URI contient une variable <ph name="HTTP_VARIABLE_DNS" />, les req
 
       Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier. Si cette règle n'est pas configurée, le démarrage au branchement de l'alimentation CA est désactivé, et les utilisateurs ne peuvent pas l'activer.</translation>
 <translation id="3660562134618097814">Transférer des cookies de fournisseurs d'identité SAML lors de la connexion</translation>
+<translation id="3661897198667953320">Permet de lister les formats d'URL des sites qui refusent automatiquement l'autorisation MIDI. Cette règle empêche ainsi les sites d'utiliser des appareils MIDI tels que des télécommandes et des instruments de musique.
+
+Pour en savoir plus sur les formats d'URL de site valides, veuillez consulter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. Les caractères génériques (<ph name="WILDCARD_VALUE" />) sont autorisés. Cette règle ne tient compte que de l'origine. Tout chemin d'accès dans le format d'URL est donc ignoré.
+
+Si cette règle n'est pas définie pour un site, alors la règle <ph name="DEFAULT_MIDI_SETTING_POLICY_NAME" /> s'applique au site (si elle est définie). Sinon, les paramètres par défaut du navigateur s'appliquent, et les utilisateurs peuvent définir l'autorisation pour chaque site.</translation>
 <translation id="3665437376055221832">N'inviter l'utilisateur que si la règle de sélection automatique n'établit de correspondance avec aucun certificat.</translation>
 <translation id="3671773704245936868">Désactiver la mise en surbrillance des éléments sélectionnés au clavier</translation>
 <translation id="3674010627788940405">Ne prend pas en charge les en-têtes de requêtes CORS sans caractères génériques.</translation>
@@ -3470,6 +3477,13 @@ Le champ <ph name="RUN_ON_OS_LOGIN_FIELD" /> indique si une application Web peut
 <translation id="402759845255257575">Interdire à tous les sites d'exécuter JavaScript</translation>
 <translation id="4027608872760987929">Activer le moteur de recherche par défaut</translation>
 <translation id="4030152268425532846">Désactiver l'annulation de la connexion automatique</translation>
+<translation id="4039065751874009354">Cette règle permet de désactiver temporairement deux correctifs associés concernant le comportement de la boîte de dialogue de confirmation affichée par l'événement beforeunload.
+Si cette règle est activée, le nouveau comportement approprié est utilisé. Lorsque cette règle est désactivée, l'ancien comportement est utilisé. Si cette règle n'est pas définie, le comportement par défaut est utilisé.
+Cette règle est une solution temporaire et sera bientôt supprimée.
+
+Nouveau comportement approprié : dans "beforeunload", appeler event.preventDefault() déclenche la boîte de dialogue de confirmation. Définir event.returnValue sur la chaîne vide ne déclenche pas la boîte de dialogue de confirmation.
+
+Ancien comportement : dans "beforeunload", appeler event.preventDefault() ne déclenche pas la boîte de dialogue de confirmation. Définir event.returnValue sur la chaîne vide déclenche la boîte de dialogue de confirmation.</translation>
 <translation id="4043796890723386527">Empêcher les utilisateurs de créer et d'utiliser des profils secondaires, et d'utiliser le mode Invité dans le navigateur <ph name="LACROS_NAME" /></translation>
 <translation id="4051723201852944592">Détecter les fenêtres recouvertes</translation>
 <translation id="4052529125939620019">Charger l'extension du composant CryptoToken au démarrage</translation>
@@ -4236,6 +4250,7 @@ Cette règle n'a aucune incidence lorsque la règle <ph name="DEVICE_SCREENSAVER
 <translation id="4735099388031364207">Si vous activez cette règle, l'attestation à distance est activée pour l'appareil. Un certificat est automatiquement généré et importé sur le serveur de gestion des appareils.
 
       Si vous désactivez cette règle, ou si vous ne la configurez pas, aucun certificat n'est généré, et les appels à l'API <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> échouent.</translation>
+<translation id="473613500147803115">Bloquer l'autorisation MIDI sur ces sites</translation>
 <translation id="473673197014866318">Cette règle permet de contrôler les paramètres de gestion des extensions pour <ph name="PRODUCT_NAME" />, y compris ceux contrôlés par des règles existantes liées aux extensions. Elle remplace toutes les anciennes règles susceptibles d'être configurées.
 
 Elle fait correspondre un ID d'extension ou une URL de mise à jour uniquement avec sa configuration spécifique. Une configuration par défaut peut être définie pour l'ID spécial <ph name="DEFAULT_SCOPE" />, lequel s'applique à toutes les extensions pour lesquelles aucune configuration personnalisée n'est définie dans cette règle. Avec une URL de mise à jour, la configuration s'applique aux extensions avec l'URL de mise à jour telle qu'elle est indiquée dans le fichier manifeste de ces extensions (pour en savoir plus, consultez la page http://support.google.com/chrome/a?p=Configure_ExtensionSettings_policy). Si l'indicateur "override_update_url" est défini sur "True", l'extension est installée et mise à jour à l'aide de l'URL spécifiée dans la règle "<ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />" ou dans le champ "update_url" de cette règle. L'indicateur "override_update_url" est ignoré si le champ "update_url" contient une URL du Chrome Web Store.
@@ -4466,9 +4481,6 @@ Si cette règle est définie sur "False", c'est le comportement par défaut qui 
 <translation id="4970046075219007744">Autoriser les applications Web à demander aux utilisateurs l'accès à ces types de fichiers via l'API File Handling</translation>
 <translation id="4970855112942626932">Désactiver la connexion au navigateur</translation>
 <translation id="4974091268178043378">Mode couleur de Chrome OS</translation>
-<translation id="4976928720873547342">Si cette règle est configurée, tous les types de données spécifiés ne seront pas synchronisés avec <ph name="CHROME_SYNC_NAME" /> ni avec le profil itinérant. Cela peut permettre de réduire la taille du profil itinérant ou de limiter les types de données importés sur les serveurs <ph name="CHROME_SYNC_NAME" />.
-
-      Les types de données actuels pour cette règle sont : "bookmarks", "readingList", "preferences", "passwords", "autofill", "themes", "typedUrls", "extensions", "apps", "tabs" et "wifiConfigurations". Ces noms sont sensibles à la casse.</translation>
 <translation id="4977702914571821981">Permet de dresser la liste des formats d'URL pour lesquels les sites ne sont pas autorisés à afficher du contenu mixte (contenu HTTP affiché sur des sites HTTPS) blocable (actif), et pour lesquels le contenu mixte blocable de manière facultative (passif) est mis à niveau.
 
           Si cette règle n'est pas configurée, le contenu mixte blocable est bloqué, et le contenu mixte blocable de manière facultative est mis à niveau. Les utilisateurs peuvent définir des exceptions autorisant l'affichage de ce contenu sur des sites spécifiques.
@@ -4543,6 +4555,11 @@ Si cette règle est définie sur "False", c'est le comportement par défaut qui 
 
       Si celle-ci est définie sur "True" ou si elle n'est pas configurée, les utilisateurs peuvent personnaliser l'arrière-plan sur la page "Nouvel onglet".</translation>
 <translation id="5076953589932162038">Paramètres des ensembles propriétaires</translation>
+<translation id="507742683193937417">Permet de lister les formats d'URL des sites qui accordent automatiquement l'autorisation MIDI. Cette règle permet ainsi aux sites d'utiliser des appareils MIDI tels que des télécommandes et des instruments de musique.
+
+Pour en savoir plus sur les formats d'URL de site valides, veuillez consulter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. Les caractères génériques (<ph name="WILDCARD_VALUE" />) sont autorisés. Cette règle ne tient compte que de l'origine. Tout chemin d'accès dans le format d'URL est donc ignoré.
+
+Si cette règle n'est pas définie pour un site, alors la règle <ph name="DEFAULT_MIDI_SETTING_POLICY_NAME" /> s'applique au site (si elle est définie). Sinon, les paramètres par défaut du navigateur s'appliquent, et les utilisateurs peuvent définir l'autorisation pour chaque site.</translation>
 <translation id="5078623750797048009">Activer les annotations des PDF</translation>
 <translation id="5081204761483900654">Sessions Invité gérées restreintes</translation>
 <translation id="5082296146261894974">Permet aux utilisateurs de cliquer sur une notification Phone Hub pour lancer l'application Eche.</translation>
@@ -4813,6 +4830,7 @@ Remarque : Cette règle ne s'applique pas aux mises à niveau HSTS.</translatio
       Pour en savoir plus sur les formats <ph name="URL_LABEL" /> valides, veuillez consulter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.  Cette règle ne tient compte que de l'origine. Ainsi, tout chemin d'accès dans le format d'URL est ignoré.</translation>
 <translation id="5318185076587284965">Autoriser l'hôte d'accès à distance à utiliser des serveurs de relais</translation>
 <translation id="5323200200131319468">Activer les commentaires audio sur l'écran de connexion</translation>
+<translation id="5323271643727095577">Ne pas afficher de boîte de dialogue d'annulation quand event.preventDefault() est appelé pour l'événement beforeunload. Afficher la boîte de dialogue d'annulation quand beforeunload event.returnValue est la chaîne vide de l'événement beforeunload.</translation>
 <translation id="5323355956693037267">Activer le clavier à l'écran sur l'écran de connexion</translation>
 <translation id="532848608876725157">Activer DNS-over-HTTPS avec solution de secours à risque</translation>
 <translation id="5328965694451556034">Signaler une connexion/déconnexion</translation>
@@ -4830,6 +4848,7 @@ Remarque : Cette règle ne s'applique pas aux mises à niveau HSTS.</translatio
       Si la propriété <ph name="AUTO_SELECT_ALL_SCREENS_NAME" /> est définie dans une requête <ph name="GET_DISPLAY_MEDIA_SET_NAME" />, toutes les surfaces d'écran sont automatiquement capturées sans nécessiter l'autorisation explicite de l'utilisateur.
       Si cette règle n'est pas configurée, <ph name="AUTO_SELECT_ALL_SCREENS_NAME" /> n'est disponible pour aucune application Web.
 Pour améliorer la confidentialité, à partir de la version 116 de <ph name="PRODUCT_NAME" />, cette règle ne sera plus compatible avec l'actualisation dynamique. Cela permettra à l'utilisateur de s'assurer qu'aucune page supplémentaire ne pourra capturer les écrans après la connexion, sauf celles déjà autorisées au début de la session.</translation>
+<translation id="5354891932736553743">Paramètre d'autorisation MIDI par défaut</translation>
 <translation id="5361167871898066799">Contrôler la fonctionnalité de correction automatique pour le clavier physique</translation>
 <translation id="5361708558735884308">Cette règle permet d'autoriser l'accès aux URL listées comme exceptions à <ph name="URL_BLOCKLIST_POLICY_NAME" />. Lisez sa description pour connaître le format des entrées listées. Par exemple, définir <ph name="URL_BLOCKLIST_POLICY_NAME" /> sur "*" bloque toutes les requêtes, et vous pouvez appliquer cette règle pour autoriser l'accès à une liste limitée d'URL. Utilisez-la pour définir des exceptions à certains schémas, ports, chemins d'accès spécifiques ou sous-domaines d'autres domaines à l'aide du format spécifié sur https://support.google.com/chrome/a?p=url_blocklist_filter_format. Le filtre le plus spécifique détermine si une URL est bloquée ou autorisée. La règle <ph name="URL_ALLOWLIST_POLICY_NAME" /> prévaut sur <ph name="URL_BLOCKLIST_POLICY_NAME" />. Cette règle est limitée à 1 000 entrées.
 
@@ -5516,6 +5535,7 @@ Si cette règle est désactivée, la protection des extensions de la <ph name="S
 <translation id="5979376378555121803">Application hébergée</translation>
 <translation id="5984099692320899605">Ne pas utiliser l'authentification NTLM</translation>
 <translation id="5984237109586500246">Accepter les contenus Web diffusés via Signed HTTP Exchange</translation>
+<translation id="5991707691018985057">Afficher la boîte de dialogue d'annulation quand event.preventDefault() est appelé pour l'événement beforeunload. Ne pas afficher de boîte de dialogue d'annulation quand event.returnValue est la chaîne vide pour l'événement beforeunload.</translation>
 <translation id="5997543603646547632">Utiliser le format d'horloge 24 h par défaut</translation>
 <translation id="5997846976342452720">Indiquer si l'outil de recherche de plug-ins doit être désactivé (obsolète)</translation>
 <translation id="5998198091336830580">Cette règle fait partie du groupe atomique suivant (seules les règles issues de la source ayant la plus haute priorité dans le groupe sont appliquées) :</translation>
@@ -5645,6 +5665,7 @@ REMARQUE : Seuls les nouveaux processus du moteur de rendu refléteront les mod
 
       Sinon, il est possible de définir l'une des valeurs suivantes : "tls1.2" ou "tls1.3". Une fois cette option définie, <ph name="PRODUCT_NAME" /> n'utilise pas les versions SSL/TLS supérieures à la version spécifiée. Une valeur non reconnue sera ignorée.</translation>
 <translation id="6123052603197028610">Ne pas autoriser l'envoi de requêtes aux serveurs Google visant à récupérer les horodatages</translation>
+<translation id="6130360423841559818">Contrôler le nouveau comportement de la boîte de dialogue d'annulation générée par l'événement beforeunload</translation>
 <translation id="6131803221304830537">Désactiver l'intégrité du code du moteur de rendu</translation>
 <translation id="6132506775968708399">Bloquer les cookies tiers</translation>
 <translation id="6133088669883929098">Autoriser tous les sites à utiliser la génération de clé</translation>
@@ -6502,6 +6523,7 @@ Cette règle sera supprimée prochainement de <ph name="PRODUCT_NAME" />.</trans
 <translation id="6794083666143216172">Autoriser les origines à interroger les attributs des appareils</translation>
 <translation id="6795485990775913659">Autoriser l'impression sans code uniquement</translation>
 <translation id="6796215185873669533">Appliquez les paramètres par défaut du navigateur pour la version de la chaîne user-agent.</translation>
+<translation id="6800111968763383631">Refuse par défaut l'autorisation MIDI pour tous les sites</translation>
 <translation id="6800181452282128474">Ne pas envoyer de requêtes aux serveurs Quirks</translation>
 <translation id="68031099365512050">Signaler l'état audio</translation>
 <translation id="680356860463873420">Ne pas autoriser les utilisateurs à employer Plugin VM</translation>
@@ -6861,6 +6883,7 @@ Si cette règle est définie, la liste de valeurs par défaut est complétée pa
 
       Si la règle est définie sur "False" ou n'est pas définie, ces informations ne sont pas transmises.
       Si elle est définie sur "True", les informations concernant le ventilateur de l'appareil sont transmises.</translation>
+<translation id="7096708978256135543">Demander chaque fois qu'un site souhaite obtenir l'autorisation MIDI</translation>
 <translation id="7098400392308393199">La protection des téléchargements en temps réel est contrôlée par la règle <ph name="SAFE_BROWSING_PROTECTION_LEVEL_POLICY_NAME" /></translation>
 <translation id="710003290625031750">Description détaillée du schéma :</translation>
 <translation id="7101550508196914704">Ne pas afficher de raccourcis d'applications dans la barre de favoris</translation>
@@ -7812,6 +7835,11 @@ Pour les instances <ph name="MS_WIN_NAME" />, les applis et extensions non issue
 Pour les instances <ph name="MAC_OS_NAME" />, les applis et extensions non issues du Chrome Web Store ne peuvent être installées d'office que si l'instance est gérée via MDM, associée à un domaine via MCX ou bénéficie de la <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />.
 
 Remarque : cette règle ne s'applique pas en mode navigation privée. Pour en savoir plus sur l'hébergement des extensions, consultez la page https://developer.chrome.com/extensions/hosting.</translation>
+<translation id="798452960161141151">Si cette règle est définie sur <ph name="BLOCK_MIDI_POLICY_NAME" /> (valeur 2), les sites sont automatiquement empêchés d'utiliser des appareils MIDI tels que des télécommandes et des instruments de musique.
+
+Si cette règle est définie sur <ph name="ASK_MIDI_POLICY_NAME" /> (valeur 3), l'utilisateur reçoit une invite lorsqu'un site souhaite utiliser des appareils MIDI.
+
+Si cette règle n'est pas définie, la règle <ph name="ASK_MIDI_POLICY_NAME" /> s'applique. Toutefois, les utilisateurs peuvent modifier ce paramètre.</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="7986473886676689183">Activer la création de rapports Android</translation>
 <translation id="7990280274626154329">Activer <ph name="SEARCH_SIDE_PANEL_FEATURE_NAME" /></translation>
@@ -7882,7 +7910,6 @@ Nous vous recommandons d'utiliser "<ph name="LACROS_SELECTION_USER_CHOICE_VALUE"
 <translation id="8035570672225663428">Activez le modèle de recharge adaptative pour suspendre le processus de charge et allonger la durée de vie de la batterie.</translation>
 <translation id="8038007682032315784">Désactiver <ph name="SEARCH_SIDE_PANEL_FEATURE_NAME" /> sur toutes les pages Web</translation>
 <translation id="8044493735196713914">Indiquer le mode de démarrage de l'appareil</translation>
-<translation id="8044720778481009876">Destinations <ph name="CLOUD_PRINT_NAME" /> et "Enregistrer dans Google Drive" (obsolète)</translation>
 <translation id="80453040817068401">Rendre le navigateur <ph name="LACROS_NAME" /> disponible</translation>
 <translation id="804619600634661088">Autoriser l'utilisation du débogage à distance</translation>
 <translation id="8047600674992048328">Nom visible de l'utilisateur pour cette configuration</translation>
@@ -8368,6 +8395,7 @@ Si elle est désactivée, la page est bloquée.</translation>
 
       Avertissement : Il est déconseillé de configurer des restrictions de version, car cela pourrait empêcher les utilisateurs de recevoir des mises à jour logicielles et des correctifs de sécurité essentiels. Limiter les mises à jour à un préfixe de version spécifique pourrait constituer un risque pour les utilisateurs.</translation>
 <translation id="8508489378025029342">Activer les rapports sur le temps d'activité de l'appareil</translation>
+<translation id="8510357716574220408"><ph name="CLOUD_PRINT_NAME" /> (obsolète)</translation>
 <translation id="8511192250554640451">Autoriser la limitation des minuteurs JavaScript en arrière-plan à être contrôlée par la logique Chrome et configurée par les utilisateurs</translation>
 <translation id="8511708772548158302">Effectuez un rollback de l'appareil vers la version cible si la version actuelle de l'OS est plus récente que la version cible. L'appareil fait l'objet d'un Powerwash, mais les configurations réseau sans certificat définies au niveau de l'appareil sont conservées et l'appareil est réenregistré automatiquement.
 Le rollback vers <ph name="PRODUCT_OS_NAME" /> 106 ou version antérieure n'est pas compatible.</translation>

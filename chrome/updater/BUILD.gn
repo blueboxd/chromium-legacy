@@ -180,7 +180,7 @@ if (is_win || is_mac || is_linux) {
     if (is_mac) {
       sources += [
         "activity_impl_util_mac.cc",
-        "app/server/posix/app_server_posix_mac.cc",
+        "app/app_server_posix_mac.cc",
         "device_management/dm_storage_mac.mm",
         "installer_mac.cc",
         "ipc/ipc_security_mac.cc",
@@ -223,12 +223,12 @@ if (is_win || is_mac || is_linux) {
       sources += [
         "activity_impl_win.cc",
         "app/app_install_win.cc",
+        "app/app_server_win.cc",
+        "app/app_server_win.h",
         "app/server/win/com_classes.cc",
         "app/server/win/com_classes.h",
         "app/server/win/com_classes_legacy.cc",
         "app/server/win/com_classes_legacy.h",
-        "app/server/win/server.cc",
-        "app/server/win/server.h",
         "app/server/win/service_main.cc",
         "app/server/win/service_main.h",
         "app/server/win/update_service_internal_stub_win.cc",
@@ -325,8 +325,8 @@ if (is_win || is_mac || is_linux) {
       sources += [
         "activity_impl_posix.cc",
         "activity_impl_util_posix.h",
-        "app/server/posix/app_server_posix.cc",
-        "app/server/posix/app_server_posix.h",
+        "app/app_server_posix.cc",
+        "app/app_server_posix.h",
         "app/server/posix/update_service_internal_stub.cc",
         "app/server/posix/update_service_internal_stub.h",
         "app/server/posix/update_service_stub.cc",
@@ -347,7 +347,7 @@ if (is_win || is_mac || is_linux) {
     if (is_linux) {
       sources += [
         "activity_impl_util_linux.cc",
-        "app/server/posix/app_server_posix_linux.cc",
+        "app/app_server_posix_linux.cc",
         "device_management/dm_storage_linux.cc",
         "installer_linux.cc",
         "ipc/ipc_security_linux.cc",
@@ -804,6 +804,7 @@ if (is_win || is_mac || is_linux) {
         "win/app_command_runner_unittest.cc",
         "win/installer_api_unittest.cc",
         "win/manifest_util_unittest.cc",
+        "win/msi_tag_unittest.cc",
         "win/protocol_parser_xml_unittest.cc",
         "win/setup/setup_util_unittest.cc",
         "win/tag_extractor_unittest.cc",
@@ -815,6 +816,7 @@ if (is_win || is_mac || is_linux) {
         "//chrome/updater/app/server/win:updater_idl_idl",
         "//chrome/updater/app/server/win:updater_internal_idl_idl",
         "//chrome/updater/app/server/win:updater_legacy_idl_idl",
+        "//chrome/updater/win:msi_tag",
         "//chrome/updater/win:tag_extractor",
         "//chrome/updater/win/test:test_executables",
         "//chrome/updater/win/test:test_strings",
@@ -835,6 +837,19 @@ if (is_win || is_mac || is_linux) {
         "test/data/signed.exe.gz",
         "test/data/tagged_encode_utf8.exe",
         "test/data/tagged_magic_utf16.exe",
+        "test/data/tagged_msi/GUH-ampersand-ending.msi",
+        "test/data/tagged_msi/GUH-bad-format.msi",
+        "test/data/tagged_msi/GUH-bad-format2.msi",
+        "test/data/tagged_msi/GUH-brand-only.msi",
+        "test/data/tagged_msi/GUH-empty-key.msi",
+        "test/data/tagged_msi/GUH-empty-tag.msi",
+        "test/data/tagged_msi/GUH-empty-value.msi",
+        "test/data/tagged_msi/GUH-invalid-key.msi",
+        "test/data/tagged_msi/GUH-invalid-length.msi",
+        "test/data/tagged_msi/GUH-invalid-marker.msi",
+        "test/data/tagged_msi/GUH-special-value.msi",
+        "test/data/tagged_msi/GUH-multiple.msi",
+        "test/data/tagged_msi/GUH-untagged.msi",
         "//chrome/test/data/updater/OfflineManifest.gup",
         "//chrome/test/data/updater/updater_qualification_app_exe.crx",
       ]
@@ -1030,7 +1045,10 @@ if (is_win || is_mac || is_linux) {
       ]
     }
     if (is_win) {
-      deps += [ "//chrome/installer/util:with_no_strings" ]
+      deps += [
+        "//chrome/installer/util:with_no_strings",
+        "//chrome/updater/test/test_installer:test_app1_installer",
+      ]
       data_deps = [
         ":test_service_files",
         "//chrome/updater/win:updater_test",

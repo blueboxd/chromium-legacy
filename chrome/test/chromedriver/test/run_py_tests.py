@@ -869,6 +869,12 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     result = self._driver.ExecuteScript(script)
     self.assertEqual(result['toJSON'], 'text')
 
+  def testExecuteScriptWithDeletedGlobalJSON(self):
+    """Tests that deleted global JSON object does not affect serialization"""
+    result = self._driver.ExecuteScript('delete JSON; return 321')
+    self.assertIsInstance(result, int)
+    self.assertEqual(result, 321)
+
   def testExecuteScriptStaleElement1(self):
     # Test the standard compliance of error handling
     div = self._driver.ExecuteScript(
@@ -5590,10 +5596,12 @@ class LaunchDesktopTest(ChromeDriverBaseTest):
       os.close(file_descriptor)
       os.chmod(path, 0o777)
       exception_raised = False
+      switches = ['--remote-debugging-port=0']
       try:
         driver = chromedriver.ChromeDriver(_CHROMEDRIVER_SERVER_URL,
                                            _CHROMEDRIVER_SERVER_PID,
                                            chrome_binary=path,
+                                           chrome_switches=switches,
                                            test_name=self.id())
       except Exception as e:
         self.assertIn('Chrome failed to start', str(e))

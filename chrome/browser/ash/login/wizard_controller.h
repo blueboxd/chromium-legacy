@@ -27,6 +27,7 @@
 #include "chrome/browser/ash/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/ash/login/screens/choobe_screen.h"
 #include "chrome/browser/ash/login/screens/consolidated_consent_screen.h"
+#include "chrome/browser/ash/login/screens/consumer_update_screen.h"
 #include "chrome/browser/ash/login/screens/cryptohome_recovery_screen.h"
 #include "chrome/browser/ash/login/screens/cryptohome_recovery_setup_screen.h"
 #include "chrome/browser/ash/login/screens/demo_preferences_screen.h"
@@ -104,6 +105,12 @@ class WizardController : public OobeUI::Observer {
   // change one without changing the other). Entries should be never modified
   // or deleted. Only additions possible.
   enum class ScreenShownStatus { kSkipped = 0, kShown = 1, kMaxValue = kShown };
+
+  enum class CompletedOobeFlowType {
+    kAutoEnrollment = 0,
+    kDemo = 1,
+    kRegular = 2
+  };
 
   explicit WizardController(WizardContext* wizard_context);
 
@@ -332,12 +339,17 @@ class WizardController : public OobeUI::Observer {
   void ShowDrivePinningScreen();
   void ShowGaiaInfoScreen();
   void ShowAddChildScreen();
+  void ShowConsumerUpdateScreen();
 
   // Shows images login screen.
   void ShowLoginScreen();
 
-  // Check if advancing to `screen` is allowed using screen priorities. Return
-  // true if the priority of `screen` is higher or equal to current screen.
+  // Show OOBE screen: resume if pending screen otherwise show welcome screen.
+  void ContinueOobeFlow();
+
+  // Check if advancing to `screen` is allowed using screen priorities.
+  // Return true if the priority of `screen` is higher or equal to current
+  // screen.
   bool CanNavigateTo(OobeScreenId screen_id);
 
   // Shows default screen depending on device ownership.
@@ -419,6 +431,7 @@ class WizardController : public OobeUI::Observer {
   void OnDrivePinningScreenExit(DrivePinningScreen::Result result);
   void OnGaiaInfoScreenExit(GaiaInfoScreen::Result result);
   void OnAddChildScreenExit(AddChildScreen::Result result);
+  void OnConsumerUpdateScreenExit(ConsumerUpdateScreen::Result result);
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.
@@ -438,8 +451,10 @@ class WizardController : public OobeUI::Observer {
   // the update check.
   void PerformPostNetworkScreenActions();
 
-  // Actions that should be done right after update stage is finished.
-  void PerformOOBECompletedActions();
+  // Actions that should be done after OOBE flow is finished.
+  // If this is called, future boots before the device is owned will start in
+  // the first sign-in screen.
+  void PerformOOBECompletedActions(CompletedOobeFlowType flow_type);
 
   ErrorScreen* GetErrorScreen();
 
@@ -536,10 +551,6 @@ class WizardController : public OobeUI::Observer {
 
   // The prescribed enrollment configuration for the device.
   policy::EnrollmentConfig prescribed_enrollment_config_;
-
-  // Whether the auto-enrollment check should be retried or the cached result
-  // returned if present.
-  bool retry_auto_enrollment_check_ = false;
 
   // Whether OOBE has yet been marked as completed.
   bool oobe_marked_completed_ = false;

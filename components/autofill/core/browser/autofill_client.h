@@ -269,6 +269,11 @@ class AutofillClient : public RiskDataLoader {
       return *this;
     }
 
+    SaveCreditCardOptions& with_cvc_save_only(bool b) {
+      cvc_save_only = b;
+      return *this;
+    }
+
     bool from_dynamic_change_form = false;
     bool has_non_focusable_field = false;
     bool should_request_name_from_user = false;
@@ -277,6 +282,7 @@ class AutofillClient : public RiskDataLoader {
     bool has_multiple_legal_lines = false;
     bool has_same_last_four_as_server_card_but_different_expiration_date =
         false;
+    bool cvc_save_only = false;
   };
 
   // Used for options of save (and update) address profile prompt.
@@ -308,8 +314,9 @@ class AutofillClient : public RiskDataLoader {
         AutofillSuggestionTriggerSource::kUnspecified};
   };
 
-  // Callback to run after local credit card save is offered. Sends whether the
-  // prompt was accepted, declined, or ignored in |user_decision|.
+  // Callback to run after local credit card save or local CVC save is offered.
+  // Sends whether the prompt was accepted, declined, or ignored in
+  // |user_decision|.
   typedef base::OnceCallback<void(SaveCardOfferUserDecision user_decision)>
       LocalSaveCardPromptCallback;
 
@@ -372,7 +379,10 @@ class AutofillClient : public RiskDataLoader {
   // crowdsourcing server.
   virtual AutofillDownloadManager* GetDownloadManager();
 
-  // Gets the PersonalDataManager instance associated with the client.
+  // Gets the PersonalDataManager instance associated with the original Chrome
+  // profile.
+  // To distinguish between (non-)incognito mode when deciding to persist data,
+  // use the client's `IsOffTheRecord()` function.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
 
   // Gets the AutofillOptimizationGuide instance associated with the client.
@@ -623,11 +633,11 @@ class AutofillClient : public RiskDataLoader {
 #endif
 
   // Runs |callback| once the user makes a decision with respect to the
-  // offer-to-save prompt. On desktop, shows the offer-to-save bubble if
-  // |options.show_prompt| is true; otherwise only shows the
-  // omnibox icon. On mobile, shows the offer-to-save infobar if
-  // |options.show_prompt| is true; otherwise does not offer to
-  // save at all.
+  // offer-to-save prompt. This includes both the save local card prompt and the
+  // save CVC for a local card prompt. On desktop, shows the offer-to-save
+  // bubble if |options.show_prompt| is true; otherwise only shows the omnibox
+  // icon. On mobile, shows the offer-to-save infobar if |options.show_prompt|
+  // is true; otherwise does not offer to save at all.
   virtual void ConfirmSaveCreditCardLocally(
       const CreditCard& card,
       AutofillClient::SaveCreditCardOptions options,
@@ -659,6 +669,10 @@ class AutofillClient : public RiskDataLoader {
   // Will run |callback| on success.
   virtual void ConfirmCreditCardFillAssist(const CreditCard& card,
                                            base::OnceClosure callback) = 0;
+
+  // Show a delete address profile dialog asking if users want to proceed with
+  // deletion.
+  virtual void ShowDeleteAddressProfileDialog() = 0;
 
   // Shows the offer-to-save (or update) address profile bubble. If
   // `original_profile` is nullptr, this renders a save prompt. Otherwise, it
@@ -716,17 +730,27 @@ class AutofillClient : public RiskDataLoader {
   virtual void PinPopupView() = 0;
 
   // The returned arguments allow to reopen the dropdown with
-  // |ShowAutofillPopup| even if the controller is destroyed temporarily.
+  // `ShowAutofillPopup()` even if the controller is destroyed temporarily.
   // This function ensures that the element's bounds are transformed back to the
   // screen space-independent bounds.
-  virtual PopupOpenArgs GetReopenPopupArgs() const = 0;
+  // The suggestion trigger source of the existing popup is not reused, but
+  // replaced with `trigger_source`. This is because it should indicate the
+  // reason for reopening the popup. Reusing the existing trigger source can
+  // have unwanted implications such as re-auto-selecting the first suggestion
+  // in the `AutofillSuggestionTriggerSource::kTextFieldDidReceiveKeyDown` case.
+  // Note that the password manager doesn't distinguish between trigger sources.
+  virtual PopupOpenArgs GetReopenPopupArgs(
+      AutofillSuggestionTriggerSource trigger_source) const = 0;
 
   // Returns (not elided) suggestions currently held by the UI.
   virtual std::vector<Suggestion> GetPopupSuggestions() const = 0;
 
   // Updates the popup contents with the newly given suggestions.
+  // `trigger_source` indicates the reason for updating the popup. (However, the
+  // password manager makes no distinction).
   virtual void UpdatePopup(const std::vector<Suggestion>& suggestions,
-                           PopupType popup_type) = 0;
+                           PopupType popup_type,
+                           AutofillSuggestionTriggerSource trigger_source) = 0;
 
   // Hide the Autofill popup if one is currently showing.
   virtual void HideAutofillPopup(PopupHidingReason reason) = 0;
@@ -778,6 +802,11 @@ class AutofillClient : public RiskDataLoader {
   virtual void PropagateAutofillPredictions(
       AutofillDriver* driver,
       const std::vector<FormStructure*>& forms) = 0;
+
+  // Handle the parsed forms for the provided driver.
+  virtual void HandleParsedForms(
+      AutofillDriver* driver,
+      const std::vector<autofill::FormStructure*>& forms);
 
   // Inform the client that the form has been filled.
   virtual void DidFillOrPreviewForm(mojom::RendererFormDataAction action,

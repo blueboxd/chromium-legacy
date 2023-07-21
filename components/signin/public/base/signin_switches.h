@@ -47,6 +47,8 @@ BASE_DECLARE_FEATURE(kFinchIosFre);
 
 BASE_DECLARE_FEATURE(kTangibleSync);
 
+BASE_DECLARE_FEATURE(kWaffle);
+
 }  // namespace switches
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_BASE_SIGNIN_SWITCHES_H_

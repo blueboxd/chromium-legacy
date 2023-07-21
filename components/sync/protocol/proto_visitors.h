@@ -121,6 +121,7 @@ VISIT_PROTO_FIELDS(const sync_pb::AppListSpecifics& proto) {
   VISIT(parent_id);
   VISIT(item_ordinal);
   VISIT(item_pin_ordinal);
+  VISIT(is_user_pinned);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::AppNotificationSettings& proto) {
@@ -571,7 +572,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(48 == GetNumModelTypes(),
+  static_assert(49 == GetNumModelTypes(),
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -583,6 +584,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(autofill_offer);
   VISIT(autofill_profile);
   VISIT(autofill_wallet);
+  VISIT(autofill_wallet_credential);
   VISIT(autofill_wallet_usage);
   VISIT(bookmark);
   VISIT(contact_info);
@@ -834,6 +836,7 @@ VISIT_PROTO_FIELDS(const sync_pb::WebauthnCredentialSpecifics& proto) {
   VISIT(user_display_name);
   VISIT(third_party_payments_support);
   VISIT(last_used_time_windows_epoch_micros);
+  VISIT(key_version);
   VISIT_SECRET(private_key);
   VISIT_SECRET(encrypted);
 }

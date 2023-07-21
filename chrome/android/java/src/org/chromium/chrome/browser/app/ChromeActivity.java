@@ -87,7 +87,6 @@ import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
-import org.chromium.chrome.browser.compositor.layouts.content.ContentOffsetProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManagerHandler;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
@@ -647,7 +646,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             if (isFinishing()) return;
 
             TabModelSelector tabModelSelector = mTabModelOrchestrator.getTabModelSelector();
-            setTabContentManager(new TabContentManager(this, getContentOffsetProvider(),
+            setTabContentManager(new TabContentManager(this, mBrowserControlsManagerSupplier.get(),
                     !SysUtils.isLowEndDevice(),
                     tabModelSelector != null ? tabModelSelector::getTabById : null));
 
@@ -1333,7 +1332,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         DeferredStartupHandler.getInstance().addDeferredTask(() -> {
             if (isActivityFinishingOrDestroyed()) return;
-            ForcedSigninProcessor.checkCanSignIn(ChromeActivity.this);
+            ForcedSigninProcessor.checkCanSignIn(
+                    ChromeActivity.this, Profile.getLastUsedRegularProfile());
         });
 
         // GSA connection is not needed on low-end devices because Icing is disabled.
@@ -1983,13 +1983,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public @NonNull FullscreenManager getFullscreenManager() {
         return getBrowserControlsManager().getFullscreenManager();
-    }
-
-    /**
-     * @return The content offset provider, may be null.
-     */
-    public ContentOffsetProvider getContentOffsetProvider() {
-        return mCompositorViewHolderSupplier.get();
     }
 
     /**
@@ -2758,7 +2751,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return true;
     }
 
-    @VisibleForTesting
     public RootUiCoordinator getRootUiCoordinatorForTesting() {
         return mRootUiCoordinator;
     }
@@ -2814,32 +2806,26 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return false;
     }
 
-    @VisibleForTesting
     public @Nullable BookmarkModel getBookmarkModelForTesting() {
         return mBookmarkModelSupplier.get();
     }
 
-    @VisibleForTesting
     public Configuration getSavedConfigurationForTesting() {
         return mConfig;
     }
 
-    @VisibleForTesting
     public boolean deferredStartupPostedForTesting() {
         return mDeferredStartupPosted;
     }
 
-    @VisibleForTesting
     public DisplayAndroidObserver getDisplayAndroidObserverForTesting() {
         return mDisplayAndroidObserver;
     }
 
-    @VisibleForTesting
     public BackPressManager getBackPressManagerForTesting() {
         return mBackPressManager;
     }
 
-    @VisibleForTesting
     public boolean recreatingForTabletModeChangeForTesting() {
         return mIsRecreatingForTabletModeChange;
     }

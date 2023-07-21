@@ -18,7 +18,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_setting_override.h"
-#include "net/first_party_sets/same_party_context.h"
 #include "net/url_request/clear_site_data.h"
 #include "net/url_request/referrer_policy.h"
 #include "net/url_request/url_request.h"
@@ -220,12 +219,13 @@ bool NetworkServiceNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
 bool NetworkServiceNetworkDelegate::OnCanSetCookie(
     const net::URLRequest& request,
     const net::CanonicalCookie& cookie,
-    net::CookieOptions* options) {
+    net::CookieOptions* options,
+    net::CookieInclusionStatus* inclusion_status) {
   bool allowed =
       network_context_->cookie_manager()->cookie_settings().IsCookieAccessible(
           cookie, request.url(), request.site_for_cookies(),
           request.isolation_info().top_frame_origin(),
-          request.cookie_setting_overrides());
+          request.cookie_setting_overrides(), inclusion_status);
   if (!allowed)
     return false;
   // The remaining checks do not consider setting overrides since they enforce

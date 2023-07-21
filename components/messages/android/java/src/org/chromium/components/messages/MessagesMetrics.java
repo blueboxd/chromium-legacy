@@ -7,7 +7,6 @@ package org.chromium.components.messages;
 import android.os.SystemClock;
 
 import androidx.annotation.IntDef;
-import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
@@ -256,21 +255,15 @@ public class MessagesMetrics {
                 return "DesktopSiteGlobalOptIn";
             case MessageIdentifier.DOWNLOAD_INCOGNITO_WARNING:
                 return "DownloadIncognitoWarning";
-            case MessageIdentifier.RESTORE_CUSTOM_TAB:
-                return "RestoreCustomTab";
-            case MessageIdentifier.UNDO_CUSTOM_TAB_RESTORATION:
-                return "UndoCustomTabRestoration";
             default:
                 return "Unknown";
         }
     }
 
-    @VisibleForTesting
     static String getEnqueuedHistogramNameForTesting() {
         return ENQUEUED_HISTOGRAM_NAME;
     }
 
-    @VisibleForTesting
     static String getDismissHistogramNameForTesting(@MessageIdentifier int messageIdentifier) {
         return DISMISSED_HISTOGRAM_PREFIX + messageIdentifierToHistogramSuffix(messageIdentifier);
     }

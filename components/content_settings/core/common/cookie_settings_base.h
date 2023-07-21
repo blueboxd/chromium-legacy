@@ -90,13 +90,16 @@ class CookieSettingsBase {
    public:
     CookieSettingWithMetadataBase(
         ContentSetting cookie_setting,
-        absl::optional<ThirdPartyBlockingScope> third_party_blocking_scope);
+        absl::optional<ThirdPartyBlockingScope> third_party_blocking_scope,
+        bool is_explicit_setting);
 
     // Returns true iff the setting is "block" due to the user's
     // third-party-cookie-blocking setting.
     bool BlockedByThirdPartyCookieBlocking() const;
 
     ContentSetting cookie_setting() const { return cookie_setting_; }
+
+    bool is_explicit_setting() const { return is_explicit_setting_; }
 
    protected:
     // The setting itself.
@@ -107,6 +110,9 @@ class CookieSettingsBase {
     // reason for blocking cookies is the third-party cookie blocking setting
     // (rather than a site-specific setting).
     absl::optional<ThirdPartyBlockingScope> third_party_blocking_scope_;
+
+    // Whether the setting is for a specific pattern.
+    bool is_explicit_setting_ = false;
   };
 
   // Returns true if the cookie associated with |domain| should be deleted
@@ -145,11 +151,11 @@ class CookieSettingsBase {
   bool IsCookieSessionOnly(const GURL& url) const;
 
   // A helper for applying third party cookie blocking rules.
-  ContentSetting GetCookieSetting(const GURL& url,
-                                  const GURL& first_party_url,
-                                  net::CookieSettingOverrides overrides,
-                                  content_settings::SettingSource* source,
-                                  base::Time* expiration = nullptr) const;
+  ContentSetting GetCookieSetting(
+      const GURL& url,
+      const GURL& first_party_url,
+      net::CookieSettingOverrides overrides,
+      content_settings::SettingInfo* info = nullptr) const;
 
   // Returns the cookie access semantics (legacy or nonlegacy) to be applied for
   // cookies on the given domain. The |cookie_domain| can be provided as the
@@ -247,8 +253,7 @@ class CookieSettingsBase {
       const GURL& first_party_url,
       bool is_third_party_request,
       net::CookieSettingOverrides overrides,
-      content_settings::SettingSource* source,
-      base::Time* expiration) const = 0;
+      content_settings::SettingInfo* info) const = 0;
 
   static bool storage_access_api_grants_unpartitioned_storage_;
   const bool is_storage_partitioned_;

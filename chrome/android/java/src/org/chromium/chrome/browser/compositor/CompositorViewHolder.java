@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.browser_controls.BrowserControlsUtils;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
-import org.chromium.chrome.browser.compositor.layouts.content.ContentOffsetProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
@@ -104,7 +103,7 @@ import java.util.Set;
  * drawn by the UI compositor on the native side.
  */
 public class CompositorViewHolder extends FrameLayout
-        implements ContentOffsetProvider, LayoutManagerHost, LayoutRenderHost, Invalidator.Host,
+        implements LayoutManagerHost, LayoutRenderHost, Invalidator.Host,
                    BrowserControlsStateProvider.Observer, ChromeAccessibilityUtil.Observer,
                    TabObscuringHandler.Observer, ViewGroup.OnHierarchyChangeListener {
     private static final long SYSTEM_UI_VIEWPORT_UPDATE_DELAY_MS = 500;
@@ -777,6 +776,7 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent e) {
+        assert e != null : "The motion event dispatched shouldn't be null!";
         updateLastActiveTouchEvent(e);
         updateIsInGesture(e);
         for (TouchEventObserver o : mTouchEventObservers) o.handleTouchEvent(e);
@@ -1109,7 +1109,7 @@ public class CompositorViewHolder extends FrameLayout
         ViewGroup view = getContentView();
         if (view != null) {
             assert mBrowserControlsManager != null;
-            float topViewsTranslation = getOverlayTranslateY();
+            float topViewsTranslation = mBrowserControlsManager.getTopVisibleContentOffset();
             float bottomMargin =
                     BrowserControlsUtils.getBottomContentOffset(mBrowserControlsManager);
             applyTranslationToTopChildViews(view, topViewsTranslation);
@@ -1402,11 +1402,6 @@ public class CompositorViewHolder extends FrameLayout
      */
     public boolean controlsResizeView() {
         return mControlsResizeView;
-    }
-
-    @Override
-    public float getOverlayTranslateY() {
-        return mBrowserControlsManager.getTopVisibleContentOffset();
     }
 
     /**

@@ -17,7 +17,7 @@
 <translation id="1100066534610197918">新しいタブをグループで開く</translation>
 <translation id="1103142993930332957">Chrome の改善にご協力ください</translation>
 <translation id="1105960400813249514">スクリーン キャプチャ</translation>
-<translation id="1108214977745280468">ページの分析情報を表示</translation>
+<translation id="1108214977745280468">ページの関連情報を表示</translation>
 <translation id="1108938384783527433">履歴の同期</translation>
 <translation id="1110914759170138831">ハイライト表示のテキストは一部省略されています</translation>
 <translation id="1111673857033749125">他のデバイスに保存されているブックマークがここに表示されます。</translation>
@@ -68,7 +68,6 @@
 <translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> から送信</translation>
 <translation id="1311657260431405215">この QR コードは URL ではありません: <ph name="QRCODEVALUE" /></translation>
 <translation id="1316212908214730110">chrome_stylized_highlight_</translation>
-<translation id="131655401280401879">後からプロフィールのロックを削除すると、保存されている情報は消去されます。</translation>
 <translation id="1320912611264252795">ブックマーク保存フロー フォルダが画面全体に表示されています</translation>
 <translation id="1327257854815634930">ナビゲーション履歴が開いています</translation>
 <translation id="1331212799747679585">Chrome を更新できません。その他のオプション</translation>
@@ -193,7 +192,6 @@
 <translation id="2056878612599315956">サイト一時停止中</translation>
 <translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 件のダウンロードが失敗しました}other{# 件のダウンロードが失敗しました}}</translation>
 <translation id="2067805253194386918">テキスト</translation>
-<translation id="2079545284768500474">元に戻す</translation>
 <translation id="2082238445998314030">結果 <ph name="TOTAL_RESULTS" /> 件中 <ph name="RESULT_NUMBER" /> 件目</translation>
 <translation id="2096012225669085171">デバイス間の同期とカスタマイズ</translation>
 <translation id="2100273922101894616">自動ログイン</translation>
@@ -278,7 +276,7 @@
 <translation id="2571711316400087311">他の言語のページを Google で翻訳するか尋ねる</translation>
 <translation id="2571834852878229351">カスタムで作成</translation>
 <translation id="2573452357057307036">Chrome を既定のブラウザに設定する方法</translation>
-<translation id="257470231920177468">この設定が有効な場合、閲覧履歴に基づいたウェブサイトのリストがここに表示されます。</translation>
+<translation id="2574249610672786438">どのデバイスからでも Chrome で自分のタブにアクセスするには、すべてのデバイスでログインしてください</translation>
 <translation id="2580436639406015883">スパムと不正行為の削減はプライベート ステート トークンに依拠して行われ、サイトが不正行為に対処し、bot と人間を区別できるようにします。
 
 アカウントへの定期的なログインなどのやり取りに基づき、サイトはブラウザにプライベート ステート トークンを発行できます。その後、アクセスした他のサイトが有効なプライベート ステート トークンを確認して検出した場合、そのサイトはユーザーを bot ではなく人間として扱う可能性が高くなります。
@@ -376,6 +374,7 @@
 <translation id="3027644380269727216">ユーザーのウェブサイト上でのアクティビティに基づいて提案されます。この設定は有効になっています。</translation>
 <translation id="3029276696788198026">プリロードなし</translation>
 <translation id="3029704984691124060">パスフレーズが一致しません</translation>
+<translation id="303514781271618814">Chrome では、使用するユーザー情報量を減らしながら、これまでと同様にブラウジングできる新機能をテストしています</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">価格をトラッキングします</translation>
 <translation id="3037517125981011456">Chrome へのログインを促すメッセージが表示されます</translation>
@@ -396,7 +395,6 @@
 <translation id="3123734510202723619">お知らせ</translation>
 <translation id="3134784203083076891">」</translation>
 <translation id="314939179385989105">Chrome のホームページ</translation>
-<translation id="3157931365184549694">復元</translation>
 <translation id="3166827708714933426">タブとウィンドウのショートカット</translation>
 <translation id="316694332262407393">Chrome はここですでに実行中です。</translation>
 <translation id="3167258285411721858"><ph name="HOST_NAME" /> のモバイルサイトをリクエストできます</translation>
@@ -430,11 +428,11 @@
 <translation id="3303414029551471755">コンテンツのダウンロードに進みますか？</translation>
 <translation id="3305130791745726624">デバイスに送信</translation>
 <translation id="3305795716056605962">[その他のオプション] からページを翻訳できます</translation>
-<translation id="3319664549618064419">このサイトを見やすくするには、PC 版サイトに切り替えてください</translation>
 <translation id="3334729583274622784">ファイル拡張子を変更しますか？</translation>
 <translation id="3341262203274374114">フォローを解除できません。エラーが発生しました。</translation>
 <translation id="3359667936385849800">現在のサービス プロバイダを使用</translation>
 <translation id="3365271666488085187">Chrome では上記の興味 / 関心が考慮されます</translation>
+<translation id="3373701465337594448">この設定が有効な場合、閲覧履歴に基づいたウェブサイトのリストがここに表示されます。</translation>
 <translation id="3373979091428520308">このページを別のデバイスと共有するには、別のデバイスの Chrome 設定で同期をオンにしてください</translation>
 <translation id="3374023511497244703">ブックマーク、履歴、パスワード、その他の Chrome データは、Google アカウントに同期されなくなります</translation>
 <translation id="3384347053049321195">画像を共有</translation>
@@ -448,6 +446,7 @@
 <translation id="3429160811076349561">試用版機能はオフになっています</translation>
 <translation id="3435465986463792564">ウィンドウの数が多くてお困りの場合も、ここで管理できます</translation>
 <translation id="3435738964857648380">セキュリティ</translation>
+<translation id="3439276997620616816">最近使ったタブがここに表示されます</translation>
 <translation id="3443221991560634068">現在のページを再読み込みする</translation>
 <translation id="3444179773590444986">サイトのダークモードに関するフィードバックを共有しますか？</translation>
 <translation id="3452832259067974318">プライバシー保護のため、Chrome ではこの欄のパスワードの自動入力は行われません。</translation>
@@ -456,6 +455,7 @@
 <translation id="3479552764303398839">後で</translation>
 <translation id="3493531032208478708">詳しくは、<ph name="BEGIN_LINK" />おすすめのコンテンツ<ph name="END_LINK" />についての説明をご覧ください</translation>
 <translation id="3495219333887281978">ログインのボトムシートが画面の下半分に表示されています。</translation>
+<translation id="3498338220321963224">保存したデータは、後ほどプロフィールのロックを削除すると消去されます。</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="350276055892098337">古い順に並べ替え</translation>
 <translation id="3507132249039706973">標準保護機能がオンになっています</translation>
@@ -547,7 +547,6 @@
 <translation id="4024768890073681126">お使いのブラウザは保護者によって管理されています</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 時間}other{# 時間}}</translation>
 <translation id="4035877632587724847">許可しない</translation>
-<translation id="4036177530563778041">中断したところから続きの作業を簡単に行うことができます</translation>
 <translation id="4042941173059740150">引き続き <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> を使用して <ph name="SITE_ETLD_PLUS_ONE" /> を利用</translation>
 <translation id="4044708993631234325">ボトムシート</translation>
 <translation id="4045764304651014138">使用状況データ</translation>
@@ -596,7 +595,7 @@
 <translation id="4250229828105606438">スクリーンショット</translation>
 <translation id="4256782883801055595">オープンソース ライセンス</translation>
 <translation id="4257230861809842349">Google パスワード マネージャーからパスワードを削除しますか？</translation>
-<translation id="4262915912852657291"><ph name="BEGIN_BOLD" />使用されるデータ:<ph name="END_BOLD" /> 閲覧履歴（このデバイスで Chrome を使用してアクセスしたサイトの記録）。</translation>
+<translation id="4262915912852657291"><ph name="BEGIN_BOLD" />使用されるデータ:<ph name="END_BOLD" /> ユーザーの閲覧履歴（該当のデバイスで Chrome を使用して訪れたウェブサイトの記録）。</translation>
 <translation id="4269820728363426813">リンクアドレスをコピー</translation>
 <translation id="4283102315569707115">デフォルトで PC 版サイトをリクエストしますか？</translation>
 <translation id="4285846616383034558">Cookie、キャッシュ、その他のサイトデータ</translation>
@@ -620,8 +619,8 @@
 <translation id="4405224443901389797">移動…</translation>
 <translation id="4405636711880428279">仮想カードを削除しますか？</translation>
 <translation id="4409271659088619928">検索エンジンは <ph name="DSE" /> に設定されています。検索履歴を削除する場合は、検索エンジンの手順をご確認ください（該当する場合）。</translation>
-<translation id="441383202534727410">閲覧履歴に基づいてウェブサイトのリストがここに表示されるようになるまで 1 週間ほどかかる場合があります。</translation>
 <translation id="4415276339145661267">Google アカウントの管理</translation>
+<translation id="4417111749295506837">車内で Chrome 情報を同期してデータを安全に保つには、プロフィールのロックを作成する必要があります。作成すると、車に乗るたびにコードまたはパスワードの入力が求められるようになります。</translation>
 <translation id="4425140285732600465">価格をトラッキングします。値下げしたサイトがある場合に通知します。</translation>
 <translation id="442518031075347249">Google Pay で仮想カードを使用できなくなります。<ph name="BEGIN_LINK1" />仮想カードの詳細<ph name="END_LINK1" /></translation>
 <translation id="4428065317363009941">広告のカスタマイズ</translation>
@@ -902,7 +901,6 @@
 <translation id="5864419784173784555">別のダウンロードの完了待ちです…</translation>
 <translation id="5865733239029070421">使用統計情報や障害レポートを Google に自動送信します</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
-<translation id="5876496397064130037">タスクが再開されました</translation>
 <translation id="587735546353481577">サイトをフォローするには、サイトにアクセスして、Chrome メニューを開き、[フォロー] をタップします。</translation>
 <translation id="5879072387416556377">おすすめの精度を上げる</translation>
 <translation id="5916664084637901428">ON</translation>
@@ -927,7 +925,7 @@
 <translation id="6005538289190791541">推奨パスワード</translation>
 <translation id="6011308810877101166">検索候補の関連性を高める</translation>
 <translation id="6026538407078977628">フルスクリーンで拡大表示</translation>
-<translation id="6030719887161080597">サイトが広告のパフォーマンスを測定するために使用する情報を管理する</translation>
+<translation id="6030719887161080597">広告効果を測定するためにサイトで使用される情報を管理します</translation>
 <translation id="6039379616847168523">次のタブに移動する</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="604124094241169006">自動設定</translation>
@@ -990,6 +988,7 @@
 <translation id="6363990818884053551">同期を開始するには、本人確認を行ってください</translation>
 <translation id="6364438453358674297">履歴から候補を削除しますか？</translation>
 <translation id="6380100320871303656">Chrome によってアクセスする可能性があると判断されたページが、より頻繁にプリロードされます。この設定によりデータの使用量が増える可能性があります。</translation>
+<translation id="6391355955030242704">車内で Chrome 情報を同期してデータを安全に保つには、セキュリティ設定でプロフィールのロックを作成する必要があります。作成すると、車に乗るたびにコードまたはパスワードの入力が求められるようになります。</translation>
 <translation id="6394791151443660613">検索: <ph name="SEARCH_QUERY" /></translation>
 <translation id="6395288395575013217">リンク</translation>
 <translation id="6397616442223433927">オンラインに復帰</translation>
@@ -1038,7 +1037,6 @@
 <translation id="6590471736817333463">最大 60% のデータを節約</translation>
 <translation id="6590680911007613645">保存するパスワードが <ph name="SITE" /> のパスワードと一致していることを確認してください</translation>
 <translation id="6593061639179217415">PC 版サイト</translation>
-<translation id="6594121454516132231">オープンウェブの理念を支えつつ、クロスサイト トラッキングからユーザーを保護する Chrome の取り組みについて</translation>
 <translation id="6594347733515723558">並べ替えと表示の設定</translation>
 <translation id="6595046016124923392">説明文を生成するために画像が Google に送信されます。</translation>
 <translation id="6600954340915313787">Chrome にコピー済み</translation>
@@ -1131,7 +1129,6 @@
 <translation id="7029390216614421513">QR コードまたはバーコードをこの枠に合わせてください。</translation>
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="7030304022046916278">セーフ ブラウジングに URL を送信して安全性を確認します</translation>
-<translation id="7030585293819777123">最後に行ったタスクを再開しますか？</translation>
 <translation id="7035701931849773472">その他のオプション</translation>
 <translation id="7037830628447527439">Google アカウントで Chrome にログインします</translation>
 <translation id="7038956721828960940">chrome_image_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
@@ -1146,7 +1143,6 @@
 <translation id="7088681679121566888">Chrome は最新の状態です</translation>
 <translation id="7105047059074518658">複数のデバイスでスムーズにブラウジングするにはログインしてください</translation>
 <translation id="7106762743910369165">お使いのブラウザは組織によって管理されています</translation>
-<translation id="7116420572655804716">車内で情報を同期してデータを安全に保つには、セキュリティ設定でプロフィールのロックを作成する必要があります。作成すると、車に乗るたびにコードまたはパスワードの入力が求められるようになります。</translation>
 <translation id="7116588989735740310">他のデバイスでアクセスしたサイトに戻るには、タブと履歴を同期します</translation>
 <translation id="7130504491556983216">ウェブを閲覧すると、こちらに興味 / 関心のリストが表示されます。</translation>
 <translation id="7138678301420049075">その他</translation>
@@ -1180,7 +1176,7 @@
 <translation id="7291910923717764901">このページの画像の説明が追加されました</translation>
 <translation id="7293429513719260019">言語を選択</translation>
 <translation id="729975465115245577">お使いのデバイスにはパスワード ファイルを保存するためのアプリがインストールされていません。</translation>
-<translation id="7304072650267745798">お使いの Android デバイスにも、同様の設定が含まれていることがあります。Chrome と Android デバイスでこの設定が有効になっている場合、企業はユーザーが利用するウェブサイトやアプリで広告の効果を測定できる可能性があります。</translation>
+<translation id="7304072650267745798">お使いの Android デバイスにも、同様の設定が含まれていることがあります。Chrome と Android デバイスでこの設定が有効になっている場合、ユーザーが利用するウェブサイトやアプリ間で広告の効果が測定される可能性があります。</translation>
 <translation id="7304873321153398381">オフラインです。Chrome でパスワードを確認できません。</translation>
 <translation id="7313188324932846546">タップして同期を設定する</translation>
 <translation id="7324354302972299151">「トラッキング拒否」リクエストを送信する</translation>
@@ -1571,7 +1567,6 @@
 <translation id="932327136139879170">ホーム</translation>
 <translation id="938850635132480979">エラー: <ph name="ERROR_CODE" /></translation>
 <translation id="939598580284253335">パスフレーズを入力</translation>
-<translation id="950679278154734362">車内で情報を同期してデータを安全に保つには、プロフィールのロックを作成する必要があります。作成すると、車に乗るたびにコードまたはパスワードの入力が求められるようになります。</translation>
 <translation id="952301137339791907">ページ分析情報のボトムシートは開いています</translation>
 <translation id="95817756606698420">中国のユーザーは Chrome での検索に <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> を使用できます。この設定は [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で変更可能です。</translation>
 <translation id="962979164594783469">このアプリをインストール</translation>

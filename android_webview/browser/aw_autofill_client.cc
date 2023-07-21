@@ -206,6 +206,10 @@ void AwAutofillClient::ConfirmSaveCreditCardLocally(
   NOTIMPLEMENTED();
 }
 
+void AwAutofillClient::ShowDeleteAddressProfileDialog() {
+  NOTREACHED();
+}
+
 void AwAutofillClient::ConfirmSaveCreditCardToCloud(
     const autofill::CreditCard& card,
     const autofill::LegalMessageLines& legal_message_lines,
@@ -289,15 +293,16 @@ void AwAutofillClient::PinPopupView() {
   NOTIMPLEMENTED();
 }
 
-autofill::AutofillClient::PopupOpenArgs AwAutofillClient::GetReopenPopupArgs()
-    const {
+autofill::AutofillClient::PopupOpenArgs AwAutofillClient::GetReopenPopupArgs(
+    autofill::AutofillSuggestionTriggerSource trigger_source) const {
   NOTIMPLEMENTED();
   return {};
 }
 
 void AwAutofillClient::UpdatePopup(
     const std::vector<autofill::Suggestion>& suggestions,
-    autofill::PopupType popup_type) {
+    autofill::PopupType popup_type,
+    autofill::AutofillSuggestionTriggerSource trigger_source) {
   NOTIMPLEMENTED();
 }
 

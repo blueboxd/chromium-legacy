@@ -21,6 +21,7 @@
 #include "ash/style/icon_button.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/toast/anchored_nudge_manager_impl.h"
 #include "ash/system/video_conference/video_conference_common.h"
 #include "ash/system/video_conference/video_conference_tray.h"
 #include "base/check.h"
@@ -70,6 +71,7 @@ constexpr char kVideoConferenceTrayCameraUseWhileSWDisabledNudgeId[] =
 // called. Please keep in sync whenever adding/removing/updating a nudge id.
 const char* const kNudgeIds[] = {
     kVideoConferenceTraySpeakOnMuteOptInNudgeId,
+    kVideoConferenceTraySpeakOnMuteOptInConfirmationNudgeId,
     kVideoConferenceTraySpeakOnMuteDetectedNudgeId,
     kVideoConferenceTrayMicrophoneUseWhileHWDisabledNudgeId,
     kVideoConferenceTrayMicrophoneUseWhileSWDisabledNudgeId,
@@ -300,6 +302,15 @@ void VideoConferenceTrayController::CloseAllVcNudges() {
   }
 }
 
+bool VideoConferenceTrayController::IsAnyVcNudgeShown() {
+  for (size_t i = 0; i < std::size(kNudgeIds); ++i) {
+    if (Shell::Get()->anchored_nudge_manager()->IsNudgeShown(kNudgeIds[i])) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool VideoConferenceTrayController::GetHasCameraPermissions() const {
   return state_.has_camera_permission;
 }
@@ -473,10 +484,12 @@ void VideoConferenceTrayController::OnInputMuteChanged(
   microphone_muted_by_hardware_switch_ =
       method == CrasAudioHandler::InputMuteChangeMethod::kPhysicalShutter;
 
-  // Reset the speak-on-mute notification timer when change to mute so user can
-  // get instant speak-on-mute notification when they mute their microphone.
   if (mute_on) {
-    last_speak_on_mute_notification_time_.reset();
+    // Updates the last mic muted time and resets the should show notification
+    // flag so user gets 60 seconds cool down before speak-on-mute notification
+    // can show when they mute their microphone.
+    last_mic_muted_time_ = base::TimeTicks::Now();
+    should_show_speak_on_mute_notification = true;
 
     // Attempt showing the speak-on-mute opt-in nudge when input is muted.
     MaybeShowSpeakOnMuteOptInNudge(GetVcTrayInActiveWindow());
@@ -505,11 +518,16 @@ void VideoConferenceTrayController::OnInputMuteChanged(
 }
 
 void VideoConferenceTrayController::OnSpeakOnMuteDetected() {
+  // Do not show "Speak on mute" nudge if another nudge is showing.
+  if (IsAnyVcNudgeShown()) {
+    return;
+  }
+
   const base::TimeTicks current_time = base::TimeTicks::Now();
 
-  if (!last_speak_on_mute_notification_time_.has_value() ||
-      (current_time - last_speak_on_mute_notification_time_.value())
-              .InSeconds() >= KSpeakOnMuteNotificationCoolDownDuration) {
+  if (should_show_speak_on_mute_notification &&
+      (current_time - last_mic_muted_time_).InSeconds() >=
+          KSpeakOnMuteNotificationCoolDownDuration) {
     AnchoredNudgeData nudge_data(
         kVideoConferenceTraySpeakOnMuteDetectedNudgeId,
         NudgeCatalogName::kVideoConferenceTraySpeakOnMuteDetected,
@@ -527,7 +545,9 @@ void VideoConferenceTrayController::OnSpeakOnMuteDetected() {
     nudge_data.anchored_to_shelf = true;
     AnchoredNudgeManager::Get()->Show(nudge_data);
 
-    last_speak_on_mute_notification_time_.emplace(current_time);
+    // Notification has shown in the current session, and we should not show it
+    // again.
+    should_show_speak_on_mute_notification = false;
   }
 }
 
@@ -578,6 +598,10 @@ void VideoConferenceTrayController::UpdateWithMediaState(
     // count.
     ++count_repeated_shows_;
     repeated_shows_timer_.Reset();
+
+    // Resets the should show flag for speak-on-mute notification so that
+    // notification can pop-up when new VC tray appears.
+    should_show_speak_on_mute_notification = true;
   }
 
   if (state_.has_media_app != old_state.has_media_app) {
@@ -653,6 +677,11 @@ bool VideoConferenceTrayController::HasMicrophonePermission() const {
 void VideoConferenceTrayController::HandleDeviceUsedWhileDisabled(
     crosapi::mojom::VideoConferenceMediaDevice device,
     const std::u16string& app_name) {
+  // Do not show "Use while disabled" nudge if another nudge is showing.
+  if (IsAnyVcNudgeShown()) {
+    return;
+  }
+
   // TODO(b/273570886): Handle the case when both camera and microphone are
   // being used while disabled.
   std::u16string device_name;

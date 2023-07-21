@@ -140,7 +140,10 @@ class MockDriveFs : public mojom::DriveFsInterceptorForTesting,
   MockDriveFs(const MockDriveFs&) = delete;
   MockDriveFs& operator=(const MockDriveFs&) = delete;
 
-  mojom::DriveFs* GetForwardingInterface() override { NOTREACHED_NORETURN(); }
+  mojom::DriveFs* GetForwardingInterface() override {
+    NOTREACHED_NORETURN()
+        << "No calls should make it to the forwarding interface";
+  }
 
   MOCK_METHOD(void, OnStartSearchQuery, (const QueryParameters&));
 
@@ -180,6 +183,11 @@ class MockDriveFs : public mojom::DriveFsInterceptorForTesting,
   MOCK_METHOD(void,
               GetMetadataByStableId,
               (int64_t, OnceCallback<void(FileError, FileMetadataPtr)>),
+              (override));
+
+  MOCK_METHOD(void,
+              SetDocsOfflineEnabled,
+              (bool, OnceCallback<void(FileError)>),
               (override));
 
  private:
@@ -2608,7 +2616,6 @@ TEST_F(DriveFsPinManagerTest, HandleQueryItem) {
     manager.listed_items_.clear();
     manager.files_to_pin_.clear();
     manager.files_to_track_.clear();
-    manager.untracked_shortcut_paths_.clear();
   };
 
   const Id dir_id = Id(101);
@@ -2765,23 +2772,6 @@ TEST_F(DriveFsPinManagerTest, HandleQueryItem) {
   EXPECT_EQ(manager.progress_.listed_docs, 0);
   EXPECT_THAT(manager.listed_items_, SizeIs(0));
   EXPECT_THAT(manager.files_to_pin_, IsEmpty());
-  EXPECT_TRUE(md.shortcut_details);
-  EXPECT_TRUE(manager.IsUntrackedPath(absolute_dir_path));
-  EXPECT_NE(Id(md.stable_id), target_id);
-  reset();
-
-  // Valid shortcut to directory to directory inside My drive.
-  md.shortcut_details = mojom::ShortcutDetails::New();
-  md.shortcut_details->target_lookup_status = LookupStatus::kOk;
-  md.shortcut_details->target_stable_id = static_cast<int64_t>(target_id);
-  md.shortcut_details->target_path = mount_path_.Append("root/target_dir");
-  md.stable_id = static_cast<int64_t>(stable_id);
-  md.type = FileMetadata::Type::kDirectory;
-  md.size = 0;
-  manager.HandleQueryItem(dir_id, dir_path, std::as_const(item));
-  EXPECT_EQ(manager.progress_.skipped_items, 1);
-  EXPECT_EQ(manager.progress_.listed_shortcuts, 1);
-  EXPECT_FALSE(manager.IsUntrackedPath(absolute_dir_path));
   EXPECT_TRUE(md.shortcut_details);
   EXPECT_NE(Id(md.stable_id), target_id);
   reset();
@@ -3022,6 +3012,9 @@ TEST_F(DriveFsPinManagerTest, StartPinning) {
   manager.progress_.free_space = int64_t(4) << 30;  // 4 GB
   manager.should_pin_ = false;
 
+  EXPECT_CALL(drivefs_, SetDocsOfflineEnabled(true, _))
+      .Times(1)
+      .WillOnce(RunOnceCallback<1>(drive::FILE_ERROR_OK));
   manager.StartPinning();
   EXPECT_EQ(manager.progress_.stage, Stage::kSuccess);
 

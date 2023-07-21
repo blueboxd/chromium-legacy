@@ -1051,10 +1051,10 @@ void LocalFrameView::RunIntersectionObserverSteps() {
   // Populating monotonic_time may be expensive, and may be unnecessary, so
   // allow it to be populated on demand.
   absl::optional<base::TimeTicks> monotonic_time;
-  bool needs_occlusion_tracking =
+  IntersectionUpdateResult result =
       UpdateViewportIntersectionsForSubtree(0, monotonic_time);
   if (FrameOwner* owner = frame_->Owner())
-    owner->SetNeedsOcclusionTracking(needs_occlusion_tracking);
+    owner->SetNeedsOcclusionTracking(result.needs_occlusion_tracking);
 #if DCHECK_IS_ON()
   DCHECK(was_dirty || !NeedsLayout());
 #endif
@@ -1070,7 +1070,8 @@ void LocalFrameView::ForceUpdateViewportIntersections() {
       DocumentUpdateReason::kIntersectionObservation);
   absl::optional<base::TimeTicks> monotonic_time;
   UpdateViewportIntersectionsForSubtree(
-      IntersectionObservation::kImplicitRootObserversNeedUpdate |
+      IntersectionObservation::kFrameViewportIntersectionNeedsUpdate |
+          IntersectionObservation::kImplicitRootObserversNeedUpdate |
           IntersectionObservation::kIgnoreDelay,
       monotonic_time);
 }
@@ -3292,8 +3293,6 @@ void LocalFrameView::ForceLayoutForPagination(const gfx::SizeF& page_size,
                           page_size.height() * maximum_shrink_factor));
       gfx::SizeF max_page_size = frame_->ResizePageRectsKeepingRatio(
           /* aspect_ratio */ page_size, expected_page_size);
-      page_logical_width = horizontal_writing_mode ? max_page_size.width()
-                                                   : max_page_size.height();
       layout_view->SetPageSize({LayoutUnit(max_page_size.width()),
                                 LayoutUnit(max_page_size.height())});
       layout_view
@@ -3302,27 +3301,8 @@ void LocalFrameView::ForceLayoutForPagination(const gfx::SizeF& page_size,
       frame_->GetDocument()->UpdateStyleAndLayout(
           DocumentUpdateReason::kPrinting);
 
-      WritingModeConverter converter(
-          layout_view->StyleRef().GetWritingDirection(),
-          PhysicalSize(layout_view->Size()));
-      LogicalRect logical_rect =
-          converter.ToLogical(layout_view->DocumentRect());
-      LayoutUnit clipped_logical_left;
-      if (!layout_view->StyleRef().IsLeftToRightDirection()) {
-        clipped_logical_left =
-            LayoutUnit(logical_rect.InlineEndOffset() - page_logical_width);
-      }
-      logical_rect.offset.inline_offset = clipped_logical_left;
-      logical_rect.size.inline_size = LayoutUnit(page_logical_width);
-
       AdjustViewSize();
       UpdateStyleAndLayout();
-      // This is how we clip in case we overflow again.
-      layout_view->ClearLayoutOverflow();
-      layout_view->AddLayoutOverflow(
-          converter.ToPhysical(logical_rect)
-              .ToLayoutFlippedRect(layout_view->StyleRef(),
-                                   PhysicalSize(layout_view->Size())));
       return;
     }
   }
@@ -4202,7 +4182,7 @@ void LocalFrameView::CollectAnnotatedRegions(
     CollectAnnotatedRegions(*curr, regions);
 }
 
-bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
+IntersectionUpdateResult LocalFrameView::UpdateViewportIntersectionsForSubtree(
     unsigned parent_flags,
     absl::optional<base::TimeTicks>& monotonic_time) {
   // TODO(dcheng): Since LocalFrameView tree updates are deferred, FrameViews
@@ -4210,26 +4190,42 @@ bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
   // Document is already detached. Investigate if this check and a similar check
   // in lifecycle updates are still needed when there are no more deferred
   // LocalFrameView updates: https://crbug.com/561683
-  if (!GetFrame().GetDocument()->IsActive())
-    return false;
+  if (!GetFrame().GetDocument()->IsActive()) {
+    return IntersectionUpdateResult();
+  }
 
   unsigned flags = GetIntersectionObservationFlags(parent_flags);
-  bool needs_occlusion_tracking = false;
+  IntersectionUpdateResult result;
+  if (RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
+    min_scroll_delta_to_update_intersection_ =
+        IntersectionGeometry::kInfiniteScrollDelta;
+  } else {
+    DCHECK_EQ(min_scroll_delta_to_update_intersection_, gfx::Vector2dF());
+  }
 
+  bool fully_updated = false;
   if (!NeedsLayout() || IsDisplayLocked()) {
     // Notify javascript IntersectionObservers
     if (IntersectionObserverController* controller =
             GetFrame().GetDocument()->GetIntersectionObserverController()) {
-      needs_occlusion_tracking |= controller->ComputeIntersections(
-          flags, GetUkmAggregator(), monotonic_time);
+      IntersectionUpdateResult observers_result =
+          controller->ComputeIntersections(flags, GetUkmAggregator(),
+                                           monotonic_time);
+      result.needs_occlusion_tracking =
+          observers_result.needs_occlusion_tracking;
+      result.has_implicit_root_observer_with_margin =
+          observers_result.has_implicit_root_observer_with_margin;
+      // min_scroll_delta_to_update_intersection_ on this frame is composed
+      // from the result of updating the IntersectionObservers tracked by this
+      // frame, and the result of recursive calls to this method for subframes.
+      // The final value of result.min_scroll_delta_to_update which will be
+      // returned to the caller is based only on the call to
+      // UpdateViewportIntersection for this frame.
       if (RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
         min_scroll_delta_to_update_intersection_ =
-            controller->MinScrollDeltaToUpdate();
-        if (intersection_observation_state_ > kNotNeeded) {
-          accumulated_scroll_delta_since_last_intersection_update_ =
-              gfx::Vector2dF();
-        }
+            observers_result.min_scroll_delta_to_update;
       }
+      fully_updated = intersection_observation_state_ >= kDesired;
     }
     intersection_observation_state_ = kNotNeeded;
   }
@@ -4238,22 +4234,40 @@ bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
     SCOPED_UMA_AND_UKM_TIMER(
         GetUkmAggregator(),
         LocalFrameUkmAggregator::kUpdateViewportIntersection);
-    UpdateViewportIntersection(flags, needs_occlusion_tracking);
+    // The result is the minimum scroll delta in the parent frame to update
+    // viewport intersection of this frame.
+    result.min_scroll_delta_to_update =
+        UpdateViewportIntersection(flags, result.needs_occlusion_tracking);
   }
+
+  auto update_result_from_subframe =
+      [this, &result](const IntersectionUpdateResult& subframe_result) {
+        result.needs_occlusion_tracking |=
+            subframe_result.needs_occlusion_tracking;
+        if (subframe_result.has_implicit_root_observer_with_margin) {
+          result.has_implicit_root_observer_with_margin = true;
+          // An implicit-root observer with margin in a subframe requires this
+          // frame to update intersection observers on every scroll.
+          min_scroll_delta_to_update_intersection_ = gfx::Vector2dF();
+        } else {
+          min_scroll_delta_to_update_intersection_.SetToMin(
+              subframe_result.min_scroll_delta_to_update);
+        }
+      };
 
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    needs_occlusion_tracking |=
+    update_result_from_subframe(
         child->View()->UpdateViewportIntersectionsForSubtree(flags,
-                                                             monotonic_time);
+                                                             monotonic_time));
   }
 
   if (DocumentPortals* portals = DocumentPortals::Get(*frame_->GetDocument())) {
     for (PortalContents* portal : portals->GetPortals()) {
       if (Frame* frame = portal->GetFrame()) {
-        needs_occlusion_tracking |=
+        update_result_from_subframe(
             frame->View()->UpdateViewportIntersectionsForSubtree(
-                flags, monotonic_time);
+                flags, monotonic_time));
       }
     }
   }
@@ -4263,13 +4277,19 @@ bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
     for (HTMLFencedFrameElement* fenced_frame :
          fenced_frames->GetFencedFrames()) {
       if (Frame* frame = fenced_frame->ContentFrame()) {
-        needs_occlusion_tracking |=
+        update_result_from_subframe(
             frame->View()->UpdateViewportIntersectionsForSubtree(
-                flags, monotonic_time);
+                flags, monotonic_time));
       }
     }
   }
-  return needs_occlusion_tracking;
+
+  if (RuntimeEnabledFeatures::IntersectionOptimizationEnabled() &&
+      fully_updated) {
+    accumulated_scroll_delta_since_last_intersection_update_ = gfx::Vector2dF();
+  }
+
+  return result;
 }
 
 void LocalFrameView::DeliverSynchronousIntersectionObservations() {
@@ -4387,6 +4407,16 @@ void LocalFrameView::UpdateIntersectionObservationStateOnScroll(
     // exceeded min_scroll_delta_to_update_intersection_ since the last
     // intersection observer update, which may change intersection status.
     SetIntersectionObservationState(LocalFrameView::kDesired);
+  } else {
+    DCHECK(RuntimeEnabledFeatures::IntersectionOptimizationEnabled());
+    // Frame viewport intersection is always updated on scroll, regardless of
+    // scroll_delta. Situations such as viewport and main frame intersection
+    // reporting and implicit-root intersection observers with margins in
+    // remote frames make the optimization not feasible. Nevertheless, frame
+    // viewport intersection updates are much faster than intersection
+    // observer updates, based on UMA data.
+    SetIntersectionObservationState(
+        LocalFrameView::kFrameViewportIntersectionOnly);
   }
 }
 
@@ -4429,6 +4459,9 @@ unsigned LocalFrameView::GetIntersectionObservationFlags(
   // Observers with explicit roots only need to be checked on the same frame,
   // since in this case target and root must be in the same document.
   if (intersection_observation_state_ != kNotNeeded) {
+    flags |= IntersectionObservation::kFrameViewportIntersectionNeedsUpdate;
+  }
+  if (intersection_observation_state_ >= kDesired) {
     flags |= (IntersectionObservation::kExplicitRootObserversNeedUpdate |
               IntersectionObservation::kImplicitRootObserversNeedUpdate);
   }
@@ -4436,7 +4469,8 @@ unsigned LocalFrameView::GetIntersectionObservationFlags(
   // For observers with implicit roots, we need to check state on the whole
   // local frame tree, as passed down from the parent.
   flags |= (parent_flags &
-            IntersectionObservation::kImplicitRootObserversNeedUpdate);
+            (IntersectionObservation::kFrameViewportIntersectionNeedsUpdate |
+             IntersectionObservation::kImplicitRootObserversNeedUpdate));
 
   // The kIgnoreDelay parameter is used to force computation in an OOPIF which
   // is hidden in the parent document, thus not running lifecycle updates. It

@@ -83,10 +83,9 @@ class WebAppProvider : public KeyedService {
   // Deprecated: Use GetForWebApps instead.
   static WebAppProvider* GetDeprecated(Profile* profile);
 
-  // On Chrome OS: if Lacros Web App (WebAppsCrosapi) is enabled, returns
-  // WebAppProvider in Lacros and nullptr in Ash. Otherwise does the reverse
-  // (nullptr in Lacros, WebAppProvider in Ash). On other platforms, always
-  // returns a WebAppProvider.
+  // On Chrome OS: In Ash, returns nullptr if Lacros Web App (WebAppsCrosapi) is
+  // enabled and it is not the Shimless RMA app profile. On other platforms,
+  // always returns a WebAppProvider.
   static WebAppProvider* GetForWebApps(Profile* profile);
 
   // Returns the WebAppProvider for the current process. In particular:
@@ -229,6 +228,8 @@ class WebAppProvider : public KeyedService {
   // dictionary to the web app database. This should be safe to delete one year
   // after 02-2022.
   void DoMigrateProfilePrefs(Profile* profile);
+
+  void MaybeScheduleGarbageCollection();
 
   std::unique_ptr<AbstractWebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppRegistrarMutable> registrar_;

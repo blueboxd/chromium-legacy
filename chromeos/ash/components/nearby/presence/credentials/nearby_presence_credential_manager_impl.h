@@ -161,19 +161,34 @@ class NearbyPresenceCredentialManagerImpl
       std::vector<mojom::SharedCredentialPtr> shared_credentials,
       mojom::StatusCode status);
 
-  // Callbacks for first time credential upload/download during first time
-  // server registration.
-  void ScheduleUploadCredentials(
-      std::vector<::nearby::internal::SharedCredential>
-          proto_shared_credentials);
+  // Callback for first time remote credential saving in the NP library.
+  void OnFirstTimeRemoteCredentialsSaved(mojom::StatusCode status);
+
+  // Callbacks for credential upload/download during first time
+  // server registration and daily syncs.
   void OnFirstTimeCredentialsUpload(bool success);
-  void ScheduleDownloadCredentials();
   void OnFirstTimeCredentialsDownload(
       std::vector<::nearby::internal::SharedCredential> credentials,
       bool success);
 
-  // Callback for first time remote credential saving in the NP library.
-  void OnFirstTimeRemoteCredentialsSaved(mojom::StatusCode status);
+  void StartDailySync();
+
+  // Callback for fetching local device credentials from the NP library during
+  // daily syncs.
+  void OnGetLocalSharedCredentials(
+      std::vector<mojom::SharedCredentialPtr> shared_credentials,
+      mojom::StatusCode status);
+
+  // Callbacks for uploading/downloading credentials as part of the
+  // daily syncs.
+  void OnDailySyncCredentialUpload(bool success);
+  void OnDailySyncCredentialDownload(
+      std::vector<::nearby::internal::SharedCredential> credentials,
+      bool success);
+
+  // Callback for remote credential saving in the NP library that is part of
+  // the daily sync flow.
+  void OnDailySyncRemoteCredentialsSaved(mojom::StatusCode status);
 
   // Helper functions to trigger uploading credentials in the NP server. The
   // helper functions are used for first time server registration to upload
@@ -184,6 +199,14 @@ class NearbyPresenceCredentialManagerImpl
   // They take a repeating callback because `UploadCredentials()` and
   // `DownloadCredentials()` must be bound as a RepeatingCallback itself as a
   // task in a NearbyScheduler.
+  void ScheduleUploadCredentials(
+      std::vector<::nearby::internal::SharedCredential>
+          proto_shared_credentials,
+      base::RepeatingCallback<void(bool)> on_upload);
+  void ScheduleDownloadCredentials(
+      base::RepeatingCallback<
+          void(std::vector<::nearby::internal::SharedCredential>, bool)>
+          on_download);
   void UploadCredentials(
       std::vector<::nearby::internal::SharedCredential> credentials,
       base::RepeatingCallback<void(bool)> upload_credentials_result_callback);
@@ -238,16 +261,22 @@ class NearbyPresenceCredentialManagerImpl
   const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Schedulers used to schedule immediate tasks to communicate with the
-  // server during the first time registration flow. Initialized during the
-  // first time registration flow kicked off in `RegisterPresence()`. Not
-  // expected to be a valid pointer unless used during the first time
-  // registration flow.
+  // server during the first time registration flow and daily credential sync
+  // flow.
+  std::unique_ptr<ash::nearby::NearbyScheduler> upload_on_demand_scheduler_;
+  std::unique_ptr<ash::nearby::NearbyScheduler> download_on_demand_scheduler_;
+
+  // Initialized during the first time registration flow kicked off in
+  // `RegisterPresence()`. Not expected to be a valid pointer unless used during
+  // the first time registration flow.
   std::unique_ptr<ash::nearby::NearbyScheduler>
       first_time_registration_on_demand_scheduler_;
+
+  // Scheduler used for daily credential syncs with the server. Every 24 hours,
+  // attempt to upload the local device's credentials and download/save
+  // remote devices' credentials.
   std::unique_ptr<ash::nearby::NearbyScheduler>
-      first_time_upload_on_demand_scheduler_;
-  std::unique_ptr<ash::nearby::NearbyScheduler>
-      first_time_download_on_demand_scheduler_;
+      daily_credential_sync_scheduler_;
 
   // Callback to return the result of the first time registration. Not
   // guaranteed to be a valid callback, as this is set only during first time

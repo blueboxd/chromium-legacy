@@ -58,7 +58,7 @@ AddChildScreen::AddChildScreen(base::WeakPtr<AddChildScreenView> view,
 AddChildScreen::~AddChildScreen() = default;
 
 bool AddChildScreen::MaybeSkip(WizardContext& context) {
-  if (context.skip_post_login_screens_for_tests) {
+  if (context.skip_to_login_for_tests) {
     exit_callback_.Run(Result::SKIPPED);
     return true;
   }
@@ -72,6 +72,10 @@ void AddChildScreen::ShowImpl() {
   }
 
   scoped_observation_.Observe(network_state_informer_.get());
+
+  // Fixing the Guest shelfButton
+  // Todo(b/291766001) Nuke is_first_signin_step_ in LoginshelfView
+  LoginScreen::Get()->SetIsFirstSigninStep(true);
 
   UpdateState(NetworkError::ERROR_REASON_UPDATE);
 
@@ -120,8 +124,8 @@ bool AddChildScreen::HandleAccelerator(LoginAcceleratorAction action) {
 
 void AddChildScreen::UpdateState(NetworkError::ErrorReason reason) {
   NetworkStateInformer::State state = network_state_informer_->state();
-  const bool is_online = NetworkStateInformer::IsOnline(state, reason);
-  if (!is_online) {
+  if (state != NetworkStateInformer::ONLINE ||
+      reason == NetworkError::ERROR_REASON_LOADING_TIMEOUT) {
     error_screen_visible_ = true;
     error_screen_->SetParentScreen(AddChildScreenView::kScreenId);
     error_screen_->ShowNetworkErrorMessage(state, reason);

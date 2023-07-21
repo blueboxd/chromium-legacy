@@ -38,6 +38,9 @@ class PasswordsPrivateDelegate
   using ImportResultsCallback =
       base::OnceCallback<void(const api::passwords_private::ImportResults&)>;
 
+  using FetchFamilyResultsCallback = base::OnceCallback<void(
+      const api::passwords_private::FamilyFetchResults&)>;
+
   using PlaintextPasswordCallback =
       base::OnceCallback<void(absl::optional<std::u16string>)>;
 
@@ -86,15 +89,6 @@ class PasswordsPrivateDelegate
                            const std::u16string& note,
                            bool use_account_store,
                            content::WebContents* web_contents) = 0;
-
-  // Changes the username and password corresponding to |ids|.
-  // |ids|: The ids for the password entries being updated.
-  // |params|: The struct which holds the new username, password and note.
-  // Returns the ids if the change was successful (can be the same ids if the
-  // username and the password didn't change), nullopt otherwise.
-  virtual absl::optional<int> ChangeSavedPassword(
-      int id,
-      const api::passwords_private::ChangeSavedPasswordParams& params) = 0;
 
   // Updates a credential. Not all attributes can be updated.
   // |credential|: The credential to be updated. Matched to an existing
@@ -154,6 +148,11 @@ class PasswordsPrivateDelegate
   virtual void MovePasswordsToAccount(const std::vector<int>& ids,
                                       content::WebContents* web_contents) = 0;
 
+  // Fetches family members of the current user for the password sharing flow.
+  // |callback|: Used to communicate the status of a request to fetch family
+  //  members, as well as the data returned in the response.
+  virtual void FetchFamilyMembers(FetchFamilyResultsCallback callback) = 0;
+
   // Trigger the password import procedure, allowing the user to select a file
   // containing passwords to import.
   // |to_store|: destination store (Device or Account) for imported passwords.
@@ -185,9 +184,6 @@ class PasswordsPrivateDelegate
   virtual void ExportPasswords(
       base::OnceCallback<void(const std::string&)> callback,
       content::WebContents* web_contents) = 0;
-
-  // Cancel any ongoing export.
-  virtual void CancelExportPasswords() = 0;
 
   // Get the most recent progress status.
   virtual api::passwords_private::ExportProgressStatus
@@ -225,15 +221,9 @@ class PasswordsPrivateDelegate
   virtual bool UnmuteInsecureCredential(
       const api::passwords_private::PasswordUiEntry& credential) = 0;
 
-  // Records that a change password flow was started for |credential|.
-  virtual void RecordChangePasswordFlowStarted(
-      const api::passwords_private::PasswordUiEntry& credential) = 0;
-
   // Requests to start a check for insecure passwords. Invokes |callback|
   // once a check is running or the request was stopped via StopPasswordCheck().
   virtual void StartPasswordCheck(StartPasswordCheckCallback callback) = 0;
-  // Stops a check for insecure passwords.
-  virtual void StopPasswordCheck() = 0;
 
   // Returns the current status of the password check.
   virtual api::passwords_private::PasswordCheckStatus

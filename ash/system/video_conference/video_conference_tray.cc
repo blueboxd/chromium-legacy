@@ -4,6 +4,7 @@
 
 #include "ash/system/video_conference/video_conference_tray.h"
 
+#include <memory>
 #include <string>
 
 #include "ash/public/cpp/shelf_types.h"
@@ -17,17 +18,24 @@
 #include "ash/system/privacy/screen_security_controller.h"
 #include "ash/system/system_notification_controller.h"
 #include "ash/system/tray/tray_background_view.h"
+#include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/video_conference/bubble/bubble_view.h"
+#include "ash/system/video_conference/bubble/linux_apps_bubble_view.h"
 #include "ash/system/video_conference/video_conference_tray_controller.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "chromeos/crosapi/mojom/video_conference.mojom.h"
 #include "components/session_manager/session_manager_types.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPoint.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -35,7 +43,9 @@
 #include "ui/color/color_id.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/controls/highlight_path_generator.h"
 
@@ -44,8 +54,8 @@ namespace ash {
 namespace {
 
 constexpr float kTrayButtonsSpacing = 4;
-constexpr float kPrivacyIndicatorRadius = 4;
-constexpr float kIndicatorBorderWidth = 1;
+constexpr float kPrivacyIndicatorRadius = 3;
+constexpr float kIndicatorBorderWidth = 2;
 
 // Histogram names
 constexpr char kToggleButtonHistogramName[] =
@@ -56,6 +66,18 @@ constexpr char kMicrophoneMuteHistogramName[] =
     "Ash.VideoConferenceTray.MicrophoneMuteButton.Click";
 constexpr char kStopScreenShareHistogramName[] =
     "Ash.VideoConferenceTray.StopScreenShareButton.Click";
+
+// Check if there's a non-linux app(s) from the given `apps`.
+bool HasNonLinuxMediaApps(const MediaApps& apps) {
+  for (auto& app : apps) {
+    if (app->app_type != crosapi::mojom::VideoConferenceAppType::kCrostiniVm &&
+        app->app_type != crosapi::mojom::VideoConferenceAppType::kPluginVm &&
+        app->app_type != crosapi::mojom::VideoConferenceAppType::kBorealis) {
+      return true;
+    }
+  }
+  return false;
+}
 
 // A customized toggle button for the VC tray's toggle bubble button.
 class ToggleBubbleButton : public IconButton {
@@ -115,6 +137,8 @@ VideoConferenceTrayButton::VideoConferenceTrayButton(
   SetBackgroundToggledColorId(cros_tokens::kCrosSysSystemNegativeContainer);
   SetIconToggledColorId(cros_tokens::kCrosSysSystemOnNegativeContainer);
 
+  SetBackgroundColorId(cros_tokens::kCrosSysSystemOnBase1);
+
   SetToggledVectorIcon(*toggled_icon);
 
   SetAccessibleRole(ax::mojom::Role::kToggleButton);
@@ -159,35 +183,77 @@ void VideoConferenceTrayButton::UpdateCapturingState() {
   SchedulePaint();
 }
 
-void VideoConferenceTrayButton::PaintButtonContents(gfx::Canvas* canvas) {
-  IconButton::PaintButtonContents(canvas);
+gfx::ImageSkia VideoConferenceTrayButton::GetImageToPaint() {
+  auto image_skia = IconButton::GetImageToPaint();
 
-  if (!show_privacy_indicator_)
-    return;
+  // If we show the privacy indicator, we need to manipulate the image to draw
+  // this indicator.
+  if (!show_privacy_indicator_) {
+    return image_skia;
+  }
 
-  const gfx::RectF bounds(GetContentsBounds());
-  auto image = GetImageToPaint();
-  auto indicator_origin_x = (bounds.width() - image.width()) / 2 +
-                            image.width() - kPrivacyIndicatorRadius;
-  auto indicator_origin_y = (bounds.height() - image.height()) / 2 +
-                            image.height() - kPrivacyIndicatorRadius;
+  const SkBitmap* bitmap = image_skia.bitmap();
+  int width = bitmap->width();
+  int height = bitmap->height();
 
-  cc::PaintFlags flags;
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setAntiAlias(true);
+  // Since the original `bitmap` is marked as immutable. We need to create a new
+  // instance of bitmap to manipulate its content.
+  SkBitmap manipulated_bitmap;
+  manipulated_bitmap.allocN32Pixels(width, height);
+  manipulated_bitmap.eraseColor(SK_ColorTRANSPARENT);
 
-  // Draw the outer border of the green dot.
-  flags.setColor(GetBackgroundColor());
-  canvas->DrawCircle(
-      gfx::PointF(indicator_origin_x - kIndicatorBorderWidth / 2,
-                  indicator_origin_y - kIndicatorBorderWidth / 2),
-      kPrivacyIndicatorRadius + kIndicatorBorderWidth, flags);
+  // Copy all the color in each location of `bitmap` to `manipulated_bitmap`.
+  for (int y = 0; y < height; y++) {
+    const SkColor* src_color =
+        reinterpret_cast<SkColor*>(bitmap->getAddr32(0, y));
+    SkColor* preview_color =
+        reinterpret_cast<SkColor*>(manipulated_bitmap.getAddr32(0, y));
 
-  // Draw the green dot privacy indicator.
-  flags.setColor(
+    for (int x = 0; x < width; x++) {
+      SkColor target_color;
+
+      if (SkColorGetA(src_color[x]) < 1) {
+        target_color = SK_ColorTRANSPARENT;
+      } else {
+        target_color = src_color[x];
+      }
+
+      preview_color[x] = target_color;
+    }
+  }
+
+  // Use a canvas to perform DST_OUT and SRC_OVER operations and draw the green
+  // privacy indicator and the ring around it.
+  SkCanvas canvas(manipulated_bitmap);
+
+  SkPoint circle_center = SkPoint::Make(
+      image_skia.width() - kPrivacyIndicatorRadius - kIndicatorBorderWidth,
+      image_skia.height() - kPrivacyIndicatorRadius - kIndicatorBorderWidth);
+
+  SkPaint paint_outer_ring;
+  paint_outer_ring.setStyle(SkPaint::kFill_Style);
+  paint_outer_ring.setAntiAlias(true);
+
+  // DST_OUT operation to draw the circle act as the ring around the green
+  // privacy indicator. Note that we need to use DST_OUT operation here to erase
+  // the portion of the icon that overlap with the ring.
+  paint_outer_ring.setBlendMode(SkBlendMode::kDstOut);
+  canvas.drawCircle(circle_center,
+                    kPrivacyIndicatorRadius + kIndicatorBorderWidth,
+                    paint_outer_ring);
+
+  SkPaint paint_circle;
+  paint_circle.setColor(
       GetColorProvider()->GetColor(ui::kColorAshPrivacyIndicatorsBackground));
-  canvas->DrawCircle(gfx::PointF(indicator_origin_x, indicator_origin_y),
-                     kPrivacyIndicatorRadius, flags);
+  paint_circle.setStyle(SkPaint::kFill_Style);
+  paint_circle.setAntiAlias(true);
+
+  // SRC_OVER operation to paint the green privacy indicator at the center of
+  // the ring.
+  paint_circle.setBlendMode(SkBlendMode::kSrcOver);
+  canvas.drawCircle(circle_center, kPrivacyIndicatorRadius, paint_circle);
+
+  return gfx::ImageSkia::CreateFrom1xBitmap(manipulated_bitmap);
 }
 
 void VideoConferenceTrayButton::UpdateTooltip() {
@@ -270,8 +336,8 @@ VideoConferenceTray::~VideoConferenceTray() {
 }
 
 void VideoConferenceTray::CloseBubble() {
+  bubble_open_ = false;
   toggle_bubble_button_->SetToggled(false);
-
   bubble_.reset();
   shelf()->UpdateAutoHideState();
 }
@@ -294,8 +360,9 @@ std::u16string VideoConferenceTray::GetAccessibleNameForBubble() {
 
 void VideoConferenceTray::HideBubbleWithView(
     const TrayBubbleView* bubble_view) {
-  if (bubble_ && bubble_->bubble_view() == bubble_view)
+  if (bubble_ && bubble_->bubble_view() == bubble_view) {
     CloseBubble();
+  }
 }
 
 void VideoConferenceTray::ClickedOutsideBubble() {
@@ -406,25 +473,26 @@ void VideoConferenceTray::OnSessionStateChanged(
 }
 
 void VideoConferenceTray::ToggleBubble(const ui::Event& event) {
-  const bool bubble_open = GetBubbleWidget();
-  base::UmaHistogramBoolean(kToggleButtonHistogramName, !bubble_open);
+  bubble_open_ = !bubble_open_;
+  base::UmaHistogramBoolean(kToggleButtonHistogramName, bubble_open_);
 
-  if (bubble_open) {
+  if (!bubble_open_) {
     CloseBubble();
     return;
   }
 
   VideoConferenceTrayController::Get()->CloseAllVcNudges();
 
-  // Create top-level bubble.
-  auto bubble_view = std::make_unique<video_conference::BubbleView>(
-      /*init_params=*/CreateInitParamsForTrayBubble(/*tray=*/this),
-      /*controller=*/VideoConferenceTrayController::Get());
-
-  bubble_ = std::make_unique<TrayBubbleWrapper>(this);
-  bubble_->ShowBubble(std::move(bubble_view));
-
-  toggle_bubble_button_->SetToggled(true);
+  // If we are already in the process of getting the media apps, we don't need
+  // to get it again.
+  if (!getting_media_apps_) {
+    getting_media_apps_ = true;
+    // Get all the currently running media apps from the controller and use it
+    // to construct the bubble.
+    VideoConferenceTrayController::Get()->GetMediaApps(
+        base::BindOnce(&VideoConferenceTray::ConstructBubbleWithMediaApps,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void VideoConferenceTray::OnCameraButtonClicked(const ui::Event& event) {
@@ -446,6 +514,36 @@ void VideoConferenceTray::OnScreenShareButtonClicked(const ui::Event& event) {
     VideoConferenceTrayController::Get()->StopAllScreenShare();
     base::UmaHistogramBoolean(kStopScreenShareHistogramName, true);
   }
+}
+
+void VideoConferenceTray::ConstructBubbleWithMediaApps(MediaApps apps) {
+  getting_media_apps_ = false;
+
+  // Should not show anything if bubble is intended to be close.
+  if (!bubble_open_) {
+    return;
+  }
+
+  std::unique_ptr<TrayBubbleView> bubble_view;
+  auto init_params = CreateInitParamsForTrayBubble(/*tray=*/this);
+
+  // If all of the apps are Linux apps, we will just use `LinuxAppsBubbleView`
+  // specifically for this situation.
+  if (!HasNonLinuxMediaApps(apps)) {
+    init_params.corner_radius = 18;
+    bubble_view = std::make_unique<video_conference::LinuxAppsBubbleView>(
+        init_params, apps);
+    bubble_view->SetPreferredWidth(bubble_view->GetPreferredSize().width());
+  } else {
+    bubble_view = std::make_unique<video_conference::BubbleView>(
+        /*init_params=*/init_params, /*media_apps=*/apps,
+        /*controller=*/VideoConferenceTrayController::Get());
+  }
+
+  bubble_ = std::make_unique<TrayBubbleWrapper>(this);
+  bubble_->ShowBubble(std::move(bubble_view));
+
+  toggle_bubble_button_->SetToggled(true);
 }
 
 BEGIN_METADATA(VideoConferenceTray, TrayBackgroundView)

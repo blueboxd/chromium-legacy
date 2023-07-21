@@ -419,18 +419,6 @@ struct PasswordForm {
   // If true, this form was parsed using Autofill predictions.
   bool was_parsed_using_autofill_predictions = false;
 
-  // If true, this match was found using public suffix matching.
-  // TODO(crbug.com/1428539): Remove after match_type is adopted.
-  bool is_public_suffix_match = false;
-
-  // If true, this is a credential found using affiliation-based match.
-  // TODO(crbug.com/1428539): Remove after match_type is adopted.
-  bool is_affiliation_based_match = false;
-
-  // If true, this is a credential found using grouping match.
-  // TODO(crbug.com/1428539): Remove after match_type is adopted.
-  bool is_grouped_match = false;
-
   // Only available when PasswordForm was requested though
   // PasswordStoreInterface::GetLogins(), empty otherwise.
   absl::optional<MatchType> match_type;

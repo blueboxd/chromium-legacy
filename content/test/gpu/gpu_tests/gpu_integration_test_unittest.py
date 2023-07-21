@@ -14,6 +14,8 @@ from typing import Dict, List, Optional, Set, Tuple, Type
 import unittest
 import unittest.mock as mock
 
+import dataclasses  # Built-in, but pylint gives an ordering false positive.
+
 import gpu_project_config
 import run_gpu_integration_test
 
@@ -109,7 +111,7 @@ def _GenerateNvidiaExampleTagsForTestClassAndArgs(
   tags = None
   with mock.patch.object(
       test_class, 'ExpectationsFiles', return_value=['exp.txt']):
-    _ = list(test_class.GenerateGpuTests(args))
+    _ = list(test_class.GenerateTestCases__RunGpuTest(args))
     platform = fakes.FakePlatform('win', 'win10')
     browser = fakes.FakeBrowser(platform, 'release')
     browser._returned_system_info = _GetSystemInfo(
@@ -123,15 +125,14 @@ def _GenerateNvidiaExampleTagsForTestClassAndArgs(
   return tags
 
 
+@dataclasses.dataclass
 class _IntegrationTestArgs():
   """Struct-like object for defining an integration test."""
-
-  def __init__(self, test_name: str):
-    self.test_name = test_name
-    self.failures = []
-    self.successes = []
-    self.skips = []
-    self.additional_args = []
+  test_name: str
+  failures: List[str] = ct.EmptyList()
+  successes: List[str] = ct.EmptyList()
+  skips: List[str] = ct.EmptyList()
+  additional_args: List[str] = ct.EmptyList()
 
 
 class GpuIntegrationTestUnittest(unittest.TestCase):
@@ -268,21 +269,19 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
             args,
             target_cpu_bits=31))
 
-  def testGenerateWebglConformanceExampleTagsForWebglVersion1andAsan(self
-                                                                     ) -> None:
+  def testGenerateWebglConformanceExampleTagsForAsan(self) -> None:
     args = gpu_helper.GetMockArgs(webgl_version='1.0.0')
     tag_set = self._TestTagGenerationForMockPlatform(
         webgl1_cit.WebGL1ConformanceIntegrationTest, args, is_asan=True)
-    self.assertTrue(set(['asan', 'webgl-version-1']).issubset(tag_set))
-    self.assertFalse(set(['no-asan', 'webgl-version-2']) & tag_set)
+    self.assertTrue(set(['asan']).issubset(tag_set))
+    self.assertFalse(set(['no-asan']) & tag_set)
 
-  def testGenerateWebglConformanceExampleTagsForWebglVersion2andNoAsan(
-      self) -> None:
+  def testGenerateWebglConformanceExampleTagsForNoAsan(self) -> None:
     args = gpu_helper.GetMockArgs(webgl_version='2.0.0')
     tag_set = self._TestTagGenerationForMockPlatform(
         webgl2_cit.WebGL2ConformanceIntegrationTest, args)
-    self.assertTrue(set(['no-asan', 'webgl-version-2']).issubset(tag_set))
-    self.assertFalse(set(['asan', 'webgl-version-1']) & tag_set)
+    self.assertTrue(set(['no-asan']).issubset(tag_set))
+    self.assertFalse(set(['asan']) & tag_set)
 
   def testWebGlConformanceTimeoutNoAsan(self) -> None:
     instance = webgl1_cit.WebGL1ConformanceIntegrationTest(

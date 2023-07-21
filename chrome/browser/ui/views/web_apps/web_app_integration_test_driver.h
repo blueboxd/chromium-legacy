@@ -130,7 +130,8 @@ enum class FilesOptions {
 enum class UpdateDialogResponse {
   kAcceptUpdate,
   kCancelDialogAndUninstall,
-  kSkipUpdate
+  kCancelUninstallAndAcceptUpdate,
+  kSkipDialog
 };
 
 enum class SubAppInstallDialogOptions {
@@ -342,8 +343,6 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckAppInListTabbed(Site site);
   void CheckAppNavigation(Site site);
   void CheckAppNavigationIsStartUrl();
-  void CheckAppToolbarVisible();
-  void CheckAppToolbarNotVisible();
   void CheckBrowserNavigation(Site site);
   void CheckBrowserNavigationIsAppSettings(Site site);
   void CheckBrowserNotAtAppHome();
@@ -380,6 +379,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckWindowNotCreated();
   void CheckWindowControlsOverlay(Site site, IsOn is_on);
   void CheckWindowControlsOverlayToggle(Site site, IsShown is_shown);
+  void CheckWindowControlsOverlayToggleIcon(IsShown is_shown);
   void CheckWindowDisplayBrowser();
   void CheckWindowDisplayMinimal();
   void CheckWindowDisplayTabbed();
@@ -393,6 +393,9 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   // WebAppInstallManagerObserver:
   void OnWebAppManifestUpdated(const AppId& app_id,
                                base::StringPiece old_name) override;
+  void OnWebAppUninstalled(
+      const AppId& app_id,
+      webapps::WebappUninstallSource uninstall_source) override;
 
  private:
   // Must be called at the beginning of every state change action function.
@@ -509,9 +512,9 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   // can often call another action).
   int executing_action_level_ = 0;
 
-  raw_ptr<Profile, DanglingAcrossTasks> active_profile_ = nullptr;
+  raw_ptr<Profile, AcrossTasksDanglingUntriaged> active_profile_ = nullptr;
   AppId active_app_id_;
-  raw_ptr<Browser, DanglingAcrossTasks> app_browser_ = nullptr;
+  raw_ptr<Browser, AcrossTasksDanglingUntriaged> app_browser_ = nullptr;
 
   bool in_tear_down_ = false;
   bool is_performing_manifest_update_ = false;

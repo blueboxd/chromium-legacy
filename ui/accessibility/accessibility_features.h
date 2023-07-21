@@ -77,13 +77,6 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(kTextBasedAudioDescription);
 // enabled.
 AX_BASE_EXPORT bool IsTextBasedAudioDescriptionEnabled();
 
-// Returns true if the accessibility code should use experimental optimization
-// techniques in the AXTree::Unserialize method.
-AX_BASE_EXPORT bool IsUnserializeOptimizationsEnabled();
-
-// Enables an experimental implementation in AXTree for performance tests.
-AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityUnserializeOptimizations);
-
 #if BUILDFLAG(IS_WIN)
 // Enables an experimental Chrome-specific accessibility COM API
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kIChromeAccessible);
@@ -165,12 +158,6 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(
 // Returns true if kAccessibilityAcceleratorNotificationsTimeout is enabled.
 AX_BASE_EXPORT bool IsAccessibilityAcceleratorNotificationsTimeoutEnabled();
 
-// Enables the deprecation of ChromeVox tabs menu.
-AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityDeprecateChromeVoxTabs);
-
-// Returns true if kAccessibilityDeprecateChromeVoxTabs is enabled.
-AX_BASE_EXPORT bool IsAccessibilityDeprecateChromeVoxTabsEnabled();
-
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Enables Get Image Descriptions to augment existing images labels,
@@ -230,6 +217,11 @@ AX_BASE_EXPORT bool IsReadAnythingWithScreen2xEnabled();
 
 // If enabled, ScreenAI library writes some debug data in /tmp.
 AX_BASE_EXPORT bool IsScreenAIDebugModeEnabled();
+
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kReadAnythingWebUIToolbar);
+
+// If enabled, use the WebUI toolbar in Read Anything.
+AX_BASE_EXPORT bool IsReadAnythingWebUIToolbarEnabled();
 
 // Enables a feature whereby inaccessible (i.e. untagged) PDFs are made
 // accessible using an optical character recognition service. Due to the size of

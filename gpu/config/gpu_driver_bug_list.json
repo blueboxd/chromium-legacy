@@ -1164,17 +1164,6 @@
       ]
     },
     {
-      "id": 152,
-      "cr_bugs": [581777],
-      "description": "copyTexImage2D fails when reading from IOSurface on multiple GPU types.",
-      "os": {
-        "type": "macosx"
-      },
-      "features": [
-        "use_intermediary_for_copy_texture_image"
-      ]
-    },
-    {
       "id": 153,
       "cr_bugs": [594016],
       "description": "Vivante GC1000 with EXT_multisampled_render_to_texture fails glReadPixels",
@@ -4218,6 +4207,25 @@
       "features": [
         "disable_accelerated_h264_decode",
         "disable_accelerated_h264_encode",
+        "disable_accelerated_vp9_decode",
+        "disable_accelerated_vp9_encode",
+        "disable_accelerated_vp9_profile2_decode"
+      ]
+    },
+    {
+      "id": 416,
+      "cr_bugs": [1465960],
+      "description": "Disable video acceleration on Jasper Lake Intel ChromeOS devices",
+      "os": {
+        "type": "chromeos"
+      },
+      "intel_gpu_series": [
+        "jasperlake"
+      ],
+      "features": [
+        "disable_accelerated_h264_decode",
+        "disable_accelerated_h264_encode",
+        "disable_accelerated_vp8_decode",
         "disable_accelerated_vp9_decode",
         "disable_accelerated_vp9_encode",
         "disable_accelerated_vp9_profile2_decode"

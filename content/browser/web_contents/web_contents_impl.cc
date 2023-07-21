@@ -47,6 +47,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/url_formatter/url_formatter.h"
+#include "components/viz/common/features.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/attribution_reporting/attribution_host.h"
@@ -187,7 +188,6 @@
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
-#include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/android/java_interfaces_impl.h"
 #include "content/browser/android/nfc_host.h"
 #include "content/browser/web_contents/web_contents_android.h"
@@ -196,6 +196,10 @@
 #include "ui/android/view_android.h"
 #include "ui/base/device_form_factor.h"
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+#include "content/browser/date_time_chooser/date_time_chooser.h"
+#endif
 
 #if BUILDFLAG(ENABLE_PPAPI)
 #include "content/browser/media/session/pepper_playback_observer.h"
@@ -214,6 +218,25 @@
 namespace content {
 
 namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class AllPointerTypes {
+  kNone = 0,
+  kCoarse = 1,
+  kFine = 2,
+  kBoth = 3,
+  kMaxValue = kBoth
+};
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PrimaryPointerType {
+  kNone = 0,
+  kCoarse = 1,
+  kFine = 2,
+  kMaxValue = kFine
+};
 
 // The window which we dobounce load info updates in.
 constexpr auto kUpdateLoadStatesInterval = base::Milliseconds(250);
@@ -1049,6 +1072,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   using_dark_colors_ = native_theme->ShouldUseDarkColors();
   preferred_color_scheme_ = native_theme->GetPreferredColorScheme();
   preferred_contrast_ = native_theme->GetPreferredContrast();
+  prefers_reduced_transparency_ = native_theme->GetPrefersReducedTransparency();
 
   screen_change_monitor_ =
       std::make_unique<ScreenChangeMonitor>(base::BindRepeating(
@@ -2900,6 +2924,7 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
        gfx::Animation::ScrollAnimationsEnabledBySystem());
 
   prefs.prefers_reduced_motion = gfx::Animation::PrefersReducedMotion();
+  prefs.prefers_reduced_transparency = prefers_reduced_transparency_;
 
   if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           GetRenderViewHost()->GetProcess()->GetID())) {
@@ -3056,6 +3081,26 @@ void WebContentsImpl::SetSlowWebPreferences(
     prefs->pointer_events_max_touch_points = ui::MaxTouchPoints();
 
     prefs->number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
+
+    AllPointerTypes all_pointer_types = AllPointerTypes::kNone;
+    if (prefs->available_pointer_types & ui::POINTER_TYPE_COARSE &&
+        prefs->available_pointer_types & ui::POINTER_TYPE_FINE) {
+      all_pointer_types = AllPointerTypes::kBoth;
+    } else if (prefs->available_pointer_types & ui::POINTER_TYPE_COARSE) {
+      all_pointer_types = AllPointerTypes::kCoarse;
+    } else if (prefs->available_pointer_types & ui::POINTER_TYPE_FINE) {
+      all_pointer_types = AllPointerTypes::kFine;
+    }
+    PrimaryPointerType primary_pointer = PrimaryPointerType::kNone;
+    if (prefs->primary_pointer_type ==
+        blink::mojom::PointerType::kPointerCoarseType) {
+      primary_pointer = PrimaryPointerType::kCoarse;
+    } else if (prefs->primary_pointer_type ==
+               blink::mojom::PointerType::kPointerFineType) {
+      primary_pointer = PrimaryPointerType::kFine;
+    }
+    base::UmaHistogramEnumeration("Input.PointerTypesAll", all_pointer_types);
+    base::UmaHistogramEnumeration("Input.PointerTypePrimary", primary_pointer);
 
 #if BUILDFLAG(IS_ANDROID)
     const bool device_is_phone =
@@ -3287,8 +3332,8 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params,
   screen_orientation_provider_ =
       std::make_unique<ScreenOrientationProvider>(this);
 
-#if BUILDFLAG(IS_ANDROID)
-  DateTimeChooserAndroid::CreateForWebContents(this);
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+  DateTimeChooser::CreateDateTimeChooser(this);
 #endif
 
   // AttributionHost must be created after `view_->CreateView()` is called as it
@@ -4517,10 +4562,19 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
                   bottom_right.y() - origin.y());
   }
 
+  RenderWidgetHostImpl* render_widget_host_impl = widget_host_view->host();
+  auto permission_exclusion_area_bounds =
+      PermissionControllerImpl::FromBrowserContext(GetBrowserContext())
+          ->GetExclusionAreaBoundsInScreen(outermost_web_contents);
+  if (permission_exclusion_area_bounds &&
+      permission_exclusion_area_bounds->Intersects(transformed_rect)) {
+    render_widget_host_impl->ShutdownAndDestroyWidget(true);
+    return;
+  }
+
   widget_host_view->InitAsPopup(view, transformed_rect,
                                 transformed_anchor_rect);
 
-  RenderWidgetHostImpl* render_widget_host_impl = widget_host_view->host();
   // Renderer-owned popup widgets wait for the renderer to request for them
   // to be shown. We signal that this condition is satisfied by calling Init().
   render_widget_host_impl->Init();
@@ -6130,6 +6184,15 @@ void WebContentsImpl::DidNavigateMainFramePreCommit(
     ExitFullscreen(false);
   DCHECK(!IsFullscreen());
 
+  if (base::FeatureList::IsEnabled(
+          features::kInvalidateLocalSurfaceIdPreCommit)) {
+    auto* rwhvb = static_cast<RenderWidgetHostViewBase*>(
+        frame_tree_node->current_frame_host()->GetView());
+    if (rwhvb) {
+      rwhvb->DidNavigateMainFramePreCommit();
+    }
+  }
+
   // Clean up keyboard lock state when navigating.
   CancelKeyboardLock(keyboard_lock_widget_);
 }
@@ -6155,10 +6218,14 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
       ClearTargetURL();
     }
 
-    RenderWidgetHostViewBase* rwhvb = static_cast<RenderWidgetHostViewBase*>(
-        render_frame_host->GetMainFrame()->GetView());
-    if (rwhvb)
-      rwhvb->OnDidNavigateMainFrameToNewPage();
+    if (!base::FeatureList::IsEnabled(
+            features::kInvalidateLocalSurfaceIdPreCommit)) {
+      RenderWidgetHostViewBase* rwhvb = static_cast<RenderWidgetHostViewBase*>(
+          render_frame_host->GetMainFrame()->GetView());
+      if (rwhvb) {
+        rwhvb->DidNavigateMainFramePreCommit();
+      }
+    }
   }
 
   PageImpl& page = render_frame_host->GetPage();
@@ -6268,8 +6335,8 @@ void WebContentsImpl::DidInferColorScheme(PageImpl& page) {
                   blink::mojom::PreferredColorScheme::kDark;
       base::UmaHistogramBoolean("Power.DarkMode.InferredDarkPageColorScheme",
                                 dark);
-      if (web_preferences_->preferred_color_scheme ==
-          blink::mojom::PreferredColorScheme::kDark) {
+      if (web_preferences_ && web_preferences_->preferred_color_scheme ==
+                                  blink::mojom::PreferredColorScheme::kDark) {
         base::UmaHistogramBoolean(
             "Power.DarkMode.DarkColorScheme.InferredDarkPageColorScheme", dark);
       }
@@ -9500,6 +9567,8 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
       observed_theme->GetPreferredColorScheme();
   ui::NativeTheme::PreferredContrast preferred_contrast =
       observed_theme->GetPreferredContrast();
+  bool prefers_reduced_transparency =
+      observed_theme->GetPrefersReducedTransparency();
   bool preferences_changed = false;
 
   if (using_dark_colors_ != using_dark_colors) {
@@ -9512,6 +9581,10 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   }
   if (preferred_contrast_ != preferred_contrast) {
     preferred_contrast_ = preferred_contrast;
+    preferences_changed = true;
+  }
+  if (prefers_reduced_transparency_ != prefers_reduced_transparency) {
+    prefers_reduced_transparency_ = prefers_reduced_transparency;
     preferences_changed = true;
   }
 
@@ -9750,6 +9823,7 @@ std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
     PrerenderTriggerType trigger_type,
     const std::string& embedder_histogram_suffix,
     ui::PageTransition page_transition,
+    PreloadingHoldbackStatus holdback_status_override,
     PreloadingAttempt* preloading_attempt,
     absl::optional<base::RepeatingCallback<bool(const GURL&)>>
         url_match_predicate) {
@@ -9760,6 +9834,8 @@ std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
       /*initiator_frame_token=*/absl::nullopt,
       /*initiator_frame_tree_node_id=*/RenderFrameHost::kNoFrameTreeNodeId,
       ukm::kInvalidSourceId, page_transition, url_match_predicate);
+  attributes.holdback_status_override = holdback_status_override;
+
   int frame_tree_node_id = GetPrerenderHostRegistry()->CreateAndStartHost(
       attributes, preloading_attempt);
 

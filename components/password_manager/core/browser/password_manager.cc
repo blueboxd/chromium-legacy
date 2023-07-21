@@ -33,7 +33,6 @@
 #include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/credential_cache.h"
-#include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
@@ -47,6 +46,7 @@
 #include "components/password_manager/core/browser/password_save_manager_impl.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/password_manager/core/common/password_manager_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -114,24 +114,26 @@ bool ShouldPromptUserToSavePassword(const PasswordFormManager& manager) {
     return false;
   }
 
-  switch (
-      password_manager_util::GetMatchType(manager.GetPendingCredentials())) {
-    case password_manager_util::GetLoginMatchType::kExact:
-      break;
-    case password_manager_util::GetLoginMatchType::kAffiliated:
-      // User successfully signed-in with affiliated web credentials. These
-      // credentials should be automatically saved in order to be autofilled on
-      // next login.
-      if (!IsValidAndroidFacetURI(
-              manager.GetPendingCredentials().signon_realm)) {
+  const auto& form = manager.GetPendingCredentials();
+  if (form.match_type.has_value()) {
+    switch (password_manager_util::GetMatchType(form)) {
+      case password_manager_util::GetLoginMatchType::kExact:
+        break;
+      case password_manager_util::GetLoginMatchType::kAffiliated:
+        // User successfully signed-in with affiliated web credentials. These
+        // credentials should be automatically saved in order to be autofilled
+        // on next login.
+        if (!IsValidAndroidFacetURI(
+                manager.GetPendingCredentials().signon_realm)) {
+          return false;
+        }
+        break;
+      case password_manager_util::GetLoginMatchType::kPSL:
+        // User successfully signed-in with PSL match credentials. These
+        // credentials should be automatically saved in order to be autofilled
+        // on next login.
         return false;
-      }
-      break;
-    case password_manager_util::GetLoginMatchType::kPSL:
-      // User successfully signed-in with PSL match credentials. These
-      // credentials should be automatically saved in order to be autofilled on
-      // next login.
-      return false;
+    }
   }
 
   return manager.IsNewLogin();
@@ -181,40 +183,6 @@ bool HasNewPasswordVote(const FormPredictions& form) {
 
   return base::ranges::any_of(form.fields, is_creation_password_or_new_password,
                               &PasswordFieldPrediction::type);
-}
-
-// Adds predictions to |predictions->fields| if |field_info_manager| has
-// predictions for corresponding fields. Predictions from |field_info_manager|
-// have priority over server predictions.
-void AddLocallySavedPredictions(const FieldInfoManager* field_info_manager,
-                                FormPredictions* predictions,
-                                BrowserSavePasswordProgressLogger* logger) {
-  DCHECK(predictions);
-  if (!field_info_manager)
-    return;
-
-  for (PasswordFieldPrediction& field : predictions->fields) {
-    auto local_prediction = field_info_manager->GetFieldType(
-        predictions->form_signature, field.signature);
-    if (local_prediction == SINGLE_USERNAME) {
-      field.type = SINGLE_USERNAME;
-    } else if (local_prediction == NOT_USERNAME) {
-      // Now local prediction NOT_USERNAME is based on the weak signal (the user
-      // ignored or rejected the prompt) so use it only if the server does not
-      // have data.
-      if (field.type != SINGLE_USERNAME && field.type != USERNAME)
-        field.type = NOT_USERNAME;
-    }
-    if (logger && local_prediction != UNKNOWN_TYPE) {
-      std::string message = base::StrCat(
-          {"form signature=",
-           NumberToString(predictions->form_signature.value()),
-           " , field signature=", NumberToString(field.signature.value()),
-           ", type=",
-           autofill::AutofillType::ServerFieldTypeToString(local_prediction)});
-      logger->LogString(Logger::STRING_LOCALLY_SAVED_PREDICTION, message);
-    }
-  }
 }
 
 bool IsMutedInsecureCredential(const PasswordForm* credential,
@@ -358,7 +326,6 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kBiometricAuthenticationBeforeFilling,
                                 false);
 #endif
-  registry->RegisterBooleanPref(prefs::kPasswordsGroupingInfoRequested, false);
 #if BUILDFLAG(IS_IOS)
   registry->RegisterBooleanPref(prefs::kAccountStorageNoticeShown, false);
   registry->RegisterIntegerPref(prefs::kAccountStorageNewFeatureIconImpressions,
@@ -1245,9 +1212,6 @@ void PasswordManager::ProcessAutofillPredictions(
     int driver_id = driver ? driver->GetId() : 0;
     predictions_[form->form_signature()] =
         ConvertToFormPredictions(driver_id, *form);
-    AddLocallySavedPredictions(client_->GetFieldInfoManager(),
-                               &predictions_[form->form_signature()],
-                               logger.get());
   }
 
   // Create form managers for non-password forms if |predictions_| has evidence
@@ -1260,9 +1224,6 @@ void PasswordManager::ProcessAutofillPredictions(
       continue;
     }
 
-    if (form->has_password_field())
-      continue;
-
     const FormPredictions* form_predictions =
         &predictions_[form->form_signature()];
     // Do not skip the form if it either contains a field for the Username
@@ -1272,7 +1233,13 @@ void PasswordManager::ProcessAutofillPredictions(
       continue;
     }
 
-    CreateFormManager(driver, form->ToFormData());
+    const FormData& form_data = form->ToFormData();
+    // If the renderer recognizes `form` as a credential form, then we will be
+    // informed about this form via `OnFormsParsed()` and `OnFormsSeen()`.
+    if (util::IsRendererRecognizedCredentialForm(form_data)) {
+      continue;
+    }
+    CreateFormManager(driver, form_data);
   }
 
   for (auto& manager : form_managers_)

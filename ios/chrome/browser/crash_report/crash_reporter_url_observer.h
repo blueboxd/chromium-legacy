@@ -68,12 +68,7 @@ class CrashReporterURLObserver : public WebStateListObserver,
   // WebStateListObserver
   void WebStateListDidChange(WebStateList* web_state_list,
                              const WebStateListChange& change,
-                             const WebStateSelection& selection) override;
-  void WebStateActivatedAt(WebStateList* web_state_list,
-                           web::WebState* old_web_state,
-                           web::WebState* new_web_state,
-                           int active_index,
-                           ActiveWebStateChangeReason reason) override;
+                             const WebStateListStatus& status) override;
 
  private:
   // A unique string identifying `web_state_list` as a group of WebStates.

@@ -18,6 +18,7 @@ import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.customtabs.EngagementSignalsCallback;
 
 import org.chromium.base.MathUtils;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.UserData;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.cc.mojom.RootScrollOffsetUpdateFrequency;
@@ -105,7 +106,6 @@ class RealtimeEngagementSignalObserver extends CustomTabTabObserver {
      * @param callback The {@link EngagementSignalsCallback} to sends the signals to.
      * @param hadScrollDown Whether there has been a scroll down gesture.
      */
-    // TODO(https://crbug.com/1378410): Inject this class and implement NativeInitObserver.
     public RealtimeEngagementSignalObserver(TabObserverRegistrar tabObserverRegistrar,
             CustomTabsConnection connection, CustomTabsSessionToken session,
             EngagementSignalsCallback callback, boolean hadScrollDown) {
@@ -397,7 +397,7 @@ class RealtimeEngagementSignalObserver extends CustomTabTabObserver {
      */
     @VisibleForTesting
     static class ScrollState implements UserData {
-        private static ScrollState sTestInstance;
+        private static ScrollState sInstanceForTesting;
 
         boolean mIsScrollActive;
         boolean mIsDirectionUp;
@@ -505,7 +505,7 @@ class RealtimeEngagementSignalObserver extends CustomTabTabObserver {
         }
 
         static @NonNull ScrollState from(Tab tab) {
-            if (sTestInstance != null) return sTestInstance;
+            if (sInstanceForTesting != null) return sInstanceForTesting;
 
             ScrollState scrollState = tab.getUserDataHost().getUserData(ScrollState.class);
             if (scrollState == null) {
@@ -525,9 +525,9 @@ class RealtimeEngagementSignalObserver extends CustomTabTabObserver {
             return SystemClock.elapsedRealtime() - mTimeLastOnScrollEnded;
         }
 
-        @VisibleForTesting
         static void setInstanceForTesting(ScrollState instance) {
-            sTestInstance = instance;
+            sInstanceForTesting = instance;
+            ResettersForTesting.register(() -> sInstanceForTesting = null);
         }
     }
 

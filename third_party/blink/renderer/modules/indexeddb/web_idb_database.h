@@ -20,7 +20,7 @@
 
 namespace blink {
 class IDBRequest;
-class WebIDBCallbacks;
+class WebIDBCallbacksImpl;
 
 class MODULES_EXPORT WebIDBDatabase final {
  public:
@@ -91,9 +91,10 @@ class MODULES_EXPORT WebIDBDatabase final {
                    int64_t object_store_id,
                    const IDBKeyRange*,
                    mojom::blink::IDBDatabase::DeleteRangeCallback callback);
-  void GetKeyGeneratorCurrentNumber(int64_t transaction_id,
-                                    int64_t object_store_id,
-                                    WebIDBCallbacks*);
+  void GetKeyGeneratorCurrentNumber(
+      int64_t transaction_id,
+      int64_t object_store_id,
+      mojom::blink::IDBDatabase::GetKeyGeneratorCurrentNumberCallback callback);
   void Clear(int64_t transaction_id,
              int64_t object_store_id,
              mojom::blink::IDBDatabase::ClearCallback callback);
@@ -116,7 +117,7 @@ class MODULES_EXPORT WebIDBDatabase final {
 
  private:
   mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> GetCallbacksProxy(
-      std::unique_ptr<WebIDBCallbacks> callbacks);
+      std::unique_ptr<WebIDBCallbacksImpl> callbacks);
 
   mojo::AssociatedRemote<mojom::blink::IDBDatabase> database_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

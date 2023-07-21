@@ -8,20 +8,26 @@
 #include <memory>
 #include <vector>
 
-#include "ash/constants/ash_features.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/values.h"
-#include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
+#include "chrome/browser/ash/arc/input_overlay/constants.h"
+#include "chrome/browser/ash/arc/input_overlay/db/proto/app_data.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/event_rewriter.h"
-#include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace aura {
 class Window;
 }  // namespace aura
+
+namespace gfx {
+class Rect;
+class RectF;
+class Vector2dF;
+}  // namespace gfx
 
 namespace ui {
 class EventSource;
@@ -31,6 +37,8 @@ namespace arc::input_overlay {
 
 class Action;
 class ArcInputOverlayManagerTest;
+class DisplayOverlayController;
+class InputElement;
 class TouchInjectorObserver;
 
 // If the following touch move sent immediately, the touch move event is not
@@ -106,7 +114,7 @@ class TouchInjector : public ui::EventRewriter {
     return menu_entry_location_;
   }
 
-  // Update |content_bounds_| and touch positions for each |actions_| for
+  // Update |content_bounds_f_| and touch positions for each |actions_| for
   // different reasons.
   void UpdatePositionsForRegister();
   void UpdateForOverlayBoundsChanged(const gfx::RectF& new_bounds);
@@ -134,9 +142,12 @@ class TouchInjector : public ui::EventRewriter {
       const ui::Event& event,
       const Continuation continuation) override;
 
-  aura::Window* window() { return window_; }
+  aura::Window* window() const { return window_; }
   const std::string& package_name() const { return package_name_; }
-  const gfx::RectF& content_bounds() const { return content_bounds_; }
+  const gfx::RectF& content_bounds_f() const { return content_bounds_f_; }
+  const gfx::Rect content_bounds() const {
+    return gfx::ToEnclosingRect(content_bounds_f_);
+  }
   const gfx::Transform* rotation_transform() {
     return rotation_transform_.get();
   }
@@ -155,6 +166,10 @@ class TouchInjector : public ui::EventRewriter {
     input_mapping_visible_ = enable;
   }
 
+  void set_can_rewrite_event(bool can_rewrite_event) {
+    can_rewrite_event_ = can_rewrite_event;
+  }
+
   bool first_launch() const { return first_launch_; }
   void set_first_launch(bool first_launch) { first_launch_ = first_launch; }
 
@@ -168,9 +183,6 @@ class TouchInjector : public ui::EventRewriter {
 
   bool enable_mouse_lock() { return enable_mouse_lock_; }
   void set_enable_mouse_lock(bool enable) { enable_mouse_lock_ = true; }
-
-  bool beta() const { return beta_; }
-  void set_beta(bool beta) { beta_ = beta; }
 
  private:
   friend class ArcInputOverlayManagerTest;
@@ -242,12 +254,24 @@ class TouchInjector : public ui::EventRewriter {
   void AddSystemVersionToProto(AppDataProto& proto);
   void LoadSystemVersionFromProto(AppDataProto& proto);
 
+  // Overwrite the default `action` from `proto`.
+  void OverwriteDefaultAction(const ActionProto& proto, Action* action);
+  // Add an action from proto if the default action has type changed or it is a
+  // user-added action.
+  void AddUserAddedActionFromProto(const ActionProto& proto);
+  // Find `action` in `actions_`, and then replace it by `new_action`. This is
+  // called when changing action type from UI or overwriting the default action
+  // with a different action type from proto.
+  void ReplaceActionInternal(Action* action,
+                             std::unique_ptr<Action> new_action);
+
   // For observers.
   void NotifyActionAdded(Action& action);
   void NotifyActionRemoved(Action& action);
   void NotifyActionTypeChanged(Action* action, Action* new_action);
-  void NotifyActionUpdated(const Action& action);
+  void NotifyActionInputBindingUpdated(const Action& action);
   void NotifyActionNameUpdated(const Action& action);
+  void NotifyContentBoundsSizeChanged();
 
   // For test.
   int GetRewrittenTouchIdForTesting(ui::PointerId original_id);
@@ -258,9 +282,9 @@ class TouchInjector : public ui::EventRewriter {
   // TouchInjector is created when targeted |window_| is created and is
   // registered only when |window_| is focused. And TouchInjector doesn't own
   // |window_| and it is destroyed when |window_| is destroyed.
-  raw_ptr<aura::Window, DanglingAcrossTasks> window_;
+  raw_ptr<aura::Window, AcrossTasksDanglingUntriaged> window_;
   std::string package_name_;
-  gfx::RectF content_bounds_;
+  gfx::RectF content_bounds_f_;
   base::WeakPtr<ui::EventRewriterContinuation> continuation_;
   std::vector<std::unique_ptr<Action>> actions_;
   base::ScopedObservation<ui::EventSource, ui::EventRewriter> observation_{
@@ -279,6 +303,8 @@ class TouchInjector : public ui::EventRewriter {
   // Linked to input mapping toggle in the menu. Set it enabled by default. This
   // is to save status if display overlay is destroyed during window operations.
   bool input_mapping_visible_ = true;
+
+  bool can_rewrite_event_ = true;
 
   // Used for UMA stats. Don't record the stats when users just switch the
   // toggle back and forth and finish at the same state. Only record the state
@@ -305,10 +331,6 @@ class TouchInjector : public ui::EventRewriter {
   // TODO(cuicuiruan): It can be removed after the mouse lock is enabled for
   // post MVP.
   bool enable_mouse_lock_ = false;
-
-  // Corresponds to |kArcInputOverlayBeta| flag to turn on/off the editor
-  // feature of adding or removing actions.
-  bool beta_ = ash::features::IsArcInputOverlayBetaEnabled();
 
   // Use default position if it is null.
   absl::optional<gfx::Vector2dF> menu_entry_location_;

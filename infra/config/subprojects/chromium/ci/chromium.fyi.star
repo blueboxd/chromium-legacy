@@ -1276,10 +1276,11 @@ def build_perf_builder(description_html, **kwargs):
         # rely on the builder dimension for the bot selection.
         builderless = False,
         cores = None,
+        siso_enabled = True,
         siso_enable_cloud_profiler = True,
         siso_enable_cloud_trace = True,
         siso_project = siso.project.DEFAULT_UNTRUSTED,
-        siso_configs = ["remote_all", "rewrapper_to_reproxy"],
+        siso_configs = [],
         notifies = ["chrome-build-perf"],
         description_html = description_html + "<br>Build stats is show in http://shortn/_gaAdI3x6o6.",
         **kwargs
@@ -1296,8 +1297,6 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             config = "chromium",
             apply_configs = [
                 "android",
-                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
-                "chromium_no_telemetry_dependencies",
             ],
         ),
         chromium_config = builder_config.chromium_config(
@@ -1332,10 +1331,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             config = "chromium",
             apply_configs = [
                 "android",
-                "checkout_siso",
                 "siso_latest",
-                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
-                "chromium_no_telemetry_dependencies",
             ],
         ),
         chromium_config = builder_config.chromium_config(
@@ -1369,10 +1365,7 @@ This builder measures build performance for Android developer builds, by simulat
             config = "chromium",
             apply_configs = [
                 "android",
-                "checkout_siso",
                 "siso_latest",
-                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
-                "chromium_no_telemetry_dependencies",
             ],
         ),
         chromium_config = builder_config.chromium_config(
@@ -1407,10 +1400,6 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
-            apply_configs = [
-                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
-                "chromium_no_telemetry_dependencies",
-            ],
         ),
         chromium_config = builder_config.chromium_config(
             config = "chromium",
@@ -1437,10 +1426,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         gclient_config = builder_config.gclient_config(
             config = "chromium",
             apply_configs = [
-                "checkout_siso",
                 "siso_latest",
-                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
-                "chromium_no_telemetry_dependencies",
             ],
         ),
         chromium_config = builder_config.chromium_config(
@@ -1467,10 +1453,7 @@ This builder measures build performance for Linux developer builds, by simulatin
         gclient_config = builder_config.gclient_config(
             config = "chromium",
             apply_configs = [
-                "checkout_siso",
                 "siso_latest",
-                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
-                "chromium_no_telemetry_dependencies",
             ],
         ),
         chromium_config = builder_config.chromium_config(
@@ -1499,10 +1482,6 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
-            apply_configs = [
-                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
-                "chromium_no_telemetry_dependencies",
-            ],
         ),
         chromium_config = builder_config.chromium_config(
             config = "chromium",
@@ -1529,10 +1508,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         gclient_config = builder_config.gclient_config(
             config = "chromium",
             apply_configs = [
-                "checkout_siso",
                 "siso_latest",
-                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
-                "chromium_no_telemetry_dependencies",
             ],
         ),
         chromium_config = builder_config.chromium_config(
@@ -1559,10 +1535,7 @@ This builder measures build performance for Windows developer builds, by simulat
         gclient_config = builder_config.gclient_config(
             config = "chromium",
             apply_configs = [
-                "checkout_siso",
                 "siso_latest",
-                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
-                "chromium_no_telemetry_dependencies",
             ],
         ),
         chromium_config = builder_config.chromium_config(
@@ -1593,8 +1566,6 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             config = "chromium",
             apply_configs = [
                 "chromeos",
-                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
-                "chromium_no_telemetry_dependencies",
             ],
         ),
         chromium_config = builder_config.chromium_config(
@@ -1626,10 +1597,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             config = "chromium",
             apply_configs = [
                 "chromeos",
-                "checkout_siso",
                 "siso_latest",
-                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
-                "chromium_no_telemetry_dependencies",
             ],
         ),
         chromium_config = builder_config.chromium_config(
@@ -2111,7 +2079,8 @@ fyi_ios_builder(
                 "mb",
                 "mac_toolchain",
             ],
-            build_config = builder_config.build_config.DEBUG,
+            # Release for now due to binary size being too large (crbug.com/1464415)
+            build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
             target_platform = builder_config.target_platform.IOS,
         ),
@@ -2409,6 +2378,13 @@ fyi_mac_builder(
 
 ci.builder(
     name = "Win 10 Fast Ring",
+    description_html = (
+        "This builder is intended to run builds & tests on pre-release " +
+        "versions of Windows. However, flashing such images on the bots " +
+        "is not supported at this time.<br/>So this builder remains paused " +
+        "until a solution can be determined. For more info, see " +
+        "<a href=\"http://shortn/_B7cJcHq55P\">http://shortn/_B7cJcHq55P</a>."
+    ),
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "chromium"),
         chromium_config = builder_config.chromium_config(

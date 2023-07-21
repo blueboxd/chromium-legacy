@@ -201,18 +201,6 @@ BrowserParamsProxy::AcceptedInternalAshUrls() const {
   return BrowserInitParams::Get()->accepted_internal_ash_urls;
 }
 
-bool BrowserParamsProxy::IsHoldingSpaceIncognitoProfileIntegrationEnabled()
-    const {
-  return BrowserInitParams::Get()
-      ->is_holding_space_incognito_profile_integration_enabled;
-}
-
-bool BrowserParamsProxy::
-    IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled() const {
-  return BrowserInitParams::Get()
-      ->is_holding_space_in_progress_downloads_notification_suppression_enabled;
-}
-
 bool BrowserParamsProxy::IsDeviceEnterprisedManaged() const {
   return BrowserInitParams::Get()->is_device_enterprised_managed;
 }
@@ -245,6 +233,10 @@ bool BrowserParamsProxy::UseCupsForPrinting() const {
 
 bool BrowserParamsProxy::UseFlossBluetooth() const {
   return BrowserInitParams::Get()->use_floss_bluetooth;
+}
+
+bool BrowserParamsProxy::IsFlossAvailable() const {
+  return BrowserInitParams::Get()->is_floss_available;
 }
 
 bool BrowserParamsProxy::IsCurrentUserDeviceOwner() const {
@@ -331,6 +323,10 @@ bool BrowserParamsProxy::IsVariableRefreshRateEnabled() const {
 
 bool BrowserParamsProxy::IsPdfOcrEnabled() const {
   return BrowserInitParams::Get()->is_pdf_ocr_enabled;
+}
+
+bool BrowserParamsProxy::IsDriveFsBulkPinningEnabled() const {
+  return BrowserInitParams::Get()->is_drivefs_bulk_pinning_enabled;
 }
 
 }  // namespace chromeos

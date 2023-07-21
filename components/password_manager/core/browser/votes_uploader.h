@@ -255,12 +255,6 @@ class VotesUploader {
       std::unique_ptr<autofill::FormStructure> form_to_upload,
       const autofill::ServerFieldTypeSet& available_field_types);
 
-  // Save a vote |field_type| for a field with |field_signature| from a form
-  // with |form_signature| to FieldInfoManager.
-  void SaveFieldVote(autofill::FormSignature form_signature,
-                     autofill::FieldSignature field_signature,
-                     autofill::ServerFieldType field_type);
-
   // On username first flow votes are uploaded both for the single username form
   // and for the single password form. This method sets the data needed to
   // upload vote on the username form. The vote is based on the user interaction
@@ -279,7 +273,7 @@ class VotesUploader {
       autofill::FormStructure& form_structure);
 
   // The client which implements embedder-specific PasswordManager operations.
-  raw_ptr<PasswordManagerClient, DanglingUntriaged> client_;
+  raw_ptr<PasswordManagerClient> client_ = nullptr;
 
   // Whether generation popup was shown at least once.
   bool generation_popup_was_shown_ = false;

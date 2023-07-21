@@ -171,7 +171,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cookie.Count2" units="units" expires_after="2023-11-12">
+<histogram name="Cookie.Count2" units="units" expires_after="2024-01-14">
   <owner>bingler@chromium.org</owner>
   <owner>morlovich@chromium.org</owner>
   <summary>
@@ -264,7 +264,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.DomainHasNonASCII" enum="Boolean"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>johannhof@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -301,7 +301,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.ErrorInitializeDB" enum="SqliteLoggedResultCode"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>wfh@chromium.org</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>
@@ -383,20 +383,6 @@ chromium-metrics-reviews@google.com.
     The metric is recorded during the startup of each client if it was able to
     process the whole component without encountering a fatal error. It will be
     recorded at most once each time the client starts up.
-  </summary>
-</histogram>
-
-<histogram name="Cookie.FirstPartySets.ComputeContext.Latency"
-    units="microseconds" expires_after="M124">
-  <owner>cfredric@chromium.org</owner>
-  <owner>chrome-first-party-sets@chromium.org</owner>
-  <summary>
-    This histogram records the (TimeTicks) latency of computing the
-    same-partiness of a given context.
-
-    This metric is sampled every time a SamePartyContext is computed (e.g. when
-    computing the cookies for a URL request, once per request). Only sampled for
-    users with high-resolution clocks.
   </summary>
 </histogram>
 
@@ -617,7 +603,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.LoadProblem" enum="CookieLoadProblem"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>morlovich@chromium.org</owner>
   <summary>
     Recorded when a problem is recorded when loading the persistent cookie
@@ -876,7 +862,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.SameSiteAttributeValue" enum="CookieSameSiteString"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -886,7 +872,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.SameSiteNoneSizeBytes" units="bytes"
-    expires_after="2024-01-07">
+    expires_after="2024-01-14">
   <owner>dylancutler@google.com</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>
@@ -910,7 +896,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.TimeBlockedOnLoad" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>nharper@chromium.org</owner>
   <summary>
     The amount of time (ms) between the cookie store load starting and
@@ -928,7 +914,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cookie.TimeInitializeDB" units="ms" expires_after="2023-11-12">
+<histogram name="Cookie.TimeInitializeDB" units="ms" expires_after="2024-01-14">
   <owner>bingler@chromium.org</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>The amount of time (ms) to initialize the cookies database.</summary>
@@ -944,13 +930,13 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cookie.Type" enum="CookieType" expires_after="2023-11-12">
+<histogram name="Cookie.Type" enum="CookieType" expires_after="2024-01-14">
   <owner>mkwst@chromium.org</owner>
   <summary>For each cookie added to the store, record it's type(s).</summary>
 </histogram>
 
 <histogram name="Cookie.WinGetLastErrorInitializeDB" enum="WinGetLastError"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>wfh@chromium.org</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>

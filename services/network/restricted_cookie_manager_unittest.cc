@@ -39,7 +39,6 @@
 #include "net/cookies/test_cookie_access_delegate.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/first_party_sets/global_first_party_sets.h"
-#include "net/first_party_sets/same_party_context.h"
 #include "services/network/cookie_access_delegate_impl.h"
 #include "services/network/cookie_settings.h"
 #include "services/network/first_party_sets/first_party_sets_access_delegate.h"
@@ -51,6 +50,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 #include "url/url_util.h"
+
+using testing::AllOf;
 
 namespace net {
 bool operator==(const net::SiteForCookies& a, const net::SiteForCookies& b) {
@@ -263,20 +264,6 @@ class TestCookieChangeListener : public network::mojom::CookieChangeListener {
   raw_ptr<base::RunLoop> run_loop_ = nullptr;
 };
 
-// A helper class to configure the kSamePartyAttributeEnabled base::Feature
-// before constructing the tests themselves.
-class WithSamePartyAttributeFeatureState {
- public:
-  WithSamePartyAttributeFeatureState() {
-    feature_list_.InitWithFeatures({net::features::kSamePartyAttributeEnabled,
-                                    net::features::kWaitForFirstPartySetsInit},
-                                   {});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 }  // namespace
 
 class RestrictedCookieManagerTest
@@ -336,9 +323,7 @@ class RestrictedCookieManagerTest
       bool can_modify_httponly,
       const net::CookieOptions::SameSiteCookieContext::ContextType
           same_site_cookie_context_type = net::CookieOptions::
-              SameSiteCookieContext::ContextType::CROSS_SITE,
-      const net::SamePartyContext::Type same_party_context_type =
-          net::SamePartyContext::Type::kCrossParty) {
+              SameSiteCookieContext::ContextType::CROSS_SITE) {
     net::ResultSavingCookieCallback<net::CookieAccessResult> callback;
     net::CookieOptions options;
     if (can_modify_httponly)
@@ -346,8 +331,6 @@ class RestrictedCookieManagerTest
     net::CookieOptions::SameSiteCookieContext same_site_cookie_context(
         same_site_cookie_context_type, same_site_cookie_context_type);
     options.set_same_site_cookie_context(same_site_cookie_context);
-    options.set_same_party_context(
-        net::SamePartyContext(same_party_context_type));
 
     cookie_monster_.SetCanonicalCookieAsync(
         std::make_unique<net::CanonicalCookie>(cookie),
@@ -406,8 +389,7 @@ class RestrictedCookieManagerTest
             /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
             net::COOKIE_PRIORITY_DEFAULT, /*same_party=*/true),
         "https", /*can_modify_httponly=*/true,
-        net::CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX,
-        net::SamePartyContext::Type::kSameParty));
+        net::CookieOptions::SameSiteCookieContext::ContextType::SAME_SITE_LAX));
   }
 
   std::unique_ptr<TestCookieChangeListener> CreateCookieChangeListener(
@@ -481,69 +463,6 @@ class RestrictedCookieManagerTest
   bool expecting_bad_message_ = false;
   bool received_bad_message_ = false;
 };
-
-namespace {
-
-mojom::FirstPartySetsAccessDelegateParamsPtr
-CreateFirstPartySetsAccessDelegateParams() {
-  auto params = mojom::FirstPartySetsAccessDelegateParams::New();
-  params->enabled = true;
-  return params;
-}
-
-}  // namespace
-
-class SamePartyEnabledRestrictedCookieManagerTest
-    : public WithSamePartyAttributeFeatureState,
-      public RestrictedCookieManagerTest {
- public:
-  SamePartyEnabledRestrictedCookieManagerTest()
-      : first_party_sets_manager_(/*enabled=*/true),
-        first_party_sets_access_delegate_(
-            first_party_sets_access_delegate_remote_
-                .BindNewPipeAndPassReceiver(),
-            CreateFirstPartySetsAccessDelegateParams(),
-            &first_party_sets_manager_) {
-    first_party_sets_manager_.SetCompleteSets(net::GlobalFirstPartySets(
-        base::Version("1.2.3"),
-        /*entries=*/
-        {
-            {net::SchemefulSite(GURL("https://example.com")),
-             net::FirstPartySetEntry(
-                 net::SchemefulSite(GURL("https://example.com")),
-                 net::SiteType::kPrimary, absl::nullopt)},
-            {net::SchemefulSite(GURL("https://member1.com")),
-             net::FirstPartySetEntry(
-                 net::SchemefulSite(GURL("https://example.com")),
-                 net::SiteType::kAssociated, 0)},
-        },
-        /*aliases=*/{}));
-    first_party_sets_access_delegate_remote_->NotifyReady(
-        mojom::FirstPartySetsReadyEvent::New());
-    auto cookie_access_delegate = std::make_unique<CookieAccessDelegateImpl>(
-        mojom::CookieAccessDelegateType::USE_CONTENT_SETTINGS,
-        &first_party_sets_access_delegate_, &cookie_settings_);
-    cookie_monster_.SetCookieAccessDelegate(std::move(cookie_access_delegate));
-  }
-  ~SamePartyEnabledRestrictedCookieManagerTest() override = default;
-
- private:
-  FirstPartySetsManager first_party_sets_manager_;
-  mojo::Remote<mojom::FirstPartySetsAccessDelegate>
-      first_party_sets_access_delegate_remote_;
-  FirstPartySetsAccessDelegate first_party_sets_access_delegate_;
-};
-
-INSTANTIATE_TEST_SUITE_P(
-    SameParty,
-    SamePartyEnabledRestrictedCookieManagerTest,
-    testing::Combine(
-        testing::Values(mojom::RestrictedCookieManagerRole::SCRIPT,
-                        mojom::RestrictedCookieManagerRole::NETWORK),
-        testing::Values(
-            net::CookieSettingOverrides(),
-            net::CookieSettingOverrides(
-                {net::CookieSettingOverride::kForceThirdPartyByUser}))));
 
 namespace {
 
@@ -927,7 +846,10 @@ TEST_P(RestrictedCookieManagerTest, FilteredCookieAccessEvents) {
             mojom::CookieAccessDetails::Type::kRead, kDefaultUrlWithPath,
             net::SiteForCookies(),
             CookieOrLine(cookie_name_field, mojom::CookieOrLine::Tag::kCookie),
-            net::CookieInclusionStatus())));
+            AllOf(
+                net::IsInclude(),
+                net::HasWarningReason(
+                    net::CookieInclusionStatus::WARN_THIRD_PARTY_PHASEOUT)))));
   }
 
   {
@@ -948,7 +870,10 @@ TEST_P(RestrictedCookieManagerTest, FilteredCookieAccessEvents) {
             mojom::CookieAccessDetails::Type::kRead, kDefaultUrlWithPath,
             net::SiteForCookies(),
             CookieOrLine(cookie_name_field, mojom::CookieOrLine::Tag::kCookie),
-            net::CookieInclusionStatus())));
+            AllOf(
+                net::IsInclude(),
+                net::HasWarningReason(
+                    net::CookieInclusionStatus::WARN_THIRD_PARTY_PHASEOUT)))));
   }
 
   // Change the cookie with a new value so that a cookie access
@@ -1003,7 +928,10 @@ TEST_P(RestrictedCookieManagerTest, FilteredCookieAccessEvents) {
             mojom::CookieAccessDetails::Type::kRead, kDefaultUrlWithPath,
             net::SiteForCookies(),
             CookieOrLine(cookie_name_field, mojom::CookieOrLine::Tag::kCookie),
-            net::CookieInclusionStatus())));
+            AllOf(
+                net::IsInclude(),
+                net::HasWarningReason(
+                    net::CookieInclusionStatus::WARN_THIRD_PARTY_PHASEOUT)))));
   }
 }
 
@@ -1153,119 +1081,6 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlCrossParty) {
                   testing::_ /* type */, testing::_ /* url */,
                   testing::_ /* site_for_cookies */,
                   testing::_ /* cookie_or_line */, net::IsInclude())));
-}
-
-TEST_P(SamePartyEnabledRestrictedCookieManagerTest, GetAllForUrlSameParty) {
-  SetSamePartyCookie("cookie-name", "cookie-value", "example.com", "/");
-  // Same Party
-  {
-    auto options = mojom::CookieManagerGetOptions::New();
-    options->name = "cookie-name";
-    options->match_type = mojom::CookieMatchType::STARTS_WITH;
-
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, kDefaultSiteForCookies, kDefaultOrigin,
-                    /*has_storage_access=*/false, std::move(options)),
-                ElementsAre(net::MatchesCookieNameValue("cookie-name",
-                                                        "cookie-value")));
-    WaitForCallback();
-  }
-
-  // Same Party. `party_context` contains fps site.
-  service_->OverrideIsolationInfoForTesting(net::IsolationInfo::Create(
-      net::IsolationInfo::RequestType::kOther, kDefaultOrigin, kDefaultOrigin,
-      net::SiteForCookies(),
-      std::set<net::SchemefulSite>{
-          net::SchemefulSite(GURL("https://member1.com"))}));
-  {
-    auto options = mojom::CookieManagerGetOptions::New();
-    options->name = "cookie-name";
-    options->match_type = mojom::CookieMatchType::STARTS_WITH;
-
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-                    /*has_storage_access=*/false, std::move(options)),
-                ElementsAre(net::MatchesCookieNameValue("cookie-name",
-                                                        "cookie-value")));
-    WaitForCallback();
-  }
-
-  {
-    // Should still be blocked when third-party cookie blocking is enabled.
-    // That is, unless the cookie setting override is set to force 3PCs.
-    cookie_settings_.set_block_third_party_cookies(true);
-    auto options = mojom::CookieManagerGetOptions::New();
-    options->name = "cookie-name";
-    options->match_type = mojom::CookieMatchType::STARTS_WITH;
-
-    EXPECT_THAT(sync_service_->GetAllForUrl(
-                    kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-                    /*has_storage_access=*/false, std::move(options)),
-                IsForceThirdPartyByUser()
-                    ? ElementsAreArray({net::MatchesCookieNameValue(
-                          "cookie-name", "cookie-value")})
-                    : testing::ElementsAreArray<CanonicalCookieMatcher>({}));
-
-    // This checks that the cookie access is not double-reported due the
-    // warning reason and EXCLUDE_USER_PREFERENCES.
-    std::vector<net::CookieInclusionStatus::WarningReason> expected_warnings = {
-        net::CookieInclusionStatus::WARN_TREATED_AS_SAMEPARTY,
-    };
-
-    if (IsForceThirdPartyByUser()) {
-      // No additional activity when 3PCs are forced, because the second access
-      // was not a change in result.
-      EXPECT_THAT(recorded_activity(), testing::SizeIs(2));
-    } else {
-      WaitForCallback();
-      EXPECT_THAT(
-          recorded_activity(),
-          ElementsAre(
-              testing::_, testing::_,
-              MatchesCookieOp(
-                  mojom::CookieAccessDetails::Type::kRead, kDefaultUrlWithPath,
-                  net::SiteForCookies(),
-                  CookieOrLine("cookie-name=cookie-value",
-                               mojom::CookieOrLine::Tag::kCookie),
-                  net::CookieInclusionStatus::MakeFromReasonsForTesting(
-                      {net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
-                       net::CookieInclusionStatus::
-                           EXCLUDE_THIRD_PARTY_BLOCKED_WITHIN_FIRST_PARTY_SET},
-                      expected_warnings))));
-    }
-  }
-}
-
-TEST_P(SamePartyEnabledRestrictedCookieManagerTest, GetAllForUrlCrossParty) {
-  // Cross Party
-  SetSamePartyCookie("cookie-name", "cookie-value", "example.com", "/");
-  // `party_context` contains cross-party site.
-  service_->OverrideIsolationInfoForTesting(net::IsolationInfo::Create(
-      net::IsolationInfo::RequestType::kOther, kDefaultOrigin, kDefaultOrigin,
-      net::SiteForCookies(),
-      std::set<net::SchemefulSite>{
-          net::SchemefulSite(GURL("https://nonexample.com"))}));
-
-  auto options = mojom::CookieManagerGetOptions::New();
-  options->name = "cookie-name";
-  options->match_type = mojom::CookieMatchType::STARTS_WITH;
-
-  EXPECT_THAT(sync_service_->GetAllForUrl(
-                  kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-                  /*has_storage_access=*/false, std::move(options)),
-              IsEmpty());
-
-  WaitForCallback();
-
-  EXPECT_THAT(
-      recorded_activity(),
-      ElementsAre(MatchesCookieOp(
-          testing::_ /* type */, testing::_ /* url */,
-          testing::_ /* site_for_cookies */, testing::_ /* cookie_or_line */,
-          net::HasExactlyExclusionReasonsForTesting(
-              std::vector<net::CookieInclusionStatus::ExclusionReason>{
-                  net::CookieInclusionStatus::
-                      EXCLUDE_SAMEPARTY_CROSS_PARTY_CONTEXT}))));
 }
 
 TEST_P(RestrictedCookieManagerTest, SetCanonicalCookie) {
@@ -1540,97 +1355,6 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicyWarnActual) {
                               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}))));
 }
 
-TEST_P(SamePartyEnabledRestrictedCookieManagerTest,
-       SetCookieFromString_SameParty_ReportsInvalid) {
-  // Invalid. Should be reported.
-  sync_service_->SetCookieFromString(
-      kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-      /*has_storage_access=*/false, "name=value;SameParty");
-
-  WaitForCallback();
-
-  EXPECT_THAT(
-      recorded_activity(),
-      ElementsAre(MatchesCookieOp(
-          mojom::CookieAccessDetails::Type::kChange, kDefaultUrlWithPath,
-          net::SiteForCookies(),
-          CookieOrLine("name=value;SameParty",
-                       mojom::CookieOrLine::Tag::kCookieString),
-          net::HasExactlyExclusionReasonsForTesting(
-              std::vector<net::CookieInclusionStatus::ExclusionReason>{
-                  net::CookieInclusionStatus::EXCLUDE_INVALID_SAMEPARTY}))));
-}
-
-TEST_P(SamePartyEnabledRestrictedCookieManagerTest,
-       SetCanonicalCookieSameParty) {
-  // Same Party. `party_context` contains fps site.
-  {
-    service_->OverrideIsolationInfoForTesting(net::IsolationInfo::Create(
-        net::IsolationInfo::RequestType::kOther, kDefaultOrigin,
-        url::Origin::Create(GURL("https://member1.com")), net::SiteForCookies(),
-        std::set<net::SchemefulSite>{
-            net::SchemefulSite(GURL("https://member1.com"))}));
-    // Need to override origin as well since the access is from member1.com.
-    service_->OverrideOriginForTesting(
-        url::Origin::Create(GURL("https://member1.com")));
-
-    EXPECT_TRUE(sync_service_->SetCanonicalCookie(
-        *net::CanonicalCookie::CreateUnsafeCookieForTesting(
-            "new-name", "new-value", "member1.com", "/", base::Time(),
-            base::Time(), base::Time(), base::Time(), /*secure=*/true,
-            /*httponly=*/false, net::CookieSameSite::LAX_MODE,
-            net::COOKIE_PRIORITY_DEFAULT, /*same_party=*/true),
-        GURL("https://member1.com/test/"), net::SiteForCookies(),
-        kDefaultOrigin, /*has_storage_access=*/false));
-
-    auto options = mojom::CookieManagerGetOptions::New();
-    options->name = "new-name";
-    options->match_type = mojom::CookieMatchType::EQUALS;
-    EXPECT_THAT(
-        sync_service_->GetAllForUrl(
-            GURL("https://member1.com/test/"), net::SiteForCookies(),
-            kDefaultOrigin, /*has_storage_access=*/false, std::move(options)),
-        ElementsAre(net::MatchesCookieNameValue("new-name", "new-value")));
-  }
-
-  // Cross Party
-  {
-    service_->OverrideIsolationInfoForTesting(net::IsolationInfo::Create(
-        net::IsolationInfo::RequestType::kOther, kDefaultOrigin, kDefaultOrigin,
-        net::SiteForCookies(),
-        std::set<net::SchemefulSite>{
-            net::SchemefulSite(GURL("https://not-example.com"))}));
-    // Need to restore the origin value since the previous Same Party test case
-    // changed it to member1.com.
-    service_->OverrideOriginForTesting(kDefaultOrigin);
-
-    EXPECT_FALSE(sync_service_->SetCanonicalCookie(
-        *net::CanonicalCookie::CreateUnsafeCookieForTesting(
-            "new-name", "new-value", "example.com", "/", base::Time(),
-            base::Time(), base::Time(), base::Time(), /*secure=*/true,
-            /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
-            net::COOKIE_PRIORITY_DEFAULT, /*same_party=*/true),
-        kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-        /*has_storage_access=*/false));
-
-    WaitForCallback();
-
-    EXPECT_THAT(
-        recorded_activity(),
-        ElementsAre(
-            testing::_, testing::_,
-            MatchesCookieOp(
-                mojom::CookieAccessDetails::Type::kChange,
-                "https://example.com/test/", net::SiteForCookies(),
-                CookieOrLine("new-name=new-value",
-                             mojom::CookieOrLine::Tag::kCookie),
-                net::HasExactlyExclusionReasonsForTesting(
-                    std::vector<net::CookieInclusionStatus::ExclusionReason>{
-                        net::CookieInclusionStatus::
-                            EXCLUDE_SAMEPARTY_CROSS_PARTY_CONTEXT}))));
-  }
-}
-
 TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieWithInclusionStatus) {
   ExpectBadMessage();
   net::CookieInclusionStatus status_exclude(
@@ -1896,49 +1620,6 @@ TEST_P(RestrictedCookieManagerTest, AddChangeListenerFromOpaqueOrigin) {
 
   TestCookieChangeListener bad_listener(std::move(bad_receiver));
   ASSERT_THAT(bad_listener.observed_changes(), IsEmpty());
-}
-
-TEST_P(SamePartyEnabledRestrictedCookieManagerTest,
-       AddChangeListenerSameParty) {
-  // Same Party. `party_context` contains fps site.
-  {
-    service_->OverrideIsolationInfoForTesting(net::IsolationInfo::Create(
-        net::IsolationInfo::RequestType::kOther, kDefaultOrigin, kDefaultOrigin,
-        net::SiteForCookies(),
-        std::set<net::SchemefulSite>{
-            net::SchemefulSite(GURL("https://member1.com"))}));
-
-    auto listener = CreateCookieChangeListener(
-        kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-        /*has_storage_access=*/false);
-
-    ASSERT_THAT(listener->observed_changes(), IsEmpty());
-
-    SetSamePartyCookie("cookie-name", "cookie-value", "example.com", "/");
-    listener->WaitForChange();
-
-    ASSERT_THAT(listener->observed_changes(), testing::SizeIs(1));
-    EXPECT_EQ(net::CookieChangeCause::INSERTED,
-              listener->observed_changes()[0].cause);
-    EXPECT_THAT(listener->observed_changes()[0].cookie,
-                net::MatchesCookieNameValue("cookie-name", "cookie-value"));
-  }
-  // Cross Party.
-  {
-    service_->OverrideIsolationInfoForTesting(net::IsolationInfo::Create(
-        net::IsolationInfo::RequestType::kOther, kDefaultOrigin, kDefaultOrigin,
-        net::SiteForCookies(),
-        std::set<net::SchemefulSite>{
-            net::SchemefulSite(GURL("https://not-example.com"))}));
-
-    auto listener = CreateCookieChangeListener(
-        kDefaultUrlWithPath, net::SiteForCookies(), kDefaultOrigin,
-        /*has_storage_access=*/false);
-
-    EXPECT_THAT(listener->observed_changes(), IsEmpty());
-    SetSamePartyCookie("cookie-name", "cookie-value", "example.com", "/");
-    EXPECT_THAT(listener->observed_changes(), IsEmpty());
-  }
 }
 
 // Test that the Change listener receives the access semantics, and that they

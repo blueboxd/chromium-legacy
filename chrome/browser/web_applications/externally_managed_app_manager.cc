@@ -17,7 +17,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
 #include "base/strings/to_string.h"
-#include "base/task/single_thread_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,6 +30,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_contents/web_contents_manager.h"
@@ -160,8 +161,9 @@ void ExternallyManagedAppManager::UninstallApps(
     ExternalInstallSource install_source,
     const UninstallCallback& callback) {
   for (auto& url : uninstall_urls) {
-    provider_->install_finalizer().UninstallExternalWebAppByUrl(
-        url, ConvertExternalInstallSourceToSource(install_source),
+    provider_->scheduler().RemoveInstallUrl(
+        /*app_id=*/absl::nullopt,
+        ConvertExternalInstallSourceToSource(install_source), url,
         ConvertExternalInstallSourceToUninstallSource(install_source),
         base::BindOnce(
             [](const UninstallCallback& callback, const GURL& app_url,
@@ -278,7 +280,7 @@ void ExternallyManagedAppManager::OnRegistrationFinished(
 }
 
 void ExternallyManagedAppManager::PostMaybeStartNext() {
-  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&ExternallyManagedAppManager::MaybeStartNext,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
@@ -336,8 +338,7 @@ void ExternallyManagedAppManager::MaybeStartNextOnLockAcquired(
 
       // If the app is already installed, only reinstall it if the app is a
       // placeholder app and the client asked for it to be reinstalled.
-      if (install_options.reinstall_placeholder &&
-          lock.registrar().IsPlaceholderApp(
+      if (lock.registrar().IsPlaceholderApp(
               app_id.value(), ConvertExternalInstallSourceToSource(
                                   install_options.install_source))) {
         StartInstallationTask(std::move(front));
@@ -355,7 +356,7 @@ void ExternallyManagedAppManager::MaybeStartNextOnLockAcquired(
         return;
       } else {
         // Add install source before returning the result.
-        ScopedRegistryUpdate update(&lock.sync_bridge());
+        ScopedRegistryUpdate update = lock.sync_bridge().BeginUpdate();
         WebApp* app_to_update = update->UpdateApp(app_id.value());
         app_to_update->AddSource(ConvertExternalInstallSourceToSource(
             install_options.install_source));
@@ -566,7 +567,7 @@ base::Value ExternallyManagedAppManager::SynchronizeInstalledAppsOnLockAcquired(
 
   // Run callback immediately if there's no work to be done.
   if (urls_to_remove.empty() && desired_apps_install_options.empty()) {
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), std::map<GURL, InstallResult>(),
                        std::map<GURL, bool>()));
@@ -683,7 +684,7 @@ void ExternallyManagedAppManager::CompleteSynchronization(
   SynchronizeRequest& request = source_and_request->second;
   CHECK(request.callback);
 
-  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(request.callback),
                                 std::move(request.install_results),
                                 std::move(request.uninstall_results)));

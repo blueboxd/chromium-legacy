@@ -1424,9 +1424,7 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   // Mapping of MathML elements. See https://w3c.github.io/mathml-aam/
   if (auto* element = DynamicTo<MathMLElement>(GetNode())) {
     if (element->HasTagName(mathml_names::kMathTag)) {
-      return RuntimeEnabledFeatures::MathMLCoreEnabled()
-                 ? ax::mojom::blink::Role::kMathMLMath
-                 : ax::mojom::blink::Role::kMath;
+      return ax::mojom::blink::Role::kMathMLMath;
     }
     if (element->HasTagName(mathml_names::kMfracTag))
       return ax::mojom::blink::Role::kMathMLFraction;
@@ -4797,7 +4795,11 @@ bool AXNodeObject::CanHaveChildren() const {
     case ax::mojom::blink::Role::kSplitter:
     case ax::mojom::blink::Role::kSwitch:
     case ax::mojom::blink::Role::kTab:
-      DCHECK(!result) << "Expected to disallow children for " << GetElement();
+      DCHECK(!result) << "Expected to disallow children for:"
+                      << "\n* Node: " << GetNode()
+                      << "\n* Layout Object: " << GetLayoutObject()
+                      << "\n* Native role: " << native_role_
+                      << "\n* Aria role: " << AriaRoleAttribute();
       break;
     case ax::mojom::blink::Role::kComboBoxSelect:
     case ax::mojom::blink::Role::kPopUpButton:
@@ -4988,10 +4990,6 @@ bool AXNodeObject::OnNativeBlurAction() {
 }
 
 bool AXNodeObject::OnNativeFocusAction() {
-  // Checking if node is focusable in a native focus action requires that we
-  // have updated style and layout tree, since the focus check relies on the
-  // existence of layout objects to determine the result. However, these layout
-  // objects may have been deferred by display-locking.
   Document* document = GetDocument();
   Node* node = GetNode();
   if (!document || !node)
@@ -5194,23 +5192,61 @@ void AXNodeObject::HandleActiveDescendantChanged() {
   }
 }
 
-AXObject* AXNodeObject::ErrorMessage() const {
+AXObject::AXObjectVector AXNodeObject::ErrorMessage() const {
   if (GetInvalidState() == ax::mojom::blink::InvalidState::kFalse)
-    return nullptr;
+    return AXObjectVector();
 
-  // Check for aria-errormessage.
-  Element* existing_error_message =
-      GetAOMPropertyOrARIAAttribute(AOMRelationProperty::kErrorMessage);
-  if (existing_error_message)
-    return AXObjectCache().GetOrCreate(existing_error_message);
+  AXObjectVector aria_error_messages = ErrorMessageFromAria();
+  if (aria_error_messages.size() > 0) {
+    return aria_error_messages;
+  }
 
-  // Check for visible validationMessage. This can only be visible for a focused
+  AXObjectVector html_error_messages = ErrorMessageFromHTML();
+  if (html_error_messages.size() > 0) {
+    return html_error_messages;
+  }
+
+  return AXObjectVector();
+}
+
+AXObject::AXObjectVector AXNodeObject::ErrorMessageFromAria() const {
+  Element* el = GetElement();
+  if (!el) {
+    return AXObjectVector();
+  }
+
+  Vector<String> ignored;
+  HeapVector<Member<Element>> elements_from_attribute;
+  if (!ElementsFromAttribute(el, elements_from_attribute,
+                             html_names::kAriaErrormessageAttr, ignored)) {
+    return AXObjectVector();
+  }
+
+  AXObjectVector error_messages;
+  for (Element* element : elements_from_attribute) {
+    AXObject* obj = AXObjectCache().GetOrCreate(element);
+    if (!obj->AccessibilityIsIgnored()) {
+      error_messages.push_back(obj);
+    }
+  }
+  return error_messages;
+}
+
+AXObject::AXObjectVector AXNodeObject::ErrorMessageFromHTML() const {
+  // This can only be visible for a focused
   // control. Corollary: if there is a visible validationMessage alert box, then
   // it is related to the current focus.
-  if (this != AXObjectCache().FocusedObject())
-    return nullptr;
+  if (this != AXObjectCache().FocusedObject()) {
+    return AXObjectVector();
+  }
 
-  return AXObjectCache().ValidationMessageObjectIfInvalid(true);
+  AXObject* native_error_message =
+      AXObjectCache().ValidationMessageObjectIfInvalid(true);
+  if (native_error_message && !native_error_message->IsDetached()) {
+    return AXObjectVector({native_error_message});
+  }
+
+  return AXObjectVector();
 }
 
 String AXNodeObject::TextAlternativeFromTooltip(

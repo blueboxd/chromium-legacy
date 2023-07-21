@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash_browser_test_starter.h"
+#include "chrome/test/base/chromeos/ash_browser_test_starter.h"
+
+#include <memory>
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
@@ -18,6 +20,7 @@
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/browser_manager_observer.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/crosapi/fake_device_ownership_waiter.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_switches.h"
@@ -43,7 +46,17 @@ std::unique_ptr<net::test_server::HttpResponse> HandleGaiaURL(
 
 }  // namespace
 
-AshBrowserTestStarter::~AshBrowserTestStarter() = default;
+AshBrowserTestStarter::~AshBrowserTestStarter() {
+  // Clean up the directories that tests were passed. This is
+  // to save bot collect results time and faster CQ runtime.
+  if (!ash_user_data_dir_for_cleanup_.empty() &&
+      !::testing::Test::HasFailure() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestLauncherBotMode)) {
+    // Intentionally not check return value.
+    base::DeletePathRecursively(ash_user_data_dir_for_cleanup_);
+  }
+}
 
 AshBrowserTestStarter::AshBrowserTestStarter()
     : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
@@ -100,9 +113,9 @@ bool AshBrowserTestStarter::PrepareEnvironmentForLacros() {
     // Unlikely the path still exist. But in case it happens, we would let
     // the browser test framework to create the tmp folder as usual.
     if (!base::PathExists(test_output_folder)) {
-      // TODO(crbug.com/1459001) Re-enable logging on bots.
-      // command_line->AppendSwitchPath(switches::kUserDataDir,
-      //                                test_output_folder);
+      command_line->AppendSwitchPath(switches::kUserDataDir,
+                                     test_output_folder);
+      ash_user_data_dir_for_cleanup_ = test_output_folder;
     }
   } else {
     LOG(WARNING)
@@ -185,6 +198,9 @@ void WaitForExoStarted(const base::FilePath& xdg_path) {
 
 void AshBrowserTestStarter::StartLacros(InProcessBrowserTest* test_class_obj) {
   DCHECK(HasLacrosArgument());
+
+  crosapi::BrowserManager::Get()->set_device_ownership_waiter_for_testing(
+      std::make_unique<crosapi::FakeDeviceOwnershipWaiter>());
 
   WaitForExoStarted(scoped_temp_dir_xdg_.GetPath());
 

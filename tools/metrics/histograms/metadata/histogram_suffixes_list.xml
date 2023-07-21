@@ -378,6 +378,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="CrashesListFragment" label="This is for the crash list tool."/>
   <suffix name="FlagsFragment" label="This is for the flag modification tool."/>
   <suffix name="HomeFragment" label="This is for the home (default) page."/>
+  <suffix name="SafeModeFragment" label="This is for the safe mode tool."/>
   <suffix name="Unknown"
       label="Unknown Fragment (the histogram may need to be updated)."/>
   <affected-histogram name="Android.WebView.DevUi.SessionDuration2"/>
@@ -853,7 +854,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="SimpleCache.IndexInitializeMethod"/>
   <affected-histogram name="SimpleCache.IndexNumEntriesOnInit"/>
   <affected-histogram name="SimpleCache.IndexRestoreTime"/>
-  <affected-histogram name="SimpleCache.MaxCacheSizeOnInit"/>
   <affected-histogram name="SimpleCache.OpenEntryIndexState"/>
   <affected-histogram
       name="SimpleCache.OriginalConsistencyResultBeforeSuccessfulRetry"/>
@@ -1211,6 +1211,8 @@ chromium-metrics-reviews@google.com.
   <suffix name="USB" label="USB device."/>
   <affected-histogram name="Cras.DeviceGain"/>
   <affected-histogram name="Cras.DeviceNoiseCancellationStatus"/>
+  <affected-histogram name="Cras.DeviceOpenStatus.Input"/>
+  <affected-histogram name="Cras.DeviceOpenStatus.Output"/>
   <affected-histogram name="Cras.DeviceSampleRate.Input"/>
   <affected-histogram name="Cras.DeviceSampleRate.Output"/>
   <affected-histogram name="Cras.DeviceVolume"/>
@@ -1219,6 +1221,7 @@ chromium-metrics-reviews@google.com.
 <histogram_suffixes name="Cras_Direction" separator=".">
   <suffix name="Input" label="Capture"/>
   <suffix name="Output" label="Playback"/>
+  <affected-histogram name="Cras.DeviceOpenStatus"/>
   <affected-histogram name="Cras.DeviceSampleRate"/>
   <affected-histogram name="Cras.StreamCallbackThreshold"/>
   <affected-histogram name="Cras.StreamChannelCount"/>

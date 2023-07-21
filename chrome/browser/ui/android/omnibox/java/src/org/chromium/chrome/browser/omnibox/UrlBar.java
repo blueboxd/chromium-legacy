@@ -850,27 +850,44 @@ public abstract class UrlBar extends AutocompleteEditText {
                         // getOffsetForHorizontal is very slow. getOffsetForAdvance is much faster.
                         finalVisibleCharIndex = textLayout.getPaint().getOffsetForAdvance(
                                 url, 0, urlTextLength, 0, urlTextLength, false, measuredWidth);
-
-                        // TODO(crbug.com/1456189) If the indexes differ, then that means we have
-                        // bidirectional text, so we clear the visible hint because it cannot be
-                        // correctly calculated.
-                        int finalVisibleCharIndexSlow =
-                                textLayout.getOffsetForHorizontal(0, measuredWidth);
-                        if (finalVisibleCharIndex != finalVisibleCharIndexSlow) {
-                            mVisibleTextPrefixHint = null;
-                        }
                     } else {
                         finalVisibleCharIndex = textLayout.getOffsetForHorizontal(0, measuredWidth);
                     }
 
-                    // To avoid issues where a small portion of the character following
-                    // finalVisibleCharIndex is visible on screen, be more conservative and extend
-                    // the visual hint by an additional character. In testing,
-                    // getOffsetForHorizontal returns the last fully visible character on screen.
-                    // By extending the offset by an additional character, the risk is of having
-                    // visual artifacts from the subsequence character on screen is mitigated.
-                    mVisibleTextPrefixHint =
-                            url.subSequence(0, Math.min(finalVisibleCharIndex + 1, urlTextLength));
+                    // getOffsetForHorizontal and getOffsetForAdvance could return an invalid index.
+                    boolean isFinalVisibleCharRtl = finalVisibleCharIndex >= urlTextLength
+                            ? false
+                            : BidiFormatter.getInstance().isRtl(url.subSequence(
+                                    finalVisibleCharIndex, finalVisibleCharIndex + 1));
+                    if (isFinalVisibleCharRtl) {
+                        // If the section of the url near the end of the viewport is not LTR, then
+                        // clear the visible text hint. If RTL or Bi-Di URLs become more prevalant,
+                        // update this to correctly calculate the hint.
+                        mVisibleTextPrefixHint = null;
+                    } else {
+                        int finalVisibleCharIndexSlow =
+                                textLayout.getOffsetForHorizontal(0, measuredWidth);
+
+                        // TODO(crbug.com/1465967): remove after getting enough data to diagnose
+                        // failed assert
+                        String errorMessage = "scrollToTLD incorrect optimized "
+                                + "finalVisibleCharIndex. old index: "
+                                + String.valueOf(finalVisibleCharIndexSlow) + " optimized index: "
+                                + String.valueOf(finalVisibleCharIndex) + " url: " + url.toString()
+                                + " viewport: " + String.valueOf(measuredWidth)
+                                + " url length: " + String.valueOf(urlTextLength);
+                        assert finalVisibleCharIndex == finalVisibleCharIndexSlow : errorMessage;
+
+                        // To avoid issues where a small portion of the character following
+                        // finalVisibleCharIndex is visible on screen, be more conservative and
+                        // extend the visual hint by an additional character. In testing,
+                        // getOffsetForHorizontal returns the last fully visible character on
+                        // screen. By extending the offset by an additional character, the risk is
+                        // of having visual artifacts from the subsequence character on screen is
+                        // mitigated.
+                        mVisibleTextPrefixHint = url.subSequence(
+                                0, Math.min(finalVisibleCharIndex + 1, urlTextLength));
+                    }
                 }
             }
         } else {

@@ -185,8 +185,6 @@ static_library("extensions") {
     "api/identity/identity_launch_web_auth_flow_function.h",
     "api/identity/identity_mint_queue.cc",
     "api/identity/identity_mint_queue.h",
-    "api/identity/identity_private_api.cc",
-    "api/identity/identity_private_api.h",
     "api/identity/identity_remove_cached_auth_token_function.cc",
     "api/identity/identity_remove_cached_auth_token_function.h",
     "api/identity/identity_token_cache.cc",
@@ -292,6 +290,8 @@ static_library("extensions") {
     "api/proxy/proxy_api_helpers.h",
     "api/reading_list/reading_list_api.cc",
     "api/reading_list/reading_list_api.h",
+    "api/reading_list/reading_list_api_constants.cc",
+    "api/reading_list/reading_list_api_constants.h",
     "api/resources_private/resources_private_api.cc",
     "api/resources_private/resources_private_api.h",
     "api/runtime/chrome_runtime_api_delegate.cc",
@@ -878,6 +878,7 @@ static_library("extensions") {
     "//components/password_manager/core/browser:affiliation",
     "//components/password_manager/core/browser:import_results",
     "//components/password_manager/core/browser/features:password_features",
+    "//components/password_manager/core/browser/import:importer",
     "//components/password_manager/core/browser/leak_detection",
     "//components/payments/core",
     "//components/performance_manager",
@@ -1411,7 +1412,6 @@ static_library("test_support") {
   testonly = true
 
   sources = [
-    "api/identity/test_scoped_should_animate_web_auth_flow_info_bar.h",
     "api/passwords_private/test_passwords_private_delegate.cc",
     "api/passwords_private/test_passwords_private_delegate.h",
     "chrome_extension_test_notification_observer.cc",

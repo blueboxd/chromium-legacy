@@ -17,7 +17,6 @@ GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "components/content_settings/core/common/features.h"');
 GEN('#include "components/performance_manager/public/features.h"');
 GEN('#include "components/privacy_sandbox/privacy_sandbox_features.h"');
-GEN('#include "components/password_manager/core/common/password_manager_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "components/privacy_sandbox/privacy_sandbox_features.h"');
 GEN('#include "content/public/common/content_features.h"');
@@ -58,25 +57,14 @@ var CrSettingsAboutPageTest = class extends CrSettingsBrowserTest {
 };
 
 TEST_F('CrSettingsAboutPageTest', 'AboutPage', function() {
-  mocha.grep('AboutPageTest_AllBuilds').run();
+  runMochaSuite('AboutPageTest_AllBuilds');
 });
 
 GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 TEST_F('CrSettingsAboutPageTest', 'AboutPage_OfficialBuild', function() {
-  mocha.grep('AboutPageTest_OfficialBuilds').run();
+  runMochaSuite('AboutPageTest_OfficialBuilds');
 });
 GEN('#endif');
-
-var CrSettingsAvatarIconTest = class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/avatar_icon_test.js';
-  }
-};
-
-TEST_F('CrSettingsAvatarIconTest', 'All', function() {
-  mocha.run();
-});
 
 var CrSettingsBasicPageTest = class extends CrSettingsBrowserTest {
   /** @override */
@@ -260,39 +248,6 @@ TEST_F(
       runMochaSuite('ClearBrowsingDataDesktop');
     });
 
-var CrSettingsMainPageTest = class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/settings_main_test.js';
-  }
-};
-
-// Copied from Polymer 2 version of tests:
-// Times out on Windows Tests (dbg). See https://crbug.com/651296.
-// Times out / crashes on chromium.linux/Linux Tests (dbg) crbug.com/667882
-// Flaky everywhere crbug.com/1197768
-TEST_F('CrSettingsMainPageTest', 'DISABLED_MainPage', function() {
-  mocha.run();
-});
-
-// TODO(crbug.com/1420597): Clean up this test after Password Manager redesign
-// is launched.
-var CrSettingsAutofillPageTest = class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/autofill_page_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {disabled: ['password_manager::features::kPasswordManagerRedesign']};
-  }
-};
-
-TEST_F('CrSettingsAutofillPageTest', 'All', function() {
-  mocha.run();
-});
-
 var CrSettingsAutofillSectionCompanyEnabledTest =
     class extends CrSettingsBrowserTest {
   /** @override */
@@ -302,104 +257,6 @@ var CrSettingsAutofillSectionCompanyEnabledTest =
 };
 
 TEST_F('CrSettingsAutofillSectionCompanyEnabledTest', 'All', function() {
-  mocha.run();
-});
-
-// TODO(crbug.com/1420597): remove this test after Password Manager redesign is
-// launched.
-var CrSettingsPasswordsSectionTest = class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/passwords_section_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {disabled: ['password_manager::features::kPasswordManagerRedesign']};
-  }
-};
-
-// Flaky on Debug builds https://crbug.com/1090931
-GEN('#if !defined(NDEBUG)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrSettingsPasswordsSectionTest', 'MAYBE_All', function() {
-  mocha.run();
-});
-GEN('#undef MAYBE_All');
-
-// TODO(crbug.com/1420597): remove this test after Password Manager redesign is
-// launched.
-var CrSettingsPasswordsDeviceSectionTest = class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/passwords_device_section_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {disabled: ['password_manager::features::kPasswordManagerRedesign']};
-  }
-};
-
-TEST_F('CrSettingsPasswordsDeviceSectionTest', 'All', function() {
-  mocha.run();
-});
-
-// TODO(crbug.com/1420597): remove this test after Password Manager redesign is
-// launched.
-var CrSettingsPasswordEditDialogTest = class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/password_edit_dialog_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {disabled: ['password_manager::features::kPasswordManagerRedesign']};
-  }
-};
-
-TEST_F('CrSettingsPasswordEditDialogTest', 'All', function() {
-  mocha.run();
-});
-
-// TODO(crbug.com/1420597): remove this test after Password Manager redesign is
-// launched.
-var CrSettingsPasswordsCheckTest = class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/password_check_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {disabled: ['password_manager::features::kPasswordManagerRedesign']};
-  }
-};
-
-// Flaky https://crbug.com/1143801
-TEST_F('CrSettingsPasswordsCheckTest', 'DISABLED_All', function() {
-  mocha.run();
-});
-
-var CrSettingsSafetyCheckPageTest = class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/safety_check_page_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    // TODO(crbug.com/1420597): Clean up this after Password Manager redesign is
-    // launched.
-    return {disabled: ['password_manager::features::kPasswordManagerRedesign']};
-  }
-};
-
-TEST_F('CrSettingsSafetyCheckPageTest', 'All', function() {
   mocha.run();
 });
 
@@ -415,6 +272,7 @@ var CrSettingsSafetyCheckPermissionsTest = class extends CrSettingsBrowserTest {
       enabled: [
         'content_settings::features::kSafetyCheckUnusedSitePermissions',
         'features::kSafetyCheckNotificationPermissions',
+        'features::kSafetyCheckExtensions',
       ],
     };
   }
@@ -510,17 +368,6 @@ TEST_F('CrSettingsSiteDetailsTest', 'MAYBE_SiteDetails', function() {
   mocha.run();
 });
 
-var CrSettingsPerformanceMenuTest = class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/settings_performance_menu_test.js';
-  }
-};
-
-TEST_F('CrSettingsPerformanceMenuTest', 'All', function() {
-  mocha.run();
-});
-
 var CrSettingsPerformancePageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -589,29 +436,6 @@ TEST_F(
     'ExceptionList', function() {
       runMochaSuite('TabDiscardExceptionList');
     });
-
-var CrSettingsBatteryPageTest = class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/battery_page_test.js';
-  }
-};
-
-TEST_F('CrSettingsBatteryPageTest', 'All', function() {
-  mocha.run();
-});
-
-var CrSettingsTabDiscardExceptionDialogTest =
-    class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/tab_discard_exception_dialog_test.js';
-  }
-};
-
-TEST_F('CrSettingsTabDiscardExceptionDialogTest', 'All', function() {
-  mocha.run();
-});
 
 var CrSettingsPersonalizationOptionsTest = class extends CrSettingsBrowserTest {
   /** @override */
@@ -1042,167 +866,6 @@ TEST_F(
 TEST_F('CrSettingsSiteSettingsPageTest', 'SafetyHubDisabled', function() {
   runMochaSuite('SafetyHubDisabled');
 });
-
-var CrSettingsMenuTest = class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/settings_menu_test.js';
-  }
-};
-
-TEST_F('CrSettingsMenuTest', 'All', function() {
-  mocha.run()
-});
-
-[['AppearanceFontsPage', 'appearance_fonts_page_test.js'],
- [
-   'SettingsCategoryDefaultRadioGroup',
-   'settings_category_default_radio_group_test.js',
- ],
- ['AntiAbusePage', 'anti_abuse_page_test.js'],
- ['CategorySettingExceptions', 'category_setting_exceptions_test.js'],
- ['Checkbox', 'checkbox_test.js'],
- ['ChooserExceptionList', 'chooser_exception_list_test.js'],
- ['ChooserExceptionListEntry', 'chooser_exception_list_entry_test.js'],
- ['CollapseRadioButton', 'collapse_radio_button_test.js'],
- ['ControlledButton', 'controlled_button_test.js'],
- ['ControlledRadioButton', 'controlled_radio_button_test.js'],
- ['AutofillAddressValidation', 'autofill_section_address_validation_test.js'],
- ['DoNotTrackToggle', 'do_not_track_toggle_test.js'],
- ['DownloadsPage', 'downloads_page_test.js'],
- ['DropdownMenu', 'dropdown_menu_test.js'],
- ['ExtensionControlledIndicator', 'extension_controlled_indicator_test.js'],
- ['FileSystemSettingsList', 'file_system_site_list_test.js'],
- ['FileSystemSettingsListEntries', 'file_system_site_entry_test.js'],
- ['FileSystemSettingsListEntryItems', 'file_system_site_entry_item_test.js'],
- ['HelpPage', 'help_page_test.js'],
- // TODO(crbug.com/1420597): Remove this test after Password Manager redesign is
- // launched.
- ['PasswordView', 'password_view_test.js'],
- // TODO(crbug.com/1420597): Remove this test after Password Manager redesign is
- // launched.
- ['PasswordsExportDialog', 'passwords_export_dialog_test.js'],
- // TODO(crbug.com/1420597): Remove this test after Password Manager redesign is
- // launched.
- ['PasswordsImportDialog', 'passwords_import_dialog_test.js'],
- ['PaymentsSection', 'payments_section_test.js'],
- ['PaymentsSectionCardDialogs', 'payments_section_card_dialogs_test.js'],
- ['PaymentsSectionCardRows', 'payments_section_card_rows_test.js'],
- ['PaymentsSectionIban', 'payments_section_iban_test.js'],
- ['PaymentsSectionUpi', 'payments_section_upi_test.js'],
- ['PeoplePage', 'people_page_test.js'],
- ['PeoplePageSyncControls', 'people_page_sync_controls_test.js'],
- ['PreloadingPage', 'preloading_page_test.js'],
- ['ProtocolHandlers', 'protocol_handlers_test.js'],
- ['RecentSitePermissions', 'recent_site_permissions_test.js'],
- // Flaky on all OSes. TODO(crbug.com/1127733): Enable the test.
- ['ResetPage', 'reset_page_test.js', 'DISABLED_All'],
- ['ResetProfileBanner', 'reset_profile_banner_test.js'],
- ['SafetyHub', 'safety_hub_test.js'],
- ['SearchEngines', 'search_engines_page_test.js'],
- ['SearchPage', 'search_page_test.js'],
- ['Search', 'search_settings_test.js'],
- ['Section', 'settings_section_test.js'],
- ['SecurityKeysBioEnrollment', 'security_keys_bio_enrollment_test.js'],
- [
-   'SecurityKeysCredentialManagement',
-   'security_keys_credential_management_test.js'
- ],
- ['SecurityKeysResetDialog', 'security_keys_reset_dialog_test.js'],
- ['SecurityKeysSetPinDialog', 'security_keys_set_pin_dialog_test.js'],
- ['SecurityKeysPhonesSubpage', 'security_keys_phones_subpage_test.js'],
- ['SecureDns', 'secure_dns_test.js'],
- ['SimpleConfirmationDialog', 'simple_confirmation_dialog_test.js'],
- ['SiteDataTest', 'site_data_test.js'],
- ['SiteDetailsPermission', 'site_details_permission_test.js'],
- [
-   'SiteDetailsPermissionDeviceEntry',
-   'site_details_permission_device_entry_test.js'
- ],
- ['SiteEntry', 'site_entry_test.js'],
- ['SiteFavicon', 'site_favicon_test.js'],
- ['SiteListEntry', 'site_list_entry_test.js'],
- ['Slider', 'settings_slider_test.js'],
- ['StartupUrlsPage', 'startup_urls_page_test.js'],
- // Flaky on all OSes. TODO(crbug.com/1302405): Enable the test.
- ['Subpage', 'settings_subpage_test.js', 'DISABLED_All'],
- ['SyncAccountControl', 'sync_account_control_test.js'],
- ['ToggleButton', 'settings_toggle_button_test.js'],
- ['ZoomLevels', 'zoom_levels_test.js'],
-].forEach(test => registerTest(...test));
-
-// Timeout on Linux dbg bots: https://crbug.com/1394737
-GEN('#if !(BUILDFLAG(IS_LINUX) && !defined(NDEBUG))');
-[['PeoplePageSyncPage', 'people_page_sync_page_test.js']].forEach(
-    test => registerTest(...test));
-GEN('#endif');
-
-GEN('#if BUILDFLAG(IS_CHROMEOS)');
-// TODO(crbug.com/1420597): Remove this test after Password Manager redesign is
-// launched.
-[['PasswordsSectionCros', 'passwords_section_test_cros.js'],
-].forEach(test => registerTest(...test));
-GEN('#endif');
-
-GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
-[['PeoplePageChromeOS', 'people_page_test_cros.js'],
- // Copied from Polymer 2 test. TODO(crbug.com/929455): flaky, fix.
- ['SiteListChromeOS', 'site_list_tests_cros.js', 'DISABLED_AndroidSmsInfo'],
-].forEach(test => registerTest(...test));
-GEN('#endif');
-
-GEN('#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)');
-[['EditDictionaryPage', 'edit_dictionary_page_test.js'],
-].forEach(test => registerTest(...test));
-GEN('#endif');
-
-GEN('#if !BUILDFLAG(IS_CHROMEOS)');
-[['DefaultBrowser', 'default_browser_test.js'],
- ['ImportDataDialog', 'import_data_dialog_test.js'],
- ['SystemPage', 'system_page_test.js'],
- // TODO(crbug.com/1350019) Test is flaky on ChromeOS
- ['AppearancePage', 'appearance_page_test.js'],
-].forEach(test => registerTest(...test));
-GEN('#endif');
-
-GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
-[['PeoplePageManageProfile', 'people_page_manage_profile_test.js'],
- ['Languages', 'languages_test.js'],
- ['RelaunchConfirmationDialog', 'relaunch_confirmation_dialog_test.js'],
-].forEach(test => registerTest(...test));
-GEN('#endif');
-
-GEN('#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)');
-[['PasskeysSubpage', 'passkeys_subpage_test.js'],
-].forEach(test => registerTest(...test));
-GEN('#endif');
-
-GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !BUILDFLAG(IS_CHROMEOS_ASH)');
-registerTest('MetricsReporting', 'metrics_reporting_test.js');
-GEN('#endif');
-
-GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
-registerTest('GetMostChromePage', 'get_most_chrome_page_test.js');
-GEN('#endif');
-
-function registerTest(testName, module, caseName) {
-  const className = `CrSettings${testName}Test`;
-  this[className] = class extends CrSettingsBrowserTest {
-    /** @override */
-    get browsePreload() {
-      return `chrome://settings/test_loader.html?module=settings/${module}`;
-    }
-
-    /** @override */
-    get featureListInternal() {
-      return {
-        disabled: ['password_manager::features::kPasswordManagerRedesign']
-      };
-    }
-  };
-
-  TEST_F(className, caseName || 'All', () => mocha.run());
-}
 
 // Some tests files are too large to run as a single "All" test (e.g. as above),
 // and flake on some bots. Each test suite can instead be run as an individual

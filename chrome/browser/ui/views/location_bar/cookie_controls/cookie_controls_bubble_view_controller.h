@@ -17,7 +17,6 @@
 #include "components/favicon_base/favicon_types.h"
 #include "url/gurl.h"
 
-class Browser;
 class CookieControlsBubbleView;
 
 class CookieControlsBubbleViewController
@@ -37,12 +36,18 @@ class CookieControlsBubbleViewController
   void OnStatusChanged(CookieControlsStatus status,
                        CookieControlsEnforcement enforcement,
                        base::Time expiration) override;
-  void OnSitesCountChanged(int allowed_sites, int blocked_sites) override;
+  void OnSitesCountChanged(int allowed_third_party_sites_count,
+                           int blocked_third_party_sites_count) override;
   void OnBreakageConfidenceLevelChanged(
       CookieControlsBreakageConfidenceLevel level) override;
 
+  void SetSubjectUrlNameForTesting(const std::u16string& name);
+
  private:
-  void SetButtonPressedCallbacks();
+  friend class CookieControlsBubbleViewBrowserTest;
+
+  void SetCallbacks();
+  void OnUserClosedContentView();
   void OnToggleButtonPressed(bool new_value);
   void OnFeedbackButtonPressed();
 
@@ -59,18 +64,25 @@ class CookieControlsBubbleViewController
   // content::WebContentsObserver
   void DidStopLoading() override;
 
+  std::u16string GetSubjectUrlName(content::WebContents* web_contents) const;
+
   raw_ptr<CookieControlsBubbleView> bubble_view_ = nullptr;
 
   // Used for favicon loading tasks.
   base::CancelableTaskTracker cancelable_task_tracker_;
 
+  base::CallbackListSubscription on_user_closed_content_view_callback_;
   base::CallbackListSubscription toggle_button_callback_;
   base::CallbackListSubscription feedback_button_callback_;
   base::WeakPtr<content_settings::CookieControlsController> controller_;
   base::ScopedObservation<content_settings::CookieControlsController,
                           content_settings::CookieControlsObserver>
       controller_observation_{this};
-  raw_ptr<Browser> browser_ = nullptr;
+
+  bool waiting_for_reload_ = false;
+
+  // Testing override for GetSubjectUrlName().
+  absl::optional<std::u16string> subject_url_name_for_testing_;
 
   base::WeakPtrFactory<CookieControlsBubbleViewController> weak_factory_{this};
 };

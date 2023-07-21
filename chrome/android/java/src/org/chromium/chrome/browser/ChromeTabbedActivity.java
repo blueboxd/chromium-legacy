@@ -467,8 +467,14 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 getMultiWindowModeStateDispatcher(), getLifecycleDispatcher(),
                 getModalDialogManagerSupplier(), this);
         StartSurfaceUserData.reset();
-        mBackPressManager.setFallbackOnBackPressed(
-                () -> { minimizeAppAndCloseTabOnBackPress(getActivityTab()); });
+        mBackPressManager.setFallbackOnBackPressed(() -> {
+            if (BackPressManager.correctTabNavigationOnFallback()) {
+                if (getToolbarManager() != null && getToolbarManager().back()) {
+                    return;
+                }
+            }
+            minimizeAppAndCloseTabOnBackPress(getActivityTab());
+        });
     }
 
     @Override
@@ -651,8 +657,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
             // clang-format off
             mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder, mContentContainer,
-                    mStartSurfaceSupplier, mTabSwitcherSupplier, getTabContentManagerSupplier(),
-                    mRootUiCoordinator::getTopUiThemeColorProvider);
+                    mStartSurfaceSupplier, mTabSwitcherSupplier, getBrowserControlsManager(),
+                    getTabContentManagerSupplier(), mRootUiCoordinator::getTopUiThemeColorProvider);
             mLayoutStateProviderSupplier.set(mLayoutManager);
             // clang-format on
         }
@@ -669,11 +675,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             ViewGroup tabSwitcherViewHolder = findViewById(R.id.tab_switcher_view_holder);
             View toolbarContainerView = findViewById(R.id.toolbar_container);
             mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder, mContentContainer,
-                mStartSurfaceSupplier, mTabSwitcherSupplier, getTabContentManagerSupplier(),
-                mRootUiCoordinator::getTopUiThemeColorProvider, mTabModelStartupInfoSupplier,
-                tabSwitcherViewHolder, mRootUiCoordinator.getScrimCoordinator(),
-                getLifecycleDispatcher(), () -> createAndSetStartSurfaceForTablet(),
-                mMultiInstanceManager, toolbarContainerView);
+                mStartSurfaceSupplier, mTabSwitcherSupplier, getBrowserControlsManager(),
+                getTabContentManagerSupplier(), mRootUiCoordinator::getTopUiThemeColorProvider,
+                mTabModelStartupInfoSupplier, tabSwitcherViewHolder,
+                mRootUiCoordinator.getScrimCoordinator(), getLifecycleDispatcher(),
+                () -> createAndSetStartSurfaceForTablet(), mMultiInstanceManager,
+                toolbarContainerView);
             mLayoutStateProviderSupplier.set(mLayoutManager);
             // clang-format on
         }
@@ -1155,7 +1162,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             return;
         }
 
-        if (getActivityTab() == null && !isOverviewVisible) {
+        if (getActivityTab() == null && !isOverviewVisible
+                && ReturnToChromeUtil.isStartSurfaceEnabled(this)) {
             mOverviewShownOnStart = true;
             // Cancel recording cold startup metrics if an overview is shown as they expect a tab to
             // be the first thing shown after startup.
@@ -1206,12 +1214,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     }
 
     /** Access the main intent metrics for test validation. */
-    @VisibleForTesting
     public MainIntentBehaviorMetrics getMainIntentBehaviorMetricsForTesting() {
         return mMainIntentMetrics;
     }
 
-    @VisibleForTesting
     public ChromeInactivityTracker getInactivityTrackerForTesting() {
         return mInactivityTracker;
     }
@@ -1960,17 +1966,14 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (startIncognito) mTabModelSelector.selectModel(true);
     }
 
-    @VisibleForTesting
     TabModelSelectorObserver getTabModelSelectorObserverForTesting() {
         return mTabModelSelectorObserver;
     }
 
-    @VisibleForTesting
     boolean getCreatedTabOnStartupForTesting() {
         return mCreatedTabOnStartup;
     }
 
-    @VisibleForTesting
     void setCreatedTabOnStartupForTesting(boolean createdTabOnStartup) {
         mCreatedTabOnStartup = createdTabOnStartup;
     }
@@ -2234,14 +2237,14 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         } else if (id == R.id.close_all_tabs_menu_id) {
             // Close both incognito and normal tabs.
             CloseAllTabsDialog.show(this, getModalDialogManagerSupplier(),
-                    () -> getTabModelSelector().closeAllTabs(), /*isIncognito=*/false);
+                    getTabModelSelectorSupplier().get(),
+                    () -> getTabModelSelector().closeAllTabs());
             RecordUserAction.record("MobileMenuCloseAllTabs");
         } else if (id == R.id.close_all_incognito_tabs_menu_id) {
             // Close only incognito tabs
             CloseAllTabsDialog.show(this, getModalDialogManagerSupplier(),
-                    ()
-                            -> getTabModelSelector().getModel(true).closeAllTabs(),
-                    /*isIncognito=*/true);
+                    getTabModelSelectorSupplier().get(),
+                    () -> getTabModelSelector().getModel(true).closeAllTabs());
             RecordUserAction.record("MobileMenuCloseAllIncognitoTabs");
         } else if (id == R.id.focus_url_bar) {
             boolean isUrlBarVisible =
@@ -2870,7 +2873,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         return super.onKeyUp(keyCode, event);
     }
 
-    @VisibleForTesting
     public boolean hasPendingNavigationRunnableForTesting() {
         ThreadUtils.assertOnUiThread();
         return mShowHistoryRunnable != null;
@@ -3091,7 +3093,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 isIncognito ? "new-incognito-tab-shortcut" : "new-tab-shortcut");
     }
 
-    @VisibleForTesting
     public MultiInstanceManager getMultiInstanceMangerForTesting() {
         return mMultiInstanceManager;
     }

@@ -57,6 +57,31 @@ BASE_FEATURE(kIOSBrowserEditMenuMetrics,
              "IOSBrowserEditMenuMetrics",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kNonModalDefaultBrowserPromoCooldownRefactor,
+             "NonModalDefaultBrowserPromoCooldownRefactor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+constexpr base::FeatureParam<int>
+    kNonModalDefaultBrowserPromoCooldownRefactorParam{
+        &kNonModalDefaultBrowserPromoCooldownRefactor,
+        /*name=*/"cooldown-days", /*default_value=*/14};
+
+BASE_FEATURE(kDefaultBrowserGenericTailoredPromoTrain,
+             "DefaultBrowserGenericTailoredPromoTrain",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+constexpr base::FeatureParam<DefaultBrowserPromoGenericTailoredArm>::Option
+    kDefaultBrowserPromoGenericTailoredArmOptions[] = {
+        {DefaultBrowserPromoGenericTailoredArm::kOnlyGeneric, "only-generic"},
+        {DefaultBrowserPromoGenericTailoredArm::kOnlyTailored,
+         "only-tailored"}};
+
+const base::FeatureParam<DefaultBrowserPromoGenericTailoredArm>
+    kDefaultBrowserPromoGenericTailoredParam{
+        &kDefaultBrowserGenericTailoredPromoTrain, "experiment-arm",
+        DefaultBrowserPromoGenericTailoredArm::kOnlyGeneric,
+        &kDefaultBrowserPromoGenericTailoredArmOptions};
+
 BASE_FEATURE(kDefaultBrowserRefactoringPromoManager,
              "DefaultBrowserRefactoringPromoManager",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -112,9 +137,9 @@ BASE_FEATURE(kIOSNewOmniboxImplementation,
              "kIOSNewOmniboxImplementation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kIOSLocationBarUseNativeContextMenu,
-             "IOSLocationBarUseNativeContextMenu",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIOSLensUseDirectUpload,
+             "IOSLensUseDirectUpload",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableLensInHomeScreenWidget,
              "EnableLensInHomeScreenWidget",

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/autofill_context_menu_manager.h"
 #include <memory>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -153,6 +154,20 @@ class AutofillContextMenuManagerTest : public ChromeRenderViewHostTestHarness {
     ASSERT_TRUE(waiter.Wait());
   }
 
+  // Creates a form where every field has unrecognized autocomplete attribute
+  // and registers it with the manager.
+  FormData SeeAutocompleteUnrecognizedForm() {
+    FormData form;
+    test::CreateTestAddressFormData(&form);
+    for (FormFieldData& field : form.fields) {
+      field.parsed_autocomplete =
+          AutocompleteParsingResult{.field_type = HtmlFieldType::kUnrecognized};
+    }
+    SetHostFramesOfFormAndFields(form);
+    AddSeenForm(form);
+    return form;
+  }
+
  private:
   TestAutofillClientInjector<TestContentAutofillClient>
       autofill_client_injector_;
@@ -295,7 +310,7 @@ TEST_F(AutofillContextMenuManagerTest, ExecuteCommand) {
 
     EXPECT_CALL(*driver(), RendererShouldFillFieldWithValue(
                                field_global_id, map_value.fill_value));
-    autofill_context_menu_manager()->ExecuteCommand(command_id);
+    autofill_context_menu_manager()->ExecuteCommand(command_id.value());
   }
 }
 
@@ -321,29 +336,28 @@ TEST_F(AutofillContextMenuManagerTest, RecordContextMenuIsShownOnField) {
 // fallback entry is part of the menu.
 TEST_F(AutofillContextMenuManagerTest,
        AutocompleteUnrecognizedFallback_ContextMenuEntry) {
-  // Create a form with one ac=unrecognized field.
-  FormData form;
-  test::CreateTestAddressFormData(&form);
-  form.fields[0].parsed_autocomplete =
-      AutocompleteParsingResult{.field_type = HtmlFieldType::kUnrecognized};
-  SetHostFramesOfFormAndFields(form);
-  AddSeenForm(form);
-
-  // Simulate triggering the context menu on the ac=unrecognized field.
+  // Simulate triggering the context menu on an ac=unrecognized field.
+  FormData form = SeeAutocompleteUnrecognizedForm();
   autofill_context_menu_manager()->set_params_for_testing(
       CreateContextMenuParams(form.unique_renderer_id,
                               form.fields[0].unique_renderer_id));
   autofill_context_menu_manager()->AppendItems();
 
-  // Expect to find the fallback entry at the end (after the manual fallback and
-  // feedback entries).
-  ASSERT_GE(menu_model()->GetItemCount(), 2u);
-  const size_t fallback_index = menu_model()->GetItemCount() - 2;
+  // Expect to find the fallback entries at the end (after the manual fallback
+  // and feedback entries).
+  ASSERT_GE(menu_model()->GetItemCount(), 3u);
+  const size_t fallback_index = menu_model()->GetItemCount() - 3;
+  EXPECT_EQ(menu_model()->GetTypeAt(fallback_index),
+            ui::MenuModel::ItemType::TYPE_TITLE);
   EXPECT_EQ(
       menu_model()->GetLabelAt(fallback_index),
       l10n_util::GetStringUTF16(
+          IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED_TITLE));
+  EXPECT_EQ(
+      menu_model()->GetLabelAt(fallback_index + 1),
+      l10n_util::GetStringUTF16(
           IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED));
-  EXPECT_EQ(menu_model()->GetTypeAt(fallback_index + 1),
+  EXPECT_EQ(menu_model()->GetTypeAt(fallback_index + 2),
             ui::MenuModel::ItemType::TYPE_SEPARATOR);
 }
 
@@ -352,10 +366,12 @@ TEST_F(AutofillContextMenuManagerTest,
 // `kManualFallbackForAutocompleteUnrecognized`.
 TEST_F(AutofillContextMenuManagerTest,
        AutocompleteUnrecognizedFallback_TriggerSuggestions) {
-  // Simulate that the context menu was opened on the `field_renderer_id`.
-  const FieldRendererId field_renderer_id = test::MakeFieldRendererId();
+  // Simulate triggering the context menu on an ac=unrecognized field.
+  FormData form = SeeAutocompleteUnrecognizedForm();
   autofill_context_menu_manager()->set_params_for_testing(
-      CreateContextMenuParams(test::MakeFormRendererId(), field_renderer_id));
+      CreateContextMenuParams(form.unique_renderer_id,
+                              form.fields[0].unique_renderer_id));
+  autofill_context_menu_manager()->AppendItems();
 
   // Expect that when the entry is selected, suggestions are triggered from that
   // field.
@@ -363,12 +379,57 @@ TEST_F(AutofillContextMenuManagerTest,
       *driver(),
       RendererShouldTriggerSuggestions(
           FieldGlobalId{LocalFrameToken(main_rfh()->GetFrameToken().value()),
-                        field_renderer_id},
+                        form.fields[0].unique_renderer_id},
           AutofillSuggestionTriggerSource::
               kManualFallbackForAutocompleteUnrecognized));
   autofill_context_menu_manager()->ExecuteCommand(
-      AutofillContextMenuManager::CommandId(
-          IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED));
+      IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED);
+}
+
+TEST_F(AutofillContextMenuManagerTest,
+       AutocompleteUnrecognizedFallback_ExplicitTriggeringMetric_NotAccepted) {
+  // Simulate triggering the context menu on an ac=unrecognized field.
+  FormData form = SeeAutocompleteUnrecognizedForm();
+  autofill_context_menu_manager()->set_params_for_testing(
+      CreateContextMenuParams(form.unique_renderer_id,
+                              form.fields[0].unique_renderer_id));
+  autofill_context_menu_manager()->AppendItems();
+
+  // Expect that when closing the context menu without accepting, the explicit
+  // trigging metric is emitted correctly.
+  base::HistogramTester histogram_tester;
+  autofill_context_menu_manager()->OnMenuClosed();
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.ManualFallback.Funnel.ExplicitTriggering."
+      "ClassifiedFieldAutocompleteUnrecognized.Address",
+      false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.ManualFallback.Funnel.ExplicitTriggering.Total.Address", false,
+      1);
+}
+
+TEST_F(AutofillContextMenuManagerTest,
+       AutocompleteUnrecognizedFallback_ExplicitTriggeringMetric_Accepted) {
+  // Simulate triggering the context menu on an ac=unrecognized field.
+  FormData form = SeeAutocompleteUnrecognizedForm();
+  autofill_context_menu_manager()->set_params_for_testing(
+      CreateContextMenuParams(form.unique_renderer_id,
+                              form.fields[0].unique_renderer_id));
+  autofill_context_menu_manager()->AppendItems();
+
+  // Expect that when accepting a suggestion, the explicit trigging metric is
+  // emitted correctly.
+  autofill_context_menu_manager()->ExecuteCommand(
+      IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED);
+  base::HistogramTester histogram_tester;
+  autofill_context_menu_manager()->OnMenuClosed();
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.ManualFallback.Funnel.ExplicitTriggering."
+      "ClassifiedFieldAutocompleteUnrecognized.Address",
+      true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.ManualFallback.Funnel.ExplicitTriggering.Total.Address", true,
+      1);
 }
 
 }  // namespace autofill

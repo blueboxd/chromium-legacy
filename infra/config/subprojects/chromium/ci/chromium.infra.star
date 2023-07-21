@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.infra builder group."""
 
+load("//lib/branches.star", "branches")
 load("//lib/builders.star", "os", "sheriff_rotations")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
@@ -20,6 +21,20 @@ ci.defaults.set(
 consoles.console_view(
     name = "chromium.infra",
 )
+
+# Builders monitored by go/clank-autoroll
+consoles.list_view(
+    name = "android.autoroll",
+    title = "Android Autoroll Gardening",
+)
+[branches.list_view_entry(
+    list_view = "android.autoroll",
+    builder = "chromium:ci/{}".format(name),
+) for name in (
+    "android-androidx-packager",
+    "android-sdk-packager",
+    "3pp-linux-amd64-packager",
+)]
 
 def packager_builder(**kwargs):
     return ci.builder(
@@ -113,6 +128,7 @@ packager_builder(
                 "tools/android/avd/proto/creation/generic_playstore_android24.textpb",
                 "tools/android/avd/proto/creation/generic_android25.textpb",
                 "tools/android/avd/proto/creation/generic_playstore_android25.textpb",
+                "tools/android/avd/proto/creation/generic_android26.textpb",
                 "tools/android/avd/proto/creation/generic_android27.textpb",
                 "tools/android/avd/proto/creation/generic_playstore_android27.textpb",
                 "tools/android/avd/proto/creation/generic_android28.textpb",
@@ -362,6 +378,12 @@ ci.builder(
                 "pool": "chromium.tests",
                 "device_type": "sailfish",
                 "device_os": "PQ3A.190801.002",
+                "max_uid_threshold": 18000,
+            },
+            {
+                "pool": "chromium.tests",
+                "device_type": "walleye",
+                "device_os": "QQ1A.191205.008",
                 "max_uid_threshold": 18000,
             },
             # Used by GPU team

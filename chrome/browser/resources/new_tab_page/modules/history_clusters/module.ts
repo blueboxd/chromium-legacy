@@ -194,6 +194,8 @@ export class HistoryClustersModuleElement extends I18nMixin
   }
 
   private onDisableButtonClick_() {
+    HistoryClustersProxyImpl.getInstance().handler.recordDisabled(
+        this.cluster.id);
     const disableEvent = new CustomEvent('disable-module', {
       composed: true,
       detail: {
@@ -207,7 +209,7 @@ export class HistoryClustersModuleElement extends I18nMixin
 
   private onDismissButtonClick_() {
     HistoryClustersProxyImpl.getInstance().handler.dismissCluster(
-        [this.searchResultPage, ...this.cluster.visits]);
+        [this.searchResultPage, ...this.cluster.visits], this.cluster.id);
     this.dispatchEvent(new CustomEvent('dismiss-module', {
       bubbles: true,
       composed: true,

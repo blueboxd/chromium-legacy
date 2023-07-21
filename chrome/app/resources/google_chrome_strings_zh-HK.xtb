@@ -82,6 +82,7 @@
 <translation id="235650106824528204">工作設定檔管理員可移除任何在使用此設定檔時產生的 Chrome 資料 (例如建立的書籤、記錄、密碼和其他設定)。<ph name="LEARN_MORE" /></translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2401189691232800402">Chrome OS 系統</translation>
+<translation id="2409816192575564775">{NUM_DEVICES,plural, =0{當時至少有一個 Chrome 擴充功能正在存取 1 部 HID 裝置}=1{至少有一個 Chrome 擴充功能正在存取 1 部 HID 裝置}other{至少有一個 Chrome 擴充功能正在存取 # 部 HID 裝置}}</translation>
 <translation id="2424440923901031101">此擴充程式違反了 Chrome 網上應用程式商店政策，且可能不安全。請從 Chrome 中移除此擴充程式，令其無法再查看及變更您瀏覽的網站相關資料，包括您的個人資料。</translation>
 <translation id="2467438592969358367">Google Chrome 想匯出您的密碼。請輸入 Windows 密碼以允許此操作。</translation>
 <translation id="2472092250898121027">此擴充程式含有惡意軟件且不安全。請從 Chrome 中移除此擴充程式，令其無法再查看及變更您瀏覽的網站相關資料，包括您的個人資料。</translation>
@@ -119,7 +120,6 @@
 <translation id="2929907241665500097">發生錯誤，Chrome 未能更新。<ph name="BEGIN_LINK" />請修正 Chrome 更新問題與更新失敗問題。<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - 網絡登入 - Chrome</translation>
 <translation id="3019382870990049182">重新啟動以更新 ChromeOS Flex</translation>
-<translation id="3033660625209020231">{NUM_DEVICES,plural, =0{Google Chrome 擴充程式當時正在存取 HID 裝置}=1{Google Chrome 擴充程式正在存取 HID 裝置}other{Google Chrome 擴充程式正在存取 # 部 HID 裝置}}</translation>
 <translation id="303514781271618814">Chrome 正在探索新功能，讓網站能在使用較少資料的情況下提供相同的瀏覽體驗</translation>
 <translation id="3037838751736561277">Google Chrome 正在背景模式中執行。</translation>
 <translation id="3038232873781883849">正在等待安裝…</translation>
@@ -227,7 +227,6 @@
 <translation id="4970947549776831107">由於此檔案類型不安全，因此 Chrome 已封鎖此檔案</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5003967926796347400">按一下 [Google 密碼管理工具]</translation>
-<translation id="5005958605836556244">{NUM_DEVICES,plural, =0{Google Chrome 擴充程式當時正在存取 HID 裝置}=1{Google Chrome 擴充程式正在存取 1 部 HID 裝置}other{Google Chrome 擴充程式正在存取 # 部 HID 裝置}}</translation>
 <translation id="5098668839038261629">開啟時，您亦將會從 Chrome 登出</translation>
 <translation id="5132929315877954718">為您的 Google Chrome 探索各種實用有趣的應用程式、遊戲、擴充功能和主題。</translation>
 <translation id="5139423532931106058">自訂您的 Chrome 設定檔</translation>
@@ -247,6 +246,7 @@
 <translation id="5430073640787465221">您的偏好設定檔已損毀或無效。
 
 Google Chrome 無法復原您的設定。</translation>
+<translation id="5521146392841465297">Chrome 建議你檢查這項擴充功能。</translation>
 <translation id="5524761631371622910">在試用期間，如果 Chrome 隨機將您加入試用行列，您的瀏覽記錄會影響所看到的廣告，以及系統推測的以下興趣。為保障您的私隱，Chrome 每個月都會自動刪除您的興趣。</translation>
 <translation id="5530733413481476019">加快 Chrome 的運作速度</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -284,6 +284,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="624230925347970731">Chrome 即將關閉</translation>
 <translation id="6247557882553405851">Google 密碼管理工具</translation>
 <translation id="6273793429163604305">即將就緒…</translation>
+<translation id="6277547788421725101">你的家長已停用 Chrome 的「網站、應用程式和擴充程式權限」設定</translation>
 <translation id="6291089322031436445">Chrome 開發人員應用程式</translation>
 <translation id="6291549208091401781">電腦上的所有使用者均安裝了 Google Chrome。</translation>
 <translation id="6326175484149238433">從 Chrome 中移除</translation>
@@ -339,6 +340,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7398801000654795464">您使用了 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入 Chrome，請使用相同帳戶重新登入。</translation>
 <translation id="7410958280246779049">由於此檔案不安全，因此 Chrome 已封鎖此檔案</translation>
 <translation id="7412494426921990001">按一下 Chrome 選單</translation>
+<translation id="742463671275348370">{NUM_DEVICES,plural, =0{當時至少有一個 Chrome 擴充功能正在存取 1 部 USB 裝置}=1{至少有一個 Chrome 擴充功能正在存取 1 部 USB 裝置}other{至少有一個 Chrome 擴充功能正在存取 # 部 USB 裝置}}</translation>
 <translation id="7426611252293106642">Google Chrome 不再支援此 Linux 發行版本，因此可能無法正常運作</translation>
 <translation id="7449333426561673451">{COUNT,plural, =1{根據機構規定，Chrome 會在閒置 1 分鐘後自動關閉。}other{根據機構規定，Chrome 會在閒置 # 分鐘後自動關閉。}}</translation>
 <translation id="7452987490177144319">{COUNT,plural, =1{根據機構規定，Chrome 會在閒置 1 分鐘後自動刪除瀏覽資料。當中可能包括記錄、自動填入資料和下載檔案。這些分頁仍會保持開啟。}other{根據機構規定，Chrome 會在閒置 # 分鐘後自動刪除瀏覽資料。當中可能包括記錄、自動填入資料和下載檔案。這些分頁仍會保持開啟。}}</translation>

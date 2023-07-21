@@ -826,6 +826,10 @@
       name: "CSSContainIntrinsicSizeAutoNone",
       status: "stable",
     },
+    {
+      name: "CSSContentVisibilityImpliesContainIntrinsicSizeAuto",
+      status: "experimental",
+    },
     // Ablation study to try to measure very roughly memory savings from not saving
     // pretokenized strings in CSS custom properties.
     {
@@ -863,21 +867,10 @@
       base_feature: "none",
     },
     {
-      name: "CSSFoldables",
-      status: "experimental",
-      base_feature: "none",
-    },
-    {
       // @font-face Font property descriptors auto range.
       // https://www.w3.org/TR/css-fonts-4/#font-prop-desc
       name: "CSSFontFaceAutoVariableRange",
       status: "stable",
-      base_feature: "none",
-    },
-    {
-      name: "CSSFontFamilyMath",
-      status: "stable",
-      implied_by: ["MathMLCore"],
       base_feature: "none",
     },
     {
@@ -941,30 +934,6 @@
       base_feature: "none",
     },
     {
-      name: "CSSMathDepth",
-      status: "stable",
-      implied_by: ["MathMLCore"],
-      base_feature: "none",
-    },
-    {
-      name: "CSSMathShift",
-      status: "stable",
-      implied_by: ["MathMLCore"],
-      base_feature: "none",
-    },
-    {
-      name: "CSSMathStyle",
-      status: "stable",
-      implied_by: ["MathMLCore"],
-      base_feature: "none",
-    },
-    {
-      name: "CSSMathVariant",
-      status: "stable",
-      implied_by: ["MathMLCore"],
-      base_feature: "none",
-    },
-    {
       name: "CSSMixBlendModePlusLighter",
       status: "stable",
       base_feature: "none",
@@ -1014,11 +983,6 @@
       status: "stable",
     },
     {
-      name: "CSSOverflowForReplacedElements",
-      status: "stable",
-      copied_from_base_feature_if: "overridden",
-    },
-    {
       name: "CSSOverflowMediaFeatures",
       status: "stable",
     },
@@ -1036,6 +1000,11 @@
       base_feature: "CssPaintingForSpellingGrammarErrors",
     },
     {
+      // crbug.com/1443291: Phrase Line Breaking
+      name: "CSSPhraseLineBreak",
+      status: "test",
+    },
+    {
       name: "CSSPictureInPicture",
       status: "stable",
       base_feature: "none",
@@ -1048,7 +1017,6 @@
     {
       name: "CSSPseudoDir",
       status: "experimental",
-      base_feature: "none",
     },
     {
       name: "CSSPseudoHasNonForgivingParsing",
@@ -1185,7 +1153,7 @@
       // Support for the 'border-box', 'content-box' and 'stroke-box' keywords
       // for the 'transform-box' property.
       name: "CSSTransformBoxAdditionalKeywords",
-      status: "stable",
+      status: "experimental",
     },
     {
       name: "CSSTransitionDiscrete",
@@ -1250,10 +1218,6 @@
       name: "CSSWhiteSpaceShorthand",
       status: "stable",
       depends_on: ["CSSTextWrap"],
-    },
-    {
-      name: "CSSWordBoundaryDetection",
-      status: "test",
     },
     {
       name: "CSSZoom",
@@ -1923,7 +1887,7 @@
     },
     {
       name: "HighlightInheritance",
-      status: "experimental",
+      status: "test",
       base_feature: "none",
     },
     {
@@ -2050,7 +2014,8 @@
       status: "experimental",
     },
     {
-      "name": "IntersectionOptimization",
+      name: "IntersectionOptimization",
+      status: "experimental",
     },
     {
       name: "JavaScriptCompileHintsMagicRuntime",
@@ -2092,6 +2057,10 @@
     },
     {
       name: "LayoutFlexSafeAlignment",
+      status: "stable",
+    },
+    {
+      name: "LayoutIgnoreMarginsForSticky",
       status: "stable",
     },
     {
@@ -2205,10 +2174,6 @@
     },
     {
       name: "ManagedConfiguration",
-      status: "stable",
-    },
-    {
-      name: "MathMLCore",
       status: "stable",
     },
     {
@@ -2687,6 +2652,11 @@
       base_feature: "none",
     },
     {
+      name: "PaymentRequestAllowOneActivationlessShow",
+      public: true,
+      status: "test",
+    },
+    {
       name: "PaymentRequestMerchantValidationEvent",
       status: "experimental",
       base_feature: "none",
@@ -2724,6 +2694,14 @@
       name: "PerMethodCanMakePaymentQuota",
       origin_trial_feature_name: "PerMethodCanMakePaymentQuota",
       status: "experimental",
+      base_feature: "none",
+    },
+    {
+      // Tracking bug for the implementation: https://crbug.com/1462930
+      name: "PermissionElement",
+      // We don’t set the feature's status because the feature is implemented
+      // at both Chromium side and blink side. This runtime blink feature
+      // doesn‘t fully work by itself.
       base_feature: "none",
     },
     {
@@ -2795,6 +2773,10 @@
       name: "PrefersReducedData",
       status: "experimental",
       base_feature: "none",
+    },
+    {
+      name: "PrefersReducedTransparency",
+      status: "experimental",
     },
     // This feature is deprecated and we are evangelizing affected sites.
     // See https://crbug.com/346236 for current status.
@@ -3705,6 +3687,7 @@
     {
       name: "ViewportSegments",
       status: "experimental",
+      public: true,
       base_feature: "none",
     },
     {
@@ -3923,8 +3906,13 @@
     {
       name: "WebEnvironmentIntegrity",
       status: "experimental",
-      base_feature: "none",
       origin_trial_feature_name: "WebEnvironmentIntegrity",
+      // base_feature is meant as kill-switch. The RuntimeFeature should follow
+      // the `status` field or Origin Trial unless explicitly overriden by
+      // Finch / command line flags.
+      base_feature_status: "enabled",
+      copied_from_base_feature_if: "overridden",
+      origin_trial_allows_third_party: true,
     },
     {
       name: "WebFontResizeLCP",

@@ -49,6 +49,9 @@ class IOSChromeSyncClient : public browser_sync::BrowserSyncClient {
       override;
   sync_preferences::PrefServiceSyncable* GetPrefServiceSyncable() override;
   sync_sessions::SessionSyncService* GetSessionSyncService() override;
+  password_manager::PasswordReceiverService* GetPasswordReceiverService()
+      override;
+  password_manager::PasswordSenderService* GetPasswordSenderService() override;
   syncer::DataTypeController::TypeVector CreateDataTypeControllers(
       syncer::SyncService* sync_service) override;
   invalidation::InvalidationService* GetInvalidationService() override;
@@ -66,8 +69,6 @@ class IOSChromeSyncClient : public browser_sync::BrowserSyncClient {
 
   // The sync api component factory in use by this client.
   std::unique_ptr<browser_sync::SyncApiComponentFactoryImpl> component_factory_;
-
-  std::unique_ptr<trusted_vault::TrustedVaultClient> trusted_vault_client_;
 
   // Members that must be fetched on the UI thread but accessed on their
   // respective backend threads.

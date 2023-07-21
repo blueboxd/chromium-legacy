@@ -35,11 +35,11 @@ bool CompareActionViewPosition(const ActionView* v1, const ActionView* v2) {
 InputMappingView::InputMappingView(
     DisplayOverlayController* display_overlay_controller)
     : controller_(display_overlay_controller) {
-  auto content_bounds = controller_->touch_injector()->content_bounds();
-  auto& actions = controller_->touch_injector()->actions();
-  SetBounds(content_bounds.x(), content_bounds.y(), content_bounds.width(),
-            content_bounds.height());
-  for (auto& action : actions) {
+  SetSize(controller_->touch_injector()->content_bounds().size());
+  for (auto& action : controller_->touch_injector()->actions()) {
+    if (action->IsDeleted()) {
+      continue;
+    }
     auto view = action->CreateView(controller_);
     if (view) {
       AddChildView(std::move(view));
@@ -166,7 +166,7 @@ void InputMappingView::OnActionTypeChanged(Action* action, Action* new_action) {
   OnActionAdded(*new_action);
 }
 
-void InputMappingView::OnActionUpdated(const Action& action) {
+void InputMappingView::OnActionInputBindingUpdated(const Action& action) {
   // Action is updated in another function already for pre-beta version.
   if (!IsBeta()) {
     return;
@@ -175,10 +175,19 @@ void InputMappingView::OnActionUpdated(const Action& action) {
   for (auto* const child : children()) {
     auto* action_view = static_cast<ActionView*>(child);
     if (action_view->action() == &action) {
-      action_view->OnActionUpdated();
+      action_view->OnActionInputBindingUpdated();
       break;
     }
   }
 }
 
+void InputMappingView::OnContentBoundsSizeChanged() {
+  if (!IsBeta()) {
+    return;
+  }
+
+  for (auto* const child : children()) {
+    static_cast<ActionView*>(child)->OnContentBoundsSizeChanged();
+  }
+}
 }  // namespace arc::input_overlay

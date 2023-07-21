@@ -543,20 +543,28 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
     /**
      * @param margin The distance between the last tab and the edge of the screen.
+     * @param isMsbVisible The boolean to determine whether model selector button is visible.
      */
     public void setEndMargin(float margin, boolean isMsbVisible) {
         // When MSB is not visible we add strip end padding here. When MSB is visible strip end
         // padding will be included in MSB margin, so just add padding between NTB and MSB here.
         if (LocalizationUtils.isLayoutRtl()) {
             mLeftMargin = margin + mNewTabButtonWidth;
-            mLeftMargin += isMsbVisible ? NEW_TAB_BUTTON_WITH_MODEL_SELECTOR_BUTTON_PADDING
-                                        : mNewTabButtonWithTabStripEndPadding;
+            if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+                mLeftMargin += isMsbVisible ? NEW_TAB_BUTTON_WITH_MODEL_SELECTOR_BUTTON_PADDING
+                                            : mNewTabButtonWithTabStripEndPadding;
+            } else {
+                mLeftMargin += mNewTabButtonWithTabStripEndPadding;
+            }
         } else {
             mRightMargin = margin + mNewTabButtonWidth;
-            mRightMargin += isMsbVisible ? NEW_TAB_BUTTON_WITH_MODEL_SELECTOR_BUTTON_PADDING
-                                         : mNewTabButtonWithTabStripEndPadding;
+            if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+                mRightMargin += isMsbVisible ? NEW_TAB_BUTTON_WITH_MODEL_SELECTOR_BUTTON_PADDING
+                                             : mNewTabButtonWithTabStripEndPadding;
+            } else {
+                mRightMargin += mNewTabButtonWithTabStripEndPadding;
+            }
         }
-
         computeAndUpdateTabWidth(false, false);
     }
 
@@ -1966,7 +1974,6 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                                                                            : deltaToOptimalEnd;
     }
 
-    @VisibleForTesting
     void setTabAtPositionForTesting(StripLayoutTab tab) {
         mTabAtPositionForTesting = tab;
     }
@@ -2045,19 +2052,16 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         animationList.add(set);
     }
 
-    @VisibleForTesting
     public boolean getInReorderModeForTesting() {
         return mInReorderMode;
     }
 
-    @VisibleForTesting
     public void startReorderModeAtIndexForTesting(int index) {
         StripLayoutTab tab = mStripTabs[index];
         updateStrip();
         startReorderMode(INVALID_TIME, 0f, tab.getDrawX() + (tab.getWidth() / 2));
     }
 
-    @VisibleForTesting
     public void stopReorderModeForTesting() {
         stopReorderMode();
     }
@@ -2540,7 +2544,6 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
 
         // 2. Check if we should swap tabs and track the new destination index.
         int destIndex = TabModel.INVALID_TAB_INDEX;
-        boolean isAnimating = mRunningAnimator != null && mRunningAnimator.isRunning();
         boolean towardEnd = (offset >= 0) ^ LocalizationUtils.isLayoutRtl();
         boolean isInGroup = TabUiFeatureUtilities.isTabletTabGroupsEnabled(mContext)
                 && mTabGroupModelFilter.hasOtherRelatedTabs(getTabById(mInteractingTab.getId()));
@@ -2550,7 +2553,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                 : mStripTabs[curIndex - 1].getTrailingMargin() == mTabMarginWidth;
         boolean approachingMargin = towardEnd ? hasTrailingMargin : hasStartingMargin;
 
-        if (!isAnimating && approachingMargin) {
+        if (approachingMargin) {
             if (isInGroup) {
                 // 2.a. Tab is in a group and approaching a margin. Maybe drag out of group.
                 destIndex = maybeMoveOutOfGroup(offset, curIndex, towardEnd);
@@ -2563,7 +2566,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                     destIndex = maybeMovePastGroup(offset, curIndex, towardEnd);
                 }
             }
-        } else if (!isAnimating) {
+        } else {
             // 2.d Tab is not interacting with tab groups. Reorder as normal.
             boolean pastLeftThreshold = offset < -flipThreshold;
             boolean pastRightThreshold = offset > flipThreshold;
@@ -2929,7 +2932,6 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         mTabMenu.performItemClick(menuItemId);
     }
 
-    @VisibleForTesting
     int getScrollDurationForTesting() {
         return getScrollDuration();
     }
@@ -2977,7 +2979,6 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     /**
      * Set the value of mStripTabs for testing
      */
-    @VisibleForTesting
     void setStripLayoutTabsForTest(StripLayoutTab[] stripTabs) {
         this.mStripTabs = stripTabs;
     }
@@ -3001,12 +3002,10 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     /**
      * Disables animations for testing purposes.
      */
-    @VisibleForTesting
     public void disableAnimationsForTesting() {
         mAnimationsDisabledForTesting = true;
     }
 
-    @VisibleForTesting
     protected Animator getRunningAnimatorForTesting() {
         return mRunningAnimator;
     }
@@ -3016,7 +3015,6 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         return mMultiStepTabCloseAnimRunning;
     }
 
-    @VisibleForTesting
     protected boolean isInReorderModeForTesting() {
         return mInReorderMode;
     }
@@ -3111,5 +3109,9 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                 }
             }
         }
+    }
+
+    View getToolbarContainerView() {
+        return mToolbarContainerView;
     }
 }

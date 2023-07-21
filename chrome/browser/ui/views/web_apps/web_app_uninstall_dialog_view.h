@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -68,7 +69,7 @@ class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
   void OnDialogAccepted();
   void OnDialogCanceled();
 
-  raw_ptr<WebAppUninstallDialogViews, DanglingAcrossTasks> dialog_;
+  raw_ptr<WebAppUninstallDialogViews, AcrossTasksDanglingUntriaged> dialog_;
 
   raw_ptr<views::Checkbox> checkbox_ = nullptr;
   gfx::ImageSkia image_;
@@ -79,7 +80,7 @@ class WebAppUninstallDialogDelegateView : public views::DialogDelegateView {
   // The dialog needs start_url copy even if app gets uninstalled.
   GURL app_start_url_;
 
-  const raw_ptr<Profile, DanglingAcrossTasks> profile_;
+  const raw_ptr<Profile, AcrossTasksDanglingUntriaged> profile_;
 
   webapps::WebappUninstallSource uninstall_source_;
 };
@@ -100,9 +101,11 @@ class WebAppUninstallDialogViews
   ~WebAppUninstallDialogViews() override;
 
   // web_app::WebAppUninstallDialog:
-  void ConfirmUninstall(const web_app::AppId& app_id,
-                        webapps::WebappUninstallSource uninstall_source,
-                        OnWebAppUninstallDialogClosed closed_callback) override;
+  void ConfirmUninstall(
+      const web_app::AppId& app_id,
+      webapps::WebappUninstallSource uninstall_source,
+      OnWebAppUninstallDialogClosed closed_callback,
+      base::OnceClosure uninstall_scheduled_callback) override;
   void SetDialogShownCallbackForTesting(base::OnceClosure callback) override;
 
   // The following methods are used by WebAppUninstallDialogDelegateView to
@@ -113,6 +116,7 @@ class WebAppUninstallDialogViews
   // WebAppProvider system. Returns a callback to be passed to this system.
   base::OnceCallback<void(webapps::UninstallResultCode code)>
   UninstallStarted();
+  base::OnceClosure TakeUninstallScheduledCallback();
 
   // Called to signify that the uninstall has been cancelled.
   void UninstallCancelled();
@@ -130,6 +134,7 @@ class WebAppUninstallDialogViews
 
   // The callback we will call Accepted/Canceled on after confirmation dialog.
   OnWebAppUninstallDialogClosed closed_callback_;
+  base::OnceClosure uninstall_scheduled_callback_;
 
   base::OnceClosure dialog_shown_callback_for_testing_;
 
@@ -144,7 +149,7 @@ class WebAppUninstallDialogViews
 
   // The web app we are showing the dialog for.
   web_app::AppId app_id_;
-  const raw_ptr<Profile, DanglingAcrossTasks> profile_;
+  const raw_ptr<Profile, AcrossTasksDanglingUntriaged> profile_;
 
   THREAD_CHECKER(thread_checker_);
 

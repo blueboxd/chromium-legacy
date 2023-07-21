@@ -17,16 +17,14 @@ if (is_ios) {
 }
 
 declare_args() {
-  # Whether to allow Rust code to be part of the Chromium *build process*.
-  # This can be used to create Rust test binaries, even if the flag below
-  # is false.
-  # This only applies to Chromium itself, so the build_with_chromium check
-  # should not be removed.
-  enable_rust =
-      build_with_chromium &&
-      # TODO(crbug.com/1453618): Windows ARM64 is missing clang_rt libs, and
-      # clang_rt.profile is needed when coverage is enabled.
-      !(is_win && use_clang_coverage && target_cpu == "arm64")
+  # Rust is available in the Chromium build but 3p repos that use //build may
+  # not use Rust and thus won't want to depend on having the Rust toolchain
+  # present, so this defaults to off in those cases.
+  #
+  # Chromium-based projects that are built for for architectures Chrome does not
+  # support may need to disable this as well, though they may need to replace
+  # code with C/C++ to get a functional product.
+  enable_rust = build_with_chromium
 
   # As we incrementally enable Rust on mainstream builders, we want to enable
   # the toolchain (by switching 'enable_rust' to true) while still disabling
@@ -83,40 +81,30 @@ declare_args() {
   # Conversions between Rust types and C++ types.
   #
   # TODO(crbug.com/1463749): Enable on ChromeOS.
-  # TODO(crbug.com/1386212): Enable on Mac.
   enable_rust_base_conversions =
-      enable_rust &&
-      (!(is_chromeos || is_ios || is_mac) || enable_all_rust_features)
+      enable_rust && (!(is_chromeos || is_ios) || enable_all_rust_features)
 
   # The base::JSONReader implementation. Requires base conversions.
   enable_rust_json = enable_rust && enable_all_rust_features
 
   # Support for chrome://crash-rust to check crash dump collection works.
-  #
-  # Note that `enable_rust_crash` is true on all platforms except Mac and
-  # ChromeOS, but `chrome://crash-rust` is only actually building and present
-  # on platforms that include Blink (e.g. it is *not* present on iOS).
-  #
-  # TODO(crbug.com/1463749): Enable on ChromeOS.
-  enable_rust_crash = enable_rust && (!is_chromeos || enable_all_rust_features)
+  enable_rust_crash = enable_rust && enable_all_rust_features
 
   # Support for QR code generation - see https://crbug.com/1431991.
   #
+  # Per go/rusty-qr-code-generator the feature is not actually used on iOS, but
+  # `is_ios` below is checked for parity with `enable_rust_base_conversions`
+  # (which is a dependency of `enable_rust_qr`).
+  #
   # TODO(crbug.com/1463749): Enable on ChromeOS.
-  # TODO(crbug.com/1386212): Enable on Mac (per go/rusty-qr-code-generation
-  # this feature is not used on iOS).
-  enable_rust_qr = enable_rust && (!(is_chromeos || is_ios || is_mac) ||
-                                   enable_all_rust_features)
+  enable_rust_qr =
+      enable_rust && (!(is_chromeos || is_ios) || enable_all_rust_features)
 
   # Support for Rust mojo bindings.
   enable_rust_mojo = enable_rust && enable_all_rust_features
 
-  # Rust gtest interop
-  # TODO(https://bugs.chromium.org/p/gn/issues/detail?id=340): Framework search
-  # paths produce invalid Ninja files with GN, and they show up in the iOS
-  # build here.
-  enable_rust_gtest_interop =
-      enable_rust && (!is_ios || enable_all_rust_features)
+  # Rust gtest interop.
+  enable_rust_gtest_interop = enable_rust
 
   # Enable Boringssl Rust bindings generation
   enable_rust_boringssl = enable_rust && enable_all_rust_features

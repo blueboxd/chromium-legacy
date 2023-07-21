@@ -6,8 +6,10 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/command_line.h"
@@ -18,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_form_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -40,6 +43,7 @@
 #include "components/version_info/version_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
@@ -71,6 +75,16 @@ using autofill::test::CreateFieldPrediction;
 
 namespace {
 
+void AddFieldOverrideToForm(
+    autofill::FormFieldData field_data,
+    ServerFieldType field_type,
+    ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion) {
+  AddFieldPredictionsToForm(
+      field_data,
+      {CreateFieldPrediction(field_type, FieldPrediction::SOURCE_OVERRIDE)},
+      form_suggestion);
+}
+
 std::string SerializeAndEncode(const AutofillQueryResponse& response) {
   std::string unencoded_response_string;
   if (!response.SerializeToString(&unencoded_response_string)) {
@@ -82,14 +96,34 @@ std::string SerializeAndEncode(const AutofillQueryResponse& response) {
   return response_string;
 }
 
-void AddFieldOverrideToForm(
-    autofill::FormFieldData field_data,
-    ServerFieldType field_type,
-    ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion) {
-  AddFieldPredictionsToForm(
-      field_data,
-      {CreateFieldPrediction(field_type, FieldPrediction::SOURCE_OVERRIDE)},
-      form_suggestion);
+// Helper struct to specify manual overrides.
+struct ManualOverride {
+  FormSignature form_signature;
+  FieldSignature field_signature;
+  const std::vector<ServerFieldType> field_types;
+};
+
+// Creates the override specification passed as a parameter to
+// `features::kAutofillOverridePredictions`.
+std::string CreateManualOverridePrediction(
+    const std::vector<ManualOverride>& overrides) {
+  std::vector<std::string> override_specs;
+  override_specs.reserve(overrides.size());
+
+  for (const auto& override : overrides) {
+    std::vector<std::string> spec_pieces;
+    spec_pieces.reserve(override.field_types.size() + 2);
+    spec_pieces.push_back(
+        base::NumberToString(static_cast<uint64_t>(override.form_signature)));
+    spec_pieces.push_back(
+        base::NumberToString(static_cast<uint32_t>(override.field_signature)));
+
+    for (ServerFieldType type : override.field_types) {
+      spec_pieces.push_back(base::NumberToString(static_cast<int>(type)));
+    }
+    override_specs.push_back(base::JoinString(spec_pieces, "_"));
+  }
+  return base::JoinString(override_specs, "-");
 }
 
 // Matches any protobuf `actual` whose serialization is equal to the
@@ -115,10 +149,6 @@ auto UnorderedElementsSerializeSameAs(Matchers... element_matchers) {
   return UnorderedElementsAre(SerializesSameAs(element_matchers)...);
 }
 
-FormStructureTestApi test_api(FormStructure* form_structure) {
-  return FormStructureTestApi(form_structure);
-}
-
 constexpr DenseSet<PatternSource> kAllPatternSources {
 #if !BUILDFLAG(USE_INTERNAL_AUTOFILL_PATTERNS)
   PatternSource::kLegacy
@@ -136,6 +166,11 @@ Matcher<FieldPrediction> EqualsPrediction(const FieldPrediction& prediction) {
 
 Matcher<FieldPrediction> EqualsPrediction(ServerFieldType type) {
   return Property("type", &FieldPrediction::type, type);
+}
+
+Matcher<FieldPrediction> EqualsPrediction(ServerFieldType type,
+                                          FieldPrediction::Source source) {
+  return EqualsPrediction(CreateFieldPrediction(type, source));
 }
 
 }  // namespace
@@ -5627,6 +5662,277 @@ TEST_F(FormStructureTestImpl, ParseApiQueryResponse) {
               ElementsAre(EqualsPrediction(NO_SERVER_DATA)));
 }
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+// Tests that manually specified (i.e. passed as a feature parameter) field type
+// predictions override server predictions.
+TEST_F(FormStructureTestImpl, ParseApiQueryResponseWithManualOverrides) {
+  // Make form.
+  FormFieldData field1;
+  test::CreateTestFormField("name", "name", "", "text", &field1);
+  FormFieldData field2;
+  test::CreateTestFormField("password", "password", "", "text", &field2);
+
+  FormData form;
+  form.fields.insert(form.fields.end(), {field1, field2});
+  form.url = GURL("http://foo.com");
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms{&form_structure};
+
+  // The feature is only initialized here because the parameters contain the
+  // form and field signatures.
+  // Only the prediction for the first field is overridden.
+  base::test::ScopedFeatureList features;
+  base::FieldTrialParams feature_parameters{
+      {features::kAutofillOverridePredictionsSpecification.name,
+       CreateManualOverridePrediction({{CalculateFormSignature(form),
+                                        CalculateFieldSignatureForField(field1),
+                                        {USERNAME}}})}};
+  features.InitAndEnableFeatureWithParameters(
+      features::kAutofillOverridePredictions, feature_parameters);
+
+  // Make serialized API response.
+  AutofillQueryResponse api_response;
+  auto* form_suggestion = api_response.add_form_suggestions();
+  AddFieldPredictionsToForm(
+      form.fields[0],
+      {CreateFieldPrediction(EMAIL_ADDRESS, FieldPrediction::SOURCE_OVERRIDE)},
+      form_suggestion);
+  AddFieldPredictionsToForm(
+      form.fields[1],
+      {CreateFieldPrediction(PASSWORD, FieldPrediction::SOURCE_OVERRIDE)},
+      form_suggestion);
+
+  FormStructure::ParseApiQueryResponse(SerializeAndEncode(api_response), forms,
+                                       test::GetEncodedSignatures(forms),
+                                       nullptr, nullptr);
+
+  ASSERT_EQ(forms[0]->field_count(), 2u);
+
+  // The prediction for the first field comes from the manual override, while
+  // the server prediction is used for the second field because no manual
+  // override is configured.
+  EXPECT_THAT(forms[0]->field(0)->server_predictions(),
+              ElementsAre(EqualsPrediction(
+                  USERNAME, FieldPrediction::SOURCE_MANUAL_OVERRIDE)));
+  EXPECT_THAT(forms[0]->field(1)->server_predictions(),
+              ElementsAre(EqualsPrediction(PASSWORD,
+                                           FieldPrediction::SOURCE_OVERRIDE)));
+}
+
+// Tests that specifying manual field type prediction overrides also works in
+// the absence of any server predictions.
+TEST_F(FormStructureTestImpl,
+       ParseApiQueryResponseWithManualOverridesAndNoServerPredictions) {
+  // Make form.
+  FormFieldData field1;
+  test::CreateTestFormField("name", "name", "", "text", &field1);
+  FormFieldData field2;
+  test::CreateTestFormField("name", "name", "", "text", &field2);
+
+  const FieldSignature kFieldSignature =
+      CalculateFieldSignatureForField(field1);
+  EXPECT_EQ(kFieldSignature, CalculateFieldSignatureForField(field2));
+
+  FormData form;
+  form.fields.insert(form.fields.end(), {field1, field2});
+  form.url = GURL("http://foo.com");
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms{&form_structure};
+  const FormSignature kFormSignature = CalculateFormSignature(form);
+
+  // The feature is only initialized here because the parameters contain the
+  // form and field signatures.
+  // Only the prediction for the first field is overridden. The prediction for
+  // the following fields with the same signature is defaulted to server
+  // predictions, because the last manual type prediction override is a "pass
+  // through".
+  base::test::ScopedFeatureList features;
+  base::FieldTrialParams feature_parameters{
+      {features::kAutofillOverridePredictionsSpecification.name,
+       CreateManualOverridePrediction(
+           {{kFormSignature, kFieldSignature, {NAME_FIRST}},
+            {kFormSignature, kFieldSignature, {}}})}};
+  features.InitAndEnableFeatureWithParameters(
+      features::kAutofillOverridePredictions, feature_parameters);
+
+  // Make serialized API response.
+  AutofillQueryResponse api_response;
+  FormStructure::ParseApiQueryResponse(SerializeAndEncode(api_response), forms,
+                                       test::GetEncodedSignatures(forms),
+                                       nullptr, nullptr);
+
+  ASSERT_EQ(forms[0]->field_count(), 2u);
+
+  // The prediction for the first field comes from the manual override. The
+  // second one is meant as a pass through for server predictions, but since
+  // there are none, there is no prediction.
+  EXPECT_THAT(forms[0]->field(0)->server_predictions(),
+              ElementsAre(EqualsPrediction(
+                  NAME_FIRST, FieldPrediction::SOURCE_MANUAL_OVERRIDE)));
+  EXPECT_THAT(forms[0]->field(1)->server_predictions(),
+              ElementsAre(EqualsPrediction(
+                  NO_SERVER_DATA, FieldPrediction::SOURCE_UNSPECIFIED)));
+}
+
+// Tests that (in the case of colliding form and field signatures) specifying a
+// pass-through (i.e. no prediction at all) in the last override for that
+// form / field signature pair leads to defaulting back to server predictions
+// at that position and all other fields with the same form / field signature
+// pair that follow.
+TEST_F(FormStructureTestImpl,
+       ParseApiQueryResponseWithManualOverridesAndPassthroughInLastPosition) {
+  // Make form.
+  FormFieldData field1;
+  test::CreateTestFormField("name", "name", "", "text", &field1);
+  FormFieldData field2;
+  test::CreateTestFormField("name", "name", "", "text", &field2);
+  FormFieldData field3;
+  test::CreateTestFormField("name", "name", "", "text", &field3);
+
+  const FieldSignature kFieldSignature =
+      CalculateFieldSignatureForField(field1);
+  EXPECT_EQ(kFieldSignature, CalculateFieldSignatureForField(field2));
+  EXPECT_EQ(kFieldSignature, CalculateFieldSignatureForField(field3));
+
+  FormData form;
+  form.fields.insert(form.fields.end(), {field1, field2, field3});
+  form.url = GURL("http://foo.com");
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms{&form_structure};
+  const FormSignature kFormSignature = CalculateFormSignature(form);
+
+  // The feature is only initialized here because the parameters contain the
+  // form and field signatures.
+  // Only the prediction for the first field is overridden. The prediction for
+  // the following fields with the same signature is defaulted to server
+  // predictions, because the last manual type prediction override is a "pass
+  // through".
+  base::test::ScopedFeatureList features;
+  base::FieldTrialParams feature_parameters{
+      {features::kAutofillOverridePredictionsSpecification.name,
+       CreateManualOverridePrediction(
+           {{kFormSignature, kFieldSignature, {NAME_FIRST}},
+            {kFormSignature, kFieldSignature, {}}})}};
+  features.InitAndEnableFeatureWithParameters(
+      features::kAutofillOverridePredictions, feature_parameters);
+
+  // Make serialized API response.
+  AutofillQueryResponse api_response;
+  auto* form_suggestion = api_response.add_form_suggestions();
+  AddFieldPredictionsToForm(
+      form.fields[0],
+      {CreateFieldPrediction(NAME_FULL, FieldPrediction::SOURCE_OVERRIDE)},
+      form_suggestion);
+  AddFieldPredictionsToForm(
+      form.fields[1],
+      {CreateFieldPrediction(NAME_LAST, FieldPrediction::SOURCE_OVERRIDE)},
+      form_suggestion);
+  AddFieldPredictionsToForm(
+      form.fields[2],
+      {CreateFieldPrediction(COMPANY_NAME, FieldPrediction::SOURCE_OVERRIDE)},
+      form_suggestion);
+
+  FormStructure::ParseApiQueryResponse(SerializeAndEncode(api_response), forms,
+                                       test::GetEncodedSignatures(forms),
+                                       nullptr, nullptr);
+
+  ASSERT_EQ(forms[0]->field_count(), 3u);
+
+  // The prediction for the first field comes from the manual override, while
+  // the server prediction is used for the remaining fields.
+  EXPECT_THAT(forms[0]->field(0)->server_predictions(),
+              ElementsAre(EqualsPrediction(
+                  NAME_FIRST, FieldPrediction::SOURCE_MANUAL_OVERRIDE)));
+  EXPECT_THAT(forms[0]->field(1)->server_predictions(),
+              ElementsAre(EqualsPrediction(NAME_LAST,
+                                           FieldPrediction::SOURCE_OVERRIDE)));
+  EXPECT_THAT(forms[0]->field(2)->server_predictions(),
+              ElementsAre(EqualsPrediction(COMPANY_NAME,
+                                           FieldPrediction::SOURCE_OVERRIDE)));
+}
+
+// Tests that (in the case of colliding form and field signatures) specifying a
+// pass-through (i.e. no prediction at all) in a middle override for that
+// form / field signature pair leads to defaulting back to server predictions
+// only for that middle field.
+TEST_F(FormStructureTestImpl,
+       ParseApiQueryResponseWithManualOverridesAndPassthroughInMiddlePosition) {
+  // Make form.
+  FormFieldData field1;
+  test::CreateTestFormField("name", "name", "", "text", &field1);
+  FormFieldData field2;
+  test::CreateTestFormField("name", "name", "", "text", &field2);
+  FormFieldData field3;
+  test::CreateTestFormField("name", "name", "", "text", &field3);
+  FormFieldData field4;
+  test::CreateTestFormField("name", "name", "", "text", &field4);
+
+  const FieldSignature kFieldSignature =
+      CalculateFieldSignatureForField(field1);
+  EXPECT_EQ(kFieldSignature, CalculateFieldSignatureForField(field2));
+  EXPECT_EQ(kFieldSignature, CalculateFieldSignatureForField(field3));
+  EXPECT_EQ(kFieldSignature, CalculateFieldSignatureForField(field4));
+
+  FormData form;
+  form.fields.insert(form.fields.end(), {field1, field2, field3, field4});
+  form.url = GURL("http://foo.com");
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms{&form_structure};
+  const FormSignature kFormSignature = CalculateFormSignature(form);
+
+  // The feature is only initialized here because the parameters contain the
+  // form and field signatures.
+  // Only the prediction for the first field is overridden. The prediction for
+  // the following fields with the same signature is defaulted to server
+  // predictions, because the last manual type prediction override is a "pass
+  // through".
+  base::test::ScopedFeatureList features;
+  base::FieldTrialParams feature_parameters{
+      {features::kAutofillOverridePredictionsSpecification.name,
+       CreateManualOverridePrediction(
+           {{kFormSignature, kFieldSignature, {NAME_FIRST}},
+            {kFormSignature, kFieldSignature, {}},
+            {kFormSignature, kFieldSignature, {COMPANY_NAME}}})}};
+  features.InitAndEnableFeatureWithParameters(
+      features::kAutofillOverridePredictions, feature_parameters);
+
+  // Make serialized API response.
+  AutofillQueryResponse api_response;
+  auto* form_suggestion = api_response.add_form_suggestions();
+  AddFieldPredictionsToForm(
+      form.fields[0],
+      {CreateFieldPrediction(NAME_LAST, FieldPrediction::SOURCE_OVERRIDE)},
+      form_suggestion);
+
+  FormStructure::ParseApiQueryResponse(SerializeAndEncode(api_response), forms,
+                                       test::GetEncodedSignatures(forms),
+                                       nullptr, nullptr);
+
+  ASSERT_EQ(forms[0]->field_count(), 4u);
+
+  // The prediction for the first field comes from the manual override.
+  EXPECT_THAT(forms[0]->field(0)->server_predictions(),
+              ElementsAre(EqualsPrediction(
+                  NAME_FIRST, FieldPrediction::SOURCE_MANUAL_OVERRIDE)));
+  // Since the second manual prediction is a "pass through", the server
+  // prediction is used.
+  EXPECT_THAT(forms[0]->field(1)->server_predictions(),
+              ElementsAre(EqualsPrediction(NAME_LAST,
+                                           FieldPrediction::SOURCE_OVERRIDE)));
+  // The third (and last) manual override is not a "pass through", so its
+  // override is used here.
+  EXPECT_THAT(forms[0]->field(2)->server_predictions(),
+              ElementsAre(EqualsPrediction(
+                  COMPANY_NAME, FieldPrediction::SOURCE_MANUAL_OVERRIDE)));
+  // Just as in the case of server predictions, the last prediction is used
+  // multiple times if there are more fields than overrides. Since the last
+  // manual override was not a "pass through", its value is used.
+  EXPECT_THAT(forms[0]->field(3)->server_predictions(),
+              ElementsAre(EqualsPrediction(
+                  COMPANY_NAME, FieldPrediction::SOURCE_MANUAL_OVERRIDE)));
+}
+#endif
+
 // Tests ParseApiQueryResponse when the payload cannot be parsed to an
 // AutofillQueryResponse where we expect an early return of the function.
 TEST_F(FormStructureTestImpl,
@@ -6161,14 +6467,14 @@ TEST_F(FormStructureTestImpl, NoAutocompleteSectionNames) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  test_api(&form_structure)
+  test_api(form_structure)
       .SetFieldTypes({NAME_FULL, ADDRESS_HOME_COUNTRY, PHONE_HOME_NUMBER,
                       NAME_FULL, ADDRESS_HOME_COUNTRY, PHONE_HOME_NUMBER});
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
 
-  test_api(&form_structure).IdentifySections(/*ignore_autocomplete=*/false);
+  test_api(form_structure).IdentifySections(/*ignore_autocomplete=*/false);
 
   // Assert the correct number of fields.
   ASSERT_EQ(6U, form_structure.field_count());
@@ -6218,7 +6524,7 @@ TEST_F(FormStructureTestImpl, NoSplitByRecurringPhoneFieldType) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  test_api(&form_structure)
+  test_api(form_structure)
       .SetFieldTypes({NAME_FULL, PHONE_HOME_NUMBER, PHONE_HOME_NUMBER,
                       NAME_FULL, PHONE_HOME_NUMBER, PHONE_HOME_NUMBER,
                       ADDRESS_HOME_COUNTRY});
@@ -6226,7 +6532,7 @@ TEST_F(FormStructureTestImpl, NoSplitByRecurringPhoneFieldType) {
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
 
-  test_api(&form_structure).IdentifySections(/*ignore_autocomplete=*/false);
+  test_api(form_structure).IdentifySections(/*ignore_autocomplete=*/false);
 
   // Assert the correct number of fields.
   ASSERT_EQ(7U, form_structure.field_count());
@@ -6270,11 +6576,11 @@ TEST_F(FormStructureTestImpl, NoSplitAdjacentNameFieldType) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  test_api(&form_structure)
+  test_api(form_structure)
       .SetFieldTypes({NAME_FIRST, NAME_LAST, NAME_FIRST, NAME_LAST,
                       ADDRESS_HOME_COUNTRY, NAME_FIRST});
 
-  test_api(&form_structure).IdentifySections(/*ignore_autocomplete=*/false);
+  test_api(form_structure).IdentifySections(/*ignore_autocomplete=*/false);
 
   // Assert the correct number of fields.
   ASSERT_EQ(6U, form_structure.field_count());
@@ -6318,14 +6624,14 @@ TEST_F(FormStructureTestImpl, SplitByRecurringFieldType) {
   form.fields.push_back(field);
 
   FormStructure form_structure(form);
-  test_api(&form_structure)
+  test_api(form_structure)
       .SetFieldTypes(
           {NAME_FULL, ADDRESS_HOME_COUNTRY, NAME_FULL, ADDRESS_HOME_COUNTRY});
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
 
-  test_api(&form_structure).IdentifySections(/*ignore_autocomplete=*/false);
+  test_api(form_structure).IdentifySections(/*ignore_autocomplete=*/false);
 
   // Assert the correct number of fields.
   ASSERT_EQ(4U, form_structure.field_count());
@@ -6369,14 +6675,14 @@ TEST_F(FormStructureTestImpl,
 
   FormStructure form_structure(form);
 
-  test_api(&form_structure)
+  test_api(form_structure)
       .SetFieldTypes(
           {NAME_FULL, ADDRESS_HOME_COUNTRY, NAME_FULL, ADDRESS_HOME_COUNTRY});
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
 
-  test_api(&form_structure).IdentifySections(/*ignore_autocomplete=*/false);
+  test_api(form_structure).IdentifySections(/*ignore_autocomplete=*/false);
 
   // Assert the correct number of fields.
   ASSERT_EQ(4U, form_structure.field_count());
@@ -6418,14 +6724,14 @@ TEST_F(FormStructureTestImpl, SplitByNewAutocompleteSectionName) {
 
   FormStructure form_structure(form);
 
-  test_api(&form_structure)
+  test_api(form_structure)
       .SetFieldTypes(
           {NAME_FULL, ADDRESS_HOME_CITY, NAME_FULL, ADDRESS_HOME_CITY});
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
 
-  test_api(&form_structure).IdentifySections(/*ignore_autocomplete=*/false);
+  test_api(form_structure).IdentifySections(/*ignore_autocomplete=*/false);
 
   // Assert the correct number of fields.
   ASSERT_EQ(4U, form_structure.field_count());
@@ -6466,14 +6772,14 @@ TEST_F(
 
   FormStructure form_structure(form);
 
-  test_api(&form_structure)
+  test_api(form_structure)
       .SetFieldTypes(
           {NAME_FULL, ADDRESS_HOME_COUNTRY, NAME_FULL, ADDRESS_HOME_CITY});
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
 
-  test_api(&form_structure).IdentifySections(/*ignore_autocomplete=*/false);
+  test_api(form_structure).IdentifySections(/*ignore_autocomplete=*/false);
 
   // Assert the correct number of fields.
   ASSERT_EQ(4U, form_structure.field_count());
@@ -6505,12 +6811,12 @@ TEST_F(FormStructureTestImpl, FromEmptyAutocompleteSectionToDefinedOne) {
 
   FormStructure form_structure(form);
 
-  test_api(&form_structure).SetFieldTypes({NAME_FULL, ADDRESS_HOME_COUNTRY});
+  test_api(form_structure).SetFieldTypes({NAME_FULL, ADDRESS_HOME_COUNTRY});
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
 
-  test_api(&form_structure).IdentifySections(/*ignore_autocomplete=*/false);
+  test_api(form_structure).IdentifySections(/*ignore_autocomplete=*/false);
 
   // Assert the correct number of fields.
   ASSERT_EQ(2U, form_structure.field_count());
@@ -6546,13 +6852,13 @@ TEST_F(FormStructureTestImpl,
 
   FormStructure form_structure(form);
 
-  test_api(&form_structure)
+  test_api(form_structure)
       .SetFieldTypes({NAME_FULL, PHONE_HOME_NUMBER, NAME_FULL});
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
 
-  test_api(&form_structure).IdentifySections(/*ignore_autocomplete=*/false);
+  test_api(form_structure).IdentifySections(/*ignore_autocomplete=*/false);
 
   // Assert the correct number of fields.
   ASSERT_EQ(3U, form_structure.field_count());
@@ -6588,14 +6894,14 @@ TEST_F(FormStructureTestImpl, FindFieldsEligibleForManualFilling) {
 
   FormStructure form_structure(form);
 
-  test_api(&form_structure)
+  test_api(form_structure)
       .SetFieldTypes(
           {CREDIT_CARD_NAME_FULL, ADDRESS_HOME_COUNTRY, UNKNOWN_TYPE});
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
 
-  test_api(&form_structure).IdentifySections(/*ignore_autocomplete=*/false);
+  test_api(form_structure).IdentifySections(/*ignore_autocomplete=*/false);
   std::vector<FieldGlobalId> expected_result;
   // Only credit card related and unknown fields are eligible for manual
   // filling.
@@ -6717,14 +7023,14 @@ TEST_P(FormStructureTest_ForPatternSource, ParseFieldTypesWithPatterns) {
   FormData form;
   test::CreateTestAddressFormData(&form);
   FormStructure form_structure(form);
-  test_api(&form_structure).ParseFieldTypesWithPatterns(pattern_source());
-  ASSERT_THAT(test_api(&form_structure).fields(), Not(IsEmpty()));
+  test_api(form_structure).ParseFieldTypesWithPatterns(pattern_source());
+  ASSERT_THAT(form_structure.fields(), Not(IsEmpty()));
 
   auto get_heuristic_type = [&](const AutofillField& field) {
     return field.heuristic_type(pattern_source());
   };
   EXPECT_THAT(
-      test_api(&form_structure).fields(),
+      form_structure.fields(),
       Each(Pointee(ResultOf(get_heuristic_type,
                             AllOf(Not(NO_SERVER_DATA), Not(UNKNOWN_TYPE))))));
 
@@ -6732,7 +7038,7 @@ TEST_P(FormStructureTest_ForPatternSource, ParseFieldTypesWithPatterns) {
     auto get_other_pattern_heuristic_type = [&](const AutofillField& field) {
       return field.heuristic_type(other_pattern_source);
     };
-    EXPECT_THAT(test_api(&form_structure).fields(),
+    EXPECT_THAT(form_structure.fields(),
                 Each(Pointee(ResultOf(get_other_pattern_heuristic_type,
                                       NO_SERVER_DATA))))
         << "PatternSource = " << static_cast<int>(other_pattern_source);

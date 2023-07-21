@@ -29,6 +29,7 @@
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/favicon_size.h"
 
@@ -224,39 +225,36 @@ void AutofillContextMenuManager::AppendItems() {
   }
 }
 
-bool AutofillContextMenuManager::IsCommandIdChecked(
-    CommandId command_id) const {
-  return false;
+bool AutofillContextMenuManager::IsCommandIdSupported(int command_id) {
+  return IsAutofillCustomCommandId(CommandId(command_id));
 }
 
-bool AutofillContextMenuManager::IsCommandIdVisible(
-    CommandId command_id) const {
+bool AutofillContextMenuManager::IsCommandIdEnabled(int command_id) {
   return true;
 }
 
-bool AutofillContextMenuManager::IsCommandIdEnabled(
-    CommandId command_id) const {
-  return true;
-}
-
-void AutofillContextMenuManager::ExecuteCommand(CommandId command_id) {
+void AutofillContextMenuManager::ExecuteCommand(int command_id) {
   content::RenderFrameHost* rfh = delegate_->GetRenderFrameHost();
   if (!rfh)
     return;
 
-  DCHECK(IsAutofillCustomCommandId(command_id));
+  CHECK(IsAutofillCustomCommandId(CommandId(command_id)));
 
-  if (command_id.value() == kAutofillContextFeedback) {
+  if (command_id == kAutofillContextFeedback) {
     ExecuteAutofillFeedbackCommand(rfh);
     return;
   }
 
-  if (command_id.value() == kAutofillFallbackForAutocompleteUnrecognized) {
+  if (command_id == kAutofillFallbackForAutocompleteUnrecognized) {
     ExecuteFallbackForAutocompleteUnrecognizedCommand(rfh);
     return;
   }
 
-  ExecuteMenuManagerCommand(command_id, rfh);
+  ExecuteMenuManagerCommand(CommandId(command_id), rfh);
+}
+
+void AutofillContextMenuManager::OnMenuClosed() {
+  fallback_metric_logger_.ContextMenuClosed();
 }
 
 void AutofillContextMenuManager::ExecuteAutofillFeedbackCommand(
@@ -286,12 +284,17 @@ void AutofillContextMenuManager::
   if (!driver) {
     return;
   }
-  CHECK(params_.field_renderer_id);
-  FieldGlobalId field = {LocalFrameToken(rfh->GetFrameToken().value()),
-                         FieldRendererId(*params_.field_renderer_id)};
+  AutofillField* field = GetAutofillField();
+  if (!field) {
+    // The field should generally exist, since the fallback option is only shown
+    // when the field can be retrieved. But if the website removed the field
+    // before the entry was select, it might not be available anymore.
+    return;
+  }
   driver->browser_events().RendererShouldTriggerSuggestions(
-      field, AutofillSuggestionTriggerSource::
-                 kManualFallbackForAutocompleteUnrecognized);
+      field->global_id(), AutofillSuggestionTriggerSource::
+                              kManualFallbackForAutocompleteUnrecognized);
+  fallback_metric_logger_.ContextMenuEntryAccepted();
 }
 
 void AutofillContextMenuManager::ExecuteMenuManagerCommand(
@@ -578,10 +581,16 @@ void AutofillContextMenuManager::
     return;
   }
 
-  menu_model_->AddItemWithStringId(
+  menu_model_->AddTitle(l10n_util::GetStringUTF16(
+      IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED_TITLE));
+  menu_model_->AddItemWithStringIdAndIcon(
       kAutofillFallbackForAutocompleteUnrecognized,
-      IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED);
+      IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED,
+      ui::ImageModel::FromVectorIcon(vector_icons::kLocationOnIcon));
   menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+  fallback_metric_logger_.ContextMenuEntryShown(
+      /*field_has_ac_unrecognized=*/field
+          ->ShouldSuppressSuggestionsAndFillingByDefault());
 }
 
 bool AutofillContextMenuManager::HaveEnoughIdsForProfile(

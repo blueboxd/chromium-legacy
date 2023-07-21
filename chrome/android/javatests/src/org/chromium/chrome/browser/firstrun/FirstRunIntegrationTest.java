@@ -50,6 +50,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.Promise;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -152,7 +153,6 @@ public class FirstRunIntegrationTest {
         FirstRunStatus.setFirstRunSkippedByPolicy(false);
         FirstRunUtils.setDisableDelayOnExitFreForTest(true);
         FirstRunActivity.setObserverForTest(mTestObserver);
-        FirstRunActivityBase.setPolicyLoadListenerFactoryForTesting(null);
 
         mInstrumentation = InstrumentationRegistry.getInstrumentation();
         mContext = mInstrumentation.getTargetContext();
@@ -181,11 +181,7 @@ public class FirstRunIntegrationTest {
         });
 
         FirstRunStatus.setFirstRunSkippedByPolicy(false);
-        FirstRunUtils.setDisableDelayOnExitFreForTest(false);
-        FirstRunAppRestrictionInfo.setInitializedInstanceForTest(null);
-        EnterpriseInfo.setInstanceForTest(null);
         AccountManagerFacadeProvider.resetInstanceForTests();
-        FirstRunFlowSequencer.setDelegateForTesting(null);
     }
 
     private ActivityMonitor getMonitor(Class activityClass) {
@@ -527,9 +523,9 @@ public class FirstRunIntegrationTest {
     private void initializePreferences(FirstRunPagesTestCase testCase) {
         if (testCase.cctTosDisabled()) skipTosDialogViaPolicy();
 
-        TestFirstRunFlowSequencerDelegate delegate =
-                new TestFirstRunFlowSequencerDelegate(testCase);
-        FirstRunFlowSequencer.setDelegateForTesting(delegate);
+        FirstRunFlowSequencer.setDelegateFactoryForTesting(
+                (profileSupplier)
+                        -> new TestFirstRunFlowSequencerDelegate(testCase, profileSupplier));
 
         setUpLocaleManagerDelegate(testCase.searchPromoType());
     }
@@ -794,7 +790,7 @@ public class FirstRunIntegrationTest {
                     ((SigninFirstRunFragment) firstRunActivity.getCurrentFragmentForTesting())
                             .getView()
                             .findViewById(R.id.fre_native_and_policy_load_progress_spinner);
-            // Replace the progress bar with a dummy to allow other checks. Currently the
+            // Replace the progress bar with a placeholder to allow other checks. Currently the
             // progress bar cannot be stopped otherwise due to some espresso issues (crbug/1115067).
             progressBar.setIndeterminateDrawable(
                     new ColorDrawable(SemanticColorUtils.getDefaultBgColor(firstRunActivity)));
@@ -1258,7 +1254,9 @@ public class FirstRunIntegrationTest {
             extends FirstRunFlowSequencer.FirstRunFlowSequencerDelegate {
         private FirstRunPagesTestCase mTestCase;
 
-        public TestFirstRunFlowSequencerDelegate(FirstRunPagesTestCase testCase) {
+        public TestFirstRunFlowSequencerDelegate(
+                FirstRunPagesTestCase testCase, OneshotSupplier<Profile> profileSupplier) {
+            super(profileSupplier);
             mTestCase = testCase;
         }
 

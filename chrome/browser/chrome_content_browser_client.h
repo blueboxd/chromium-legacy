@@ -386,6 +386,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldDenyRequestOnCertificateError(const GURL main_page_url) override;
 #endif
   base::OnceClosure SelectClientCertificate(
+      content::BrowserContext* browser_context,
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       net::ClientCertIdentityList client_certs,
@@ -863,6 +864,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<content::PrefetchServiceDelegate>
   CreatePrefetchServiceDelegate(
       content::BrowserContext* browser_context) override;
+
+  std::unique_ptr<content::PrerenderWebContentsDelegate>
+  CreatePrerenderWebContentsDelegate() override;
 
   void OnWebContentsCreated(content::WebContents* web_contents) override;
 

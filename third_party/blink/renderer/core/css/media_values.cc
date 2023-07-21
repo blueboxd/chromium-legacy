@@ -387,6 +387,17 @@ bool MediaValues::CalculatePrefersReducedData(LocalFrame* frame) {
   return override_value.value_or(GetNetworkStateNotifier().SaveDataEnabled());
 }
 
+bool MediaValues::CalculatePrefersReducedTransparency(LocalFrame* frame) {
+  DCHECK(frame);
+  DCHECK(frame->GetSettings());
+  const MediaFeatureOverrides* overrides =
+      frame->GetPage()->GetMediaFeatureOverrides();
+  absl::optional<bool> override_value =
+      overrides ? overrides->GetPrefersReducedTransparency() : absl::nullopt;
+  return override_value.value_or(
+      frame->GetSettings()->GetPrefersReducedTransparency());
+}
+
 ForcedColors MediaValues::CalculateForcedColors(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetSettings());

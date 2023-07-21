@@ -298,8 +298,19 @@ suite('AboutPageTest_AllBuilds', function() {
     fireStatusChanged(UpdateStatus.DISABLED_BY_ADMIN);
     assertTrue(relaunch.hidden);
   });
+
+  // <if expr="_google_chrome or _is_chrome_for_testing_branded">
+  test('TermsOfService', function() {
+    const termsOfServiceEl =
+        page.shadowRoot!.querySelector<HTMLAnchorElement>('a#tos');
+    assertTrue(!!termsOfServiceEl);
+
+    assertEquals(page.i18n('aboutProductTos'), termsOfServiceEl.textContent);
+    assertEquals(page.i18n('aboutTermsURL'), termsOfServiceEl.href);
+  });
   // </if>
 
+  // </if>
   test('GetHelp', function() {
     assertTrue(!!page.shadowRoot!.querySelector('#help'));
     page.shadowRoot!.querySelector<HTMLElement>('#help')!.click();
@@ -307,6 +318,7 @@ suite('AboutPageTest_AllBuilds', function() {
   });
 });
 
+// <if expr="_google_chrome">
 suite('AboutPageTest_OfficialBuilds', function() {
   let page: SettingsAboutPageElement;
   let browserProxy: TestAboutPageBrowserProxy;
@@ -326,7 +338,7 @@ suite('AboutPageTest_OfficialBuilds', function() {
     await browserProxy.whenCalled('openFeedbackDialog');
   });
 
-  // <if expr="_google_chrome and is_macosx">
+  // <if expr="is_macosx">
   type Scenarios = 'CANT_PROMOTE'|'CAN_PROMOTE'|'IN_BETWEEN'|'PROMOTED';
 
   /**
@@ -437,3 +449,4 @@ suite('AboutPageTest_OfficialBuilds', function() {
   });
   // </if>
 });
+// </if>

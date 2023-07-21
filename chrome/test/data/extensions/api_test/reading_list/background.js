@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+let readingList = chrome.readingList;
 chrome.test.runTests([
 
   async function testAddEntryFunction() {
@@ -10,31 +11,95 @@ chrome.test.runTests([
       title: 'example of title',
       hasBeenRead: false
     };
-    await chrome.readingList.addEntry(entry);
+    await readingList.addEntry(entry);
     await chrome.test.assertPromiseRejects(
-        chrome.readingList.addEntry(entry), 'Error: Duplicate URL');
+        readingList.addEntry(entry), 'Error: Duplicate URL.');
     chrome.test.succeed();
   },
 
-  async function testInvalidURL() {
+  async function testAddEntryInvalidURLError() {
     const entry = {
       url: 'Invalid URL',
       title: 'example of title',
       hasBeenRead: false
     };
     await chrome.test.assertPromiseRejects(
-        chrome.readingList.addEntry(entry), 'Error: URL is not valid');
+        readingList.addEntry(entry), 'Error: URL is not valid.');
     chrome.test.succeed();
   },
 
-  async function TestNotSupportedURL() {
+  async function testAddEntryNotSupportedURLError() {
     const entry = {
       url: 'chrome://example',
       title: 'example of title',
       hasBeenRead: false
     };
     await chrome.test.assertPromiseRejects(
-        chrome.readingList.addEntry(entry), 'Error: URL is not supported');
+        readingList.addEntry(entry), 'Error: URL is not supported.');
+    chrome.test.succeed();
+  },
+
+  async function testRemoveEntryFunction() {
+    const entry = {
+      url: 'https://www.example.com'
+    };
+    await readingList.removeEntry(entry);
+    await chrome.test.assertPromiseRejects(
+        readingList.removeEntry(entry), 'Error: URL not found.');
+    chrome.test.succeed();
+  },
+
+  async function testRemoveEntryInvalidURLError() {
+    const entry = {
+      url: 'Invalid URL'
+    };
+    await chrome.test.assertPromiseRejects(
+        readingList.removeEntry(entry), 'Error: URL is not valid.');
+    chrome.test.succeed();
+  },
+
+  async function testRemoveEntryNotSupportedURLError() {
+    const entry = {
+      url: 'chrome://example'
+    };
+    await chrome.test.assertPromiseRejects(
+        readingList.removeEntry(entry), 'Error: URL is not supported.');
+    chrome.test.succeed();
+  },
+
+  async function testUpdateEntryFunction() {
+    var entry = {
+      url: 'https://www.example.com',
+      title: 'Title',
+      hasBeenRead: true
+    };
+    await readingList.addEntry(entry);
+    entry.title = 'New title';
+    await readingList.updateEntry(entry);
+    chrome.test.succeed();
+  },
+
+  async function testNoFeaturesProvidedUpdateEntry() {
+    const entry = {
+      url: 'https://www.example.com',
+    };
+    await chrome.test.assertPromiseRejects(
+        readingList.updateEntry(entry),
+        'Error: At least one of `title` or `hasBeenRead` must be provided.');
+    chrome.test.succeed();
+  },
+
+  async function testUpdateEntryInvalidURLError() {
+    const entry = {url: 'Invalid URL', title: 'example of title'};
+    await chrome.test.assertPromiseRejects(
+        readingList.updateEntry(entry), 'Error: URL is not valid.');
+    chrome.test.succeed();
+  },
+
+  async function testUpdateEntryNotSupportedURLError() {
+    const entry = {url: 'chrome://example', title: 'example of title'};
+    await chrome.test.assertPromiseRejects(
+        readingList.updateEntry(entry), 'Error: URL is not supported.');
     chrome.test.succeed();
   },
 

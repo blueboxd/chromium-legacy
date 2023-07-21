@@ -68,7 +68,6 @@ Bare personer som har passordfrasen din, kan lese de krypterte dataene. Passordf
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – sendt fra <ph name="DEVICE_NAME" /></translation>
 <translation id="1311657260431405215">Denne QR-koden er ikke noen nettadresse: <ph name="QRCODEVALUE" /></translation>
 <translation id="1316212908214730110">chrome_stylized_highlight_</translation>
-<translation id="131655401280401879">Den lagrede informasjonen din slettes hvis du fjerner profillåsen senere.</translation>
 <translation id="1320912611264252795">Mapper med flyt for lagring av bokmerke er åpnet i full høyde</translation>
 <translation id="1327257854815634930">Navigasjonsloggen er åpnet</translation>
 <translation id="1331212799747679585">Kan ikke oppdatere Chrome. Flere alternativer</translation>
@@ -193,7 +192,6 @@ Når du sletter nettleserloggen, enten det er hele loggen eller bare loggen for 
 <translation id="2056878612599315956">Nettstedet er satt på pause</translation>
 <translation id="2065944887543506430">{FILE_COUNT,plural, =1{1 nedlasting mislyktes}other{# nedlastinger mislyktes}}</translation>
 <translation id="2067805253194386918">tekst</translation>
-<translation id="2079545284768500474">Angre</translation>
 <translation id="2082238445998314030">Resultat <ph name="RESULT_NUMBER" /> av <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Synkronisering og personlig tilpasning på alle enheter</translation>
 <translation id="2100273922101894616">Automatisk pålogging</translation>
@@ -278,7 +276,7 @@ Når du sletter nettleserloggen, enten det er hele loggen eller bare loggen for 
 <translation id="2571711316400087311">Tilby å sende sider på andre språk til Google Oversetter</translation>
 <translation id="2571834852878229351">Lag mitt eget</translation>
 <translation id="2573452357057307036">Finn ut hvordan du angir Chrome som standard</translation>
-<translation id="257470231920177468">Når dette vises, vises en liste her over nettsteder du besøker som gjetter interessene dine.</translation>
+<translation id="2574249610672786438">For å se fanene dine overalt hvor du bruker Chrome, logg på alle enhetene dine</translation>
 <translation id="2580436639406015883">Mengden nettsøppel og svindel blir redusert ved bruk av private tilstandstokener, som hjelper nettsteder med å bekjempe svindel og skille mellom roboter og mennesker.
 
 Basert på hvordan du samhandler med et bestemt nettsted (f.eks. hvis du pleier å logge på med en konto), kan nettstedet utstede et privat tilstandstoken til nettleseren din. Hvis andre nettsteder du besøker, senere ser etter og finner et gyldig privat tilstandstoken, er det større sannsynlighet for at de behandler deg som et menneske og ikke en robot.
@@ -376,6 +374,7 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="3027644380269727216">Basert på aktiviteten din på et nettsted. Denne innstillingen er på.</translation>
 <translation id="3029276696788198026">Ingen forhåndslasting</translation>
 <translation id="3029704984691124060">Passordfrasene stemmer ikke overens</translation>
+<translation id="303514781271618814">Chrome utforsker nye funksjoner som gjør det mulig for nettsteder å bruke mindre av dataene dine og likevel gi deg den samme nettlesingsopplevelsen</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Sporer prisen</translation>
 <translation id="3037517125981011456">Viser beskjeder om å logge på Chrome</translation>
@@ -396,7 +395,6 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="3123734510202723619">Kunngjøringer</translation>
 <translation id="3134784203083076891">»</translation>
 <translation id="314939179385989105">Startsiden for Chrome</translation>
-<translation id="3157931365184549694">Gjenopprett</translation>
 <translation id="3166827708714933426">Hurtigtaster for vinduer og faner</translation>
 <translation id="316694332262407393">Chrome kjører allerede her.</translation>
 <translation id="3167258285411721858">Du kan be om mobilnettstedet for <ph name="HOST_NAME" /></translation>
@@ -430,11 +428,11 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="3303414029551471755">Vil du gå videre med å laste ned innholdet?</translation>
 <translation id="3305130791745726624">Send til enheter</translation>
 <translation id="3305795716056605962">Oversett sider fra Flere alternativer-knappen</translation>
-<translation id="3319664549618064419">Bytt til nettsted for datamaskiner for å få en bedre visning av dette nettstedet</translation>
 <translation id="3334729583274622784">Vil du endre filetternavnet?</translation>
 <translation id="3341262203274374114">Kan ikke slutte å følge. Noe gikk galt.</translation>
 <translation id="3359667936385849800">Bruk den nåværende tjenesteleverandøren din</translation>
 <translation id="3365271666488085187">Chrome kan vurdere denne interessen</translation>
+<translation id="3373701465337594448">Når dette vises, vises en liste her over nettsteder du besøker som gjetter interessene dine</translation>
 <translation id="3373979091428520308">For å dele denne siden med en annen enhet, slå på synkronisering i Chrome-innstillingene på den andre enheten</translation>
 <translation id="3374023511497244703">Bokmerker, logg, passord og andre Chrome-data synkroniseres ikke lenger med Google-kontoen din.</translation>
 <translation id="3384347053049321195">Del bildet</translation>
@@ -448,6 +446,7 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="3429160811076349561">Prøvefunksjoner er avslått</translation>
 <translation id="3435465986463792564">Har du mange vinduer? Du kan administrere dem her</translation>
 <translation id="3435738964857648380">Sikkerhet</translation>
+<translation id="3439276997620616816">Her finner du de nylige fanene dine</translation>
 <translation id="3443221991560634068">Last inn den aktive siden på nytt</translation>
 <translation id="3444179773590444986">Vil du dele tilbakemeldinger om mørkt tema for nettsteder?</translation>
 <translation id="3452832259067974318">For å beskytte personvernet ditt autofyller ikke Chrome passordet ditt i dette feltet.</translation>
@@ -456,6 +455,7 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="3479552764303398839">Ikke nå</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /> om foreslått innhold</translation>
 <translation id="3495219333887281978">Påloggingsfeltet nederst er åpnet i halv høyde.</translation>
+<translation id="3498338220321963224">De lagrede dataene dine blir slettet hvis profillåsen fjernes senere.</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="350276055892098337">Sorter etter eldste</translation>
 <translation id="3507132249039706973">Standardbeskyttelse er på</translation>
@@ -547,7 +547,6 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="4024768890073681126">Nettleseren administreres av forelderen din</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# t}other{# t}}</translation>
 <translation id="4035877632587724847">Ikke tillat</translation>
-<translation id="4036177530563778041">Du kan enkelt fortsette der du slapp</translation>
 <translation id="4042941173059740150">Fortsett til <ph name="SITE_ETLD_PLUS_ONE" /> med <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
 <translation id="4044708993631234325">Felt nederst</translation>
 <translation id="4045764304651014138">Bruksdata</translation>
@@ -620,8 +619,8 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="4405224443901389797">Flytt til …</translation>
 <translation id="4405636711880428279">Vil du fjerne det virtuelle kortet ditt?</translation>
 <translation id="4409271659088619928">Søkemotoren din er <ph name="DSE" />. Se eventuelt instruksjonene deres om hvordan du sletter søkeloggen din.</translation>
-<translation id="441383202534727410">Det kan ta opptil én uke før en liste over nettsteder vises her, basert på nettleserloggen din.</translation>
 <translation id="4415276339145661267">Administrer Google-kontoen din</translation>
+<translation id="4417111749295506837">For å synkronisere Chrome-informasjonen din og holde dataene dine sikre i bilen må du opprette en profillås. Da må du bruke en kode eller et passord hver gang du setter deg inn i bilen.</translation>
 <translation id="4425140285732600465">Sporer prisen. Du får varsler hvis prisen settes ned på noe nettsted.</translation>
 <translation id="442518031075347249">Du kommer ikke lenger til å kunne bruke det virtuelle kortet ditt med Google Pay. <ph name="BEGIN_LINK1" />Finn ut mer om virtuelle kort<ph name="END_LINK1" /></translation>
 <translation id="4428065317363009941">Personlig tilpasning av annonser</translation>
@@ -633,7 +632,7 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="4487967297491345095">Alle appdataene for Chrome slettes permanent. Dette omfatter alle filer, innstillinger, kontoer, databaser osv.</translation>
 <translation id="449126573531210296">Kryptér synkroniserte passord med Google-kontoen din</translation>
 <translation id="4508528996305412043">Feedkortmenyen er åpnet</translation>
-<translation id="4509501256689523862">Om en annonse du ser har et personlig preg avhenger av denne innstillingen, <ph name="BEGIN_LINK_1" />Annonseemner<ph name="END_LINK_1" />, <ph name="BEGIN_LINK_2" />innstillingene for informasjonskapsler<ph name="END_LINK_2" /> og om nettstedet du ser på viser personlig tilpassede annonser</translation>
+<translation id="4509501256689523862">Om en annonse du ser har et personlig preg avhenger av denne innstillingen, <ph name="BEGIN_LINK_1" />Annonseemner<ph name="END_LINK_1" />, <ph name="BEGIN_LINK_2" />innstillingene for informasjonskapsler<ph name="END_LINK_2" /> og om nettstedet du ser på, viser personlig tilpassede annonser</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{for # dag siden}other{for # dager siden}}</translation>
 <translation id="451872707440238414">Søk i bokmerkene dine</translation>
 <translation id="4521489764227272523">De valgte dataene er er fjernet fra Chrome og de synkroniserte enhetene dine.
@@ -902,7 +901,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5864419784173784555">Venter på en annen nedlasting …</translation>
 <translation id="5865733239029070421">Sender automatisk brukerstatistikk og programstopprapporter til Google</translation>
 <translation id="5869522115854928033">Lagrede passord</translation>
-<translation id="5876496397064130037">Gjøremålet er gjenopptatt</translation>
 <translation id="587735546353481577">For å følge et nettsted, gå til nettstedet, åpne Chrome-menyen og trykk på Følg.</translation>
 <translation id="5879072387416556377">Få bedre forslag</translation>
 <translation id="5916664084637901428">På</translation>
@@ -990,6 +988,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6363990818884053551">For å starte synkroniseringen, bekreft at det er deg</translation>
 <translation id="6364438453358674297">Vil du fjerne forslaget fra loggen?</translation>
 <translation id="6380100320871303656">Forhåndslaster oftere sider som Chrome tror du sannsynligvis kommer til å besøke. Denne innstillingen kan medføre høyere databruk.</translation>
+<translation id="6391355955030242704">For å synkronisere Chrome-informasjonen din og holde dataene dine sikre i bilen må du opprette en profillås i sikkerhetsinnstillingene. Da må du bruke en kode eller et passord hver gang du setter deg inn i bilen.</translation>
 <translation id="6394791151443660613">Søk: <ph name="SEARCH_QUERY" /></translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6397616442223433927">På nettet igjen</translation>
@@ -1038,7 +1037,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6590471736817333463">Spar opptil 60 % data</translation>
 <translation id="6590680911007613645">Sørg for at passordet du lagrer, samsvarer med passordet ditt for <ph name="SITE" /></translation>
 <translation id="6593061639179217415">Side for datamaskiner</translation>
-<translation id="6594121454516132231">Se hvordan Chrome planlegger å verne deg mot sporing på tvers av nettsteder, samtidig som det åpne nettet ivaretas</translation>
 <translation id="6594347733515723558">Alt. sort. og visning</translation>
 <translation id="6595046016124923392">Bildene blir sendt til Google for å gjøre beskrivelsene bedre.</translation>
 <translation id="6600954340915313787">Kopiert til Chrome</translation>
@@ -1131,7 +1129,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7029390216614421513">Plassér QR-/strekkoden i denne rammen.</translation>
 <translation id="7029809446516969842">Passord</translation>
 <translation id="7030304022046916278">Sender nettadresser til Safe Browsing for å sjekke dem</translation>
-<translation id="7030585293819777123">Vil du gjenoppta det du holdt på med sist?</translation>
 <translation id="7035701931849773472">Andre alternativer</translation>
 <translation id="7037830628447527439">Logg på Chrome med Google-kontoen din</translation>
 <translation id="7038956721828960940">chrome_bilde_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
@@ -1146,7 +1143,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7088681679121566888">Chrome er oppdatert</translation>
 <translation id="7105047059074518658">Logg på for å surfe lettere på flere enheter</translation>
 <translation id="7106762743910369165">Nettleseren administreres av organisasjonen din</translation>
-<translation id="7116420572655804716">For å synkronisere informasjonen din og holde dataene dine sikre i bilen må du opprette en profillås i sikkerhetsinnstillingene. Du bruker en kode eller et passord hver gang du setter deg inn i bilen.</translation>
 <translation id="7116588989735740310">Synkroniser fanene og loggen din for å gå tilbake til nettsteder du har besøkt på andre enheter</translation>
 <translation id="7130504491556983216">En liste over interesser vises her mens du surfer på nettet</translation>
 <translation id="7138678301420049075">Annet</translation>
@@ -1543,7 +1539,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="9100610230175265781">Det kreves en passordfrase</translation>
 <translation id="9101137867221042551">Administrering</translation>
 <translation id="9102803872260866941">Fanen for forhåndsvisning er åpnet</translation>
-<translation id="9102864637938129124">Nettsteder og annonsører kan forstå hvordan annonser innfrir. Denne innstillingen er på.</translation>
+<translation id="9102864637938129124">Nettsteder og annonsører kan forstå hvilke resultater annonser gir. Denne innstillingen er på.</translation>
 <translation id="9104217018994036254">Liste over enheter du kan dele faner med.</translation>
 <translation id="9106148373857059373">Flyt for lagring av bokmerke er lukket</translation>
 <translation id="9108312223223904744">Telefon som støtte for sikkerhetsnøkkel</translation>
@@ -1571,7 +1567,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="932327136139879170">Gå til startsiden</translation>
 <translation id="938850635132480979">Feil: <ph name="ERROR_CODE" /></translation>
 <translation id="939598580284253335">Angi en passordfrase</translation>
-<translation id="950679278154734362">For å synkronisere informasjonen din og holde dataene dine sikre i bilen må du opprette en profillås. Du bruker en kode eller et passord hver gang du setter deg inn i bilen.</translation>
 <translation id="952301137339791907">Sidestatistikkfeltet nederst er åpnet</translation>
 <translation id="95817756606698420">Chrome kan bruke <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> for søk i Kina. Du kan endre dette i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
 <translation id="962979164594783469">Installer denne appen</translation>

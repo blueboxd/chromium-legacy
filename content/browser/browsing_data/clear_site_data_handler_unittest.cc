@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/base_switches.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -14,12 +13,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_task_environment.h"
+#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -153,7 +151,7 @@ class StringConsoleMessagesDelegate : public ConsoleMessagesDelegate {
 
 class ClearSiteDataHandlerTest
     : public testing::Test,
-      public testing::WithParamInterface<std::vector<base::test::FeatureRef>> {
+      public testing::WithParamInterface<std::tuple<bool, bool, bool>> {
  public:
   ClearSiteDataHandlerTest()
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
@@ -161,11 +159,11 @@ class ClearSiteDataHandlerTest
   ClearSiteDataHandlerTest(const ClearSiteDataHandlerTest&) = delete;
   ClearSiteDataHandlerTest& operator=(const ClearSiteDataHandlerTest&) = delete;
 
-  bool IsClientHintsSupportEnabled() {
-    return std::find(GetParam().begin(), GetParam().end(),
-                     features::kClearSiteDataClientHintsSupport) !=
-           GetParam().end();
-  }
+  bool IsClientHintsSupportEnabled() { return std::get<0>(GetParam()); }
+
+  bool IsWildcardSupportEnabled() { return std::get<1>(GetParam()); }
+
+  bool IsStorageBucketSupportEnabled() { return std::get<2>(GetParam()); }
 
  private:
   BrowserTaskEnvironment task_environment_;
@@ -174,15 +172,28 @@ class ClearSiteDataHandlerTest
 INSTANTIATE_TEST_SUITE_P(
     ParseHeaderAndExecuteClearingTaskWithFeaturesEnabledTestSuite,
     ClearSiteDataHandlerTest,
-    testing::Values(std::vector<base::test::FeatureRef>{},
-                    std::vector<base::test::FeatureRef>{
-                        blink::features::kStorageBuckets},
-                    std::vector<base::test::FeatureRef>{
-                        features::kClearSiteDataClientHintsSupport}));
+    testing::Combine(testing::Bool(), testing::Bool(), testing::Bool()));
 
 TEST_P(ClearSiteDataHandlerTest, ParseHeaderAndExecuteClearingTask) {
+  std::vector<base::test::FeatureRef> features_to_enable;
+  std::vector<base::test::FeatureRef> features_to_disable;
+  if (IsClientHintsSupportEnabled()) {
+    features_to_enable.push_back(features::kClearSiteDataClientHintsSupport);
+  } else {
+    features_to_disable.push_back(features::kClearSiteDataClientHintsSupport);
+  }
+  if (IsWildcardSupportEnabled()) {
+    features_to_enable.push_back(net::features::kClearSiteDataWildcardSupport);
+  } else {
+    features_to_disable.push_back(net::features::kClearSiteDataWildcardSupport);
+  }
+  if (IsStorageBucketSupportEnabled()) {
+    features_to_enable.push_back(blink::features::kStorageBuckets);
+  } else {
+    features_to_disable.push_back(blink::features::kStorageBuckets);
+  }
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures(GetParam(), {});
+  features.InitWithFeatures(features_to_enable, features_to_disable);
 
   struct TestCase {
     const char* header;
@@ -193,13 +204,15 @@ TEST_P(ClearSiteDataHandlerTest, ParseHeaderAndExecuteClearingTask) {
     std::set<std::string> storage_buckets_to_remove;
   };
 
-  // TODO(crbug.com/1458394): Generate combinations instead of listing manually.
-  // TODO(crbug.com/1458394): Support cases with no valid parsed targets.
-  std::vector<TestCase> standard_test_cases = {
+  std::set<std::string> storage_buckets_test_case_expectation = {"drafts",
+                                                                 "inbox"};
+
+  std::vector<TestCase> test_cases = {
       // One data type.
       {"\"cookies\"", true, false, false, false},
       {"\"storage\"", false, true, false, false},
       {"\"cache\"", false, false, true, false},
+      {"\"clientHints\"", false, false, false, IsClientHintsSupportEnabled()},
 
       // Two data types.
       {"\"cookies\", \"storage\"", true, true, false, false},
@@ -225,10 +238,22 @@ TEST_P(ClearSiteDataHandlerTest, ParseHeaderAndExecuteClearingTask) {
       {"\"cookies\", \"storage\", \"cache\", \"clientHints\"", true, true, true,
        IsClientHintsSupportEnabled()},
 
-      // The wildcard datatype is not yet shipped.
-      {"\"*\", \"storage\"", false, true, false, false},
-      {"\"cookies\", \"*\", \"storage\"", true, true, false, false},
-      {"\"*\", \"cookies\", \"*\"", true, false, false, false},
+      // Wildcard.
+      {"\"*\"", IsWildcardSupportEnabled(), IsWildcardSupportEnabled(),
+       IsWildcardSupportEnabled(),
+       IsWildcardSupportEnabled() && IsClientHintsSupportEnabled()},
+      {"\"*\", \"storage\"", IsWildcardSupportEnabled(), true,
+       IsWildcardSupportEnabled(),
+       IsWildcardSupportEnabled() && IsClientHintsSupportEnabled()},
+      {"\"cookies\", \"*\", \"storage\"", true, true,
+       IsWildcardSupportEnabled(),
+       IsWildcardSupportEnabled() && IsClientHintsSupportEnabled()},
+      {"\"*\", \"cookies\", \"*\"", true, IsWildcardSupportEnabled(),
+       IsWildcardSupportEnabled(),
+       IsWildcardSupportEnabled() && IsClientHintsSupportEnabled()},
+      {"\"*\", \"clientHints\"", IsWildcardSupportEnabled(),
+       IsWildcardSupportEnabled(), IsWildcardSupportEnabled(),
+       IsClientHintsSupportEnabled()},
 
       // Different formatting.
       {"\"cookies\"", true, false, false, false},
@@ -242,122 +267,103 @@ TEST_P(ClearSiteDataHandlerTest, ParseHeaderAndExecuteClearingTask) {
       // Unknown types are ignored, but we still proceed with the deletion for
       // those that we recognize.
       {"\"cache\", \"foo\"", false, false, true, false},
-  };
-
-  if (IsClientHintsSupportEnabled()) {
-    // These tests would fail to parse at all if client hint support was
-    // disabled as they would lack a valid target.
-    standard_test_cases.emplace_back("\"clientHints\"", false, false, false,
-                                     true);
-    standard_test_cases.emplace_back("\"*\", \"clientHints\"", false, false,
-                                     false, true);
-  }
-
-  std::set<std::string> storage_buckets_test_case_expectation = {"drafts",
-                                                                 "inbox"};
-
-  if (!base::FeatureList::IsEnabled(blink::features::kStorageBuckets)) {
-    storage_buckets_test_case_expectation.clear();
-  }
-
-  std::vector<TestCase> experimental_test_cases = {
-      // Wildcard.
-      {"\"*\"", true, true, true, IsClientHintsSupportEnabled()},
-      {"\"*\", \"storage\"", true, true, true, IsClientHintsSupportEnabled()},
-      {"\"cache\", \"*\", \"storage\"", true, true, true,
-       IsClientHintsSupportEnabled()},
-      {"\"*\", \"cookies\", \"*\"", true, true, true,
-       IsClientHintsSupportEnabled()},
-      {"\"*\", \"cookies\", \"clientHints\"", true, true, true,
-       IsClientHintsSupportEnabled()},
 
       // Storage Buckets
       {"\"storage\", \"storage:drafts\"", false, true, false, false},
+      {"\"*\", \"storage:drafts\", \"storage:inbox\"",
+       IsWildcardSupportEnabled(), IsWildcardSupportEnabled(),
+       IsWildcardSupportEnabled(),
+       IsWildcardSupportEnabled() && IsClientHintsSupportEnabled(),
+       (!IsWildcardSupportEnabled() && IsStorageBucketSupportEnabled())
+           ? storage_buckets_test_case_expectation
+           : std::set<std::string>()},
       {"\"cookies\", \"storage:drafts", true, false, false,
        false},  // Invalid header, should end with '"'
       {"\"cookies\", \"storage:invalid_name$#$\"", true, false, false,
        false},  // Invalid bucket name
 
       {"\"cookies\", \"storage:drafts\", \"storage:inbox\"", true, false, false,
-       false, storage_buckets_test_case_expectation}};
+       false,
+       IsStorageBucketSupportEnabled() ? storage_buckets_test_case_expectation
+                                       : std::set<std::string>()},
+  };
 
-  const std::vector<TestCase>* test_case_sets[] = {&standard_test_cases,
-                                                   &experimental_test_cases};
+  if (!base::FeatureList::IsEnabled(blink::features::kStorageBuckets)) {
+    storage_buckets_test_case_expectation.clear();
+  }
 
-  for (const std::vector<TestCase>* test_cases : test_case_sets) {
-    base::test::ScopedCommandLine scoped_command_line;
-    if (test_cases == &experimental_test_cases) {
-      scoped_command_line.GetProcessCommandLine()->AppendSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures);
+  for (const TestCase& test_case : test_cases) {
+    SCOPED_TRACE(test_case.header);
+
+    // Test that ParseHeader works correctly.
+    ClearSiteDataTypeSet clear_site_data_types;
+    std::set<std::string> storage_buckets_to_remove = {};
+
+    GURL url("https://example.com");
+    ConsoleMessagesDelegate console_delegate;
+
+    base::HistogramTester histogram_tester;
+    bool success = ClearSiteDataHandler::ParseHeaderForTesting(
+        test_case.header, &clear_site_data_types, &storage_buckets_to_remove,
+        &console_delegate, url);
+    if (!test_case.cookies && !test_case.storage && !test_case.cache &&
+        !test_case.client_hints &&
+        test_case.storage_buckets_to_remove.empty()) {
+      EXPECT_FALSE(success);
+      continue;
     }
+    EXPECT_TRUE(success);
 
-    for (const TestCase& test_case : *test_cases) {
-      SCOPED_TRACE(test_case.header);
+    EXPECT_EQ(test_case.cookies,
+              clear_site_data_types.Has(ClearSiteDataType::kCookies));
+    EXPECT_EQ(test_case.storage,
+              clear_site_data_types.Has(ClearSiteDataType::kStorage));
+    EXPECT_EQ(test_case.cache,
+              clear_site_data_types.Has(ClearSiteDataType::kCache));
+    EXPECT_EQ(test_case.client_hints,
+              clear_site_data_types.Has(ClearSiteDataType::kClientHints));
+    EXPECT_EQ(test_case.storage_buckets_to_remove, storage_buckets_to_remove);
 
-      // Test that ParseHeader works correctly.
-      ClearSiteDataTypeSet clear_site_data_types;
-      std::set<std::string> storage_buckets_to_remove = {};
+    // Count the number of bits in a mask that are 1.
+    auto count_ones_in_mask = [](int mask) {
+      int count = 0;
+      for (size_t i = 0; i < sizeof(mask) * 8; ++i) {
+        count += (mask >> i) & 1;
+      }
+      return count;
+    };
+    histogram_tester.ExpectTotalCount("Storage.ClearSiteDataHeader.Parameters",
+                                      1);
+    int sample =
+        histogram_tester.GetTotalSum("Storage.ClearSiteDataHeader.Parameters");
+    // There should be one bit set to one for each data type seen.
+    EXPECT_EQ(count_ones_in_mask(sample),
+              static_cast<int>(test_case.cookies) +
+                  static_cast<int>(test_case.storage) +
+                  static_cast<int>(test_case.cache) +
+                  static_cast<int>(!storage_buckets_to_remove.empty()) +
+                  static_cast<int>(test_case.client_hints));
 
-      GURL url("https://example.com");
-      ConsoleMessagesDelegate console_delegate;
+    // Test that a call with the above parameters actually reaches
+    // ExecuteClearingTask().
+    auto context = net::CreateTestURLRequestContextBuilder()->Build();
+    std::unique_ptr<net::URLRequest> request(context->CreateRequest(
+        url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
+    TestHandler handler(
+        base::BindRepeating(&FakeBrowserContextGetter),
+        base::BindRepeating(&FakeWebContentsGetter), request->url(),
+        test_case.header, request->load_flags(),
+        /*cookie_partition_key=*/absl::nullopt, /*storage_key=*/absl::nullopt,
+        /*partitioned_state_allowed_only=*/false, base::DoNothing(),
+        std::make_unique<ConsoleMessagesDelegate>());
 
-      base::HistogramTester histogram_tester;
-      EXPECT_TRUE(ClearSiteDataHandler::ParseHeaderForTesting(
-          test_case.header, &clear_site_data_types, &storage_buckets_to_remove,
-          &console_delegate, url));
+    EXPECT_CALL(handler,
+                ClearSiteData(url::Origin::Create(url), clear_site_data_types,
+                              test_case.storage_buckets_to_remove, _, _, _, _));
+    bool defer = handler.DoHandleHeader();
+    EXPECT_TRUE(defer);
 
-      EXPECT_EQ(test_case.cookies,
-                clear_site_data_types.Has(ClearSiteDataType::kCookies));
-      EXPECT_EQ(test_case.storage,
-                clear_site_data_types.Has(ClearSiteDataType::kStorage));
-      EXPECT_EQ(test_case.cache,
-                clear_site_data_types.Has(ClearSiteDataType::kCache));
-      EXPECT_EQ(test_case.client_hints,
-                clear_site_data_types.Has(ClearSiteDataType::kClientHints));
-      EXPECT_EQ(test_case.storage_buckets_to_remove, storage_buckets_to_remove);
-
-      // Count the number of bits in a mask that are 1.
-      auto count_ones_in_mask = [](int mask) {
-        int count = 0;
-        for (size_t i = 0; i < sizeof(mask) * 8; ++i) {
-          count += (mask >> i) & 1;
-        }
-        return count;
-      };
-      histogram_tester.ExpectTotalCount(
-          "Storage.ClearSiteDataHeader.Parameters", 1);
-      int sample = histogram_tester.GetTotalSum(
-          "Storage.ClearSiteDataHeader.Parameters");
-      // There should be one bit set to one for each data type seen.
-      EXPECT_EQ(count_ones_in_mask(sample),
-                static_cast<int>(test_case.cookies) +
-                    static_cast<int>(test_case.storage) +
-                    static_cast<int>(test_case.cache) +
-                    static_cast<int>(!storage_buckets_to_remove.empty()) +
-                    static_cast<int>(test_case.client_hints));
-
-      // Test that a call with the above parameters actually reaches
-      // ExecuteClearingTask().
-      auto context = net::CreateTestURLRequestContextBuilder()->Build();
-      std::unique_ptr<net::URLRequest> request(context->CreateRequest(
-          url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
-      TestHandler handler(
-          base::BindRepeating(&FakeBrowserContextGetter),
-          base::BindRepeating(&FakeWebContentsGetter), request->url(),
-          test_case.header, request->load_flags(),
-          /*cookie_partition_key=*/absl::nullopt, /*storage_key=*/absl::nullopt,
-          /*partitioned_state_allowed_only=*/false, base::DoNothing(),
-          std::make_unique<ConsoleMessagesDelegate>());
-
-      EXPECT_CALL(
-          handler,
-          ClearSiteData(url::Origin::Create(url), clear_site_data_types,
-                        test_case.storage_buckets_to_remove, _, _, _, _));
-      bool defer = handler.DoHandleHeader();
-      EXPECT_TRUE(defer);
-
-      testing::Mock::VerifyAndClearExpectations(&handler);
-    }
+    testing::Mock::VerifyAndClearExpectations(&handler);
   }
 }
 
@@ -526,7 +532,7 @@ TEST_F(ClearSiteDataHandlerTest, FormattedConsoleOutput) {
     const char* header;
     const char* url;
     const char* output;
-    bool experimental;
+    bool wildcard;
     bool client_hints;
   } kTestCases[] = {
       // Successful deletion outputs one line, and in case of cookies, also
@@ -640,16 +646,15 @@ TEST_F(ClearSiteDataHandlerTest, FormattedConsoleOutput) {
     // |NetworkServiceClient| creates a new |ClearSiteDataHandler| for each
     // navigation, redirect, or subresource header responses.
     for (const auto& test : kTestCases) {
-      base::test::ScopedCommandLine scoped_command_line;
-      if (test.experimental) {
-        scoped_command_line.GetProcessCommandLine()->AppendSwitch(
-            switches::kEnableExperimentalWebPlatformFeatures);
+      std::vector<base::test::FeatureRef> features;
+      if (test.wildcard) {
+        features.push_back(net::features::kClearSiteDataWildcardSupport);
+      }
+      if (test.client_hints) {
+        features.push_back(features::kClearSiteDataClientHintsSupport);
       }
       base::test::ScopedFeatureList scoped_feature_list;
-      if (test.client_hints) {
-        scoped_feature_list.InitAndEnableFeature(
-            features::kClearSiteDataClientHintsSupport);
-      }
+      scoped_feature_list.InitWithFeatures(features, {});
       TestHandler handler(
           base::BindRepeating(&FakeBrowserContextGetter),
           base::BindRepeating(&FakeWebContentsGetter), GURL(test.url),

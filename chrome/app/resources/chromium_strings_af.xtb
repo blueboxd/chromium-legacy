@@ -3,15 +3,16 @@
 <translationbundle lang="af">
 <translation id="1026101648481255140">Hervat installering</translation>
 <translation id="1029669172902658969">Herbegin om &amp;Chromium-bedryfstelsel op te dateer</translation>
+<translation id="1040916596585577953">Chromium beveel aan dat jy hierdie uitbreiding nagaan</translation>
 <translation id="1065672644894730302">Jou voorkeure kan nie gelees word nie.
 
 Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure sal nie gestoor word nie.</translation>
+<translation id="1083934481477628225">Jou ouer het “Toestemmings vir werwe, apps en uitbreidings” vir Chromium afgeskakel</translation>
 <translation id="1098170124587656448">Chromium kan help om jou teen dataskendings, slegte uitbreidings, en meer te beskerm</translation>
 <translation id="1104942323762546749">Chromium wil jou wagwoorde uitvoer. Tik jou Windows-wagwoord in om dit toe te laat.</translation>
 <translation id="113122355610423240">Chromium is jou verstekblaaier</translation>
 <translation id="1131805035311359397"><ph name="BEGIN_LINK" />Meld by Chromium aan<ph name="END_LINK" /> om te kyk of jou wagwoorde teen dataskendings en ander sekuriteitkwessies beveilig word.</translation>
 <translation id="1153368717515616349">Klik die Chromium-kieslys</translation>
-<translation id="1157106475430165622">{NUM_DEVICES,plural, =0{Chromium-uitbreidings het toegang tot MKT-toestelle gehad}=1{Chromium-uitbreidings het tans toegang tot MKT-toestelle}other{Chromium-uitbreidings het tans toegang tot # MKT-toestelle}}</translation>
 <translation id="1185134272377778587">Meer oor Chromium</translation>
 <translation id="1203500561924088507">Dankie dat jy geïnstalleer het. Jy moet jou blaaier herbegin voordat jy <ph name="BUNDLE_NAME" /> gebruik.</translation>
 <translation id="1261119230216066228">Geheuebespaarder het Chromium vinniger gemaak</translation>
@@ -60,6 +61,7 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="2359808026110333948">Gaan voort</translation>
 <translation id="2384373936468275798">Chromium-bedryfstelsel kon nie jou data sinkroniseer nie omdat jou rekening se aanmeldbesonderhede verouderd is.</translation>
 <translation id="2396765026452590966">Die uitbreiding "<ph name="EXTENSION_NAME" />" het verander watter bladsy gewys word wanneer jy Chromium begin.</translation>
+<translation id="2398377054246527950">{NUM_DEVICES,plural, =0{Een of meer Chromium-uitbreidings het toegang tot 1 MKT-toestel gehad}=1{Een of meer Chromium-uitbreidings het tans toegang tot 1 MKT-toestel}other{Een of meer Chromium-uitbreidings het tans toegang tot # MKT-toestelle}}</translation>
 <translation id="2401032172288869980">Chromium het kamera- en mikrofoontoestemming vir hierdie werf nodig</translation>
 <translation id="2451727308784734061">Gebruik jou kortpad om vinnig na Wagwoordbestuurder toe te gaan. Jy kan jou kortpad na jou rekenaar se tuisskerm of applanseerder toe skuif.</translation>
 <translation id="2478295928299953161">Chromium gaan binnekort toemaak</translation>
@@ -92,6 +94,7 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="3032787606318309379">Voeg tans by Chromium …</translation>
 <translation id="3038232873781883849">Wag tans om te installeer...</translation>
 <translation id="3068515742935458733">Help om Chromium beter te maak deur omvalverslae en <ph name="UMA_LINK" /> na Google te stuur</translation>
+<translation id="3079753320517721795">{NUM_DEVICES,plural, =0{Een of meer Chromium-uitbreidings het toegang tot 1 USB-toestel gehad}=1{Een of meer Chromium-uitbreidings het tans toegang tot 1 USB-toestel}other{Een of meer Chromium-uitbreidings het tans toegang tot # USB-toestelle}}</translation>
 <translation id="3101560983689755071">Jou blaaigeskiedenis beïnvloed die advertensies wat jy sien en die belangstellings soos hieronder geskat. Chromium vee outomaties elke maand jou belangstellings op ’n rollende basis uit om jou privaatheid te beskerm. Belangstellings kan herlaai, tensy jy hulle verwyder.</translation>
 <translation id="3103660991484857065">Die installeerder kon nie die argief se saampersing omkeer nie. Laai Chromium asseblief weer af.</translation>
 <translation id="3130323860337406239">Chromium gebruik tans jou mikrofoon.</translation>
@@ -154,6 +157,7 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="4222932583846282852">Kanselleer tans …</translation>
 <translation id="4230135487732243613">Koppel jou Chromium-data aan hierdie rekening?</translation>
 <translation id="4271805377592243930">Kry hulp met Chromium</translation>
+<translation id="4281844954008187215">Diensbepalings</translation>
 <translation id="4285930937574705105">Kon weens 'n ongespesifiseerde fout nie installeer nie. As Chromium tans loop, maak dit asseblief toe en probeer weer.</translation>
 <translation id="4304713468139749426">Wagwoordbestuurder</translation>
 <translation id="4334294535648607276">Aflaai is voltooi.</translation>
@@ -297,6 +301,7 @@ Sommige kenmerke sal dalk nie beskikbaar wees nie. Spesifiseer 'n ander profielg
 <translation id="7025789849649390912">Installering is gestop.</translation>
 <translation id="705851970750939768">Dateer Chromium op</translation>
 <translation id="7067091210845072982">As 'n prent nie 'n nuttige beskrywing het nie, sal Chromium probeer om een vir jou te verskaf. Prente word na Google toe gestuur om beskrywings te skep.</translation>
+<translation id="7141270731789036260">Pasmaak Chrome-toetsweergawe</translation>
 <translation id="7173822816570314652">Jou organisasie vee Chromium-data uit wanneer dit <ph name="TIMEOUT_DURATION" /> lank nie gebruik is nie. Dit kan geskiedenis, outovul en aflaaie insluit.</translation>
 <translation id="718435575166326686">Chromium het kameratoestemming vir hierdie werf nodig</translation>
 <translation id="7196312274710523067">Kon nie Chromium begin nie. Probeer weer.</translation>
@@ -371,7 +376,6 @@ Chromium kan nie jou instellings herwin nie.</translation>
 <translation id="8619360774459241877">Begin tans Chromium …</translation>
 <translation id="8621669128220841554">Kon weens 'n ongespesifiseerde fout nie installeer nie. Laai Chromium asseblief weer af.</translation>
 <translation id="8648201657708811153">Google Chrome-toetsweergawe kan nie jou verstekblaaier gemaak word nie.</translation>
-<translation id="867492205098279939">{NUM_DEVICES,plural, =0{’n Chromium-uitbreiding het toegang tot MKT-toestelle gehad}=1{’n Chromium-uitbreiding het tans toegang tot 1 MKT-toestel}other{’n Chromium-uitbreiding het tans toegang tot # MKT-toestelle}}</translation>
 <translation id="8697124171261953979">Dit beheer ook watter bladsy gewys word wanneer jy Chromium begin of vanuit die omnikassie soek.</translation>
 <translation id="8704119203788522458">Dit is jou Chromium</translation>
 <translation id="8796602469536043152">Chromium het toestemming nodig om toegang te kry tot jou kamera en mikrofoon vir hierdie werf</translation>

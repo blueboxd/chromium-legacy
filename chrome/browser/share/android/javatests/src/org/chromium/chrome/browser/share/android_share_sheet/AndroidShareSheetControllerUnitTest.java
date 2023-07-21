@@ -214,7 +214,6 @@ public class AndroidShareSheetControllerUnitTest {
         ShadowLinkToTextCoordinator.setForceToFail(null);
         ShadowQrCodeDialog.sLastUrl = null;
         mWindow.destroy();
-        TrackerFactory.setTrackerForTests(null);
     }
 
     /**
@@ -763,7 +762,7 @@ public class AndroidShareSheetControllerUnitTest {
     // Work around shadow to assume runtime is at least U.
     // TODO(https://crbug.com/1420388): Switch to @Config(sdk=34) this once API 34 exists.
     @Implements(BuildCompat.class)
-    static class ShadowBuildCompatForU {
+    public static class ShadowBuildCompatForU {
         @Implementation
         protected static boolean isAtLeastU() {
             return true;

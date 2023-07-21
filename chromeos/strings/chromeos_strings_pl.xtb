@@ -9,6 +9,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (wątki: <ph name="THREAD_COUNT" />, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Dostępna jest nowa funkcja. Aby dowiedzieć się więcej, naciśnij klawisz strzałki w górę.</translation>
 <translation id="1059913517121127803">Nie udało się rozpocząć skanowania</translation>
+<translation id="1062823486781306604"><ph name="INDEX" /> z <ph name="COUNT" />, <ph name="NAME" />.</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">wykryto zaporę sieciową</translation>
 <translation id="1075811647922107217">Rozmiar strony</translation>
@@ -371,6 +372,7 @@
 <translation id="397105322502079400">Obliczanie...</translation>
 <translation id="39823212440917567">Zadania drukowania starsze niż <ph name="NUMBER_OF_DAYS" /> dni zostaną usunięte</translation>
 <translation id="3993704782688964914">Oprogramowanie urządzenia (<ph name="DEVICE_NAME" />) jest aktualne</translation>
+<translation id="3998976413398910035">Zarządzaj drukarkami</translation>
 <translation id="4003384961948020559">Niepowodzenie – odbiornik papieru jest pełny</translation>
 <translation id="4021031199988160623">Aby przetestować, przełącz na tryb laptopa</translation>
 <translation id="4034824040120875894">Drukarka</translation>
@@ -541,6 +543,7 @@
 <translation id="5257811368506016604">Włącz jasny tryb kolorów</translation>
 <translation id="5264277876637023664">Przeprowadź test procesora</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
+<translation id="527501763019887383">APN jest wyłączony.</translation>
 <translation id="5275828089655680674">Uruchom ponownie testy</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5286263799730375393">kolor podświetlenia klawiszy</translation>
@@ -586,6 +589,7 @@
 <translation id="5620281292257375798">Na użytek wewnętrzny</translation>
 <translation id="5649768706273821470">Posłuchaj</translation>
 <translation id="5655283760733841251">Zwiększ jasność klawiatury</translation>
+<translation id="5655776422854483175">Brak zadań drukowania</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5662240986744577912">przełącz filtr prywatności</translation>
 <translation id="5669267381087807207">Aktywowanie</translation>
@@ -605,6 +609,7 @@
 <translation id="5832805196449965646">Dodaj osobę</translation>
 <translation id="583281660410589416">Nieznany</translation>
 <translation id="5843706793424741864">Stopnie Fahrenheita</translation>
+<translation id="584953448295717128">APN jest wykrywany automatycznie.</translation>
 <translation id="5849570051105887917">Kod operatora macierzystego</translation>
 <translation id="5859603669299126575">Album Galeria sztuki</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
@@ -665,7 +670,7 @@
 <translation id="6278428485366576908">Motyw</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Włącz ciemny motyw</translation>
-<translation id="6285899124799306373">otwórz Menu z aplikacjami</translation>
+<translation id="628726841779494414">Zarządzaj drukarkami w ustawieniach drukarek</translation>
 <translation id="629550705077076970">przyciemnianie klawiatury</translation>
 <translation id="6302401976930124515">Test <ph name="TEST_NAME" /> został anulowany</translation>
 <translation id="631063167932043783">Aplikacja Odkrywaj</translation>
@@ -883,6 +888,7 @@
 <translation id="80398733265834479">Włącz automatyczny tryb kolorów</translation>
 <translation id="8041089156583427627">Prześlij opinię</translation>
 <translation id="8045012663542226664">Wyciszenie mikrofonu</translation>
+<translation id="8067126283828232460">APN jest połączony.</translation>
 <translation id="8075838845814659848">Stan naładowania</translation>
 <translation id="8076492880354921740">Karty</translation>
 <translation id="8082366717211101304">Nie udało się znaleźć DNS w aplikacjach na Androida</translation>
@@ -913,7 +919,6 @@
 <translation id="8312330582793120272">odtwórz multimedia</translation>
 <translation id="8318753676953949627">Brak obrazów</translation>
 <translation id="8329018942023753850">aplikacja Kalkulator</translation>
-<translation id="8335869473001018124">otwórz wyszukiwarkę</translation>
 <translation id="8336739000755212683">Zmień obraz konta na urządzeniu</translation>
 <translation id="8347227221149377169">Zadania drukowania</translation>
 <translation id="8351855506390808906">Mapowanie punktu styku</translation>
@@ -1029,6 +1034,7 @@
 <translation id="9111102763498581341">Odblokuj</translation>
 <translation id="9122602430962285795">Aby połączyć się ponownie, otwórz Ustawienia</translation>
 <translation id="9126720536733509015">Zapisz kilka stron w 1 pliku PDF</translation>
+<translation id="9133104754938025929">Wygaszacz ekranu działa tylko podczas ładowania, aby oszczędzać baterię.</translation>
 <translation id="9137526406337347448">Usługi Google</translation>
 <translation id="9138630967333032450">Lewy shift</translation>
 <translation id="9143347780818904997">na <ph name="MINUTES" /> min</translation>

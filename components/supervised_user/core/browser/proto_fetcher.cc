@@ -10,6 +10,7 @@
 
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
@@ -149,7 +150,7 @@ class FetcherImpl final : public ProtoFetcher<Response> {
 
   FetcherImpl(IdentityManager& identity_manager,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-              const std::string& payload,
+              StringPiece payload,
               const FetcherConfig& fetcher_config,
               Callback callback)
       : fetcher_(LaunchFetcher(identity_manager,
@@ -250,7 +251,6 @@ class FetcherImpl final : public ProtoFetcher<Response> {
   // Returns payload when it's eligible for the request type.
   absl::optional<std::string> GetRequestPayload() const {
     if (config_.method == FetcherConfig::Method::kGet) {
-      CHECK(payload_.empty()) << "Unexpected payload in GET request";
       return absl::nullopt;
     }
     return payload_;
@@ -301,14 +301,14 @@ class DeferredFetcherImpl final : public DeferredProtoFetcher<Response> {
 
   void Start(Callback callback) override {
     fetcher_ = std::make_unique<FetcherImpl<Response>>(
-        identity_manager_, url_loader_factory_, payload_, config_,
+        identity_manager_.get(), url_loader_factory_, payload_, config_,
         std::move(callback));
   }
 
  private:
   std::unique_ptr<FetcherImpl<Response>> fetcher_;
   std::string payload_;
-  IdentityManager& identity_manager_;
+  const raw_ref<IdentityManager, LeakedDanglingUntriaged> identity_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const FetcherConfig config_;
 };
@@ -471,6 +471,9 @@ RepeatableFetchManager<Request, Response>::MakeFetcher(
 template class RepeatableFetchManager<
     kids_chrome_management::ClassifyUrlRequest,
     kids_chrome_management::ClassifyUrlResponse>;
+template class RepeatableFetchManager<
+    kids_chrome_management::PermissionRequest,
+    kids_chrome_management::CreatePermissionRequestResponse>;
 
 // Fetcher factories.
 std::unique_ptr<ClassifyUrlFetcher> ClassifyURL(

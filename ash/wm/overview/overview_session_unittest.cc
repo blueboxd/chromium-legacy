@@ -66,6 +66,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
+#include "ash/wm/test/fake_window_state.h"
 #include "ash/wm/window_mini_view_header_view.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
@@ -4042,6 +4043,28 @@ TEST_F(TabletModeOverviewSessionTest, SnappingFullscreenWindow) {
   EXPECT_TRUE(WindowState::Get(window.get())->IsSnapped());
 }
 
+class ContinuousOverviewAnimationTest : public OverviewTestBase {
+ public:
+  ContinuousOverviewAnimationTest() = default;
+  ContinuousOverviewAnimationTest(const ContinuousOverviewAnimationTest&) =
+      delete;
+  ContinuousOverviewAnimationTest& operator=(
+      const ContinuousOverviewAnimationTest&) = delete;
+  ~ContinuousOverviewAnimationTest() override = default;
+
+  // OverviewTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kContinuousOverviewScrollAnimation,
+                              chromeos::features::kJelly},
+        /*disabled_features=*/{});
+    OverviewTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 class ClamshellScrollOverviewSessionTest : public OverviewTestBase {
  public:
   ClamshellScrollOverviewSessionTest() = default;
@@ -7312,29 +7335,6 @@ TEST_F(SplitViewOverviewSessionInClamshellTest,
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
-class TestWindowStateDelegate : public WindowStateDelegate {
- public:
-  TestWindowStateDelegate() = default;
-  TestWindowStateDelegate(const TestWindowStateDelegate&) = delete;
-  TestWindowStateDelegate& operator=(const TestWindowStateDelegate&) = delete;
-  ~TestWindowStateDelegate() override = default;
-
-  // WindowStateDelegate:
-  std::unique_ptr<PresentationTimeRecorder> OnDragStarted(
-      int component) override {
-    drag_in_progress_ = true;
-    return nullptr;
-  }
-  void OnDragFinished(bool cancel, const gfx::PointF& location) override {
-    drag_in_progress_ = false;
-  }
-
-  bool drag_in_progress() { return drag_in_progress_; }
-
- private:
-  bool drag_in_progress_ = false;
-};
-
 // Tests that when a split view window carries over to clamshell split view
 // while the divider is being dragged, the window resize is properly completed.
 TEST_F(SplitViewOverviewSessionInClamshellTest,
@@ -7342,8 +7342,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest,
   std::unique_ptr<aura::Window> snapped_window = CreateTestWindow();
   std::unique_ptr<aura::Window> overview_window = CreateTestWindow();
   WindowState* snapped_window_state = WindowState::Get(snapped_window.get());
-  TestWindowStateDelegate* snapped_window_state_delegate =
-      new TestWindowStateDelegate();
+  auto* snapped_window_state_delegate = new FakeWindowStateDelegate();
   snapped_window_state->SetDelegate(
       base::WrapUnique(snapped_window_state_delegate));
 

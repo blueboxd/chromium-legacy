@@ -50,6 +50,32 @@ BASE_DECLARE_FEATURE(kDefaultBrowserIntentsShowSettings);
 // Feature flag to log metrics for the edit menu.
 BASE_DECLARE_FEATURE(kIOSBrowserEditMenuMetrics);
 
+// Feature flag to enable the non-modal DB promo cooldown refactor separating
+// the cooldown periods for full screen and non-modal promos, as well as
+// Finchable cooldown period for non-modal promos.
+BASE_DECLARE_FEATURE(kNonModalDefaultBrowserPromoCooldownRefactor);
+
+// The default param value for the non-modal promo cooldown period, in days,
+// overridable through Finch.
+extern const base::FeatureParam<int>
+    kNonModalDefaultBrowserPromoCooldownRefactorParam;
+
+// Feature flag to enable the default browser promo generic and tailored train
+// experiment.
+BASE_DECLARE_FEATURE(kDefaultBrowserGenericTailoredPromoTrain);
+
+// Param values for the default browser promo generic and tailored train
+// experiment.
+enum class DefaultBrowserPromoGenericTailoredArm {
+  kOnlyGeneric,
+  kOnlyTailored,
+};
+
+// Feature param for the default browser promo generic and tailored train
+// experiment.
+extern const base::FeatureParam<DefaultBrowserPromoGenericTailoredArm>
+    kDefaultBrowserPromoGenericTailoredParam;
+
 // Feature flag that allows full screen default browser promos to be added to
 // the promo manager.
 BASE_DECLARE_FEATURE(kDefaultBrowserRefactoringPromoManager);
@@ -85,12 +111,11 @@ bool IsSearchWithEnabled();
 // Feature flag to hide search web in the edit menu.
 BASE_DECLARE_FEATURE(kIOSEditMenuHideSearchWeb);
 
-// Feature flag that shows iOS 15 context menu, instead of tooltip popover,
-// during a location bar long press gesture.
-BASE_DECLARE_FEATURE(kIOSLocationBarUseNativeContextMenu);
-
 // Feature flag that swaps the omnibox textfield implementation.
 BASE_DECLARE_FEATURE(kIOSNewOmniboxImplementation);
+
+// Feature flag to use direct upload for Lens searches.
+BASE_DECLARE_FEATURE(kIOSLensUseDirectUpload);
 
 // Feature flag to enable the Lens entrypoint in the home screen widget.
 BASE_DECLARE_FEATURE(kEnableLensInHomeScreenWidget);

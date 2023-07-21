@@ -1965,7 +1965,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 26
+          "shards": 27
         },
         "test": "browser_tests",
         "test_id_prefix": "ninja://chrome/test:browser_tests/"
@@ -3284,7 +3284,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 8
+          "shards": 9
         },
         "test_id_prefix": "ninja://:blink_web_tests/"
       },
@@ -7435,47 +7435,6 @@
         },
         "test": "content_browsertests",
         "test_id_prefix": "ninja://content/test:content_browsertests/"
-      },
-      {
-        "args": [
-          "--disable-features=BackForwardCache"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "bf_cache_content_unittests",
-        "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 10
-        },
-        "test": "content_unittests",
-        "test_id_prefix": "ninja://content/test:content_unittests/"
-      },
-      {
-        "args": [
-          "--disable-features=BackForwardCache",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.unit_tests.filter"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "bf_cache_unit_tests",
-        "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 10
-        },
-        "test": "unit_tests",
-        "test_id_prefix": "ninja://chrome/test:unit_tests/"
       }
     ],
     "isolated_scripts": [
@@ -7548,6 +7507,17 @@
   "linux-gcc-rel": {
     "additional_compile_targets": [
       "empty_main"
+    ]
+  },
+  "linux-v4l2-codec-rel": {
+    "additional_compile_targets": [
+      "image_processor_perf_test",
+      "video_decode_accelerator_tests",
+      "video_decode_accelerator_perf_tests",
+      "video_encode_accelerator_tests",
+      "video_encode_accelerator_perf_tests",
+      "v4l2_stateless_decoder",
+      "v4l2_unittest"
     ]
   }
 }

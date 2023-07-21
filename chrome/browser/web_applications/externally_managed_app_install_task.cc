@@ -11,7 +11,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/single_thread_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -91,12 +91,6 @@ void ExternallyManagedAppInstallTask::OnUrlLoaded(
       weak_ptr_factory_.GetWeakPtr(), std::move(result_callback));
 
   if (load_url_result == WebAppUrlLoader::Result::kUrlLoaded) {
-    // If we are not re-installing a placeholder, then no need to uninstall
-    // anything.
-    if (!install_options_.reinstall_placeholder) {
-      ContinueWebAppInstall(web_contents, std::move(retry_on_failure));
-      return;
-    }
     // Calling InstallWebAppWithOptions with the same URL used to install a
     // placeholder won't necessarily replace the placeholder app, because the
     // new app might be installed with a new AppId. To avoid this, always
@@ -149,7 +143,7 @@ void ExternallyManagedAppInstallTask::OnUrlLoaded(
       break;
   }
 
-  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(retry_on_failure),
                      ExternallyManagedAppManager::InstallResult(code)));
@@ -196,9 +190,10 @@ void ExternallyManagedAppInstallTask::UninstallPlaceholderApp(
   }
 
   // Otherwise, uninstall the placeholder app.
-  provider_->install_finalizer().UninstallExternalWebAppByUrl(
-      install_options_.install_url,
+  provider_->scheduler().RemoveInstallUrl(
+      std::move(app_id),
       ConvertExternalInstallSourceToSource(install_options_.install_source),
+      install_options_.install_url,
       webapps::WebappUninstallSource::kPlaceholderReplacement,
       base::BindOnce(&ExternallyManagedAppInstallTask::OnPlaceholderUninstalled,
                      weak_ptr_factory_.GetWeakPtr(), web_contents,
@@ -241,7 +236,7 @@ void ExternallyManagedAppInstallTask::InstallPlaceholder(
 
   if (app_id.has_value() && !install_options_.force_reinstall) {
     // No need to install a placeholder app again.
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(
             std::move(callback),

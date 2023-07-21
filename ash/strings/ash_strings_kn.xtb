@@ -32,6 +32,7 @@
 <translation id="1117719261843403176">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಟಾಗಲ್ ಮಾಡಿ. <ph name="STATE" />.</translation>
 <translation id="112308213915226829">ಶೆಲ್ಫ್ ಅನ್ನು ಸ್ವಯಂಮರೆಮಾಡು</translation>
 <translation id="1142002900084379065">ಇತ್ತೀಚಿನ ಫೋಟೋಗಳು</translation>
+<translation id="114221662579355151">ಕ್ಯಾಮರಾವನ್ನು ಬಳಸಲು ಅನುಮತಿ ಹೊಂದಿರುವ <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> ಮತ್ತು ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳು ಹಾಗೂ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೆ ಇದು ಕ್ಯಾಮರಾಗೆ ಆ್ಯಕ್ಸೆಸ್ ನೀಡುತ್ತದೆ. ನೀವು ವೆಬ್ ಪುಟವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಬೇಕಾಗಬಹುದು ಅಥವಾ ಆ್ಯಪ್ ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕಾಗಬಹುದು.</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> ಗೆ ಸಂಬಂಧಿಸಿದ ಮಾಹಿತಿ ಡೈಲಾಗ್ ಅನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="1150989369772528668">ಕ್ಯಾಲೆಂಡರ್</translation>
 <translation id="1153356358378277386">ಜೋಡಿ ಮಾಡಲಾದ ಸಾಧನಗಳು</translation>
@@ -118,16 +119,17 @@
 <translation id="14648076227129703">ಕ್ಯಾಮರಾವನ್ನು ಬಳಸಲು ಅನುಮತಿ ಹೊಂದಿರುವ <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> ಮತ್ತು ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೆ ಇದು ಕ್ಯಾಮರಾಗೆ ಆ್ಯಕ್ಸೆಸ್ ನೀಡುತ್ತದೆ</translation>
 <translation id="1467432559032391204">ಎಡಕ್ಕೆ</translation>
 <translation id="146902737843070955">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಈ ಬದಲಾವಣೆಯನ್ನು ವಿನಂತಿಸಿದ್ದಾರೆ</translation>
+<translation id="1469148162491666137">ಇದು ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿಗಳನ್ನು ಹೊಂದಿರುವ <ph name="APP1_NAME" />, <ph name="APP2_NAME" />, ಮತ್ತು ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳು ಹಾಗೂ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೆ ಆ್ಯಕ್ಸೆಸ್ ಅನ್ನು ನೀಡುತ್ತದೆ. ನೀವು ವೆಬ್ ಪುಟವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಬೇಕಾಗಬಹುದು ಅಥವಾ ಆ್ಯಪ್ ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕಾಗಬಹುದು.</translation>
 <translation id="147310119694673958">ಫೋನ್ ಬ್ಯಾಟರಿ <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="1479909375538722835">ಫ್ಲೋಟಿಂಗ್ ಆ್ಯಕ್ಸೆಸಿಬಿಲಿಟಿ ಮೆನು</translation>
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />, ಕ್ಯಾಲೆಂಡರ್ ವೀಕ್ಷಣೆಯನ್ನು ತೆರೆಯಲು Enter ಕೀ ಒತ್ತಿರಿ</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1487931858675166540"><ph name="SECOND_ITEM_TITLE" /> ಜೊತೆಗೆ <ph name="FIRST_ITEM_TITLE" /> ಅನ್ನು ಸ್ವ್ಯಾಪ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="1500926532737552529">ಎಲ್ಲಾ ಸಲಹೆಗಳನ್ನು ತೋರಿಸಿ</translation>
-<translation id="1503394326855300303">ಬಹು ಸೈನ್-ಇನ್ ಸೆಷನ್‌ನಲ್ಲಿ ಈ ಮಾಲೀಕರ ಖಾತೆಯೇ ಮೊದಲ ಸೈನ್-ಇನ್ ಮಾಡಿದ ಖಾತೆ ಆಗಿರಬೇಕು.</translation>
 <translation id="1510238584712386396">ಲಾಂಚರ್</translation>
 <translation id="1516740043221086139">'ಅಡಚಣೆ ಮಾಡಬೇಡಿ' ಆನ್ ಆಗಿದೆ.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{ನೋಟಿಫಿಕೇಶನ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ. ಒಂದು ಆ್ಯಪ್‌ಗೆ ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ಆಫ್ ಮಾಡಲಾಗಿದೆ}one{ನೋಟಿಫಿಕೇಶನ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ. # ಆ್ಯಪ್‌ಗಳಿಗೆ ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ಆಫ್ ಮಾಡಲಾಗಿದೆ}other{ನೋಟಿಫಿಕೇಶನ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ. # ಆ್ಯಪ್‌ಗಳಿಗೆ ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ಆಫ್ ಮಾಡಲಾಗಿದೆ}}</translation>
+<translation id="1523032696246003">ಬ್ಯಾಟರಿ ಮಟ್ಟ <ph name="BATTERY_PERCENTAGE" />% | ಬ್ಯಾಟರಿ ಚಾರ್ಜಿಂಗ್‌ ಪೂರ್ಣಗೊಳ್ಳುವುದಕ್ಕೆ ಬೇಕಾದ ಸಮಯ <ph name="TIME" /></translation>
 <translation id="1525508553941733066">ವಜಾಗೊಳಿಸಿ</translation>
 <translation id="1526448108126799339">ಹೊಸ ವಿಂಡೋದಲ್ಲಿ ಹೊಸ ಟ್ಯಾಬ್ ಅನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="1528259147807435347">ಕಳೆದ ವಾರ ಎಡಿಟ್ ಮಾಡಿದ್ದಾರೆ</translation>
@@ -140,6 +142,7 @@
 <translation id="1550523713251050646">ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳಿಗೆ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="1555130319947370107">ನೀಲಿ</translation>
 <translation id="1557622599341396706">ಡೆಸ್ಕ್ ಹೆಸರನ್ನು ತೋರಿಸಿ</translation>
+<translation id="1569384531973824928">ಇದು ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿಗಳನ್ನು ಹೊಂದಿರುವ ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೆ ಆ್ಯಕ್ಸೆಸ್ ನೀಡುತ್ತದೆ. ನೀವು ವೆಬ್ ಪುಟವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಬೇಕಾಗಬಹುದು ಅಥವಾ ಆ್ಯಪ್ ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕಾಗಬಹುದು.</translation>
 <translation id="1576623706766186887">ಮ್ಯಾಗ್ನಿಫೈಯರ್ ಆನ್ ಆಗಿರುವಾಗ ಝೂಮ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="1586324912145647027">1 ರಿಂದ 8 ನೇ ಡೆಸ್ಕ್‌ವರೆಗೆ ಹೋಗಿ</translation>
 <translation id="1589090746204042747">ಈ ಸೆಶನ್‌ನಲ್ಲಿ ನೀವು ನಡೆಸುವ ಎಲ್ಲಾ ಚಟುವಟಿಕೆಯನ್ನು ಪ್ರವೇಶಿಸುವುದು</translation>
@@ -160,7 +163,6 @@
 <translation id="1677507110654891115"><ph name="FEATURE_NAME" /> ಅನ್ನು ಕನೆಕ್ಟ್ ಮಾಡಲಾಗಿಲ್ಲ.</translation>
 <translation id="1677582821739292812">ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಅನ್ನು ಯಾರೋ ನೋಡುತ್ತಿದ್ದಾರೆ</translation>
 <translation id="1679841710523778799">ಪ್ರಖರತೆ ಹೆಚ್ಚು ಮಾಡುವಿಕೆಯನ್ನು ಆನ್‌ ಮಾಡಿ</translation>
-<translation id="1683399938733266832">CPU ಪ್ರಸ್ತುತ ಬಳಕೆ: <ph name="CPU_USEAGE" />%</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> ಟೈಮರ್ · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 ವಿಳಾಸ: <ph name="ADDRESS" /></translation>
@@ -202,7 +204,6 @@
 <translation id="1823873187264960516">ಇಥರ್ನೆಟ್: <ph name="ADDRESS" /></translation>
 <translation id="1824922790784036530">ಸ್ಥಳ ಪ್ರವೇಶವನ್ನು ಆನ್ ಮಾಡಿ</translation>
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" /> ಅನ್ನು ಅನ್‌ಪಿನ್ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="183465528887726323">ಹಾಟ್‌ಸ್ಪಾಟ್ ಅನ್ನು ಬಳಸಲು ಮೊಬೈಲ್ ಡೇಟಾಗೆ ಕನೆಕ್ಟ್ ಮಾಡಿ</translation>
 <translation id="1838895407229022812">ನೈಟ್ ಲೈಟ್ ಆಫ್ ಆಗಿದೆ.</translation>
 <translation id="1854180393107901205">ಬಿತ್ತರಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ</translation>
 <translation id="1862380676329487333">ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ ಮತ್ತು ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>
@@ -226,7 +227,6 @@
 <translation id="1961239773406905488">ಕ್ಯಾಮರಾ ಪೂರ್ವವೀಕ್ಷಣೆಯನ್ನು ಮರೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">ಪರದೆಯನ್ನು ಲಾಕ್ ಮಾಡಿ</translation>
-<translation id="1962972976741217487">1 ಸಾಧನವು ನಿಮ್ಮ <ph name="DEVICE_NAME" /> ಹಾಟ್‌ಸ್ಪಾಟ್‌ಗೆ ಕನೆಕ್ಟ್ ಆಗಿದೆ</translation>
 <translation id="1967970931040389207">ಹಾಟ್‌ಸ್ಪಾಟ್ ಆನ್ ಮಾಡಿ</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">ಹಾಯ್‌, <ph name="USERNAME" /></translation>
@@ -315,6 +315,7 @@
 <translation id="2369165858548251131">ಚೈನಿಸ್ ಭಾಷೆಯಲ್ಲಿ "ನಮಸ್ಕಾರ"</translation>
 <translation id="2382875860893882175">ಬಿತ್ತರಿಸುವಿಕೆಯನ್ನು ಪ್ರಸ್ತುತ ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ. ನೀವು ಯಾವುದೇ ಸಮಯದಲ್ಲಿ ಬಿತ್ತರಿಸುವಿಕೆಯನ್ನು ಪುನರಾರಂಭಿಸಬಹುದು ಅಥವಾ ಬಿತ್ತರಿಸುವುದನ್ನು ನಿಲ್ಲಿಸಬಹುದು.</translation>
 <translation id="2386292613071805067">ಪುಟದಲ್ಲಿರುವ ಎಲ್ಲವನ್ನೂ ಆಯ್ಕೆಮಾಡಿ</translation>
+<translation id="2396594569364254378">ಬಳಸಲಾದ ಮೆಮೊರಿ <ph name="USED_MEMORY" /> | <ph name="TOTAL_MEMORY" /> ಒಟ್ಟು ಮೆಮೊರಿ</translation>
 <translation id="2397416548179033562">Chrome ಮೆನು ತೋರಿಸು</translation>
 <translation id="240006516586367791">ಮೀಡಿಯಾ ನಿಯಂತ್ರಣಗಳು</translation>
 <translation id="2402411679569069051">ನಿಮ್ಮ Chromebook ಅನ್‌ಲಾಕ್ ಮಾಡಲು, ನಿಮ್ಮ ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಬಳಸಿ ಅಥವಾ ನಿಮ್ಮ ಫೋನ್ ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
@@ -373,7 +374,6 @@
 <translation id="263399434338050016">"ಎಲ್ಲವನ್ನೂ ಆಯ್ಕೆಮಾಡಿ"</translation>
 <translation id="2644422758626431000">ವಿಂಡೋವನ್ನು ಎಡಕ್ಕೆ ಪಿನ್ ಮಾಡಿ</translation>
 <translation id="2645435784669275700">ChromeOS</translation>
-<translation id="2647092942972307022">ಒಟ್ಟು <ph name="TOTAL_MEMORY" /> ರಲ್ಲಿ <ph name="USED_MEMORY" /> ಲಭ್ಯವಿದೆ</translation>
 <translation id="2653019840645008922">ವಿಂಡೋ ಕ್ಯಾಪ್ಚರ್</translation>
 <translation id="2653659639078652383">ಸಲ್ಲಿಸಿ</translation>
 <translation id="2658778018866295321">ಕ್ಲಿಕ್ ಮಾಡಿ ಮತ್ತು ಡ್ರ್ಯಾಗ್ ಮಾಡಿ</translation>
@@ -512,6 +512,7 @@
 <translation id="3294437725009624529">ಅತಿಥಿ</translation>
 <translation id="3298690094479023523">ನಿಮ್ಮ ಪಿನ್ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಇನ್ನೂ ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3300193645498960160">ಮ್ಯೂಟ್ ಮಾಡಿದ್ದಾಗ ನೀವು ಮಾತನಾಡಿದರೆ ನಿಮಗೆ ನೋಟಿಫಿಕೇಶನ್ ಸಿಗುತ್ತದೆ. ಆಡಿಯೋ ಎಂದಿಗೂ ನಿಮ್ಮ ಸಾಧನವನ್ನು ತೊರೆಯುವುದಿಲ್ಲ.</translation>
+<translation id="3306386552969601301"><ph name="DEVICECOUNT" /> ಸಾಧನಗಳು <ph name="DEVICE_NAME" /> ಹಾಟ್‌ಸ್ಪಾಟ್‌ಗೆ ಕನೆಕ್ಟ್ ಆಗಿವೆ</translation>
 <translation id="3307642347673023554">ಲ್ಯಾಪ್‌ಟಾಪ್ ಮೋಡ್‌ಗೆ ಬದಲಿಸಲಾಗಿದೆ</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" />, ಆನಂತರ ಕೂಡಾ ಸೈನ್ ಇನ್ ಮಾಡಬಹುದು.</translation>
 <translation id="3321628682574733415">ತಪ್ಪಾದ ಪೋಷಕ ಕೋಡ್</translation>
@@ -551,6 +552,7 @@
 <translation id="3445288400492335833"><ph name="MINUTES" /> ನಿಮಿಷ</translation>
 <translation id="3445925074670675829">USB-C ಸಾಧನ</translation>
 <translation id="3455468639467374593">ಟೆಂಪ್ಲೇಟ್‌‌, <ph name="TEMPLATE_NAME" /></translation>
+<translation id="3456931972722214204">1 ಸಾಧನವು <ph name="DEVICE_NAME" /> ಹಾಟ್‌ಸ್ಪಾಟ್‌ಗೆ ಕನೆಕ್ಟ್ ಆಗಿದೆ</translation>
 <translation id="346243998268439747">ಝೂಮ್‌ ಮಟ್ಟವನ್ನು ಮರುಹೊಂದಿಸಿ</translation>
 <translation id="3465223694362104965">ನೀವು ಕೊನೆಯದಾಗಿ ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗಿನಿಂದ ಇನ್ನೊಂದು ಕೀಬೋರ್ಡ್ ಈ ಸಾಧನಕ್ಕೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ. ನೀವು ಈ ಕೀಬೋರ್ಡ್ ಬಳಸುವ ಮೊದಲು ಅದರ ಮೇಲಿನ ನಿಮ್ಮ ನಂಬಿಕೆಯನ್ನು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಿ.</translation>
 <translation id="3465356146291925647">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿರ್ವಹಿಸಿದ್ದಾರೆ</translation>
@@ -597,7 +599,6 @@
 <translation id="3621202678540785336">ಇನ್‌ಪುಟ್</translation>
 <translation id="3621712662352432595">ಆಡಿಯೋ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="3626281679859535460">ಪ್ರಕಾಶಮಾನ</translation>
-<translation id="3629640897379005903">ಹಾಟ್‌ಸ್ಪಾಟ್ ವಿವರಗಳನ್ನು ತೋರಿಸಿ. ಹಾಟ್‌ಸ್ಪಾಟ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="3630697955794050612">ಆಫ್</translation>
 <translation id="3631369015426612114">ಕೆಳಗಿನವುಗಳಿಂದ ಅಧಿಸೂಚನೆಗಳನ್ನು ಅನುಮತಿಸಿ</translation>
 <translation id="3633097874324966332">ನಿಮ್ಮ ಸಾಧನವನ್ನು ಜೋಡಿಸಲು ಬ್ಲೂಟೂತ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
@@ -645,6 +646,7 @@
 <translation id="3799080171973636491">ನೀವು ಪೂರ್ಣ ಪರದೆ ವರ್ಧಕದ ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ಒತ್ತಿದ್ದೀರಿ. ನೀವು ಅದನ್ನು ಆನ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="380165613292957338">ಹಾಯ್, ನಾನು ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು?</translation>
 <translation id="3804737937830804242">ಕ್ಯಾಮರಾ ಕುಗ್ಗಿಸಿ</translation>
+<translation id="3824784079442479685">ಕ್ಯಾಮರಾವನ್ನು ಬಳಸಲು ಅನುಮತಿ ಹೊಂದಿರುವ <ph name="APP_NAME" />, ಮತ್ತು ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳು ಹಾಗೂ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೆ ಇದು ಕ್ಯಾಮರಾಗೆ ಆ್ಯಕ್ಸೆಸ್ ನೀಡುತ್ತದೆ. ನೀವು ವೆಬ್ ಪುಟವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಬೇಕಾಗಬಹುದು ಅಥವಾ ಆ್ಯಪ್ ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕಾಗಬಹುದು.</translation>
 <translation id="3826099427150913765">ಪಾಸ್‌ವರ್ಡ್‌ಗೆ ಬದಲಿಸಿ</translation>
 <translation id="383058930331066723">ಬ್ಯಾಟರಿ ಸೇವರ್‌ ಮೋಡ್‌ ಆನ್ ಆಗಿದೆ</translation>
 <translation id="383629559565718788">ಕೀಬೋರ್ಡ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
@@ -700,6 +702,7 @@
 <translation id="4066027111132117168">ಪ್ರಕ್ರಿಯೆಯಲ್ಲಿದೆ, <ph name="REMAINING_TIME" /></translation>
 <translation id="4069532248403319695">ಡೌನ್‌ಲೋಡ್‌ಗಳ ಪುಟವನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="4072264167173457037">ಮಧ್ಯಮ ಸಿಗ್ನಲ್</translation>
+<translation id="4076455981957565732"><ph name="NUM_TURNED_IN" />/<ph name="TOTAL_NUM_OF_SUBMISSIONS" /> ಸ್ವೀಕರಿಸಲಾಗಿದೆ • <ph name="NUM_GRADED" /> ಗ್ರೇಡ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="4086921558679520050">ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿನ ಭೌತಿಕ ಮೈಕ್ ಸ್ವಿಚ್ ಅನ್ನು ಆನ್ ಮಾಡಿ</translation>
 <translation id="4101772068965291327">ಹೋಮ್ ಅನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="4112140312785995938">ಹಿಂದಕ್ಕೆ ಸೀಕ್ ಮಾಡಿ</translation>
@@ -736,7 +739,6 @@
 <translation id="423685346499232137">ಈ ಸಮಯದಲ್ಲಿ ವಿಷಯವನ್ನು ನಕಲಿಸಲು ಅಥವಾ ಅಂಟಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4240486403425279990">ಅವಲೋಕನ ಮೋಡ್‌</translation>
-<translation id="4240756737570479726">ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ…</translation>
 <translation id="4242533952199664413">ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆ</translation>
 <translation id="4247123849143712100">ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ ಮತ್ತು ಶಟ್ ಡೌನ್ ಮಾಡಿ</translation>
 <translation id="4250229828105606438">ಸ್ಕ್ರೀನ್‌ಶಾಟ್</translation>
@@ -763,6 +765,7 @@
 <translation id="4324840740119394760">ಕ್ಯಾಮರಾವನ್ನು ಬಳಸಲು ಅನುಮತಿ ಹೊಂದಿರುವ <ph name="APP_NAME" /> ಮತ್ತು ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೆ ಇದು ಕ್ಯಾಮರಾಗೆ ಆ್ಯಕ್ಸೆಸ್ ನೀಡುತ್ತದೆ</translation>
 <translation id="4333628967105022692">ಅನೇಕ ಬಳಕೆದಾರರು ಸೈನ್ ಇನ್ ಆಗಿರುವಾಗ ಲ್ಯಾಕ್ರೋಸ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="4338109981321384717">ಭೂತಕನ್ನಡಿ</translation>
+<translation id="4356872429719185452">ಹಾಟ್‌ಸ್ಪಾಟ್ ವಿವರಗಳನ್ನು ತೋರಿಸಿ. ಹಾಟ್‌ಸ್ಪಾಟ್ ಆನ್ ಮಾಡಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="4371348193907997655">ಕ್ಯಾಸ್ಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="4375482231364171368">ವಿಳಾಸ ಪಟ್ಟಿಯಲ್ಲಿ ಹುಡುಕಿ</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ ಶೇಕಡಾ <ph name="SIGNAL_STRENGTH" /> ಶೇಕಡಾ</translation>
@@ -859,6 +862,7 @@
 <translation id="4752784485658729358">6 ಉಳಿಸಿದ ಡೆಸ್ಕ್‌ಗಳನ್ನು ಮಾತ್ರ ಅನುಮತಿಸಲಾಗಿದೆ. ಹೊಸದನ್ನು ಉಳಿಸಲು ಡೆಸ್ಕ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ.</translation>
 <translation id="4759238208242260848">ಡೌನ್‌ಲೋಡ್‌ಗಳು</translation>
 <translation id="4762573482154983647">ಆ್ಯಪ್‌ಗಳನ್ನು ಮರೆಮಾಡಿ</translation>
+<translation id="4763885921995354846">ಕ್ಯಾಮರಾವನ್ನು ಬಳಸಲು ಅನುಮತಿ ಹೊಂದಿರುವ ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೆ ಇದು ಕ್ಯಾಮರಾಗೆ ಆ್ಯಕ್ಸೆಸ್ ನೀಡುತ್ತದೆ. ನೀವು ವೆಬ್ ಪುಟವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಬೇಕಾಗಬಹುದು ಅಥವಾ ಆ್ಯಪ್ ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕಾಗಬಹುದು.</translation>
 <translation id="4774338217796918551">ನಾಳೆ <ph name="COME_BACK_TIME" /> ಸಮಯಕ್ಕೆ ಹಿಂತಿರುಗಿ.</translation>
 <translation id="4776584068981882959">ಇನ್ನೂ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> ಗಾಗಿ ಪಾಸ್‌ವರ್ಡ್</translation>
@@ -886,6 +890,7 @@
 <translation id="4871905435473761992">ಹಾಟ್‌ಸ್ಪಾಟ್ ವಿವರಗಳನ್ನು ತೋರಿಸಿ. ನಿಮ್ಮ ಮೊಬೈಲ್ ನೆಟ್‌ವರ್ಕ್ ಹಾಟ್‌ಸ್ಪಾಟ್ ಅನ್ನು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="4872237917498892622">Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
 <translation id="4872852897273142380">ಬುಕ್‌ಮಾರ್ಕ್‌ ಪಟ್ಟಿಯನ್ನು ಫೋಕಸ್‌ನಲ್ಲಿರಿಸಿ ಅಥವಾ ಹೈಲೈಟ್‌ ಮಾಡಿ (ತೋರಿಸಿದ್ದರೆ)</translation>
+<translation id="4881323000405981760">Linux ಆ್ಯಪ್‌ಗಳಲ್ಲಿ ಎಫೆಕ್ಟ್‌ಗಳನ್ನು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ</translation>
 <translation id="4881695831933465202">ತೆರೆ</translation>
 <translation id="4889868803215848840">ಸಲಹೆಗಳನ್ನು ಸುಧಾರಿಸಲು ಐಚ್ಛಿಕ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಒದಗಿಸಿ:</translation>
 <translation id="4890187583552566966">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು Google Assistant ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ.</translation>
@@ -929,7 +934,6 @@
 <translation id="5034421018520995080">ಪುಟದ ಮೇಲಿನ ಭಾಗಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ಸಾಧನವು ಹೊಸ ಫೋನ್ ಒಂದಕ್ಕೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ</translation>
 <translation id="5035389544768382859">ಡಿಸ್‌ಪ್ಲೇ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು ಖಚಿತಪಡಿಸಿ</translation>
-<translation id="5038863510258510803">ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="5042305953558921026">ಅವಲೋಕನ ಮೋಡ್‌ ಕೀ</translation>
 <translation id="5043679421800073804">ಶೆಲ್ಫ್‌ನಲ್ಲಿರುವ ಕೊನೆಯ ಐಕಾನ್ ಅನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ ಅಥವಾ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="504465286040788597">ಹಿಂದಿನ ಪ್ಯಾರಾಗ್ರಾಫ್</translation>
@@ -985,7 +989,6 @@
 <translation id="5297704307811127955">ಆಫ್</translation>
 <translation id="5300589172476337783">ತೋರಿಸಿ</translation>
 <translation id="5302048478445481009">ಭಾಷೆ</translation>
-<translation id="5303783651764314393"><ph name="DEVICECOUNT" /> ಸಾಧನಗಳು ನಿಮ್ಮ <ph name="DEVICE_NAME" /> ಹಾಟ್‌ಸ್ಪಾಟ್‌ಗೆ ಕನೆಕ್ಟ್ ಆಗಿವೆ</translation>
 <translation id="5308380583665731573">ಸಂಪರ್ಕಿಸು</translation>
 <translation id="5313326810920013265">ಬ್ಲೂಟೂತ್‌‌ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="5314219114274263156">ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡಿಂಗ್ ತೆಗೆದುಕೊಳ್ಳಲಾಗಿದೆ</translation>
@@ -1062,6 +1065,7 @@
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5618148318840095371">ನಾವು ನಿಮ್ಮನ್ನು ಉತ್ತಮ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಬದಲಿಸಿದ್ದೇವೆ</translation>
 <translation id="5619862035903135339">ನಿರ್ವಾಹಕರ ನೀತಿಯ ಪ್ರಕಾರ ಸ್ಕ್ರೀನ್ ಕ್ಯಾಪ್ಚರ್ ಮೋಡ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತದೆ</translation>
+<translation id="5620979661744857819">ಇದು ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿಗಳನ್ನು ಹೊಂದಿರುವ <ph name="APP_NAME" /> ಮತ್ತು ಎಲ್ಲಾ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೆ ಆ್ಯಕ್ಸೆಸ್ ಅನ್ನು ನೀಡುತ್ತದೆ. ನೀವು ವೆಬ್ ಪುಟವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಬೇಕಾಗಬಹುದು ಅಥವಾ ಆ್ಯಪ್ ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕಾಗಬಹುದು.</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5627392655516693966">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="5646376287012673985">ಸ್ಥಳ</translation>
@@ -1109,10 +1113,12 @@
 <translation id="5825969630400862129">ಕನೆಕ್ಟ್ ಮಾಡಿದ ಸಾಧನಗಳ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> ನಲ್ಲಿ <ph name="ROUTE_TITLE" /> ನಿಲ್ಲಿಸಿ</translation>
 <translation id="5841296711770970362">ಮುಂದಿನ ಟ್ರ್ಯಾಕ್‌ಗೆ ಹೋಗಿ</translation>
+<translation id="5842553299352339114"><ph name="DEVICE_NAME" /> ಹಾಟ್‌ಸ್ಪಾಟ್ ಆನ್ ಆಗಿದೆ, ಯಾವುದೇ ಸಾಧನಗಳು ಕನೆಕ್ಟ್ ಆಗಿಲ್ಲ</translation>
 <translation id="584525477304726060">ಹಿಗ್ಗಿಸಲು ಹೋಲ್ಡ್ ಮಾಡಿ</translation>
 <translation id="5856638668464565213"><ph name="NETWORK_NAME" /> ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿಲ್ಲ.</translation>
 <translation id="5860033963881614850">ಆಫ್</translation>
 <translation id="5860491529813859533">ಆನ್ ಮಾಡಿ</translation>
+<translation id="5864748620896638071">ಬ್ಯಾಟರಿ ಮಟ್ಟ <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="5867217927013474703">ನೆಟ್‌ವರ್ಕ್ ಮಾಹಿತಿಯನ್ನು ಸಂಗ್ರಹಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="5867606971598166637">ನಿಮ್ಮ ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಸ್ಕ್ರೀನ್‌ಗಳನ್ನು ಮಾನಿಟರ್ ಮಾಡುತ್ತಿದ್ದಾರೆ</translation>
 <translation id="5876666360658629066">ಪೋಷಕ ಕೋಡ್ ಅನ್ನು ನಮೂದಿಸಿ</translation>
@@ -1321,7 +1327,6 @@
 <translation id="6752912906630585008"><ph name="REMOVED_DESK" /> ಡೆಸ್ಕ್ ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ ಮತ್ತು <ph name="RECEIVE_DESK" /> ಡೆಸ್ಕ್‌ನೊಂದಿಗೆ ವಿಲೀನಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="6753390234084146956">ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="6757237461819837179">ಯಾವುದೇ ಮೀಡಿಯಾ ಪ್ಲೇ ಆಗುತ್ತಿಲ್ಲ</translation>
-<translation id="6759628406555734414">ಹಾಟ್‌ಸ್ಪಾಟ್ ವಿವರಗಳನ್ನು ತೋರಿಸಿ. ಹಾಟ್‌ಸ್ಪಾಟ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="6768043681523654438">ಸಂಗ್ರಹಣೆ</translation>
 <translation id="6777216307882431711">ಸಂಪರ್ಕಿತ USB-C ಸಾಧನಗಳನ್ನು ಚಾರ್ಜ್ ಮಾಡುತ್ತಿದೆ</translation>
 <translation id="6781002679438061620">ಡೆಸ್ಕ್ 9</translation>
@@ -1371,6 +1376,7 @@
 <translation id="6981291220124935078">ಆ್ಯಕ್ಸೆಸ್ ಅನ್ನು ಆನ್ ಮಾಡಿ</translation>
 <translation id="6981982820502123353">ಪ್ರವೇಶ</translation>
 <translation id="698231206551913481">ಒಮ್ಮೆ ಈ ಬಳಕೆದಾರರನ್ನು ತೆಗೆದುಹಾಕಿದಾಗ ಈ ಬಳಕೆದಾರರೊಂದಿಗೆ ಸಂಯೋಜಿತವಾಗಿರುವ ಎಲ್ಲಾ ಫೈಲ್‌ಗಳು ಮತ್ತು ಸ್ಥಳೀಯ ಡೇಟಾವನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಲಾಗುತ್ತದೆ.</translation>
+<translation id="7004910047186208204">ಮೊಬೈಲ್ ಡೇಟಾಗೆ ಕನೆಕ್ಟ್ ಮಾಡಿ</translation>
 <translation id="7005239792648594238">ಪ್ರಾರಂಭಿಸಲು ಆ್ಯಪ್ ತೆರೆಯಿರಿ</translation>
 <translation id="7007983414944123363">ನಿಮ್ಮ ಪಿನ್ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="7014684956566476813"><ph name="DEVICE_NAME" /> ಹೆಸರಿನ ಸಾಧನಕ್ಕೆ ಕನೆಕ್ಟ್ ಮಾಡಲಾಗಿದೆ</translation>
@@ -1409,7 +1415,6 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> ನಲ್ಲಿ ಹಳೆಯ ರೆಸಲ್ಯೂಷನ್‌ಗೆ ಹಿಂತಿರುಗಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7180611975245234373">ರಿಫ್ರೆಶ್ ಮಾಡಿ</translation>
-<translation id="7187711731540696127">ನಿಮ್ಮ <ph name="DEVICE_NAME" /> ಹಾಟ್‌ಸ್ಪಾಟ್ ಆನ್ ಆಗಿದೆ, ಯಾವುದೇ ಸಾಧನಗಳು ಕನೆಕ್ಟ್ ಆಗಿಲ್ಲ</translation>
 <translation id="7188494361780961876">ಮೆನುವನ್ನು ಪರದೆಯ ಮೇಲ್ಭಾಗದ ಎಡತುದಿಗೆ ಸರಿಸಲಾಗಿದೆ.</translation>
 <translation id="7189412385142492784">ಶುಕ್ರ ಗ್ರಹ ಎಷ್ಟು ದೂರದಲ್ಲಿದೆ</translation>
 <translation id="7198435252016571249">ಕ್ಯಾಮರಾವನ್ನು ಕೆಳಗಿನ ಬಲ ಮೂಲೆಯಲ್ಲಿ ಸ್ನ್ಯಾಪ್ ಮಾಡಲಾಗಿದೆ. ಸಿಸ್ಟಮ್ ಮೇಲ್ಮೈ ಜೊತೆಗೆ ಸಂಘರ್ಷ.</translation>
@@ -1458,7 +1463,6 @@
 <translation id="743058460480092004">ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೋಫೋನ್ ಬಳಕೆಯಲ್ಲಿವೆ.</translation>
 <translation id="7452560014878697800">ಆ್ಯಪ್‌ವೊಂದು ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಬಳಸುತ್ತಿದೆ</translation>
 <translation id="7453330308669753048">ಹುಡುಕಾಟ ಇತಿಹಾಸದ ಫಲಿತಾಂಶವನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ</translation>
-<translation id="7455047553373871740"><ph name="BATTERY_PERCENTAGE" />% | ಭರ್ತಿಯಾಗಲು ಬೇಕಾದ ಸಮಯ <ph name="TIME" /></translation>
 <translation id="7459485586006128091">ಆಂತರಿಕ ದೋಷದಿಂದಾಗಿ, ಹಾಟ್‌ಸ್ಪಾಟ್ ಅನ್ನು ಆಫ್ ಮಾಡಲಾಗಿದೆ. ಕೆಲವು ನಿಮಿಷಗಳ ನಂತರ ಮರುಸಂಪರ್ಕಿಸಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="7461924472993315131">ಪಿನ್</translation>
 <translation id="746232733191930409">ಸ್ಕ್ರೀನ್ ರೆಕಾರ್ಡಿಂಗ್ ಮೋಡ್</translation>
@@ -1489,6 +1493,7 @@
 <translation id="7561982940498449837">ಮೆನು ಮುಚ್ಚಿರಿ</translation>
 <translation id="7564874036684306347">ವಿಂಡೋಗಳನ್ನು ಬೇರೊಂದು ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗೆ ಸರಿಸಿದರೆ, ಅದು ಅನಿರೀಕ್ಷಿತ ವರ್ತನೆಗೆ ಕಾರಣವಾಗಬಹುದು. ಆನಂತರ ಬರುವ ಅಧಿಸೂಚನೆಗಳು, ವಿಂಡೋಗಳು ಮತ್ತು ಡೈಲಾಗ್‌ಗಳು ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗಳ ನಡುವೆ ವಿಭಜನೆಯಾಗಬಹುದು.</translation>
 <translation id="7569509451529460200">ಬ್ರೈಲ್ ಹಾಗೂ ChromeVox ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
+<translation id="7571361473021531288">ಬ್ಯಾಟರಿ ಮಟ್ಟ <ph name="BATTERY_PERCENTAGE" />% | ಬ್ಯಾಟರಿ ಬಳಕೆ <ph name="TIME" /> ಉಳಿದಿದೆ</translation>
 <translation id="7573585051776738856">ಸಕ್ರಿಯ ವಿಂಡೋ ಬಲಭಾಗದಲ್ಲಿ ಡಾಕ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="7579778809502851308">ಸ್ಕ್ರೀನ್ ಕ್ಯಾಪ್ಚರ್</translation>
 <translation id="7593891976182323525">ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
@@ -1526,6 +1531,7 @@
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 ನೋಟಿಫಿಕೇಶನ್}one{# ನೋಟಿಫಿಕೇಶನ್‍ಗಳು}other{# ನೋಟಿಫಿಕೇಶನ್‍ಗಳು}}</translation>
 <translation id="7723703419796509666">ಡೆವಲಪರ್ ಪರಿಕರಗಳ ಕನ್ಸೋಲ್ ಅನ್ನು ತೋರಿಸಿ ಅಥವಾ ಮರೆಮಾಡಿ</translation>
 <translation id="7724603315864178912">ಕತ್ತರಿಸು</translation>
+<translation id="7725108879223146004">ಹಾಟ್‌ಸ್ಪಾಟ್ ವಿವರಗಳನ್ನು ತೋರಿಸಿ. ಹಾಟ್‌ಸ್ಪಾಟ್ ಆಫ್ ಮಾಡಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="7727952505535211425">ಹೊಸ ಟ್ಯಾಬ್‌ ಒಂದರಲ್ಲಿನ ವಿಳಾಸ ಪಟ್ಟಿಯಲ್ಲಿ ವೆಬ್‌ಸೈಟ್ ಅನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="77365090426890123">ಮೆಮೊರಿ ಬಳಕೆ</translation>
 <translation id="7742327441377685481">ಯಾವುದೇ ಅಧಿಸೂಚನೆಗಳಿಲ್ಲ</translation>
@@ -1583,6 +1589,7 @@
 <translation id="797512352675305461">ಫುಲ್‌ಸ್ಕ್ರೀನ್ ಮ್ಯಾಗ್ನಿಫೈಯರ್ ಅನ್ನು ಆನ್ ಅಥವಾ ಆಫ್ ಮಾಡಿ</translation>
 <translation id="7977927628060636163">ಮೊಬೈಲ್ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗೆ ಹುಡುಕಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="7982789257301363584">ನೆಟ್‌ವರ್ಕ್</translation>
+<translation id="7982878511129296052">ಆಫ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="7984197416080286869">ತೀರಾ ಹೆಚ್ಚು ಫಿಂಗರ್‌ಪ್ರಿಂಟ್ ಪ್ರಯತ್ನಗಳು</translation>
 <translation id="798779949890829624">ಈ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು ನಿಮ್ಮ ನಿರ್ವಾಹಕರ ಮೂಲಕ ನಿರ್ವಹಿಸಲ್ಪಡುತ್ತದೆ</translation>
 <translation id="799296642788192631">ಪ್ರಮುಖ ಫೈಲ್‌ಗಳನ್ನು ನೀವು ಪಿನ್ ಮಾಡಬಹುದು. ಪಿನ್ ಮಾಡಲು, ಐಟಂ ಮೇಲೆ ಹೋವರ್ ಮಾಡಿ ಅಥವಾ ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ ಮತ್ತು ಐಟಂ ಮೇಲೆ ಬಲ ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
@@ -1660,6 +1667,7 @@
 <translation id="8308637677604853869">ಹಿಂದಿನ ಮೆನು</translation>
 <translation id="830868413617744215">ಬೀಟಾ</translation>
 <translation id="8314772463905284467">CAPS LOCK ಆನ್ ಆಗಿದೆ</translation>
+<translation id="8315514906653279104">ಆನ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8345019317483336363"><ph name="WINDOW_TITLE" /> ವಿಂಡೋ ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8349964124165471584">ಹೊಸ ವಿಂಡೋದಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
@@ -1810,6 +1818,7 @@
 <translation id="9024331582947483881">ಪೂರ್ಣ ಪರದೆ</translation>
 <translation id="9029736946581028033">ಸಾಧನವು ಶೀಘ್ರದಲ್ಲಿ ಆಫ್ ಆಗುತ್ತದೆ</translation>
 <translation id="9030319654231318877">ಸೂರ್ಯಾಸ್ತದವರೆಗೆ ಆಫ್</translation>
+<translation id="9030665205623277906">CPU ಬಳಕೆಯ ಸ್ನ್ಯಾಪ್‌ಶಾಟ್: <ph name="CPU_USEAGE" />%</translation>
 <translation id="9034924485347205037">Linux ಫೈಲ್‌ಗಳು</translation>
 <translation id="9047624247355796468"><ph name="NETWORK_NAME" /> ನ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="9059834730836941392">ಕುಗ್ಗಿಸುವ ನೋಟಿಫಿಕೇಶನ್</translation>
@@ -1839,7 +1848,6 @@
 <translation id="9178475906033259337"><ph name="QUERY" /> ಕುರಿತಾದ 1 ಫಲಿತಾಂಶವನ್ನು ಪ್ರದರ್ಶಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="9179259655489829027">ಸೈನ್-ಇನ್ ಮಾಡಿರುವ ಯಾವುದೇ ಬಳಕೆದಾರರನ್ನು, ಪಾಸ್‌ವರ್ಡ್ ಇಲ್ಲದೆಯೇ ಪ್ರವೇಶಿಸಲು ಈ ವೈಶಿಷ್ಟ್ಯವು ಅವಕಾಶ ನೀಡುತ್ತದೆ. ನಿಮಗೆ ವಿಶ್ವಾಸವಿರುವ ಖಾತೆಗಳೊಂದಿಗೆ ಮಾತ್ರ ಈ ವೈಶಿಷ್ಟ್ಯವನ್ನು ಬಳಸಿ.</translation>
 <translation id="9183456764293710005">ಫುಲ್‌ಸ್ಕ್ರೀನ್ ವರ್ಧಕ</translation>
-<translation id="9186811218777709815"><ph name="BATTERY_PERCENTAGE" />% | <ph name="TIME" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
 <translation id="9193626018745640770">"ಅಪರಿಚಿತ ಸ್ವೀಕರಿಸುವವರು" ನಲ್ಲಿ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="9194617393863864469">ಮತ್ತೊಂದು ಬಳಕೆದಾರರಾಗಿ ಸೈನ್‌ ಇನ್‌ ಮಾಡಿ...</translation>
 <translation id="9198992156681343238"><ph name="DISPLAY_NAME" /> ರೆಸಲ್ಯೂಷನ್ <ph name="RESOLUTION" /> ಗೆ ಬದಲಾಗಿದೆ. ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಲು 'ಖಚಿತಪಡಿಸಿ' ಕ್ಲಿಕ್ ಮಾಡಿ. ಹಿಂದಿನ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಇನ್ನು <ph name="TIMEOUT_SECONDS" /> ನಲ್ಲಿ ಮರುಸ್ಥಾಪಿಸಲಾಗುತ್ತದೆ.</translation>

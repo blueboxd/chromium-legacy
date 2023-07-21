@@ -87,7 +87,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   const UserList& GetLoggedInUsers() const override;
   const UserList& GetLRULoggedInUsers() const override;
   const AccountId& GetOwnerAccountId() const override;
-  void GetOwnerAccountIdAsync(
+  void RequestOwnerAccountId(
       base::OnceCallback<void(const AccountId&)> callback) const override;
 
   const AccountId& GetLastSessionActiveAccountId() const override;
@@ -215,6 +215,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Notifies observers that active user has changed.
   void NotifyActiveUserChanged(User* active_user);
 
+  // Notifies observers that login state is changed.
+  void NotifyLoginStateUpdated();
+
   // Notifies that user has logged in.
   virtual void NotifyOnLogin();
 
@@ -284,11 +287,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   virtual void RegularUserLoggedInAsEphemeral(const AccountId& account_id,
                                               const UserType user_type);
 
-  // Update the global LoginState.
-  virtual void UpdateLoginState(const User* active_user,
-                                const User* primary_user,
-                                bool is_current_user_owner) const = 0;
-
   virtual bool IsEphemeralAccountIdByPolicy(
       const AccountId& account_id) const = 0;
 
@@ -298,7 +296,8 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   virtual void SetEphemeralModeConfig(
       EphemeralModeConfig ephemeral_mode_config);
 
-  virtual void ResetOwnerId();
+  // Since the owner `AccountId` is static over the device lifetime (after its
+  // been fetched), this method should only be called once.
   virtual void SetOwnerId(const AccountId& owner_account_id);
 
   virtual const AccountId& GetPendingUserSwitchID() const;
@@ -363,9 +362,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // Notifies observers that merge session state had changed.
   void NotifyMergeSessionStateChanged();
-
-  // Call UpdateLoginState.
-  void CallUpdateLoginState();
 
   // Insert |user| at the front of the LRU user list.
   void SetLRUUser(User* user);

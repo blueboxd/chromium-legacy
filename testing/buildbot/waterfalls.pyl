@@ -652,10 +652,8 @@
         'swarming': {
           'dimension_sets': [
             {
-              'device_os': 'QP1A.190711.020',
+              'device_os': 'QQ1A.191205.008',
               'device_os_flavor': 'google',
-              'device_type': 'marlin',
-              'os': 'Android',
             },
           ],
         },
@@ -667,7 +665,8 @@
         },
         'os_type': 'android',
         'mixins': [
-          'has_native_resultdb_integration'
+          'has_native_resultdb_integration',
+          'walleye',
         ],
       },
       'android-11-x86-rel': {
@@ -1058,11 +1057,6 @@
     'name': 'chromium.android.fyi',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
-      'Android ASAN (dbg) (reclient)': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
       'android-12-x64-dbg-tests': {
         'mixins': [
           '12-x64-emulator',
@@ -1150,6 +1144,22 @@
           'gtest_tests': 'cronet_gtests',
         },
         'os_type': 'android',
+      },
+      'android-cronet-mainline-clang-arm-dbg': {
+        'additional_compile_targets': [
+          'cronet_package',
+          'cronet_perf_test_apk',
+          'cronet_sample_test_apk',
+          'cronet_smoketests_missing_native_library_instrumentation_apk',
+          'cronet_smoketests_platform_only_instrumentation_apk',
+          'cronet_test_instrumentation_apk',
+          'cronet_tests_android',
+          'cronet_unittests_android',
+          'net_unittests',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'cronet_dbg_isolated_scripts',
+        },
       },
       'android-webview-12-x64-dbg-tests': {
         'mixins': [
@@ -1773,7 +1783,7 @@
         'mixins': [
           'arm64',
           'docker',
-          'linux-focal',
+          'linux-jammy-or-focal',
         ],
       },
       'ToTLinux': {
@@ -2027,6 +2037,15 @@
       'ToTWinASanLibfuzzer': {
         'mixins': [
           'win10',
+        ],
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'ToTWinArm64PGO': {
+        'mixins': [
+          'arm64',
+          'win11',
         ],
         'additional_compile_targets': [
           'all',
@@ -2504,7 +2523,9 @@
         # the gpu_noop_sleep_telemetry_test test should be used. Otherwise, this
         # should have the same test_suites as 'Dawn Mac x64 Release (Intel)'.
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gpu_telemetry_tests': 'gpu_dawn_telemetry_tests',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
+          'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
       'Dawn Mac x64 Release (AMD)': {
@@ -2558,7 +2579,7 @@
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_dawn_telemetry_tests',
-          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough_win_x64',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -2570,7 +2591,7 @@
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_dawn_telemetry_tests',
-          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough_win_x64',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -2597,7 +2618,7 @@
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_dawn_telemetry_tests',
-          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough_win_x64',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -2613,7 +2634,7 @@
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_dawn_telemetry_tests',
-          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
+          'gtest_tests': 'gpu_dawn_integration_gtests_passthrough_win_x64',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
@@ -2794,7 +2815,7 @@
         'mixins': [
           'arm64',
           'docker',
-          'linux-focal',
+          'linux-jammy-or-focal',
         ],
       },
       'fuchsia-arm64-rel': {
@@ -2808,7 +2829,7 @@
         'mixins': [
           'arm64',
           'docker',
-          'linux-focal',
+          'linux-jammy-or-focal',
         ],
       },
       'fuchsia-x64-cast-receiver-rel': {
@@ -2878,7 +2899,7 @@
         'mixins': [
           'arm64',
           'docker',
-          'linux-focal',
+          'linux-jammy-or-focal',
         ],
       },
       'fuchsia-fyi-x64-asan': {
@@ -3406,7 +3427,7 @@
         ],
         'mixins': [
           'has_native_resultdb_integration',
-          'mac_13_x64',
+          'mac_13_arm64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_14_beta',
@@ -3429,7 +3450,7 @@
         ],
         'mixins': [
           'has_native_resultdb_integration',
-          'mac_13_x64',
+          'mac_13_arm64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_14_beta',
@@ -3447,7 +3468,7 @@
         ],
         'mixins': [
           'has_native_resultdb_integration',
-          'mac_13_x64',
+          'mac_13_arm64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_15_beta',
@@ -3463,7 +3484,7 @@
         ],
         'mixins': [
           'has_native_resultdb_integration',
-          'mac_13_x64',
+          'mac_13_arm64',
           'mac_toolchain',
           'out_dir_arg',
           'xcode_15_beta',
@@ -4523,7 +4544,8 @@
         # the gpu_noop_sleep_telemetry_test test should be used. Otherwise, this
         # should have the same test_suites as 'Mac FYI Release (Intel)'.
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gtest_tests': 'gpu_fyi_mac_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
         },
       },
       'Mac FYI Experimental Retina Release (AMD)': {
@@ -4906,6 +4928,17 @@
           'empty_main',
         ],
       },
+      'linux-v4l2-codec-rel': {
+        'additional_compile_targets': [
+          'image_processor_perf_test',
+          'video_decode_accelerator_tests',
+          'video_decode_accelerator_perf_tests',
+          'video_encode_accelerator_tests',
+          'video_encode_accelerator_perf_tests',
+          'v4l2_stateless_decoder',
+          'v4l2_unittest',
+        ],
+      },
     },
   },
   {
@@ -4960,7 +4993,7 @@
             'isolate_profile_data',
         ],
         'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests_no_nacl',
+          'gtest_tests': 'chromium_mac_gtests_no_nacl_no_nocompile',
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
@@ -6613,6 +6646,17 @@
     'name': 'internal.chromeos.fyi',
     'mixins': ['chrome-tester-service-account'],
     'machines': {
+      'chromeos-betty-pi-arc-chrome-accessibility-fyi': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'mixins': [
+          'chromeos-betty',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_browser_all_tast_tests',
+        },
+      },
       'chromeos-betty-pi-arc-chrome-dchecks': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -6656,17 +6700,6 @@
         ],
         'test_suites': {
           'skylab_tests': 'chromeos_jacuzzi_skylab_tests',
-        },
-        'os_type': 'chromeos',
-      },
-      'chromeos-kevin-chrome-skylab-fyi': {
-        'additional_compile_targets': [
-          "chrome",
-          "linux_symbols",
-          "symupload",
-        ],
-        'test_suites': {
-          'skylab_tests': 'chromeos_kevin_skylab_tests',
         },
         'os_type': 'chromeos',
       },

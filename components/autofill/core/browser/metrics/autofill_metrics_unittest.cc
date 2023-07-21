@@ -1707,8 +1707,7 @@ TEST_F(AutofillMetricsTest, AutofillProfileIsEnabledAtStartup) {
                        /*history_service=*/nullptr,
                        /*sync_service=*/nullptr,
                        /*strike_database=*/nullptr,
-                       /*image_fetcher=*/nullptr,
-                       /*is_off_the_record=*/false);
+                       /*image_fetcher=*/nullptr);
   histogram_tester.ExpectUniqueSample("Autofill.Address.IsEnabled.Startup",
                                       true, 1);
 }
@@ -1726,8 +1725,7 @@ TEST_F(AutofillMetricsTest, AutofillProfileIsDisabledAtStartup) {
                        /*history_service=*/nullptr,
                        /*sync_service=*/nullptr,
                        /*strike_database=*/nullptr,
-                       /*image_fetcher=*/nullptr,
-                       /*is_off_the_record=*/false);
+                       /*image_fetcher=*/nullptr);
   histogram_tester.ExpectUniqueSample("Autofill.Address.IsEnabled.Startup",
                                       false, 1);
 }
@@ -1745,8 +1743,7 @@ TEST_F(AutofillMetricsTest, AutofillCreditCardIsEnabledAtStartup) {
                        /*history_service=*/nullptr,
                        /*sync_service=*/nullptr,
                        /*strike_database=*/nullptr,
-                       /*image_fetcher=*/nullptr,
-                       /*is_off_the_record=*/false);
+                       /*image_fetcher=*/nullptr);
   histogram_tester.ExpectUniqueSample("Autofill.CreditCard.IsEnabled.Startup",
                                       true, 1);
 }
@@ -1764,8 +1761,7 @@ TEST_F(AutofillMetricsTest, AutofillCreditCardIsDisabledAtStartup) {
                        /*history_service=*/nullptr,
                        /*sync_service=*/nullptr,
                        /*strike_database=*/nullptr,
-                       /*image_fetcher=*/nullptr,
-                       /*is_off_the_record=*/false);
+                       /*image_fetcher=*/nullptr);
   histogram_tester.ExpectUniqueSample("Autofill.CreditCard.IsEnabled.Startup",
                                       false, 1);
 }
@@ -7141,7 +7137,7 @@ TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
   // Simulate checking whether to fill a dynamic form before the form was filled
   // initially.
   FormStructure form_structure(form);
-  autofill_manager().ShouldTriggerRefillForTest(form_structure);
+  test_api(autofill_manager()).ShouldTriggerRefill(form_structure);
   histogram_tester.ExpectTotalCount("Autofill.FormEvents.Address", 0);
 
   // Simulate filling the form.
@@ -7149,7 +7145,7 @@ TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
 
   // Simulate checking whether to fill a dynamic form after the form was filled
   // initially.
-  autofill_manager().ShouldTriggerRefillForTest(form_structure);
+  test_api(autofill_manager()).ShouldTriggerRefill(form_structure);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Autofill.FormEvents.Address"),
       BucketsInclude(Bucket(FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM, 1),
@@ -7157,7 +7153,8 @@ TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
                      Bucket(FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL, 0)));
 
   // Trigger a refill, the refill metric should be updated.
-  autofill_manager().TriggerRefillForTest(form, AutofillTriggerSource::kPopup);
+  test_api(autofill_manager())
+      .TriggerRefill(form, AutofillTriggerSource::kPopup);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Autofill.FormEvents.Address"),
       BucketsInclude(Bucket(FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM, 1),
@@ -7165,7 +7162,7 @@ TEST_F(AutofillMetricsTest, DynamicFormMetrics) {
                      Bucket(FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL, 0)));
 
   // Trigger a check to see whether a refill should happen. The
-  autofill_manager().ShouldTriggerRefillForTest(form_structure);
+  test_api(autofill_manager()).ShouldTriggerRefill(form_structure);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Autofill.FormEvents.Address"),
       BucketsInclude(Bucket(FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM, 2),
@@ -7933,8 +7930,9 @@ TEST_F(AutofillMetricsTest, PageLanguageMetricsInvalidLanguage) {
 // 4. Selection fields are always overridden by Autofill.
 //    |Autofill.IsValueNotAutofilledOverExistingValueSameAsSubmittedValue2|
 //    should not record anything in this case.
+// TODO(1275649): Re-enable when restarting the experiment.
 TEST_F(AutofillMetricsTest,
-       IsValueNotAutofilledOverExistingValueSameAsSubmittedValue) {
+       DISABLED_IsValueNotAutofilledOverExistingValueSameAsSubmittedValue) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(
       features::kAutofillPreventOverridingPrefilledValues);
@@ -8735,8 +8733,8 @@ TEST_F(AutofillMetricsFromLogEventsTest, AutofillFieldInfoMetricsFieldType) {
   FormStructure* form_structure_ptr = form_structure.get();
   form_structure->DetermineHeuristicTypes(nullptr, nullptr);
   ASSERT_TRUE(
-      autofill_manager()
-          .mutable_form_structures_for_test()
+      test_api(autofill_manager())
+          .mutable_form_structures()
           ->emplace(form_structure_ptr->global_id(), std::move(form_structure))
           .second);
 
@@ -8758,8 +8756,9 @@ TEST_F(AutofillMetricsFromLogEventsTest, AutofillFieldInfoMetricsFieldType) {
   }
 
   std::string response_string = SerializeAndEncode(response);
-  autofill_manager().OnLoadedServerPredictionsForTest(
-      response_string, test::GetEncodedSignatures(*form_structure_ptr));
+  test_api(autofill_manager())
+      .OnLoadedServerPredictions(
+          response_string, test::GetEncodedSignatures(*form_structure_ptr));
 
   base::TimeTicks parse_time = autofill_manager()
                                    .form_structures()

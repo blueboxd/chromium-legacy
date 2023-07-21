@@ -1436,7 +1436,7 @@ class CaptureLostTrackingWidget : public Widget {
 
  private:
   // Weak. Stores whether OnMouseCaptureLost has been invoked for this widget.
-  raw_ptr<CaptureLostState, DanglingAcrossTasks> capture_lost_state_;
+  raw_ptr<CaptureLostState, AcrossTasksDanglingUntriaged> capture_lost_state_;
 };
 
 }  // namespace
@@ -2052,7 +2052,7 @@ class WidgetInputMethodInteractiveTest : public DesktopWidgetTestInteractive {
   }
 
  private:
-  raw_ptr<Widget, DanglingAcrossTasks> deactivate_widget_ = nullptr;
+  raw_ptr<Widget, AcrossTasksDanglingUntriaged> deactivate_widget_ = nullptr;
 };
 
 #if BUILDFLAG(IS_MAC)

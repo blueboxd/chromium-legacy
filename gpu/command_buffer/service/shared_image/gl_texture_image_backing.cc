@@ -28,6 +28,37 @@
 
 namespace gpu {
 
+namespace {
+
+// Representation of a GLTextureImageBacking as a GL Texture.
+class GLTextureImageRepresentationImpl : public GLTextureImageRepresentation {
+ public:
+  GLTextureImageRepresentationImpl(
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      MemoryTypeTracker* tracker,
+      std::vector<raw_ptr<gles2::Texture>> textures)
+      : GLTextureImageRepresentation(manager, backing, tracker),
+        textures_(std::move(textures)) {
+    DCHECK_EQ(textures_.size(), NumPlanesExpected());
+  }
+
+  ~GLTextureImageRepresentationImpl() override = default;
+
+ private:
+  // GLTextureImageRepresentation:
+  gles2::Texture* GetTexture(int plane_index) override {
+    DCHECK(format().IsValidPlaneIndex(plane_index));
+    return textures_[plane_index];
+  }
+  bool BeginAccess(GLenum mode) override { return true; }
+  void EndAccess() override {}
+
+  std::vector<raw_ptr<gles2::Texture>> textures_;
+};
+
+}  // namespace
+
 ///////////////////////////////////////////////////////////////////////////////
 // GLTextureImageBacking
 
@@ -35,6 +66,7 @@ bool GLTextureImageBacking::SupportsPixelReadbackWithFormat(
     viz::SharedImageFormat format) {
   return (format == viz::MultiPlaneFormat::kNV12 ||
           format == viz::MultiPlaneFormat::kYV12 ||
+          format == viz::MultiPlaneFormat::kI420 ||
           format == viz::SinglePlaneFormat::kRGBA_8888 ||
           format == viz::SinglePlaneFormat::kBGRA_8888 ||
           format == viz::SinglePlaneFormat::kR_8 ||
@@ -47,6 +79,7 @@ bool GLTextureImageBacking::SupportsPixelUploadWithFormat(
     viz::SharedImageFormat format) {
   return (format == viz::MultiPlaneFormat::kNV12 ||
           format == viz::MultiPlaneFormat::kYV12 ||
+          format == viz::MultiPlaneFormat::kI420 ||
           format == viz::SinglePlaneFormat::kRGBA_8888 ||
           format == viz::SinglePlaneFormat::kRGBA_4444 ||
           format == viz::SinglePlaneFormat::kBGRA_8888 ||
@@ -162,8 +195,8 @@ GLTextureImageBacking::ProduceGLTexture(SharedImageManager* manager,
     gl_textures.push_back(texture.texture());
   }
 
-  return std::make_unique<GLTextureGLCommonRepresentation>(
-      manager, this, nullptr, tracker, std::move(gl_textures));
+  return std::make_unique<GLTextureImageRepresentationImpl>(
+      manager, this, tracker, std::move(gl_textures));
 }
 
 std::unique_ptr<GLTexturePassthroughImageRepresentation>
@@ -182,9 +215,9 @@ GLTextureImageBacking::ProduceGLTexturePassthrough(SharedImageManager* manager,
 std::unique_ptr<DawnImageRepresentation> GLTextureImageBacking::ProduceDawn(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
-    WGPUDevice device,
-    WGPUBackendType backend_type,
-    std::vector<WGPUTextureFormat> view_formats) {
+    const wgpu::Device& device,
+    wgpu::BackendType backend_type,
+    std::vector<wgpu::TextureFormat> view_formats) {
   if (!factory()) {
     DLOG(ERROR) << "No SharedImageFactory to create a dawn representation.";
     return nullptr;

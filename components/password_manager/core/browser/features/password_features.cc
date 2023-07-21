@@ -57,4 +57,28 @@ BASE_FEATURE(kFillingAcrossGroupedSites,
              "FillingAcrossGroupedSites",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables the experiment for the password manager to only fill on account
+// selection, rather than autofilling on page load, with highlighting of fields.
+BASE_FEATURE(kFillOnAccountSelect,
+             "fill-on-account-select",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the notification UI that is displayed to the user when visiting a
+// website for which a stored password has been shared by another user.
+BASE_FEATURE(kSharedPasswordNotificationUI,
+             "SharedPasswordNotificationUI",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables password receiving service including incoming password sharing
+// invitation sync data type.
+BASE_FEATURE(kPasswordManagerEnableReceiverService,
+             "PasswordManagerEnableReceiverService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables password sender service including outgoing password sharing
+// invitation sync data type.
+BASE_FEATURE(kPasswordManagerEnableSenderService,
+             "PasswordManagerEnableSenderService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 }  // namespace password_manager::features

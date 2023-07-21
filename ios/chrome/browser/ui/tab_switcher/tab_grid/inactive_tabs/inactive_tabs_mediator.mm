@@ -31,6 +31,10 @@
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "ui/base/device_form_factor.h"
 
+// To get access to UseSessionSerializationOptimizations().
+// TODO(crbug.com/1383087): remove once the feature is fully launched.
+#import "ios/web/common/features.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -131,7 +135,8 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   CHECK(IsInactiveTabsAvailable());
   CHECK(webStateList);
   CHECK(prefService);
-  CHECK(sessionRestorationAgent);
+  CHECK(sessionRestorationAgent ||
+        web::features::UseSessionSerializationOptimizations());
   CHECK(snapshotAgent);
   CHECK(snapshotAgent->snapshot_cache());
   CHECK(tabRestoreService);
@@ -272,7 +277,7 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 
 - (void)willChangeWebStateList:(WebStateList*)webStateList
                         change:(const WebStateListChangeDetach&)detachChange
-                     selection:(const WebStateSelection&)selection {
+                        status:(const WebStateListStatus&)status {
   DCHECK_EQ(_webStateList, webStateList);
   if (_webStateList->IsBatchInProgress()) {
     // Updates are handled in the batch operation observer methods.
@@ -288,7 +293,7 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
-                    selection:(const WebStateSelection&)selection {
+                       status:(const WebStateListStatus&)status {
   DCHECK_EQ(_webStateList, webStateList);
   if (_webStateList->IsBatchInProgress()) {
     // Updates are handled in the batch operation observer methods.
@@ -296,8 +301,8 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   }
 
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly: {
-      CHECK(!selection.pinned_state_change);
+    case WebStateListChange::Type::kStatusOnly: {
+      CHECK(!status.pinned_state_change);
       // TODO(crbug.com/1442546): Move the implementation from
       // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
       // here. Note that here is reachable only when `reason` ==
@@ -321,7 +326,7 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
       web::WebState* insertedWebState = insertChange.inserted_web_state();
       TabSwitcherItem* item =
           [[WebStateTabSwitcherItem alloc] initWithWebState:insertedWebState];
-      [_consumer insertItem:item atIndex:selection.index selectedItemID:nil];
+      [_consumer insertItem:item atIndex:status.index selectedItemID:nil];
 
       _scopedWebStateObservation->AddObservation(insertedWebState);
       break;
@@ -390,7 +395,9 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   }
   // TODO(crbug.com/1418021): Add metrics when the user closes all inactive
   // tabs from regular tab grid.
-  _closedSessionWindow = SerializeWebStateList(_webStateList);
+  if (!web::features::UseSessionSerializationOptimizations()) {
+    _closedSessionWindow = SerializeWebStateList(_webStateList);
+  }
   int oldSize = _tabRestoreService ? _tabRestoreService->entries().size() : 0;
   _webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
   _syncedClosedTabsCount =
@@ -403,10 +410,12 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   }
   // TODO(crbug.com/1418021): Add metrics when the user restores all inactive
   // tabs from regular tab grid.
-  _sessionRestorationAgent->RestoreSessionWindow(
-      _closedSessionWindow, SessionRestorationScope::kRegularOnly);
+  if (_sessionRestorationAgent) {
+    _sessionRestorationAgent->RestoreSessionWindow(
+        _closedSessionWindow, SessionRestorationScope::kRegularOnly);
+    _closedSessionWindow = nil;
+  }
 
-  _closedSessionWindow = nil;
   [self removeEntriesFromTabRestoreService];
   _syncedClosedTabsCount = 0;
 }

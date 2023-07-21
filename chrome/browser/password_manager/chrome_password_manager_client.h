@@ -142,7 +142,7 @@ class ChromePasswordManagerClient
 
   void ShowKeyboardReplacingSurface(
       password_manager::PasswordManagerDriver* driver,
-      autofill::mojom::SubmissionReadinessState submission_readiness,
+      const password_manager::SubmissionReadinessParams& submission_readiness,
       bool is_webauthn_form) override;
 #endif
 
@@ -308,6 +308,15 @@ class ChromePasswordManagerClient
   bool has_binding_for_credential_manager() const {
     return content_credential_manager_.HasBinding();
   }
+  base::WeakPtr<PasswordGenerationPopupControllerImpl>
+  generation_popup_controller() {
+    return popup_controller_;
+  }
+  void SetCurrentTargetFrameForTesting(
+      content::RenderFrameHost* render_frame_host) {
+    password_generation_driver_receivers_.SetCurrentTargetFrameForTesting(
+        render_frame_host);
+  }
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -330,8 +339,10 @@ class ChromePasswordManagerClient
 
   // content::WebContentsObserver overrides.
   void PrimaryPageChanged(content::Page& page) override;
-  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
+
+  password_manager::ContentPasswordManagerDriverFactory* GetDriverFactory()
+      const;
 
   // Given |bounds| in the renderers coordinate system, return the same bounds
   // in the screens coordinate system.
@@ -412,10 +423,6 @@ class ChromePasswordManagerClient
       generated_password_saved_message_delegate_;
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  raw_ptr<password_manager::ContentPasswordManagerDriverFactory,
-          DanglingAcrossTasks>
-      driver_factory_;
-
   // As a mojo service, will be registered into service registry
   // of the main frame host by ChromeContentBrowserClient
   // once main frame host was created.
@@ -427,7 +434,7 @@ class ChromePasswordManagerClient
   // Observer for password generation popup.
   raw_ptr<PasswordGenerationPopupObserver> observer_;
 
-  // Controls the popup
+  // Controls the generation popup.
   base::WeakPtr<PasswordGenerationPopupControllerImpl> popup_controller_;
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)

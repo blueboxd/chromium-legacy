@@ -67,6 +67,14 @@ BASE_FEATURE(kUseDnsHttpsSvcbAlpn,
              "UseDnsHttpsSvcbAlpn",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const base::FeatureParam<int> kAlternativePortForGloballyReachableCheck{
+    &kUseAlternativePortForGloballyReachableCheck,
+    "AlternativePortForGloballyReachableCheck", 443};
+
+BASE_FEATURE(kUseAlternativePortForGloballyReachableCheck,
+             "UseAlternativePortForGloballyReachableCheck",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSHA1ServerSignature,
              "SHA1ServerSignature",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -231,10 +239,6 @@ BASE_FEATURE(kUdpSocketPosixAlwaysUpdateBytesReceived,
 
 BASE_FEATURE(kCookieSameSiteConsidersRedirectChain,
              "CookieSameSiteConsidersRedirectChain",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSamePartyAttributeEnabled,
-             "SamePartyAttributeEnabled",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kWaitForFirstPartySetsInit,
@@ -409,6 +413,10 @@ BASE_FEATURE(kEnableWebTransportDraft07,
 
 BASE_FEATURE(kZstdContentEncoding,
              "ZstdContentEncoding",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kClearSiteDataWildcardSupport,
+             "ClearSiteDataWildcardSupport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace net::features

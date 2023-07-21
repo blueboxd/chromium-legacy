@@ -319,6 +319,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="160851722280695521">Spill Dino Run-spillet i Chrome</translation>
 <translation id="161042844686301425">Cyan</translation>
 <translation id="1611101756749861742">Andre rull</translation>
+<translation id="1615178538289490617">Opphev tilgangen for <ph name="PORT_NAME" /></translation>
 <translation id="1615402009686901181">På grunn av en administratorregel er skjermdumper deaktivert når konfidensielt innhold er synlig</translation>
 <translation id="1617276713587758852">Crossover-biler</translation>
 <translation id="1618571384971354160">Tauing og veihjelp</translation>
@@ -625,6 +626,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2276057643614339130">Utskriftsgrunnlag</translation>
 <translation id="2277103315734023688">Spol fremover</translation>
 <translation id="2277753418458118549">Vis detaljer om tilkoblingen</translation>
+<translation id="22792995594807632">Filene må gjennomgås før de kan lastes ned</translation>
 <translation id="2283340219607151381">Lagre og fyll inn adresser</translation>
 <translation id="2283447177162560884">«<ph name="PAGE_TITLE" />» er slettet</translation>
 <translation id="2286383991450886080">34 x 44 tommer</translation>
@@ -1276,6 +1278,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="3736520371357197498">Hvis du forstår sikkerhetsrisikoen, kan du <ph name="BEGIN_LINK" />gå til det usikre nettstedet<ph name="END_LINK" /> før de farlige programmene er fjernet.</translation>
 <translation id="3738166223076830879">Nettleseren administreres av administratoren din.</translation>
 <translation id="3740319564441798148">Regionbuss og -tog</translation>
+<translation id="3740447166056383374">Filene må gjennomgås før de kan kopieres</translation>
 <translation id="374325029554577103">Treningsteknologi</translation>
 <translation id="3743765582345153106">Bekreft alltid når autofyll brukes</translation>
 <translation id="3744111561329211289">Bakgrunnssynkronisering</translation>
@@ -1332,7 +1335,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="3848487483475744267"><ph name="CREATE_GOOGLE_DOC_FOCUSED_FRIENDLY_MATCH_TEXT" /> – trykk på Tab og deretter på Enter for å opprette et nytt Google-dokument raskt</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="3851830401766703401">Juridisk utdannelse</translation>
-<translation id="3853684360927654006">Kalkulator for passordstyrke</translation>
 <translation id="385489333361351399">Kamera og fotoutstyr</translation>
 <translation id="3858027520442213535">Oppdater dato og klokkeslett</translation>
 <translation id="3858860766373142691">Navn</translation>
@@ -1797,6 +1799,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="4852429274334674023">Operativsystemer</translation>
 <translation id="4854853140771946034">Opprett et nytt notat i Google Keep raskt</translation>
 <translation id="485902285759009870">Bekrefter koden …</translation>
+<translation id="4862630594858951805">Vil du ha e-poster når prisen går ned?</translation>
 <translation id="486459320933704969">En forelder eller foresatt må si at det er greit at du besøker dette nettstedet</translation>
 <translation id="4866506163384898554">Trykk på |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| for å vise markøren</translation>
 <translation id="4873616204573862158">Briller</translation>
@@ -1867,6 +1870,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="4995749490935861684"><ph name="CUSTOMIZE_SEARCH_ENGINES_FOCUSED_FRIENDLY_MATCH_TEXT" /> – trykk på Tab og deretter på Enter for å administrere nettstedsøk og standard søkemotor</translation>
 <translation id="4998950033665438990">Ensidig</translation>
 <translation id="5002932099480077015">Hvis du slår på dette alternativet, lagrer Chrome en kopi av kortet ditt på denne enheten, slik at det blir raskere å fylle ut skjemaer i fremtiden.</translation>
+<translation id="5007392906805964215">Se gjennom</translation>
 <translation id="5011561501798487822">gjenkjent språk</translation>
 <translation id="5015510746216210676">Maskinnavn:</translation>
 <translation id="5017554619425969104">Teksten du kopierte</translation>
@@ -1991,6 +1995,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="5255690596502591079">Ta opp likevel</translation>
 <translation id="5255833070095767006">350 x 460 mm</translation>
 <translation id="5257739419779698609">{0,plural, =1{Administratorreglene anbefaler ikke at du kopierer denne filen til <ph name="DESTINATION_NAME" />}other{Administratorreglene anbefaler ikke at du kopierer disse filene til <ph name="DESTINATION_NAME" />}}</translation>
+<translation id="5263867360296733198">Filene må gjennomgås før de kan lastes opp</translation>
 <translation id="5266128565379329178">Innbinding topp</translation>
 <translation id="5269225904387178860">Fire hull bunn</translation>
 <translation id="5269999699920406580">Funksjoner som gjelder for hele systemet, kan bare angis av eieren: <ph name="OWNER_EMAIL" /></translation>
@@ -2064,6 +2069,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="5412236728747081950">Dette nettstedet mottar interessene dine fra Chrome for å kunne vise deg mer relevante annonser</translation>
 <translation id="5412245327974352290"><ph name="TRADITIONAL_TEXT" /> – <ph name="ADDITIONAL_TEXT" /></translation>
 <translation id="541416427766103491">Hylle 4</translation>
+<translation id="5414446060143308245">Filene må gjennomgås før de kan overføres</translation>
 <translation id="5414511064953050917">Flytt likevel</translation>
 <translation id="5421136146218899937">Slett nettlesingsdata</translation>
 <translation id="5423269318075950257">Spor prisen</translation>
@@ -2148,6 +2154,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="5596939519753369075">2 x 3,5 tommer</translation>
 <translation id="560412284261940334">Administrering støttes ikke</translation>
+<translation id="5605249000617390290">Finn ut mer om prissporing</translation>
 <translation id="5605670050355397069">Ledger</translation>
 <translation id="5610142619324316209">Sjekk tilkoblingen</translation>
 <translation id="5610807607761827392">Du kan administrere kort og adresser i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
@@ -2195,6 +2202,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="571403275720188526">(arm64)</translation>
 <translation id="571510845185711675">Veterinærer</translation>
 <translation id="5720705177508910913">Gjeldende bruker</translation>
+<translation id="572328651809341494">Nylige faner</translation>
 <translation id="5723287205918986743">Forsvarsindustri</translation>
 <translation id="5725567311035061582">Administrer informasjonskapsler og nettstedsdata</translation>
 <translation id="5730040223043577876">Chrome anbefaler at du tilbakestiller passordet ditt hvis du også har brukt det på andre nettsteder.</translation>
@@ -2283,6 +2291,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="5921639886840618607">Vil du lagre kortet i Google-kontoen?</translation>
 <translation id="5922853866070715753">Nesten ferdig</translation>
 <translation id="5923492272538889093">Vil du bruke enhetsopplåsing i stedet for verifiseringskode?</translation>
+<translation id="5924510104057992926">Filene må gjennomgås før de kan åpnes</translation>
 <translation id="5924782825030413055">Kilden til den siste samtykkeoppdateringen:</translation>
 <translation id="5925040402342933574">Optisk disk (halvglans)</translation>
 <translation id="5926982310317673627">Treningssentre og helsestudioer</translation>
@@ -2508,6 +2517,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="6394852772105848029">Dette nettstedet vil åpne <ph name="APP_NAME" />-appen</translation>
 <translation id="6398765197997659313">Avslutt fullskjerm</translation>
 <translation id="6401136357288658127">Denne regelen er avviklet. Du bør bruke den nye regelen <ph name="NEW_POLICY" /> i stedet.</translation>
+<translation id="6402537308870515461">Filene må gjennomgås før de kan flyttes</translation>
 <translation id="6403167778944553">Bad og soverom</translation>
 <translation id="6404511346730675251">Rediger bokmerket</translation>
 <translation id="6405181733356710802">Vil du fortsette til <ph name="APP_NAME" />?</translation>
@@ -2656,6 +2666,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="6710594484020273272">&lt;Skriv inn en søketerm&gt;</translation>
 <translation id="671076103358959139">Registreringstoken:</translation>
 <translation id="6711464428925977395">Det er noe galt med proxy-tjeneren, eller adressen er feil.</translation>
+<translation id="6716013836112872184">Vi sender e-post til <ph name="EMAIL" /> når prisen settes ned på et nettsted.</translation>
 <translation id="6716672519412350405"><ph name="URL" /> vil lage et 3D-kart av omgivelsene dine og spore kameraposisjonen</translation>
 <translation id="6718612893943028815">Vil du bruke kameraet?</translation>
 <translation id="6721164594124191969">Etiketter (glans)</translation>
@@ -2788,6 +2799,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="6999969238895751684">Underholdningsindustri</translation>
 <translation id="7003278537452757231">Ryer og tepper</translation>
 <translation id="7003335073762455340">Du sporer dette produktet. Denne siden er lagret i <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
+<translation id="7004499039102548441">Nylige faner</translation>
 <translation id="7004583254764674281">Bruk Windows Hello til å bekrefte kort raskere</translation>
 <translation id="7006930604109697472">Send likevel</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
@@ -2914,7 +2926,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <ph name="DEBUG_INFO" /></translation>
 <translation id="7256634549594854023">Bakskuff</translation>
 <translation id="725866823122871198">En privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kan ikke opprettes fordi datoen og klokkeslettet (<ph name="DATE_AND_TIME" />) på datamaskinen er feil.</translation>
-<translation id="7260504762447901703">Opphev tilgangen</translation>
 <translation id="7265608370113700582">Adressen er bare tilgjengelig på denne enheten</translation>
 <translation id="7275334191706090484">Administrerte bokmerker</translation>
 <translation id="7277998515889183784">Sminke og kosmetikk</translation>
@@ -3185,6 +3196,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="7767278989746220252">Terrasse, plen og hage</translation>
 <translation id="776749070095465053">Stoff</translation>
 <translation id="7773005668374414287">Samme rekkefølge – forsiden opp</translation>
+<translation id="7779418012194492374">Opphev tilgangen for <ph name="DEVICE_NAME" /></translation>
 <translation id="7781829728241885113">I går</translation>
 <translation id="7785790577395078482">dette nettbrettet</translation>
 <translation id="7786368602962652765">Et obligatorisk felt er tomt. Fyll det før du lagrer.</translation>
@@ -3463,6 +3475,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="8390725133630534698">Deling fra <ph name="ORIGIN_NAME" /> til <ph name="VM_NAME" /> er blokkert av en administratorregel</translation>
 <translation id="8396522675989118466">Dette er den <ph name="NUMBER_OF_DIGITS" />-sifrede koden på <ph name="SIDE_OF_CARD" /></translation>
 <translation id="8398335999901363925">Betalingsmåter som kan fylles ut ved å trykkes på, åpnes i full høyde.</translation>
+<translation id="8398446215576328011">Tilbakestill regler som er tatt i bruk</translation>
 <translation id="8398790343843005537">Finn telefonen din</translation>
 <translation id="8403506619177967839">Fanfiksjon</translation>
 <translation id="8405579342203358118">Administrer hvilken informasjon du synkroniserer, i Chrome-innstillingene</translation>
@@ -3807,6 +3820,7 @@ Mer informasjon:
 <translation id="9155211586651734179">Eksterne lydenheter er tilkoblet</translation>
 <translation id="9155646082713385498">Tidsskrifter</translation>
 <translation id="9157595877708044936">Konfigurerer ...</translation>
+<translation id="9161794544616754735">{0,plural, =1{<ph name="FILE_NAME" /> kan ha sensitivt innhold}other{<ph name="FILE_COUNT" /> filer kan ha sensitivt innhold}}</translation>
 <translation id="9164742147345933553">os://flags</translation>
 <translation id="9165305804774426672">Nettsteder du besøker, kan også fastslå hva du liker, basert på aktiviteten din på nettstedet. Hvis du for eksempel besøker et nettsted som selger joggesko for langdistanseturer, kan det hende at nettstedet bestemmer seg for at du er interessert i å løpe maraton.</translation>
 <translation id="9166851138617700776">Mer om annonser som er foreslått av nettsteder og annonsemåling</translation>

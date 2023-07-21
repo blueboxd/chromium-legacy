@@ -3,7 +3,6 @@
 <translationbundle lang="iw">
 <translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> מהכרטיסיות לא היו בשימוש לאחרונה. לסגור אותן?</translation>
 <translation id="125153950246128346">יש להקיש כדי לראות כרטיסייה אחרת</translation>
-<translation id="1403228085774130835">‏ניתן לאתר את הכרטיסיות הסגורות ב'כרטיסיות אחרונות' שבתפריט הראשי של Chrome.</translation>
 <translation id="1455506303394048917">הפעילות שלך בכרטיסיות הפרטיות האלה תימחק מהמכשיר הזה</translation>
 <translation id="1499635324672558517">לסגור את כל הכרטיסיות הפרטיות?</translation>
 <translation id="1657719826150349398">העברת הכרטיסייה למטה</translation>
@@ -47,6 +46,7 @@
 <translation id="5073204694187207510">הסתרת רשת מסך מלא</translation>
 <translation id="5076161749301278626">להציג ביקורות נוספות על החנות?</translation>
 <translation id="5082793167783849073">כדי להשוות במהירות בין דפים, אפשר ליצור קבוצה. כדי להתחיל, צריך ללחוץ לחיצה ארוכה על קישור.</translation>
+<translation id="5339733443032484186">הכרטיסייה האחרונה שלך</translation>
 <translation id="5490235265819901748">קבוצת כרטיסיות הורחבה</translation>
 <translation id="5494920125229734069">בחירת הכול</translation>
 <translation id="5556417849629758491">ניתן להציג את פרטי החנות. האפשרות זמינה בחלק העליון של המסך</translation>

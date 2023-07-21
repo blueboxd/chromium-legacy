@@ -7,6 +7,10 @@
 
 #include "chrome/browser/ui/passwords/bubble_controllers/password_bubble_controller_base.h"
 
+namespace password_manager {
+struct PasswordForm;
+}
+
 // This controller manages the bubble notifying the user that some of the stored
 // passwords have been received via password sharing feature from other users.
 class SharedPasswordsNotificationBubbleController
@@ -16,9 +20,30 @@ class SharedPasswordsNotificationBubbleController
       base::WeakPtr<PasswordsModelDelegate> delegate);
   ~SharedPasswordsNotificationBubbleController() override;
 
+  // Called by the view code when the "Got it" button is clicked
+  // by the user acknowledging the shared password notification prompt.
+  void OnAcknowledgeClicked();
+
+  // Called by the view code when the "Manage Passwords" button is clicked
+  // by the user.
+  void OnManagePasswordsClicked();
+
   // PasswordBubbleControllerBase:
   std::u16string GetTitle() const override;
   void ReportInteractions() override;
+
+ private:
+  // Returns a list of the credentials currently stored in the delegate that
+  // have been received via password sharing feature, and the user has not been
+  // notified about them yet.
+  std::vector<password_manager::PasswordForm*>
+  GetSharedCredentialsRequiringNotification() const;
+
+  // Marks all credentials returned by
+  // GetSharedCredentialsRequiringNotification() in the password store as
+  // notified, in the sense that the user has been notified about them and no
+  // need to show the notification again.
+  void MarkSharedCredentialAsNotifiedInPasswordStore();
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_SHARED_PASSWORDS_NOTIFICATIONS_BUBBLE_CONTROLLER_H_

@@ -277,6 +277,22 @@ Style notes:
       <message name="IDS_SHELF_LAUNCHER_NUDGE_TEXT" desc="The text shown to users beside the home button that shows the launcher UI when the device is in clamshell mode. This nudge text guides them to click on the home button to see all the apps in the launcher UI.">
         See all apps
       </message>
+      <message name="IDS_SHELF_PREVIOUS_DESK_BUTTON_TITLE" desc="The title used for the previous desk button within the desk button on the shelf.">
+        Previous Desk: <ph name="PREVIOUS_DESK_NAME">$1<ex>Desk 1</ex></ph>, use Search+Space or keyboard shortcut: Shift+Search+<ph name="PREVIOUS_DESK_INDEX">$2<ex>1</ex></ph> to activate.
+      </message>
+      <message name="IDS_SHELF_PREVIOUS_DESK_BUTTON_TITLE_16_DESKS" desc="The title used for the previous desk button within the desk button on the shelf when that desk is beyond the 8th desk.">
+        Previous Desk: <ph name="PREVIOUS_DESK_NAME">$1<ex>Desk 12</ex></ph>, use Search+Space to activate.
+      </message>
+      <message name="IDS_SHELF_DESK_BUTTON_TITLE" desc="The title used for the desk button on the shelf.">
+        Current Desk: <ph name="CURRENT_DESK_NAME">$1<ex>Desk 2</ex></ph>, use Search+Space to open all desks menu.
+      </message>
+      <message name="IDS_SHELF_NEXT_DESK_BUTTON_TITLE" desc="The title used for the next desk button within the desk button on the shelf.">
+        Next Desk: <ph name="NEXT_DESK_NAME">$1<ex>Desk 3</ex></ph>, use Search+Space or keyboard shortcut: Shift+Search+<ph name="NEXT_DESK_INDEX">$2<ex>3</ex></ph> to activate.
+      </message>
+      <message name="IDS_SHELF_NEXT_DESK_BUTTON_TITLE_16_DESKS" desc="The title used for the next desk button within the desk button on the shelf when that desk is beyond the 8th desk.">
+        Next Desk: <ph name="NEXT_DESK_NAME">$1<ex>Desk 14</ex></ph>, use Search+Space to activate.
+      </message>
+
 
       <!-- Status tray items -->
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBLE_DESCRIPTION" is_accessibility_with_no_ui="true" desc="The accessible description of the status tray and the information on it.">
@@ -1607,6 +1623,9 @@ Style notes:
       <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_PORTRAIT_RELIGHT_NAME" desc="Text for name of the portrait relight effect in the VC bubble, which is a toggle and effectively adjusts the users lighting.">
         Improve lighting
       </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_BUBBLE_LINUX_APP_WARNING_TEXT" desc="Text for the warning label placed inside the VC bubble when there's any linux app running.">
+        Effects are not supported on linux apps
+      </message>
       <message name="IDS_ASH_VIDEO_CONFERENCE_TOAST_SPEAK_ON_MUTE_DETECTED" desc="A toast message that we show when user tries to speak while muted on system-level.">
         Are you talking? Your mic is off. Select the mic to turn it on.
       </message>
@@ -2494,6 +2513,9 @@ Style notes:
         About <ph name="time_left">$1<ex>40 minutes</ex></ph> left (<ph name="percentage">$2<ex>56%</ex></ph>%).
 Connect your device to power.
       </message>
+      <message name="IDS_ASH_BATTERY_SAVER_DISABLED_TOAST_TEXT" translateable="false" desc="The toast message when battery saver mode is disabled.">
+        Battery Saver has been turned off
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_TITLE" translateable="false" desc="The title for the notification displayed when device battery level is low, and battery saver mode is enabled.">
         Low Battery - turning on battery saver
       </message>
@@ -2721,19 +2743,19 @@ Turning on battery saver to increase your battery life.
         Off
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HOTSPOT_STATUS_ENABLING" desc="The sublabel for hotspot feature pod in quick settings to show hotspot is enabling.">
-        Enabling...
+        Turning on...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HOTSPOT_STATUS_DISABLING" desc="The sublabel for hotspot feature pod in quick settings to show hotspot is disabling.">
-        Disabling...
+        Turning off...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HOTSPOT_FEATURE_TILE_DRILL_IN_TOOLTIP_STATUS_ON" desc="The tooltip for the drill in button in hotspot feature tile of quick settings when hotspot is on.">
         Show hotspot details. Hotspot is on.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HOTSPOT_FEATURE_TILE_TOOLTIP_STATUS_ENABLING" desc="The tooltip for the hotspot feature tile of quick settings when hotspot is enabling.">
-        Show hotspot details. Hotspot is enabling.
+        Show hotspot details. Hotspot is turning on.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HOTSPOT_FEATURE_TILE_TOOLTIP_STATUS_DISABLING" desc="The tooltip for the hotspot feature tile of quick settings when hotspot is disabling.">
-        Show hotspot details. Hotspot is disabling.
+        Show hotspot details. Hotspot is turning off.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HOTSPOT_FEATURE_TILE_DRILL_IN_TOOLTIP_STATUS_OFF" desc="The tooltip for the drill in button in hotspot feature tile of quick settings when hotspot is off and is not allowed to turn on.">
         Show hotspot details. Hotspot is off.
@@ -2760,7 +2782,7 @@ Turning on battery saver to increase your battery life.
         Show hotspot details. Hotspot is blocked by your administrator.
       </message>
       <message name="IDS_ASH_HOTSPOT_DETAILED_VIEW_SUBLABEL_NO_MOBILE_DATA" desc="The sublabel text in the hotspot detailed view when hotspot is off and not allowed to turn on due to no mobile network connection.">
-        Connect to mobile data to use hotspot
+        Connect to mobile data
       </message>
       <message name="IDS_ASH_HOTSPOT_DETAILED_VIEW_INFO_TOOLTIP_MOBILE_DATA_NOT_SUPPORTED" desc="The tooltip for the info icon in hotspot detailed view when hotspot is off and not allowed to turn on due to the connected mobile data doesn't support hotspot.">
         Your mobile network doesn't support hotspot
@@ -2784,13 +2806,13 @@ Turning on battery saver to increase your battery life.
         "<ph name="NAME">$1<ex>Chromebook</ex></ph>" visible to Bluetooth devices.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HOTSPOT_ON_MULTIPLE_CONNECTED_DEVICES" desc="Tooltip or accessiblity text for the hotspot icon in system tray when hotspot is turned on and multiple devices are connected.">
-        <ph name="DEVICECOUNT">$1</ph> devices connected to your <ph name="DEVICE_NAME">$2<ex>Chromebook</ex></ph> hotspot
+        <ph name="DEVICECOUNT">$1</ph> devices connected to <ph name="DEVICE_NAME">$2<ex>Chromebook</ex></ph> hotspot
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HOTSPOT_ON_ONE_CONNECTED_DEVICE" desc="Tooltip or accessiblity text for the hotspot icon in system tray when hotspot is turned on and one device is connected.">
-        1 device connected to your <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> hotspot
+        1 device connected to <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> hotspot
       </message>
       <message name="IDS_ASH_STATUS_TRAY_HOTSPOT_ON_NO_CONNECTED_DEVICES" desc="Tooltip or accessiblity text for the hotspot icon in system tray when hotspot is turned on and no devices are connected.">
-        Your <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> hotspot is on, no devices connected
+        <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> hotspot is on, no devices connected
       </message>
       <message name="IDS_ASH_HOTSPOT_ON_TITLE" desc="Title used for the system notification shown when the hotspot is turned on.">
         Hotspot is on
@@ -4503,17 +4525,14 @@ Turning on battery saver to increase your battery life.
       <message name="IDS_ASH_LOGIN_MANUAL_LOCK_MESSAGE" desc="Message shown to user indicating that their parent locked the device.">
         Your parent locked this device
       </message>
-      <message name="IDS_ASH_LOGIN_MULTI_PROFILES_RESTRICTED_POLICY_TITLE" desc="Text that is shown on the title of the bubble shown for user pod which is not allowed in multi-profiles session.">
+      <message name="IDS_ASH_LOGIN_MULTI_USER_SIGN_IN_RESTRICTED_POLICY_TITLE" desc="Text that is shown on the title of the bubble shown for user pod which is not allowed in multi-profiles session.">
         Can't set up multiple sign-in
       </message>
-      <message name="IDS_ASH_LOGIN_MULTI_PROFILES_NOT_ALLOWED_POLICY_MSG" desc="Text that is shown on the bubble shown for user pod which is not allowed in multi-profiles session because of not-allowed policy or because of usage policy-pushed certificates.">
+      <message name="IDS_ASH_LOGIN_MULTI_USER_SIGN_IN_NOT_ALLOWED_POLICY_MSG" desc="Text that is shown on the bubble shown for user pod which is not allowed in multi-profiles session because of not-allowed policy or because of usage policy-pushed certificates.">
         The administrator for this account has disallowed multiple sign-in.
       </message>
-      <message name="IDS_ASH_LOGIN_MULTI_PROFILES_PRIMARY_ONLY_POLICY_MSG" desc="Text that is shown on the bubble shown for user pod which is not allowed in multi-profiles session because of primary-only policy.">
+      <message name="IDS_ASH_LOGIN_MULTI_USER_SIGN_IN_PRIMARY_ONLY_POLICY_MSG" desc="Text that is shown on the bubble shown for user pod which is not allowed in multi-profiles session because of primary-only policy.">
         The administrator for this account requires this account to be the first signed-in account in a multiple sign-in session.
-      </message>
-      <message name="IDS_ASH_LOGIN_MULTI_PROFILES_OWNER_PRIMARY_ONLY_MSG" desc="Text that is shown on the bubble shown for owner user pod which is not allowed in multi-profiles session because it has to be primary user in the session.">
-        This owner account has to be the first signed-in account in a multiple sign-in session.
       </message>
       <message name="IDS_ASH_LOGIN_ONLINE_SIGN_IN_MESSAGE" desc="Message shown in the login screen when online sign-in is required.">
         Sign in
@@ -6716,6 +6735,9 @@ New install
       <message name="IDS_GLANCEABLES_WELCOME_LABEL" desc="Personalized greeting / welcome message shown on glanceables surfaces (welcome screen and overview mode).">
         Welcome back, <ph name="GIVEN_NAME">$1<ex>John</ex></ph>
       </message>
+      <message name="IDS_GLANCEABLES_ITEMS_TURNED_IN_AND_GRADED" desc="The teacher classroom glanceable shows upcoming/missed/completed assignments from Google Classroom. For each assignment item, this text displays the number of submissions turned in along side the total number of sumbissions. Then this text also displays the number of submissions currently graded.">
+        <ph name="NUM_TURNED_IN">$1<ex>8</ex></ph>/<ph name="TOTAL_NUM_OF_SUBMISSIONS">$2<ex>22</ex></ph> turned in • <ph name="NUM_GRADED">$3<ex>5</ex></ph> graded
+      </message>
       <message name="IDS_GLANCEABLES_LIST_FOOTER_ITEMS_COUNT_LABEL" desc="The glanceable displays classroom or tasks items fetched from Google Classroom or Google Tasks API. The first placeholder value is the number of items visible in the UI. The second placeholder value is the total number of items returned from API.">
         Showing <ph name="NUM_SHOWN_ITEMS">$1<ex>5</ex></ph> out of <ph name="NUM_TOTAL_ITEMS">$2<ex>10</ex></ph>
       </message>
@@ -6766,35 +6788,35 @@ To shut down the device, press and hold the power button on the device again.
       </message>
 
       <!-- Welcome Tour -->
-      <message name="IDS_ASH_WELCOME_TOUR_DIALOG_ACCEPT_BUTTON_TEXT" desc="Text shown on the dialog's button that starts the System UI Welcome Tour tutorial when triggered." translateable="false">
-        [i18n] Quick tour
+      <message name="IDS_ASH_WELCOME_TOUR_DIALOG_ACCEPT_BUTTON_TEXT" desc="Text shown on the dialog's button that starts the System UI Welcome Tour tutorial when triggered.">
+        Quick tour
       </message>
-      <message name="IDS_ASH_WELCOME_TOUR_DIALOG_CANCEL_BUTTON_TEXT" desc="Text shown on the dialog's button that closes the dialog without starting the System UI Welcome Tour tutorial when triggered." translateable="false">
-        [i18n] No thanks
+      <message name="IDS_ASH_WELCOME_TOUR_DIALOG_CANCEL_BUTTON_TEXT" desc="Text shown on the dialog's button that closes the dialog without starting the System UI Welcome Tour tutorial when triggered.">
+        No thanks
       </message>
-      <message name="IDS_ASH_WELCOME_TOUR_DIALOG_DESCRIPTION_TEXT" desc="Text shown in the body of the dialog as part of the System UI Welcome Tour." translateable="false">
-        [i18n] Take a quick tour to get off to a smooth start. With 6 steps, it will just take a few minutes.
+      <message name="IDS_ASH_WELCOME_TOUR_DIALOG_DESCRIPTION_TEXT" desc="Text shown in the body of the dialog as part of the System UI Welcome Tour.">
+        Take a quick tour to get off to a smooth start. With 6 steps, it will just take a few minutes.
       </message>
-      <message name="IDS_ASH_WELCOME_TOUR_DIALOG_TITLE_TEXT" desc="Text shown as the Welcome Tour dialog title." translateable="false">
-        [i18n] Hi there. Chromebooks are a little different.
+      <message name="IDS_ASH_WELCOME_TOUR_DIALOG_TITLE_TEXT" desc="Text shown as the Welcome Tour dialog title.">
+        Hi there. Chromebooks are a little different.
       </message>
-      <message name="IDS_ASH_WELCOME_TOUR_EXPLORE_APP_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the Explore app as part of the System UI Welcome Tour." translateable="false">
-        [i18n] Those were the basics! Continue in Explore to make the most of your Chromebook. You'll find the best apps for Chromebook, tips on getting started, special offers, and more.
+      <message name="IDS_ASH_WELCOME_TOUR_EXPLORE_APP_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the Explore app as part of the System UI Welcome Tour.">
+        Those were the basics! Continue in Explore, our built-in app for tips and help. You’ll find tips for getting started, recommended apps, special offers, and the newest Chromebook features.
       </message>
-      <message name="IDS_ASH_WELCOME_TOUR_HOME_BUTTON_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the home button as part of the System UI Welcome Tour." translateable="false">
-        [i18n] Use apps to do everything you need on your Chromebook. Find your apps in the Launcher. You can also press the Launcher key on the keyboard.
+      <message name="IDS_ASH_WELCOME_TOUR_HOME_BUTTON_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the home button as part of the System UI Welcome Tour.">
+        Use apps to do everything you need on your Chromebook. You can find your apps in the Launcher. You can also press the Launcher key on the keyboard.
       </message>
-      <message name="IDS_ASH_WELCOME_TOUR_SEARCH_BOX_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the search box as part of the System UI Welcome Tour." translateable="false">
-        [i18n] Search for files, apps, and more in Launcher. You can also get answers to questions about your Chromebook.
+      <message name="IDS_ASH_WELCOME_TOUR_SEARCH_BOX_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the search box as part of the System UI Welcome Tour.">
+        Search for your files, apps, and more in the Launcher. You can also get answers to questions about your Chromebook.
       </message>
-      <message name="IDS_ASH_WELCOME_TOUR_SETTINGS_APP_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the Settings app as part of the System UI Welcome Tour" translateable="false">
-        [i18n] Customize and personalize your Chromebook in Settings.
+      <message name="IDS_ASH_WELCOME_TOUR_SETTINGS_APP_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the Settings app as part of the System UI Welcome Tour">
+        Customize and personalize your Chromebook in Settings. Try changing your wallpaper or setting a screen saver.
       </message>
-      <message name="IDS_ASH_WELCOME_TOUR_SHELF_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the shelf as part of the System UI Welcome Tour." translateable="false">
-        [i18n] Your pinned apps and open apps are on the Shelf. It's similar to a taskbar or dock.
+      <message name="IDS_ASH_WELCOME_TOUR_SHELF_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the shelf as part of the System UI Welcome Tour.">
+        Your pinned and open apps are on the Shelf. To pin an app to the Shelf, right-click an app or tap your touchpad with two fingers.
       </message>
-      <message name="IDS_ASH_WELCOME_TOUR_STATUS_AREA_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the status area as part of the System UI Welcome Tour." translateable="false">
-        [i18n] Frequently used controls like Wi-Fi, Bluetooth and volume controls are in Quick Settings. You can also go here to take screenshots.
+      <message name="IDS_ASH_WELCOME_TOUR_STATUS_AREA_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the status area as part of the System UI Welcome Tour.">
+        Frequently used controls like Wi-Fi, Bluetooth and volume are in Quick Settings. You can also go here to take screenshots.
       </message>
 
       <!-- TODO(b/286455407): Update strings once finalized with UX Writing -->

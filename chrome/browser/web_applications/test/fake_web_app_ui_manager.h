@@ -6,8 +6,11 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_TEST_FAKE_WEB_APP_UI_MANAGER_H_
 
 #include <map>
+#include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -28,6 +31,8 @@ class FakeWebAppUiManager : public WebAppUiManager {
   void Shutdown() override;
 
   void SetNumWindowsForApp(const AppId& app_id, size_t num_windows_for_app);
+  void SetOnNotifyOnAllAppWindowsClosedCallback(
+      base::RepeatingCallback<void(AppId)> callback);
   int num_reparent_tab_calls() const { return num_reparent_tab_calls_; }
 
   void SetOnLaunchWebAppCallback(OnLaunchWebAppCallback callback);
@@ -67,13 +72,25 @@ class FakeWebAppUiManager : public WebAppUiManager {
                            Profile& profile,
                            LaunchWebAppCallback callback,
                            AppLock& lock) override;
-  void MaybeTransferAppAttributes(const AppId& from_extension_or_app,
-                                  const AppId& to_app) override;
+#if BUILDFLAG(IS_CHROMEOS)
+  void MigrateLauncherState(const AppId& from_app_id,
+                            const AppId& to_app_id,
+                            base::OnceClosure callback) override;
+#endif
   content::WebContents* CreateNewTab() override;
   void TriggerInstallDialog(content::WebContents* web_contents) override;
 
  private:
   base::flat_map<AppId, size_t> app_id_to_num_windows_map_;
+  // Closures waiting to be called when all windows for a given `AppId` are
+  // closed.
+  base::flat_map<AppId, std::vector<base::OnceClosure>>
+      windows_closed_requests_map_;
+
+  // Callback that is triggered after `NotifyOnAllAppWindowsClosed` is called.
+  base::RepeatingCallback<void(AppId)>
+      notify_on_all_app_windows_closed_callback_ = base::DoNothing();
+
   int num_reparent_tab_calls_ = 0;
   OnLaunchWebAppCallback on_launch_web_app_callback_;
 };

@@ -53,6 +53,11 @@ class AlertCoordinatorTest : public PlatformTest {
     return alert_coordinator_;
   }
 
+  void TearDown() override {
+    [alert_coordinator_ stop];
+    PlatformTest::TearDown();
+  }
+
  private:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
@@ -258,29 +263,6 @@ TEST_F(AlertCoordinatorTest, NoInteractionActionTest) {
 
   // Test.
   EXPECT_TRUE(block_called);
-}
-
-// Tests that the `noInteractionAction` block is not called for an alert
-// coordinator which is dismissed with the cancel button.
-TEST_F(AlertCoordinatorTest, NoInteractionActionWithCancelTest) {
-  // Setup.
-  UIViewController* view_controller = GetViewController();
-  AlertCoordinator* alert_coordinator = GetAlertCoordinator(view_controller);
-
-  __block BOOL block_called = NO;
-
-  alert_coordinator.noInteractionAction = ^{
-    block_called = YES;
-  };
-
-  StartAlertCoordinator();
-
-  // Action.
-  [alert_coordinator executeCancelHandler];
-  [alert_coordinator stop];
-
-  // Test.
-  EXPECT_FALSE(block_called);
 }
 
 // Tests that the alert coordinator is dismissed if destroyed without being

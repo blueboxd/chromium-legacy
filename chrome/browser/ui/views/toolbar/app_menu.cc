@@ -145,14 +145,6 @@ bool IsRecentTabsCommand(int command_id) {
           1);
 }
 
-// Returns true if |command_id| identifies an other profile menu item.
-bool IsOtherProfileCommand(int command_id) {
-  return command_id >= IDC_FIRST_UNBOUNDED_MENU &&
-         ((command_id - IDC_FIRST_UNBOUNDED_MENU) %
-              AppMenuModel::kNumUnboundedMenuTypes ==
-          2);
-}
-
 // Combination border/background for the buttons contained in the menu. The
 // painting of the border/background is done here as LabelButton does not always
 // paint the border.
@@ -335,12 +327,18 @@ class InMenuImageButton : public ImageButton {
   void Init(InMenuButtonBackground::ButtonType type,
             InMenuButtonBackground::ButtonShape shape,
             const ui::ImageModel& image_model) {
+    SetFocusBehavior(FocusBehavior::ALWAYS);
     SetImageModel(views::Button::STATE_NORMAL, image_model);
     SetImageHorizontalAlignment(ImageButton::ALIGN_CENTER);
     SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
     SetBackground(std::make_unique<InMenuButtonBackground>(type, shape));
     SetBorder(views::CreateEmptyBorder(
         gfx::Insets::TLBR(0, kHorizontalPadding, 0, kHorizontalPadding)));
+  }
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    ImageButton::GetAccessibleNodeData(node_data);
+    node_data->role = ax::mojom::Role::kMenuItem;
   }
 };
 

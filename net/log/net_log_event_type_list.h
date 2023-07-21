@@ -1639,15 +1639,6 @@ EVENT_TYPE(HTTP2_SESSION_SEND_DATA)
 //   }
 EVENT_TYPE(HTTP2_SESSION_RECV_DATA)
 
-// This event is sent for receiving an HTTP/2 PUSH_PROMISE frame.
-// The following parameters are attached:
-//   {
-//     "headers": <The list of header:value pairs>,
-//     "id": <The stream id>,
-//     "promised_stream_id": <The stream id>,
-//   }
-EVENT_TYPE(HTTP2_SESSION_RECV_PUSH_PROMISE)
-
 // A stream is stalled by the session send window being closed.
 EVENT_TYPE(HTTP2_SESSION_STREAM_STALLED_BY_SESSION_SEND_WINDOW)
 
@@ -2166,6 +2157,14 @@ EVENT_TYPE(QUIC_SESSION_WEBTRANSPORT_CLIENT_ALIVE)
 //     "error": <Optionally, error codes and details when an error happened>
 //   }
 EVENT_TYPE(QUIC_SESSION_WEBTRANSPORT_CLIENT_STATE_CHANGED)
+
+// A WebTransport session is ready.
+//   {
+//     "http_datagram_version": <Negotiated HTTP Datagram version>,
+//     "webtransport_http3_version": <Negotiated WebTransport over HTTP/3
+//      version>
+//   }
+EVENT_TYPE(QUIC_SESSION_WEBTRANSPORT_SESSION_READY)
 
 // QUIC with TLS gets 0-RTT rejected.
 EVENT_TYPE(QUIC_SESSION_ZERO_RTT_REJECTED)

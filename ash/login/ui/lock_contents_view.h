@@ -37,6 +37,7 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "components/account_id/account_id.h"
+#include "components/user_manager/multi_user/multi_user_sign_in_policy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/display/display_observer.h"
@@ -209,10 +210,10 @@ class ASH_EXPORT LockContentsView
   // a note in the menu user view.
   void ToggleManagementForUserForDebug(const AccountId& user);
 
-  // Called for debugging to make |user| having a multiprofile policy.
-  void SetMultiprofilePolicyForUserForDebug(
+  // Called for debugging to make |user| having a multi-user-sign-in policy.
+  void SetMultiUserSignInPolicyForUserForDebug(
       const AccountId& user,
-      const MultiProfileUserBehavior& multiprofile_policy);
+      user_manager::MultiUserSignInPolicy policy);
 
   // Called for debugging to toggle forced online sign-in form |user|.
   void ToggleForceOnlineSignInForUserForDebug(const AccountId& user);
@@ -445,8 +446,8 @@ class ASH_EXPORT LockContentsView
 
   // If the kiosk app button is not visible, the kiosk app default message would
   // be shown.
-  raw_ptr<KioskAppDefaultMessage, DanglingAcrossTasks> kiosk_default_message_ =
-      nullptr;
+  raw_ptr<KioskAppDefaultMessage, AcrossTasksDanglingUntriaged>
+      kiosk_default_message_ = nullptr;
 
   // Actions that should be executed before a new layout happens caused by a
   // display change (eg. screen rotation). A full layout pass is performed after
@@ -473,7 +474,7 @@ class ASH_EXPORT LockContentsView
   raw_ptr<LoginErrorBubble, ExperimentalAsh> warning_banner_bubble_;
 
   // View that is shown on login timeout with camera usage.
-  raw_ptr<LoginCameraTimeoutView, DanglingAcrossTasks>
+  raw_ptr<LoginCameraTimeoutView, AcrossTasksDanglingUntriaged>
       login_camera_timeout_view_ = nullptr;
 
   // Bottom status indicator displaying entreprise domain or ADB enabled alert

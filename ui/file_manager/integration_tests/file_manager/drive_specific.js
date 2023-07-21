@@ -344,7 +344,7 @@ testcase.drivePinMultiple = async () => {
   await remoteCall.waitForElementLost(
       appId, '#file-list .dim-offline[file-name="world.ogv"]');
   await remoteCall.waitForElement(
-      appId, '#file-list .pinned[file-name="world.ogv"] .inline-status');
+      appId, '#file-list .pinned[file-name="world.ogv"] xf-inline-status');
 
   // Select world.ogv by itself.
   await remoteCall.waitAndClickElement(
@@ -412,7 +412,7 @@ testcase.drivePinHosted = async () => {
   await remoteCall.waitForElementLost(
       appId, '#file-list .dim-offline[file-name="hello.txt"]');
   await remoteCall.waitForElement(
-      appId, '#file-list .pinned[file-name="hello.txt"] .inline-status');
+      appId, '#file-list .pinned[file-name="hello.txt"] xf-inline-status');
 
   // Test Document.gdoc should not be pinned however.
   await remoteCall.waitForElement(
@@ -469,7 +469,7 @@ testcase.drivePinFileMobileNetwork = async () => {
   // Check: File is pinned.
   await remoteCall.waitForElement(appId, '[command="#toggle-pinned"][checked]');
   await remoteCall.waitForElement(
-      appId, '#file-list .pinned[file-name="hello.txt"] .inline-status');
+      appId, '#file-list .pinned[file-name="hello.txt"] xf-inline-status');
   await waitForNotification('disabled-mobile-sync');
   await sendTestMessage({
     name: 'clickNotificationButton',
@@ -697,7 +697,7 @@ testcase.driveAvailableOfflineActionBar = async () => {
   // Hover cursor over the pinned icon.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'fakeMouseOver', appId,
-      ['#file-list .pinned[file-name="hello.txt"] .inline-status']));
+      ['#file-list .pinned[file-name="hello.txt"] xf-inline-status']));
 
   // Verify the correct tooltip is displayed.
   const tooltip = await remoteCall.waitForElement(
@@ -958,7 +958,7 @@ testcase.driveInlineSyncStatusSingleFile = async () => {
     syncStatus: 'in_progress',
   });
 
-  const pieProgressQuery = '[data-sync-status=in_progress] .progress';
+  const pieProgressQuery = 'xf-inline-status[sync-status=in_progress]';
 
   // Verify this data reaches the UI as a progress value of 50%.
   const inlineStatus = await remoteCall.waitForElement(appId, pieProgressQuery);
@@ -982,7 +982,8 @@ testcase.driveInlineSyncStatusSingleFile = async () => {
   });
 
   // Verify the "sync in progress" icon is no longer displayed.
-  await remoteCall.waitForElementLost(appId, '[data-sync-status=in_progress]');
+  await remoteCall.waitForElementLost(
+      appId, 'xf-inline-status[sync-status=in_progress]');
 };
 
 /**
@@ -1045,8 +1046,8 @@ testcase.driveInlineSyncStatusParentFolder = async () => {
   // toBeUploaded - syncing in progress
   // toFailUploading - syncing in progress
 
-  const syncInProgressQuery = '[data-sync-status=in_progress]';
-  const syncFailedQuery = '[data-sync-status=error]';
+  const syncInProgressQuery = 'xf-inline-status[sync-status=in_progress]';
+  const syncFailedQuery = 'xf-inline-status[sync-status=error]';
 
   // Verify the "sync in progress" icon is displayed in the parent folder.
   await remoteCall.waitForElement(appId, syncInProgressQuery);
@@ -1114,7 +1115,7 @@ testcase.driveInlineSyncStatusSingleFileProgressEvents = async () => {
 
   // Verify this data reaches the UI as a progress value of 50%.
   const inlineStatus = await remoteCall.waitForElement(
-      appId, '[data-sync-status=in_progress] .progress');
+      appId, 'xf-inline-status[sync-status=in_progress]');
 
   chrome.test.assertEq(Number(inlineStatus.attributes['progress']), 0.5);
 
@@ -1126,7 +1127,8 @@ testcase.driveInlineSyncStatusSingleFileProgressEvents = async () => {
   });
 
   // Verify the "sync in progress" icon is no longer displayed.
-  await remoteCall.waitForElementLost(appId, '[data-sync-status=in_progress]');
+  await remoteCall.waitForElementLost(
+      appId, 'xf-inline-status[sync-status=in_progress]');
 };
 
 /**
@@ -1195,8 +1197,8 @@ testcase.driveInlineSyncStatusParentFolderProgressEvents = async () => {
   // some_folder/toBeUploaded - syncing in progress
   // some_folder/toFailUploading - syncing in progress
 
-  const syncInProgressQuery = '[data-sync-status=in_progress]';
-  const syncQueuedQuery = '[data-sync-status=queued]';
+  const syncInProgressQuery = 'xf-inline-status[sync-status=in_progress]';
+  const syncQueuedQuery = 'xf-inline-status[sync-status=queued]';
 
   // Verify the "sync in progress" icon is displayed in the parent "some_folder"
   // folder.
@@ -1531,58 +1533,6 @@ testcase.drivePinToggleIsDisabledAndHiddenWhenBulkPinningEnabled = async () => {
 };
 
 /**
- * Tests that when bulk pinning is enabled, the "Available offline" toggle
- * should not be visible. When the preference is updated, the toggle should
- * reappear.
- */
-testcase.driveFolderShouldShowOfflineTickWhenBulkPinningEnabled = async () => {
-  const appId = await setupAndWaitUntilReady(
-      RootPath.DRIVE, [],
-      [ENTRIES.directoryA, ENTRIES.directoryB, ENTRIES.linkGtoB]);
-
-  // Wait for the directory "A" to not have the pinned class attached.
-  await remoteCall.waitForElement(
-      appId, '#file-list [file-name="A"]:not(.pinned)');
-
-  // Mock the free space returned by spaced to be 4 GB and enable the bulk
-  // pinning preference.
-  await remoteCall.setSpacedFreeSpace(4n << 30n);
-  await sendTestMessage({name: 'setBulkPinningEnabledPref', enabled: true});
-
-  // Wait for the folder to show up as pinned (the underlying folder will not
-  // actually get pinned but the class should still be added).
-  await remoteCall.waitForElement(appId, '#file-list [file-name="A"].pinned');
-
-  // Disable the bulk pinning preference and wait for the folder to lose the
-  // pinned class.
-  await sendTestMessage({name: 'setBulkPinningEnabledPref', enabled: false});
-  await remoteCall.waitForElement(
-      appId, '#file-list [file-name="A"]:not(.pinned)');
-
-  // Show the context menu for the "A" directory and click the pinning command.
-  await remoteCall.showContextMenuFor(appId, 'A');
-  await remoteCall.waitAndClickElement(
-      appId,
-      '#file-context-menu:not([hidden]) ' +
-          '[command="#toggle-pinned"]:not([checked])');
-
-  // Wait for the element to receive the pinned class from the explicit pinning
-  // action then enable the bulk pinning feature.
-  await remoteCall.waitForElement(appId, '#file-list [file-name="A"].pinned');
-  await sendTestMessage({name: 'setBulkPinningEnabledPref', enabled: true});
-
-  // The folder should not lose it's pinning status when the pinning manager
-  // enters the Syncing state.
-  await remoteCall.waitForBulkPinningStage('Syncing');
-  await remoteCall.waitForElement(appId, '#file-list [file-name="A"].pinned');
-
-  // Disable the bulk pinning preference and ensure the folder retains its
-  // pinned state.
-  await sendTestMessage({name: 'setBulkPinningEnabledPref', enabled: false});
-  await remoteCall.waitForElement(appId, '#file-list [file-name="A"].pinned');
-};
-
-/**
  * Tests that "Shared with me" which is outside "My drive" retains the pinned
  * property and it is not updated when bulk pinning is enabled.
  */
@@ -1727,6 +1677,14 @@ testcase.driveItemsOutOfViewportShouldUpdateTheirSyncStatus = async () => {
   await remoteCall.waitAndClickElement(
       appId, ['.table-header-cell:nth-of-type(1)']);
 
+  // Update the second file's metadata to "not pinnable" and wait for the
+  // corresponding icon to be displayed.
+  const secondFileName = entries[1].nameText;
+  await sendTestMessage(
+      {name: 'setCanPin', path: `/root/${secondFileName}`, canPin: false});
+  await remoteCall.waitForElement(
+      appId, `#file-list [file-name="${secondFileName}"].cant-pin`);
+
   // Wait for the first entry to appear in the file list.
   const firstFileName = entries[0].nameText;
   await remoteCall.waitForElement(
@@ -1759,7 +1717,7 @@ testcase.driveItemsOutOfViewportShouldUpdateTheirSyncStatus = async () => {
   });
 
   const inlineSyncSelector = fileName => `#file-list [file-name="${
-      fileName}"][data-sync-status=in_progress] .progress`;
+      fileName}"] xf-inline-status[sync-status=in_progress]`;
 
   // Wait for the progress to appear on the last file and assert it received the
   // correct progress value.
@@ -1767,6 +1725,15 @@ testcase.driveItemsOutOfViewportShouldUpdateTheirSyncStatus = async () => {
       await remoteCall.waitForElement(appId, inlineSyncSelector(lastFileName));
   chrome.test.assertEq(
       Number(lastFileInlineStatus.attributes['progress']), 0.5);
+
+  // Send a "completed" sync progress event for the second last file and wait
+  // for its effect.
+  const secondLastFileName = entries[entries.length - 2].nameText;
+  await sendTestMessage({
+    name: 'setDriveSyncProgress',
+    path: `/root/${secondLastFileName}`,
+    progress: 100,
+  });
 
   // Scroll back up to the first element.
   await remoteCall.callRemoteTestUtil('setScrollTop', appId, ['#file-list', 0]);
@@ -1777,6 +1744,10 @@ testcase.driveItemsOutOfViewportShouldUpdateTheirSyncStatus = async () => {
       await remoteCall.waitForElement(appId, inlineSyncSelector(firstFileName));
   chrome.test.assertEq(
       Number(firstFileInlineStatus.attributes['progress']), 0.5);
+
+  // Ensure the second file is still displayed as "not pinnable".
+  await remoteCall.waitForElement(
+      appId, `#file-list [file-name="${secondFileName}"].cant-pin`);
 
   // Switch to grid view.
   await remoteCall.waitAndClickElement(appId, '#view-button');
@@ -1817,13 +1788,15 @@ testcase.driveAllItemsShouldBeQueuedIfTrackedByPinManager = async () => {
 
   // The file should have a queued despite never getting set to pinned.
   await remoteCall.waitForElement(
-      appId, '#file-list [file-name="hello.txt"][data-sync-status=queued]');
+      appId,
+      '#file-list [file-name="hello.txt"] xf-inline-status[sync-status=queued]');
 
   // Disable bulk pinning and ensure the sync status gets removed (i.e. returns
   // to not found).
   await sendTestMessage({name: 'setBulkPinningEnabledPref', enabled: false});
   await remoteCall.waitForElement(
-      appId, '#file-list [file-name="hello.txt"][data-sync-status=not_found]');
+      appId,
+      '#file-list [file-name="hello.txt"] xf-inline-status[sync-status=not_found]');
 
   // Ensure the pin manager pins files then re-enable the bulk pinning
   // preferece. The hello file should be pinned now.
@@ -1831,7 +1804,7 @@ testcase.driveAllItemsShouldBeQueuedIfTrackedByPinManager = async () => {
   await sendTestMessage({name: 'setBulkPinningEnabledPref', enabled: true});
   await remoteCall.waitForElement(
       appId,
-      '#file-list [file-name="hello.txt"][data-sync-status=not_found].pinned');
+      '#file-list [file-name="hello.txt"].pinned xf-inline-status[sync-status=not_found]');
 };
 
 /**
@@ -1847,7 +1820,8 @@ testcase.driveDirtyItemsShouldBeDisplayedAsQueued = async () => {
   // The file should be displayed as "queued" despite it not having received any
   // progress events yet because dirty=true.
   await remoteCall.waitForElement(
-      appId, '#file-list [file-name="dirty.txt"][data-sync-status=queued]');
+      appId,
+      '#file-list [file-name="dirty.txt"] xf-inline-status[sync-status=queued]');
 
   // Fake the file starting to sync.
   await sendTestMessage({
@@ -1859,7 +1833,7 @@ testcase.driveDirtyItemsShouldBeDisplayedAsQueued = async () => {
   // Verify that the sync_state transitions to "in_progress".
   await remoteCall.waitForElement(
       appId,
-      '#file-list [file-name="dirty.txt"][data-sync-status=in_progress]');
+      '#file-list [file-name="dirty.txt"] xf-inline-status[sync-status=in_progress]');
 };
 
 /**

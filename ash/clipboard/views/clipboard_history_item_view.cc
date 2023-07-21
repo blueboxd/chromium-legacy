@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/bubble/bubble_utils.h"
 #include "ash/clipboard/clipboard_history.h"
 #include "ash/clipboard/clipboard_history_item.h"
 #include "ash/clipboard/clipboard_history_util.h"
@@ -14,6 +15,7 @@
 #include "ash/clipboard/views/clipboard_history_main_button.h"
 #include "ash/clipboard/views/clipboard_history_text_item_view.h"
 #include "ash/clipboard/views/clipboard_history_view_constants.h"
+#include "ash/style/typography.h"
 #include "base/auto_reset.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -22,12 +24,16 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/clipboard/clipboard_data.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
@@ -35,6 +41,7 @@
 #include "ui/views/metadata/view_factory_internal.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_targeter_delegate.h"
+#include "ui/views/view_utils.h"
 
 namespace ash {
 namespace {
@@ -62,7 +69,38 @@ const gfx::Insets GetDeleteButtonMargins(
       return ClipboardHistoryViews::kBitmapItemDeleteButtonMargins;
   }
 }
+
+// Creates a label with the text "Ctrl+V" to be displayed under the contents of
+// the first item in the clipboard history menu.
+std::unique_ptr<views::Label> CreateCtrlVLabel() {
+  return views::Builder<views::Label>(
+             bubble_utils::CreateLabel(
+                 TypographyToken::kCrosLabel1,
+                 ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN)
+                     .GetShortcutText(),
+                 cros_tokens::kCrosSysSecondary))
+      .SetID(clipboard_history_util::kCtrlVLabelID)
+      .SetHorizontalAlignment(gfx::ALIGN_LEFT)
+      .Build();
+}
 }  // namespace
+
+// ClipboardHistoryItemView::ContentsView --------------------------------------
+
+ClipboardHistoryItemView::ContentsView::ContentsView() {
+  SetID(clipboard_history_util::kContentsViewID);
+}
+
+ClipboardHistoryItemView::ContentsView::~ContentsView() = default;
+
+void ClipboardHistoryItemView::ContentsView::OnViewVisibilityChanged(
+    views::View* observed_view,
+    views::View* starting_view) {
+  is_delete_button_visible_ = observed_view->GetVisible();
+  SetClipPath(GetClipPath());
+}
+
+// ClipboardHistoryItemView::DisplayView ---------------------------------------
 
 // Container class for everything that visibly appears in a menu item.
 class ClipboardHistoryItemView::DisplayView
@@ -97,9 +135,32 @@ class ClipboardHistoryItemView::DisplayView
           views::Builder<views::View>()
               .SetLayoutManager(std::make_unique<views::FillLayout>())
               .AddChildren(
-                  views::Builder<views::View>(container->CreateContentsView()),
+                  views::Builder<views::BoxLayoutView>()
+                      .SetOrientation(views::BoxLayout::Orientation::kVertical)
+                      .SetBetweenChildSpacing(
+                          ClipboardHistoryViews::kCtrlVLabelPadding)
+                      .AddChildren(
+                          views::Builder<views::View>(
+                              container->CreateContentsView())
+                              .CopyAddressTo(&contents_view_),
+                          views::Builder<views::Label>(CreateCtrlVLabel())
+                              .CopyAddressTo(&container->ctrl_v_label_)
+                              // The Ctrl+V label is hidden by default.
+                              // `ShowCtrlVLabel()` will be called on the menu's
+                              // first item to make its label visible.
+                              .SetVisible(false)),
                   views::Builder<views::View>(container->CreateDeleteButton()))
               .Build());
+
+      // `CreateDeleteButton()` already calls `CopyAddressTo()` when building
+      // the delete button, so it will not copy the right address if called
+      // again. Therefore, we cache `delete_button_` outside of the builder.
+      delete_button_ = container->delete_button_.get();
+
+      // `contents_view_` observes `delete_button_` so that the former can be
+      // clipped to avoid overlapping with the latter.
+      delete_button_->AddObserver(
+          views::AsViewClass<ContentsView>(contents_view_));
     } else {
       // Add the item's contents and a delete button that, when visible, takes
       // away some of the contents' horizontal space.
@@ -113,7 +174,12 @@ class ClipboardHistoryItemView::DisplayView
   DisplayView(const DisplayView& rhs) = delete;
   DisplayView& operator=(const DisplayView& rhs) = delete;
 
-  ~DisplayView() override = default;
+  ~DisplayView() override {
+    if (chromeos::features::IsClipboardHistoryRefreshEnabled()) {
+      delete_button_->RemoveObserver(
+          views::AsViewClass<ContentsView>(contents_view_));
+    }
+  }
 
  private:
   // views::ViewTargeterDelegate:
@@ -132,7 +198,18 @@ class ClipboardHistoryItemView::DisplayView
 
   // The parent item view.
   const raw_ptr<ClipboardHistoryItemView> container_;
+
+  // Owned by the view hierarchy. Only set when the clipboard history refresh is
+  // enabled.
+  raw_ptr<views::View> contents_view_;
+
+  // Owned by the view hierarchy. Only set when the clipboard history refresh is
+  // enabled. Cached locally because `container_` cannot be accessed when `this`
+  // is being destroyed.
+  raw_ptr<views::View> delete_button_;
 };
+
+// ClipboardHistoryItemView ----------------------------------------------------
 
 // static
 std::unique_ptr<ClipboardHistoryItemView>
@@ -144,18 +221,25 @@ ClipboardHistoryItemView::CreateFromClipboardHistoryItem(
   const auto display_format = item->display_format();
   UMA_HISTOGRAM_ENUMERATION(
       "Ash.ClipboardHistory.ContextMenu.DisplayFormatShown", display_format);
+
+  std::unique_ptr<ClipboardHistoryItemView> item_view;
   switch (display_format) {
     case crosapi::mojom::ClipboardHistoryDisplayFormat::kUnknown:
       NOTREACHED_NORETURN();
     case crosapi::mojom::ClipboardHistoryDisplayFormat::kText:
     case crosapi::mojom::ClipboardHistoryDisplayFormat::kFile:
-      return std::make_unique<ClipboardHistoryTextItemView>(
+      item_view = std::make_unique<ClipboardHistoryTextItemView>(
           item_id, clipboard_history, container);
+      break;
     case crosapi::mojom::ClipboardHistoryDisplayFormat::kPng:
     case crosapi::mojom::ClipboardHistoryDisplayFormat::kHtml:
-      return std::make_unique<ClipboardHistoryBitmapItemView>(
+      item_view = std::make_unique<ClipboardHistoryBitmapItemView>(
           item_id, clipboard_history, container);
+      break;
   }
+  // Initialize `item_view` now that it can create format-specific contents.
+  item_view->Init();
+  return item_view;
 }
 
 ClipboardHistoryItemView::~ClipboardHistoryItemView() = default;
@@ -225,22 +309,9 @@ void ClipboardHistoryItemView::HandleMainButtonPressEvent(
   Activate(CalculateActionForMainButtonClick(), event.flags());
 }
 
-void ClipboardHistoryItemView::Init() {
-  views::Builder<views::View>(this)
-      .SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY)
-      .SetLayoutManager(std::make_unique<views::FillLayout>())
-      .AddChildren(
-          // Add the main button below the delete button in the z-order so that
-          // hovering over the delete button causes it to be recognized as the
-          // item view's event handler.
-          views::Builder<views::View>(
-              std::make_unique<ClipboardHistoryMainButton>(this))
-              .CopyAddressTo(&main_button_),
-          views::Builder<views::View>(std::make_unique<DisplayView>(this)))
-      .BuildChildren();
-
-  subscription_ = container_->AddSelectedChangedCallback(base::BindRepeating(
-      &ClipboardHistoryItemView::OnSelectionChanged, base::Unretained(this)));
+void ClipboardHistoryItemView::ShowCtrlVLabel() {
+  CHECK(ctrl_v_label_);
+  ctrl_v_label_->SetVisible(true);
 }
 
 void ClipboardHistoryItemView::MaybeHandleGestureEventFromMainButton(
@@ -340,6 +411,24 @@ void ClipboardHistoryItemView::GetAccessibleNodeData(ui::AXNodeData* data) {
                          IsMainButtonPseudoFocused());
 }
 
+void ClipboardHistoryItemView::Init() {
+  views::Builder<views::View>(this)
+      .SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY)
+      .SetLayoutManager(std::make_unique<views::FillLayout>())
+      .AddChildren(
+          // Add the main button below the delete button in the z-order so that
+          // hovering over the delete button causes it to be recognized as the
+          // item view's event handler.
+          views::Builder<views::View>(
+              std::make_unique<ClipboardHistoryMainButton>(this))
+              .CopyAddressTo(&main_button_),
+          views::Builder<views::View>(std::make_unique<DisplayView>(this)))
+      .BuildChildren();
+
+  subscription_ = container_->AddSelectedChangedCallback(base::BindRepeating(
+      &ClipboardHistoryItemView::OnSelectionChanged, base::Unretained(this)));
+}
+
 void ClipboardHistoryItemView::Activate(Action action, int event_flags) {
   DCHECK_EQ(Action::kEmpty, action_);
   DCHECK_NE(action_, action);
@@ -429,6 +518,9 @@ void ClipboardHistoryItemView::SetPseudoFocus(PseudoFocus new_pseudo_focus) {
     main_button_->SchedulePaint();
   }
 }
+
+BEGIN_METADATA(ClipboardHistoryItemView, ContentsView, views::View)
+END_METADATA
 
 BEGIN_METADATA(ClipboardHistoryItemView, DisplayView, views::View)
 END_METADATA

@@ -728,11 +728,16 @@ class ComputedStyle : public ComputedStyleBase,
     return ScrollbarGutter() & kScrollbarGutterBothEdges;
   }
 
-  // ignore non-standard ::-webkit-scrollbar when standard properties are in use
+  bool UsesStandardScrollbarStyle() const {
+    return ScrollbarWidth() != EScrollbarWidth::kAuto ||
+           ScrollbarColor().has_value();
+  }
+
+  // Ignore non-standard ::-webkit-scrollbar when standard properties are in
+  // use.
   bool HasCustomScrollbarStyle() const {
     return HasPseudoElementStyle(kPseudoIdScrollbar) &&
-           ScrollbarWidth() == EScrollbarWidth::kAuto &&
-           ScrollbarColor() == absl::nullopt;
+           !UsesStandardScrollbarStyle();
   }
 
   // shape-outside (aka -webkit-shape-outside)
@@ -951,7 +956,7 @@ class ComputedStyle : public ComputedStyleBase,
   void CopyChildDependentFlagsFrom(const ComputedStyle&) const;
 
   // Counters.
-  const CounterDirectiveMap* GetCounterDirectives() const;
+  CORE_EXPORT const CounterDirectiveMap* GetCounterDirectives() const;
   const CounterDirectives GetCounterDirectives(
       const AtomicString& identifier) const;
   bool CounterDirectivesEqual(const ComputedStyle& other) const {
@@ -3580,6 +3585,17 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   void SetHasDynamicViewportUnits() {
     SetViewportUnitFlags(ViewportUnitFlags() |
                          static_cast<unsigned>(ViewportUnitFlag::kDynamic));
+  }
+
+  // ContainIntrinsicSize
+  void SetContainIntrinsicSizeAuto() {
+    StyleIntrinsicLength width = ContainIntrinsicWidth();
+    width.SetHasAuto();
+    SetContainIntrinsicWidth(width);
+
+    StyleIntrinsicLength height = ContainIntrinsicHeight();
+    height.SetHasAuto();
+    SetContainIntrinsicHeight(height);
   }
 
  private:

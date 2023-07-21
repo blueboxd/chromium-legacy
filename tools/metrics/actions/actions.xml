@@ -6419,6 +6419,35 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Commerce.PriceInsights.HistoryGraphInteraction">
+  <owner>zhiyuancai@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when users interact with the history graph shown in the shopping
+    insights side panel.
+  </description>
+</action>
+
+<action name="Commerce.PriceInsights.InlineFeedbackLinkClicked">
+  <owner>zhiyuancai@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when users click the feedback link shown in the shopping insights
+    side panel to pop up the feedback dialog.
+  </description>
+</action>
+
+<action name="Commerce.PriceInsights.NavigationClosedSidePanel"
+    not_user_triggered="true">
+  <owner>zhiyuancai@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when the shopping insights side panel is currently showing and the
+    user navigates away from the current tab, in which case the side panel will
+    be automatically closed.
+  </description>
+</action>
+
 <action name="Commerce.PriceTracking.BookmarkDialogPriceTrackViewShown">
   <owner>meiliang@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -6589,6 +6618,49 @@ should be able to be added at any place in this file.
   <description>
     Records when price tracking icon view shown regarless of the icon view
     state.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.PushNotification.NotificationTapped">
+  <owner>ayman@chromium.org</owner>
+  <owner>davidjm@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when the user taps on a notification indicating that a price drop
+    has occurred on a shopping website they are tracking.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.PushNotification.Received"
+    not_user_triggered="true">
+  <owner>ayman@chromium.org</owner>
+  <owner>davidjm@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a notification that a price drop has occurred for a shopping
+    website the user is tracking is received.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.PushNotification.UnTrackProductTapped">
+  <owner>ayman@chromium.org</owner>
+  <owner>davidjm@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when the user taps 'Untrack product' upon receiving a notification
+    that the price has dropped for a shopping URL the user is tracking. The user
+    can access 'Untrack product' by long pressing on the notififcation.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.PushNotification.VisitSiteTapped">
+  <owner>ayman@chromium.org</owner>
+  <owner>davidjm@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when the user taps 'Visit site' upon receiving a notification that
+    the price has dropped for a shopping URL the user is tracking. The user can
+    access 'Visit site' by long pressing on the notififcation.
   </description>
 </action>
 
@@ -12133,6 +12205,15 @@ should be able to be added at any place in this file.
     The number of times the user triggered the maps context menu after a long
     press on an address, this includes all the menu contexts,
     &quot;get-directions&quot;,&quot;view-location&quot;, and copy.
+  </description>
+</action>
+
+<action name="IOS.ExperienceKit.Maps.OneTap.View">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    The number of times the user tapped on an underlined address and triggered
+    the &quot;view-locationh&quot; view controller.
   </description>
 </action>
 
@@ -26667,6 +26748,11 @@ should be able to be added at any place in this file.
   <description>Change password pressed in PageInfo.</description>
 </action>
 
+<action name="PageInfo.Closed">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
+</action>
+
 <action name="PageInfo.Cookies.Allowed">
   <owner>olesiamarukhno@google.com</owner>
   <owner>dullweber@chromium.org</owner>
@@ -31408,6 +31494,17 @@ should be able to be added at any place in this file.
 <action name="ShowRecentlyViewed">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="ShowRemapKeysSettingsSubpage">
+  <owner>michaelcheco@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <description>
+    Recorded when a user navigates to the remap keys settings subpage by
+    clicking on the notification shown when they attempted to rewrite a key
+    event to a six pack key action using a shortcut that is inconsistent with
+    their setting for that behavior.
+  </description>
 </action>
 
 <action name="ShowSections_RecentSitesDisabled">
@@ -38572,6 +38669,8 @@ should be able to be added at any place in this file.
       label="For price insights page action icon label triggering."/>
   <suffix name="PriceTrackingChipFeature"
       label="For PriceTrackingChipFeature feature."/>
+  <suffix name="PriceTrackingEmailConsentFeature"
+      label="For price tracking email consent dialog."/>
   <suffix name="PriceTrackingInSidePanel"
       label="For PriceTrackingInSidePanelFeature feature."/>
   <suffix name="PriceTrackingPageActionIconLabel"
@@ -38606,8 +38705,6 @@ should be able to be added at any place in this file.
       label="For the RequestDesktopSiteDefaultOn feature."/>
   <suffix name="RequestDesktopSiteExceptionsGeneric"
       label="For the RequestDesktopSiteExceptionsGeneric feature."/>
-  <suffix name="RequestDesktopSiteExceptionsSpecific"
-      label="For the RequestDesktopSiteExceptionsSpecific feature."/>
   <suffix name="RequestDesktopSiteOptIn"
       label="For the RequestDesktopSiteOptIn feature."/>
   <suffix name="RestoreTabsOnFRE" label="For the RestoreTabsOnFRE feature."/>

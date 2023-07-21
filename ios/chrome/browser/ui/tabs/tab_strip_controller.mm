@@ -504,20 +504,32 @@ const CGFloat kSymbolSize = 18;
     UIImage* buttonNewTabImage =
         DefaultSymbolWithPointSize(kPlusSymbol, kSymbolSize);
 
-    // TODO(crbug.com/1418068): Simplify after minimum version required is >=
-    // iOS 15.
-    if (base::ios::IsRunningOnIOS15OrLater() &&
-        IsUIButtonConfigurationEnabled()) {
-      if (@available(iOS 15, *)) {
-        UIButtonConfiguration* buttonConfiguration =
-            [UIButtonConfiguration plainButtonConfiguration];
-        buttonConfiguration.contentInsets =
-            NSDirectionalEdgeInsetsMake(0, kNewTabButtonLeadingImageInset,
-                                        kNewTabButtonBottomImageInset, 0);
-        buttonConfiguration.image = buttonNewTabImage;
-        _buttonNewTab.tintColor = [UIColor colorNamed:kGrey500Color];
-        _buttonNewTab.configuration = buttonConfiguration;
-      }
+    if (IsUIButtonConfigurationEnabled()) {
+      UIButtonConfiguration* buttonConfiguration =
+          [UIButtonConfiguration plainButtonConfiguration];
+      buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
+          0, kNewTabButtonLeadingImageInset, kNewTabButtonBottomImageInset, 0);
+      buttonConfiguration.image = buttonNewTabImage;
+      buttonConfiguration.baseForegroundColor =
+          [UIColor colorNamed:kGrey500Color];
+      _buttonNewTab.configurationUpdateHandler = ^(UIButton* incomingButton) {
+        UIButtonConfiguration* updatedConfig = incomingButton.configuration;
+        switch (incomingButton.state) {
+          case UIControlStateHighlighted: {
+            updatedConfig.baseForegroundColor =
+                [UIColor colorNamed:kGrey700Color];
+            break;
+          }
+          case UIControlStateNormal:
+            updatedConfig.baseForegroundColor =
+                [UIColor colorNamed:kGrey500Color];
+            break;
+          default:
+            break;
+        }
+        incomingButton.configuration = updatedConfig;
+      };
+      _buttonNewTab.configuration = buttonConfiguration;
     } else {
       UIEdgeInsets imageInsets = UIEdgeInsetsMake(
           0, kNewTabButtonLeadingImageInset, kNewTabButtonBottomImageInset, 0);
@@ -1145,9 +1157,9 @@ const CGFloat kSymbolSize = 18;
 
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
-                    selection:(const WebStateSelection&)selection {
+                       status:(const WebStateListStatus&)status {
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
+    case WebStateListChange::Type::kStatusOnly:
       // TODO(crbug.com/1442546): Move the implementation from
       // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
       // here. Note that here is reachable only when `reason` ==
@@ -1156,7 +1168,7 @@ const CGFloat kSymbolSize = 18;
     case WebStateListChange::Type::kDetach: {
       // Keep the actual view around while it is animating out.  Once the
       // animation is done, remove the view.
-      NSUInteger index = [self indexForWebStateListIndex:selection.index];
+      NSUInteger index = [self indexForWebStateListIndex:status.index];
       TabView* view = [_tabArray objectAtIndex:index];
       [_closingTabs addObject:view];
       _targetFrames.RemoveFrame(view);
@@ -1198,7 +1210,7 @@ const CGFloat kSymbolSize = 18;
           [self indexForWebStateListIndex:moveChange.moved_from_index()];
       TabView* view = [_tabArray objectAtIndex:arrayIndex];
       [_tabArray removeObject:view];
-      [_tabArray insertObject:view atIndex:selection.index];
+      [_tabArray insertObject:view atIndex:status.index];
       [self setNeedsLayoutWithAnimation];
       break;
     }
@@ -1215,15 +1227,14 @@ const CGFloat kSymbolSize = 18;
           change.As<WebStateListChangeInsert>();
       TabView* view =
           [self createTabViewForWebState:insertChange.inserted_web_state()
-                              isSelected:selection.active_state_change];
+                              isSelected:status.active_web_state_change()];
       [_tabArray insertObject:view
-                      atIndex:[self indexForWebStateListIndex:selection.index]];
+                      atIndex:[self indexForWebStateListIndex:status.index]];
       [[self tabStripView] addSubview:view];
 
       [self updateContentSizeAndRepositionViews];
       [self setNeedsLayoutWithAnimation];
-      [self updateContentOffsetForWebStateIndex:selection.index
-                                  isNewWebState:YES];
+      [self updateContentOffsetForWebStateIndex:status.index isNewWebState:YES];
       break;
     }
   }

@@ -61,11 +61,16 @@ enum class IOSDefaultBrowserVideoPromoAction {
 extern const char kDefaultBrowserFullscreenPromoExperimentRemindMeGroupParam[];
 
 // Visible for testing
+
 // Key in storage containing an NSDate indicating the last time a user
-// interacted with ANY promo. The string value is kept from when the promos
-// first launched to avoid changing the behavior for users that have already
-// seen the promo.
-extern NSString* const kLastTimeUserInteractedWithPromo;
+// interacted with a non-modal promo.
+extern NSString* const kLastTimeUserInteractedWithNonModalPromo;
+
+// Key in storage containing an NSDate indicating the last time a user
+// interacted with ANY full screen promo. The string value is kept from when the
+// promos first launched to avoid changing the behavior for users that have
+// already seen the promo.
+extern NSString* const kLastTimeUserInteractedWithFullscreenPromo;
 
 // Key in storage containing all the recent timestamps of browser cold starts up
 // to allowed maximum number of past events.
@@ -132,6 +137,10 @@ bool IsDefaultBrowserVideoPromoEnabled();
 // Returns true if the default browser video promo half screen enabled.
 bool IsDefaultBrowserVideoPromoHalfscreenEnabled();
 
+// Returns true if the non-modal default browser promo cooldown refactor is
+// enabled.
+bool IsNonModalDefaultBrowserPromoCooldownRefactorEnabled();
+
 // Returns true if the default browser promo triggering criteria should be
 // skipped.
 bool ShouldForceDefaultPromoType();
@@ -143,6 +152,14 @@ DefaultPromoType ForceDefaultPromoType();
 // Returns true if client is in Default Browser promo trigger criteria
 // experiment.
 bool IsDefaultBrowserTriggerCriteraExperimentEnabled();
+
+// Returns true if the default browser promo generic tailored experiment is
+// enabled.
+bool IsDefaultBrowserPromoGenericTailoredTrainEnabled();
+
+// Returns true if the only-generic arm of the default browser promo generic
+// tailored experiment is enabled.
+bool IsDefaultBrowserPromoOnlyGenericArmTrain();
 
 // Returns true if Default Browser promo should be triggered on omnibox
 // copy-paste.
@@ -160,8 +177,8 @@ bool HasUserInteractedWithTailoredFullscreenPromoBefore();
 // non-modal promo before.
 NSInteger UserInteractionWithNonModalPromoCount();
 
-// Logs that one of default browser promos was displayed.
-void LogDefaultBrowserPromoDisplayed();
+// Logs that one of the fullscreen default browser promos was displayed.
+void LogFullscreenDefaultBrowserPromoDisplayed();
 
 // Logs that the user has interacted with the Fullscreen Promo.
 void LogUserInteractionWithFullscreenPromo();
@@ -210,9 +227,13 @@ bool IsLikelyInterestedDefaultBrowserUser(DefaultPromoType type);
 // true, this type of promo will be ignored.
 DefaultPromoType MostRecentInterestDefaultPromoType(BOOL skipAllTabsPromo);
 
-// Return YES if the user has seen a promo recently, and shouldn't
+// Return YES if the user has seen a full screen promo recently, and shouldn't
 // see another one.
-bool UserInPromoCooldown();
+bool UserInFullscreenPromoCooldown();
+
+// Returns YES if the user has seen a non-modal promo recently, and shouldn't
+// see another one.
+bool UserInNonModalPromoCooldown();
 
 // List of all key used to store data in NSUserDefaults. Still used as key
 // in the NSDictionary stored under `kBrowserDefaultsKey`.
@@ -228,6 +249,7 @@ bool HasAppLaunchedOnColdStartAndRecordsLaunch();
 // Return true if the default browser promo should be registered with the promo
 // manager to display a default browser promo.
 bool ShouldRegisterPromoWithPromoManager(bool is_signed_in,
+                                         bool is_omnibox_copy_paste,
                                          feature_engagement::Tracker* tracker);
 
 // Returns true if it was determined that the user is eligible for a

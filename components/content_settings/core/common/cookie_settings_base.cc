@@ -48,9 +48,11 @@ CookieSettingsBase::CookieSettingsBase()
 CookieSettingsBase::CookieSettingWithMetadataBase::
     CookieSettingWithMetadataBase(
         ContentSetting cookie_setting,
-        absl::optional<ThirdPartyBlockingScope> third_party_blocking_scope)
+        absl::optional<ThirdPartyBlockingScope> third_party_blocking_scope,
+        bool is_explicit_setting)
     : cookie_setting_(cookie_setting),
-      third_party_blocking_scope_(third_party_blocking_scope) {
+      third_party_blocking_scope_(third_party_blocking_scope),
+      is_explicit_setting_(is_explicit_setting) {
   DCHECK(!third_party_blocking_scope_.has_value() ||
          !IsAllowed(cookie_setting_));
 }
@@ -87,8 +89,7 @@ bool CookieSettingsBase::ShouldDeleteCookieOnExit(
   // No overrides are given since existing ones only pertain to 3P checks.
   ContentSetting setting = GetCookieSettingInternal(
       origin, is_privacy_sandbox_v4_enabled_ ? GURL() : origin,
-      /*is_third_party_request=*/false, net::CookieSettingOverrides(), nullptr,
-      nullptr);
+      /*is_third_party_request=*/false, net::CookieSettingOverrides(), nullptr);
   DCHECK(IsValidSetting(setting));
   if (setting == CONTENT_SETTING_ALLOW)
     return false;
@@ -121,12 +122,11 @@ ContentSetting CookieSettingsBase::GetCookieSetting(
     const GURL& url,
     const GURL& first_party_url,
     net::CookieSettingOverrides overrides,
-    content_settings::SettingSource* source,
-    base::Time* expiration) const {
+    content_settings::SettingInfo* info) const {
   return GetCookieSettingInternal(
       url, first_party_url,
       IsThirdPartyRequest(url, net::SiteForCookies::FromUrl(first_party_url)),
-      overrides, source, expiration);
+      overrides, info);
 }
 
 bool CookieSettingsBase::IsFullCookieAccessAllowed(
@@ -137,7 +137,7 @@ bool CookieSettingsBase::IsFullCookieAccessAllowed(
   ContentSetting setting = GetCookieSettingInternal(
       url,
       GetFirstPartyURL(site_for_cookies, base::OptionalToPtr(top_frame_origin)),
-      IsThirdPartyRequest(url, site_for_cookies), overrides, nullptr, nullptr);
+      IsThirdPartyRequest(url, site_for_cookies), overrides, nullptr);
   return IsAllowed(setting);
 }
 
@@ -147,8 +147,7 @@ bool CookieSettingsBase::IsCookieSessionOnly(const GURL& origin) const {
   // No overrides are given since existing ones only pertain to 3P checks.
   ContentSetting setting = GetCookieSettingInternal(
       origin, is_privacy_sandbox_v4_enabled_ ? GURL() : origin,
-      /*is_third_party_request=*/false, net::CookieSettingOverrides(), nullptr,
-      nullptr);
+      /*is_third_party_request=*/false, net::CookieSettingOverrides(), nullptr);
   DCHECK(IsValidSetting(setting));
   return setting == CONTENT_SETTING_SESSION_ONLY;
 }

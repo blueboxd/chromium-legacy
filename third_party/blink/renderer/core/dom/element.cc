@@ -4147,6 +4147,14 @@ void Element::setEditContext(EditContext* edit_context,
   }
 
   EnsureElementRareData().SetEditContext(edit_context);
+
+  // EditContext affects the -webkit-user-modify CSS property of the element
+  // (which is what Chromium uses internally to determine editability) so
+  // we need to recalc styles. This is an inherited property, so we invalidate
+  // the subtree rather than just the node itself.
+  SetNeedsStyleRecalc(
+      StyleChangeType::kSubtreeStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kEditContext));
 }
 
 struct Element::AffectedByPseudoStateChange {
@@ -8760,10 +8768,6 @@ bool Element::IsReplacedElementRespectingCSSOverflow() const {
     return true;
   }
 
-  if (!RuntimeEnabledFeatures::CSSOverflowForReplacedElementsEnabled()) {
-    return false;
-  }
-
   return IsA<HTMLVideoElement>(this) || IsA<HTMLCanvasElement>(this) ||
          IsA<HTMLImageElement>(this) ||
          (IsA<SVGSVGElement>(this) &&
@@ -8857,7 +8861,7 @@ Element* Element::ImplicitAnchorElement() {
     if (Element* anchor = html_element->anchorElement()) {
       return anchor;
     }
-    if (Element* select_menu = html_element->ownerSelectMenuElement()) {
+    if (Element* select_menu = html_element->popoverOwnerSelectMenuElement()) {
       return select_menu;
     }
   } else if (PseudoElement* pseudo_element = DynamicTo<PseudoElement>(this)) {

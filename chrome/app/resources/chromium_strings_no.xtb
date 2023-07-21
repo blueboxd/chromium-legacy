@@ -5,12 +5,12 @@
 <translation id="1029669172902658969">Start på nytt for å oppdatere &amp;ChromiumOS</translation>
 <translation id="1040916596585577953">Chromium anbefaler at du går gjennom denne utvidelsen</translation>
 <translation id="1065672644894730302">Kan ikke lese innstillingene. Enkelte funksjoner kan være utilgjengelige, og endringer av innstillingene blir ikke lagret.</translation>
+<translation id="1083934481477628225">Forelderen din har slått av «Tillatelser for nettsteder, apper og utvidelser» for Chromium</translation>
 <translation id="1098170124587656448">Chromium kan beskytte deg mot databrudd, ondsinnede utvidelser med mer</translation>
 <translation id="1104942323762546749">Chromium forsøker å eksportere passordene dine. Skriv inn Windows-passordet ditt for å tillate dette.</translation>
 <translation id="113122355610423240">Chromium er standardnettleseren din</translation>
 <translation id="1131805035311359397">For å sjekke om passordene dine er trygge mot databrudd og andre sikkerhetsproblemer, <ph name="BEGIN_LINK" />logg på Chromium<ph name="END_LINK" />.</translation>
 <translation id="1153368717515616349">Klikk på Chromium-menyen</translation>
-<translation id="1157106475430165622">{NUM_DEVICES,plural, =0{Chromium-utvidelser brukte HID-enheter}=1{Chromium-utvidelser bruker HID-enheter}other{Chromium-utvidelser bruker # HID-enheter}}</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1203500561924088507">Installasjonen er fullført. Start nettleseren på nytt før du tar i bruk <ph name="BUNDLE_NAME" />.</translation>
 <translation id="1261119230216066228">Minnesparing har gjort Chromium raskere</translation>
@@ -59,6 +59,7 @@ Tillatelser du allerede har gitt nettsteder og apper, kan gjelde for denne konto
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2384373936468275798">ChromiumOS kunne ikke synkronisere dataene dine, ettersom påloggingsopplysningene for kontoen din er utdaterte.</translation>
 <translation id="2396765026452590966">Utvidelsen «<ph name="EXTENSION_NAME" />» har endret hvilken side som vises når du starter Chromium.</translation>
+<translation id="2398377054246527950">{NUM_DEVICES,plural, =0{1 HID-enhet ble brukt av en eller flere Chromium-utvidelser}=1{1 HID-enhet brukes av en eller flere Chromium-utvidelser}other{# HID-enheter brukes av en eller flere Chromium-utvidelser}}</translation>
 <translation id="2401032172288869980">Chromium trenger kamera- og mikrofontillatelse for dette nettstedet</translation>
 <translation id="2451727308784734061">Bruk snarveien for å åpne Passordlagring raskt. Du kan flytte snarveien til startskjermen eller appoversikten på datamaskinen.</translation>
 <translation id="2478295928299953161">Chromium lukkes snart</translation>
@@ -91,6 +92,7 @@ Tillatelser du allerede har gitt nettsteder og apper, kan gjelde for denne konto
 <translation id="3032787606318309379">Legger til i Chromium …</translation>
 <translation id="3038232873781883849">Venter på installering</translation>
 <translation id="3068515742935458733">Bidra til å gjøre Chromium bedre ved å sende programstopprapporter og <ph name="UMA_LINK" /> til Google</translation>
+<translation id="3079753320517721795">{NUM_DEVICES,plural, =0{1 USB-enhet ble brukt av en eller flere Chromium-utvidelser}=1{1 USB-enhet brukes av en eller flere Chromium-utvidelser}other{# USB-enheter brukes av en eller flere Chromium-utvidelser}}</translation>
 <translation id="3101560983689755071">Nettleserloggen din påvirker hvilke annonser du ser, og interessene som er anslått nedenfor. For å beskytte personvernet ditt sletter Chromium interessene dine automatisk på rullerende basis hver måned. Interessene kan fornyes med mindre du fjerner dem.</translation>
 <translation id="3103660991484857065">Installasjonsprogrammet kunne ikke dekomprimere arkivet. Last ned Chromium på nytt.</translation>
 <translation id="3130323860337406239">Chromium bruker mikrofonen din.</translation>
@@ -153,6 +155,7 @@ Tillatelser du allerede har gitt nettsteder og apper, kan gjelde for denne konto
 <translation id="4222932583846282852">Avbryter …</translation>
 <translation id="4230135487732243613">Vil du koble Chromium-dataene dine til denne kontoen?</translation>
 <translation id="4271805377592243930">Få hjelp med Chromium</translation>
+<translation id="4281844954008187215">Vilkår for bruk</translation>
 <translation id="4285930937574705105">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Chromium hvis nettleseren kjører, og prøv på nytt.</translation>
 <translation id="4304713468139749426">Passordlagring</translation>
 <translation id="4334294535648607276">Nedlastingen er fullført.</translation>
@@ -295,6 +298,7 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="7025789849649390912">Installasjonen er stoppet.</translation>
 <translation id="705851970750939768">Oppdater Chromium</translation>
 <translation id="7067091210845072982">Hvis et bilde ikke har noen nyttig beskrivelse, prøver Chromium å finne en til deg. For å opprette beskrivelser blir bilder sendt til Google.</translation>
+<translation id="7141270731789036260">Tilpass Chrome for testing</translation>
 <translation id="7173822816570314652">Organisasjonen din sletter Chromium-data når de ikke har vært i bruk på <ph name="TIMEOUT_DURATION" />. Dette kan omfatte loggen, autofyll og nedlastinger.</translation>
 <translation id="718435575166326686">Chromium trenger kameratillatelse for dette nettstedet</translation>
 <translation id="7196312274710523067">Kunne ikke starte Chromium. Prøv på nytt.</translation>
@@ -369,7 +373,6 @@ Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="8619360774459241877">Starter Chromium ...</translation>
 <translation id="8621669128220841554">Installeringen mislyktes på grunn av en uspesifisert feil. Last ned Chromium på nytt.</translation>
 <translation id="8648201657708811153">Google Chrome for testing kan ikke brukes som standardnettleser.</translation>
-<translation id="867492205098279939">{NUM_DEVICES,plural, =0{En Chromium-utvidelse brukte HID-enheter}=1{En Chromium-utvidelse bruker 1 HID-enhet}other{En Chromium-utvidelse bruker # HID-enheter}}</translation>
 <translation id="8697124171261953979">Den styrer også hvilken side som vises når du starter Chromium eller søker fra multifunksjonsfeltet.</translation>
 <translation id="8704119203788522458">Dette er din Chromium</translation>
 <translation id="8796602469536043152">Chromium trenger tilgang til kameraet ditt og mikrofonen din for dette nettstedet</translation>

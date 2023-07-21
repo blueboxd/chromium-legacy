@@ -19,7 +19,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
-#include "chrome/browser/ash/crosapi/copy_migrator.h"
 #include "chrome/browser/ash/crosapi/move_migrator.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -186,11 +185,13 @@ bool BrowserDataMigratorImpl::MaybeRestartToMigrateInternal(
       case MigrationStep::kEnded:
       default:
         // TODO(crbug.com/1277848): Once `BrowserDataMigrator` stabilises,
-        // remove
-        // this log message or reduce to VLOG(1).
-        LOG(WARNING)
-            << "Migration has ended and either completed or failed. step = "
-            << static_cast<int>(step);
+        // remove this log message or reduce to VLOG(1).
+        if (crosapi::browser_util::IsProfileMigrationCompletedForUser(
+                local_state, user_id_hash, true /* print_mode */)) {
+          LOG(WARNING) << "Migration was attempted and successfully completed.";
+        } else {
+          LOG(WARNING) << "Migration was attempted but failed or was skipped.";
+        }
         break;
     }
 
@@ -291,16 +292,9 @@ bool BrowserDataMigratorImpl::MaybeRestartToMigrateInternal(
     return true;
   }
 
-  if (crosapi::browser_util::IsCopyOrMoveProfileMigrationCompletedForUser(
-          local_state, user_id_hash)) {
-    // TODO(crbug.com/1277848): Once `BrowserDataMigrator` stabilises,
-    // remove this log message.
-    if (crosapi::browser_util::IsProfileMigrationCompletedForUser(
-            local_state, user_id_hash,
-            crosapi::browser_util::MigrationMode::kMove)) {
-      LOG(WARNING) << "Profile move migration has been completed already.";
-    }
-    LOG(WARNING) << "Profile migration has been completed already.";
+  if (crosapi::browser_util::IsProfileMigrationCompletedForUser(
+          local_state, user_id_hash, true /* print_mode */)) {
+    LOG(WARNING) << "Profile migration is already completed.";
     return false;
   }
 
@@ -329,22 +323,14 @@ bool BrowserDataMigratorImpl::RestartToMigrate(
   // `user` should exist by the time `RestartToMigrate()` is called.
   CHECK(user) << "User could not be found for " << account_id.GetUserEmail()
               << " but RestartToMigrate() was called.";
-  const bool is_move =
-      crosapi::browser_util::GetMigrationMode(user, policy_init_state) ==
-          crosapi::browser_util::MigrationMode::kMove ||
-      MoveMigrator::ResumeRequired(local_state, user_id_hash);
-
-  std::string mode = browser_data_migrator_util::kCopySwitchValue;
-  if (is_move) {
-    mode = browser_data_migrator_util::kMoveSwitchValue;
-  }
 
   // TODO(crbug.com/1277848): Once `BrowserDataMigrator` stabilises, remove
   // this log message.
   LOG(WARNING) << "Making a dbus method call to session_manager";
   bool success =
       SessionManagerClient::Get()->BlockingRequestBrowserDataMigration(
-          cryptohome::CreateAccountIdentifierFromAccountId(account_id), mode);
+          cryptohome::CreateAccountIdentifierFromAccountId(account_id),
+          browser_data_migrator_util::kMoveSwitchValue);
 
   // TODO(crbug.com/1261730): Add an UMA.
   if (!success) {
@@ -389,26 +375,14 @@ void BrowserDataMigratorImpl::Migrate(crosapi::browser_util::MigrationMode mode,
   DCHECK(GetMigrationStep(local_state_) == MigrationStep::kRestartCalled);
   SetMigrationStep(local_state_, MigrationStep::kStarted);
 
-  switch (mode) {
-    case crosapi::browser_util::MigrationMode::kMove:
-      LOG(WARNING) << "Initializing MoveMigrator.";
-      migrator_delegate_ = std::make_unique<MoveMigrator>(
-          original_profile_dir_, user_id_hash_, std::move(progress_tracker_),
-          cancel_flag_, local_state_,
-          base::BindOnce(
-              &BrowserDataMigratorImpl::MigrateInternalFinishedUIThread,
-              weak_factory_.GetWeakPtr(), mode));
-      break;
-    case crosapi::browser_util::MigrationMode::kCopy:
-      LOG(WARNING) << "Initializing CopyMigrator.";
-      migrator_delegate_ = std::make_unique<CopyMigrator>(
-          original_profile_dir_, user_id_hash_, std::move(progress_tracker_),
-          cancel_flag_,
-          base::BindOnce(
-              &BrowserDataMigratorImpl::MigrateInternalFinishedUIThread,
-              weak_factory_.GetWeakPtr(), mode));
-      break;
-  }
+  DCHECK_EQ(mode, crosapi::browser_util::MigrationMode::kMove);
+
+  LOG(WARNING) << "Initializing MoveMigrator.";
+  migrator_delegate_ = std::make_unique<MoveMigrator>(
+      original_profile_dir_, user_id_hash_, std::move(progress_tracker_),
+      cancel_flag_, local_state_,
+      base::BindOnce(&BrowserDataMigratorImpl::MigrateInternalFinishedUIThread,
+                     weak_factory_.GetWeakPtr(), mode));
 
   migrator_delegate_->Migrate();
 }

@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "base/functional/bind.h"
-#include "base/functional/callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
@@ -25,15 +23,12 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/page.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
-#include "net/cert/cert_status_flags.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "ui/base/page_transition_types.h"
 
 using autofill::mojom::FocusedFieldType;
 
@@ -428,6 +423,9 @@ void ContentPasswordManagerDriver::UserModifiedNonPasswordField(
 
 void ContentPasswordManagerDriver::ShowPasswordSuggestions(
     autofill::FieldRendererId element_id,
+    const autofill::FormData& form,
+    uint64_t username_field_index,
+    uint64_t password_field_index,
     base::i18n::TextDirection text_direction,
     const std::u16string& typed_username,
     int options,
@@ -435,6 +433,13 @@ void ContentPasswordManagerDriver::ShowPasswordSuggestions(
   if (!password_manager::bad_message::CheckFrameNotPrerendering(
           render_frame_host_))
     return;
+
+  if ((username_field_index > form.fields.size()) ||
+      (password_field_index > form.fields.size())) {
+    mojo::ReportBadMessage(
+        "username_field_index or password_field_index cannot be greater than "
+        "form.fields.size()!");
+  }
 
 #if BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(
@@ -445,7 +450,10 @@ void ContentPasswordManagerDriver::ShowPasswordSuggestions(
     // was shown or not) and do not call the OnShowPasswordSuggestions on the
     // password autofill manager if TTF was shown.
     client_->ShowKeyboardReplacingSurface(
-        this, autofill::mojom::SubmissionReadinessState::kNoInformation,
+        this,
+        SubmissionReadinessParams(
+            form, username_field_index, password_field_index,
+            autofill::mojom::SubmissionReadinessState::kNoInformation),
         options & autofill::ACCEPTS_WEBAUTHN_CREDENTIALS);
   }
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -463,8 +471,10 @@ void ContentPasswordManagerDriver::ShowKeyboardReplacingSurface(
           render_frame_host_)) {
     return;
   }
-  client_->ShowKeyboardReplacingSurface(this, submission_readiness,
-                                        is_webauthn_form);
+  autofill::FormData form;
+  client_->ShowKeyboardReplacingSurface(
+      this, SubmissionReadinessParams(form, 0, 0, submission_readiness),
+      is_webauthn_form);
 }
 #endif
 

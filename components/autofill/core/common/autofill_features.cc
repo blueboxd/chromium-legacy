@@ -296,16 +296,6 @@ BASE_FEATURE(kAutofillEnableSupportForPhoneNumberTrunkTypes,
              "AutofillEnableSupportForPhoneNumberTrunkTypes",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables autofill to function within a FencedFrame, and is enabled by
-// default as part of FencedFramesAPIChanges blink experiment.
-// This flag can be used via Finch to disable Autofill in the
-// FencedFramesAPIChanges blink experiment without affecting the other
-// features included in the experiment.
-// TODO(crbug.com/1294378): Remove once launched.
-BASE_FEATURE(kAutofillEnableWithinFencedFrame,
-             "AutofillEnableWithinFencedFrame",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Controls whether or not all datalist shall be extracted into FormFieldData.
 // This feature is enabled in both WebView and WebLayer where all datalists
 // instead of only the focused one shall be extracted and sent to Android
@@ -387,6 +377,26 @@ BASE_FEATURE(kAutofillHighlightOnlyChangedValuesInPreviewMode,
 BASE_FEATURE(kAutofillLabelAffixRemoval,
              "AutofillLabelAffixRemoval",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Allows passing a set of overrides for Autofill server predictions.
+// Example command line to override server predictions manually:
+// chrome --enable-features=AutofillOverridePredictions:spec/1_2_4-7_8_9
+// This creates two manual overrides that supersede server predictions as
+// follows:
+// * The server prediction for the field with signature 2 in the form with
+//   signature 1 is overridden to be 4 (NAME_MIDDLE).
+// * The server prediction for the field with signature 8 in the form with
+//   signature 7 is overridden to be 9 (EMAIL_ADDRESS).
+//
+// See components/autofill/core/browser/server_prediction_overrides.h for more
+// examples and details on how to specify overrides.
+BASE_FEATURE(kAutofillOverridePredictions,
+             "AutofillOverridePredictions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// The override specification in string form.
+const base::FeatureParam<std::string> kAutofillOverridePredictionsSpecification{
+    &kAutofillOverridePredictions, "spec", "[]"};
 
 // When enabled, Autofill would not override the field values that were either
 // filled by Autofill or on page load.
@@ -497,6 +507,12 @@ BASE_FEATURE(kAutofillShowAutocompleteDeleteButton,
 // TODO(crbug.com/1326895): Clean up when launched.
 BASE_FEATURE(kAutofillShowManualFallbackInContextMenu,
              "AutofillShowManualFallbackInContextMenu",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether granular filling will be available in the autofill popup.
+// TODO(crbug.com/1459990): Clean up when launched.
+BASE_FEATURE(kAutofillGranularFillingAvailable,
+             "AutofillGranularFillingAvailable",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allows silent profile updates even when the profile import requirements are

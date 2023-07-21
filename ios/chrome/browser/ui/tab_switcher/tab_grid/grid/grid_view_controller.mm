@@ -1052,9 +1052,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     NSIndexPath* dropIndexPath = CreateIndexPath(destinationIndex);
     // Drop synchronously if local object is available.
     if (item.dragItem.localObject) {
-      __weak __typeof(self) weakSelf = self;
       _dropAnimationInProgress = YES;
-      [self.delegate gridViewControllerDropAnimationWillBegin:weakSelf];
+      [self.delegate gridViewControllerDropAnimationWillBegin:self];
+      __weak __typeof(self) weakSelf = self;
       [[coordinator dropItem:item.dragItem toItemAtIndexPath:dropIndexPath]
           addCompletion:^(UIViewAnimatingPosition finalPosition) {
             [weakSelf.delegate gridViewControllerDropAnimationDidEnd:weakSelf];
@@ -1287,9 +1287,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [self removeEmptyStateAnimated:YES];
     [self.collectionView insertItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
   };
-
   __weak __typeof(self) weakSelf = self;
-  auto completion = ^(BOOL finished) {
+  auto completion = ^{
     __typeof(self) strongSelf = weakSelf;
     if (!strongSelf) {
       return;
@@ -1314,8 +1313,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   };
 
   [self performModelUpdates:modelUpdates
-                collectionViewUpdates:collectionViewUpdates
-      collectionViewUpdatesCompletion:completion];
+      collectionViewUpdates:collectionViewUpdates
+                 completion:completion];
 
   [self updateVisibleCellZIndex];
   [self updateVisibleCellIdentifiers];
@@ -1343,9 +1342,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       [self animateEmptyStateIn];
     }
   };
-
   __weak __typeof(self) weakSelf = self;
-  auto completion = ^(BOOL finished) {
+  auto completion = ^{
     __typeof(self) strongSelf = weakSelf;
     if (!strongSelf) {
       return;
@@ -1364,8 +1362,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   };
 
   [self performModelUpdates:modelUpdates
-                collectionViewUpdates:collectionViewUpdates
-      collectionViewUpdatesCompletion:completion];
+      collectionViewUpdates:collectionViewUpdates
+                 completion:completion];
 
   [self updateVisibleCellZIndex];
   [self updateVisibleCellIdentifiers];
@@ -1422,43 +1420,15 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [self.collectionView moveItemAtIndexPath:CreateIndexPath(fromIndex)
                                  toIndexPath:CreateIndexPath(toIndex)];
   };
-
   __weak __typeof(self) weakSelf = self;
-  auto completion = ^(BOOL finished) {
-    __typeof(self) strongSelf = weakSelf;
-    if (!strongSelf) {
-      return;
-    }
-
-    [strongSelf.delegate gridViewController:strongSelf
-                          didMoveItemWithID:itemID
-                                    toIndex:toIndex];
-
-    // Bring back selected halo only for the moved cell, which lost it during
-    // the move (drag & drop).
-    if (strongSelf.selectedIndex != toIndex) {
-      return;
-    }
-    // Force reload of the selected cell now to avoid extra delay for the
-    // blue halo to appear. Bring the halo in 100ms.
-    [UIView
-        animateWithDuration:0.1
-                 animations:^{
-                   [strongSelf.collectionView reloadItemsAtIndexPaths:@[
-                     CreateIndexPath(strongSelf.selectedIndex)
-                   ]];
-                   [self deselectAllCollectionViewItemsAnimated:NO];
-                   [self
-                       selectCollectionViewItemWithID:strongSelf.selectedItemID
-                                             animated:NO
-                                       scrollPosition:
-                                           UICollectionViewScrollPositionNone];
-                 }
-                 completion:nil];
+  auto completion = ^{
+    [weakSelf.delegate gridViewController:weakSelf
+                        didMoveItemWithID:itemID
+                                  toIndex:toIndex];
   };
   [self performModelUpdates:modelUpdates
-                collectionViewUpdates:collectionViewUpdates
-      collectionViewUpdatesCompletion:completion];
+      collectionViewUpdates:collectionViewUpdates
+                 completion:completion];
 
   [self updateVisibleCellZIndex];
   [self updateVisibleCellIdentifiers];
@@ -1519,6 +1489,90 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // Called when the Inactive Tabs settings link is tapped.
 - (void)didTapInactiveTabsSettingsLink {
   [self.delegate didTapInactiveTabsSettingsLinkInGridViewController:self];
+}
+
+#pragma mark - Public Editing Mode Selection
+
+- (void)selectAllItemsForEditing {
+  if (_mode != TabGridModeSelection) {
+    return;
+  }
+
+  for (TabSwitcherItem* item in self.items) {
+    [self selectItemWithIDForEditing:item.identifier];
+  }
+  [self.collectionView reloadData];
+}
+
+- (void)deselectAllItemsForEditing {
+  if (_mode != TabGridModeSelection) {
+    return;
+  }
+
+  for (TabSwitcherItem* item in self.items) {
+    [self deselectItemWithIDForEditing:item.identifier];
+  }
+  [self.collectionView reloadData];
+}
+
+- (NSArray<NSString*>*)selectedItemIDsForEditing {
+  return [self.selectedEditingItemIDs allObjects];
+}
+
+- (NSArray<NSString*>*)selectedShareableItemIDsForEditing {
+  return [self.selectedSharableEditingItemIDs allObjects];
+}
+
+- (BOOL)allItemsSelectedForEditing {
+  return _mode == TabGridModeSelection &&
+         self.items.count == self.selectedEditingItemIDs.count;
+}
+
+#pragma mark - Private Editing Mode Selection
+
+- (BOOL)isItemWithIDSelectedForEditing:(NSString*)identifier {
+  return [self.selectedEditingItemIDs containsObject:identifier];
+}
+
+- (void)selectItemWithIDForEditing:(NSString*)identifier {
+  [self.selectedEditingItemIDs addObject:identifier];
+  if ([self.shareableItemsProvider isItemWithIdentifierSharable:identifier]) {
+    [self.selectedSharableEditingItemIDs addObject:identifier];
+  }
+}
+
+- (void)deselectItemWithIDForEditing:(NSString*)identifier {
+  [self.selectedEditingItemIDs removeObject:identifier];
+  [self.selectedSharableEditingItemIDs removeObject:identifier];
+}
+
+#pragma mark - Suggested Actions Section
+
+- (void)updateSuggestedActionsSection {
+  if (!self.suggestedActionsDelegate) {
+    return;
+  }
+  // In search mode if there is already a search query, and the suggested
+  // actions section section is not yet added, add it. otherwise remove the
+  // section if it exists and the search mode is not active.
+  auto updateSectionBlock = ^{
+    NSIndexSet* sections =
+        [NSIndexSet indexSetWithIndex:kSuggestedActionsSectionIndex];
+    if (self.mode == TabGridModeSearch && self.searchText.length) {
+      if (!self.showingSuggestedActions) {
+        [self.collectionView insertSections:sections];
+        self.showingSuggestedActions = YES;
+      }
+    } else {
+      if (self.showingSuggestedActions) {
+        [self.collectionView deleteSections:sections];
+        self.showingSuggestedActions = NO;
+      }
+    }
+  };
+  [UIView performWithoutAnimation:^{
+    [self.collectionView performBatchUpdates:updateSectionBlock completion:nil];
+  }];
 }
 
 #pragma mark - Private properties
@@ -1597,9 +1651,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 // Performs model updates and view updates together.
 - (void)performModelUpdates:(ProceduralBlock)modelUpdates
-              collectionViewUpdates:(ProceduralBlock)collectionViewUpdates
-    collectionViewUpdatesCompletion:
-        (void (^)(BOOL))collectionViewUpdatesCompletion {
+      collectionViewUpdates:(ProceduralBlock)collectionViewUpdates
+                 completion:(ProceduralBlock)completion {
   [self.collectionView
       performBatchUpdates:^{
         self.updating = YES;
@@ -1608,7 +1661,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
         collectionViewUpdates();
       }
       completion:^(BOOL completed) {
-        collectionViewUpdatesCompletion(completed);
+        completion();
         self.updating = NO;
       }];
 }
@@ -1976,89 +2029,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // Note: At this point, `header` could be nil if not visible, or if the
   // supplementary view is not an InactiveTabsPreambleHeader.
   header.daysThreshold = self.inactiveTabsDaysThreshold;
-}
-
-#pragma mark Suggested Actions Section
-
-- (void)updateSuggestedActionsSection {
-  if (!self.suggestedActionsDelegate)
-    return;
-  // In search mode if there is already a search query, and the suggested
-  // actions section section is not yet added, add it. otherwise remove the
-  // section if it exists and the search mode is not active.
-  auto updateSectionBlock = ^{
-    NSIndexSet* sections =
-        [NSIndexSet indexSetWithIndex:kSuggestedActionsSectionIndex];
-    if (self.mode == TabGridModeSearch && self.searchText.length) {
-      if (!self.showingSuggestedActions) {
-        [self.collectionView insertSections:sections];
-        self.showingSuggestedActions = YES;
-      }
-    } else {
-      if (self.showingSuggestedActions) {
-        [self.collectionView deleteSections:sections];
-        self.showingSuggestedActions = NO;
-      }
-    }
-  };
-  [UIView performWithoutAnimation:^{
-    [self.collectionView performBatchUpdates:updateSectionBlock completion:nil];
-  }];
-}
-
-#pragma mark - Public Editing Mode Selection
-
-- (void)selectAllItemsForEditing {
-  if (_mode != TabGridModeSelection) {
-    return;
-  }
-
-  for (TabSwitcherItem* item in self.items) {
-    [self selectItemWithIDForEditing:item.identifier];
-  }
-  [self.collectionView reloadData];
-}
-
-- (void)deselectAllItemsForEditing {
-  if (_mode != TabGridModeSelection) {
-    return;
-  }
-
-  for (TabSwitcherItem* item in self.items) {
-    [self deselectItemWithIDForEditing:item.identifier];
-  }
-  [self.collectionView reloadData];
-}
-
-- (NSArray<NSString*>*)selectedItemIDsForEditing {
-  return [self.selectedEditingItemIDs allObjects];
-}
-
-- (NSArray<NSString*>*)selectedShareableItemIDsForEditing {
-  return [self.selectedSharableEditingItemIDs allObjects];
-}
-
-- (BOOL)allItemsSelectedForEditing {
-  return _mode == TabGridModeSelection &&
-         self.items.count == self.selectedEditingItemIDs.count;
-}
-
-#pragma mark - Private Editing Mode Selection
-
-- (BOOL)isItemWithIDSelectedForEditing:(NSString*)identifier {
-  return [self.selectedEditingItemIDs containsObject:identifier];
-}
-
-- (void)selectItemWithIDForEditing:(NSString*)identifier {
-  [self.selectedEditingItemIDs addObject:identifier];
-  if ([self.shareableItemsProvider isItemWithIdentifierSharable:identifier]) {
-    [self.selectedSharableEditingItemIDs addObject:identifier];
-  }
-}
-
-- (void)deselectItemWithIDForEditing:(NSString*)identifier {
-  [self.selectedEditingItemIDs removeObject:identifier];
-  [self.selectedSharableEditingItemIDs removeObject:identifier];
 }
 
 @end

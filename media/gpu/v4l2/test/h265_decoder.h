@@ -8,6 +8,8 @@
 
 #include "media/gpu/v4l2/test/video_decoder.h"
 
+#include "media/base/video_codecs.h"
+#include "media/gpu/v4l2/test/h265_dpb.h"
 #include "media/video/h265_parser.h"
 
 namespace media {
@@ -49,9 +51,13 @@ class H265Decoder : public VideoDecoder {
     // retryable error) is returned. The next time Decode() is called the call
     // that previously failed will be retried and execution continues from
     // there (if possible).
+    // Processes PPS before processing the current slice.
     kTryPreprocessCurrentSlice,
+    // Makes sure processing the previous frame is finished.
     kEnsurePicture,
+    // Processes a new frame.
     kTryNewFrame,
+    // Processes the current slice.
     kTryCurrentSlice,
     // Error in decode, can't continue.
     kError,
@@ -66,7 +72,13 @@ class H265Decoder : public VideoDecoder {
     kRanOutOfStreamData,  // Need more stream data to proceed.
   };
 
-  // Process H265 stream structures.
+  // Output all pictures in DPB that have not been outputted yet.
+  bool OutputAllRemainingPics();
+
+  // Output all pictures in DPB and clear the DPB.
+  bool Flush();
+
+  // Process H265 bitstream PPS (picture parameter set).
   bool ProcessPPS(int pps_id, bool* need_new_buffers);
 
   // Process current slice header to discover if we need to start a new picture,
@@ -75,6 +87,36 @@ class H265Decoder : public VideoDecoder {
 
   // Process current slice as a slice of the current picture.
   bool ProcessCurrentSlice();
+
+  // Calculates the picture output flags using |slice_hdr| for |curr_pic_|.
+  void CalcPicOutputFlags(const H265SliceHeader* slice_hdr);
+
+  // Calculates picture order count (POC) using |pps| and|slice_hdr| for
+  // |curr_pic_|.
+  void CalcPictureOrderCount(const H265PPS* pps,
+                             const H265SliceHeader* slice_hdr);
+
+  // Calculates the POCs for the reference pictures for |curr_pic_| using
+  // |sps|, |pps| and |slice_hdr| and stores them in the member variables.
+  // Returns false if bitstream conformance is not maintained, true otherwise.
+  bool CalcRefPicPocs(const H265SPS* sps,
+                      const H265PPS* pps,
+                      const H265SliceHeader* slice_hdr);
+
+  // Builds the reference pictures lists for |curr_pic_| using |sps|, |pps|,
+  // |slice_hdr| and the member variables calculated in CalcRefPicPocs. Returns
+  // false if bitstream conformance is not maintained or needed reference
+  // pictures are missing, true otherwise. At the end of this,
+  // |ref_pic_list{0,1}| will be populated with the required reference pictures
+  // for submitting to the accelerator.
+  bool BuildRefPicLists(const H265SPS* sps,
+                        const H265PPS* pps,
+                        const H265SliceHeader* slice_hdr);
+
+  // Performs DPB management operations for |curr_pic_| by removing no longer
+  // needed entries from the DPB and outputting pictures from the DPB. |sps|
+  // should be the corresponding SPS for |curr_pic_|.
+  bool PerformDpbOperations(const H265SPS* sps);
 
   // Start processing a new frame. This also generates all the POC and output
   // variables for the frame, generates reference picture lists, performs
@@ -94,15 +136,42 @@ class H265Decoder : public VideoDecoder {
 
   std::unique_ptr<H265Parser> parser_;
 
+  // DPB in use.
+  H265DPB dpb_;
+
+  // Picture currently being processed/decoded.
+  scoped_refptr<H265Picture> curr_pic_;
+
+  // Used to identify first picture in decoding order
+  // or first picture that follows an EOS NALU.
+  bool first_picture_ = true;
+
   const base::MemoryMappedFile& data_stream_;
 
-  // Currently active PPS.
+  // Global state values needed for decoding. See spec.
+  scoped_refptr<H265Picture> prev_tid0_pic_;
+  int max_pic_order_cnt_lsb_;
+
+  // Currently active SPS and PPS.
+  int curr_sps_id_ = -1;
   int curr_pps_id_ = -1;
 
   // Current NALU and slice header being processed.
   std::unique_ptr<H265NALU> curr_nalu_;
   std::unique_ptr<H265SliceHeader> curr_slice_hdr_;
   std::unique_ptr<H265SliceHeader> last_slice_hdr_;
+
+  // Output picture size.
+  gfx::Size pic_size_;
+  // Output visible cropping rect.
+  gfx::Rect visible_rect_;
+
+  // Profile of input bitstream.
+  VideoCodecProfile profile_;
+  // Bit depth of input bitstream.
+  uint8_t bit_depth_ = 0;
+  // Chroma sampling format of input bitstream.
+  VideoChromaSampling chroma_sampling_ = VideoChromaSampling::kUnknown;
 
   // If this is true, then the entire steam has been parsed.
   bool is_stream_over_ = false;

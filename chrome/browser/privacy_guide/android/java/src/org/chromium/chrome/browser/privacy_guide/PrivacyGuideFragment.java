@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
@@ -23,6 +22,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
@@ -98,6 +98,9 @@ public class PrivacyGuideFragment
         mPagerAdapter = new PrivacyGuidePagerAdapter(this, new StepDisplayHandlerImpl());
         mNavbarVisibilityDelegate = new NavbarVisibilityDelegate(mPagerAdapter.getItemCount());
         mViewPager.setAdapter(mPagerAdapter);
+        if (ChromeFeatureList.sPrivacyGuidePostMVP.isEnabled()) {
+            mViewPager.setPageTransformer(new PrivacyGuidePageTransformer());
+        }
         mViewPager.setUserInputEnabled(false);
 
         mTabLayout = mView.findViewById(R.id.tab_layout);
@@ -277,9 +280,10 @@ public class PrivacyGuideFragment
         mSettingsLauncher = settingsLauncher;
     }
 
-    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     void setPrivacyGuideMetricsDelegateForTesting(
             @Nullable PrivacyGuideMetricsDelegate privacyGuideMetricsDelegate) {
+        var oldValue = mPrivacyGuideMetricsDelegate;
         mPrivacyGuideMetricsDelegate = privacyGuideMetricsDelegate;
+        ResettersForTesting.register(() -> mPrivacyGuideMetricsDelegate = oldValue);
     }
 }

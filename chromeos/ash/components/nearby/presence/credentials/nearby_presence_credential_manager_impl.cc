@@ -37,6 +37,7 @@ const char kFirstTimeRegistrationFieldMaskPath[] = "display_name";
 const char kUploadCredentialsFieldMaskPath[] = "certificates";
 const base::TimeDelta kServerResponseTimeout = base::Seconds(5);
 constexpr int kServerCommunicationMaxAttempts = 5;
+const base::TimeDelta kSyncCredentialsDailyTimePeriod = base::Hours(24);
 
 }  // namespace
 
@@ -162,6 +163,18 @@ NearbyPresenceCredentialManagerImpl::NearbyPresenceCredentialManagerImpl(
   CHECK(identity_manager_);
   CHECK(url_loader_factory_);
   CHECK(local_device_data_provider_);
+
+  daily_credential_sync_scheduler_ =
+      ash::nearby::NearbySchedulerFactory::CreatePeriodicScheduler(
+          /*request_period=*/kSyncCredentialsDailyTimePeriod,
+          /*retry_failures=*/true, /*require_connectivity=*/true,
+          prefs::kNearbyPresenceSchedulingCredentialDailySyncPrefName,
+          pref_service_,
+          base::BindRepeating(
+              &NearbyPresenceCredentialManagerImpl::StartDailySync,
+              weak_ptr_factory_.GetWeakPtr()),
+          base::DefaultClock::GetInstance());
+  daily_credential_sync_scheduler_->Start();
 }
 
 NearbyPresenceCredentialManagerImpl::~NearbyPresenceCredentialManagerImpl() =
@@ -324,53 +337,19 @@ void NearbyPresenceCredentialManagerImpl::OnFirstTimeCredentialsGenerated(
   //      4. Download other devices' credentials.
   //      5. Save other devices' credentials.
   // Next, kick off Step 3.
-  ScheduleUploadCredentials(proto_shared_credentials);
-}
-
-void NearbyPresenceCredentialManagerImpl::ScheduleUploadCredentials(
-    std::vector<::nearby::internal::SharedCredential>
-        proto_shared_credentials) {
-  first_time_upload_on_demand_scheduler_ =
-      ash::nearby::NearbySchedulerFactory::CreateOnDemandScheduler(
-          /*retry_failures=*/true,
-          /*require_connectivity=*/true,
-          prefs::kNearbyPresenceSchedulingFirstTimeUploadPrefName,
-          pref_service_,
-          base::BindRepeating(
-              &NearbyPresenceCredentialManagerImpl::UploadCredentials,
-              weak_ptr_factory_.GetWeakPtr(), proto_shared_credentials,
-              base::BindRepeating(&NearbyPresenceCredentialManagerImpl::
-                                      OnFirstTimeCredentialsUpload,
-                                  weak_ptr_factory_.GetWeakPtr())),
-          base::DefaultClock::GetInstance());
-  first_time_upload_on_demand_scheduler_->Start();
-  first_time_upload_on_demand_scheduler_->MakeImmediateRequest();
+  ScheduleUploadCredentials(
+      proto_shared_credentials,
+      base::BindRepeating(
+          &NearbyPresenceCredentialManagerImpl::OnFirstTimeCredentialsUpload,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void NearbyPresenceCredentialManagerImpl::OnFirstTimeCredentialsUpload(
     bool success) {
-  CHECK(first_time_upload_on_demand_scheduler_);
   if (!success) {
-    // Allow the scheduler to exponentially attempt uploading credentials
-    // until the max. Once it reaches the max attempts, notify consumers of
-    // failure.
-    if (first_time_upload_on_demand_scheduler_->GetNumConsecutiveFailures() <
-        kServerCommunicationMaxAttempts) {
-      first_time_upload_on_demand_scheduler_->HandleResult(
-          /*success=*/false);
-      return;
-    }
-
-    // We've exceeded the max attempts; registration has failed.
-    first_time_upload_on_demand_scheduler_->Stop();
-    first_time_upload_on_demand_scheduler_.reset();
-    CHECK(on_registered_callback_);
     std::move(on_registered_callback_).Run(/*success=*/false);
     return;
   }
-
-  first_time_upload_on_demand_scheduler_->HandleResult(/*success=*/true);
-  first_time_upload_on_demand_scheduler_.reset();
 
   // We've completed the 3rd of 5 steps of first time registration:
   //      1. Register this device with the server.
@@ -379,55 +358,18 @@ void NearbyPresenceCredentialManagerImpl::OnFirstTimeCredentialsUpload(
   //      4. Download other devices' credentials.
   //      5. Save other devices' credentials.
   // Next, kick off Step 4.
-  ScheduleDownloadCredentials();
-}
-
-void NearbyPresenceCredentialManagerImpl::ScheduleDownloadCredentials() {
-  // Next, to complete first time registration, the CredentialManager needs to
-  // download the remote devices' shared credentials and save them to the
-  // Nearby library.
-  first_time_download_on_demand_scheduler_ =
-      ash::nearby::NearbySchedulerFactory::CreateOnDemandScheduler(
-          /*retry_failures=*/true,
-          /*require_connectivity=*/true,
-          prefs::kNearbyPresenceSchedulingFirstTimeDownloadPrefName,
-          pref_service_,
-          base::BindRepeating(
-              &NearbyPresenceCredentialManagerImpl::DownloadCredentials,
-              weak_ptr_factory_.GetWeakPtr(),
-              base::BindRepeating(&NearbyPresenceCredentialManagerImpl::
-                                      OnFirstTimeCredentialsDownload,
-                                  weak_ptr_factory_.GetWeakPtr())),
-          base::DefaultClock::GetInstance());
-  first_time_download_on_demand_scheduler_->Start();
-  first_time_download_on_demand_scheduler_->MakeImmediateRequest();
+  ScheduleDownloadCredentials(base::BindRepeating(
+      &NearbyPresenceCredentialManagerImpl::OnFirstTimeCredentialsDownload,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void NearbyPresenceCredentialManagerImpl::OnFirstTimeCredentialsDownload(
     std::vector<::nearby::internal::SharedCredential> credentials,
     bool success) {
-  CHECK(first_time_download_on_demand_scheduler_);
   if (!success) {
-    // Allow the scheduler to exponentially attempt uploading credentials
-    // until the max. Once it reaches the max attempts, notify consumers of
-    // failure.
-    if (first_time_download_on_demand_scheduler_->GetNumConsecutiveFailures() <
-        kServerCommunicationMaxAttempts) {
-      first_time_download_on_demand_scheduler_->HandleResult(
-          /*success=*/false);
-      return;
-    }
-
-    // We've exceeded the max attempts; registration has failed.
-    first_time_download_on_demand_scheduler_->Stop();
-    first_time_download_on_demand_scheduler_.reset();
-    CHECK(on_registered_callback_);
     std::move(on_registered_callback_).Run(/*success=*/false);
     return;
   }
-
-  first_time_download_on_demand_scheduler_->HandleResult(/*success=*/true);
-  first_time_download_on_demand_scheduler_.reset();
 
   // We've completed the 4th of 5 steps for first time registration.
   //      1. Register this device with the server.
@@ -462,6 +404,185 @@ void NearbyPresenceCredentialManagerImpl::OnFirstTimeRemoteCredentialsSaved(
   local_device_data_provider_->SetRegistrationComplete(/*complete=*/true);
   CHECK(on_registered_callback_);
   std::move(on_registered_callback_).Run(/*success=*/true);
+}
+
+void NearbyPresenceCredentialManagerImpl::StartDailySync() {
+  // If the device has not been registered yet, this is a no-op, and is
+  // considered a success, which reschedules the daily sync. This happens when
+  // the First Time Registration flow is kicked off, and the daily sync event
+  // fires.
+  if (!IsLocalDeviceRegistered()) {
+    daily_credential_sync_scheduler_->HandleResult(/*success=*/true);
+    return;
+  }
+
+  // The flow for first time registration is as follows:
+  //      1. Fetch this device's credentials.
+  //      2. Upload this device's credentials if they have changed.
+  //      3. Download other devices' credentials.
+  //      4. Save other devices' credentials.
+  //
+  // Next, kick off Step 1.
+  nearby_presence_->GetLocalSharedCredentials(
+      local_device_data_provider_->GetAccountName(),
+      base::BindOnce(
+          &NearbyPresenceCredentialManagerImpl::OnGetLocalSharedCredentials,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NearbyPresenceCredentialManagerImpl::OnGetLocalSharedCredentials(
+    std::vector<mojom::SharedCredentialPtr> shared_credentials,
+    mojom::StatusCode status) {
+  // On failures, exponentially retry the daily sync flow.
+  if (status != mojom::StatusCode::kOk) {
+    daily_credential_sync_scheduler_->HandleResult(/*success=*/false);
+    return;
+  }
+
+  // We've completed the 1st of 4 steps for daily credential sync.
+  //   -> 1. Fetch this device's credentials.
+  //      2. Upload this device's credentials if they have changed.
+  //      3. Download other devices' credentials.
+  //      4. Save other devices' credentials.
+  //
+  // Next, kick off Step 2.
+
+  // Convert from mojo to proto and check for changes for the credentials.
+  // Only upload if they have changed, otherwise proceed to the next step.
+  std::vector<::nearby::internal::SharedCredential> proto_shared_credentials;
+  for (const auto& cred : shared_credentials) {
+    proto_shared_credentials.push_back(
+        proto::SharedCredentialFromMojom(cred.get()));
+  }
+
+  // Update the credentials persisted to disk if they have changed, and
+  // schedule an upload of the credentials.
+  if (local_device_data_provider_->HaveSharedCredentialsChanged(
+          proto_shared_credentials)) {
+    local_device_data_provider_->UpdatePersistedSharedCredentials(
+        proto_shared_credentials);
+    ScheduleUploadCredentials(
+        proto_shared_credentials,
+        base::BindRepeating(
+            &NearbyPresenceCredentialManagerImpl::OnDailySyncCredentialUpload,
+            weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  // If the local credentials haven't changed, don't upload them to the server.
+  // We've completed the 2nd of 4 steps for daily credential sync.
+  //      1. Fetch this device's credentials.
+  //  ->  2. Upload this device's credentials if they have changed.
+  //      3. Download other devices' credentials.
+  //      4. Save other devices' credentials.
+  //
+  // Next, kick off Step 3.
+  ScheduleDownloadCredentials(base::BindRepeating(
+      &NearbyPresenceCredentialManagerImpl::OnDailySyncCredentialDownload,
+      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NearbyPresenceCredentialManagerImpl::OnDailySyncCredentialUpload(
+    bool success) {
+  // On failures, exponentially retry the daily sync flow.
+  if (!success) {
+    daily_credential_sync_scheduler_->HandleResult(/*success=*/false);
+    return;
+  }
+
+  // We've completed the 2nd of 4 steps for daily credential sync.
+  //      1. Fetch this device's credentials.
+  //  ->  2. Upload this device's credentials if they have changed.
+  //      3. Download other devices' credentials.
+  //      4. Save other devices' credentials.
+  //
+  // Next, kick off Step 3.
+  ScheduleDownloadCredentials(base::BindRepeating(
+      &NearbyPresenceCredentialManagerImpl::OnDailySyncCredentialDownload,
+      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NearbyPresenceCredentialManagerImpl::OnDailySyncCredentialDownload(
+    std::vector<::nearby::internal::SharedCredential> credentials,
+    bool success) {
+  // On failures, exponentially retry the daily sync flow.
+  if (!success) {
+    daily_credential_sync_scheduler_->HandleResult(/*success=*/false);
+    return;
+  }
+
+  // We've completed the 3rd of 4 steps for daily credential sync.
+  //      1. Fetch this device's credentials.
+  //      2. Upload this device's credentials if they have changed.
+  //  ->  3. Download other devices' credentials.
+  //      4. Save other devices' credentials.
+  //
+  // Next, kick off Step 4.
+  //
+  // Convert the credentials and send them over the mojo pipe to the NP library.
+  std::vector<mojom::SharedCredentialPtr> mojo_credentials;
+  for (auto cred : credentials) {
+    mojo_credentials.push_back(proto::SharedCredentialToMojom(cred));
+  }
+
+  nearby_presence_->UpdateRemoteSharedCredentials(
+      std::move(mojo_credentials),
+      local_device_data_provider_->GetAccountName(),
+      base::BindOnce(&NearbyPresenceCredentialManagerImpl::
+                         OnDailySyncRemoteCredentialsSaved,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NearbyPresenceCredentialManagerImpl::OnDailySyncRemoteCredentialsSaved(
+    mojom::StatusCode status) {
+  // On failures, exponentially retry the daily sync flow.
+  if (status != mojom::StatusCode::kOk) {
+    daily_credential_sync_scheduler_->HandleResult(/*success=*/false);
+    return;
+  }
+
+  // We've completed the last of 4 steps for daily credential sync.
+  //      1. Fetch this device's credentials.
+  //      2. Upload this device's credentials if they have changed.
+  //      3. Download other devices' credentials.
+  //   -> 4. Save other devices' credentials.
+  // Signal success to the scheduler, which causes it to reschedule for the
+  // next daily sync.
+  daily_credential_sync_scheduler_->HandleResult(/*success=*/true);
+}
+
+void NearbyPresenceCredentialManagerImpl::ScheduleUploadCredentials(
+    std::vector<::nearby::internal::SharedCredential> proto_shared_credentials,
+    base::RepeatingCallback<void(bool)> on_upload) {
+  upload_on_demand_scheduler_ =
+      ash::nearby::NearbySchedulerFactory::CreateOnDemandScheduler(
+          /*retry_failures=*/true,
+          /*require_connectivity=*/true,
+          prefs::kNearbyPresenceSchedulingUploadPrefName, pref_service_,
+          base::BindRepeating(
+              &NearbyPresenceCredentialManagerImpl::UploadCredentials,
+              weak_ptr_factory_.GetWeakPtr(), proto_shared_credentials,
+              std::move(on_upload)),
+          base::DefaultClock::GetInstance());
+  upload_on_demand_scheduler_->Start();
+  upload_on_demand_scheduler_->MakeImmediateRequest();
+}
+
+void NearbyPresenceCredentialManagerImpl::ScheduleDownloadCredentials(
+    base::RepeatingCallback<
+        void(std::vector<::nearby::internal::SharedCredential>, bool)>
+        on_download) {
+  download_on_demand_scheduler_ =
+      ash::nearby::NearbySchedulerFactory::CreateOnDemandScheduler(
+          /*retry_failures=*/true,
+          /*require_connectivity=*/true,
+          prefs::kNearbyPresenceSchedulingDownloadPrefName, pref_service_,
+          base::BindRepeating(
+              &NearbyPresenceCredentialManagerImpl::DownloadCredentials,
+              weak_ptr_factory_.GetWeakPtr(), std::move(on_download)),
+          base::DefaultClock::GetInstance());
+  download_on_demand_scheduler_->Start();
+  download_on_demand_scheduler_->MakeImmediateRequest();
 }
 
 void NearbyPresenceCredentialManagerImpl::UploadCredentials(
@@ -510,8 +631,30 @@ void NearbyPresenceCredentialManagerImpl::HandleUploadCredentialsResult(
 
   server_client_.reset();
 
+  CHECK(upload_on_demand_scheduler_);
+  if (!success) {
+    // Allow the scheduler to exponentially attempt uploading credentials
+    // until the max. Once it reaches the max attempts, notify consumers of
+    // failure.
+    if (upload_on_demand_scheduler_->GetNumConsecutiveFailures() <
+        kServerCommunicationMaxAttempts) {
+      upload_on_demand_scheduler_->HandleResult(
+          /*success=*/false);
+      return;
+    }
+
+    // We've exceeded the max attempts; registration has failed.
+    upload_on_demand_scheduler_->Stop();
+    upload_on_demand_scheduler_.reset();
+    CHECK(upload_credentials_callback);
+    upload_credentials_callback.Run(/*success=*/false);
+    return;
+  }
+
+  upload_on_demand_scheduler_->HandleResult(/*success=*/true);
+  upload_on_demand_scheduler_.reset();
   CHECK(upload_credentials_callback);
-  upload_credentials_callback.Run(success);
+  upload_credentials_callback.Run(/*success=*/true);
 }
 
 void NearbyPresenceCredentialManagerImpl::OnUploadCredentialsTimeout(
@@ -581,10 +724,34 @@ void NearbyPresenceCredentialManagerImpl::HandleDownloadCredentialsResult(
     bool success,
     std::vector<::nearby::internal::SharedCredential> credentials) {
   // TODO(b/276307539): Add metrics to record failures.
+
   server_client_.reset();
-  CHECK(download_credentials_result_callback);
-  download_credentials_result_callback.Run(/*remote_credentials=*/credentials,
-                                           /*success=*/success);
+
+  CHECK(download_on_demand_scheduler_);
+  if (!success) {
+    // Allow the scheduler to exponentially attempt downloading credentials
+    // until the max. Once it reaches the max attempts, notify consumers of
+    // failure.
+    if (download_on_demand_scheduler_->GetNumConsecutiveFailures() <
+        kServerCommunicationMaxAttempts) {
+      download_on_demand_scheduler_->HandleResult(
+          /*success=*/false);
+      return;
+    }
+
+    // We've exceeded the max attempts; registration has failed.
+    download_on_demand_scheduler_->Stop();
+    download_on_demand_scheduler_.reset();
+    CHECK(download_credentials_result_callback);
+    download_credentials_result_callback.Run(/*credentials=*/{},
+                                             /*success=*/false);
+    return;
+  }
+
+  download_on_demand_scheduler_->HandleResult(/*success=*/true);
+  download_on_demand_scheduler_.reset();
+  download_credentials_result_callback.Run(/*credentials=*/credentials,
+                                           /*success=*/true);
 }
 
 void NearbyPresenceCredentialManagerImpl::OnDownloadCredentialsTimeout(

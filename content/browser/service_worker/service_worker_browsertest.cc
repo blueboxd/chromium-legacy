@@ -5349,10 +5349,19 @@ class ServiceWorkerRaceNetworkRequestBrowserTest
             return nullptr;
           }
 
+          if (base::Contains(request.GetURL().query(), "server_close_socket")) {
+            return std::make_unique<net::test_server::RawHttpResponse>("", "");
+          }
+
+          const bool is_slow =
+              base::Contains(request.GetURL().query(), "server_slow");
+          auto http_response =
+              is_slow ? std::make_unique<net::test_server::DelayedHttpResponse>(
+                            base::Seconds(2))
+                      : std::make_unique<net::test_server::BasicHttpResponse>();
+
           const char kQueryForRedirect[] = "server_redirect";
           if (base::Contains(request.GetURL().query(), kQueryForRedirect)) {
-            auto http_response =
-                std::make_unique<net::test_server::BasicHttpResponse>();
             http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
 
             const int pos = request.GetURL().query().find(kQueryForRedirect);
@@ -5365,17 +5374,6 @@ class ServiceWorkerRaceNetworkRequestBrowserTest
             return http_response;
           }
 
-          if (base::Contains(request.GetURL().query(), "server_close_socket")) {
-            return std::make_unique<net::test_server::RawHttpResponse>("", "");
-          }
-
-          const bool is_slow =
-              base::Contains(request.GetURL().query(), "server_slow");
-
-          auto http_response =
-              is_slow ? std::make_unique<net::test_server::DelayedHttpResponse>(
-                            base::Seconds(2))
-                      : std::make_unique<net::test_server::BasicHttpResponse>();
           http_response->set_content_type("text/plain");
 
           if (base::Contains(request.GetURL().query(), "server_notfound")) {
@@ -5819,6 +5817,32 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestBrowserTest,
                    "response.text())"));
 }
 
+IN_PROC_BROWSER_TEST_F(
+    ServiceWorkerRaceNetworkRequestBrowserTest,
+    Subresource_NetworkRequest_Wins_FetchHandler_Fallback_Redirect) {
+  SetupAndRegisterServiceWorker();
+  WorkerRunningStatusObserver observer(public_context());
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  observer.WaitUntilRunning();
+
+  const std::string path =
+      "/service_worker/mock_response?server_redirect&sw_fallback&sw_slow";
+  const std::string path_after_redirect =
+      "/service_worker/mock_response?&sw_fallback&sw_slow";
+
+  // Network request is faster, and the fetch handler will fallback.
+  // This case the response from RaceNetworkRequset is used.
+  EXPECT_EQ("[ServiceWorkerRaceNetworkRequest] Response from the network",
+            EvalJs(GetPrimaryMainFrame(),
+                   "fetch('" + path + "').then(response => response.text())"));
+
+  // The first request is NOT deduped.
+  EXPECT_EQ(2, GetRequestCount(path));
+  // The second request is sent as a fallback, the RaceNetworkRequest is reused
+  // for the fallback.
+  EXPECT_EQ(1, GetRequestCount(path_after_redirect));
+}
+
 IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestBrowserTest,
                        Subresource_NetworkRequest_Wins_Post) {
   SetupAndRegisterServiceWorker();
@@ -5936,6 +5960,30 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestBrowserTest,
   // happens.
   ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
   EXPECT_FALSE(ExecJs(GetPrimaryMainFrame(), "fetch('" + relative_url + "')"));
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestBrowserTest,
+                       Subresource_FetchHandler_Wins_Fallback_Redirect) {
+  SetupAndRegisterServiceWorker();
+  WorkerRunningStatusObserver observer(public_context());
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  observer.WaitUntilRunning();
+
+  // Fetch handler will fallback. This case the response from RaceNetworkRequest
+  // is returned as a final response.
+  const std::string path =
+      "/service_worker/mock_response?server_redirect&server_slow&sw_fallback";
+  const std::string path_after_redirect =
+      "/service_worker/mock_response?&server_slow&sw_fallback";
+  EXPECT_EQ("[ServiceWorkerRaceNetworkRequest] Slow response from the network",
+            EvalJs(GetPrimaryMainFrame(),
+                   "fetch('" + path + "').then(response => response.text())"));
+
+  // The first request is deduped.
+  EXPECT_EQ(1, GetRequestCount(path));
+  // The second request is sent as a fallback, the RaceNetworkRequest is reused
+  // for the fallback.
+  EXPECT_EQ(1, GetRequestCount(path_after_redirect));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerRaceNetworkRequestBrowserTest,

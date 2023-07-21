@@ -877,6 +877,12 @@ void Pointer::CaptureCursor(const gfx::Point& hotspot) {
   if (host_window()->bounds().IsEmpty())
     return;
 
+  // Return if the surface has no committed buffer.
+  Buffer* buffer = root_surface()->GetBuffer();
+  if (!buffer) {
+    return;
+  }
+
   // Cancel all pending captures.
   cursor_capture_weak_ptr_factory_.InvalidateWeakPtrs();
 
@@ -885,13 +891,15 @@ void Pointer::CaptureCursor(const gfx::Point& hotspot) {
   // Otherwise, send RequestCopyOfOutput request to viz
   // to capture cursor bitmap.
   if (!root_surface()->HasAcquireFence()) {
-    SkBitmap bitmap = root_surface()->GetBuffer()->CreateBitmap();
+    SkBitmap bitmap = buffer->CreateBitmap();
     if (!bitmap.empty()) {
       OnCursorBitmapObtained(hotspot, bitmap, root_surface()->GetBufferScale());
       return;
-    };
+    }
   }
 
+  // Advance the surface id to ensure capturing the correct compositor frame.
+  AllocateLocalSurfaceId();
   // Submit compositor frame to be captured.
   SubmitCompositorFrame();
 
@@ -907,18 +915,10 @@ void Pointer::CaptureCursor(const gfx::Point& hotspot) {
 
   request->set_source(cursor_capture_source_id_);
 
-  // host_window()->layer()->RequestCopyOfOutput() would not work correctly
-  // when the host window's bounds change. When host window's bounds change,
-  // a new surface local id is allocated and will then update the layer's
-  // surface id via aura::Window::OnFirstSurfaceActivation. However
-  // OnFirstSurfaceActivation doesn't necessarily always happen before
-  // root frame sink's BeginFrame, and this would cause wrong surface id
-  // when requesting copy of output. See http://crbug.com/1448598.
-  // Thus, we use host window's surface id for requesting copy of output.
   aura::Env::GetInstance()
       ->context_factory()
       ->GetHostFrameSinkManager()
-      ->RequestCopyOfOutput(host_window()->GetSurfaceId(), std::move(request));
+      ->RequestCopyOfOutput(GetSurfaceId(), std::move(request));
 }
 
 void Pointer::OnCursorCaptured(const gfx::Point& hotspot,

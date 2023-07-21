@@ -80,6 +80,7 @@
 <translation id="235650106824528204">Kõik Chrome'i andmed, mis luuakse selle profiili kasutamise ajal (nt järjehoidjad, ajalugu, paroolid ja muud seaded), saab tööprofiili administraator eemaldada. <ph name="LEARN_MORE" /></translation>
 <translation id="2359808026110333948">Jätka</translation>
 <translation id="2401189691232800402">Chrome OS-i süsteem</translation>
+<translation id="2409816192575564775">{NUM_DEVICES,plural, =0{Üks või mitu Chrome'i laiendust kasutasid juurdepääsu ühele HID-seadmele}=1{Üks või mitu Chrome'i laiendust kasutasid juurdepääsu ühele HID-seadmele}other{Üks või mitu Chrome'i laiendust kasutasid juurdepääsu # HID-seadmele}}</translation>
 <translation id="2424440923901031101">Laiendus rikub Chrome'i veebipoe eeskirju ja see võib olla ebaturvaline. Eemaldage see Chrome'ist, et see ei saaks enam näha ja muuta teie andmeid saitidel, mida külastate, sealhulgas teie isiklikku teavet.</translation>
 <translation id="2467438592969358367">Google Chrome soovib teie paroole eksportida. Selle lubamiseks sisestage oma Windowsi parool.</translation>
 <translation id="2472092250898121027">Laiendus sisaldab pahavara ja see on ebaturvaline. Eemaldage see Chrome'ist, et see ei saaks enam näha ja muuta teie andmeid saitidel, mida külastate, sealhulgas teie isiklikku teavet.</translation>
@@ -117,7 +118,6 @@
 <translation id="2929907241665500097">Chrome'i ei värskendatud, midagi läks valesti. <ph name="BEGIN_LINK" />Lahendage Chrome'i värskendamisprobleemid ja parandage ebaõnnestunud värskendused.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – võrku sisselogimine – Chrome</translation>
 <translation id="3019382870990049182">Taaskäivitage &amp;Chrome OS Flexi värskendamiseks</translation>
-<translation id="3033660625209020231">{NUM_DEVICES,plural, =0{Google Chrome'i laiendused pääsesid juurde HID-seadmetele}=1{Google Chrome'i laiendused pääsevad juurde HID-seadmetele}other{Google Chrome'i laiendused pääsevad juurde # HID-seadmele}}</translation>
 <translation id="303514781271618814">Chrome katsetab uusi funktsioone, mis võimaldaksid saitidel pakkuda väiksema andmemahu juures samasugust sirvimiskogemust</translation>
 <translation id="3037838751736561277">Google Chrome on taustarežiimis.</translation>
 <translation id="3038232873781883849">Installimise ootamine …</translation>
@@ -225,7 +225,6 @@
 <translation id="4970947549776831107">Chrome blokeeris selle faili, kuna see failitüüp on ohtlik</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5003967926796347400">Klõpsake „Google'i paroolihaldur”</translation>
-<translation id="5005958605836556244">{NUM_DEVICES,plural, =0{Google Chrome'i laiendus pääses juurde HID-seadmetele}=1{Google Chrome'i laiendus pääseb juurde ühele HID-seadmele}other{Google Chrome'i laiendus pääseb juurde # HID-seadmele}}</translation>
 <translation id="5098668839038261629">Kui see on sisse lülitatud, logitakse teid ka Chrome'ist välja</translation>
 <translation id="5132929315877954718">Avastage Google Chrome'i jaoks suurepäraseid rakendusi, mänge, laiendusi ja teemasid.</translation>
 <translation id="5139423532931106058">Kohandage oma Chrome'i profiili</translation>
@@ -243,6 +242,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="5394833366792865639">Chrome’i vahelehe jagamine</translation>
 <translation id="5412485296464121825">Saidid võivad talletada Chrome'i teavet teie huvide kohta. Näiteks kui külastate saiti, et osta maratoni jooksmiseks jalatseid, võib sait määratleda teie huviks maratonijooksu. Kui külastate hiljem jooksule registreerumiseks muud saiti, võib see sait näidata teile teie huvide alusel jooksujalatsite reklaami.</translation>
 <translation id="5430073640787465221">Teie eelistuste fail on rikutud või kehtetu. Google Chrome ei saa teie seadeid taastada.</translation>
+<translation id="5521146392841465297">Chrome soovitab teil selle laienduse üle vaadata.</translation>
 <translation id="5524761631371622910">Kui katsed on sisse lülitatud ja Chrome on teid juhuslikkuse alusel lisanud aktiivsesse katsesse, mõjutab teie sirvimisajalugu teile esitatavaid reklaame ja allolevaid prognoositud huvisid. Teie privaatsuse kaitsmiseks kustutab Chrome teie huvisid jooksvalt iga kuu.</translation>
 <translation id="5530733413481476019">Muutke Chrome kiiremaks</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -280,6 +280,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="624230925347970731">Chrome suletakse peagi</translation>
 <translation id="6247557882553405851">Google'i paroolihaldur</translation>
 <translation id="6273793429163604305">Tähelepanu …</translation>
+<translation id="6277547788421725101">Sinu vanem lülitas Chrome'i puhul valiku „Saitide, rakenduste ja laienduste load” välja</translation>
 <translation id="6291089322031436445">Chrome Devi rakendused</translation>
 <translation id="6291549208091401781">Google Chrome on arvutisse kõigi kasutajate jaoks juba installitud.</translation>
 <translation id="6326175484149238433">Eemalda Chrome'ist</translation>
@@ -335,6 +336,7 @@ Load, mille olete juba veebisaitidele ja rakendustele andnud, võivad selle kont
 <translation id="7398801000654795464">Olite Chrome'i sisse logitud kasutajana <ph name="USER_EMAIL_ADDRESS" />. Kasutage uuesti sisselogimiseks sama kontot.</translation>
 <translation id="7410958280246779049">Chrome blokeeris selle faili, kuna see on ohtlik</translation>
 <translation id="7412494426921990001">Klõpsake Chrome'i menüül</translation>
+<translation id="742463671275348370">{NUM_DEVICES,plural, =0{Üks või mitu Chrome'i laiendust kasutasid juurdepääsu ühele USB-seadmele}=1{Üks või mitu Chrome'i laiendust kasutasid juurdepääsu ühele USB-seadmele}other{Üks või mitu Chrome'i laiendust kasutasid juurdepääsu # USB-seadmele}}</translation>
 <translation id="7426611252293106642">Google Chrome ei pruugi õigesti töötada, kuna seda ei toetata enam selles Linuxi versioonis</translation>
 <translation id="7449333426561673451">{COUNT,plural, =1{Teie organisatsioon sulgeb Chrome’i automaatselt, kui seda ei kasutata 1 minuti jooksul.}other{Teie organisatsioon sulgeb Chrome’i automaatselt, kui seda ei kasutata # minuti jooksul.}}</translation>
 <translation id="7452987490177144319">{COUNT,plural, =1{Teie organisatsioon kustutab sirvimisandmed automaatselt, kui Chrome'i ei kasutata 1 minuti jooksul. Need võivad hõlmata ajalugu, automaattäidet ja allalaadimisi. Teie vahelehed jäävad avatuks.}other{Teie organisatsioon kustutab sirvimisandmed automaatselt, kui Chrome'i ei kasutata # minuti jooksul. Need võivad hõlmata ajalugu, automaattäidet ja allalaadimisi. Teie vahelehed jäävad avatuks.}}</translation>

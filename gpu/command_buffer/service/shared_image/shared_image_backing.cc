@@ -35,8 +35,6 @@ const char* BackingTypeToString(SharedImageBackingType type) {
       return "AHardwareBufferImageBacking";
     case SharedImageBackingType::kAngleVulkan:
       return "AngleVulkanImageBacking";
-    case SharedImageBackingType::kGLImage:
-      return "GLImageBacking";
     case SharedImageBackingType::kGLTexture:
       return "GLTextureImageBacking";
     case SharedImageBackingType::kOzone:
@@ -197,9 +195,9 @@ SharedImageBacking::ProduceSkiaGraphite(
 std::unique_ptr<DawnImageRepresentation> SharedImageBacking::ProduceDawn(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
-    WGPUDevice device,
-    WGPUBackendType backend_type,
-    std::vector<WGPUTextureFormat> view_formats) {
+    const wgpu::Device& device,
+    wgpu::BackendType backend_type,
+    std::vector<wgpu::TextureFormat> view_formats) {
   return nullptr;
 }
 

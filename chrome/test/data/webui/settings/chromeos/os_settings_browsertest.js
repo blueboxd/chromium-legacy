@@ -194,6 +194,21 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ['AppManagementToggleRow', 'app_management/toggle_row_test.js'],
  ['CellularNetworksList', 'cellular_networks_list_test.js'],
  ['CellularRoamingToggleButton', 'cellular_roaming_toggle_button_test.js'],
+ [
+   'CustomizeMouseButtonsSubpage',
+   'device_page/customize_mouse_buttons_subpage_test.js',
+   {enabled: ['ash::features::kPeripheralCustomization']}
+ ],
+ [
+   'CustomizePenButtonsSubpage',
+   'device_page/customize_pen_buttons_subpage_test.js',
+   {enabled: ['ash::features::kPeripheralCustomization']}
+ ],
+ [
+   'CustomizeTabletButtonsSubpage',
+   'device_page/customize_tablet_buttons_subpage_test.js',
+   {enabled: ['ash::features::kPeripheralCustomization']}
+ ],
  ['DateTimePage', 'date_time_page/date_time_page_test.js'],
  ['DateTimePageTimezoneSelector', 'date_time_page/timezone_selector_test.js'],
  ['DateTimePageTimezoneSubpage', 'date_time_page/timezone_subpage_test.js'],
@@ -612,11 +627,12 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'os_printing_page/cups_printer_landing_page_test.js',
    {enabled: ['ash::features::kPrinterSettingsPrinterStatus']}
  ],
- [
-   'OsPrintingPageCupsPrinterPage',
-   'os_printing_page/cups_printer_page_test.js',
-   {enabled: ['ash::features::kPrinterSettingsRevamp']}
- ],
+ // TODO(crbug.com/1464595): Test is flaky on debug build.
+ // [
+ //   'OsPrintingPageCupsPrinterPage',
+ //   'os_printing_page/cups_printer_page_test.js',
+ //   {enabled: ['ash::features::kPrinterSettingsRevamp']}
+ // ],
  [
    'OsPrintingPageCupsPrintersEntry',
    'os_printing_page/cups_printers_entry_test.js', {

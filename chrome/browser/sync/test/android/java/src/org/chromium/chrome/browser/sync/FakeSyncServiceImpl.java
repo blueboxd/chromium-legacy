@@ -238,6 +238,11 @@ public class FakeSyncServiceImpl extends SyncService {
     }
 
     @Override
+    public boolean isTypeManagedByCustodian(int type) {
+        return mDelegate.isTypeManagedByCustodian(type);
+    }
+
+    @Override
     public void setSelectedTypes(boolean syncEverything, Set<Integer> enabledTypes) {
         mDelegate.setSelectedTypes(syncEverything, enabledTypes);
     }
@@ -255,16 +260,6 @@ public class FakeSyncServiceImpl extends SyncService {
     @Override
     public void setSyncRequested() {
         mDelegate.setSyncRequested();
-    }
-
-    @Override
-    public boolean isPaymentsIntegrationEnabled() {
-        return mDelegate.isPaymentsIntegrationEnabled();
-    }
-
-    @Override
-    public void setPaymentsIntegrationEnabled(boolean enable) {
-        mDelegate.setPaymentsIntegrationEnabled(enable);
     }
 
     @Override

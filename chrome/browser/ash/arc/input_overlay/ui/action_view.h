@@ -5,21 +5,25 @@
 #ifndef CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_UI_ACTION_VIEW_H_
 #define CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_UI_ACTION_VIEW_H_
 
+#include <string>
+#include <vector>
+
 #include "base/memory/raw_ptr.h"
-#include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
-#include "chrome/browser/ash/arc/input_overlay/ui/action_label.h"
-#include "chrome/browser/ash/arc/input_overlay/ui/reposition_controller.h"
-#include "chrome/browser/ash/arc/input_overlay/ui/touch_point.h"
+#include "chrome/browser/ash/arc/input_overlay/db/proto/app_data.pb.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/view.h"
 
 namespace arc::input_overlay {
 
 class Action;
+class ActionLabel;
+class ArrowContainer;
 class DisplayOverlayController;
+class InputElement;
+class RepositionController;
+class TouchPoint;
 
 // Represents the default label index. Default -1 means all the index.
 constexpr int kDefaultLabelIndex = -1;
@@ -44,7 +48,9 @@ class ActionView : public views::View {
   virtual void AddTouchPoint() = 0;
 
   // Called when associated action is updated.
-  void OnActionUpdated();
+  void OnActionInputBindingUpdated();
+  // Called when window/content bounds are changed.
+  void OnContentBoundsSizeChanged();
 
   // TODO(cuicuiruan): Remove virtual for post MVP once edit menu is ready for
   // |ActionMove|.
@@ -97,6 +103,12 @@ class ActionView : public views::View {
 
   void SetTouchPointCenter(const gfx::Point& touch_point_center);
   gfx::Point GetTouchCenterInWindow() const;
+
+  // Returns the `attached_view` position and update the attached_view.
+  gfx::Point CalculateAttachViewPositionInRootWindow(
+      const gfx::Rect& root_window_bounds,
+      const gfx::Point& window_content_origin,
+      ArrowContainer* attached_view) const;
 
   // views::View:
   void AddedToWidget() override;
@@ -152,10 +164,6 @@ class ActionView : public views::View {
 
   // By default, no label is unbound.
   int unbind_label_index_ = kDefaultLabelIndex;
-
-  // Corresponding to |kArcInputOverlayBeta| flag to turn on/off the editor
-  // feature of adding or removing actions.
-  bool beta_;
 };
 
 }  // namespace arc::input_overlay

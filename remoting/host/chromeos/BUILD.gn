@@ -74,22 +74,27 @@ source_set("browser_interop") {
 
 source_set("remoting_service") {
   sources = [
+    "file_session_storage.cc",
+    "file_session_storage.h",
     "remote_support_host_ash.cc",
     "remote_support_host_ash.h",
     "remoting_service.cc",
     "remoting_service.h",
     "session_id.h",
+    "session_storage.h",
   ]
 
   public_deps = [
     ":enterprise_support",
     "//remoting/host/it2me:chrome_os_host",
+    "//remoting/host/it2me:common",
   ]
 
   configs += [ "//remoting/build/config:version" ]
 
   deps = [
     ":browser_interop",
+    ":features",
     "//mojo/public/cpp/bindings",
     "//remoting/base:base",
     "//remoting/host",
@@ -132,7 +137,10 @@ source_set("unit_tests") {
 
   sources = [
     "clipboard_aura_unittest.cc",
+    "file_session_storage_unittest.cc",
     "frame_sink_desktop_capturer_unittest.cc",
+    "remote_support_host_ash_unittest.cc",
+    "remoting_service_unittest.cc",
     "scoped_fake_ash_proxy.cc",
     "scoped_fake_ash_proxy.h",
   ]
@@ -140,14 +148,19 @@ source_set("unit_tests") {
   configs += [ "//remoting/build/config:version" ]
 
   deps = [
+    ":browser_interop",
     ":chromeos",
     ":features",
+    ":remoting_service",
     "//base/test:test_support",
+    "//components/policy/core/common:test_support",
     "//components/viz/service",
     "//remoting/host:common",
     "//remoting/host:test_support",
+    "//remoting/host/it2me:common",
     "//remoting/proto",
     "//remoting/resources",
+    "//services/network:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

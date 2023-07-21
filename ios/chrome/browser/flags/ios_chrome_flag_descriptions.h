@@ -55,6 +55,11 @@ extern const char kAutofillDisableSilentProfileUpdatesDescription[];
 extern const char kAutofillEnableCardArtImageName[];
 extern const char kAutofillEnableCardArtImageDescription[];
 
+// Title and description for the flag to control whether the autofill payments
+// mandatory reauth feature is enabled on Bling.
+extern const char kAutofillEnablePaymentsMandatoryReauthOnBlingName[];
+extern const char kAutofillEnablePaymentsMandatoryReauthOnBlingDescription[];
+
 // Title and description for the flag to control the new autofill suggestion
 // ranking formula for address profiles.
 extern const char kAutofillEnableRankingFormulaAddressProfilesName[];
@@ -313,6 +318,11 @@ extern const char kEnableFollowManagementInstantReloadDescription[];
 extern const char kEnableFollowUIUpdateName[];
 extern const char kEnableFollowUIUpdateDescription[];
 
+// Title and description for the flag to enable Friendlier Safe Browsing feature
+// on iOS.
+extern const char kEnableFriendlierSafeBrowsingSettingsName[];
+extern const char kEnableFriendlierSafeBrowsingSettingsDescription[];
+
 // Title and description for the flag to enable kEditPasswordsInSettings flag on
 // iOS.
 extern const char kEditPasswordsInSettingsName[];
@@ -401,11 +411,6 @@ extern const char kEnableUserPolicyDescription[];
 extern const char kEnableVariationsGoogleGroupFilteringName[];
 extern const char kEnableVariationsGoogleGroupFilteringDescription[];
 
-// Title and description for the flag to introduce following web channels on
-// Chrome iOS.
-extern const char kEnableWebChannelsName[];
-extern const char kEnableWebChannelsDescription[];
-
 // Title and description for the flag to enable feed background refresh.
 extern const char kFeedBackgroundRefreshName[];
 extern const char kFeedBackgroundRefreshDescription[];
@@ -423,11 +428,6 @@ extern const char kFeedExperimentTaggingDescription[];
 // refresh.
 extern const char kFeedInvisibleForegroundRefreshName[];
 extern const char kFeedInvisibleForegroundRefreshDescription[];
-
-// Title and description for the flag to set the default Following feed sort
-// type.
-extern const char kFollowingFeedDefaultSortTypeName[];
-extern const char kFollowingFeedDefaultSortTypeDescription[];
 
 // Title and description for the flag to trigger the startup sign-in promo.
 extern const char kForceStartupSigninPromoName[];
@@ -893,6 +893,11 @@ extern const char kThemeColorInToolbarDescription[];
 // the device camera from the home screen widget.
 extern const char kEnableLensInHomeScreenWidgetName[];
 extern const char kEnableLensInHomeScreenWidgetDescription[];
+
+// Title and description for the flag to enable using direct upload for
+// Lens searches in iOS.
+extern const char kIOSLensUseDirectUploadName[];
+extern const char kIOSLensUseDirectUploadDescription[];
 
 // Title and description for the flag to enable using Lens to search using
 // the device camera from the keyboard.

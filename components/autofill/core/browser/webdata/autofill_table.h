@@ -281,10 +281,10 @@ class VirtualCardUsageData;
 //                      legacy version of this.
 //   virtual_card_enrollment_state
 //                      An enum indicating the virtual card enrollment state of
-//                      this card. UNSPECIFIED is the default value. UNENROLLED
-//                      means this card has not been enrolled to have virtual
-//                      cards. ENROLLED means the card has been enrolled and
-//                      has related virtual credit cards.
+//                      this card. kUnspecified is the default value.
+//                      kUnenrolled means this card has not been enrolled to
+//                      have virtual cards. kEnrolled means the card has been
+//                      enrolled and has related virtual credit cards.
 //   card_art_url       URL to generate the card art image for this card.
 //   product_description
 //                      The product description for the card. Used to be shown
@@ -292,9 +292,9 @@ class VirtualCardUsageData;
 //   card_issuer_id     The id of the card's issuer.
 //   virtual_card_enrollment_type
 //                      An enum indicating the type of virtual card enrollment
-//                      of this card. TYPE_UNSPECIFIED is the default value.
-//                      ISSUER denotes that it is an issuer-level enrollment.
-//                      NETWORK denotes that it is a network-level enrollment.
+//                      of this card. kTypeUnspecified is the default value.
+//                      kIssuer denotes that it is an issuer-level enrollment.
+//                      kNetwork denotes that it is a network-level enrollment.
 // unmasked_credit_cards
 //                      When a masked credit credit card is unmasked and the
 //                      full number is downloaded or when the full number is
@@ -722,10 +722,17 @@ class AutofillTable : public WebDatabaseTable,
   bool RemoveServerCvc(int64_t instrument_id);
   // This will clear all server cvcs.
   bool ClearServerCvcs();
+  // When a server card is deleted on payment side (i.e. pay.google.com), sync
+  // notifies Chrome about the card deletion, not the CVC deletion, as Payment
+  // server does not have access to the CVC storage on the Sync server side, so
+  // Payment cannot delete the CVC from server side directly, and this has to be
+  // done on the Chrome side. So this ReconcileServerCvc will be invoked when
+  // card sync happens and will remove orphaned CVC from the current client.
+  bool ReconcileServerCvcs();
   // Methods for getting cvc from server_stored_cvc. For testing purpose only
   // because CVC is populated to CreditCard via GetServerCreditCards.
   std::u16string GetServerCvcForTesting(int64_t instrument_id);
-  base::flat_map<int64_t, std::u16string> GetAllServerCvcForTesting();
+  base::flat_map<int64_t, std::u16string> GetAllServerCvcsForTesting();
 
   // Methods to add, update, remove and get the metadata for server cards and
   // addresses.
@@ -822,7 +829,7 @@ class AutofillTable : public WebDatabaseTable,
                                        const base::Time& delete_end);
 
   // Clear all credit cards.
-  bool ClearCreditCards();
+  void ClearCreditCards();
 
   // Read all the stored metadata for |model_type| and fill |metadata_batch|
   // with it.

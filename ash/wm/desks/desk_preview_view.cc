@@ -579,13 +579,21 @@ void DeskPreviewView::OnFocus() {
     UpdateOverviewHighlightForFocus(this);
   }
 
+  mini_view_->UpdateDeskButtonVisibility();
   mini_view_->UpdateFocusColor();
   View::OnFocus();
 }
 
 void DeskPreviewView::OnBlur() {
+  mini_view_->UpdateDeskButtonVisibility();
   mini_view_->UpdateFocusColor();
   View::OnBlur();
+}
+
+void DeskPreviewView::AboutToRequestFocusFromTabTraversal(bool reverse) {
+  if (reverse) {
+    mini_view_->OnPreviewAboutToBeFocusedByReverseTab();
+  }
 }
 
 views::View* DeskPreviewView::GetView() {
@@ -593,8 +601,11 @@ views::View* DeskPreviewView::GetView() {
 }
 
 void DeskPreviewView::MaybeActivateHighlightedView() {
-  DesksController::Get()->ActivateDesk(mini_view_->desk(),
-                                       DesksSwitchSource::kMiniViewButton);
+  DesksController::Get()->ActivateDesk(
+      mini_view_->desk(),
+      mini_view_->owner_bar()->type() == DeskBarViewBase::Type::kDeskButton
+          ? DesksSwitchSource::kDeskButtonMiniViewButton
+          : DesksSwitchSource::kMiniViewButton);
 }
 
 void DeskPreviewView::MaybeCloseHighlightedView(bool primary_action) {

@@ -116,8 +116,6 @@ public class ShareDelegateImplUnitTest {
 
     @After
     public void tearDown() {
-        AppHooks.setInstanceForTesting(null);
-        TrackerFactory.setTrackerForTests(null);
         ShadowBuildCompatForU.sIsAtLeastU = false;
         ShadowShareSheetCoordinator.reset();
         ShadowShareHelper.reset();
@@ -382,7 +380,7 @@ public class ShareDelegateImplUnitTest {
     // Work around shadow to assume runtime is at least U.
     // TODO(https://crbug.com/1420388): Switch to @Config(sdk=34) this once API 34 exists.
     @Implements(BuildCompat.class)
-    static class ShadowBuildCompatForU {
+    public static class ShadowBuildCompatForU {
         static boolean sIsAtLeastU;
         @Implementation
         protected static boolean isAtLeastU() {

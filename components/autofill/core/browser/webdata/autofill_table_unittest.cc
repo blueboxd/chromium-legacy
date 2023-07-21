@@ -1241,6 +1241,25 @@ TEST_F(AutofillTableTest, CreditCard) {
   EXPECT_FALSE(db_creditcard);
 }
 
+// Tests that verify ClearCreditCards function working as expected.
+TEST_F(AutofillTableTest, ClearCreditCards) {
+  CreditCard card = test::GetCreditCard();
+  card.set_cvc(u"123");
+  EXPECT_TRUE(table_->AddCreditCard(card));
+  std::unique_ptr<CreditCard> db_card = table_->GetCreditCard(card.guid());
+  EXPECT_EQ(card.cvc(), db_card->cvc());
+
+  // After ClearCreditCards, local_stored_cvc table and credit_cards table
+  // should be empty.
+  table_->ClearCreditCards();
+  EXPECT_FALSE(table_->GetCreditCard(card.guid()));
+  sql::Statement s(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT guid FROM local_stored_cvc WHERE guid=?"));
+  s.BindString(0, card.guid());
+  ASSERT_TRUE(s.is_valid());
+  EXPECT_FALSE(s.Step());
+}
+
 // Tests that adding credit card with cvc, get credit card with cvc and update
 // credit card with only cvc change will not update credit_card table
 // modification_date.
@@ -1345,10 +1364,30 @@ TEST_F(AutofillTableTest, ServerCvc) {
   // Clear the server_stored_cvc table.
   table_->AddServerCvc(kInstrumentId, kCvc);
   EXPECT_TRUE(table_->ClearServerCvcs());
-  EXPECT_TRUE(table_->GetAllServerCvcForTesting().empty());
+  EXPECT_TRUE(table_->GetAllServerCvcsForTesting().empty());
 
   // Clear the server_stored_cvc table when table is empty will return false.
   EXPECT_FALSE(table_->ClearServerCvcs());
+}
+
+// Tests that verify reconcile server cvc function working as expected.
+TEST_F(AutofillTableTest, ReconcileServerCvcs) {
+  // Add 2 server credit cards.
+  CreditCard card1 = test::GetMaskedServerCard();
+  card1.set_cvc(u"123");
+  CreditCard card2 = test::GetMaskedServerCard2();
+  card2.set_cvc(u"234");
+  test::SetServerCreditCards(table_.get(), {card1, card2});
+
+  // Add 1 server cvc that doesn't have a credit card associate with. We should
+  // have 3 cvcs in server_stored_cvc table.
+  EXPECT_TRUE(table_->AddServerCvc(3333, u"456"));
+  EXPECT_EQ(3U, table_->GetAllServerCvcsForTesting().size());
+
+  // After we reconcile server cvc, we should only see 2 cvcs in
+  // server_stored_cvc table because obsolete cvc has been reconciled.
+  EXPECT_TRUE(table_->ReconcileServerCvcs());
+  EXPECT_EQ(2U, table_->GetAllServerCvcsForTesting().size());
 }
 
 TEST_F(AutofillTableTest, AddFullServerCreditCard) {
@@ -1581,16 +1620,34 @@ TEST_F(AutofillTableTest, RemoveAutofillDataModifiedBetween) {
       "VALUES('00000000-0000-0000-0000-000000000005', 3, 'first name5');"
       "INSERT INTO credit_cards (guid, date_modified) "
       "VALUES('00000000-0000-0000-0000-000000000006', 17);"
+      "INSERT INTO local_stored_cvc (guid, value_encrypted, "
+      "last_updated_timestamp) "
+      "VALUES('00000000-0000-0000-0000-000000000006', '', 17);"
       "INSERT INTO credit_cards (guid, date_modified) "
       "VALUES('00000000-0000-0000-0000-000000000007', 27);"
+      "INSERT INTO local_stored_cvc (guid, value_encrypted, "
+      "last_updated_timestamp) "
+      "VALUES('00000000-0000-0000-0000-000000000007', '', 27);"
       "INSERT INTO credit_cards (guid, date_modified) "
       "VALUES('00000000-0000-0000-0000-000000000008', 37);"
+      "INSERT INTO local_stored_cvc (guid, value_encrypted, "
+      "last_updated_timestamp) "
+      "VALUES('00000000-0000-0000-0000-000000000008', '', 37);"
       "INSERT INTO credit_cards (guid, date_modified) "
       "VALUES('00000000-0000-0000-0000-000000000009', 47);"
+      "INSERT INTO local_stored_cvc (guid, value_encrypted, "
+      "last_updated_timestamp) "
+      "VALUES('00000000-0000-0000-0000-000000000009', '', 47);"
       "INSERT INTO credit_cards (guid, date_modified) "
       "VALUES('00000000-0000-0000-0000-000000000010', 57);"
+      "INSERT INTO local_stored_cvc (guid, value_encrypted, "
+      "last_updated_timestamp) "
+      "VALUES('00000000-0000-0000-0000-000000000010', '', 57);"
       "INSERT INTO credit_cards (guid, date_modified) "
-      "VALUES('00000000-0000-0000-0000-000000000011', 67);"));
+      "VALUES('00000000-0000-0000-0000-000000000011', 67);"
+      "INSERT INTO local_stored_cvc (guid, value_encrypted, "
+      "last_updated_timestamp) "
+      "VALUES('00000000-0000-0000-0000-000000000011', '', 67);"));
 
   // Remove all entries modified in the bounded time range [17,41).
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
@@ -1652,6 +1709,18 @@ TEST_F(AutofillTableTest, RemoveAutofillDataModifiedBetween) {
   EXPECT_EQ(67, s_credit_cards_bounded.ColumnInt64(0));
   EXPECT_FALSE(s_credit_cards_bounded.Step());
 
+  // Make sure the expected card cvcs are still present.
+  sql::Statement s_cvc_bounded(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT last_updated_timestamp FROM local_stored_cvc ORDER BY guid"));
+  ASSERT_TRUE(s_cvc_bounded.is_valid());
+  ASSERT_TRUE(s_cvc_bounded.Step());
+  EXPECT_EQ(47, s_cvc_bounded.ColumnInt64(0));
+  ASSERT_TRUE(s_cvc_bounded.Step());
+  EXPECT_EQ(57, s_cvc_bounded.ColumnInt64(0));
+  ASSERT_TRUE(s_cvc_bounded.Step());
+  EXPECT_EQ(67, s_cvc_bounded.ColumnInt64(0));
+  EXPECT_FALSE(s_cvc_bounded.Step());
+
   // Remove all entries modified on or after time 51 (unbounded range).
   table_->RemoveAutofillDataModifiedBetween(Time::FromTimeT(51), Time(),
                                             &profiles, &credit_cards);
@@ -1695,6 +1764,14 @@ TEST_F(AutofillTableTest, RemoveAutofillDataModifiedBetween) {
   EXPECT_EQ(47, s_credit_cards_unbounded.ColumnInt64(0));
   EXPECT_FALSE(s_credit_cards_unbounded.Step());
 
+  // Make sure the remaining card cvc is the expected one.
+  sql::Statement s_cvc_unbounded(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT last_updated_timestamp FROM local_stored_cvc"));
+  ASSERT_TRUE(s_cvc_unbounded.is_valid());
+  ASSERT_TRUE(s_cvc_unbounded.Step());
+  EXPECT_EQ(47, s_cvc_unbounded.ColumnInt64(0));
+  EXPECT_FALSE(s_cvc_unbounded.Step());
+
   // Remove all remaining entries.
   table_->RemoveAutofillDataModifiedBetween(Time(), Time(), &profiles,
                                             &credit_cards);
@@ -1728,6 +1805,12 @@ TEST_F(AutofillTableTest, RemoveAutofillDataModifiedBetween) {
           "SELECT date_modified FROM credit_cards"));
   ASSERT_TRUE(s_credit_cards_empty.is_valid());
   EXPECT_FALSE(s_credit_cards_empty.Step());
+
+  // There should be no card cvcs left.
+  sql::Statement s_cvc_empty(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT last_updated_timestamp FROM local_stored_cvc"));
+  ASSERT_TRUE(s_cvc_empty.is_valid());
+  EXPECT_FALSE(s_cvc_empty.Step());
 }
 
 TEST_F(AutofillTableTest, RemoveOriginURLsModifiedBetween) {
@@ -1896,12 +1979,12 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   inputs[0].SetRawInfo(CREDIT_CARD_EXP_MONTH, u"1");
   inputs[0].SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"2020");
   inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
-  inputs[0].set_card_issuer(CreditCard::Issuer::GOOGLE);
+  inputs[0].set_card_issuer(CreditCard::Issuer::kGoogle);
   inputs[0].set_instrument_id(321);
   inputs[0].set_virtual_card_enrollment_state(
-      CreditCard::VirtualCardEnrollmentState::UNENROLLED);
+      CreditCard::VirtualCardEnrollmentState::kUnenrolled);
   inputs[0].set_virtual_card_enrollment_type(
-      CreditCard::VirtualCardEnrollmentType::ISSUER);
+      CreditCard::VirtualCardEnrollmentType::kIssuer);
   inputs[0].set_product_description(u"Fake description");
   inputs[0].set_cvc(u"000");
 
@@ -1913,13 +1996,13 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   inputs[1].SetNetworkForMaskedCard(kVisaCard);
   std::u16string nickname = u"Grocery card";
   inputs[1].SetNickname(nickname);
-  inputs[1].set_card_issuer(CreditCard::Issuer::EXTERNAL_ISSUER);
+  inputs[1].set_card_issuer(CreditCard::Issuer::kExternalIssuer);
   inputs[1].set_issuer_id("amex");
   inputs[1].set_instrument_id(123);
   inputs[1].set_virtual_card_enrollment_state(
-      CreditCard::VirtualCardEnrollmentState::ENROLLED);
+      CreditCard::VirtualCardEnrollmentState::kEnrolled);
   inputs[1].set_virtual_card_enrollment_type(
-      CreditCard::VirtualCardEnrollmentType::NETWORK);
+      CreditCard::VirtualCardEnrollmentType::kNetwork);
   inputs[1].set_card_art_url(GURL("https://www.example.com"));
   inputs[1].set_cvc(u"111");
 
@@ -1947,22 +2030,22 @@ TEST_F(AutofillTableTest, SetGetServerCards) {
   EXPECT_TRUE(outputs[0]->nickname().empty());
   EXPECT_EQ(nickname, outputs[1]->nickname());
 
-  EXPECT_EQ(CreditCard::Issuer::GOOGLE, outputs[0]->card_issuer());
-  EXPECT_EQ(CreditCard::Issuer::EXTERNAL_ISSUER, outputs[1]->card_issuer());
+  EXPECT_EQ(CreditCard::Issuer::kGoogle, outputs[0]->card_issuer());
+  EXPECT_EQ(CreditCard::Issuer::kExternalIssuer, outputs[1]->card_issuer());
   EXPECT_EQ("", outputs[0]->issuer_id());
   EXPECT_EQ("amex", outputs[1]->issuer_id());
 
   EXPECT_EQ(321, outputs[0]->instrument_id());
   EXPECT_EQ(123, outputs[1]->instrument_id());
 
-  EXPECT_EQ(CreditCard::VirtualCardEnrollmentState::UNENROLLED,
+  EXPECT_EQ(CreditCard::VirtualCardEnrollmentState::kUnenrolled,
             outputs[0]->virtual_card_enrollment_state());
-  EXPECT_EQ(CreditCard::VirtualCardEnrollmentState::ENROLLED,
+  EXPECT_EQ(CreditCard::VirtualCardEnrollmentState::kEnrolled,
             outputs[1]->virtual_card_enrollment_state());
 
-  EXPECT_EQ(CreditCard::VirtualCardEnrollmentType::ISSUER,
+  EXPECT_EQ(CreditCard::VirtualCardEnrollmentType::kIssuer,
             outputs[0]->virtual_card_enrollment_type());
-  EXPECT_EQ(CreditCard::VirtualCardEnrollmentType::NETWORK,
+  EXPECT_EQ(CreditCard::VirtualCardEnrollmentType::kNetwork,
             outputs[1]->virtual_card_enrollment_type());
 
   EXPECT_EQ(GURL(), outputs[0]->card_art_url());
@@ -2180,13 +2263,13 @@ TEST_F(AutofillTableTest, SetServerCardsData) {
   inputs[0].SetRawInfo(CREDIT_CARD_NUMBER, u"1111");
   inputs[0].SetNetworkForMaskedCard(kVisaCard);
   inputs[0].SetNickname(u"Grocery card");
-  inputs[0].set_card_issuer(CreditCard::Issuer::EXTERNAL_ISSUER);
+  inputs[0].set_card_issuer(CreditCard::Issuer::kExternalIssuer);
   inputs[0].set_issuer_id("amex");
   inputs[0].set_instrument_id(1);
   inputs[0].set_virtual_card_enrollment_state(
-      CreditCard::VirtualCardEnrollmentState::ENROLLED);
+      CreditCard::VirtualCardEnrollmentState::kEnrolled);
   inputs[0].set_virtual_card_enrollment_type(
-      CreditCard::VirtualCardEnrollmentType::ISSUER);
+      CreditCard::VirtualCardEnrollmentType::kIssuer);
   inputs[0].set_card_art_url(GURL("https://www.example.com"));
   inputs[0].set_product_description(u"Fake description");
 
@@ -2205,13 +2288,13 @@ TEST_F(AutofillTableTest, SetServerCardsData) {
 
   EXPECT_EQ(inputs[0], *outputs[0]);
 
-  EXPECT_EQ(CreditCard::VirtualCardEnrollmentState::ENROLLED,
+  EXPECT_EQ(CreditCard::VirtualCardEnrollmentState::kEnrolled,
             outputs[0]->virtual_card_enrollment_state());
 
-  EXPECT_EQ(CreditCard::VirtualCardEnrollmentType::ISSUER,
+  EXPECT_EQ(CreditCard::VirtualCardEnrollmentType::kIssuer,
             outputs[0]->virtual_card_enrollment_type());
 
-  EXPECT_EQ(CreditCard::Issuer::EXTERNAL_ISSUER, outputs[0]->card_issuer());
+  EXPECT_EQ(CreditCard::Issuer::kExternalIssuer, outputs[0]->card_issuer());
   EXPECT_EQ("amex", outputs[0]->issuer_id());
 
   EXPECT_EQ(GURL("https://www.example.com"), outputs[0]->card_art_url());
@@ -2230,7 +2313,7 @@ TEST_F(AutofillTableTest, SetServerCardsData) {
   ASSERT_TRUE(table_->GetServerCreditCards(&outputs));
   ASSERT_EQ(1U, outputs.size());
   EXPECT_EQ("card2", outputs[0]->server_id());
-  EXPECT_EQ(CreditCard::Issuer::ISSUER_UNKNOWN, outputs[0]->card_issuer());
+  EXPECT_EQ(CreditCard::Issuer::kIssuerUnknown, outputs[0]->card_issuer());
   EXPECT_EQ("", outputs[0]->issuer_id());
 
   // Make sure no metadata was added.

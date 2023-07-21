@@ -267,7 +267,11 @@ test("device_unittests") {
     ]
     deps += [ "//chromeos/constants" ]
     if (is_chromeos_ash) {
-      deps += [ "//ash/constants" ]
+      deps += [
+        "//ash/constants",
+        "//chromeos/ash/services/nearby/public/cpp/",
+        "//chromeos/ash/services/secure_channel/public/cpp/shared",
+      ]
     }
     if (is_chromeos_lacros) {
       deps += [ "//chromeos/lacros:test_support" ]
@@ -516,7 +520,7 @@ if (is_android) {
   }
 }
 
-if (!is_android && !is_ios && !is_chromeos) {
+if (is_win || is_linux || is_mac) {
   test("passkey_enclave") {
     testonly = true
     sources = [ "fido/enclave/test/passkey_enclave.cc" ]
@@ -536,8 +540,8 @@ if (!is_android && !is_ios && !is_chromeos) {
     deps = [
       "//base",
       "//build/win:default_exe_manifest",
-      "//device/fido:enclave_device",
-      "//device/fido:fido",
+      "//components/sync/protocol:protocol",
+      "//device/fido",
       "//net",
     ]
   }

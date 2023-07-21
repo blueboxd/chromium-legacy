@@ -10,6 +10,7 @@
 #include "content/public/browser/preloading_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/speculation_rules/speculation_rules.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -68,6 +69,8 @@ class CONTENT_EXPORT PreloadingAttemptImpl : public PreloadingAttempt {
 
   PreloadingType preloading_type() const { return preloading_type_; }
 
+  void SetSpeculationEagerness(blink::mojom::SpeculationEagerness eagerness);
+
  private:
   friend class test::PreloadingAttemptAccessor;
 
@@ -120,8 +123,18 @@ class CONTENT_EXPORT PreloadingAttemptImpl : public PreloadingAttempt {
   // standard buckets, of 1.15 spacing.
   absl::optional<base::TimeDelta> ready_time_;
 
-  // TODO: doc
+  // The random seed used to determine if a preloading attempt should be sampled
+  // in UKM logs. We use a different random seed for each session (that is the
+  // source of randomness for sampling) and then hash that seed with the UKM
+  // source ID so that all attempts for a given source ID use the same random
+  // value to determine sampling. This allows all PreloadingAttempt for a given
+  // (preloading_type, predictor) in a page load to be sampled in or out
+  // together.
   uint32_t sampling_seed_;
+
+  // Eagerness of this preloading attempt (specified by a speculation rule).
+  // This is only set for attempts that are triggered by speculation rules.
+  absl::optional<blink::mojom::SpeculationEagerness> eagerness_ = absl::nullopt;
 
   base::WeakPtrFactory<PreloadingAttemptImpl> weak_factory_{this};
 };

@@ -86,6 +86,10 @@
 #import "third_party/ocmock/gtest_support.h"
 #import "ui/base/device_form_factor.h"
 
+// To get access to web::features::kEnableSessionSerializationOptimizations.
+// TODO(crbug.com/1383087): remove once the feature is fully launched.
+#import "ios/web/common/features.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -96,15 +100,16 @@ namespace {
 class BrowserViewControllerTest : public BlockCleanupTest {
  public:
  protected:
-  BrowserViewControllerTest()
-      : scene_state_([[SceneState alloc] initWithAppState:nil]) {}
+  BrowserViewControllerTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS},
+        {web::features::kEnableSessionSerializationOptimizations});
+  }
 
   void SetUp() override {
     BlockCleanupTest::SetUp();
 
-    scoped_feature_list_.InitWithFeatures(
-        {supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS},
-        {});
+    scene_state_ = [[SceneState alloc] initWithAppState:nil];
 
     // Set up a TestChromeBrowserState instance.
     TestChromeBrowserState::Builder test_cbs_builder;
@@ -340,6 +345,10 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [[bvc_ view] removeFromSuperview];
     [bvc_ shutdown];
     [bookmarks_coordinator_ stop];
+    [tab_strip_coordinator_ stop];
+    [popup_menu_coordinator_ stop];
+    [NTPCoordinator_ stop];
+    [side_swipe_mediator_ disconnect];
 
     BlockCleanupTest::TearDown();
   }
@@ -572,6 +581,7 @@ TEST_F(BrowserViewControllerTest, ViewOnInsert) {
                                 })];
   InsertWebState(std::move(ntp_web_state2));
   EXPECT_OCMOCK_VERIFY(container_view_mock);
+  [NTPCoordinator_ stop];
 }
 
 }  // namespace

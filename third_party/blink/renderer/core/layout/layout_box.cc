@@ -512,11 +512,9 @@ PaintLayerType LayoutBox::LayerTypeRequired() const {
       (StyleRef().SpecifiesColumns() && !IsLayoutNGObject()))
     return kNormalPaintLayer;
 
-  const bool is_replaced_element_respecting_overflow =
-      RuntimeEnabledFeatures::CSSOverflowForReplacedElementsEnabled() &&
-      IsLayoutReplaced();
-  if (HasNonVisibleOverflow() && !is_replaced_element_respecting_overflow)
+  if (HasNonVisibleOverflow() && !IsLayoutReplaced()) {
     return kOverflowClipPaintLayer;
+  }
 
   return kNoPaintLayer;
 }
@@ -1162,7 +1160,22 @@ int LayoutBox::PixelSnappedScrollHeight() const {
 
 void LayoutBox::SetMargin(const NGPhysicalBoxStrut& box) {
   NOT_DESTROYED();
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled());
   margin_box_outsets_ = box;
+}
+
+NGPhysicalBoxStrut LayoutBox::MarginBoxOutsets() const {
+  NOT_DESTROYED();
+  if (!RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
+    return margin_box_outsets_;
+  }
+  if (PhysicalFragmentCount()) {
+    // We get margin data from the first physical fragment. Margins are
+    // per-LayoutBox data, and we don't need to take care of block
+    // fragmentation.
+    return GetPhysicalFragment(0)->Margins();
+  }
+  return NGPhysicalBoxStrut();
 }
 
 void LayoutBox::AbsoluteQuads(Vector<gfx::QuadF>& quads,
@@ -2120,8 +2133,6 @@ void LayoutBox::UpdateCachedIntrinsicLogicalWidthsIfNeeded() {
 LayoutUnit LayoutBox::OverrideContainingBlockContentLogicalWidth() const {
   NOT_DESTROYED();
   DCHECK(HasOverrideContainingBlockContentLogicalWidth());
-  if (extra_input_)
-    return extra_input_->containing_block_content_inline_size;
   return rare_data_->override_containing_block_content_logical_width_;
 }
 
@@ -2129,8 +2140,6 @@ LayoutUnit LayoutBox::OverrideContainingBlockContentLogicalWidth() const {
 // direction ?.
 bool LayoutBox::HasOverrideContainingBlockContentLogicalWidth() const {
   NOT_DESTROYED();
-  if (extra_input_)
-    return true;
   return rare_data_ &&
          rare_data_->has_override_containing_block_content_logical_width_;
 }
@@ -2140,7 +2149,6 @@ bool LayoutBox::HasOverrideContainingBlockContentLogicalWidth() const {
 void LayoutBox::SetOverrideContainingBlockContentLogicalWidth(
     LayoutUnit logical_width) {
   NOT_DESTROYED();
-  DCHECK(!extra_input_);
   DCHECK_GE(logical_width, LayoutUnit(-1));
   EnsureRareData().override_containing_block_content_logical_width_ =
       logical_width;
@@ -2151,7 +2159,6 @@ void LayoutBox::SetOverrideContainingBlockContentLogicalWidth(
 // direction ?.
 void LayoutBox::ClearOverrideContainingBlockContentSize() {
   NOT_DESTROYED();
-  DCHECK(!extra_input_);
   if (!rare_data_)
     return;
   EnsureRareData().has_override_containing_block_content_logical_width_ = false;
@@ -4914,55 +4921,6 @@ RecalcLayoutOverflowResult LayoutBox::RecalcChildLayoutOverflowNG() {
   return result;
 }
 
-DISABLE_CFI_PERF
-void LayoutBox::AddLayoutOverflow(const LayoutRect& rect) {
-  NOT_DESTROYED();
-  if (rect.IsEmpty())
-    return;
-
-  LayoutRect client_box = NoOverflowRect();
-  if (client_box.Contains(rect))
-    return;
-
-  // For overflow clip objects, we don't want to propagate overflow into
-  // unreachable areas.
-  LayoutRect overflow_rect(rect);
-  if (IsScrollContainer() || IsA<LayoutView>(this)) {
-    // Overflow is in the block's coordinate space and thus is flipped for
-    // vertical-rl writing
-    // mode.  At this stage that is actually a simplification, since we can
-    // treat vertical-lr/rl
-    // as the same.
-    if (HasTopOverflow()) {
-      overflow_rect.ShiftMaxYEdgeTo(
-          std::min(overflow_rect.MaxY(), client_box.MaxY()));
-    } else {
-      overflow_rect.ShiftYEdgeTo(std::max(overflow_rect.Y(), client_box.Y()));
-    }
-    if (HasLeftOverflow() !=
-        IsFlippedBlocksWritingMode(StyleRef().GetWritingMode())) {
-      overflow_rect.ShiftMaxXEdgeTo(
-          std::min(overflow_rect.MaxX(), client_box.MaxX()));
-    } else {
-      overflow_rect.ShiftXEdgeTo(std::max(overflow_rect.X(), client_box.X()));
-    }
-
-    // Now re-test with the adjusted rectangle and see if it has become
-    // unreachable or fully
-    // contained.
-    if (client_box.Contains(overflow_rect) || overflow_rect.IsEmpty())
-      return;
-  }
-
-  if (!LayoutOverflowIsSet()) {
-    if (!overflow_)
-      overflow_ = std::make_unique<BoxOverflowModel>();
-    overflow_->layout_overflow.emplace(client_box);
-  }
-
-  overflow_->layout_overflow->AddLayoutOverflow(overflow_rect);
-}
-
 void LayoutBox::AddSelfVisualOverflow(const LayoutRect& rect) {
   NOT_DESTROYED();
   if (rect.IsEmpty())
@@ -5268,6 +5226,7 @@ LayoutRect LayoutBox::NoOverflowRect() const {
 
 LayoutRect LayoutBox::VisualOverflowRect() const {
   NOT_DESTROYED();
+  DCHECK(!IsLayoutMultiColumnSet());
   if (!VisualOverflowIsSet())
     return BorderBoxRect();
 
@@ -5810,6 +5769,17 @@ bool LayoutBox::HasAnchorPositionScrollTranslation() const {
   if (Element* element = DynamicTo<Element>(GetNode())) {
     return element->GetAnchorPositionScrollData() &&
            element->GetAnchorPositionScrollData()->HasTranslation();
+  }
+  return false;
+}
+
+bool LayoutBox::HasAnchorPositionScrollTranslationAffectedByViewportScrolling()
+    const {
+  if (Element* element = DynamicTo<Element>(GetNode())) {
+    if (AnchorPositionScrollData* data =
+            element->GetAnchorPositionScrollData()) {
+      return data->HasTranslation() && data->IsAffectedByViewportScrolling();
+    }
   }
   return false;
 }

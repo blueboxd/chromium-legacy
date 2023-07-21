@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/invalidation/public/invalidation_service.h"
+#include "components/signin/public/base/gaia_id_hash.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
@@ -47,7 +48,6 @@
 #include "components/sync/service/sync_api_component_factory.h"
 #include "components/sync/service/sync_auth_manager.h"
 #include "components/sync/service/sync_prefs.h"
-#include "components/sync/service/sync_type_preference_provider.h"
 #include "components/sync/service/trusted_vault_histograms.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -289,7 +289,8 @@ void SyncServiceImpl::Initialize() {
   // *After* setting up `auth_manager_`, run a prefs migration that depends on
   // the account state.
   sync_prefs_.MaybeMigratePrefsForSyncToSigninPart1(
-      GetSyncAccountStateForPrefs());
+      GetSyncAccountStateForPrefs(),
+      signin::GaiaIdHash::FromGaiaId(GetAccountInfo().gaia));
 
   if (!IsLocalSyncEnabled()) {
     // TODO(crbug.com/1454037): Record these histograms only if
@@ -843,6 +844,7 @@ SyncService::UserActionableError SyncServiceImpl::GetUserActionableError()
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::REQUEST_CANCELED:
+    case GoogleServiceAuthError::CHALLENGE_RESPONSE_REQUIRED:
       // Transient errors aren't reachable.
       NOTREACHED();
       break;
@@ -960,6 +962,7 @@ void SyncServiceImpl::OnEngineInitialized(bool success,
   }
 
   sync_prefs_.MaybeMigratePrefsForSyncToSigninPart2(
+      signin::GaiaIdHash::FromGaiaId(GetAccountInfo().gaia),
       user_settings_->IsUsingExplicitPassphrase());
 
   data_type_manager_ =
@@ -1051,9 +1054,12 @@ void SyncServiceImpl::OnActionableProtocolError(
 
       if (error.error_type == NOT_MY_BIRTHDAY ||
           error.error_type == ENCRYPTION_OBSOLETE) {
+        // Note: For legacy reasons, `kImplicitPassphrase` is used to represent
+        // the "unknown" state.
         base::UmaHistogramEnumeration(
             "Sync.PassphraseTypeUponNotMyBirthdayOrEncryptionObsolete",
-            crypto_.GetPassphraseType());
+            crypto_.GetPassphraseType().value_or(
+                PassphraseType::kImplicitPassphrase));
       }
 
       // Security domain state might be reset, reset local state as well.
@@ -1232,13 +1238,23 @@ void SyncServiceImpl::ReconfigureDataTypesDueToCrypto() {
   NotifyObservers();
 }
 
+void SyncServiceImpl::SetPassphraseType(PassphraseType passphrase_type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  sync_prefs_.SetCachedPassphraseType(passphrase_type);
+}
+
+absl::optional<PassphraseType> SyncServiceImpl::GetPassphraseType() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return sync_prefs_.GetCachedPassphraseType();
+}
+
 void SyncServiceImpl::SetEncryptionBootstrapToken(
     const std::string& bootstrap_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_prefs_.SetEncryptionBootstrapToken(bootstrap_token);
 }
 
-std::string SyncServiceImpl::GetEncryptionBootstrapToken() {
+std::string SyncServiceImpl::GetEncryptionBootstrapToken() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return sync_prefs_.GetEncryptionBootstrapToken();
 }
@@ -2066,6 +2082,8 @@ void SyncServiceImpl::StopAndClear() {
   // first-time setup again and set SyncRequested to false.
   sync_prefs_.ClearInitialSyncFeatureSetupComplete();
   sync_prefs_.ClearPassphrasePromptMutedProductVersion();
+  // The passphrase type is now undefined again.
+  sync_prefs_.ClearCachedPassphraseType();
   // For explicit passphrase users, clear the encryption key, such that they
   // will need to reenter it if sync gets re-enabled.
   sync_prefs_.ClearEncryptionBootstrapToken();

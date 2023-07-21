@@ -27,41 +27,6 @@ std::string GlanceablesClassroomCourse::ToString() const {
 }
 
 // ----------------------------------------------------------------------------
-// GlanceablesClassroomCourseWorkItem:
-
-GlanceablesClassroomCourseWorkItem::GlanceablesClassroomCourseWorkItem(
-    const std::string& id,
-    const std::string& title,
-    const GURL& link,
-    const absl::optional<base::Time>& due)
-    : id(id), title(title), link(link), due(due) {}
-
-std::string GlanceablesClassroomCourseWorkItem::ToString() const {
-  std::stringstream ss;
-  ss << "id: " << id << ", title: " << title << ", link: " << link;
-  if (due.has_value()) {
-    ss << ", due: " << base::TimeFormatHTTP(due.value());
-  }
-  return ss.str();
-}
-
-// ----------------------------------------------------------------------------
-// GlanceablesClassroomStudentSubmission:
-
-GlanceablesClassroomStudentSubmission::GlanceablesClassroomStudentSubmission(
-    const std::string& id,
-    const std::string& course_work_id,
-    State state)
-    : id(id), course_work_id(course_work_id), state(state) {}
-
-std::string GlanceablesClassroomStudentSubmission::ToString() const {
-  std::stringstream ss;
-  ss << "id: " << id << ", course work id: " << course_work_id
-     << ", State: " << static_cast<int>(state);
-  return ss.str();
-}
-
-// ----------------------------------------------------------------------------
 // GlanceablesClassroomAggregatedSubmissionsState
 GlanceablesClassroomAggregatedSubmissionsState::
     GlanceablesClassroomAggregatedSubmissionsState(int total_count,
@@ -79,12 +44,14 @@ GlanceablesClassroomAssignment::GlanceablesClassroomAssignment(
     const std::string& course_work_title,
     const GURL& link,
     const absl::optional<base::Time>& due,
+    const base::Time& last_update,
     absl::optional<GlanceablesClassroomAggregatedSubmissionsState>
         submissions_state)
     : course_title(course_title),
       course_work_title(course_work_title),
       link(link),
       due(due),
+      last_update(last_update),
       submissions_state(std::move(submissions_state)) {}
 
 std::string GlanceablesClassroomAssignment::ToString() const {
@@ -94,6 +61,7 @@ std::string GlanceablesClassroomAssignment::ToString() const {
   if (due.has_value()) {
     ss << ", Due: " << base::TimeFormatHTTP(due.value());
   }
+  ss << ", Last Update: " << base::TimeFormatHTTP(last_update);
   if (submissions_state.has_value()) {
     ss << ", total_submission_count: " << submissions_state->total_count
        << ", number turned in: " << submissions_state->number_turned_in

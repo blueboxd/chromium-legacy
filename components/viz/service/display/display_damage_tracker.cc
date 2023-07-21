@@ -4,14 +4,23 @@
 
 #include "components/viz/service/display/display_damage_tracker.h"
 
+#include "base/feature_list.h"
 #include "base/observer_list.h"
 #include "base/trace_event/trace_event.h"
-#include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 
 namespace viz {
+namespace {
+
+// Kill switch for optimization to skip updating pending surfaces on begin
+// frames from other displays.
+BASE_FEATURE(kSkipBeginFramesFromOtherDisplays,
+             "SkipBeginFramesFromOtherDisplays",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+}  // namespace
 
 DisplayDamageTracker::DisplayDamageTracker(SurfaceManager* surface_manager,
                                            SurfaceAggregator* aggregator)
@@ -23,6 +32,13 @@ DisplayDamageTracker::DisplayDamageTracker(SurfaceManager* surface_manager,
 
 DisplayDamageTracker::~DisplayDamageTracker() {
   surface_manager_->RemoveObserver(this);
+}
+
+void DisplayDamageTracker::SetDisplayBeginFrameSourceId(
+    uint64_t begin_frame_source_id) {
+  if (base::FeatureList::IsEnabled(kSkipBeginFramesFromOtherDisplays)) {
+    begin_frame_source_id_ = begin_frame_source_id;
+  }
 }
 
 void DisplayDamageTracker::SetDelegate(Delegate* delegate) {
@@ -49,7 +65,7 @@ void DisplayDamageTracker::SetNewRootSurface(const SurfaceId& root_surface_id) {
 void DisplayDamageTracker::SetRootSurfaceDamaged() {
   BeginFrameAck ack;
   ack.has_damage = true;
-  ProcessSurfaceDamage(root_surface_id_, ack, true);
+  ProcessSurfaceDamage(root_surface_id_, ack, true, false);
 }
 
 bool DisplayDamageTracker::IsRootSurfaceValid() const {
@@ -65,7 +81,8 @@ void DisplayDamageTracker::DisplayResized() {
 
 void DisplayDamageTracker::ProcessSurfaceDamage(const SurfaceId& surface_id,
                                                 const BeginFrameAck& ack,
-                                                bool display_damaged) {
+                                                bool display_damaged,
+                                                bool is_actively_scrolling) {
   TRACE_EVENT1("viz", "DisplayDamageTracker::SurfaceDamaged", "surface_id",
                surface_id.ToString());
 
@@ -83,6 +100,7 @@ void DisplayDamageTracker::ProcessSurfaceDamage(const SurfaceId& surface_id,
     if (it != surface_states_.end() &&
         !it->second.last_ack.frame_id.IsNextInSequenceTo(ack.frame_id)) {
       it->second.last_ack = ack;
+      it->second.last_is_actively_scrolling = is_actively_scrolling;
     } else {
       valid_ack = false;
     }
@@ -141,6 +159,15 @@ bool DisplayDamageTracker::HasPendingSurfaces(
   return false;
 }
 
+bool DisplayDamageTracker::HasDamageDueToActiveScroller() {
+  for (auto& entry : surface_states_) {
+    if (entry.second.last_is_actively_scrolling) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void DisplayDamageTracker::OnSurfaceMarkedForDestruction(
     const SurfaceId& surface_id) {
   auto it = surface_states_.find(surface_id);
@@ -152,7 +179,8 @@ void DisplayDamageTracker::OnSurfaceMarkedForDestruction(
 }
 
 bool DisplayDamageTracker::OnSurfaceDamaged(const SurfaceId& surface_id,
-                                            const BeginFrameAck& ack) {
+                                            const BeginFrameAck& ack,
+                                            bool is_actively_scrolling) {
   bool display_damaged = false;
   if (ack.has_damage) {
     display_damaged =
@@ -167,21 +195,36 @@ bool DisplayDamageTracker::OnSurfaceDamaged(const SurfaceId& surface_id,
   if (surface_id == root_surface_id_)
     UpdateRootFrameMissing();
 
-  ProcessSurfaceDamage(surface_id, ack, display_damaged);
+  ProcessSurfaceDamage(surface_id, ack, display_damaged, is_actively_scrolling);
 
   return display_damaged;
+}
+
+bool DisplayDamageTracker::CheckBeginFrameSourceId(uint64_t source_id) {
+  return !begin_frame_source_id_ || source_id == *begin_frame_source_id_ ||
+         source_id == BeginFrameArgs::kManualSourceId;
 }
 
 void DisplayDamageTracker::OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                                    const BeginFrameArgs& args) {
   TRACE_EVENT1("viz", "DisplayDamageTracker::SurfaceDamageExpected",
                "surface_id", surface_id.ToString());
-  // Insert a new state for the surface if we don't know of it yet. We don't use
-  // OnSurfaceCreated() for this, because it may not be called if a
-  // CompositorFrameSinkSupport starts submitting frames to a different Display,
-  // but continues using the same Surface, or if a Surface does not activate its
-  // first CompositorFrame immediately.
+
+  // Insert a new state for the surface if we don't know of it yet. We don't
+  // use OnSurfaceCreated() for this, because it may not be called if a
+  // CompositorFrameSinkSupport starts submitting frames to a different
+  // Display, but continues using the same Surface, or if a Surface does not
+  // activate its first CompositorFrame immediately.
   surface_states_[surface_id].last_args = args;
+
+  // HasPendingSurfaces() won't consider any surfaces that received a begin
+  // frame from a different displays begin frame source but will still iterate
+  // through all of the entries in `surface_states_`. That iteration is
+  // expensive so avoid doing it when source_id doesn't match.
+  if (!CheckBeginFrameSourceId(args.frame_id.source_id)) {
+    return;
+  }
+
   NotifyPendingSurfacesChanged();
 }
 

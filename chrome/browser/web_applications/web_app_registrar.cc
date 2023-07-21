@@ -39,6 +39,7 @@
 #include "chrome/browser/web_applications/web_app_translation_manager.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
+#include "content/public/browser/isolated_web_apps_policy.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/common/content_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -92,8 +93,6 @@ blink::ParsedPermissionsPolicy WebAppRegistrar::GetPermissionsPolicy(
 bool WebAppRegistrar::IsPlaceholderApp(
     const AppId& app_id,
     const WebAppManagement::Type source_type) const {
-  CHECK(source_type == WebAppManagement::kPolicy ||
-        source_type == WebAppManagement::kKiosk);
   const WebApp* web_app = GetAppById(app_id);
   if (!web_app)
     return false;
@@ -105,6 +104,10 @@ bool WebAppRegistrar::IsPlaceholderApp(
   if (it == config_map.end()) {
     return false;
   }
+  // Only kiosk and policy sources currently have placeholder apps.
+  CHECK(!it->second.is_placeholder ||
+        (source_type == WebAppManagement::kPolicy ||
+         source_type == WebAppManagement::kKiosk));
   return it->second.is_placeholder;
 }
 
@@ -114,8 +117,6 @@ bool WebAppRegistrar::IsPlaceholderApp(
 absl::optional<AppId> WebAppRegistrar::LookupPlaceholderAppId(
     const GURL& install_url,
     const WebAppManagement::Type source_type) const {
-  CHECK(source_type == WebAppManagement::kPolicy ||
-        source_type == WebAppManagement::kKiosk);
   for (const WebApp& web_app : GetApps()) {
     const WebApp::ExternalConfigMap& config_map =
         web_app.management_to_external_config_map();
@@ -886,7 +887,7 @@ int WebAppRegistrar::CountUserInstalledNotLocallyInstalledApps() const {
 std::vector<content::StoragePartitionConfig>
 WebAppRegistrar::GetIsolatedWebAppStoragePartitionConfigs(
     const AppId& isolated_web_app_id) const {
-  if (!base::FeatureList::IsEnabled(features::kIsolatedWebApps)) {
+  if (!content::IsolatedWebAppsPolicy::AreIsolatedWebAppsEnabled(profile_)) {
     return {};
   }
 

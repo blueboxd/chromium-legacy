@@ -124,6 +124,8 @@ public abstract class SyncService {
 
     public abstract boolean isTypeManagedByPolicy(@UserSelectableType int type);
 
+    public abstract boolean isTypeManagedByCustodian(@UserSelectableType int type);
+
     /**
      * Enables syncing for the passed types.
      *
@@ -139,17 +141,6 @@ public abstract class SyncService {
     public abstract boolean isInitialSyncFeatureSetupComplete();
 
     public abstract void setSyncRequested();
-
-    /**
-     * @return Whether the Payments integration feature is enabled.
-     */
-    public abstract boolean isPaymentsIntegrationEnabled();
-
-    /**
-     * Enables or disables the Payments integration.
-     * @param enable True to enable Payments integration.
-     */
-    public abstract void setPaymentsIntegrationEnabled(boolean enable);
 
     /**
      * Instances of this class keep sync paused until {@link #close} is called. Use

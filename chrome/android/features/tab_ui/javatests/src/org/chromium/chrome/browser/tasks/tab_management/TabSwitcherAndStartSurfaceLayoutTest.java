@@ -101,9 +101,11 @@ import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupTitleUtils;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.undo_tab_close_snackbar.UndoBarController;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
@@ -1236,7 +1238,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         enterTabSwitcher(mActivityTestRule.getActivity());
         onViewWaiting(tabSwitcherViewMatcher())
                 .check(ThumbnailAspectRatioAssertion.havingAspectRatio(
-                        TabUtils.getTabThumbnailAspectRatio(mActivityTestRule.getActivity())));
+                        TabUtils.getTabThumbnailAspectRatio(mActivityTestRule.getActivity(),
+                                mActivityTestRule.getActivity().getBrowserControlsManager())));
     }
 
     @Test
@@ -1305,9 +1308,12 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testThumbnailFetchingResult_liveLayer(boolean isStartSurfaceRefactorEnabled)
             throws Exception {
-        var histograms = HistogramWatcher.newSingleRecordWatcher(
-                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
-                TabContentManager.ThumbnailFetchingResult.GOT_NOTHING);
+        // May be called when setting both grid card size and thumbnail fetcher.
+        var histograms = HistogramWatcher.newBuilder()
+                                 .expectIntRecord(TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                                         TabContentManager.ThumbnailFetchingResult.GOT_NOTHING)
+                                 .allowExtraRecords(TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT)
+                                 .build();
 
         prepareTabs(1, 0, "about:blank");
         enterTabSwitcher(mActivityTestRule.getActivity());
@@ -1325,9 +1331,12 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testThumbnailFetchingResult_jpeg(boolean isStartSurfaceRefactorEnabled)
             throws Exception {
-        var histograms = HistogramWatcher.newSingleRecordWatcher(
-                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
-                TabContentManager.ThumbnailFetchingResult.GOT_JPEG);
+        // May be called when setting both grid card size and thumbnail fetcher.
+        var histograms = HistogramWatcher.newBuilder()
+                                 .expectIntRecord(TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                                         TabContentManager.ThumbnailFetchingResult.GOT_JPEG)
+                                 .allowExtraRecords(TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT)
+                                 .build();
 
         prepareTabs(1, 0, "about:blank");
         simulateJpegHasCachedWithDefaultAspectRatio();
@@ -1347,9 +1356,13 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/2.0/allow_to_refetch/true"})
     public void testThumbnailFetchingResult_changingAspectRatio(
             boolean isStartSurfaceRefactorEnabled) throws Exception {
-        var histograms = HistogramWatcher.newSingleRecordWatcher(
-                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
-                TabContentManager.ThumbnailFetchingResult.GOT_DIFFERENT_ASPECT_RATIO_JPEG);
+        // May be called when setting both grid card size and thumbnail fetcher.
+        var histograms = HistogramWatcher.newBuilder()
+                                 .expectIntRecord(TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                                         TabContentManager.ThumbnailFetchingResult
+                                                 .GOT_DIFFERENT_ASPECT_RATIO_JPEG)
+                                 .allowExtraRecords(TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT)
+                                 .build();
 
         prepareTabs(1, 0, "about:blank");
         // Simulate Jpeg has cached with default aspect ratio.
@@ -2059,6 +2072,10 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         List<Tab> tabGroup = new ArrayList<>(
                 Arrays.asList(normalTabModel.getTabAt(0), normalTabModel.getTabAt(1)));
         createTabGroup(cta, false, tabGroup);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TabGroupTitleUtils.storeTabGroupTitle(
+                    CriticalPersistedTabData.from(normalTabModel.getTabAt(0)).getRootId(), "Foo");
+        });
         verifyTabSwitcherCardCount(cta, 2);
         assertTrue(snackbarManager.getCurrentSnackbarForTesting().getController()
                            instanceof UndoGroupSnackbarController);
@@ -2074,6 +2091,13 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         assertEquals("3", snackbarManager.getCurrentSnackbarForTesting().getTextForTesting());
         CriteriaHelper.pollInstrumentationThread(TabUiTestHelper::verifyUndoBarShowingAndClickUndo);
         verifyTabSwitcherCardCount(cta, 2);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            assertEquals("Foo",
+                    TabGroupTitleUtils.getTabGroupTitle(
+                            CriticalPersistedTabData.from(normalTabModel.getTabAt(1)).getRootId()));
+            assertNull(TabGroupTitleUtils.getTabGroupTitle(
+                    CriticalPersistedTabData.from(normalTabModel.getTabAt(2)).getRootId()));
+        });
     }
 
     @Test
@@ -2103,6 +2127,12 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
                 Arrays.asList(normalTabModel.getTabAt(0), normalTabModel.getTabAt(1)));
         createTabGroup(cta, false, tabGroup2);
         verifyTabSwitcherCardCount(cta, 3);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TabGroupTitleUtils.storeTabGroupTitle(
+                    CriticalPersistedTabData.from(normalTabModel.getTabAt(3)).getRootId(), "Foo");
+            TabGroupTitleUtils.storeTabGroupTitle(
+                    CriticalPersistedTabData.from(normalTabModel.getTabAt(1)).getRootId(), "Bar");
+        });
         assertTrue(snackbarManager.getCurrentSnackbarForTesting().getController()
                            instanceof UndoGroupSnackbarController);
         assertEquals("2", snackbarManager.getCurrentSnackbarForTesting().getTextForTesting());
@@ -2119,6 +2149,53 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
         assertEquals("4", snackbarManager.getCurrentSnackbarForTesting().getTextForTesting());
         CriteriaHelper.pollInstrumentationThread(TabUiTestHelper::verifyUndoBarShowingAndClickUndo);
         verifyTabSwitcherCardCount(cta, 3);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            assertEquals("Foo",
+                    TabGroupTitleUtils.getTabGroupTitle(
+                            CriticalPersistedTabData.from(normalTabModel.getTabAt(4)).getRootId()));
+            assertEquals("Bar",
+                    TabGroupTitleUtils.getTabGroupTitle(
+                            CriticalPersistedTabData.from(normalTabModel.getTabAt(0)).getRootId()));
+        });
+    }
+
+    @Test
+    @MediumTest
+    @UseMethodParameter(RefactorTestParams.class)
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
+    public void testUndoGroupMergeInTabSwitcher_PostMergeGroupTitleCommit(
+            boolean isStartSurfaceRefactorEnabled) {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        SnackbarManager snackbarManager = mActivityTestRule.getActivity().getSnackbarManager();
+        createTabs(cta, false, 3);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 3);
+
+        // Merge first two tabs into a group.
+        TabModel normalTabModel = cta.getTabModelSelector().getModel(false);
+        List<Tab> tabGroup = new ArrayList<>(
+                Arrays.asList(normalTabModel.getTabAt(0), normalTabModel.getTabAt(1)));
+        createTabGroup(cta, false, tabGroup);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TabGroupTitleUtils.storeTabGroupTitle(
+                    CriticalPersistedTabData.from(normalTabModel.getTabAt(0)).getRootId(), "Foo");
+        });
+        verifyTabSwitcherCardCount(cta, 2);
+        assertTrue(snackbarManager.getCurrentSnackbarForTesting().getController()
+                           instanceof UndoGroupSnackbarController);
+        assertEquals("2", snackbarManager.getCurrentSnackbarForTesting().getTextForTesting());
+
+        // Merge tab group of 2 at first index with the 3rd tab.
+        mergeAllNormalTabsToAGroup(cta);
+        assertTrue(snackbarManager.getCurrentSnackbarForTesting().getController()
+                           instanceof UndoGroupSnackbarController);
+
+        // Check that the old group title was deleted when the group merge is committed.
+        TestThreadUtils.runOnUiThreadBlocking(() -> snackbarManager.dismissAllSnackbars());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            assertNull(TabGroupTitleUtils.getTabGroupTitle(
+                    CriticalPersistedTabData.from(normalTabModel.getTabAt(1)).getRootId()));
+        });
     }
 
     @Test
@@ -2334,7 +2411,8 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
     private void simulateJpegHasCachedWithDefaultAspectRatio() throws IOException {
         simulateJpegHasCachedWithAspectRatio(
-                TabUtils.getTabThumbnailAspectRatio(mActivityTestRule.getActivity()));
+                TabUtils.getTabThumbnailAspectRatio(mActivityTestRule.getActivity(),
+                        mActivityTestRule.getActivity().getBrowserControlsManager()));
     }
 
     private void simulateAspectRatioChangedToPoint75() throws IOException {

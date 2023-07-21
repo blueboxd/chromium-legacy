@@ -64,6 +64,39 @@ enum class DownloadBubbleSubpageAction {
 };
 const char kSubpageActionHistogram[] = "Download.Bubble.SubpageAction";
 
+bool ShouldOpenPrimaryDialog(DownloadCommands::Command command) {
+  switch (command) {
+    case DownloadCommands::KEEP:
+    case DownloadCommands::DISCARD:
+    case DownloadCommands::REVIEW:
+    case DownloadCommands::RETRY:
+    case DownloadCommands::CANCEL:
+    case DownloadCommands::BYPASS_DEEP_SCANNING:
+    case DownloadCommands::RESUME:
+    case DownloadCommands::PAUSE:
+    case DownloadCommands::OPEN_WHEN_COMPLETE:
+    case DownloadCommands::SHOW_IN_FOLDER:
+    case DownloadCommands::ALWAYS_OPEN_TYPE:
+    case DownloadCommands::CANCEL_DEEP_SCAN:
+    case DownloadCommands::LEARN_MORE_SCANNING:
+      return true;
+    case DownloadCommands::DEEP_SCAN:
+      return !base::FeatureList::IsEnabled(
+          safe_browsing::kDeepScanningUpdatedUX);
+    default:
+      NOTREACHED() << "Unexpected button pressed on download bubble: "
+                   << command;
+      return true;
+  }
+}
+
+bool ShouldReturnToPrimaryDialog(download::DownloadDangerType danger_type) {
+  // The only non-terminal danger type where the security subpage view shows is
+  // `DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING`. We should then return to the row
+  // view for safe deep scans.
+  return danger_type == download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE;
+}
+
 }  // namespace
 
 // This class encapsulates a piece of text broken into several paragraphs.
@@ -138,9 +171,12 @@ class ParagraphsView : public views::View {
   }
 
   void SizeToFit(int fixed_width) {
-    for (views::StyledLabel* label : paragraphs_) {
-      label->SizeToFit(fixed_width);
+    if (fixed_width_ == fixed_width) {
+      return;
     }
+
+    fixed_width_ = fixed_width;
+    Update();
   }
 
  private:
@@ -150,18 +186,19 @@ class ParagraphsView : public views::View {
       label->SetDefaultTextStyle(default_text_style_);
       label->SetProperty(views::kMarginsKey,
                          gfx::Insets().set_bottom(after_paragraph_));
+      label->SizeToFit(fixed_width_);
     }
 
     if (!paragraphs_.empty()) {
       paragraphs_.back()->SetProperty(views::kMarginsKey, gfx::Insets());
+      PreferredSizeChanged();
     }
-
-    PreferredSizeChanged();
   }
 
   int text_context_ = views::style::CONTEXT_LABEL;
   int default_text_style_ = views::style::STYLE_PRIMARY;
   int after_paragraph_ = 0;
+  int fixed_width_ = 0;
   std::vector<views::StyledLabel*> paragraphs_;
 };
 
@@ -319,6 +356,7 @@ void DownloadBubbleSecurityView::UpdateSecondaryIconAndText() {
   // instead give it a width that's the minimum we want it to have. Then the
   // Layout will stretch it back out into any additional space available.
   secondary_styled_label_->SizeToFit(GetMinimumLabelWidth());
+  secondary_styled_label_->PreferredSizeChanged();
 }
 
 void DownloadBubbleSecurityView::AddIconAndText() {
@@ -491,7 +529,7 @@ void DownloadBubbleSecurityView::AddProgressBar() {
   progress_bar_->SetVisible(false);
 }
 
-void DownloadBubbleSecurityView::ProcessButtonClick(
+bool DownloadBubbleSecurityView::ProcessButtonClick(
     DownloadCommands::Command command,
     bool is_secondary_button) {
   RecordWarningActionTime(is_secondary_button);
@@ -499,15 +537,22 @@ void DownloadBubbleSecurityView::ProcessButtonClick(
   // happens leading to closure of the bubble, it will be called after primary
   // dialog is opened.
   if (navigation_handler_ && bubble_controller_) {
-    navigation_handler_->OpenPrimaryDialog();
-    bubble_controller_->ProcessDownloadButtonPress(model_.get(), command,
-                                                   /*is_main_view=*/false);
+    bool should_close = bubble_controller_->ProcessDownloadButtonPressWithClose(
+        model_.get(), command,
+        /*is_main_view=*/false);
+    if (ShouldOpenPrimaryDialog(command)) {
+      navigation_handler_->OpenPrimaryDialog();
+    } else {
+      navigation_handler_->OpenSecurityDialog(download_row_view_);
+    }
+    return should_close;
   }
 
   base::UmaHistogramEnumeration(
       kSubpageActionHistogram,
       is_secondary_button ? DownloadBubbleSubpageAction::kPressedSecondaryButton
                           : DownloadBubbleSubpageAction::kPressedPrimaryButton);
+  return true;
 }
 
 void DownloadBubbleSecurityView::UpdateButton(
@@ -517,12 +562,12 @@ void DownloadBubbleSecurityView::UpdateButton(
   ui::DialogButton button_type =
       is_secondary_button ? ui::DIALOG_BUTTON_CANCEL : ui::DIALOG_BUTTON_OK;
 
-  base::OnceCallback callback(base::BindOnce(
+  base::RepeatingCallback callback(base::BindRepeating(
       &DownloadBubbleSecurityView::ProcessButtonClick, base::Unretained(this),
       button_info.command, is_secondary_button));
 
   if (button_type == ui::DIALOG_BUTTON_CANCEL) {
-    bubble_delegate_->SetCancelCallback(std::move(callback));
+    bubble_delegate_->SetCancelCallbackWithClose(callback);
     bubble_delegate_->SetButtonEnabled(button_type, !has_checkbox);
     views::LabelButton* button = bubble_delegate_->GetCancelButton();
     if (button_info.color) {
@@ -530,7 +575,7 @@ void DownloadBubbleSecurityView::UpdateButton(
     }
     secondary_button_ = button;
   } else {
-    bubble_delegate_->SetAcceptCallback(std::move(callback));
+    bubble_delegate_->SetAcceptCallbackWithClose(callback);
   }
 
   bubble_delegate_->SetButtonLabel(button_type, button_info.label);
@@ -566,14 +611,36 @@ void DownloadBubbleSecurityView::UpdateButtons() {
 
 void DownloadBubbleSecurityView::UpdateProgressBar() {
   DownloadUIModel::BubbleUIInfo& ui_info = download_row_view_->ui_info();
+  progress_bar_->SetVisible(ui_info.has_progress_bar);
   // The progress bar is only supported for deep scanning currently, which
   // requires a looping progress bar.
   if (!ui_info.has_progress_bar || !ui_info.is_progress_bar_looping) {
     return;
   }
 
-  progress_bar_->SetVisible(true);
   progress_bar_->SetValue(-1);
+}
+
+void DownloadBubbleSecurityView::ClearWideFields() {
+  bubble_delegate_->SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, std::u16string());
+  bubble_delegate_->SetButtonLabel(ui::DIALOG_BUTTON_OK, std::u16string());
+  paragraphs_->SetText(std::u16string());
+  // Setting an extremely low value here will force the labels to break text
+  // into a large number of labels and lay them out, which is wasteful. We set a
+  // conservative value of 200 here, which is small enough to ensure the bubble
+  // can shrink to minimum width, but not so small as to cause performance
+  // problems.
+  CHECK_GE(views::LayoutProvider::Get()->GetDistanceMetric(
+               views::DistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH),
+           200);
+  paragraphs_->SizeToFit(200);
+  secondary_styled_label_->SetText(std::u16string());
+  secondary_styled_label_->SizeToFit(200);
+
+  title_->SetText(std::u16string());
+  deep_scanning_link_->SetText(std::u16string());
+
+  PreferredSizeChanged();
 }
 
 void DownloadBubbleSecurityView::RecordWarningActionTime(
@@ -598,20 +665,44 @@ void DownloadBubbleSecurityView::UpdateSecurityView(
   DCHECK(download_row_view_->model());
   model_ =
       DownloadItemModel::Wrap(download_row_view_->model()->GetDownloadItem());
+  model_->SetDelegate(this);
+  cached_danger_type_ = model_->GetDangerType();
   did_log_action_ = false;
 
-  // Subtle: Some of the security subpage views (like the prompt for deep
-  // scanning) use buttons that are too wide for a small dialog. Our multiline
-  // labels need to know the width of the bubble in order to size themselves
-  // appropriately (see `GetMinimumLabelWidth`). This means that we must update
-  // the buttons before the primary or secondary text.
+  UpdateViews();
+  base::UmaHistogramEnumeration(kSubpageActionHistogram,
+                                DownloadBubbleSubpageAction::kShown);
+}
+
+void DownloadBubbleSecurityView::OnDownloadUpdated() {
+  if (cached_danger_type_ == model_->GetDangerType()) {
+    return;
+  }
+
+  cached_danger_type_ = model_->GetDangerType();
+  if (ShouldReturnToPrimaryDialog(cached_danger_type_)) {
+    navigation_handler_->OpenPrimaryDialog();
+    return;
+  }
+
+  UpdateViews();
+}
+
+void DownloadBubbleSecurityView::UpdateViews() {
+  // Our multiline labels need to know the width of the bubble in order to size
+  // themselves appropriately (see `GetMinimumLabelWidth`). This means that we
+  // must reset fields that increase the width of the bubble before update. This
+  // avoids problems where, e.g., both the buttons and the text used to be wide
+  // but aren't anymore. A single round of updates could still have a wide
+  // bubble.
+  ClearWideFields();
   UpdateButtons();
   UpdateHeader();
   UpdateIconAndText();
   UpdateSecondaryIconAndText();
   UpdateProgressBar();
-  base::UmaHistogramEnumeration(kSubpageActionHistogram,
-                                DownloadBubbleSubpageAction::kShown);
+
+  bubble_delegate_->SizeToContents();
 }
 
 void DownloadBubbleSecurityView::UpdateAccessibilityTextAndFocus() {

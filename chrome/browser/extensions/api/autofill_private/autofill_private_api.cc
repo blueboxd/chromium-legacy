@@ -29,6 +29,7 @@
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/geo/address_i18n.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
+#include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_flow.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -68,53 +69,12 @@ constexpr char kFieldLengthKey[] = "isLongField";
 constexpr char kFieldNameKey[] = "fieldName";
 constexpr char kFieldRequired[] = "isRequired";
 
-// Field names for the address components.
-constexpr char kFullNameField[] = "FULL_NAME";
-constexpr char kCompanyNameField[] = "COMPANY_NAME";
-constexpr char kAddressLineField[] = "ADDRESS_LINES";
-constexpr char kDependentLocalityField[] = "ADDRESS_LEVEL_3";
-constexpr char kCityField[] = "ADDRESS_LEVEL_2";
-constexpr char kStateField[] = "ADDRESS_LEVEL_1";
-constexpr char kPostalCodeField[] = "POSTAL_CODE";
-constexpr char kSortingCodeField[] = "SORTING_CODE";
-constexpr char kCountryField[] = "COUNTY_CODE";
-
-// Converts an autofill::ServerFieldType to string format. Used in serilization
-// of field type info to be used in JavaScript code, and hence those values
-// shouldn't be modified.
-const char* GetStringFromAddressField(autofill::ServerFieldType type) {
-  switch (type) {
-    case autofill::NAME_FULL:
-      return kFullNameField;
-    case autofill::COMPANY_NAME:
-      return kCompanyNameField;
-    case autofill::ADDRESS_HOME_STREET_ADDRESS:
-      return kAddressLineField;
-    case autofill::ADDRESS_HOME_DEPENDENT_LOCALITY:
-      return kDependentLocalityField;
-    case autofill::ADDRESS_HOME_CITY:
-      return kCityField;
-    case autofill::ADDRESS_HOME_STATE:
-      return kStateField;
-    case autofill::ADDRESS_HOME_ZIP:
-      return kPostalCodeField;
-    case autofill::ADDRESS_HOME_SORTING_CODE:
-      return kSortingCodeField;
-    case autofill::ADDRESS_HOME_COUNTRY:
-      return kCountryField;
-    default:
-      NOTREACHED();
-      return "";
-  }
-}
-
 // Serializes the AddressUiComponent a map from string to base::Value().
 base::Value::Dict AddressUiComponentAsValueMap(
     const autofill::AutofillAddressUIComponent& address_ui_component) {
   base::Value::Dict info;
   info.Set(kFieldNameKey, address_ui_component.name);
-  info.Set(kFieldTypeKey,
-           GetStringFromAddressField(address_ui_component.field));
+  info.Set(kFieldTypeKey, FieldTypeToStringPiece(address_ui_component.field));
   info.Set(kFieldLengthKey,
            address_ui_component.length_hint ==
                autofill::AutofillAddressUIComponent::HINT_LONG);
@@ -796,32 +756,18 @@ AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction::Run() {
     return RespondNow(Error(kErrorDeviceAuthUnavailable));
   }
 
-  // If `device_authenticator` is not available, then don't do anything.
-  scoped_refptr<device_reauth::DeviceAuthenticator> device_authenticator =
-      client->GetDeviceAuthenticator();
-  if (!device_authenticator) {
-    return RespondNow(Error(kErrorDeviceAuthUnavailable));
-  }
-
-  // `device_authenticator` is a scoped_refptr, so we need to keep it alive
-  // until the callback that uses it is complete.
-  base::OnceClosure bind_device_authenticator =
-      base::DoNothingWithBoundArgs(device_authenticator);
   const std::u16string message =
       l10n_util::GetStringUTF16(IDS_PAYMENTS_AUTOFILL_MANDATORY_REAUTH_PROMPT);
 
   base::RecordAction(base::UserMetricsAction(
       "PaymentsUserAuthTriggeredForMandatoryAuthToggle"));
-  // We will be modifying the pref `kAutofillPaymentMethodsMandatoryReauth`
-  // asynchronously. The pref value directly correlates to the mandatory auth
-  // toggle.
-  autofill_util::AuthenticateUser(
-      device_authenticator, message,
+  client->GetOrCreatePaymentsMandatoryReauthManager()->AuthenticateWithMessage(
+      message,
       base::BindOnce(
           &AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction::
               UpdateMandatoryAuthTogglePref,
-          this)
-          .Then(base::IgnoreArgs(std::move(bind_device_authenticator))));
+          this));
+
   return RespondNow(NoArguments());
 #else
   return RespondNow(Error(kErrorDeviceAuthUnavailable));
@@ -870,35 +816,26 @@ AutofillPrivateAuthenticateUserToEditLocalCardFunction::Run() {
     return RespondNow(Error(kErrorDataUnavailable));
   }
   if (personal_data_manager->IsPaymentMethodsMandatoryReauthEnabled()) {
-    // If `device_authenticator` is not available, then don't do anything.
-    scoped_refptr<device_reauth::DeviceAuthenticator> device_authenticator =
-        client->GetDeviceAuthenticator();
-    if (!device_authenticator) {
-      return RespondNow(Error(kErrorDeviceAuthUnavailable));
-    }
-
-    // `device_authenticator` is a scoped_refptr, so we need to keep it alive
-    // until the callback that uses it is complete.
-    base::OnceClosure bind_device_authenticator =
-        base::DoNothingWithBoundArgs(device_authenticator);
     const std::u16string message = l10n_util::GetStringUTF16(
         IDS_PAYMENTS_AUTOFILL_EDIT_CARD_MANDATORY_REAUTH_PROMPT);
 
     base::RecordAction(base::UserMetricsAction(
         "PaymentsUserAuthTriggeredToShowEditLocalCardDialog"));
+
     // Based on the result of the auth, we will be asynchronously returning if
     // the user can edit the local card.
-    autofill_util::AuthenticateUser(
-        device_authenticator, message,
-        base::BindOnce(&AutofillPrivateAuthenticateUserToEditLocalCardFunction::
-                           CanShowEditDialogForLocalCard,
-                       this)
-            .Then(base::IgnoreArgs(std::move(bind_device_authenticator))));
+    client->GetOrCreatePaymentsMandatoryReauthManager()
+        ->AuthenticateWithMessage(
+            message,
+            base::BindOnce(
+                &AutofillPrivateAuthenticateUserToEditLocalCardFunction::
+                    CanShowEditDialogForLocalCard,
+                this));
 
-    // Due to async nature of AuthenticateWithMessage() on device authenticator
-    // we use the below check to make sure we have a `Respond` captured. If we
-    // didn't have this check, then we would show the edit card dialog box even
-    // before the user successfully completes the auth.
+    // Due to async nature of AuthenticateWithMessage() on mandatory re-auth
+    // manager we use the below check to make sure we have a `Respond` captured.
+    // If we didn't have this check, then we would show the edit card dialog box
+    // even before the user successfully completes the auth.
     return did_respond() ? AlreadyResponded() : RespondLater();
   }
 #endif

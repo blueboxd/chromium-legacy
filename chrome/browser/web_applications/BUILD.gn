@@ -500,6 +500,7 @@ source_set("web_applications") {
       "//ash/webui/system_apps/public:system_web_app_type",
       "//chrome/browser/ash/crosapi:browser_util",
       "//chrome/browser/ash/system_web_apps/types",
+      "//chromeos/ash/components/browser_context_helper",
     ]
   }
 
@@ -538,8 +539,6 @@ source_set("web_applications_test_support") {
     "test/fake_data_retriever.h",
     "test/fake_externally_managed_app_manager.cc",
     "test/fake_externally_managed_app_manager.h",
-    "test/fake_install_finalizer.cc",
-    "test/fake_install_finalizer.h",
     "test/fake_os_integration_manager.cc",
     "test/fake_os_integration_manager.h",
     "test/fake_url_handler_manager.cc",
@@ -564,8 +563,6 @@ source_set("web_applications_test_support") {
     "test/mock_os_integration_manager.h",
     "test/os_integration_test_override_impl.cc",
     "test/os_integration_test_override_impl.h",
-    "test/service_worker_registration_waiter.cc",
-    "test/service_worker_registration_waiter.h",
     "test/signed_web_bundle_utils.cc",
     "test/signed_web_bundle_utils.h",
     "test/test_file_utils.cc",
@@ -897,6 +894,7 @@ source_set("web_applications_browser_tests") {
     "//components/web_package",
     "//components/web_package/test_support",
     "//components/webapps/browser",
+    "//components/webapps/browser:test_support",
     "//components/webapps/services/web_app_origin_association/test:test_support",
     "//ui/events/devices:test_support",
     "//url",

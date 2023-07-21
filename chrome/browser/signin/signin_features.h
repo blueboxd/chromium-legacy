@@ -20,15 +20,23 @@ enum class SigninPromoVariant { kSignIn, kMakeYourOwn, kDoMore };
 extern const base::FeatureParam<SigninPromoVariant>
     kForYouFreSignInPromoVariant;
 
+enum class WithDefaultBrowserStep {
+  // The default browser step should be shown as appropriate.
+  kYes,
+  // The default browser step should be skipped.
+  kNo,
+  // The default browser step should be shown even if we normally should skip
+  // it, example because of policies or the current default state.
+  kForced,
+};
+extern const base::FeatureParam<WithDefaultBrowserStep>
+    kForYouFreWithDefaultBrowserStep;
+
 BASE_DECLARE_FEATURE(kForYouFreSyntheticTrialRegistration);
 
 extern const base::FeatureParam<std::string> kForYouFreStudyGroup;
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(ENABLE_WAFFLE_DESKTOP)
-BASE_DECLARE_FEATURE(kWaffle);
-#endif  // BUILDFLAG(ENABLE_WAFFLE_DESKTOP)
 
 BASE_DECLARE_FEATURE(kProcessGaiaRemoveLocalAccountHeader);
 
@@ -39,5 +47,7 @@ BASE_DECLARE_FEATURE(kDisallowManagedProfileSignout);
 #if BUILDFLAG(ENABLE_MIRROR)
 BASE_DECLARE_FEATURE(kVerifyRequestInitiatorForMirrorHeaders);
 #endif  // BUILDFLAG(ENABLE_MIRROR)
+
+BASE_DECLARE_FEATURE(kProfilesReordering);
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_FEATURES_H_

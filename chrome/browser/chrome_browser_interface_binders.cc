@@ -33,7 +33,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/translate/translate_frame_binder.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
@@ -87,6 +86,7 @@
 #include "components/security_state/core/security_state.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/site_engagement/core/mojom/site_engagement_details.mojom.h"
 #include "components/translate/content/common/translate.mojom.h"
@@ -102,6 +102,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/features_generated.h"
 #include "third_party/blink/public/mojom/credentialmanagement/credential_manager.mojom.h"
 #include "third_party/blink/public/mojom/lcp_critical_path_predictor/lcp_critical_path_predictor.mojom.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
@@ -159,6 +160,7 @@
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters.mojom.h"
 #include "chrome/browser/new_tab_page/modules/photos/photos.mojom.h"
 #include "chrome/browser/new_tab_page/modules/recipes/recipes.mojom.h"
+#include "chrome/browser/new_tab_page/modules/v2/history_clusters/history_clusters_v2.mojom.h"
 #include "chrome/browser/new_tab_page/new_tab_page_util.h"
 #include "chrome/browser/payments/payment_request_factory.h"
 #include "chrome/browser/ui/webui/access_code_cast/access_code_cast.mojom.h"
@@ -331,8 +333,8 @@
 #include "chrome/browser/ui/webui/settings/ash/input_device_settings/input_device_settings_provider.mojom.h"
 #include "chrome/browser/ui/webui/settings/ash/os_apps_page/mojom/app_notification_handler.mojom.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_ui.h"
-#include "chrome/browser/ui/webui/settings/ash/search/search.mojom.h"
-#include "chrome/browser/ui/webui/settings/ash/search/user_action_recorder.mojom.h"
+#include "chrome/browser/ui/webui/settings/ash/search/mojom/search.mojom.h"
+#include "chrome/browser/ui/webui/settings/ash/search/mojom/user_action_recorder.mojom.h"
 #include "chromeos/ash/components/audio/public/mojom/cros_audio_config.mojom.h"
 #include "chromeos/ash/components/local_search_service/public/mojom/index.mojom.h"
 #include "chromeos/ash/services/auth_factor_config/public/mojom/auth_factor_config.mojom.h"
@@ -879,7 +881,7 @@ void PopulateChromeFrameBinders(
   }
   map->Add<blink::mojom::ShareService>(base::BindRepeating(
       &ForwardToJavaWebContents<blink::mojom::ShareService>));
-  if (base::FeatureList::IsEnabled(features::kWebEnvironmentIntegrity)) {
+  if (base::FeatureList::IsEnabled(blink::features::kWebEnvironmentIntegrity)) {
     map->Add<blink::mojom::EnvironmentIntegrityService>(base::BindRepeating(
         &environment_integrity::AndroidEnvironmentIntegrityService::Create));
   }
@@ -1033,7 +1035,7 @@ void PopulateChromeWebUIFrameBinders(
 #endif
 
 #if BUILDFLAG(ENABLE_WAFFLE_DESKTOP)
-  if (base::FeatureList::IsEnabled(kWaffle)) {
+  if (base::FeatureList::IsEnabled(switches::kWaffle)) {
     RegisterWebUIControllerInterfaceBinder<waffle::mojom::PageHandlerFactory,
                                            WaffleUI>(map);
   }
@@ -1172,8 +1174,13 @@ void PopulateChromeWebUIFrameBinders(
   if (base::FeatureList::IsEnabled(ntp_features::kNtpHistoryClustersModule) ||
       base::FeatureList::IsEnabled(
           ntp_features::kNtpHistoryClustersModuleLoad)) {
-    RegisterWebUIControllerInterfaceBinder<
-        ntp::history_clusters::mojom::PageHandler, NewTabPageUI>(map);
+    if (base::FeatureList::IsEnabled(ntp_features::kNtpModulesRedesigned)) {
+      RegisterWebUIControllerInterfaceBinder<
+          ntp::history_clusters_v2::mojom::PageHandler, NewTabPageUI>(map);
+    } else {
+      RegisterWebUIControllerInterfaceBinder<
+          ntp::history_clusters::mojom::PageHandler, NewTabPageUI>(map);
+    }
   }
 
   RegisterWebUIControllerInterfaceBinder<
@@ -1279,6 +1286,9 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<ash::auth::mojom::PinFactorEditor,
                                          ash::settings::OSSettingsUI,
                                          ash::OobeUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<ash::auth::mojom::PasswordFactorEditor,
+                                         ash::settings::OSSettingsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       ash::cellular_setup::mojom::ESimManager, ash::settings::OSSettingsUI,

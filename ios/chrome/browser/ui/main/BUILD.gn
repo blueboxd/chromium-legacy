@@ -122,6 +122,7 @@ source_set("main") {
     "//ios/chrome/browser/web:tab_helper_delegates",
     "//ios/chrome/browser/web:web_internal",
     "//ios/chrome/common/ui/colors",
+    "//ios/web/common:features",
     "//net",
   ]
 
@@ -180,6 +181,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/shared/public/features:system_flags",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:fake_system_identity",
     "//ios/chrome/browser/signin:fake_system_identity_manager",
@@ -189,9 +191,11 @@ source_set("unit_tests") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/tabs/inactive_tabs:features",
     "//ios/chrome/browser/ui/browser_view",
+    "//ios/chrome/browser/ui/default_promo/post_restore:features",
     "//ios/chrome/test:block_cleanup_test",
     "//ios/chrome/test:test_support",
     "//ios/testing:block_swizzler",
+    "//ios/web/common:features",
     "//ios/web/public/test",
     "//testing/gtest",
     "//third_party/ocmock",

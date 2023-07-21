@@ -24,6 +24,7 @@
 #include "content/browser/preloading/prefetch/prefetch_type.h"
 #include "content/browser/preloading/prefetch/proxy_lookup_client_impl.h"
 #include "content/browser/preloading/preloading.h"
+#include "content/browser/preloading/preloading_attempt_impl.h"
 #include "content/browser/preloading/preloading_data_impl.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/public/browser/global_routing_id.h"
@@ -373,9 +374,11 @@ PrefetchContainer::PrefetchContainer(
             ? PreloadingDataImpl::GetSameURLAndNoVarySearchURLMatcher(
                   prefetch_document_manager_, prefetch_url_)
             : PreloadingDataImpl::GetSameURLMatcher(prefetch_url_);
-    auto* attempt = preloading_data->AddPreloadingAttempt(
-        GetPredictorForSpeculationRules(world), PreloadingType::kPrefetch,
-        std::move(matcher));
+    auto* attempt = static_cast<PreloadingAttemptImpl*>(
+        preloading_data->AddPreloadingAttempt(
+            GetPredictorForSpeculationRules(world), PreloadingType::kPrefetch,
+            std::move(matcher)));
+    attempt->SetSpeculationEagerness(prefetch_type.GetEagerness());
     attempt_ = attempt->GetWeakPtr();
     initiator_devtools_navigation_token_ = rfhi->GetDevToolsNavigationToken();
   }
@@ -417,8 +420,26 @@ PrefetchContainer::~PrefetchContainer() {
   }
 }
 
-PrefetchContainer::Reader::Reader(PrefetchContainer& prefetch_container)
-    : prefetch_container_(prefetch_container) {}
+PrefetchContainer::Reader::Reader() : Reader(nullptr, 0) {}
+
+PrefetchContainer::Reader::Reader(
+    base::WeakPtr<PrefetchContainer> prefetch_container,
+    size_t index_redirect_chain_to_serve)
+    : prefetch_container_(std::move(prefetch_container)),
+      index_redirect_chain_to_serve_(index_redirect_chain_to_serve) {}
+
+PrefetchContainer::Reader::Reader(Reader&&) = default;
+PrefetchContainer::Reader& PrefetchContainer::Reader::operator=(Reader&&) =
+    default;
+PrefetchContainer::Reader::~Reader() = default;
+
+PrefetchContainer::Reader PrefetchContainer::Reader::Clone() const {
+  return Reader(prefetch_container_, index_redirect_chain_to_serve_);
+}
+
+PrefetchContainer::Reader PrefetchContainer::CreateReader() {
+  return Reader(GetWeakPtr(), 0);
+}
 
 void PrefetchContainer::SetPrefetchStatusWithoutUpdatingTriggeringOutcome(
     PrefetchStatus prefetch_status) {
@@ -599,7 +620,7 @@ bool PrefetchContainer::Reader::IsIsolatedCookieCopyInProgress() const {
   }
 }
 
-void PrefetchContainer::Reader::OnIsolatedCookieCopyStart() {
+void PrefetchContainer::Reader::OnIsolatedCookieCopyStart() const {
   DCHECK(!IsIsolatedCookieCopyInProgress());
 
   // We don't want any of the cookie listeners for this prefetch to pick up
@@ -613,14 +634,15 @@ void PrefetchContainer::Reader::OnIsolatedCookieCopyStart() {
       base::TimeTicks::Now();
 }
 
-void PrefetchContainer::Reader::OnIsolatedCookiesReadCompleteAndWriteStart() {
+void PrefetchContainer::Reader::OnIsolatedCookiesReadCompleteAndWriteStart()
+    const {
   DCHECK(IsIsolatedCookieCopyInProgress());
 
   GetCurrentSinglePrefetchToServe().cookie_read_end_and_write_start_time_ =
       base::TimeTicks::Now();
 }
 
-void PrefetchContainer::Reader::OnIsolatedCookieCopyComplete() {
+void PrefetchContainer::Reader::OnIsolatedCookieCopyComplete() const {
   DCHECK(IsIsolatedCookieCopyInProgress());
 
   const auto& this_prefetch = GetCurrentSinglePrefetchToServe();
@@ -641,7 +663,7 @@ void PrefetchContainer::Reader::OnIsolatedCookieCopyComplete() {
   }
 }
 
-void PrefetchContainer::Reader::OnInterceptorCheckCookieCopy() {
+void PrefetchContainer::Reader::OnInterceptorCheckCookieCopy() const {
   if (!GetCurrentSinglePrefetchToServe().cookie_copy_start_time_) {
     return;
   }
@@ -654,7 +676,7 @@ void PrefetchContainer::Reader::OnInterceptorCheckCookieCopy() {
 }
 
 void PrefetchContainer::Reader::SetOnCookieCopyCompleteCallback(
-    base::OnceClosure callback) {
+    base::OnceClosure callback) const {
   DCHECK(IsIsolatedCookieCopyInProgress());
 
   GetCurrentSinglePrefetchToServe().on_cookie_copy_complete_callback_ =
@@ -663,12 +685,6 @@ void PrefetchContainer::Reader::SetOnCookieCopyCompleteCallback(
 
 void PrefetchContainer::TakeStreamingURLLoader(
     std::unique_ptr<PrefetchStreamingURLLoader> streaming_loader) {
-  // Transfer the OnReceivedHeadCallback to the last streaming URL loader.
-  if (!streaming_loaders_.empty()) {
-    streaming_loader->SetOnReceivedHeadCallback(
-        streaming_loaders_.back()->ReleaseOnReceivedHeadCallback());
-  }
-
   streaming_loaders_.push_back(std::move(streaming_loader));
 }
 
@@ -681,37 +697,40 @@ PrefetchStreamingURLLoader* PrefetchContainer::GetLastStreamingURLLoader()
 }
 
 PrefetchResponseReader::RequestHandler
-PrefetchContainer::CreateRequestHandler() {
+PrefetchContainer::Reader::CreateRequestHandler() {
+  return GetPrefetchContainer()->CreateRequestHandlerInternal(*this);
+}
+
+PrefetchResponseReader::RequestHandler
+PrefetchContainer::CreateRequestHandlerInternal(Reader& reader) {
   CHECK(!streaming_loaders_.empty());
+  DCHECK_EQ(reader.GetPrefetchContainer(), this);
   auto* raw_streaming_loader = streaming_loaders_[0].get();
   raw_streaming_loader->OnStartServing();
 
-  DCHECK(GetReader()
-             .GetCurrentSinglePrefetchToServe()
+  DCHECK(reader.GetCurrentSinglePrefetchToServe()
              .response_reader_->GetStreamingLoader()
              .get() == raw_streaming_loader);
 
   // Create a `RequestHandler` from the current `SinglePrefetch` (==
-  // `GetReader()`) and its corresponding `PrefetchStreamingURLLoader` (==
-  // `raw_streaming_loader`).
+  // `reader`) and its corresponding `PrefetchStreamingURLLoader`.
   std::unique_ptr<PrefetchResponseReader> response_reader =
-      GetReader().TakeCurrentResponseReaderToServe();
+      reader.TakeCurrentResponseReaderToServe();
   auto* raw_response_reader = response_reader.get();
   auto handler =
       raw_response_reader->CreateRequestHandler(std::move(response_reader));
 
   // Advance the current `SinglePrefetch` position.
-  GetReader().AdvanceCurrentURLToServe();
+  reader.AdvanceCurrentURLToServe();
 
   // If `raw_streaming_loader` doesn't correspond to the next `SinglePrefetch`,
   // then schedule its deletion, because it is no longer used for any upcoming
   // `SinglePrefetch`.
   // TODO(crbug.com/1449360): Clean up the lifetime and the deletion mechanism
   // of streaming loaders here.
-  if (GetReader().IsEnd() || GetReader()
-                                     .GetCurrentSinglePrefetchToServe()
-                                     .response_reader_->GetStreamingLoader()
-                                     .get() != raw_streaming_loader) {
+  if (reader.IsEnd() || reader.GetCurrentSinglePrefetchToServe()
+                                .response_reader_->GetStreamingLoader()
+                                .get() != raw_streaming_loader) {
     std::unique_ptr<PrefetchStreamingURLLoader> streaming_loader =
         std::move(streaming_loaders_[0]);
     streaming_loaders_.erase(streaming_loaders_.begin());
@@ -753,7 +772,7 @@ void PrefetchContainer::ResetAllStreamingURLLoaders() {
 }
 
 void PrefetchContainer::Reader::OnPrefetchProbeResult(
-    PrefetchProbeResult probe_result) {
+    PrefetchProbeResult probe_result) const {
   prefetch_container_->probe_result_ = probe_result;
 
   switch (probe_result) {
@@ -778,10 +797,25 @@ void PrefetchContainer::Reader::OnPrefetchProbeResult(
   }
 }
 
-void PrefetchContainer::OnPrefetchedResponseHeadReceived() {
-  if (prefetch_document_manager_) {
+void PrefetchContainer::OnReceivedHead() {
+  // Check `GetHead()` here, because `OnReceivedHead()` can be called in
+  // non-servable cases when response headers are not available.
+  if (prefetch_document_manager_ && GetHead()) {
     prefetch_document_manager_->OnPrefetchedHeadReceived(GetURL());
   }
+  if (on_received_head_callback_) {
+    std::move(on_received_head_callback_).Run();
+  }
+}
+
+void PrefetchContainer::SetOnReceivedHeadCallback(
+    base::OnceClosure on_received_head_callback) {
+  DCHECK(!on_received_head_callback_);
+  on_received_head_callback_ = std::move(on_received_head_callback);
+}
+
+base::OnceClosure PrefetchContainer::ReleaseOnReceivedHeadCallback() {
+  return std::move(on_received_head_callback_);
 }
 
 void PrefetchContainer::OnPrefetchComplete() {
@@ -979,6 +1013,17 @@ bool PrefetchContainer::Reader::IsIsolatedNetworkContextRequiredToServe()
 std::unique_ptr<PrefetchResponseReader>
 PrefetchContainer::Reader::TakeCurrentResponseReaderToServe() {
   return std::move(GetCurrentSinglePrefetchToServe().response_reader_);
+}
+
+bool PrefetchContainer::Reader::IsPrefetchServable(
+    base::TimeDelta cacheable_duration) const {
+  return GetPrefetchContainer()->IsPrefetchServable(cacheable_duration);
+}
+bool PrefetchContainer::Reader::HasPrefetchStatus() const {
+  return GetPrefetchContainer()->HasPrefetchStatus();
+}
+PrefetchStatus PrefetchContainer::Reader::GetPrefetchStatus() const {
+  return GetPrefetchContainer()->GetPrefetchStatus();
 }
 
 net::SchemefulSite PrefetchContainer::GetSiteForPreviousRedirectHop(

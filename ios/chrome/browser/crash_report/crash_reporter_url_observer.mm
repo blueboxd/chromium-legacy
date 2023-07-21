@@ -243,12 +243,10 @@ void CrashReporterURLObserver::StopObservingWebStateList(
 void CrashReporterURLObserver::WebStateListDidChange(
     WebStateList* web_state_list,
     const WebStateListChange& change,
-    const WebStateSelection& selection) {
+    const WebStateListStatus& status) {
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // WebStateActivatedAt() to here. Note that here is reachable only when
-      // `reason` == ActiveWebStateChangeReason::Activated.
+    case WebStateListChange::Type::kStatusOnly:
+      // The activation is handled after this switch statement.
       break;
     case WebStateListChange::Type::kDetach: {
       const WebStateListChangeDetach& detach_change =
@@ -282,25 +280,19 @@ void CrashReporterURLObserver::WebStateListDidChange(
       web::WebState* inserted_web_state = insert_change.inserted_web_state();
       web_state_to_group_[inserted_web_state] =
           GroupForWebStateList(web_state_list);
-      if (selection.active_state_change) {
+      if (status.active_web_state_change()) {
         RecordURLForWebState(inserted_web_state);
       }
       break;
     }
   }
-}
 
-void CrashReporterURLObserver::WebStateActivatedAt(
-    WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int active_index,
-    ActiveWebStateChangeReason reason) {
-  if (!new_web_state)
-    return;
-  // Update WebStateList map in case tabs were moved to another window.
-  web_state_to_group_[new_web_state] = GroupForWebStateList(web_state_list);
-  RecordURLForWebState(new_web_state);
+  if (status.active_web_state_change() && status.new_active_web_state) {
+    // Update WebStateList map in case tabs were moved to another window.
+    web_state_to_group_[status.new_active_web_state] =
+        GroupForWebStateList(web_state_list);
+    RecordURLForWebState(status.new_active_web_state);
+  }
 }
 
 #pragma mark - WebStateObserver

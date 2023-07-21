@@ -13,7 +13,6 @@ namespace autofill {
 namespace features {
 
 // All features in alphabetical order.
-BASE_DECLARE_FEATURE(kAutofillAlwaysReturnCloudTokenizedCard);
 BASE_DECLARE_FEATURE(kAutofillEnableCardArtImage);
 BASE_DECLARE_FEATURE(kAutofillEnableCardArtServerSideStretching);
 BASE_DECLARE_FEATURE(kAutofillEnableCardProductName);
@@ -48,7 +47,6 @@ BASE_DECLARE_FEATURE(kAutofillMoveLegalTermsAndIconForNewCardEnrollment);
 BASE_DECLARE_FEATURE(kAutofillOfferToSaveCardWithSameLastFour);
 BASE_DECLARE_FEATURE(kAutofillParseIBANFields);
 BASE_DECLARE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields);
-BASE_DECLARE_FEATURE(kAutofillRemoveCardExpirationAndTypeTitles);
 BASE_DECLARE_FEATURE(kAutofillSaveCardInfobarEditSupport);
 BASE_DECLARE_FEATURE(kAutofillShowUnmaskedCachedCardInManualFillingView);
 BASE_DECLARE_FEATURE(kAutofillSuggestServerCardInsteadOfLocalCard);
@@ -63,6 +61,7 @@ extern const base::FeatureParam<int>
 
 #if BUILDFLAG(IS_IOS)
 BASE_DECLARE_FEATURE(kAutofillUseTwoDotsForLastFourDigits);
+BASE_DECLARE_FEATURE(kAutofillEnablePaymentsMandatoryReauthOnBling);
 #endif
 
 // Return whether a [No thanks] button and new messaging is shown in the save

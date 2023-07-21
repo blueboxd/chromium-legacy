@@ -200,7 +200,8 @@ class SmartCardTest : public ContentBrowserTest {
       (async () => {{
         let context = await navigator.smartCard.establishContext();
 
-        let connection = await context.connect("Fake reader", "shared", ["t1"]);
+        let connection =
+          (await context.connect("Fake reader", "shared", ["t1"])).connection;
 
         let transaction = {};
 
@@ -340,7 +341,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, Disconnect) {
     (async () => {
       let context = await navigator.smartCard.establishContext();
 
-      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+      let connection =
+        (await context.connect("Fake reader", "shared", ["t1"])).connection;
 
       await connection.disconnect("eject");
 
@@ -387,7 +389,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, ConcurrentDisconnect) {
     (async () => {
       let context = await navigator.smartCard.establishContext();
 
-      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+      let connection =
+        (await context.connect("Fake reader", "shared", ["t1"])).connection;
 
       // This first disconnect() call will go through but won't be finished
       // before the end of this script.
@@ -435,7 +438,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, Transmit) {
     (async () => {
       let context = await navigator.smartCard.establishContext();
 
-      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+      let connection =
+        (await context.connect("Fake reader", "shared", ["t1"])).connection;
 
       let apdu = new Uint8Array([0x03, 0x02, 0x01]);
       let response = await connection.transmit(apdu);
@@ -471,7 +475,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, Control) {
     (async () => {
       let context = await navigator.smartCard.establishContext();
 
-      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+      let connection =
+        (await context.connect("Fake reader", "shared", ["t1"])).connection;
 
       let data = new Uint8Array([0x03, 0x02, 0x01]);
       let response = await connection.control(42, data);
@@ -506,7 +511,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, GetAttribute) {
     (async () => {
       let context = await navigator.smartCard.establishContext();
 
-      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+      let connection =
+        (await context.connect("Fake reader", "shared", ["t1"])).connection;
 
       let response = await connection.getAttribute(42);
 
@@ -541,7 +547,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, SetAttribute) {
     (async () => {
       let context = await navigator.smartCard.establishContext();
 
-      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+      let connection =
+        (await context.connect("Fake reader", "shared", ["t1"])).connection;
 
       let data = new Uint8Array([0x03, 0x02, 0x01]);
       await connection.setAttribute(42, data);
@@ -577,7 +584,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, Status) {
     (async () => {
       let context = await navigator.smartCard.establishContext();
 
-      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+      let connection =
+        (await context.connect("Fake reader", "shared", ["t1"])).connection;
 
       let status = await connection.status();
 
@@ -642,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, GetStatusChange) {
       GetFakeSmartCardDelegate().mock_context_factory;
 
   EXPECT_CALL(mock_context_factory,
-              GetStatusChange(base::TimeDelta::Max(), _, _))
+              GetStatusChange(base::Milliseconds(4321), _, _))
       .WillOnce(
           [](base::TimeDelta timeout,
              std::vector<device::mojom::SmartCardReaderStateInPtr> states_in,
@@ -699,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, GetStatusChange) {
                             currentCount: 6 }];
        let statesOut = await context.getStatusChange(
            readerStates,
-           AbortSignal.timeout(4321));
+           {timeout: 4321});
 
        if (statesOut.length !== 1) {
          return `states array has size ${statesOut.length}`;
@@ -776,22 +784,22 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, GetStatusChangeAborted) {
 
   ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
 
-  EXPECT_EQ("Exception: AbortError", EvalJs(shell(), R"((async () => {
+  EXPECT_EQ("Exception: Error, Something", EvalJs(shell(), R"((async () => {
        let context = await navigator.smartCard.establishContext();
 
        let abortController = new AbortController();
 
        let getStatusPromise = context.getStatusChange(
            [{readerName: "Fake Reader", currentState: {empty: true}}],
-           abortController.signal);
+           {signal: abortController.signal});
 
-       abortController.abort();
+       abortController.abort(Error("Something"));
 
        try {
          let result = await getStatusPromise;
          return "Success";
        } catch (e) {
-         return `Exception: ${e.name}`;
+         return `Exception: ${e.name}, ${e.message}`;
        }
      })())"));
 }
@@ -829,12 +837,12 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, Connect) {
   auto expected_reader_names =
       base::Value(base::Value::List().Append("Foo").Append("Bar"));
 
-  EXPECT_EQ("[object SmartCardConnection]", EvalJs(shell(), R"(
+  EXPECT_EQ("[object SmartCardConnection], t1", EvalJs(shell(), R"(
     (async () => {
       let context = await navigator.smartCard.establishContext();
-      let connection = await context.connect("Fake reader", "shared",
+      let result = await context.connect("Fake reader", "shared",
           ["t0", "t1"]);
-      return `${connection}`;
+      return `${result.connection}, ${result.activeProtocol}`;
     })())"));
 }
 
@@ -873,7 +881,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, StartTransaction) {
     (async () => {
       let context = await navigator.smartCard.establishContext();
 
-      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+      let connection =
+        (await context.connect("Fake reader", "shared", ["t1"])).connection;
 
       let transaction = async () => {
         let apdu = new Uint8Array([0x03, 0x02, 0x01]);
@@ -957,7 +966,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, EndTransactionFails) {
     (async () => {
       let context = await navigator.smartCard.establishContext();
 
-      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+      let connection =
+        (await context.connect("Fake reader", "shared", ["t1"])).connection;
 
       let transaction = async () => {
         return "eject";
@@ -1008,7 +1018,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, DisconnectedOnTransactionReturn) {
     (async () => {
       let context = await navigator.smartCard.establishContext();
 
-      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+      let connection =
+        (await context.connect("Fake reader", "shared", ["t1"])).connection;
 
       let transaction = async () => {
         await connection.disconnect();
@@ -1063,7 +1074,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, OngoingTransmitOnTransactionReturn) {
     (async () => {
       let context = await navigator.smartCard.establishContext();
 
-      let connection = await context.connect("Fake reader", "shared", ["t1"]);
+      let connection =
+        (await context.connect("Fake reader", "shared", ["t1"])).connection;
 
       let transaction = async () => {
         // Return before the transmit() completes.

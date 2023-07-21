@@ -51,6 +51,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/metrics/accept_language_and_content_language_usage.h"
 #include "third_party/blink/public/common/page/browsing_context_group_info.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
@@ -59,6 +60,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_fetch_handler_bypass_option.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_fetch_handler_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
@@ -2455,8 +2457,8 @@ void DocumentLoader::CommitNavigation() {
   // since the latter isn't populated in unit tests.
   if (frame_->IsOutermostMainFrame()) {
     auto address_space = response_.AddressSpace();
-    if ((address_space == network::mojom::blink::IPAddressSpace::kLocal ||
-         address_space == network::mojom::blink::IPAddressSpace::kLoopback) &&
+    if ((address_space == network::mojom::blink::IPAddressSpace::kPrivate ||
+         address_space == network::mojom::blink::IPAddressSpace::kLocal) &&
         !frame_->DomWindow()->IsSecureContext()) {
       CountUse(WebFeature::kMainFrameNonSecurePrivateAddressSpace);
     }
@@ -2761,6 +2763,15 @@ void DocumentLoader::CreateParserPostCommit() {
           loading_behavior |
           kLoadingBehaviorServiceWorkerMainResourceFetchFallback);
     }
+    if (service_worker_network_provider_->GetFetchHandlerBypassOption() ==
+            mojom::blink::ServiceWorkerFetchHandlerBypassOption::
+                kRaceNetworkRequest ||
+        service_worker_network_provider_->GetFetchHandlerBypassOption() ==
+            mojom::blink::ServiceWorkerFetchHandlerBypassOption::
+                kRaceNetworkRequestHoldback) {
+      loading_behavior = static_cast<LoadingBehaviorFlag>(
+          loading_behavior | kLoadingBehaviorServiceWorkerRaceNetworkRequest);
+    }
     GetLocalFrameClient().DidObserveLoadingBehavior(loading_behavior);
   }
 
@@ -2956,7 +2967,13 @@ void DocumentLoader::RecordUseCountersForCommit() {
           mojom::blink::DocumentPolicyFeature::kForceLoadAtTop)) {
     CountUse(WebFeature::kForceLoadAtTop);
   }
-
+  if (response_.DidUseSharedDictionary()) {
+    CountUse(WebFeature::kSharedDictionaryUsed);
+    CountUse(WebFeature::kSharedDictionaryUsedForNavigation);
+    CountUse(frame_->IsOutermostMainFrame()
+                 ? WebFeature::kSharedDictionaryUsedForMainFrameNavigation
+                 : WebFeature::kSharedDictionaryUsedForSubFrameNavigation);
+  }
   if (response_.IsSignedExchangeInnerResponse()) {
     CountUse(WebFeature::kSignedExchangeInnerResponse);
     CountUse(frame_->IsOutermostMainFrame()

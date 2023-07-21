@@ -63,9 +63,7 @@ apps::Permissions CreatePermissions(Profile* profile) {
   apps::Permissions permissions;
   for (const PermissionInfo& info : permission_infos) {
     permissions.push_back(std::make_unique<apps::Permission>(
-        info.permission,
-        std::make_unique<apps::PermissionValue>(
-            profile->GetPrefs()->GetBoolean(info.pref_name)),
+        info.permission, profile->GetPrefs()->GetBoolean(info.pref_name),
         /*is_managed=*/false));
   }
   return permissions;
@@ -159,8 +157,6 @@ void BorealisApps::SetUpSpecialApps(bool allowed) {
   initial_steam_app->show_in_management = false;
   initial_steam_app->allow_uninstall = false;
   AppPublisher::Publish(std::move(initial_steam_app));
-
-  // TODO(crbug.com/1253250): Add other fields for the App struct.
 }
 
 bool BorealisApps::CouldBeAllowed() const {
@@ -198,6 +194,10 @@ void BorealisApps::CreateAppOverrides(
 
   // Borealis apps don't handle intents (like "open with").
   app->handles_intents = false;
+  // Borealis apps are normal apps per apps-management.
+  app->show_in_management = true;
+  // Borealis supports uninstall per-app
+  app->allow_uninstall = true;
 
   // Hide some known spurious "apps" from the user.
   if (borealis::ShouldHideIrrelevantApp(registration.Name())) {
@@ -210,15 +210,8 @@ void BorealisApps::CreateAppOverrides(
   }
 }
 
-void BorealisApps::LoadIcon(const std::string& app_id,
-                            const IconKey& icon_key,
-                            IconType icon_type,
-                            int32_t size_hint_in_dip,
-                            bool allow_placeholder_icon,
-                            apps::LoadIconCallback callback) {
-  registry()->LoadIcon(app_id, icon_key, icon_type, size_hint_in_dip,
-                       allow_placeholder_icon, IconKey::kInvalidResourceId,
-                       std::move(callback));
+int BorealisApps::DefaultIconResourceId() const {
+  return IDR_LOGO_BOREALIS_DEFAULT_192;
 }
 
 void BorealisApps::Launch(const std::string& app_id,

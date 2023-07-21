@@ -162,8 +162,6 @@ DEFINE_VARIATION_PARAM(kIPHRequestDesktopSiteOptInFeature,
                        "IPH_RequestDesktopSiteOptIn");
 DEFINE_VARIATION_PARAM(kIPHRequestDesktopSiteExceptionsGenericFeature,
                        "IPH_RequestDesktopSiteExceptionsGeneric");
-DEFINE_VARIATION_PARAM(kIPHRequestDesktopSiteExceptionsSpecificFeature,
-                       "IPH_RequestDesktopSiteExceptionsSpecific");
 DEFINE_VARIATION_PARAM(kIPHShoppingListMenuItemFeature,
                        "IPH_ShoppingListMenuItem");
 DEFINE_VARIATION_PARAM(kIPHShoppingListSaveFlowFeature,
@@ -273,7 +271,7 @@ DEFINE_VARIATION_PARAM(kIPHDownloadToolbarButtonFeature,
 DEFINE_VARIATION_PARAM(kIPHExtensionsMenuFeature, "IPH_ExtensionsMenu");
 DEFINE_VARIATION_PARAM(kIPHFocusModeFeature, "IPH_FocusMode");
 DEFINE_VARIATION_PARAM(kIPHExtensionsRequestAccessButtonFeature,
-                       "IPH_ExtensionsRequestAccessFeature");
+                       "IPH_ExtensionsRequestAccessButton");
 DEFINE_VARIATION_PARAM(kIPHGlobalMediaControls, "IPH_GlobalMediaControls");
 DEFINE_VARIATION_PARAM(kIPHGMCCastStartStopFeature, "IPH_GMCCastStartStop");
 DEFINE_VARIATION_PARAM(kIPHHighEfficiencyModeFeature, "IPH_HighEfficiencyMode");
@@ -296,6 +294,8 @@ DEFINE_VARIATION_PARAM(kIPHPriceInsightsPageActionIconLabelFeature,
                        "IPH_PriceInsightsPageActionIconLabelFeature");
 DEFINE_VARIATION_PARAM(kIPHPriceTrackingChipFeature,
                        "IPH_PriceTrackingChipFeature");
+DEFINE_VARIATION_PARAM(kIPHPriceTrackingEmailConsentFeature,
+                       "IPH_PriceTrackingEmailConsentFeature");
 DEFINE_VARIATION_PARAM(kIPHPriceTrackingPageActionIconLabelFeature,
                        "IPH_PriceTrackingPageActionIconLabelFeature");
 DEFINE_VARIATION_PARAM(kIPHReadingListDiscoveryFeature,
@@ -433,7 +433,6 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHRequestDesktopSiteDefaultOnFeature),
         VARIATION_ENTRY(kIPHRequestDesktopSiteOptInFeature),
         VARIATION_ENTRY(kIPHRequestDesktopSiteExceptionsGenericFeature),
-        VARIATION_ENTRY(kIPHRequestDesktopSiteExceptionsSpecificFeature),
         VARIATION_ENTRY(kIPHShoppingListMenuItemFeature),
         VARIATION_ENTRY(kIPHShoppingListSaveFlowFeature),
         VARIATION_ENTRY(kIPHTabGroupsQuicklyComparePagesFeature),
@@ -511,6 +510,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHPowerBookmarksSidePanelFeature),
         VARIATION_ENTRY(kIPHPriceInsightsPageActionIconLabelFeature),
         VARIATION_ENTRY(kIPHPriceTrackingChipFeature),
+        VARIATION_ENTRY(kIPHPriceTrackingEmailConsentFeature),
         VARIATION_ENTRY(kIPHPriceTrackingPageActionIconLabelFeature),
         VARIATION_ENTRY(kIPHReadingListDiscoveryFeature),
         VARIATION_ENTRY(kIPHReadingListEntryPointFeature),

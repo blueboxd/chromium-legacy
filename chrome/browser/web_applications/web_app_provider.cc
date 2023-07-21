@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/extensions_manager.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
+#include "chrome/browser/web_applications/isolated_web_apps/garbage_collect_storage_partitions_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_from_command_line.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
@@ -48,10 +49,17 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/browser/web_applications/web_contents/web_contents_manager.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 
 #if (BUILDFLAG(IS_CHROMEOS))
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_update_manager.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 #endif
 
 namespace web_app {
@@ -74,12 +82,14 @@ WebAppProvider* WebAppProvider::GetForWebApps(Profile* profile) {
   // If features::kWebAppsCrosapi is enabled, Ash browser only manages system
   // web apps (return nullptr here). Otherwise, Ash browser manages all web apps
   // (return WebAppProvider).
-  return IsWebAppsCrosapiEnabled()
-             ? nullptr
-             : WebAppProviderFactory::GetForProfile(profile);
-#else
-  return WebAppProviderFactory::GetForProfile(profile);
+  // An exception is that Shimless RMA app always requires loading IWA on Ash.
+  if (IsWebAppsCrosapiEnabled() &&
+      (!::ash::features::IsShimlessRMA3pDiagnosticsEnabled() ||
+       !::ash::IsShimlessRmaAppBrowserContext(profile))) {
+    return nullptr;
+  }
 #endif
+  return WebAppProviderFactory::GetForProfile(profile);
 }
 
 // static
@@ -290,6 +300,7 @@ void WebAppProvider::Shutdown() {
 
 void WebAppProvider::StartImpl() {
   StartSyncBridge();
+  MaybeScheduleGarbageCollection();
 }
 
 void WebAppProvider::CreateSubsystems(Profile* profile) {
@@ -439,13 +450,27 @@ void WebAppProvider::CheckIsConnected() const {
 void WebAppProvider::DoMigrateProfilePrefs(Profile* profile) {
   std::map<AppId, int> sources =
       TakeAllWebAppInstallSources(profile->GetPrefs());
-  ScopedRegistryUpdate update(sync_bridge_.get());
+  ScopedRegistryUpdate update = sync_bridge_->BeginUpdate();
   for (const auto& iter : sources) {
     WebApp* web_app = update->UpdateApp(iter.first);
     if (web_app && !web_app->latest_install_source()) {
       web_app->SetLatestInstallSource(
           static_cast<webapps::WebappInstallSource>(iter.second));
     }
+  }
+}
+
+void WebAppProvider::MaybeScheduleGarbageCollection() {
+  // We are mirating from ExtensionsPref::kStorageGarbageCollect to
+  // prefs::kShouldGarbageCollectStoragePartitions. During migration, either
+  // one of the prefs can trigget garbge collection.
+  // TODO(crbug.com/1463825): Delete ExtensionsPref::kStorageGarbageCollect.
+  if (profile_->GetPrefs()->GetBoolean(
+          prefs::kShouldGarbageCollectStoragePartitions) ||
+      extensions_manager_->ShouldGarbageCollectStoragePartitions()) {
+    command_manager().ScheduleCommand(
+        std::make_unique<web_app::GarbageCollectStoragePartititonsCommand>(
+            profile_, base::DoNothing()));
   }
 }
 

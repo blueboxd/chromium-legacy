@@ -154,6 +154,7 @@ public class StaticLayout extends Layout {
                          .with(LayoutTab.RENDER_Y, 0.0f)
                          .with(LayoutTab.SATURATION, 1.0f)
                          .with(LayoutTab.STATIC_TO_VIEW_BLEND, 0.0f)
+                         .with(LayoutTab.IS_ACTIVE_LAYOUT_SUPPLIER, this::isActive)
                          .build();
 
         mAnimationHandler = updateHost.getAnimationHandler();
@@ -225,6 +226,20 @@ public class StaticLayout extends Layout {
             }
 
             @Override
+            public void onDestroyed(Tab tab) {
+                if (mModel.get(LayoutTab.TAB_ID) != tab.getId()) return;
+
+                mModel.set(LayoutTab.TAB_ID, Tab.INVALID_TAB_ID);
+            }
+
+            @Override
+            public void onTabUnregistered(Tab tab) {
+                if (mModel.get(LayoutTab.TAB_ID) != tab.getId()) return;
+
+                mModel.set(LayoutTab.TAB_ID, Tab.INVALID_TAB_ID);
+            }
+
+            @Override
             public void onContentChanged(Tab tab) {
                 updateStaticTab(tab, /*skipUpdateVisibleIds=*/false);
             }
@@ -279,6 +294,7 @@ public class StaticLayout extends Layout {
     public void doneHiding() {
         super.doneHiding();
         mIsActive = false;
+        mModel.set(LayoutTab.TAB_ID, Tab.INVALID_TAB_ID);
     }
 
     @Override
@@ -381,7 +397,6 @@ public class StaticLayout extends Layout {
                 mTopUiThemeColorProvider.get().calculateColor(tab, tab.getThemeColor()));
     }
 
-    @VisibleForTesting
     void setTextBoxBackgroundColorForTesting(Integer color) {
         sToolbarTextBoxBackgroundColorForTesting = color;
     }
@@ -470,27 +485,22 @@ public class StaticLayout extends Layout {
         }
     }
 
-    @VisibleForTesting
     PropertyModel getModelForTesting() {
         return mModel;
     }
 
-    @VisibleForTesting
     TabModelSelector getTabModelSelectorForTesting() {
         return mTabModelSelector;
     }
 
-    @VisibleForTesting
     TabContentManager getTabContentManagerForTesting() {
         return mTabContentManager;
     }
 
-    @VisibleForTesting
     BrowserControlsStateProvider getBrowserControlsStateProviderForTesting() {
         return mBrowserControlsStateProvider;
     }
 
-    @VisibleForTesting
     public int getCurrentTabIdForTesting() {
         return mModel.get(LayoutTab.TAB_ID);
     }

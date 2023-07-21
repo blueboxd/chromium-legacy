@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -38,6 +39,7 @@
 #include "chrome/updater/policy/manager.h"
 #include "chrome/updater/policy/service.h"
 #include "chrome/updater/prefs.h"
+#include "chrome/updater/tag.h"
 #include "chrome/updater/test_scope.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/util.h"
@@ -404,42 +406,6 @@ void StopProcmonLogging(const base::FilePath& pml_file) {
   }
 }
 
-const base::ProcessIterator::ProcessEntries FindProcesses(
-    const base::FilePath::StringType& executable_name) {
-  return base::NamedProcessIterator(executable_name, nullptr).Snapshot();
-}
-
-base::FilePath::StringType PrintProcesses(
-    const base::FilePath::StringType& executable_name) {
-  base::FilePath::StringType message(L"Found processes:\n");
-  base::FilePath::StringType demarcation(72, L'=');
-  demarcation += L'\n';
-  message += demarcation;
-
-  for (const base::ProcessEntry& entry : FindProcesses(executable_name)) {
-    message += base::StrCat(
-        {entry.exe_file(), L", pid=", base::NumberToWString(entry.pid()),
-         L", creation time=",
-         [](base::ProcessId pid) {
-           const base::Process process = base::Process::Open(pid);
-           return process.IsValid() ? base::ASCIIToWide(base::TimeFormatHTTP(
-                                          process.CreationTime()))
-                                    : L"n/a";
-         }(entry.pid()),
-         L", cmdline=",
-         [](base::ProcessId pid) {
-           std::unique_ptr<ProcessInspector> process_inspector =
-               ProcessInspector::Create(base::Process::OpenWithAccess(
-                   pid, PROCESS_ALL_ACCESS | PROCESS_VM_READ));
-           return process_inspector ? process_inspector->command_line()
-                                    : L"n/a";
-         }(entry.pid()),
-         L"\n"});
-  }
-
-  return message + demarcation;
-}
-
 EventHolder CreateWaitableEventForTest() {
   NamedObjectAttributes attr = GetNamedObjectAttributes(
       base::NumberToWString(::GetCurrentProcessId()).c_str(), GetTestScope());
@@ -447,8 +413,38 @@ EventHolder CreateWaitableEventForTest() {
               ::CreateEvent(&attr.sa, FALSE, FALSE, attr.name.c_str()))),
           attr.name};
 }
-
 #endif  // BUILDFLAG(IS_WIN)
+
+const base::ProcessIterator::ProcessEntries FindProcesses(
+    const base::FilePath::StringType& executable_name) {
+  return base::NamedProcessIterator(executable_name, nullptr).Snapshot();
+}
+
+std::string PrintProcesses(const base::FilePath::StringType& executable_name) {
+  const std::string demarcation(72, '=');
+  std::stringstream message;
+  message << "Found processes:" << std::endl << demarcation << std::endl;
+  for (const base::ProcessEntry& entry : FindProcesses(executable_name)) {
+    message << entry.exe_file() << ", pid=" << entry.pid()
+            << ", creation time=" << [](base::ProcessId pid) {
+                 const base::Process process = base::Process::Open(pid);
+                 return process.IsValid()
+                            ? base::TimeFormatHTTP(process.CreationTime())
+                            : "n/a";
+               }(entry.pid());
+#if BUILDFLAG(IS_WIN)
+    message << ", cmdline=" << [](base::ProcessId pid) {
+      std::unique_ptr<ProcessInspector> process_inspector =
+          ProcessInspector::Create(base::Process::OpenWithAccess(
+              pid, PROCESS_ALL_ACCESS | PROCESS_VM_READ));
+      return process_inspector ? process_inspector->command_line() : L"n/a";
+    }(entry.pid());
+#endif
+    message << std::endl;
+  }
+  message << demarcation << std::endl;
+  return message.str();
+}
 
 bool WaitFor(base::FunctionRef<bool()> predicate,
              base::FunctionRef<void()> still_waiting) {
@@ -540,6 +536,34 @@ void ExpectOnlyMockUpdater(const base::FilePath& mock_updater_path) {
       });
 
   EXPECT_EQ(count_mock_updater_path, 1);
+}
+
+void ExpectTagArgsEqual(const updater::tagging::TagArgs& actual,
+                        const updater::tagging::TagArgs& expected) {
+  EXPECT_EQ(actual.bundle_name, expected.bundle_name);
+  EXPECT_EQ(actual.installation_id, expected.installation_id);
+  EXPECT_EQ(actual.brand_code, expected.brand_code);
+  EXPECT_EQ(actual.client_id, expected.client_id);
+  EXPECT_EQ(actual.experiment_labels, expected.experiment_labels);
+  EXPECT_EQ(actual.referral_id, expected.referral_id);
+  EXPECT_EQ(actual.language, expected.language);
+  EXPECT_EQ(actual.browser_type, expected.browser_type);
+  EXPECT_EQ(actual.usage_stats_enable, expected.usage_stats_enable);
+
+  EXPECT_EQ(actual.apps.size(), expected.apps.size());
+  for (size_t i = 0; i < expected.apps.size(); ++i) {
+    const updater::tagging::AppArgs& app_actual = actual.apps[i];
+    const updater::tagging::AppArgs& app_expected = expected.apps[i];
+
+    EXPECT_EQ(app_actual.app_id, app_expected.app_id);
+    EXPECT_EQ(app_actual.app_name, app_expected.app_name);
+    EXPECT_EQ(app_actual.needs_admin, app_expected.needs_admin);
+    EXPECT_EQ(app_actual.ap, app_expected.ap);
+    EXPECT_EQ(app_actual.encoded_installer_data,
+              app_expected.encoded_installer_data);
+    EXPECT_EQ(app_actual.install_data_index, app_expected.install_data_index);
+    EXPECT_EQ(app_actual.experiment_labels, app_expected.experiment_labels);
+  }
 }
 
 }  // namespace updater::test

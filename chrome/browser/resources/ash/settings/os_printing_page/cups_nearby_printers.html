@@ -8,8 +8,8 @@
     margin-top: 20px;
   }
 
-  .list-frame {
-    padding-inline-start: 0;
+  :host([is-printer-settings-revamp-enabled_]) .list-frame {
+    padding-inline: 0;
   }
 </style>
 
@@ -21,7 +21,8 @@
         list-blurred="{{listBlurred_}}" focus-row-index="[[index]]"
         iron-list-tab-index="[[tabIndex]]"
         user-printers-allowed="[[userPrintersAllowed]]"
-        saving-printer="[[savingPrinter_]]">
+        saving-printer="[[savingPrinter_]]"
+        num-printers="[[printersCount]]">
     </settings-cups-printers-entry>
   </template>
 </iron-list>

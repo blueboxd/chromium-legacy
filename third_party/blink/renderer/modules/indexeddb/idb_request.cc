@@ -32,6 +32,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
@@ -58,41 +59,139 @@
 
 namespace blink {
 
-IDBRequest::AsyncTraceState::AsyncTraceState(const char* trace_event_name)
-    : trace_event_name_(nullptr) {
-  // If PopulateForNewEvent is called, it sets trace_event_name_ to
-  // trace_event_name. Otherwise, trace_event_name_ is nullptr, so this instance
-  // is considered empty. This roundabout initialization lets us avoid calling
-  // TRACE_EVENT_NESTABLE_ASYNC_END0 with an uninitalized ID.
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
-      "IndexedDB", trace_event_name,
-      TRACE_ID_LOCAL(PopulateForNewEvent(trace_event_name)));
+namespace {
+
+const char* RequestTypeToName(IDBRequest::TypeForMetrics type) {
+  switch (type) {
+    case IDBRequest::TypeForMetrics::kCursorAdvance:
+      return "IDBCursor::advance";
+    case IDBRequest::TypeForMetrics::kCursorContinue:
+      return "IDBCursor::continue";
+    case IDBRequest::TypeForMetrics::kCursorContinuePrimaryKey:
+      return "IDBCursor::continuePrimaryKEy";
+    case IDBRequest::TypeForMetrics::kCursorDelete:
+      return "IDBCursor::delete";
+
+    case IDBRequest::TypeForMetrics::kFactoryOpen:
+      return "IDBFactory::open";
+    case IDBRequest::TypeForMetrics::kFactoryDeleteDatabase:
+      return "IDBFactory::deleteDatabase";
+
+    case IDBRequest::TypeForMetrics::kIndexOpenCursor:
+      return "IDBIndex::openCursor";
+    case IDBRequest::TypeForMetrics::kIndexCount:
+      return "IDBIndex::count";
+    case IDBRequest::TypeForMetrics::kIndexOpenKeyCursor:
+      return "IDBIndex::openKeyCursor";
+    case IDBRequest::TypeForMetrics::kIndexGet:
+      return "IDBIndex::get";
+    case IDBRequest::TypeForMetrics::kIndexGetAll:
+      return "IDBIndex::getAll";
+    case IDBRequest::TypeForMetrics::kIndexBatchGetAll:
+      return "IDBIndex::batchGetAll";
+    case IDBRequest::TypeForMetrics::kIndexGetAllKeys:
+      return "IDBIndex::getAllKeys";
+    case IDBRequest::TypeForMetrics::kIndexGetKey:
+      return "IDBIndex::getKey";
+
+    case IDBRequest::TypeForMetrics::kObjectStoreGet:
+      return "IDBObjectStore::get";
+    case IDBRequest::TypeForMetrics::kObjectStoreGetKey:
+      return "IDBObjectStore::getKey";
+    case IDBRequest::TypeForMetrics::kObjectStoreGetAll:
+      return "IDBObjectStore::getAll";
+    case IDBRequest::TypeForMetrics::kObjectStoreBatchGetAll:
+      return "IDBObjectStore::batchGetAll";
+    case IDBRequest::TypeForMetrics::kObjectStoreGetAllKeys:
+      return "IDBObjectStore::getAllKeys";
+    case IDBRequest::TypeForMetrics::kObjectStoreDelete:
+      return "IDBObjectStore::delete";
+    case IDBRequest::TypeForMetrics::kObjectStoreClear:
+      return "IDBObjectStore::clear";
+    case IDBRequest::TypeForMetrics::kObjectStoreCreateIndex:
+      return "IDBObjectStore::createIndex";
+
+    case IDBRequest::TypeForMetrics::kObjectStorePut:
+      return "IDBObjectStore::put";
+    case IDBRequest::TypeForMetrics::kObjectStoreAdd:
+      return "IDBObjectStore::add";
+    case IDBRequest::TypeForMetrics::kObjectStoreUpdate:
+      return "IDBObjectStore::update";
+    case IDBRequest::TypeForMetrics::kObjectStoreOpenCursor:
+      return "IDBObjectStore::openCursor";
+    case IDBRequest::TypeForMetrics::kObjectStoreOpenKeyCursor:
+      return "IDBObjectStore::openKeyCursor";
+    case IDBRequest::TypeForMetrics::kObjectStoreCount:
+      return "IDBObjectStore::count";
+  }
+}
+
+void RecordHistogram(IDBRequest::TypeForMetrics type,
+                     base::TimeDelta duration) {
+  switch (type) {
+    case IDBRequest::TypeForMetrics::kObjectStorePut:
+      UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.RequestDuration.ObjectStorePut",
+                          duration);
+      break;
+    case IDBRequest::TypeForMetrics::kObjectStoreAdd:
+      UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.RequestDuration.ObjectStoreAdd",
+                          duration);
+      break;
+    case IDBRequest::TypeForMetrics::kObjectStoreGet:
+      UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.RequestDuration.ObjectStoreGet",
+                          duration);
+      break;
+
+    case IDBRequest::TypeForMetrics::kCursorAdvance:
+    case IDBRequest::TypeForMetrics::kCursorContinue:
+    case IDBRequest::TypeForMetrics::kCursorContinuePrimaryKey:
+    case IDBRequest::TypeForMetrics::kCursorDelete:
+    case IDBRequest::TypeForMetrics::kFactoryOpen:
+    case IDBRequest::TypeForMetrics::kFactoryDeleteDatabase:
+    case IDBRequest::TypeForMetrics::kIndexOpenCursor:
+    case IDBRequest::TypeForMetrics::kIndexCount:
+    case IDBRequest::TypeForMetrics::kIndexOpenKeyCursor:
+    case IDBRequest::TypeForMetrics::kIndexGet:
+    case IDBRequest::TypeForMetrics::kIndexGetAll:
+    case IDBRequest::TypeForMetrics::kIndexBatchGetAll:
+    case IDBRequest::TypeForMetrics::kIndexGetAllKeys:
+    case IDBRequest::TypeForMetrics::kIndexGetKey:
+    case IDBRequest::TypeForMetrics::kObjectStoreGetKey:
+    case IDBRequest::TypeForMetrics::kObjectStoreGetAll:
+    case IDBRequest::TypeForMetrics::kObjectStoreBatchGetAll:
+    case IDBRequest::TypeForMetrics::kObjectStoreGetAllKeys:
+    case IDBRequest::TypeForMetrics::kObjectStoreDelete:
+    case IDBRequest::TypeForMetrics::kObjectStoreClear:
+    case IDBRequest::TypeForMetrics::kObjectStoreCreateIndex:
+    case IDBRequest::TypeForMetrics::kObjectStoreUpdate:
+    case IDBRequest::TypeForMetrics::kObjectStoreOpenCursor:
+    case IDBRequest::TypeForMetrics::kObjectStoreOpenKeyCursor:
+    case IDBRequest::TypeForMetrics::kObjectStoreCount:
+      break;
+  }
+}
+
+}  // namespace
+
+IDBRequest::AsyncTraceState::AsyncTraceState(TypeForMetrics type)
+    : type_(type), start_time_(base::TimeTicks::Now()) {
+  static std::atomic<size_t> counter(0);
+  id_ = counter.fetch_add(1, std::memory_order_relaxed);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("IndexedDB", RequestTypeToName(type),
+                                    TRACE_ID_LOCAL(id_));
 }
 
 void IDBRequest::AsyncTraceState::RecordAndReset() {
-  if (trace_event_name_) {
-    TRACE_EVENT_NESTABLE_ASYNC_END0("IndexedDB", trace_event_name_,
+  if (type_) {
+    TRACE_EVENT_NESTABLE_ASYNC_END0("IndexedDB", RequestTypeToName(*type_),
                                     TRACE_ID_LOCAL(id_));
-    trace_event_name_ = nullptr;
+    RecordHistogram(*type_, base::TimeTicks::Now() - start_time_);
+    type_.reset();
   }
 }
 
 IDBRequest::AsyncTraceState::~AsyncTraceState() {
-  if (trace_event_name_) {
-    TRACE_EVENT_NESTABLE_ASYNC_END0("IndexedDB", trace_event_name_,
-                                    TRACE_ID_LOCAL(id_));
-  }
-}
-
-size_t IDBRequest::AsyncTraceState::PopulateForNewEvent(
-    const char* trace_event_name) {
-  DCHECK(trace_event_name);
-  DCHECK(!trace_event_name_);
-  trace_event_name_ = trace_event_name;
-
-  static std::atomic<size_t> counter(0);
-  id_ = counter.fetch_add(1, std::memory_order_relaxed);
-  return id_;
+  RecordAndReset();
 }
 
 IDBRequest* IDBRequest::Create(ScriptState* script_state,
@@ -156,7 +255,7 @@ IDBRequest::~IDBRequest() {
   if (!GetExecutionContext())
     return;
   if (ready_state_ == DONE)
-    DCHECK(metrics_.IsEmpty()) << metrics_.trace_event_name();
+    DCHECK(metrics_.IsEmpty()) << metrics_.id();
   else
     DCHECK_EQ(ready_state_, kEarlyDeath);
 }
@@ -222,7 +321,7 @@ const String& IDBRequest::readyState() const {
   return indexed_db_names::kDone;
 }
 
-std::unique_ptr<WebIDBCallbacks> IDBRequest::CreateWebCallbacks() {
+std::unique_ptr<WebIDBCallbacksImpl> IDBRequest::CreateWebCallbacks() {
   DCHECK(!web_callbacks_);
   auto callbacks = std::make_unique<WebIDBCallbacksImpl>(this);
   web_callbacks_ = callbacks.get();
@@ -495,6 +594,18 @@ void IDBRequest::OnCount(bool success, uint32_t count) {
   }
 }
 
+void IDBRequest::OnPut(mojom::blink::IDBTransactionPutResultPtr result) {
+  if (result->is_error_result()) {
+    HandleError(std::move(result->get_error_result()));
+    return;
+  }
+
+  probe::AsyncTask async_task(GetExecutionContext(), &async_task_context_,
+                              "put");
+  DCHECK(result->is_key());
+  HandleResponse(std::move(result->get_key()));
+}
+
 void IDBRequest::OnGet(mojom::blink::IDBDatabaseGetResultPtr result) {
   if (result->is_error_result()) {
     HandleError(std::move(result->get_error_result()));
@@ -575,6 +686,17 @@ void IDBRequest::OnAdvanceCursor(mojom::blink::IDBCursorResultPtr result) {
   HandleResponse(std::move(result->get_values()->keys[0]),
                  std::move(result->get_values()->primary_keys[0]),
                  std::move(result->get_values()->values[0]));
+}
+
+void IDBRequest::OnGotKeyGeneratorCurrentNumber(
+    int64_t number,
+    mojom::blink::IDBErrorPtr error) {
+  if (error) {
+    HandleError(std::move(error));
+  } else {
+    DCHECK_GE(number, 0);
+    HandleResponse(number);
+  }
 }
 
 void IDBRequest::EnqueueResponse(DOMException* error) {

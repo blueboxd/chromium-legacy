@@ -146,6 +146,13 @@ class AutofillWebDataService : public WebDataServiceBase {
   // Schedules a task to add a full server credit card to the web database.
   void AddFullServerCreditCard(const CreditCard& credit_card);
 
+  // Methods to schedule a task to add, update, remove, clear server cvc in the
+  // web database.
+  void AddServerCvc(int64_t instrument_id, const std::u16string& cvc);
+  void UpdateServerCvc(int64_t instrument_id, const std::u16string& cvc);
+  void RemoveServerCvc(int64_t instrument_id);
+  void ClearServerCvcs();
+
   // Initiates the request for local/server credit cards.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
   // finished, with the credit cards included in the argument |result|.  The

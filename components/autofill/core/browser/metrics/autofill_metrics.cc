@@ -122,6 +122,11 @@ enum FieldTypeGroupForMetrics {
   GROUP_ADDRESS_HOME_LANDMARK,
   GROUP_ADDRESS_HOME_BETWEEN_STREETS,
   GROUP_ADDRESS_HOME_ADMIN_LEVEL2,
+  GROUP_ADDRESS_HOME_STREET_LOCATION,
+  GROUP_ADDRESS_HOME_OVERFLOW,
+  GROUP_DELIVERY_INSTRUCTIONS,
+  GROUP_ADDRESS_HOME_OVERFLOW_AND_LANDMARK,
+  GROUP_ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK,
   // Add new entries here and update enums.xml.
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
@@ -247,10 +252,27 @@ int GetFieldTypeGroupPredictionQualityMetric(
           group = GROUP_ADDRESS_HOME_LANDMARK;
           break;
         case ADDRESS_HOME_BETWEEN_STREETS:
+        case ADDRESS_HOME_BETWEEN_STREETS_1:
+        case ADDRESS_HOME_BETWEEN_STREETS_2:
           group = GROUP_ADDRESS_HOME_BETWEEN_STREETS;
           break;
         case ADDRESS_HOME_ADMIN_LEVEL2:
           group = GROUP_ADDRESS_HOME_ADMIN_LEVEL2;
+          break;
+        case ADDRESS_HOME_OVERFLOW:
+          group = GROUP_ADDRESS_HOME_OVERFLOW;
+          break;
+        case ADDRESS_HOME_OVERFLOW_AND_LANDMARK:
+          group = GROUP_ADDRESS_HOME_OVERFLOW_AND_LANDMARK;
+          break;
+        case ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK:
+          group = GROUP_ADDRESS_HOME_BETWEEN_STREETS_OR_LANDMARK;
+          break;
+        case ADDRESS_HOME_STREET_LOCATION:
+          group = GROUP_ADDRESS_HOME_STREET_LOCATION;
+          break;
+        case DELIVERY_INSTRUCTIONS:
+          group = GROUP_DELIVERY_INSTRUCTIONS;
           break;
         case UNKNOWN_TYPE:
           group = GROUP_UNKNOWN_TYPE;
@@ -1620,7 +1642,7 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
   size_t virtual_card_enabled_card_count = base::ranges::count_if(
       server_cards, [](const std::unique_ptr<CreditCard>& card) {
         return card->virtual_card_enrollment_state() ==
-               CreditCard::VirtualCardEnrollmentState::ENROLLED;
+               CreditCard::VirtualCardEnrollmentState::kEnrolled;
       });
   base::UmaHistogramCounts1000(
       "Autofill.StoredCreditCardCount.Server.WithVirtualCardMetadata",

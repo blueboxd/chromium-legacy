@@ -4,11 +4,13 @@
 
 #include <initializer_list>
 #include <iterator>
+#include <memory>
 #include <string>
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
+#include "base/check_deref.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -27,6 +29,7 @@
 #include "base/values.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/lock/screen_locker_tester.h"
+#include "chrome/browser/ash/login/oobe_quick_start/connectivity/fake_target_device_connection_broker.h"
 #include "chrome/browser/ash/login/saml/lockscreen_reauth_dialog_test_helper.h"
 #include "chrome/browser/ash/login/signin/token_handle_util.h"
 #include "chrome/browser/ash/login/signin_partition_manager.h"
@@ -42,6 +45,8 @@
 #include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/ash/login/test/user_policy_mixin.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_policy_builder.h"
 #include "chrome/browser/ash/policy/test_support/embedded_policy_test_server_mixin.h"
@@ -60,6 +65,7 @@
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/marketing_opt_in_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/quick_start_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -86,6 +92,8 @@
 #include "components/trusted_vault/standalone_trusted_vault_client.h"
 #include "components/trusted_vault/trusted_vault_client.h"
 #include "components/user_manager/known_user.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -144,6 +152,8 @@ constexpr test::UIPath kPrimaryButton = {"gaia-signin", "signin-frame-dialog",
                                          "primary-action-button"};
 constexpr test::UIPath kSecondaryButton = {"gaia-signin", "signin-frame-dialog",
                                            "secondary-action-button"};
+constexpr test::UIPath kQuickStartButton = {
+    "gaia-signin", "signin-frame-dialog", "quick-start-button"};
 
 // UMA names for better test reading.
 const char kLoginRequests[] = "OOBE.GaiaScreen.LoginRequests";
@@ -1013,11 +1023,31 @@ IN_PROC_BROWSER_TEST_F(ReauthEndpointWebviewLoginTest, SupervisedUser) {
 class ReauthEndpointWebviewLoginOwnerTest
     : public ReauthEndpointWebviewLoginTest {
  protected:
-  ReauthEndpointWebviewLoginOwnerTest() {
-    scoped_testing_cros_settings_.device_settings()->Set(
-        kDeviceOwner, base::Value(FakeGaiaMixin::kFakeUserEmail));
-  }
+  ReauthEndpointWebviewLoginOwnerTest() = default;
   ~ReauthEndpointWebviewLoginOwnerTest() override = default;
+
+  void SetUp() override {
+    ReauthEndpointWebviewLoginTest::SetUp();
+
+    auto user_manager = std::make_unique<ash::FakeChromeUserManager>();
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::move(user_manager));
+  }
+
+  void SetUpOnMainThread() override {
+    ReauthEndpointWebviewLoginTest::SetUpOnMainThread();
+
+    GetFakeUserManager().SetOwnerId(AccountId::FromUserEmailGaiaId(
+        FakeGaiaMixin::kFakeUserEmail, FakeGaiaMixin::kFakeUserGaiaId));
+  }
+
+ private:
+  ash::FakeChromeUserManager& GetFakeUserManager() {
+    return CHECK_DEREF(static_cast<ash::FakeChromeUserManager*>(
+        user_manager::UserManager::Get()));
+  }
+
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
 };
 
 IN_PROC_BROWSER_TEST_F(ReauthEndpointWebviewLoginOwnerTest, SupervisedUser) {
@@ -2281,6 +2311,68 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginEnrolledTest, GaiaLoginVariantMetrics) {
                                        GaiaView::GaiaLoginVariant::kAddUser, 1);
   histogram_tester_.ExpectUniqueSample(kSuccessLoginRequests,
                                        GaiaView::GaiaLoginVariant::kAddUser, 1);
+}
+
+// This class is a subclass of WebviewLoginTest with the addition of the
+// abillity to enable Quick Start feature in order to test Quick Start
+// functionality in the Gaia signin screen
+class WebviewLoginQuickStartTest : public WebviewLoginTest {
+ public:
+  WebviewLoginQuickStartTest() {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeature(features::kOobeQuickStart);
+    connection_broker_factory_.set_initial_feature_support_status(
+        quick_start::TargetDeviceConnectionBroker::FeatureSupportStatus::
+            kUndetermined);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    OobeBaseTest::SetUpInProcessBrowserTestFixture();
+    quick_start::TargetDeviceConnectionBrokerFactory::SetFactoryForTesting(
+        &connection_broker_factory_);
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    quick_start::TargetDeviceConnectionBrokerFactory::SetFactoryForTesting(
+        nullptr);
+    OobeBaseTest::TearDownInProcessBrowserTestFixture();
+  }
+
+  quick_start::FakeTargetDeviceConnectionBroker::Factory
+      connection_broker_factory_;
+};
+
+IN_PROC_BROWSER_TEST_F(WebviewLoginQuickStartTest,
+                       QuickStartButtonNotShownWhenFeatureSupportUndetermined) {
+  WaitForSigninScreen();
+  test::WaitForOobeJSReady();
+
+  // Check that QuickStart button is hidden since QuickStart feature is not
+  // enabled
+  test::OobeJS().ExpectHiddenPath(kQuickStartButton);
+}
+
+IN_PROC_BROWSER_TEST_F(WebviewLoginQuickStartTest,
+                       QuickStartButtonFunctionalWhenFeatureEnabled) {
+  WaitForSigninScreen();
+  test::WaitForOobeJSReady();
+
+  test::OobeJS().ExpectHiddenPath(kQuickStartButton);
+
+  // Enable Quick Start
+  connection_broker_factory_.instances().front()->set_feature_support_status(
+      quick_start::TargetDeviceConnectionBroker::FeatureSupportStatus::
+          kSupported);
+
+  // Check that QuickStart button is visible since QuickStart feature is enabled
+  test::OobeJS()
+      .CreateVisibilityWaiter(/*visibility=*/true, kQuickStartButton)
+      ->Wait();
+
+  test::OobeJS().ClickOnPath(kQuickStartButton);
+
+  // Wait for Quick Start screen to show
+  OobeScreenWaiter(QuickStartView::kScreenId).Wait();
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

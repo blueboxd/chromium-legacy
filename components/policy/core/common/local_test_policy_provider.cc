@@ -9,7 +9,9 @@
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_service_impl.h"
+#include "components/prefs/pref_registry_simple.h"
 
 namespace policy {
 
@@ -38,6 +40,11 @@ void LocalTestPolicyProvider::LoadJsonPolicies(
   RefreshPolicies();
 }
 
+void LocalTestPolicyProvider::ClearPolicies() {
+  loader_.ClearPolicies();
+  RefreshPolicies();
+}
+
 void LocalTestPolicyProvider::RefreshPolicies() {
   PolicyBundle bundle = loader_.Load();
   first_policies_loaded_ = true;
@@ -47,6 +54,14 @@ void LocalTestPolicyProvider::RefreshPolicies() {
 bool LocalTestPolicyProvider::IsFirstPolicyLoadComplete(
     PolicyDomain domain) const {
   return first_policies_loaded_;
+}
+
+// static
+void LocalTestPolicyProvider::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterListPref(
+      policy::policy_prefs::kLocalTestPoliciesForNextStartup,
+      base::Value::List());
 }
 
 LocalTestPolicyProvider::LocalTestPolicyProvider() {

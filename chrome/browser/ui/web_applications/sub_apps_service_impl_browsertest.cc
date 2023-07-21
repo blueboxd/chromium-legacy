@@ -17,12 +17,13 @@
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
-#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/webapps/browser/uninstall_result_code.h"
@@ -115,7 +116,7 @@ class SubAppsServiceImplBrowserTest : public WebAppControllerBrowserTest {
 
   void UninstallParentAppBySource(WebAppManagement::Type source) {
     base::test::TestFuture<void> uninstall_future;
-    provider().install_finalizer().UninstallExternalWebApp(
+    provider().scheduler().RemoveInstallSource(
         parent_app_id_, source, webapps::WebappUninstallSource::kAppsPage,
         base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
           EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
@@ -511,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest,
 
   // Add another source to the parent app.
   {
-    ScopedRegistryUpdate update(&provider().sync_bridge_unsafe());
+    ScopedRegistryUpdate update = provider().sync_bridge_unsafe().BeginUpdate();
     WebApp* web_app = update->UpdateApp(parent_app_id_);
     ASSERT_TRUE(web_app);
     web_app->AddSource(WebAppManagement::kDefault);

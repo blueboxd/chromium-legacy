@@ -35,19 +35,10 @@ constexpr int kMainContainerWidth = 296;
 
 }  // namespace
 
-// static
-EditingList* EditingList::Show(DisplayOverlayController* controller) {
-  auto* parent = controller->GetOverlayWidgetContentsView();
-  auto* editing_list =
-      parent->AddChildView(std::make_unique<EditingList>(controller));
-  editing_list->Init();
-  editing_list->SetPosition(gfx::Point(24, 24));
-  return editing_list;
-}
-
 EditingList::EditingList(DisplayOverlayController* controller)
     : TouchInjectorObserver(), controller_(controller) {
   controller_->AddTouchInjectorObserver(this);
+  Init();
 }
 
 EditingList::~EditingList() {
@@ -91,7 +82,7 @@ void EditingList::Init() {
 
 bool EditingList::HasControls() const {
   DCHECK(controller_);
-  return controller_->GetTouchInjectorActionsSize() != 0;
+  return controller_->GetActiveActionsSize() != 0;
 }
 
 void EditingList::AddHeader(views::View* container) {
@@ -175,6 +166,9 @@ void EditingList::AddControlListContent() {
   DCHECK(controller_);
   DCHECK(scroll_content_);
   for (const auto& action : controller_->touch_injector()->actions()) {
+    if (action->IsDeleted()) {
+      continue;
+    }
     scroll_content_->AddChildView(
         std::make_unique<ActionViewListItem>(controller_, action.get()));
   }
@@ -196,14 +190,15 @@ gfx::Size EditingList::CalculatePreferredSize() const {
 
 void EditingList::OnActionAdded(Action& action) {
   DCHECK(scroll_content_);
-  if (controller_->GetTouchInjectorActionsSize() == 1u) {
+  if (controller_->GetActiveActionsSize() == 1u) {
     // Clear the zero-state.
     scroll_content_->RemoveAllChildViews();
+    controller_->TurnFlag(ash::ArcGameControlsFlag::kEmpty, /*turn_on=*/false);
   }
   scroll_content_->AddChildView(
       std::make_unique<ActionViewListItem>(controller_, &action));
 
-  SizeToPreferredSize();
+  controller_->UpdateEditingListWidgetBounds();
 }
 
 void EditingList::OnActionRemoved(const Action& action) {
@@ -217,25 +212,27 @@ void EditingList::OnActionRemoved(const Action& action) {
     }
   }
   // Set to zero-state if it is empty.
-  if (controller_->GetTouchInjectorActionsSize() == 0u) {
+  if (controller_->GetActiveActionsSize() == 0u) {
     AddZeroStateContent();
+    controller_->TurnFlag(ash::ArcGameControlsFlag::kEmpty, /*turn_on=*/true);
   }
 
-  SizeToPreferredSize();
+  controller_->UpdateEditingListWidgetBounds();
 }
 
 void EditingList::OnActionTypeChanged(Action* action, Action* new_action) {
   OnActionRemoved(*action);
   OnActionAdded(*new_action);
+  controller_->UpdateEditingListWidgetBounds();
 }
 
-void EditingList::OnActionUpdated(const Action& action) {
+void EditingList::OnActionInputBindingUpdated(const Action& action) {
   DCHECK(scroll_content_);
   for (auto* child : scroll_content_->children()) {
     auto* list_item = static_cast<ActionViewListItem*>(child);
     DCHECK(list_item);
     if (list_item->action() == &action) {
-      list_item->OnActionUpdated();
+      list_item->OnActionInputBindingUpdated();
       break;
     }
   }

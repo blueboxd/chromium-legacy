@@ -17,6 +17,7 @@ ChromeLabsUiTest.*
 ConfirmBubbleTest.*
 ContentAnalysysDialogUiTest.*
 ContentSettingBubbleDialogTest.*
+CookieControlsBubbleViewDialogBrowserTest.*
 OldCookieControlsBubbleViewTest.*
 CryptoModulePasswordDialogTest.*
 DeepScanningFailureModalDialogTest.*
@@ -66,6 +67,7 @@ PermissionRequestChipDialogBrowserTest.*
 *PopupViewViewsBrowsertest*
 PrivacySandboxDialogViewBrowserTest.*
 PrivacySandboxNoticeBubbleBrowserTest.*
+ProfileMenuViewPixelTest.*
 ProfilePickerUIPixelTest.*
 ProfileTypeChoiceUIPixelTest.*
 PromptForScanningModalDialogTest.*

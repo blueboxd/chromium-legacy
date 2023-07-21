@@ -200,6 +200,7 @@ test("components_unittests") {
     "//components/os_crypt/sync:unit_tests",
     "//components/page_image_service:unit_tests",
     "//components/password_manager/core/browser:unit_tests",
+    "//components/password_manager/core/common:unit_tests",
     "//components/payments/core:unit_tests",
     "//components/policy/core/browser:unit_tests",
     "//components/policy/core/common:unit_tests",
@@ -952,6 +953,7 @@ if (use_blink) {
     if (enable_screen_ai_service) {
       deps += [
         "//components/services/screen_ai",
+        "//components/services/screen_ai/public/mojom",
         "//skia",
       ]
     }
@@ -1109,6 +1111,7 @@ if (is_android) {
   robolectric_binary("components_junit_tests") {
     deps = [
       "//components/android_autofill/browser/junit:components_autofill_junit_tests",
+      "//components/autofill/android:payments_autofill_junit_tests",
       "//components/background_task_scheduler:components_background_task_scheduler_junit_tests",
       "//components/browser_ui/bottomsheet/android/internal:junit_tests",
       "//components/browser_ui/client_certificate/android:junit",
@@ -1123,6 +1126,7 @@ if (is_android) {
       "//components/crash/android:junit",
       "//components/download/network:junit",
       "//components/embedder_support/android:components_embedder_support_junit_tests",
+      "//components/environment_integrity/android:junit",
       "//components/gcm_driver/android:components_gcm_driver_junit_tests",
       "//components/image_fetcher:junit",
       "//components/installedapp/android:junit",

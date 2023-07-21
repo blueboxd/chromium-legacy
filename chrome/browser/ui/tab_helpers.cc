@@ -13,7 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/3pcd_heuristics/opener_heuristic_tab_helper.h"
+#include "chrome/browser/3pcd/heuristics/opener_heuristic_tab_helper.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/breadcrumbs/breadcrumb_manager_tab_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -56,7 +56,6 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "chrome/browser/permissions/one_time_permissions_tracker_helper.h"
-#include "chrome/browser/permissions/unused_site_permissions_service_factory.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/loading_predictor_tab_helper.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
@@ -73,7 +72,6 @@
 #include "chrome/browser/safe_browsing/trigger_creator.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/connection_help_tab_helper.h"
 #include "chrome/browser/ssl/https_only_mode_tab_helper.h"
@@ -96,6 +94,8 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/privacy_sandbox/privacy_sandbox_prompt_helper.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
+#include "chrome/browser/ui/safety_hub/unused_site_permissions_service.h"
+#include "chrome/browser/ui/safety_hub/unused_site_permissions_service_factory.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -140,11 +140,11 @@
 #include "components/permissions/features.h"
 #include "components/permissions/permission_recovery_success_rate_tracker.h"
 #include "components/permissions/permission_request_manager.h"
-#include "components/permissions/unused_site_permissions_service.h"
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_observer.h"
 #include "components/safe_browsing/content/browser/safe_browsing_tab_observer.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/search/ntp_features.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/site_engagement/content/site_engagement_helper.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/supervised_user/core/common/buildflags.h"
@@ -508,7 +508,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     PrivacySandboxPromptHelper::CreateForWebContents(web_contents);
 
 #if BUILDFLAG(ENABLE_WAFFLE_DESKTOP)
-  if (base::FeatureList::IsEnabled(kWaffle)) {
+  if (base::FeatureList::IsEnabled(switches::kWaffle)) {
     WaffleTabHelper::CreateForWebContents(web_contents);
   }
 #endif
@@ -538,8 +538,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
           permissions::features::kRecordPermissionExpirationTimestamps)) {
     auto* service = UnusedSitePermissionsServiceFactory::GetForProfile(profile);
     if (service) {
-      permissions::UnusedSitePermissionsService::TabHelper::
-          CreateForWebContents(web_contents, service);
+      UnusedSitePermissionsService::TabHelper::CreateForWebContents(
+          web_contents, service);
     }
   }
   if (base::FeatureList::IsEnabled(ntp_features::kNtpHistoryClustersModule)) {

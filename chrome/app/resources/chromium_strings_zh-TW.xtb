@@ -3,13 +3,14 @@
 <translationbundle lang="zh-TW">
 <translation id="1026101648481255140">繼續安裝</translation>
 <translation id="1029669172902658969">重新啟動以更新 Chromium OS(&amp;C)</translation>
+<translation id="1040916596585577953">Chromium 建議你檢查這項擴充功能</translation>
 <translation id="1065672644894730302">系統無法讀取你的偏好設定。部分功能可能無法使用，且系統也不會儲存任何偏好設定的變更。</translation>
+<translation id="1083934481477628225">你的家長已停用 Chromium 的「網站、應用程式和擴充功能的權限」設定</translation>
 <translation id="1098170124587656448">Chromium 可確保安全性，例如防範資料侵害事件或封鎖含有惡意軟體的擴充功能等等</translation>
 <translation id="1104942323762546749">Chromium 要求匯出你的密碼。如果允許，請輸入你的 Windows 密碼。</translation>
 <translation id="113122355610423240">Chromium 是你的預設瀏覽器</translation>
 <translation id="1131805035311359397">如要檢查你的密碼是否因資料侵害事件而遭到外洩，或是否有其他安全性問題，<ph name="BEGIN_LINK" />請登入 Chromium<ph name="END_LINK" />。</translation>
 <translation id="1153368717515616349">按一下「Chromium」選單</translation>
-<translation id="1157106475430165622">{NUM_DEVICES,plural, =0{Chromium 擴充功能當時正在存取 HID 裝置}=1{Chromium 擴充功能正在存取 HID 裝置}other{Chromium 擴充功能正在存取 # 部 HID 裝置}}</translation>
 <translation id="1185134272377778587">關於 Chromium</translation>
 <translation id="1203500561924088507">感謝你安裝本服務。你必須重新啟動瀏覽器，才能使用 <ph name="BUNDLE_NAME" />。</translation>
 <translation id="1261119230216066228">記憶體節省模式可以提升 Chromium 運作速度</translation>
@@ -58,6 +59,7 @@
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2384373936468275798">你的帳戶登入詳細資料尚未更新，因此 Chromium OS 無法同步處理你的資料。</translation>
 <translation id="2396765026452590966">擴充功能「<ph name="EXTENSION_NAME" />」已變更 Chromium 啟動時所顯示的網頁。</translation>
+<translation id="2398377054246527950">{NUM_DEVICES,plural, =0{至少有 1 個 Chromium 擴充功能當時正在存取 1 部 HID 裝置}=1{至少有 1 個 Chromium 擴充功能正在存取 1 部 HID 裝置}other{至少有 1 個 Chromium 擴充功能正在存取 # 部 HID 裝置}}</translation>
 <translation id="2401032172288869980">Chromium 需要相機權限和麥克風權限，才能執行這個網站要求的功能</translation>
 <translation id="2451727308784734061">使用捷徑快速前往密碼管理工具。你可以將捷徑移至電腦的主畫面或應用程式啟動器。</translation>
 <translation id="2478295928299953161">Chromium 即將關閉</translation>
@@ -90,6 +92,7 @@
 <translation id="3032787606318309379">正在新增至 Chromium...</translation>
 <translation id="3038232873781883849">正在等待安裝...</translation>
 <translation id="3068515742935458733">將當機報告和<ph name="UMA_LINK" />傳送給 Google，助我們一臂之力，讓 Chromium 更臻完美</translation>
+<translation id="3079753320517721795">{NUM_DEVICES,plural, =0{至少有 1 個 Chromium 擴充功能當時正在存取 1 部 USB 裝置}=1{至少有 1 個 Chromium 擴充功能正在存取 1 部 USB 裝置}other{至少有 1 個 Chromium 擴充功能正在存取 # 部 USB 裝置}}</translation>
 <translation id="3101560983689755071">你的瀏覽記錄會影響你所看到的廣告，以及系統推測的下列興趣喜好。為保護個人隱私，Chromium 每個月都會自動刪除你的興趣喜好。系統會重新整理這項資訊，除非你自行予以移除。</translation>
 <translation id="3103660991484857065">安裝程式無法解壓縮封存檔案，請重新下載 Chromium。</translation>
 <translation id="3130323860337406239">Chromium 正在使用你的麥克風。</translation>
@@ -152,6 +155,7 @@
 <translation id="4222932583846282852">取消中…</translation>
 <translation id="4230135487732243613">要將你的 Chromium 資料連結至這個帳戶嗎？</translation>
 <translation id="4271805377592243930">前往 Chromium 說明頁面</translation>
+<translation id="4281844954008187215">服務條款</translation>
 <translation id="4285930937574705105">不明錯誤導致安裝失敗。如果目前 Chromium 正在執行，請關閉 Chromium，然後再試一次。</translation>
 <translation id="4304713468139749426">密碼管理工具</translation>
 <translation id="4334294535648607276">下載完成。</translation>
@@ -294,6 +298,7 @@
 <translation id="7025789849649390912">已停止安裝。</translation>
 <translation id="705851970750939768">更新 Chromium</translation>
 <translation id="7067091210845072982">如果圖片缺少有用的說明，Chromium 會嘗試為你提供說明。系統會將圖片傳送給 Google，以便產生說明。</translation>
+<translation id="7141270731789036260">自訂 Chrome for Testing</translation>
 <translation id="7173822816570314652">由於 Chromium 資料閒置超過 <ph name="TIMEOUT_DURATION" />，貴機構已將其刪除。當中可能包含歷史記錄、自動填入的資料和下載內容。</translation>
 <translation id="718435575166326686">Chromium 需要相機權限，才能執行這個網站要求的功能</translation>
 <translation id="7196312274710523067">無法啟動 Chromium，請再試一次。</translation>
@@ -369,7 +374,6 @@ Chromium 無法復原你的設定。</translation>
 <translation id="8619360774459241877">正在啟動 Chromium…</translation>
 <translation id="8621669128220841554">不明錯誤導致安裝失敗，請重新下載 Chromium。</translation>
 <translation id="8648201657708811153">Google Chrome for Testing 無法設為預設瀏覽器。</translation>
-<translation id="867492205098279939">{NUM_DEVICES,plural, =0{Chromium 擴充功能當時正在存取 HID 裝置}=1{Chromium 擴充功能正在存取 1 個 HID 裝置}other{Chromium 擴充功能正在存取 # 部 HID 裝置}}</translation>
 <translation id="8697124171261953979">這個擴充功能也會控管 Chromium 啟動時或你使用網址列搜尋時所顯示的網頁。</translation>
 <translation id="8704119203788522458">這是你專屬的 Chromium</translation>
 <translation id="8796602469536043152">Chromium 需要相關權限，才能讓這個網站使用你的攝影機和麥克風</translation>

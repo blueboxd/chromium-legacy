@@ -18,14 +18,15 @@
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
-#include "chrome/browser/web_applications/test/fake_install_finalizer.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/fake_web_contents_manager.h"
+#include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
@@ -110,7 +111,8 @@ class IsolatedWebAppApplyUpdateCommandTest : public WebAppTest {
         installed_location_, installed_version_, {"some-partition"},
         std::move(pending_update_info)));
 
-    ScopedRegistryUpdate update(&fake_provider().sync_bridge_unsafe());
+    ScopedRegistryUpdate update =
+        fake_provider().sync_bridge_unsafe().BeginUpdate();
     update->CreateApp(std::move(isolated_web_app));
   }
 
@@ -187,6 +189,10 @@ TEST_F(IsolatedWebAppApplyUpdateCommandTest, Succeeds) {
   InstallIwa(update_info());
   WriteUpdateBundleToDisk();
   CreateDefaultPageState();
+
+  auto& icon_state = fake_web_contents_manager().GetOrCreateIconState(
+      url_info_.origin().GetURL().Resolve(kIconPath));
+  icon_state.bitmaps = {web_app::CreateSquareIcon(32, SK_ColorWHITE)};
 
   auto result = ApplyPendingUpdate();
   EXPECT_THAT(result.has_value(), IsTrue()) << result.error();
@@ -338,17 +344,6 @@ TEST_F(IsolatedWebAppApplyUpdateCommandTest, FailsIfIconDownloadFails) {
   WriteUpdateBundleToDisk();
   CreateDefaultPageState();
 
-  // TODO(b/288394839): We currently do not error when the download of an
-  // individual icon fails. We should change that behavior for IWAs and fail
-  // installation/update if icons cannot be downloaded. Once this is done, the
-  // code below should be updated to use `icon_state.http_status_code` to test
-  // that a failing icon download fails the update process, instead of using
-  // `icon_state.trigger_primary_page_changed_if_fetched` to test a failing icon
-  // download.
-  auto& icon_state = fake_web_contents_manager().GetOrCreateIconState(
-      url_info_.origin().GetURL().Resolve(kIconPath));
-  icon_state.trigger_primary_page_changed_if_fetched = true;
-
   auto result = ApplyPendingUpdate();
   ASSERT_THAT(result.has_value(), IsFalse());
   EXPECT_THAT(result.error().message,
@@ -357,18 +352,32 @@ TEST_F(IsolatedWebAppApplyUpdateCommandTest, FailsIfIconDownloadFails) {
 }
 
 TEST_F(IsolatedWebAppApplyUpdateCommandTest, FailsIfInstallFinalizerFails) {
-  auto fake_install_finalizer = std::make_unique<FakeInstallFinalizer>();
-  FakeInstallFinalizer* fake_install_finalizer_ptr =
-      fake_install_finalizer.get();
-  fake_provider().SetInstallFinalizer(std::move(fake_install_finalizer));
+  class FailingUpdateFinalizer : public WebAppInstallFinalizer {
+   public:
+    explicit FailingUpdateFinalizer(AppId app_id)
+        : WebAppInstallFinalizer(nullptr), app_id_(std::move(app_id)) {}
+
+    void FinalizeUpdate(const WebAppInstallInfo& web_app_info,
+                        InstallFinalizedCallback callback) override {
+      std::move(callback).Run(app_id_,
+                              webapps::InstallResultCode::kNotInstallable, {});
+    }
+
+   private:
+    AppId app_id_;
+  };
+
+  fake_provider().SetInstallFinalizer(
+      std::make_unique<FailingUpdateFinalizer>(url_info_.app_id()));
   test::AwaitStartWebAppProviderAndSubsystems(profile());
 
   InstallIwa(update_info());
   WriteUpdateBundleToDisk();
   CreateDefaultPageState();
 
-  fake_install_finalizer_ptr->SetNextFinalizeInstallResult(
-      url_info_.app_id(), webapps::InstallResultCode::kNotInstallable);
+  auto& icon_state = fake_web_contents_manager().GetOrCreateIconState(
+      url_info_.origin().GetURL().Resolve(kIconPath));
+  icon_state.bitmaps = {web_app::CreateSquareIcon(32, SK_ColorWHITE)};
 
   auto result = ApplyPendingUpdate();
   ASSERT_THAT(result.has_value(), IsFalse());

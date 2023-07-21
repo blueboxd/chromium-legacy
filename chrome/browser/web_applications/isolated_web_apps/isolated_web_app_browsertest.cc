@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
-#include "chrome/browser/web_applications/test/service_worker_registration_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -35,6 +34,7 @@
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/site_engagement/content/site_engagement_service.h"
+#include "components/webapps/browser/test/service_worker_registration_waiter.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/service_worker_context.h"
@@ -488,10 +488,11 @@ class IsolatedWebAppBrowserServiceWorkerTest
 
   const GURL& app_url() const { return app_url_; }
 
-  raw_ptr<Browser, DanglingAcrossTasks> app_window_;
-  raw_ptr<content::WebContents, DanglingAcrossTasks> app_web_contents_;
-  raw_ptr<content::RenderFrameHost, DanglingAcrossTasks> app_frame_;
-  raw_ptr<content::StoragePartition, DanglingAcrossTasks> storage_partition_;
+  raw_ptr<Browser, AcrossTasksDanglingUntriaged> app_window_;
+  raw_ptr<content::WebContents, AcrossTasksDanglingUntriaged> app_web_contents_;
+  raw_ptr<content::RenderFrameHost, AcrossTasksDanglingUntriaged> app_frame_;
+  raw_ptr<content::StoragePartition, AcrossTasksDanglingUntriaged>
+      storage_partition_;
   GURL app_url_;
 
   std::unique_ptr<net::EmbeddedTestServer> isolated_web_app_dev_server_;

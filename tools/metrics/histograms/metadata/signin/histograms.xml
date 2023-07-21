@@ -98,7 +98,7 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-signin-team@google.com</owner>
   <summary>
     This histogram records the action taken by user after receiving the header
-    from Gaia in the web sign-in flow. Currently only recorded on Android.
+    from Gaia in the web sign-in flow. Currently only recorded on mobile.
   </summary>
 </histogram>
 
@@ -191,7 +191,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Signin.AccountFetcher.AccountUserInfoFetchTime" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>triploblastic@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -337,7 +337,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram base="true" name="Signin.AndroidGetAccountsTime" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>alexilin@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <summary>
@@ -357,7 +357,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AndroidNumberOfDeviceAccounts" units="accounts"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>triploblastic@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -366,7 +366,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AuthError" enum="GoogleServiceAuthError"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -532,7 +532,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Extensions.LaunchWebAuthFlowResult"
-    enum="LaunchWebAuthFlowResult" expires_after="2023-11-12">
+    enum="LaunchWebAuthFlowResult" expires_after="2024-01-14">
   <owner>alexilin@chromium.org</owner>
   <owner>rsult@google.com</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -892,7 +892,7 @@ the browser and content area. -->
 </histogram>
 
 <histogram name="Signin.OAuth2MintToken.ApiCallResult"
-    enum="OAuth2MintTokenApiCallResult" expires_after="2023-11-12">
+    enum="OAuth2MintTokenApiCallResult" expires_after="2024-01-14">
   <owner>alexilin@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -1110,24 +1110,6 @@ OAuth Multilogin call. -->
   <summary>
     This histogram records the success of setting each cookie after Multilogin
     response is received and parsed.
-  </summary>
-</histogram>
-
-<histogram name="Signin.SignedInAccountsViewImpression" enum="BooleanShown"
-    expires_after="2024-04-01">
-  <owner>jlebel@chromium.org</owner>
-  <owner>msarda@chromium.org</owner>
-  <owner>chrome-signin-team@google.com</owner>
-  <summary>
-    Track the number of times the view that displays the accounts that are
-    signed is shown. This view only exists on iOS and is shown every time the
-    application enters forground iff the accounts changed while it was in
-    background. Only bucket &quot;Shown&quot; is being recorded (this histogram
-    is a counter).
-
-    This histogram was added following crbug.com/1006717 (stable regression)
-    where the signed-in accounts view was repeatedly shown for a set of users.
-    It is used as a counter to monitor that there are no bumps in its timeline.
   </summary>
 </histogram>
 
@@ -1367,17 +1349,6 @@ kept as long as profile signout is possible -->
     understand how many callbacks from |getAllCookies:| can be missing, related
     to a bug from iOS. And if the number of cookies is related in that iOS bug.
     See: crbug.com/880981.
-  </summary>
-</histogram>
-
-<histogram name="Signin.SyncConsentScreen.DataRowClicked"
-    enum="SigninSyncConsentDataRow" expires_after="2023-08-18">
-  <owner>arthurmilchior@chromium.org</owner>
-  <owner>triploblastic@chromium.org</owner>
-  <owner>chrome-signin-team@google.com</owner>
-  <summary>
-    This histogram records which sync data row was clicked by the user on the
-    tangible sync consent page on Android and iOS.
   </summary>
 </histogram>
 

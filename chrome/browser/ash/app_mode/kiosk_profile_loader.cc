@@ -7,11 +7,16 @@
 #include <memory>
 #include <tuple>
 
+#include "base/check_deref.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
+#include "base/sequence_checker.h"
 #include "base/syslog_logging.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/ash/app_mode/cancellable_job.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/app_mode/retry_runner.h"
@@ -23,14 +28,13 @@
 #include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
-#include "content/public/browser/browser_thread.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
 namespace {
 
-using ::content::BrowserThread;
+enum class MountedState { kMounted, kNotMounted };
 
 using CryptohomeMountStateCallback =
     base::OnceCallback<void(absl::optional<MountedState> result)>;
@@ -90,13 +94,46 @@ void CheckCryptohomeMountState(CryptohomeMountStateCallback on_done) {
 
 // Checks the mount state of cryptohome and retries if the cryptohome service is
 // not yet available.
-std::unique_ptr<CryptohomeMountStateChecker> CheckCryptohome(
+std::unique_ptr<CancellableJob> CheckCryptohome(
     CryptohomeMountStateCallback on_done) {
   return RunUpToNTimes<MountedState>(
       /*n=*/5,
       /*job=*/base::BindRepeating(&CheckCryptohomeMountState),
       /*on_done=*/std::move(on_done));
 }
+
+class SessionStarter : public CancellableJob,
+                       public UserSessionManagerDelegate {
+ public:
+  using ResultCallback = base::OnceCallback<void(Profile& result)>;
+
+  static std::unique_ptr<CancellableJob> Run(const UserContext& user_context,
+                                             ResultCallback on_done) {
+    auto handle = base::WrapUnique(new SessionStarter(std::move(on_done)));
+    UserSessionManager::GetInstance()->StartSession(
+        user_context, UserSessionManager::StartSessionType::kPrimary,
+        /*has_auth_cookies=*/false,
+        /*has_active_session=*/false,
+        /*delegate=*/handle->weak_ptr_factory_.GetWeakPtr());
+    return handle;
+  }
+
+  SessionStarter(const SessionStarter&) = delete;
+  SessionStarter& operator=(const SessionStarter&) = delete;
+  ~SessionStarter() override = default;
+
+ private:
+  explicit SessionStarter(ResultCallback on_done)
+      : on_done_(std::move(on_done)) {}
+
+  // UserSessionManagerDelegate implementation:
+  void OnProfilePrepared(Profile* profile, bool browser_launched) override {
+    std::move(on_done_).Run(CHECK_DEREF(profile));
+  }
+
+  ResultCallback on_done_;
+  base::WeakPtrFactory<SessionStarter> weak_ptr_factory_{this};
+};
 
 }  // namespace
 
@@ -111,12 +148,13 @@ KioskProfileLoader::KioskProfileLoader(const AccountId& app_account_id,
 KioskProfileLoader::~KioskProfileLoader() = default;
 
 void KioskProfileLoader::Start() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   login_performer_.reset();
-  cryptohome_checker_ = CheckCryptohome(base::BindOnce(
+  current_step_ = CheckCryptohome(base::BindOnce(
       [](KioskProfileLoader* self, absl::optional<MountedState> result) {
-        // Reset `cryptohome_checker_` to free resources now the job is done.
-        self->cryptohome_checker_.reset();
+        DCHECK_CALLED_ON_VALID_SEQUENCE(self->sequence_checker_);
+        // Reset `current_step_` to free resources now the job is done.
+        self->current_step_.reset();
         if (!result.has_value()) {
           return self->ReportLaunchResult(
               KioskAppLaunchError::Error::kCryptohomedNotRunning);
@@ -129,7 +167,7 @@ void KioskProfileLoader::Start() {
                 KioskAppLaunchError::Error::kAlreadyMounted);
         }
       },
-      // Safe because `this` owns `cryptohome_checker_`
+      // Safe because `this` owns `current_step_`
       base::Unretained(this)));
 }
 
@@ -156,11 +194,7 @@ void KioskProfileLoader::OnAuthSuccess(const UserContext& user_context) {
 
   failed_mount_attempts_ = 0;
 
-  UserSessionManager::GetInstance()->StartSession(
-      user_context, UserSessionManager::StartSessionType::kPrimary,
-      false,  // has_auth_cookies
-      false,  // Start session for user.
-      AsWeakPtr());
+  PrepareProfile(user_context);
 }
 
 void KioskProfileLoader::OnAuthFailure(const AuthFailure& error) {
@@ -191,17 +225,26 @@ void KioskProfileLoader::PolicyLoadFailed() {
 void KioskProfileLoader::OnOldEncryptionDetected(
     std::unique_ptr<UserContext> user_context,
     bool has_incomplete_migration) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_->OnOldEncryptionDetected(std::move(user_context));
 }
 
-void KioskProfileLoader::OnProfilePrepared(Profile* profile,
-                                           bool browser_launched) {
-  delegate_->OnProfileLoaded(profile);
-  ReportLaunchResult(KioskAppLaunchError::Error::kNone);
+void KioskProfileLoader::PrepareProfile(const UserContext& user_context) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  current_step_ = SessionStarter::Run(
+      user_context, base::BindOnce(&KioskProfileLoader::ReportProfileLoaded,
+                                   base::Unretained(this)));
+}
+
+void KioskProfileLoader::ReportProfileLoaded(Profile& profile) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  current_step_.reset();
+  delegate_->OnProfileLoaded(&profile);
 }
 
 void KioskProfileLoader::ReportLaunchResult(KioskAppLaunchError::Error error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  current_step_.reset();
 
   if (error == KioskAppLaunchError::Error::kCryptohomedNotRunning) {
     SYSLOG(ERROR) << "Cryptohome not available when loading Kiosk profile.";

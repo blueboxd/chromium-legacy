@@ -54,6 +54,7 @@
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_metrics.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_mediator_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_metrics.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
@@ -64,6 +65,10 @@
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "net/base/mac/url_conversions.h"
 #import "ui/gfx/image/image.h"
+
+// To get access to UseSessionSerializationOptimizations().
+// TODO(crbug.com/1383087): remove once the feature is fully launched.
+#import "ios/web/common/features.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -165,11 +170,6 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
   return nullptr;
 }
 
-// Records the number of Tabs closed after a bulk or a "Close All" operation.
-void RecordTabGridCloseTabsCount(int count) {
-  base::UmaHistogramCounts100("IOS.TabGrid.CloseTabs", count);
-}
-
 }  // namespace
 
 @interface BaseGridMediator () <CRWWebStateObserver,
@@ -256,7 +256,7 @@ void RecordTabGridCloseTabsCount(int count) {
 
 - (void)willChangeWebStateList:(WebStateList*)webStateList
                         change:(const WebStateListChangeDetach&)detachChange
-                     selection:(const WebStateSelection&)selection {
+                        status:(const WebStateListStatus&)status {
   DCHECK_EQ(_webStateList, webStateList);
   if (webStateList->IsBatchInProgress()) {
     return;
@@ -277,27 +277,27 @@ void RecordTabGridCloseTabsCount(int count) {
   // the Tab Search and was closed from the context menu. In such a case
   // there were no observation added for it. Therefore, there is no need to
   // remove one.
-  if (![self isPinnedWebState:selection.index]) {
+  if (![self isPinnedWebState:status.index]) {
     _scopedWebStateObservation->RemoveObservation(detachedWebState);
   }
 }
 
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
-                    selection:(const WebStateSelection&)selection {
+                       status:(const WebStateListStatus&)status {
   DCHECK_EQ(_webStateList, webStateList);
   if (webStateList->IsBatchInProgress()) {
     return;
   }
 
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly: {
-      const WebStateListChangeSelectionOnly& selectionOnlyChange =
-          change.As<WebStateListChangeSelectionOnly>();
-      if (selection.pinned_state_change) {
+    case WebStateListChange::Type::kStatusOnly: {
+      const WebStateListChangeStatusOnly& selectionOnlyChange =
+          change.As<WebStateListChangeStatusOnly>();
+      if (status.pinned_state_change) {
         [self changePinnedStateForWebState:selectionOnlyChange
                                                .selected_web_state()
-                                   atIndex:selection.index];
+                                   atIndex:status.index];
         return;
       }
 
@@ -313,25 +313,25 @@ void RecordTabGridCloseTabsCount(int count) {
     case WebStateListChange::Type::kMove: {
       const WebStateListChangeMove& moveChange =
           change.As<WebStateListChangeMove>();
-      if (![self isPinnedWebState:selection.index]) {
+      if (![self isPinnedWebState:status.index]) {
         // BaseGridMediator handles only non pinned tabs because pinned tabs are
         // handled in PinnedTabsMediator.
         NSUInteger itemIndex =
-            [self itemIndexFromWebStateListIndex:selection.index];
+            [self itemIndexFromWebStateListIndex:status.index];
         [self.consumer
             moveItemWithID:moveChange.moved_web_state()->GetStableIdentifier()
                    toIndex:itemIndex];
       }
 
       // The pinned state can be updated when a tab is moved.
-      if (selection.pinned_state_change) {
+      if (status.pinned_state_change) {
         [self changePinnedStateForWebState:moveChange.moved_web_state()
-                                   atIndex:selection.index];
+                                   atIndex:status.index];
       }
       break;
     }
     case WebStateListChange::Type::kReplace: {
-      if ([self isPinnedWebState:selection.index]) {
+      if ([self isPinnedWebState:status.index]) {
         return;
       }
 
@@ -349,7 +349,7 @@ void RecordTabGridCloseTabsCount(int count) {
       break;
     }
     case WebStateListChange::Type::kInsert: {
-      if ([self isPinnedWebState:selection.index]) {
+      if ([self isPinnedWebState:status.index]) {
         [self.consumer
             selectItemWithID:GetActiveWebStateIdentifier(
                                  webStateList,
@@ -364,8 +364,7 @@ void RecordTabGridCloseTabsCount(int count) {
       web::WebState* insertedWebState = insertChange.inserted_web_state();
       TabSwitcherItem* item =
           [[WebStateTabSwitcherItem alloc] initWithWebState:insertedWebState];
-      NSUInteger itemIndex =
-          [self itemIndexFromWebStateListIndex:selection.index];
+      NSUInteger itemIndex = [self itemIndexFromWebStateListIndex:status.index];
       [self.consumer insertItem:item
                         atIndex:itemIndex
                  selectedItemID:GetActiveWebStateIdentifier(
@@ -688,11 +687,15 @@ void RecordTabGridCloseTabsCount(int count) {
       return;
     }
 
-    self.closedSessionWindow = SerializeWebStateList(self.webStateList);
+    if (!web::features::UseSessionSerializationOptimizations()) {
+      self.closedSessionWindow = SerializeWebStateList(self.webStateList);
+    }
     self.webStateList->CloseAllNonPinnedWebStates(
         WebStateList::CLOSE_USER_ACTION);
   } else {
-    self.closedSessionWindow = SerializeWebStateList(self.webStateList);
+    if (!web::features::UseSessionSerializationOptimizations()) {
+      self.closedSessionWindow = SerializeWebStateList(self.webStateList);
+    }
     self.webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
   }
 
@@ -708,10 +711,12 @@ void RecordTabGridCloseTabsCount(int count) {
   if (!self.closedSessionWindow) {
     return;
   }
-  SessionRestorationBrowserAgent::FromBrowser(self.browser)
-      ->RestoreSessionWindow(self.closedSessionWindow,
-                             SessionRestorationScope::kRegularOnly);
-  self.closedSessionWindow = nil;
+  if (!web::features::UseSessionSerializationOptimizations()) {
+    SessionRestorationBrowserAgent::FromBrowser(self.browser)
+        ->RestoreSessionWindow(self.closedSessionWindow,
+                               SessionRestorationScope::kRegularOnly);
+    self.closedSessionWindow = nil;
+  }
   [self removeEntriesFromTabRestoreService];
   self.syncedClosedTabsCount = 0;
 }
@@ -1179,6 +1184,12 @@ void RecordTabGridCloseTabsCount(int count) {
     return YES;
   }
   return NO;
+}
+
+#pragma mark - TabGridPageMutator
+
+- (void)currentlySelectedGrid:(BOOL)selected {
+  NOTREACHED_NORETURN() << "Should be implemented in a subclass.";
 }
 
 @end

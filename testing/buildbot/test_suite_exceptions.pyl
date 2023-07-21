@@ -485,6 +485,13 @@
           'Release_x64',
         ],
         'swarming': {
+          # blink_web_tests has issues on non-broadwell machines.
+          # see https://crbug.com/1458859
+          'dimension_sets': [
+            {
+              'cpu': 'x86-64-Broadwell_GCE',
+            },
+          ],
           "shards": 12,
         },
       },
@@ -1343,6 +1350,15 @@
           'shards': 15,
         }
       },
+      'win10-code-coverage': {
+        'swarming': {
+          'shards': 40,
+          'dimension_sets': [{
+            'pool': 'chromium.tests.coverage',
+            'ssd': '1',
+          }],
+        }
+      },
       'win10-rel-no-external-ip': {
         # crbug.com/868082
         'args': [
@@ -1552,6 +1568,9 @@
         },
       },
       'android-oreo-x86-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_o.chrome_public_test_apk.filter',
+        ],
         'swarming': {
           'shards': 75,
           'dimension_sets': [
@@ -1654,6 +1673,11 @@
       'android-13-x64-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_13.chrome_public_unit_test_apk.filter',
+        ],
+      },
+      'android-oreo-x86-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_o.chrome_public_unit_test_apk.filter',
         ],
       },
     },
@@ -2017,6 +2041,9 @@
         },
       },
       'android-oreo-x86-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_o.content_browsertests.filter',
+        ],
         'swarming': {
           'shards': 75,
           'dimension_sets': [
@@ -2166,6 +2193,15 @@
         'args': [
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
         ],
+      },
+      'win10-code-coverage': {
+        'swarming': {
+          'shards': 40,
+          'dimension_sets': [{
+            'pool': 'chromium.tests.coverage',
+            'ssd': '1',
+          }],
+        }
       },
       'win10-rel-no-external-ip': {
         # crbug.com/868082
@@ -2640,30 +2676,27 @@
       # https://crbug.com/1111979
       'linux-lacros-asan-lsan-rel': {
         'args': [
-          '--gtest_filter=-NativeExtensionBindingsSystemUnittest*:'
-          'BluetoothSocketApiUnittest.CreateThenClose:'
-          'FeatureProviderTest.PermissionFeatureAvailability',
+          '--gtest_filter=-NativeExtensionBindingsSystemUnittest.AccessToAliasDoesntGiveAliasSourceAccess:'
+          'NativeExtensionBindingsSystemUnittest.AliasedAPIsAreDifferentObjects',
         ],
       },
       # https://crbug.com/1111979,
       'linux-lacros-code-coverage': {
         'args': [
-          '--gtest_filter=-BluetoothSocketApiUnittest.CreateThenClose:'
-          'NativeExtensionBindingsSystemUnittest.*',
+          '--gtest_filter=-NativeExtensionBindingsSystemUnittest.AccessToAliasDoesntGiveAliasSourceAccess:'
+          'NativeExtensionBindingsSystemUnittest.AliasedAPIsAreDifferentObjects',
         ],
       },
       'linux-lacros-dbg-tests-fyi': {
         'args': [
-          '--gtest_filter=-NativeExtensionBindingsSystemUnittest*:'
-          'BluetoothSocketApiUnittest.CreateThenClose:'
-          'FeatureProviderTest.PermissionFeatureAvailability',
+          '--gtest_filter=-NativeExtensionBindingsSystemUnittest.AccessToAliasDoesntGiveAliasSourceAccess:'
+          'NativeExtensionBindingsSystemUnittest.AliasedAPIsAreDifferentObjects',
         ],
       },
       'linux-lacros-tester-rel': {
         'args': [
-          '--gtest_filter=-NativeExtensionBindingsSystemUnittest*:'
-          'BluetoothSocketApiUnittest.CreateThenClose:'
-          'FeatureProviderTest.PermissionFeatureAvailability',
+          '--gtest_filter=-NativeExtensionBindingsSystemUnittest.AccessToAliasDoesntGiveAliasSourceAccess:'
+          'NativeExtensionBindingsSystemUnittest.AliasedAPIsAreDifferentObjects',
         ],
       },
     },
@@ -2861,7 +2894,12 @@
       # If you change this, make similar changes in android-x86-code-coverage below
       'android-nougat-x86-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n_p.gl_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n_o_p.gl_tests.filter',
+        ],
+      },
+      'android-oreo-x86-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n_o_p.gl_tests.filter',
         ],
       },
       'android-pie-arm64-rel': {
@@ -2871,13 +2909,13 @@
       },
       'android-pie-x86-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n_p.gl_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n_o_p.gl_tests.filter',
         ],
       },
       # Keep this same as android-nougat-x86-rel above
       'android-x86-code-coverage': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n_p.gl_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n_o_p.gl_tests.filter',
         ],
       },
     },
@@ -3158,6 +3196,11 @@
           'shards': 32, # Adjusted for testing, see https://crbug.com/1179567
         },
       },
+      'linux-lacros-asan-lsan-rel': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
       'linux-rel-cft': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux.linux-rel-cft.interactive_ui_tests.filter',
@@ -3216,6 +3259,42 @@
       },
     },
   },
+  'interactive_ui_tests Lacros version skew testing ash beta': {
+    'modifications': {
+      'linux-lacros-asan-lsan-rel': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
+    },
+  },
+  'interactive_ui_tests Lacros version skew testing ash canary': {
+    'modifications': {
+      'linux-lacros-asan-lsan-rel': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
+    },
+  },
+  'interactive_ui_tests Lacros version skew testing ash dev': {
+    'modifications': {
+      'linux-lacros-asan-lsan-rel': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
+    },
+  },
+  'interactive_ui_tests Lacros version skew testing ash stable': {
+    'modifications': {
+      'linux-lacros-asan-lsan-rel': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
+    },
+  },
   'interactive_ui_tests amd64-generic': {
     'remove_from': [
       # TODO(crbug.com/1204231): Re-enable.
@@ -3248,6 +3327,42 @@
     },
   },
   'lacros_chrome_browsertests_run_in_series': {
+    'modifications': {
+      'linux-lacros-asan-lsan-rel': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
+    },
+  },
+  'lacros_chrome_browsertests_run_in_series Lacros version skew testing ash beta': {
+    'modifications': {
+      'linux-lacros-asan-lsan-rel': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
+    },
+  },
+  'lacros_chrome_browsertests_run_in_series Lacros version skew testing ash canary': {
+    'modifications': {
+      'linux-lacros-asan-lsan-rel': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
+    },
+  },
+  'lacros_chrome_browsertests_run_in_series Lacros version skew testing ash dev': {
+    'modifications': {
+      'linux-lacros-asan-lsan-rel': {
+        'swarming': {
+          'shards': 5,
+        },
+      },
+    },
+  },
+  'lacros_chrome_browsertests_run_in_series Lacros version skew testing ash stable': {
     'modifications': {
       'linux-lacros-asan-lsan-rel': {
         'swarming': {
@@ -3607,6 +3722,12 @@
           '--gtest_filter=-ScopedDirTest.CloseOutOfScope',
         ],
       },
+      'android-oreo-x86-rel': {
+        'args': [
+          # TODO(crbug.com/1260440): Fix the failed test
+          '--gtest_filter=-ScopedDirTest.CloseOutOfScope',
+        ],
+      },
       # Keep this same as android-nougat-x86-rel above
       'android-x86-code-coverage': {
         'args': [
@@ -3887,6 +4008,9 @@
       },
       'android-oreo-x86-rel': {
         'ci_only': True,
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_o.services_unittests.filter',
+        ],
         'swarming': {
           'shards': 3,
         },
@@ -4599,38 +4723,11 @@
       'Mac FYI ASAN (Intel)': {
         'args': [
           '--extra-browser-args=--disable-metal-shader-cache',
-          '--enable-metal-debug-layers',
-        ],
-      },
-      'Mac FYI Experimental Retina Release (AMD)': {
-        'args': [
-          '--enable-metal-debug-layers',
-        ],
-      },
-      'Mac FYI Release (Intel)': {
-        'args': [
-          '--enable-metal-debug-layers',
         ],
       },
       'Mac FYI Retina ASAN (AMD)': {
         'args': [
           '--extra-browser-args=--disable-metal-shader-cache',
-          '--enable-metal-debug-layers',
-        ],
-      },
-      'Mac FYI Retina Release (AMD)': {
-        'args': [
-          '--enable-metal-debug-layers',
-        ],
-      },
-      'mac-angle-chromium-amd': {
-        'args': [
-          '--enable-metal-debug-layers',
-        ],
-      },
-      'mac-angle-chromium-intel': {
-        'args': [
-          '--enable-metal-debug-layers',
         ],
       },
     },
@@ -4703,38 +4800,11 @@
       'Mac FYI ASAN (Intel)': {
         'args': [
           '--extra-browser-args=--disable-metal-shader-cache',
-          '--enable-metal-debug-layers',
-        ],
-      },
-      'Mac FYI Experimental Retina Release (AMD)': {
-        'args': [
-          '--enable-metal-debug-layers',
-        ],
-      },
-      'Mac FYI Release (Intel)': {
-        'args': [
-          '--enable-metal-debug-layers',
         ],
       },
       'Mac FYI Retina ASAN (AMD)': {
         'args': [
           '--extra-browser-args=--disable-metal-shader-cache',
-          '--enable-metal-debug-layers',
-        ],
-      },
-      'Mac FYI Retina Release (AMD)': {
-        'args': [
-          '--enable-metal-debug-layers',
-        ],
-      },
-      'mac-angle-chromium-amd': {
-        'args': [
-          '--enable-metal-debug-layers',
-        ],
-      },
-      'mac-angle-chromium-intel': {
-        'args': [
-          '--enable-metal-debug-layers',
         ],
       },
     },
@@ -5135,6 +5205,11 @@
         },
       },
     },
+  },
+  'webview_instrumentation_test_apk_no_field_trial': {
+    'remove_from': [
+      'android-12-x64-rel', # These tests are not ready to run on a non FYI CI.
+    ]
   },
   'webview_ui_test_app_test_apk': {
     'remove_from': [

@@ -545,6 +545,12 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_CONTENT_CONTEXT_LIVE_CAPTION_DISABLE" desc="The name of the Live Caption command in the content area context menu to disable Live Caption">
           &amp;Disable Live Caption
         </message>
+        <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED_TITLE" desc="The title of the Autofill manual fallback for unrecognized autocomplete attribute command in the content area context menu.">
+         Fill in form
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED" desc="The name of the Autofill manual fallback for unrecognized autocomplete attribute command in the content area context menu.">
+         Addresses and more
+        </message>
         <if expr="not use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_BACK" desc="The name of the Back command in the content area context menu">
             &amp;Back
@@ -819,9 +825,6 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FEEDBACK" desc="The name of the Autofill Feedback command in the content area context menu">
            Help improve autofill
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED" desc="The name of the Autofill manual fallback for unrecognized autocomplete attribute command in the content area context menu.">
-           Addresses and more
           </message>
         </if>
         <if expr="use_titlecase">
@@ -1103,9 +1106,6 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FEEDBACK" desc="The name of the Autofill Feedback command in the content area context menu">
            Help Improve Autofill
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED" desc="The name of the Autofill manual fallback for unrecognized autocomplete attribute command in the content area context menu.">
-           Addresses and more
           </message>
         </if>
 
@@ -3721,6 +3721,9 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_COOKIE_CONTROLS_BUBBLE_SITE_NOT_WORKING_DESCRIPTION_TEMPORARY" translateable="false"  desc="">
         Try temporarily allowing third-party cookies, which means less protection but site features are more likely to work
       </message>
+      <message name="IDS_COOKIE_CONTROLS_BUBBLE_SITE_NOT_WORKING_DESCRIPTION_PERMANENT" translateable="false" desc="">
+        Try allowing third-party cookies, which means less protection but site features are more likely to work
+      </message>
       <message name="IDS_COOKIE_CONTROLS_BUBBLE_BLOCKING_RESTART_TITLE" translateable="false"  desc="">
         {COUNT, plural,
               =1 {1 day until Chrome starts blocking cookies again}
@@ -3749,6 +3752,12 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_COOKIE_CONTROLS_BUBBLE_SEND_FEEDBACK_FORM_PLACEHOLDER" translateable="false"  desc="">
         Tell us why you allowed third-party cookies on this site
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_PAGE_ACTION_COOKIES_ALLOWED_LABEL" translateable="false"  desc="">
+        Third-party cookies allowed
+      </message>
+      <message name="IDS_COOKIE_CONTROLS_PAGE_ACTION_COOKIES_BLOCKED_LABEL" translateable="false"  desc="">
+        Third-party cookies blocked
       </message>
 
       <!-- Win certificate selector dialog strings.  -->
@@ -6625,6 +6634,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
           App (<ph name="ANDROID_PACKAGE_NAME">$1<ex>com.netflix.mediaclient</ex></ph>)
         </message>
       </if>
+      <message name="IDS_SHARED_PASSWORDS_NOTIFICATION_GOT_IT_BUTTON" desc="The button text on the shared passwords notification bubble to inform the user that one of the stored passwords for this website has been received via the password sharing feature.">
+        Got it
+      </message>
+      <message name="IDS_SHARED_PASSWORDS_NOTIFICATION_TITLE" desc="The title text that is used in the shared passwords notification bubble to inform the user that one of the stored passwords for this website has been received via the password sharing feature.">
+        {NUM_PASSWORDS, plural,
+        =1 {New password for this site}
+        other {New passwords for this site}}
+      </message>
       <!-- Password manager onboarding strings -->
       <message name="IDS_PASSWORD_MANAGER_ONBOARDING_TITLE_A" desc="The title shown in the password manager onboarding dialog.">
         Save your passwords?
@@ -7111,6 +7128,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOM_LINKS_EDIT_SHORTCUT" desc="The title for custom link edit shortcut dialog. (On the New Tab Page)">
         Edit shortcut
       </message>
+      <message name="IDS_NTP_CUSTOM_LINKS_MORE_ACTIONS" desc="The tooltip and accessibility label for the 3 dot menu on a shortcut. (On the New Tab Page)">
+        More actions for <ph name="SHORTCUT_TITLE">$1<ex>YouTube</ex></ph> shortcut
+      </message>
       <message name="IDS_UPLOAD_IMAGE_FORMAT" desc="The permitted upload image format for the custom background. (On the New Tab Page)">
         *.jpeg, *.jpg, *.png
       </message>
@@ -7445,6 +7465,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_NTP_MODULES_DISABLE_BUTTON_TEXT" desc="Text shown on the dismiss button of an NTP module.">
         Never show <ph name="MODULE_NAME">$1<ex>shopping suggestions</ex></ph>
+      </message>
+      <message name="IDS_NTP_MODULES_MORE_ACTIONS" desc="The tooltip and accessibility label for the 3 dot menu on a module.">
+        More actions for <ph name="MODULE_NAME">$1<ex>shopping suggestions</ex></ph>
       </message>
       <message name="IDS_NTP_MODULES_CUSTOMIZE_BUTTON_TEXT" desc="Text shown on the customize button of an NTP module.">
         Customize cards
@@ -8391,6 +8414,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_TOOLTIP_SAVE_CREDIT_CARD_FAILURE" desc="The tooltip for the icon that shows the credit card is not successfully uploaded">
         Can't save card right now
+      </message>
+      <message name="IDS_TOOLTIP_SAVE_CVC" desc="The tooltip for the icon that shows the save CVC bubble">
+        Save CVC
       </message>
       <message name="IDS_TOOLTIP_SAVE_IBAN" desc="The tooltip for the icon that shows the save IBAN (International Bank Account Number) bubble">
         Save IBAN
@@ -10234,6 +10260,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         </message>
         <message name="IDS_CONTROLLED_SETTING_CHILD_RESTRICTION" desc="Text displayed in the controlled settings bubble when a setting's value is pre-set because the user is a child.">
           This setting can't be changed by a child user.
+        </message>
+        <message name="IDS_CONTROLLED_SETTING_PARENT" desc="Text displayed in the controlled settings bubble when a setting's value is controlled by user's parent.">
+          This setting is managed by a parent.
         </message>
         <!-- Extension install location strings -->
         <message name="IDS_EXTENSIONS_INSTALL_LOCATION_UNKNOWN" desc="The text explaining the the installation location is unknown.">
@@ -15495,7 +15524,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </if>
 
     <!-- Waffle strings -->
-    <if expr="not chromeos_lacros and not is_android and _google_chrome">
+    <if expr="enable_waffle_desktop">
       <message name="IDS_WAFFLE_PAGE_TITLE" desc="The title for the Waffle page."
         translateable="false">
         Lorem ipsum dolor sit amet

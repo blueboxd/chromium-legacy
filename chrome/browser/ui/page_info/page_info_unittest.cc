@@ -52,6 +52,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/features.h"
+#include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -1445,6 +1446,38 @@ TEST_F(PageInfoTest, ShowInfobarWhenGeolocationAndMediaChangedToBlock) {
   histograms.ExpectUniqueSample(
       "Permissions.PageInfo.Changed.AudioCapture.ReloadInfobarNotShown",
       permissions::PermissionChangeAction::REALLOWED, 1);
+}
+
+TEST_F(PageInfoTest, ShowInfoBarWhenAllowingThirdPartyCookies) {
+  SetDefaultUIExpectations(mock_ui());
+  NavigateAndCommit(url());
+
+  page_info()->OnStatusChanged(CookieControlsStatus::kEnabled,
+                               CookieControlsEnforcement::kNoEnforcement,
+                               base::Time());
+
+  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  page_info()->OnThirdPartyToggleClicked(/*block_third_party_cookies=*/false);
+  page_info()->OnUIClosing(nullptr);
+  ASSERT_EQ(1u, infobar_manager()->infobar_count());
+
+  infobar_manager()->RemoveInfoBar(infobar_manager()->infobar_at(0));
+}
+
+TEST_F(PageInfoTest, ShowInfoBarWhenBlockingThirdPartyCookies) {
+  SetDefaultUIExpectations(mock_ui());
+  NavigateAndCommit(url());
+
+  page_info()->OnStatusChanged(CookieControlsStatus::kDisabledForSite,
+                               CookieControlsEnforcement::kNoEnforcement,
+                               base::Time());
+
+  EXPECT_EQ(0u, infobar_manager()->infobar_count());
+  page_info()->OnThirdPartyToggleClicked(/*block_third_party_cookies=*/true);
+  page_info()->OnUIClosing(nullptr);
+  ASSERT_EQ(1u, infobar_manager()->infobar_count());
+
+  infobar_manager()->RemoveInfoBar(infobar_manager()->infobar_at(0));
 }
 
 #endif

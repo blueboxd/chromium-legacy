@@ -470,23 +470,6 @@ enum class FetchAccountCapabilitiesFromSystemLibraryResult {
   kMaxValue = kErrorUnexpectedValue
 };
 
-// Enum values used for "Signin.SyncConsentScreen.DataRowClicked"
-// histogram, which records that a user tapped on an entry in TangibleSync
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-// TODO(crbug.com/1373063): use this enum in java
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin.metrics
-enum class SigninSyncConsentDataRow {
-  // The bookmark row is tapped.
-  kBookmarksRowTapped = 0,
-  // The Autofill row is tapped.
-  kAutofillRowTapped = 1,
-  // The "History and more" row is tapped.
-  kHistoryRowTapped = 2,
-  // Always the last enumerated type.
-  kMaxValue = kHistoryRowTapped,
-};
-
 // -----------------------------------------------------------------------------
 // Histograms
 // -----------------------------------------------------------------------------
@@ -600,11 +583,11 @@ void RecordSignoutUserAction(bool force_clear_data);
 // Records |Signin_Impression_From*| user action.
 void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point);
 
-#if BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 // Records |Signin.AccountConsistencyPromoAction.{PromoEvent}| histogram.
 void RecordConsistencyPromoUserAction(AccountConsistencyPromoAction action,
                                       AccessPoint access_point);
-#endif  // BUILDFLAG(IS_IOS)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 }  // namespace signin_metrics
 

@@ -3,13 +3,14 @@
 <translationbundle lang="es-419">
 <translation id="1026101648481255140">Reanudar la instalación</translation>
 <translation id="1029669172902658969">Reiniciar para actualizar Chromium OS</translation>
+<translation id="1040916596585577953">Chromium te recomienda revisar esta extensión</translation>
 <translation id="1065672644894730302">No se pueden leer tus preferencias. Es posible que algunas funciones no estén disponibles y que no se guarden los cambios realizados a las preferencias.</translation>
+<translation id="1083934481477628225">Tu madre o padre desactivaron la opción "Permisos para sitios, apps y extensiones" para Chromium.</translation>
 <translation id="1098170124587656448">Chromium puede protegerte ante violaciones de la seguridad de los datos, extensiones dañadas y mucho más</translation>
 <translation id="1104942323762546749">Chromium desea exportar tus contraseñas. Para permitirlo, escribe tu contraseña de Windows.</translation>
 <translation id="113122355610423240">Chromium es tu navegador predeterminado</translation>
 <translation id="1131805035311359397">Para comprobar si tus contraseñas están a salvo de violaciones de la seguridad de los datos y otros problemas de seguridad, <ph name="BEGIN_LINK" />accede a Chromium<ph name="END_LINK" />.</translation>
 <translation id="1153368717515616349">Haz clic en el menú de Chromium</translation>
-<translation id="1157106475430165622">{NUM_DEVICES,plural, =0{Las extensiones de Chromium tenían acceso a dispositivos HID}=1{Las extensiones de Chromium tienen acceso a un dispositivo HID}other{Las extensiones de Chromium tienen acceso a # dispositivos HID}}</translation>
 <translation id="1185134272377778587">Acerca de Chromium</translation>
 <translation id="1203500561924088507">Gracias por instalar <ph name="BUNDLE_NAME" />. Debes reiniciar tu navegador antes de usarlo.</translation>
 <translation id="1261119230216066228">El Ahorro de memoria hizo que Chromium sea más rápido</translation>
@@ -58,6 +59,7 @@ Es posible que se apliquen a esta cuenta los permisos que otorgaste a sitios web
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2384373936468275798">Chromium OS no pudo sincronizar los datos porque la información de acceso de la cuenta está desactualizada.</translation>
 <translation id="2396765026452590966">La extensión "<ph name="EXTENSION_NAME" />" cambió la página que se muestra al iniciar Chromium.</translation>
+<translation id="2398377054246527950">{NUM_DEVICES,plural, =0{Una o más extensiones de Chromium tenían acceso a 1 dispositivo HID}=1{Una o más extensiones de Chromium tienen acceso a 1 dispositivo HID}other{Una o más extensiones de Chromium tienen acceso a # dispositivos HID}}</translation>
 <translation id="2401032172288869980">Chromium necesita permiso de acceso al micrófono y la cámara para este sitio.</translation>
 <translation id="2451727308784734061">Accede rápidamente al Administrador de contraseñas con el acceso directo. Puedes mover el acceso directo a la pantalla principal de la computadora o al selector de aplicaciones.</translation>
 <translation id="2478295928299953161">Chromium se cerrará pronto</translation>
@@ -90,6 +92,7 @@ Es posible que se apliquen a esta cuenta los permisos que otorgaste a sitios web
 <translation id="3032787606318309379">Agregar a Chromium...</translation>
 <translation id="3038232873781883849">Esperando para instalar...</translation>
 <translation id="3068515742935458733">Envía a Google informes de fallos y <ph name="UMA_LINK" /> para ayudar a mejorar Chromium.</translation>
+<translation id="3079753320517721795">{NUM_DEVICES,plural, =0{Una o más extensiones de Chromium tenían acceso a 1 dispositivo USB}=1{Una o más extensiones de Chromium tienen acceso a 1 dispositivo USB}other{Una o más extensiones de Chromium tienen acceso a # dispositivos USB}}</translation>
 <translation id="3101560983689755071">Tu historial de navegación afecta los anuncios que ves y los intereses como se estima a continuación. Para proteger tu privacidad, Chromium quita tus intereses automáticamente de manera continua todos los meses. Los intereses se pueden actualizar a no ser que los quites.</translation>
 <translation id="3103660991484857065">El instalador no pudo descomprimir el archivo. Descarga Chromium nuevamente.</translation>
 <translation id="3130323860337406239">Chromium está usando tu micrófono.</translation>
@@ -150,6 +153,7 @@ Es posible que se apliquen a esta cuenta los permisos que otorgaste a sitios web
 <translation id="4222932583846282852">Cancelando…</translation>
 <translation id="4230135487732243613">¿Quieres vincular los datos de Chromium a esta cuenta?</translation>
 <translation id="4271805377592243930">Obtener ayuda con Chromium</translation>
+<translation id="4281844954008187215">Condiciones del Servicio</translation>
 <translation id="4285930937574705105">No se pudo completar la instalación debido a un error no identificado. Si Chromium se está ejecutando en este momento, ciérralo e intenta nuevamente.</translation>
 <translation id="4304713468139749426">Administrador de contraseñas</translation>
 <translation id="4334294535648607276">Descarga completa</translation>
@@ -291,6 +295,7 @@ Es posible que se apliquen a esta cuenta los permisos que otorgaste a sitios web
 <translation id="7025789849649390912">Se detuvo la instalación.</translation>
 <translation id="705851970750939768">Actualizar Chromium</translation>
 <translation id="7067091210845072982">Si una imagen no tiene una descripción útil, Chromium intentará proporcionarte una. Para crear descripciones, se envían las imágenes a Google.</translation>
+<translation id="7141270731789036260">Personalizar Chrome for Testing</translation>
 <translation id="7173822816570314652">Tu organización borra los datos de Chromium cuando no se usan durante <ph name="TIMEOUT_DURATION" />. Esto puede incluir el historial, los datos de Autocompletar y las descargas.</translation>
 <translation id="718435575166326686">Chromium necesita permiso de acceso a la cámara para este sitio.</translation>
 <translation id="7196312274710523067">No se pudo iniciar Chromium. Vuelve a intentarlo.</translation>
@@ -363,7 +368,6 @@ Es posible que se apliquen a esta cuenta los permisos que otorgaste a sitios web
 <translation id="8619360774459241877">Iniciando Chromium…</translation>
 <translation id="8621669128220841554">La instalación falló debido a un error no especificado. Descarga Chromium otra vez.</translation>
 <translation id="8648201657708811153">Google Chrome for Testing no se puede establecer como tu navegador predeterminado.</translation>
-<translation id="867492205098279939">{NUM_DEVICES,plural, =0{Una extensión de Chromium tenía acceso a dispositivos HID}=1{Una extensión de Chromium tiene acceso a 1 dispositivo HID}other{Una extensión de Chromium tiene acceso a # dispositivos HID}}</translation>
 <translation id="8697124171261953979">También controla qué página se muestra al iniciar Chromium o al realizar búsquedas desde el cuadro multifunción.</translation>
 <translation id="8704119203788522458">Este es tu Chromium</translation>
 <translation id="8796602469536043152">Chromium necesita permiso para acceder a tu cámara y micrófono para este sitio</translation>

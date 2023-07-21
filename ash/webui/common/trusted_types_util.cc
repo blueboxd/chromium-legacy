@@ -30,7 +30,12 @@ void EnableTrustedTypesCSP(content::WebUIDataSource* source) {
       // Add TrustedTypes policy for creating the PDF plugin.
       "print-preview-plugin-loader "
       // Add TrustedTypes policies necessary for using Polymer.
-      "polymer-html-literal polymer-template-event-attribute-policy;");
+      "polymer-html-literal polymer-template-event-attribute-policy "
+      // Add TrustedTypes policies for Google Analytics and video processor
+      // script URLs. Used by the Camera App.
+      "ga-js-static video-processor-js-static "
+      // Added TrustedTypes policy for trusted script URLs.
+      "camera-app-trusted-script file-manager-trusted-script;");
 }
 
 }  // namespace ash

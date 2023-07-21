@@ -533,8 +533,18 @@ BubbleBorder::Arrow GetOptimalPopupPlacement(
   return arrow;
 }
 
-bool IsFooterFrontendId(PopupItemId frontend_id) {
-  switch (frontend_id) {
+bool IsGroupFillingPopupItemId(PopupItemId popup_item_id) {
+  switch (popup_item_id) {
+    case PopupItemId::kFillFullAddress:
+    case PopupItemId::kFillFullName:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsFooterPopupItemId(PopupItemId popup_item_id) {
+  switch (popup_item_id) {
     case PopupItemId::kScanCreditCard:
     case PopupItemId::kPasswordAccountStorageEmpty:
     case PopupItemId::kPasswordAccountStorageOptIn:
@@ -543,6 +553,7 @@ bool IsFooterFrontendId(PopupItemId frontend_id) {
     case PopupItemId::kShowAccountCards:
     case PopupItemId::kUseVirtualCard:
     case PopupItemId::kAllSavedPasswordsEntry:
+    case PopupItemId::kFillEverythingFromAddressProfile:
     case PopupItemId::kClearForm:
     case PopupItemId::kAutofillOptions:
     case PopupItemId::kSeePromoCodeDetails:

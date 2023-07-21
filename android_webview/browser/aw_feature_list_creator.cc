@@ -14,6 +14,7 @@
 #include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_feature_entries.h"
 #include "android_webview/browser/aw_metrics_service_client_delegate.h"
+#include "android_webview/browser/metrics/android_metrics_provider.h"
 #include "android_webview/browser/metrics/aw_metrics_service_client.h"
 #include "android_webview/browser/tracing/aw_tracing_delegate.h"
 #include "android_webview/browser/variations/variations_seed_loader.h"
@@ -33,6 +34,7 @@
 #include "components/embedder_support/android/metrics/android_metrics_service_client.h"
 #include "components/embedder_support/origin_trials/origin_trial_prefs.h"
 #include "components/embedder_support/origin_trials/pref_names.h"
+#include "components/metrics/android_metrics_helper.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/persistent_histograms.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
@@ -109,6 +111,10 @@ const char* const kPersistentPrefsAllowlist[] = {
 
     // The state of the previous background tracing session.
     tracing::kBackgroundTracingSessionState,
+
+    // System-level info.
+    metrics::prefs::kVersionCodePref,
+    prefs::kPrimaryCpuAbiBitnessPref,
 };
 
 void HandleReadError(PersistentPrefStore::PrefReadError error) {}

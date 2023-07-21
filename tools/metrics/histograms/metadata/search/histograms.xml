@@ -56,6 +56,7 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the count of failed deletions from the auxiliary search.
   </summary>
+  <token key="AuxiliarySearchDataType" variants="AuxiliarySearchDataType"/>
 </histogram>
 
 <histogram name="Search.AuxiliarySearch.DeletionRequestStatus"
@@ -84,6 +85,7 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the count of failed donations from the auxiliary search.
   </summary>
+  <token key="AuxiliarySearchDataType" variants="AuxiliarySearchDataType"/>
 </histogram>
 
 <histogram name="Search.AuxiliarySearch.DonationRequestStatus"
@@ -104,6 +106,7 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the count of contents which are sent to the auxiliary search.
   </summary>
+  <token key="AuxiliarySearchDataType" variants="AuxiliarySearchDataType"/>
 </histogram>
 
 <histogram name="Search.AuxiliarySearch.QueryTime{AuxiliarySearchDataType}"
@@ -111,6 +114,7 @@ chromium-metrics-reviews@google.com.
   <owner>gangwu@chromium.org</owner>
   <owner>chrome-mobile-search@google.com</owner>
   <summary>Time taken for query contents for the auxiliary search.</summary>
+  <token key="AuxiliarySearchDataType" variants="AuxiliarySearchDataType"/>
 </histogram>
 
 <histogram name="Search.ContextualSearch.All.ResultsSeen" enum="Boolean"
@@ -212,7 +216,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.NetError" enum="NetErrorCodes"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>donnd@chromium.org</owner>
   <owner>basiaz@google.com</owner>
   <summary>
@@ -403,7 +407,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearch.SelectionExpanded"
-    enum="ContextualSearchGestureIsTap" expires_after="2023-11-12">
+    enum="ContextualSearchGestureIsTap" expires_after="2024-01-14">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1353,10 +1357,10 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Search.DefaultSearchProviderType2"
-    enum="OmniboxSearchEngineType" expires_after="2023-11-12">
+<histogram name="Search.DefaultSearchProviderType2{Population}"
+    enum="OmniboxSearchEngineType" expires_after="2024-07-18">
   <owner>mpearson@chromium.org</owner>
-  <owner>csharp@chromium.org</owner>
+  <owner>ftirelo@chromium.org</owner>
   <summary>
     The type of the default search engine that is loaded when a regular, guest,
     or ChromeOS sign-in screen profile is opened or after a profile reset. (A
@@ -1372,7 +1376,14 @@ chromium-metrics-reviews@google.com.
     people cannot search / browse the web using this profile. As such, the
     default search engine setting for this profile does not have any practical
     meaning.
+
+    {Population}
   </summary>
+  <token key="Population">
+    <variant name="" summary="Reported for all users."/>
+    <variant name=".SetByEnterprisePolicy"
+        summary="Reported for users with DSP set by Enterprise policy."/>
+  </token>
 </histogram>
 
 <histogram name="Search.GsaAccountChangeNotificationSource"
@@ -1642,7 +1653,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.QueryTiles.TrendingTileEvent" enum="TrendingTileEvent"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>

@@ -9,6 +9,7 @@
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> ਥ੍ਰੈੱਡ, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1047773237499189053">ਨਵੀਂ ਵਿਸ਼ੇਸ਼ਤਾ ਉਪਲਬਧ ਹੈ, ਹੋਰ ਜਾਣਨ ਲਈ 'ਉੱਪਰ ਤੀਰ' ਕੁੰਜੀ ਦੀ ਵਰਤੋਂ ਕਰੋ।</translation>
 <translation id="1059913517121127803">ਸਕੈਨ ਕਰਨਾ ਸ਼ੁਰੂ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ</translation>
+<translation id="1062823486781306604"><ph name="COUNT" /> ਵਿੱਚੋਂ <ph name="INDEX" />, <ph name="NAME" />।</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Firewall ਦਾ ਪਤਾ ਲੱਗਾ</translation>
 <translation id="1075811647922107217">ਪੰਨੇ ਦਾ ਆਕਾਰ</translation>
@@ -371,6 +372,7 @@
 <translation id="397105322502079400">ਅਨੁਮਾਨ ਲਗਾ ਰਿਹਾ ਹੈ...</translation>
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> ਦਿਨਾਂ ਤੋਂ ਜ਼ਿਆਦਾ ਪੁਰਾਣੀਆਂ ਪ੍ਰਿੰਟ ਜੌਬਾਂ ਨੂੰ ਹਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ</translation>
 <translation id="3993704782688964914">ਤੁਹਾਡਾ <ph name="DEVICE_NAME" /> ਹੁਣ ਅੱਪ-ਟੂ-ਡੇਟ ਹੈ</translation>
+<translation id="3998976413398910035">ਪ੍ਰਿੰਟਰਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
 <translation id="4003384961948020559">ਅਸਫਲ ਰਹੀ - ਆਊਟਪੁੱਟ ਭਰ ਗਿਆ ਹੈ</translation>
 <translation id="4021031199988160623">ਜਾਂਚ ਕਰਨ ਲਈ ਲੈਪਟਾਪ ਮੋਡ 'ਤੇ ਸਵਿੱਚ ਕਰੋ</translation>
 <translation id="4034824040120875894">ਪ੍ਰਿੰਟਰ</translation>
@@ -541,6 +543,7 @@
 <translation id="5257811368506016604">ਹਲਕੇ ਰੰਗ ਵਾਲੇ ਮੋਡ ਨੂੰ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="5264277876637023664">CPU ਟੈਸਟ ਚਲਾਓ</translation>
 <translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
+<translation id="527501763019887383">APN ਬੰਦ ਹੈ।</translation>
 <translation id="5275828089655680674">ਨਿਯਮਬੱਧ ਕੰਮਾਂ ਨੂੰ ਮੁੜ-ਚਲਾਓ</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5286263799730375393">ਬੈਕਲਾਈਟ ਦਾ ਰੰਗ</translation>
@@ -586,6 +589,7 @@
 <translation id="5620281292257375798">ਸਿਰਫ਼ ਅੰਦਰੂਨੀ</translation>
 <translation id="5649768706273821470">ਸੁਣਿਆ</translation>
 <translation id="5655283760733841251">ਕੀ-ਬੋਰਡ ਦੀ ਚਮਕ ਵਧਾਉਣ ਵਾਲੀ ਕੁੰਜੀ</translation>
+<translation id="5655776422854483175">ਕੋਈ ਪ੍ਰਿੰਟ ਜੌਬ ਨਹੀਂ ਹੈ</translation>
 <translation id="5659593005791499971">ਈਮੇਲ</translation>
 <translation id="5662240986744577912">ਪਰਦੇਦਾਰੀ ਸਕ੍ਰੀਨ ਨੂੰ ਟੌਗਲ ਕਰੋ</translation>
 <translation id="5669267381087807207">ਸਕਿਰਿਆ ਕਰ ਰਿਹਾ ਹੈ</translation>
@@ -605,6 +609,7 @@
 <translation id="5832805196449965646">ਵਿਅਕਤੀ ਜੋੜੋ</translation>
 <translation id="583281660410589416">ਅਗਿਆਤ</translation>
 <translation id="5843706793424741864">ਫਾਰੇਨਹੀਟ</translation>
+<translation id="584953448295717128">APN ਦਾ ਆਪਣੇ ਆਪ ਪਤਾ ਲਗਾਇਆ ਜਾਂਦਾ ਹੈ।</translation>
 <translation id="5849570051105887917">ਹੋਮ ਪ੍ਰਦਾਨਕ ਕੋਡ</translation>
 <translation id="5859603669299126575">ਕਲਾ ਗੈਲਰੀ ਐਲਬਮ</translation>
 <translation id="5860033963881614850">ਬੰਦ ਕਰੋ</translation>
@@ -665,7 +670,7 @@
 <translation id="6278428485366576908">ਥੀਮ</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">ਗੂੜ੍ਹਾ ਥੀਮ ਚਾਲੂ ਕਰੋ</translation>
-<translation id="6285899124799306373">ਲਾਂਚਰ ਖੋਲ੍ਹੋ</translation>
+<translation id="628726841779494414">ਪ੍ਰਿੰਟਰ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਆਪਣੇ ਪ੍ਰਿੰਟਰਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
 <translation id="629550705077076970">ਕੀ-ਬੋਰਡ ਦੀ ਰੋਸ਼ਨੀ ਘੱਟ ਕਰੋ</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> ਟੈਸਟ ਨੂੰ ਰੱਦ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ</translation>
 <translation id="631063167932043783">Explore ਐਪ</translation>
@@ -883,6 +888,7 @@
 <translation id="80398733265834479">ਸਵੈ-ਵਿਵਸਥਿਤ ਰੰਗ ਵਾਲੇ ਮੋਡ ਨੂੰ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="8041089156583427627">ਵਿਚਾਰ ਭੇਜੋ</translation>
 <translation id="8045012663542226664">ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਮਿਊਟ ਕਰਨ ਵਾਲਾ ਬਟਨ</translation>
+<translation id="8067126283828232460">APN ਕਨੈਕਟ ਹੈ।</translation>
 <translation id="8075838845814659848">ਬਾਕੀ ਚਾਰਜ</translation>
 <translation id="8076492880354921740">ਟੈਬਾਂ</translation>
 <translation id="8082366717211101304">Android ਐਪਾਂ ਤੋਂ DNS ਸੰਬੰਧੀ ਸਮੱਸਿਆ ਨੂੰ ਹੱਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
@@ -913,7 +919,6 @@
 <translation id="8312330582793120272">ਮੀਡੀਆ ਚਲਾਓ</translation>
 <translation id="8318753676953949627">ਕੋਈ ਚਿੱਤਰ ਨਹੀਂ</translation>
 <translation id="8329018942023753850">Calculator ਐਪ</translation>
-<translation id="8335869473001018124">ਖੋਜ ਖੋਲ੍ਹੋ</translation>
 <translation id="8336739000755212683">ਡੀਵਾਈਸ ਦੇ ਖਾਤੇ ਦਾ ਚਿੱਤਰ ਬਦਲੋ</translation>
 <translation id="8347227221149377169">ਪ੍ਰਿੰਟ ਜੌਬਾਂ</translation>
 <translation id="8351855506390808906">ਕੀ-ਮੈਪਿੰਗ ਟੱਚ ਪੁਆਇੰਟ</translation>
@@ -1029,6 +1034,7 @@
 <translation id="9111102763498581341">ਅਣਲਾਕ ਕਰੋ</translation>
 <translation id="9122602430962285795">ਮੁੜ-ਕਨੈਕਟ ਕਰਨ ਲਈ, ਸੈਟਿੰਗਾਂ 'ਤੇ ਜਾਓ</translation>
 <translation id="9126720536733509015">ਇੱਕ ਤੋਂ ਵੱਧ ਪੰਨਿਆਂ ਨੂੰ ਇੱਕੋ PDF ਵਿੱਚ ਰੱਖਿਅਤ ਕਰੋ</translation>
+<translation id="9133104754938025929">ਬੈਟਰੀ ਬਚਾਉਣ ਲਈ, ਸਕ੍ਰੀਨ ਸੇਵਰ ਵਿਸ਼ੇਸ਼ਤਾ ਸਿਰਫ਼ ਚਾਰਜ ਹੋਣ ਵੇਲੇ ਹੀ ਕੰਮ ਕਰਦੀ ਹੈ।</translation>
 <translation id="9137526406337347448">Google ਸੇਵਾਵਾਂ</translation>
 <translation id="9138630967333032450">ਖੱਬੀ Shift ਕੁੰਜੀ</translation>
 <translation id="9143347780818904997"><ph name="MINUTES" /> ਮਿੰਟਾਂ ਲਈ</translation>

@@ -38,6 +38,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password/password_sharing/family_picker_coordinator.h"
 #import "ios/chrome/browser/ui/settings/utils/password_utils.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -73,6 +74,9 @@
 
 // The action sheet coordinator, if one is currently being shown.
 @property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
+
+// Coordinator for family picker for password sharing.
+@property(nonatomic, strong) FamilyPickerCoordinator* familyPickerCoordinator;
 
 @end
 
@@ -165,9 +169,11 @@
 }
 
 - (void)stop {
+  [self dismissActionSheetCoordinator];
   [self.mediator disconnect];
   self.mediator = nil;
   self.viewController = nil;
+  [self dismissAlertCoordinator];
 }
 
 #pragma mark - PasswordDetailsHandler
@@ -199,7 +205,9 @@
       [OpenNewTabCommand commandWithURLFromChrome:GURL(kPasscodeArticleURL)];
 
   [self.alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_OK)
-                                   action:nil
+                                   action:^{
+                                     [weakSelf dismissAlertCoordinator];
+                                   }
                                     style:UIAlertActionStyleCancel];
 
   [self.alertCoordinator
@@ -212,6 +220,7 @@
                           ApplicationCommands);
                   [applicationCommandsHandler
                       closeSettingsUIAndOpenURL:command];
+                  [weakSelf dismissAlertCoordinator];
                 }
                  style:UIAlertActionStyleDefault];
 
@@ -235,43 +244,31 @@
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_EDIT)
                 action:^{
                   [weakSelf.viewController passwordEditingConfirmed];
+                  [weakSelf dismissActionSheetCoordinator];
                 }
                  style:UIAlertActionStyleDefault];
 
   [self.actionSheetCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CANCEL_PASSWORD_EDIT)
-                action:nil
+                action:^{
+                  [weakSelf dismissActionSheetCoordinator];
+                }
                  style:UIAlertActionStyleCancel];
 
   [self.actionSheetCoordinator start];
 }
 
-// TODO(crbug.com/1359392): By convention, passing nil for `anchorView` means
-// to use the delete button in the bottom bar as the anchor. This is a temporary
-// hack and will be removed when `kPasswordsGrouping` is enabled by default.
 - (void)showPasswordDeleteDialogWithPasswordDetails:(PasswordDetails*)password
                                          anchorView:(UIView*)anchorView {
   NSString* title;
   NSString* message;
   // Blocked websites have empty `password` and no title or message.
   if ([password.password length]) {
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kPasswordsGrouping)) {
-      std::tie(title, message) =
-          GetPasswordAlertTitleAndMessageForOrigins(password.origins);
-    } else {
-      message = l10n_util::GetNSStringF(
-          password.isCompromised
-              ? IDS_IOS_DELETE_COMPROMISED_PASSWORD_DESCRIPTION
-              : IDS_IOS_DELETE_PASSWORD_DESCRIPTION,
-          base::SysNSStringToUTF16(password.origins[0]));
-    }
+    std::tie(title, message) =
+        password_manager::GetPasswordAlertTitleAndMessageForOrigins(
+            password.origins);
   }
-  NSString* buttonText =
-      l10n_util::GetNSString(base::FeatureList::IsEnabled(
-                                 password_manager::features::kPasswordsGrouping)
-                                 ? IDS_IOS_DELETE_ACTION_TITLE
-                                 : IDS_IOS_CONFIRM_PASSWORD_DELETION);
+  NSString* buttonText = l10n_util::GetNSString(IDS_IOS_DELETE_ACTION_TITLE);
 
   self.actionSheetCoordinator =
       anchorView
@@ -289,15 +286,19 @@
                                    message:message
                              barButtonItem:self.viewController.deleteButton];
   __weak __typeof(self.mediator) weakMediator = self.mediator;
+  __weak __typeof(self) weakSelf = self;
   [self.actionSheetCoordinator
       addItemWithTitle:buttonText
                 action:^{
                   [weakMediator removeCredential:password];
+                  [weakSelf dismissActionSheetCoordinator];
                 }
                  style:UIAlertActionStyleDestructive];
   [self.actionSheetCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CANCEL_PASSWORD_DELETION)
-                action:nil
+                action:^{
+                  [weakSelf dismissActionSheetCoordinator];
+                }
                  style:UIAlertActionStyleCancel];
   [self.actionSheetCoordinator start];
 }
@@ -329,12 +330,15 @@
                   [weakSelf.mediator
                       moveCredentialToAccountStoreWithConflict:password];
                   movedCompletion();
+                  [weakSelf dismissActionSheetCoordinator];
                 }
                  style:UIAlertActionStyleDefault];
 
   [self.actionSheetCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CANCEL_PASSWORD_MOVE)
-                action:nil
+                action:^{
+                  [weakSelf dismissActionSheetCoordinator];
+                }
                  style:UIAlertActionStyleCancel];
   [self.actionSheetCoordinator start];
 }
@@ -366,6 +370,16 @@
   }
 }
 
+- (void)onShareButtonPressed {
+  // TODO(crbug.com/1463882): Implement displaying appropriate view based on the
+  // family query and amount of credential groups.
+  DCHECK(!self.familyPickerCoordinator);
+  self.familyPickerCoordinator = [[FamilyPickerCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
+  [self.familyPickerCoordinator start];
+}
+
 #pragma mark - PasswordDetailsMediatorDelegate
 
 - (void)showDismissWarningDialogWithPasswordDetails:(PasswordDetails*)password {
@@ -380,8 +394,11 @@
                                                    message:message];
 
   NSString* cancelButtonText = l10n_util::GetNSString(IDS_CANCEL);
+  __weak PasswordDetailsCoordinator* weakSelf = self;
   [self.alertCoordinator addItemWithTitle:cancelButtonText
-                                   action:nil
+                                   action:^{
+                                     [weakSelf dismissAlertCoordinator];
+                                   }
                                     style:UIAlertActionStyleDefault];
 
   NSString* dismissButtonText =
@@ -391,6 +408,7 @@
       addItemWithTitle:dismissButtonText
                 action:^{
                   [weakMediator didConfirmWarningDismissalForPassword:password];
+                  [weakSelf dismissAlertCoordinator];
                 }
                  style:UIAlertActionStyleDefault
              preferred:YES
@@ -406,6 +424,18 @@
       PasswordTabHelper::FromWebState(activeWebState)
           ->GetPasswordManagerClient();
   passwordManagerClient->UpdateFormManagers();
+}
+
+#pragma mark - Private
+
+- (void)dismissActionSheetCoordinator {
+  [self.actionSheetCoordinator stop];
+  self.actionSheetCoordinator = nil;
+}
+
+- (void)dismissAlertCoordinator {
+  [self.alertCoordinator stop];
+  self.alertCoordinator = nil;
 }
 
 @end

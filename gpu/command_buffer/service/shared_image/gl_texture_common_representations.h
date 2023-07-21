@@ -14,33 +14,11 @@
 namespace gpu {
 
 // Interface through which a representation that has a GL texture calls into its
-// GLImage backing.
+// backing.
 class GLTextureImageRepresentationClient {
  public:
   virtual bool GLTextureImageRepresentationBeginAccess(bool readonly) = 0;
   virtual void GLTextureImageRepresentationEndAccess(bool readonly) = 0;
-};
-
-// Representation of a GLTextureImageBacking or GLImageBacking
-// as a GL Texture.
-class GLTextureGLCommonRepresentation : public GLTextureImageRepresentation {
- public:
-  GLTextureGLCommonRepresentation(SharedImageManager* manager,
-                                  SharedImageBacking* backing,
-                                  GLTextureImageRepresentationClient* client,
-                                  MemoryTypeTracker* tracker,
-                                  std::vector<raw_ptr<gles2::Texture>> texture);
-  ~GLTextureGLCommonRepresentation() override;
-
- private:
-  // GLTextureImageRepresentation:
-  gles2::Texture* GetTexture(int plane_index) override;
-  bool BeginAccess(GLenum mode) override;
-  void EndAccess() override;
-
-  const raw_ptr<GLTextureImageRepresentationClient> client_ = nullptr;
-  std::vector<raw_ptr<gles2::Texture>> textures_;
-  GLenum mode_ = 0;
 };
 
 // Representation of a GLTextureImageBacking or

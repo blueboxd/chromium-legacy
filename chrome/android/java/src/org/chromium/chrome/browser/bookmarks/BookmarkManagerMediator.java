@@ -7,15 +7,11 @@ package org.chromium.chrome.browser.bookmarks;
 import static org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.buildMenuListItem;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import androidx.appcompat.content.res.AppCompatResources;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.Callback;
@@ -43,7 +39,6 @@ import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.styles.ChromeColors;
-import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter.DragListener;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter.DraggabilityProvider;
@@ -591,7 +586,7 @@ class BookmarkManagerMediator
 
     @Override
     public void notifyStateChange(BookmarkUiObserver observer) {
-        int state = getCurrentUiMode();
+        final @BookmarkUiMode int state = getCurrentUiMode();
         observer.onUiModeChanged(state);
         switch (state) {
             case BookmarkUiMode.LOADING:
@@ -630,7 +625,7 @@ class BookmarkManagerMediator
 
     @Override
     public void openSearchUi() {
-        setState(BookmarkUiState.createSearchState());
+        setState(BookmarkUiState.createSearchState(""));
         mSelectableListLayout.onStartSearch(R.string.bookmark_no_result);
     }
 
@@ -749,6 +744,13 @@ class BookmarkManagerMediator
         if (!mStateStack.isEmpty() && mStateStack.peek().mUiMode == BookmarkUiMode.LOADING) {
             mStateStack.pop();
         }
+        // Don't queue multiple consecutive search states. Instead replace the previous with the new
+        // one.
+        if (getCurrentUiMode() == BookmarkUiMode.SEARCHING
+                && state.mUiMode == BookmarkUiMode.SEARCHING) {
+            mStateStack.pop();
+        }
+
         mStateStack.push(state);
         notifyUi(state);
     }
@@ -1141,44 +1143,20 @@ class BookmarkManagerMediator
                 item.isFolder() && useImages ? StartImageVisibility.FOLDER_DRAWABLE
                                              : StartImageVisibility.DRAWABLE);
 
+        @BookmarkType
+        int type = item.getId().getType();
         if (item.isFolder()) {
-            final @BookmarkType int type = item.getId().getType();
-            // TODO(https://crbug.com/1454593): Rework to not require another model call.
-            boolean isSpecialFolder =
-                    Objects.equals(item.getParentId(), mBookmarkModel.getRootFolderId());
-            final Drawable folderDrawable;
-            if (useImages) {
-                model.set(ImprovedBookmarkRowProperties.FOLDER_CHILD_COUNT,
-                        BookmarkUtils.getChildCountForDisplay(item.getId(), mBookmarkModel));
-                if (isSpecialFolder) {
-                    folderDrawable = BookmarkUtils.getFolderIcon(mContext, type, displayPref);
-                } else {
-                    folderDrawable = ResourcesCompat.getDrawable(mContext.getResources(),
-                            R.drawable.ic_folder_outline_24dp, mContext.getTheme());
-                    mBookmarkImageFetcher.fetchFirstTwoImagesForFolder(item, imagePair -> {
-                        model.set(ImprovedBookmarkRowProperties.START_IMAGE_FOLDER_DRAWABLES,
-                                imagePair);
-                    });
-                }
-            } else {
-                folderDrawable = BookmarkUtils.getFolderIcon(mContext, type, displayPref);
+            if (displayPref == BookmarkRowDisplayPref.VISUAL) {
+                model.set(ImprovedBookmarkRowProperties.FOLDER_COORDINATOR,
+                        new ImprovedBookmarkFolderViewCoordinator(
+                                mContext, mBookmarkImageFetcher, item.getId(), mBookmarkModel));
             }
-
-            if (isSpecialFolder) {
-                model.set(ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR,
-                        SemanticColorUtils.getColorPrimaryContainer(mContext));
-                model.set(ImprovedBookmarkRowProperties.START_ICON_TINT,
-                        ColorStateList.valueOf(
-                                SemanticColorUtils.getDefaultIconColorAccent1(mContext)));
-            } else {
-                model.set(ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR,
-                        ChromeColors.getSurfaceColor(mContext, R.dimen.default_elevation_1));
-                model.set(ImprovedBookmarkRowProperties.START_ICON_TINT,
-                        AppCompatResources.getColorStateList(
-                                mContext, R.color.default_icon_color_secondary_tint_list));
-            }
-
-            model.set(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE, folderDrawable);
+            model.set(ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR,
+                    BookmarkUtils.getIconBackground(mContext, mBookmarkModel, item));
+            model.set(ImprovedBookmarkRowProperties.START_ICON_TINT,
+                    BookmarkUtils.getIconTint(mContext, mBookmarkModel, item));
+            model.set(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE,
+                    BookmarkUtils.getFolderIcon(mContext, type, displayPref));
         } else {
             model.set(ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR,
                     ChromeColors.getSurfaceColor(mContext, R.dimen.default_elevation_1));
@@ -1319,7 +1297,7 @@ class BookmarkManagerMediator
         final @BookmarkUiMode int currentUiMode = getCurrentUiMode();
         if (!TextUtils.isEmpty(text)) {
             // #setState will no-op if we're already in a search state.
-            setState(BookmarkUiState.createSearchState());
+            setState(BookmarkUiState.createSearchState(text));
             search(text);
         } else if (currentUiMode == BookmarkUiMode.SEARCHING) {
             onEndSearch();

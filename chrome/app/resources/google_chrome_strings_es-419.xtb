@@ -79,6 +79,7 @@
 <translation id="235650106824528204">El administrador del perfil de trabajo puede quitar cualquier dato de Chrome que se genere durante el uso de este perfil (como la creación de favoritos, un historial, contraseñas y otras opciones de configuración). <ph name="LEARN_MORE" /></translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2401189691232800402">Sistema de ChromeOS</translation>
+<translation id="2409816192575564775">{NUM_DEVICES,plural, =0{Una o más extensiones de Chrome tenían acceso a 1 dispositivo HID}=1{Una o más extensiones de Chrome tienen acceso a 1 dispositivo HID}other{Una o más extensiones de Chrome tienen acceso a # dispositivos HID}}</translation>
 <translation id="2424440923901031101">Esta extensión incumple la política de Chrome Web Store y es posible que no sea segura. Quítala de Chrome para que ya no pueda ver ni cambiar tus datos en los sitios que visitas, incluida tu información personal.</translation>
 <translation id="2467438592969358367">Google Chrome desea exportar tus contraseñas. Para permitirlo, ingresa tu contraseña de Windows.</translation>
 <translation id="2472092250898121027">Esta extensión contiene software malicioso y no es segura. Quítala de Chrome para que ya no pueda ver ni cambiar tus datos en los sitios que visitas, incluida tu información personal.</translation>
@@ -116,7 +117,6 @@
 <translation id="2929907241665500097">No se actualizó Chrome porque se produjo un error. <ph name="BEGIN_LINK" />Soluciona los problemas de actualización y las actualizaciones con error de Chrome.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" />: Acceso a la red - Chrome</translation>
 <translation id="3019382870990049182">Reiniciar para actualizar ChromeOS Flex</translation>
-<translation id="3033660625209020231">{NUM_DEVICES,plural, =0{Las extensiones de Google Chrome tenían acceso a dispositivos HID}=1{Las extensiones de Google Chrome tienen acceso a dispositivos HID}other{Las extensiones de Google Chrome tienen acceso a # dispositivos HID}}</translation>
 <translation id="303514781271618814">Chrome está explorando funciones nuevas que les permiten a los sitios ofrecer la misma experiencia de navegación usando menos de tus datos</translation>
 <translation id="3037838751736561277">Google Chrome está en modo de segundo plano</translation>
 <translation id="3038232873781883849">Esperando para instalar...</translation>
@@ -224,7 +224,6 @@
 <translation id="4970947549776831107">Chrome bloqueó este archivo porque este tipo de archivo es peligroso</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5003967926796347400">Haz clic en "Administrador de contraseñas de Google"</translation>
-<translation id="5005958605836556244">{NUM_DEVICES,plural, =0{Una extensión de Google Chrome tenía acceso a dispositivos HID}=1{Una extensión de Google Chrome tiene acceso a 1 dispositivo HID}other{Una extensión de Google Chrome tiene acceso a # dispositivos HID}}</translation>
 <translation id="5098668839038261629">Si activas esta opción, saldrás de Chrome</translation>
 <translation id="5132929315877954718">Descubre aplicaciones, juegos, extensiones y temas geniales para Google Chrome.</translation>
 <translation id="5139423532931106058">Personaliza tu perfil de Chrome</translation>
@@ -240,6 +239,7 @@
 <translation id="5394833366792865639">Compartir una pestaña de Chrome</translation>
 <translation id="5412485296464121825">Los sitios pueden almacenar información sobre tus intereses con Chrome. Por ejemplo, si visitas un sitio para comprar zapatillas para una maratón, es posible que el sitio defina que te interesa correr maratones. Luego, si visitas otro sitio para registrarte en una carrera, ese sitio podrá mostrarte un anuncio sobre calzado para correr en función de tus intereses.</translation>
 <translation id="5430073640787465221">Tu archivo de preferencias está dañado o no es válido. Google Chrome no puede recuperar tu configuración.</translation>
+<translation id="5521146392841465297">Chrome te recomienda revisar esta extensión.</translation>
 <translation id="5524761631371622910">Cuando comienzan las pruebas, si Chrome te ubicó de manera aleatoria en una prueba activa, tu historial de navegación afecta los anuncios que ves y los intereses, como se estima a continuación. Para proteger tu privacidad, Chrome borra tus intereses de manera continua todos los meses.</translation>
 <translation id="5530733413481476019">Logra que Chrome sea más rápido</translation>
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
@@ -277,6 +277,7 @@
 <translation id="624230925347970731">Chrome se cerrará pronto</translation>
 <translation id="6247557882553405851">Administrador de contraseñas de Google</translation>
 <translation id="6273793429163604305">En sus marcas…</translation>
+<translation id="6277547788421725101">Tu madre o padre desactivaron la opción "Permisos para sitios, apps y extensiones" para Chrome</translation>
 <translation id="6291089322031436445">Apps de Chrome Dev</translation>
 <translation id="6291549208091401781">Google Chrome ya está instalado para todos los usuarios en tu computadora.</translation>
 <translation id="6326175484149238433">Quitar de Chrome</translation>
@@ -332,6 +333,7 @@ Es posible que se apliquen a esta cuenta los permisos que otorgaste a sitios web
 <translation id="7398801000654795464">Accediste a Google Chrome con <ph name="USER_EMAIL_ADDRESS" />. Usa la misma cuenta para volver a acceder.</translation>
 <translation id="7410958280246779049">Chrome bloqueó este archivo porque es peligroso</translation>
 <translation id="7412494426921990001">Haz clic en el menú de Chrome</translation>
+<translation id="742463671275348370">{NUM_DEVICES,plural, =0{Una o más extensiones de Chrome tenían acceso a 1 dispositivo USB}=1{Una o más extensiones de Chrome tienen acceso a 1 dispositivo USB}other{Una o más extensiones de Chrome tienen acceso a # dispositivos USB}}</translation>
 <translation id="7426611252293106642">Es posible que Google Chrome no funcione correctamente porque ya no es compatible con esta distribución de Linux</translation>
 <translation id="7449333426561673451">{COUNT,plural, =1{La organización cierra Chrome automáticamente si no lo usas durante 1 minuto.}other{La organización cierra Chrome automáticamente si no lo usas durante # minutos.}}</translation>
 <translation id="7452987490177144319">{COUNT,plural, =1{Tu organización borra automáticamente los datos de navegación si no usas Chrome durante 1 minuto. Esto puede incluir el historial, los datos de Autocompletar y las descargas. Las pestañas permanecerán abiertas.}other{Tu organización borra automáticamente los datos de navegación si no usas Chrome durante # minutos. Esto puede incluir el historial, los datos de Autocompletar y las descargas. Las pestañas permanecerán abiertas.}}</translation>

@@ -4,6 +4,7 @@
 
 #include "components/exo/shell_surface.h"
 
+#include <sstream>
 #include <vector>
 
 #include "ash/accessibility/accessibility_delegate.h"
@@ -111,6 +112,7 @@ struct ConfigureData {
   bool is_resizing = false;
   bool is_active = false;
   float raster_scale = 1.0f;
+  size_t count = 0;
 };
 
 uint32_t Configure(ConfigureData* config_data,
@@ -125,6 +127,7 @@ uint32_t Configure(ConfigureData* config_data,
   config_data->is_resizing = resizing;
   config_data->is_active = activated;
   config_data->raster_scale = raster_scale;
+  config_data->count++;
   return 0;
 }
 
@@ -134,7 +137,7 @@ bool IsCaptureWindow(ShellSurface* shell_surface) {
          window;
 }
 
-cc::Region CreateRegion(ShellSurface::ShapeRects shape_rects) {
+cc::Region CreateRegion(ui::Layer::ShapeRects shape_rects) {
   cc::Region shape_region;
   for (const gfx::Rect& rect : shape_rects) {
     shape_region.Union(rect);
@@ -3310,14 +3313,15 @@ TEST_F(ShellSurfaceTest, SetShapeAppliedAfterSurfaceCommit) {
   std::unique_ptr<ShellSurface> shell_surface =
       test::ShellSurfaceBuilder({64, 64}).BuildShellSurface();
   shell_surface->OnSetServerStartResize();
-  shell_surface->OnSetFrame(SurfaceFrameType::NORMAL);
+  shell_surface->OnSetFrame(SurfaceFrameType::SHADOW);
   shell_surface->root_surface()->Commit();
-  ASSERT_TRUE(shell_surface->GetWidget());
+  const views::Widget* widget = shell_surface->GetWidget();
+  ASSERT_TRUE(widget);
 
-  // Windows shadows should be applied.
+  // Windows shadows should be applied with resizing enabled.
   EXPECT_NE(wm::kShadowElevationNone,
-            wm::GetShadowElevationConvertDefault(
-                shell_surface->GetWidget()->GetNativeWindow()));
+            wm::GetShadowElevationConvertDefault(widget->GetNativeWindow()));
+  EXPECT_TRUE(shell_surface->server_side_resize());
 
   // Create a window shape from two unique rects.
   const cc::Region shape_region =
@@ -3326,20 +3330,45 @@ TEST_F(ShellSurfaceTest, SetShapeAppliedAfterSurfaceCommit) {
   // Apply the shape to the surface. This should not yet be reflected on the
   // host window's layer.
   shell_surface->SetShape(shape_region);
-  const ShellSurfaceBase::ShapeRects* layer_shape_rects =
-      shell_surface->host_window()->layer()->alpha_shape();
+  const ui::Layer::ShapeRects* layer_shape_rects =
+      widget->GetNativeWindow()->layer()->alpha_shape();
   EXPECT_FALSE(layer_shape_rects);
 
   // After surface commit the shape should have been applied to the layer.
   shell_surface->root_surface()->Commit();
-  layer_shape_rects = shell_surface->host_window()->layer()->alpha_shape();
+  layer_shape_rects = widget->GetNativeWindow()->layer()->alpha_shape();
   EXPECT_TRUE(layer_shape_rects);
   EXPECT_EQ(shape_region, CreateRegion(*layer_shape_rects));
 
-  // Window shadows should be disabled when window shapes are set.
+  // Window shadows and resizing should be disabled when window shapes are set.
   EXPECT_EQ(wm::kShadowElevationNone,
-            wm::GetShadowElevationConvertDefault(
-                shell_surface->GetWidget()->GetNativeWindow()));
+            wm::GetShadowElevationConvertDefault(widget->GetNativeWindow()));
+  EXPECT_FALSE(shell_surface->server_side_resize());
+
+  // Ensure the window targeter correctly passes through events to areas of the
+  // window not covered by the shape.
+  gfx::Rect target_bounds = widget->GetWindowBoundsInScreen();
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  {
+    // Send an event to the point just outside of the region, it should not
+    // target the root surface.
+    gfx::Point location = target_bounds.origin() + gfx::Vector2d(9, 9);
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location,
+                         ui::EventTimeForNow(), 0, 0);
+    event_generator->Dispatch(&event);
+    EXPECT_NE(shell_surface->root_surface(),
+              GetTargetSurfaceForLocatedEvent(&event));
+  }
+  {
+    // Send an event to the point just within of the region, it should target
+    // the root surface.
+    gfx::Point location = target_bounds.origin() + gfx::Vector2d(11, 11);
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location,
+                         ui::EventTimeForNow(), 0, 0);
+    event_generator->Dispatch(&event);
+    EXPECT_EQ(shell_surface->root_surface(),
+              GetTargetSurfaceForLocatedEvent(&event));
+  }
 }
 
 // Assert SetShape() updates the host window's layer with the most recent shape
@@ -3348,9 +3377,10 @@ TEST_F(ShellSurfaceTest, SetShapeUpdatesAndUnsetsCorrectlyAfterCommit) {
   std::unique_ptr<ShellSurface> shell_surface =
       test::ShellSurfaceBuilder({64, 64}).BuildShellSurface();
   shell_surface->OnSetServerStartResize();
-  shell_surface->OnSetFrame(SurfaceFrameType::NORMAL);
+  shell_surface->OnSetFrame(SurfaceFrameType::SHADOW);
   shell_surface->root_surface()->Commit();
-  ASSERT_TRUE(shell_surface->GetWidget());
+  const views::Widget* widget = shell_surface->GetWidget();
+  ASSERT_TRUE(widget);
 
   // Create several unique window shapes.
   const cc::Region shape_region_1 =
@@ -3364,33 +3394,165 @@ TEST_F(ShellSurfaceTest, SetShapeUpdatesAndUnsetsCorrectlyAfterCommit) {
   // applied to the host window's layer.
   shell_surface->SetShape(shape_region_1);
   shell_surface->SetShape(shape_region_2);
-  const ShellSurfaceBase::ShapeRects* layer_shape_rects =
-      shell_surface->host_window()->layer()->alpha_shape();
+  const ui::Layer::ShapeRects* layer_shape_rects =
+      widget->GetNativeWindow()->layer()->alpha_shape();
   EXPECT_FALSE(layer_shape_rects);
 
   // After surface commit only the most recent shape should have been applied.
   shell_surface->root_surface()->Commit();
-  layer_shape_rects = shell_surface->host_window()->layer()->alpha_shape();
+  layer_shape_rects = widget->GetNativeWindow()->layer()->alpha_shape();
   EXPECT_TRUE(layer_shape_rects);
   EXPECT_EQ(shape_region_2, CreateRegion(*layer_shape_rects));
 
   // Apply another shape to the surface. The layer shape should not change.
   shell_surface->SetShape(shape_region_3);
-  layer_shape_rects = shell_surface->host_window()->layer()->alpha_shape();
+  layer_shape_rects = widget->GetNativeWindow()->layer()->alpha_shape();
   EXPECT_TRUE(layer_shape_rects);
   EXPECT_EQ(shape_region_2, CreateRegion(*layer_shape_rects));
 
   // The new shape should have been applied after the surface is committed.
   shell_surface->root_surface()->Commit();
-  layer_shape_rects = shell_surface->host_window()->layer()->alpha_shape();
+  layer_shape_rects = widget->GetNativeWindow()->layer()->alpha_shape();
   EXPECT_TRUE(layer_shape_rects);
   EXPECT_EQ(shape_region_3, CreateRegion(*layer_shape_rects));
 
   // Setting a null shape should unset the host window's layer shape.
   shell_surface->SetShape(absl::nullopt);
   shell_surface->root_surface()->Commit();
-  layer_shape_rects = shell_surface->host_window()->layer()->alpha_shape();
+  layer_shape_rects = widget->GetNativeWindow()->layer()->alpha_shape();
   EXPECT_FALSE(layer_shape_rects);
+}
+
+// SetShape() is not supported for windows with the frame enabled.
+TEST_F(ShellSurfaceTest, SetShapeWithFrameNotSupported) {
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({64, 64}).BuildShellSurface();
+  shell_surface->OnSetServerStartResize();
+  shell_surface->OnSetFrame(SurfaceFrameType::NORMAL);
+  shell_surface->root_surface()->Commit();
+  const views::Widget* widget = shell_surface->GetWidget();
+  ASSERT_TRUE(widget);
+
+  // Create a window shape from two unique rects.
+  const cc::Region shape_region =
+      CreateRegion({{10, 10, 32, 32}, {20, 20, 32, 32}});
+
+  // Try to apply the shape to the surface and commit, this should have no
+  // effect.
+  shell_surface->SetShape(shape_region);
+  const ui::Layer::ShapeRects* layer_shape_rects =
+      widget->GetNativeWindow()->layer()->alpha_shape();
+  shell_surface->root_surface()->Commit();
+  layer_shape_rects = widget->GetNativeWindow()->layer()->alpha_shape();
+  EXPECT_FALSE(layer_shape_rects);
+}
+
+TEST_F(ShellSurfaceTest, MaximizedOrFullscreenInitialState) {
+  UpdateDisplay("800x600, 800x600");
+  constexpr gfx::Size kEmptySize{0, 0};
+  // on secondary display.
+  constexpr gfx::Rect kInitialBounds{800, 0, 100, 100};
+  const auto primary_display = GetPrimaryDisplay();
+  const auto secondary_display = GetSecondaryDisplay();
+  for (auto initial_state : {chromeos::WindowStateType::kMaximized,
+                             chromeos::WindowStateType::kFullscreen}) {
+    std::stringstream ss;
+    ss << initial_state;
+    SCOPED_TRACE(ss.str());
+    gfx::Rect primary_bounds =
+        initial_state == chromeos::WindowStateType::kMaximized
+            ? primary_display.work_area()
+            : primary_display.bounds();
+    gfx::Rect secondary_bounds =
+        initial_state == chromeos::WindowStateType::kMaximized
+            ? secondary_display.work_area()
+            : secondary_display.bounds();
+    // While it is possible to start in fullscreen, SessionRestore restores the
+    // originally fullscreen window to maximized, so the fullscreen window won't
+    // have restore bounds.
+    bool verify_restore_bounds =
+        initial_state == chromeos::WindowStateType::kMaximized;
+    {
+      ConfigureData config_data;
+      std::unique_ptr<ShellSurface> shell_surface =
+          test::ShellSurfaceBuilder(kEmptySize)
+              .SetConfigureCallback(base::BindRepeating(
+                  &Configure, base::Unretained(&config_data)))
+              .SetWindowState(initial_state)
+              .BuildShellSurface();
+      EXPECT_EQ(1u, config_data.count);
+      EXPECT_EQ(initial_state, config_data.state_type);
+      EXPECT_EQ(primary_bounds, config_data.suggested_bounds);
+    }
+    {
+      ConfigureData config_data;
+      std::unique_ptr<ShellSurface> shell_surface =
+          test::ShellSurfaceBuilder(kEmptySize)
+              .SetConfigureCallback(base::BindRepeating(
+                  &Configure, base::Unretained(&config_data)))
+              .SetWindowState(initial_state)
+              .SetDisplayId(secondary_display.id())
+              .BuildShellSurface();
+      EXPECT_EQ(1u, config_data.count);
+      EXPECT_EQ(initial_state, config_data.state_type);
+      EXPECT_EQ(secondary_bounds, config_data.suggested_bounds);
+    }
+    {
+      ConfigureData config_data;
+      std::unique_ptr<ShellSurface> shell_surface =
+          test::ShellSurfaceBuilder(kEmptySize)
+              .SetConfigureCallback(base::BindRepeating(
+                  &Configure, base::Unretained(&config_data)))
+              .SetWindowState(initial_state)
+              .SetBounds(kInitialBounds)
+              .BuildShellSurface();
+      EXPECT_EQ(1u, config_data.count);
+      EXPECT_EQ(initial_state, config_data.state_type);
+      EXPECT_EQ(secondary_bounds, config_data.suggested_bounds);
+      EXPECT_EQ(secondary_bounds,
+                shell_surface->GetWidget()->GetWindowBoundsInScreen());
+      if (verify_restore_bounds) {
+        EXPECT_EQ(kInitialBounds,
+                  shell_surface->GetWidget()->GetRestoredBounds());
+      }
+    }
+    {
+      ConfigureData config_data;
+      std::unique_ptr<ShellSurface> shell_surface =
+          test::ShellSurfaceBuilder(kEmptySize)
+              .SetConfigureCallback(base::BindRepeating(
+                  &Configure, base::Unretained(&config_data)))
+              .SetWindowState(initial_state)
+              .SetBounds(kInitialBounds)
+              .BuildShellSurface();
+      EXPECT_EQ(1u, config_data.count);
+      EXPECT_EQ(initial_state, config_data.state_type);
+      EXPECT_EQ(secondary_bounds, config_data.suggested_bounds);
+      if (verify_restore_bounds) {
+        EXPECT_EQ(kInitialBounds,
+                  shell_surface->GetWidget()->GetRestoredBounds());
+      }
+    }
+    {
+      // The display id has higher priority.
+      ConfigureData config_data;
+      std::unique_ptr<ShellSurface> shell_surface =
+          test::ShellSurfaceBuilder(kEmptySize)
+              .SetConfigureCallback(base::BindRepeating(
+                  &Configure, base::Unretained(&config_data)))
+              .SetWindowState(initial_state)
+              .SetBounds(kInitialBounds)
+              .SetDisplayId(primary_display.id())
+              .BuildShellSurface();
+      EXPECT_EQ(1u, config_data.count);
+      EXPECT_EQ(initial_state, config_data.state_type);
+      EXPECT_EQ(primary_bounds, config_data.suggested_bounds);
+      if (verify_restore_bounds) {
+        EXPECT_EQ(kInitialBounds,
+                  shell_surface->GetWidget()->GetRestoredBounds());
+      }
+    }
+  }
 }
 
 }  // namespace exo

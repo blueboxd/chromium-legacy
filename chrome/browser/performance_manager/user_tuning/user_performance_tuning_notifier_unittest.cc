@@ -58,7 +58,7 @@ class UserPerformanceTuningNotifierTest : public GraphTestHarness {
   class TestProcessMetricsDecorator
       : public performance_manager::ProcessMetricsDecorator {
    public:
-    void RequestImmediateMetrics() override {
+    void OnRequestImmediateMetrics() override {
       ++request_immediate_metrics_count_;
     }
 

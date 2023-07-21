@@ -22,7 +22,9 @@ import {FakeCellularSetupDelegate} from './fake_cellular_setup_delegate.js';
 import {FakeESimManagerRemote} from './fake_esim_manager_remote.js';
 import {MockMetricsPrivate} from './mock_metrics_private.js';
 
-suite('CrComponentsEsimFlowUiTest', function() {
+const suiteSuffix = 'smdsSupportEnabled';
+
+suite(`CrComponentsEsimFlowUiTest${suiteSuffix}`, function() {
   /** @type {string} */
   const ACTIVATION_CODE_VALID = 'LPA:1$ACTIVATION_CODE';
 
@@ -90,17 +92,9 @@ suite('CrComponentsEsimFlowUiTest', function() {
         wifiGuidPrefix + '_guid', ConnectionStateType.kNotConnected);
   }
 
-  test('Error fetching profiles', async function() {
-    eSimManagerRemote.addEuiccForTest(0);
-    const availableEuiccs = await eSimManagerRemote.getAvailableEuiccs();
-    const euicc = availableEuiccs.euiccs[0];
-
-    euicc.setRequestPendingProfilesResult(ESimOperationResult.kFailure);
-    eSimPage.initSubflow();
-
-    await flushAsync();
-    endFlowAndVerifyResult(ESimSetupFlowResult.ERROR_FETCHING_PROFILES);
-  });
+  function setSmdsSupportEnabled(value) {
+    eSimPage.smdsSupportEnabled_ = value;
+  }
 
   setup(async function() {
     networkConfigRemote = new FakeNetworkConfig();
@@ -118,6 +112,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
     eSimPage = document.createElement('esim-flow-ui');
     eSimPage.delegate = new FakeCellularSetupDelegate();
     document.body.appendChild(eSimPage);
+    setSmdsSupportEnabled(true);
     flush();
 
     ironPages = eSimPage.$$('iron-pages');
@@ -158,8 +153,8 @@ suite('CrComponentsEsimFlowUiTest', function() {
   /**
    * Simulates navigating forward to trigger a profile install.
    * Asserts that the button_bar and page state is enabled and not busy before
-   * navigating forward. Asserts that the button_bar and page state is disabled
-   * and busy during the install.
+   * navigating forward. Asserts that the button_bar and page state is
+   * disabled and busy during the install.
    * @param {HTMLElement} page
    * @param {ButtonState} previousBackButtonState
    */
@@ -276,6 +271,18 @@ suite('CrComponentsEsimFlowUiTest', function() {
     assertSelectedPage(ESimPageName.CONFIRMATION_CODE, confirmationCodePage);
     assertButtonState(forwardButtonShouldBeEnabled, backButtonState);
   }
+
+  test('Error fetching profiles', async function() {
+    eSimManagerRemote.addEuiccForTest(0);
+    const availableEuiccs = await eSimManagerRemote.getAvailableEuiccs();
+    const euicc = availableEuiccs.euiccs[0];
+
+    euicc.setRequestPendingProfilesResult(ESimOperationResult.kFailure);
+    eSimPage.initSubflow();
+
+    await flushAsync();
+    endFlowAndVerifyResult(ESimSetupFlowResult.ERROR_FETCHING_PROFILES);
+  });
 
   suite('Add eSIM flow with zero pending profiles', function() {
     let euicc;
@@ -462,7 +469,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
           /*backButtonState*/ ButtonState.ENABLED);
     }
 
-    [1, 2].forEach(profileCount => function() {
+    [1, 2].forEach(profileCount => {
       test(`Skip discovery flow (${profileCount} profiles)`, async function() {
         await setupWithProfiles(profileCount);
 
@@ -479,7 +486,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
       });
     });
 
-    [1, 2].forEach(profileCount => function() {
+    [1, 2].forEach(profileCount => {
       test(
           'Navigate backwards from skip discovery flow with confirmation code',
           async function() {
@@ -543,7 +550,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
           /*backButtonState*/ ButtonState.HIDDEN);
     }
 
-    [1, 2].forEach(profileCount => function() {
+    [1, 2].forEach(profileCount => {
       test('Select profile flow', async function() {
         await setupWithProfiles(profileCount);
 
@@ -557,16 +564,15 @@ suite('CrComponentsEsimFlowUiTest', function() {
       });
     });
 
-    [1, 2].forEach(profileCount => function() {
+    [1, 2].forEach(profileCount => {
       test(
           'Select profile with valid confirmation code flow', async function() {
             await setupWithProfiles(profileCount);
 
             const availableEuiccs =
                 await eSimManagerRemote.getAvailableEuiccs();
-            const profileList =
-                await availableEuiccs.euiccs[0].getProfileList();
-            profileList.profiles[0].setProfileInstallResultForTest(
+            const euicc = availableEuiccs.euiccs[0];
+            euicc.setProfileInstallResultForTest(
                 ProfileInstallResult.kErrorNeedsConfirmationCode);
 
             await selectProfile();
@@ -577,8 +583,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
                 /*backButtonState*/ ButtonState.ENABLED);
             assertFocusDefaultButtonEventFired();
 
-            profileList.profiles[0].setProfileInstallResultForTest(
-                ProfileInstallResult.kSuccess);
+            euicc.setProfileInstallResultForTest(ProfileInstallResult.kSuccess);
             await enterConfirmationCode(
                 /*backButtonState*/ ButtonState.ENABLED);
 
@@ -590,7 +595,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
           });
     });
 
-    [1, 2].forEach(profileCount => function() {
+    [1, 2].forEach(profileCount => {
       test(
           'Navigate backwards from select profile with confirmation code flow',
           async function() {
@@ -598,9 +603,8 @@ suite('CrComponentsEsimFlowUiTest', function() {
 
             const availableEuiccs =
                 await eSimManagerRemote.getAvailableEuiccs();
-            const profileList =
-                await availableEuiccs.euiccs[0].getProfileList();
-            profileList.profiles[0].setProfileInstallResultForTest(
+            const euicc = availableEuiccs.euiccs[0];
+            euicc.setProfileInstallResultForTest(
                 ProfileInstallResult.kErrorNeedsConfirmationCode);
 
             await selectProfile();
@@ -624,7 +628,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
           });
     });
 
-    [1, 2].forEach(profileCount => function() {
+    [1, 2].forEach(profileCount => {
       test('End flow before installation attempted', async function() {
         await setupWithProfiles(profileCount);
 
@@ -633,7 +637,7 @@ suite('CrComponentsEsimFlowUiTest', function() {
       });
     });
 
-    [1, 2].forEach(profileCount => function() {
+    [1, 2].forEach(profileCount => {
       test('No available network before installation', async function() {
         await setupWithProfiles(profileCount);
 
@@ -644,14 +648,14 @@ suite('CrComponentsEsimFlowUiTest', function() {
       });
     });
 
-    [1, 2].forEach(profileCount => function() {
+    [1, 2].forEach(profileCount => {
       test('No available network after installation', async function() {
         await setupWithProfiles(profileCount);
 
         await selectProfile();
         await flushAsync();
-        // Right after installation, internet connection is lost and the dialog
-        // closes, NO_NETWORK should not be reported.
+        // Right after installation, internet connection is lost and the
+        // dialog closes, NO_NETWORK should not be reported.
         takeWifiNetworkOffline();
         await flushAsync();
 

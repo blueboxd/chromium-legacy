@@ -11,7 +11,7 @@
 <translation id="1125124144982679672">Kuka käyttää Chromea?</translation>
 <translation id="1142745911746664600">Chromen päivitys epäonnistui</translation>
 <translation id="1149651794389918149">Kirjaudu Chromeen. Jos haluat kirjautua tilille vain kerran, voit <ph name="GUEST_LINK_BEGIN" />käyttää laitetta vieraana<ph name="GUEST_LINK_END" />.</translation>
-<translation id="1152920704813762236">Tietoa Chrome-käyttöjärjestelmästä</translation>
+<translation id="1152920704813762236">Tietoa ChromeOS:stä</translation>
 <translation id="1154147086299354128">Avaa Chr&amp;omessa</translation>
 <translation id="1203500561924088507">Kiitos asennuksesta. Selain pitää käynnistää uudelleen ennen kuin <ph name="BUNDLE_NAME" /> otetaan käyttöön.</translation>
 <translation id="1278833599417554002">Päivitä &amp;Chrome käynnistämällä se uudelleen</translation>
@@ -79,6 +79,7 @@
 <translation id="235650106824528204">Työprofiilin järjestelmänvalvoja voi poistaa tämän profiilin käytön aikana luotua Chrome-dataa (esim. kirjanmerkit, historia, salasanat ja muut asetukset). <ph name="LEARN_MORE" /></translation>
 <translation id="2359808026110333948">Jatka</translation>
 <translation id="2401189691232800402">Chrome-käyttöjärjestelmä</translation>
+<translation id="2409816192575564775">{NUM_DEVICES,plural, =0{Yhdellä tai useammalla Chrome-laajennuksella oli pääsy yhdelle HID-laitteelle}=1{Yhdellä tai useammalla Chrome-laajennuksella on pääsy yhdelle HID-laitteelle}other{Yhdellä tai useammalla Chrome-laajennuksella on pääsy # HID-laitteelle}}</translation>
 <translation id="2424440923901031101">Tämä laajennus rikkoo Chrome Web Storen käytäntöä ja saattaa olla vaarallinen. Poista se Chromesta, jotta se ei enää voi nähdä tai muuttaa dataasi sivustoilla, joilla vierailet, mukaan lukien henkilökohtaisia tietojasi.</translation>
 <translation id="2467438592969358367">Google Chrome yrittää viedä salasanojasi tiedostoon. Salli tämä kirjoittamalla Windows-salasanasi.</translation>
 <translation id="2472092250898121027">Tämä laajennus sisältää haittaohjelmia, ja se ei ole turvallinen. Poista se Chromesta, jotta se ei enää voi nähdä tai muuttaa dataasi sivustoilla, joilla vierailet, mukaan lukien henkilökohtaisia tietojasi.</translation>
@@ -116,7 +117,6 @@
 <translation id="2929907241665500097">Chromea ei päivitetty, vaan jotain meni pieleen. <ph name="BEGIN_LINK" />Korjaa Chromen päivitysongelmat ja epäonnistuneet päivitykset<ph name="END_LINK" />.</translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – Kirjautuminen verkkoon – Chrome</translation>
 <translation id="3019382870990049182">Päivitä &amp;ChromeOS Flex käynnistämällä se uudelleen</translation>
-<translation id="3033660625209020231">{NUM_DEVICES,plural, =0{Google Chrome ‑laajennukset käyttivät HID-laitteita}=1{Google Chrome ‑laajennukset käyttävät HID-laitteita}other{Google Chrome ‑laajennukset käyttävät # HID-laitetta}}</translation>
 <translation id="303514781271618814">Chrome kokeilee uusia ominaisuuksia, joiden avulla sivustot voivat tarjota saman selauskokemuksen vähemmällä datalla.</translation>
 <translation id="3037838751736561277">Google Chrome on käynnissä taustalla.</translation>
 <translation id="3038232873781883849">Asennetaan…</translation>
@@ -224,7 +224,6 @@
 <translation id="4970947549776831107">Chrome on estänyt tiedoston, koska tämäntyyppiset tiedostot ovat vaarallisia</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5003967926796347400">Valitse "Google Salasanat"</translation>
-<translation id="5005958605836556244">{NUM_DEVICES,plural, =0{Google Chrome ‑laajennus käytti HID-laitteita}=1{Google Chrome ‑laajennus käyttää 1 HID-laitetta}other{Google Chrome ‑laajennus käyttää # HID-laitetta}}</translation>
 <translation id="5098668839038261629">Kun tämä on päällä, sinut kirjataan ulos myös Chromesta</translation>
 <translation id="5132929315877954718">Löydät hienoja sovelluksia, pelejä ja teemoja Google Chromelle.</translation>
 <translation id="5139423532931106058">Muokkaa Chrome-profiiliasi</translation>
@@ -240,6 +239,7 @@
 <translation id="5394833366792865639">Jaa Chrome-välilehti</translation>
 <translation id="5412485296464121825">Sivustot voivat tallentaa Chromeen tietoja kiinnostuksen kohteistasi. Jos esimerkiksi käyt sivustolla, koska haluat ostaa kengät maratonia varten, sivusto voi määritellä maratonjuoksun sinua kiinnostavaksi aiheeksi. Jos myöhemmin käyt toisella sivustolla, jolla ilmoittaudut juoksukilpailuun, kyseinen sivusto voi näyttää sinulle mainoksen juoksukengistä kiinnostuksen kohteidesi perusteella.</translation>
 <translation id="5430073640787465221">Asetustiedostosi on virheellinen. Google Chrome ei voi palauttaa asetuksiasi.</translation>
+<translation id="5521146392841465297">Chrome suosittelee, että tarkistat tämän laajennukseen.</translation>
 <translation id="5524761631371622910">Jos Chrome on sijoittanut sinut aktiiviseen kokeiluun satunnaisesti, selaushistoriasi vaikuttaa näkemiisi mainoksiin ja alla kuvatulla tavalla arvioituihin kiinnostuksen kohteisiin kokeilujen aikana. Yksityisyytesi suojaamiseksi Chrome poistaa kiinnostuksen kohteesi kuukausittain.</translation>
 <translation id="5530733413481476019">Chromen nopeuttaminen</translation>
 <translation id="5566025111015594046">Google Chrome (saapuva mDNS)</translation>
@@ -277,6 +277,7 @@
 <translation id="624230925347970731">Chrome suljetaan pian</translation>
 <translation id="6247557882553405851">Googlen Salasanojen ylläpito</translation>
 <translation id="6273793429163604305">Paikoillanne…</translation>
+<translation id="6277547788421725101">Vanhempasi on laittanut Chromen "Sivustojen, sovellusten ja laajennusten käyttöluvat" pois päältä</translation>
 <translation id="6291089322031436445">Chromen kehittäjäversion sovellukset</translation>
 <translation id="6291549208091401781">Google Chrome on jo asennettuna kaikille tietokoneen käyttäjille.</translation>
 <translation id="6326175484149238433">Poista Chromesta</translation>
@@ -332,6 +333,7 @@ Sivustoille ja sovelluksille myöntämäsi luvat saattavat koskea tätä tiliä.
 <translation id="7398801000654795464">Chromeen kirjautunut käyttäjä: <ph name="USER_EMAIL_ADDRESS" />. Kirjaudu uudelleen sisään samalla tilillä.</translation>
 <translation id="7410958280246779049">Chrome esti tämän tiedoston, koska se on vaarallinen</translation>
 <translation id="7412494426921990001">Valitse Chrome-valikko</translation>
+<translation id="742463671275348370">{NUM_DEVICES,plural, =0{Yhdellä tai useammalla Chrome-laajennuksella oli pääsy yhdelle USB-laitteelle}=1{Yhdellä tai useammalla Chrome-laajennuksella on pääsy yhdelle USB-laitteelle}other{Yhdellä tai useammalla Chrome-laajennuksella on pääsy # USB-laitteelle}}</translation>
 <translation id="7426611252293106642">Google Chrome ei välttämättä toimi oikein, koska tämä Linux-jakelu ei enää tue sitä</translation>
 <translation id="7449333426561673451">{COUNT,plural, =1{Organisaatiosi sulkee Chromen automaattisesti, kun sitä ei ole käytetty 1 minuuttiin.}other{Organisaatiosi sulkee Chromen automaattisesti, kun sitä ei ole käytetty # minuuttiin.}}</translation>
 <translation id="7452987490177144319">{COUNT,plural, =1{Organisaatiosi poistaa selausdatan automaattisesti, kun Chromea ei ole käytetty 1 minuuttiin. Tämä voi sisältää historian, automaattisen täytön ja lataukset. Välilehdet pysyvät auki.}other{Organisaatiosi poistaa selausdatan automaattisesti, kun Chromea ei ole käytetty # minuuttiin. Tämä voi sisältää historian, automaattisen täytön ja lataukset. Välilehdet pysyvät auki.}}</translation>

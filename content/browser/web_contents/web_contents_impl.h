@@ -875,6 +875,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       PrerenderTriggerType trigger_type,
       const std::string& embedder_histogram_suffix,
       ui::PageTransition page_transition,
+      PreloadingHoldbackStatus holdback_status_override,
       PreloadingAttempt* preloading_attempt,
       absl::optional<base::RepeatingCallback<bool(const GURL&)>>
           url_match_predicate = absl::nullopt) override;
@@ -1463,6 +1464,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                            PopupWindowBrowserNavResumeLoad);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
                            SuppressedPopupWindowBrowserNavResumeLoad);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostSitePerProcessTest,
+                           BrowserClosesPopupIntersectsPermissionPrompt);
 
   // So |find_request_manager_| can be accessed for testing.
   friend class FindRequestManagerTest;
@@ -2305,6 +2308,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       ui::NativeTheme::PreferredColorScheme::kLight;
   ui::NativeTheme::PreferredContrast preferred_contrast_ =
       ui::NativeTheme::PreferredContrast::kNoPreference;
+  bool prefers_reduced_transparency_ = false;
 
   // Tracks clients who want to be notified when a JavaScript dialog is
   // dismissed.

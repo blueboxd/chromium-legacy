@@ -1492,7 +1492,8 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
 
   CHECK(!render_frame->in_frame_tree_);
   render_frame->in_frame_tree_ = true;
-#if !defined(ARCH_CPU_ARM64)
+#if !((BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_32_BITS)) || \
+      (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
   render_frame->added_to_frame_tree_stack_trace_.emplace();
 #endif
   render_frame->Initialize(nullptr);
@@ -1604,7 +1605,8 @@ void RenderFrameImpl::CreateFrame(
     // call to createLocalChild.
     CHECK(!render_frame->in_frame_tree_);
     render_frame->in_frame_tree_ = true;
-#if !defined(ARCH_CPU_ARM64)
+#if !((BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_32_BITS)) || \
+      (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
     render_frame->added_to_frame_tree_stack_trace_.emplace();
 #endif
   } else {
@@ -2161,10 +2163,6 @@ void RenderFrameImpl::Delete(
       // main frame when a commit (and ownership transfer) is imminent.
       // TODO(dcheng): This is the case of https://crbug.com/838348.
       DCHECK(is_main_frame_);
-      // This check is not enabled on Android, since it was previously much
-      // easier to trigger this race there, and it's still unclear what's
-      // causing the new race.
-#if !BUILDFLAG(IS_ANDROID)
       if (in_frame_tree_) {
         // This remote should always be non-null when intent ==
         // kSpeculativeMainFrameForNavigationCancelled.
@@ -2191,7 +2189,6 @@ void RenderFrameImpl::Delete(
         // No need to signal anything; only failure is signalled.
         helper.reset();
       }
-#endif  // !BUILDFLAG(IS_ANDROID)
       break;
   }
 
@@ -3572,7 +3569,8 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
 
   CHECK(!child_render_frame->in_frame_tree_);
   child_render_frame->in_frame_tree_ = true;
-#if !defined(ARCH_CPU_ARM64)
+#if !((BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_32_BITS)) || \
+      (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
   child_render_frame->added_to_frame_tree_stack_trace_.emplace();
 #endif
   child_render_frame->Initialize(/*parent=*/GetWebFrame());
@@ -5079,7 +5077,8 @@ bool RenderFrameImpl::SwapIn(WebFrame* previous_web_frame) {
 
   CHECK(!in_frame_tree_);
   in_frame_tree_ = true;
-#if !defined(ARCH_CPU_ARM64)
+#if !((BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_32_BITS)) || \
+      (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
   added_to_frame_tree_stack_trace_.emplace();
 #endif
 
@@ -5584,7 +5583,8 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
 
   params->initiator_activation_and_ad_status =
       blink::GetNavigationInitiatorActivationAndAdStatus(
-          info->url_request.HasUserGesture(), info->is_ad_script_in_stack);
+          info->url_request.HasUserGesture(), info->initiator_frame_is_ad,
+          info->is_ad_script_in_stack);
 
   GetFrameHost()->OpenURL(std::move(params));
 }
@@ -5848,7 +5848,8 @@ void RenderFrameImpl::BeginNavigationInternal(
   blink::mojom::NavigationInitiatorActivationAndAdStatus
       initiator_activation_and_ad_status =
           blink::GetNavigationInitiatorActivationAndAdStatus(
-              info->url_request.HasUserGesture(), info->is_ad_script_in_stack);
+              info->url_request.HasUserGesture(), info->initiator_frame_is_ad,
+              info->is_ad_script_in_stack);
 
   blink::mojom::BeginNavigationParamsPtr begin_navigation_params =
       blink::mojom::BeginNavigationParams::New(
@@ -6367,7 +6368,8 @@ WebView* RenderFrameImpl::CreateNewWindow(
 
   params->initiator_activation_and_ad_status =
       blink::GetNavigationInitiatorActivationAndAdStatus(
-          request.HasUserGesture(), GetWebFrame()->IsAdScriptInStack());
+          request.HasUserGesture(), GetWebFrame()->IsAdFrame(),
+          GetWebFrame()->IsAdScriptInStack());
 
   // We preserve this information before sending the message since |params| is
   // moved on send.

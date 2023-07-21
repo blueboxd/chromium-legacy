@@ -372,6 +372,7 @@
 <translation id="397105322502079400">গণনা কৰি থকা হৈছে…</translation>
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> দিনতকৈ পুৰণি প্ৰিণ্টৰ কামসমূহ আঁতৰোৱা হ’ব</translation>
 <translation id="3993704782688964914">আপোনাৰ <ph name="DEVICE_NAME" />টো এতিয়া আপ টু ডে’ট হৈ আছে</translation>
+<translation id="3998976413398910035">প্ৰিণ্টাৰ পৰিচালনা কৰক</translation>
 <translation id="4003384961948020559">বিফল হৈছে - আউটপুট ভৰ্তি হৈ গৈছে</translation>
 <translation id="4021031199988160623">পৰীক্ষা কৰিবলৈ লেপটপ ম’ডলৈ সলনি কৰক</translation>
 <translation id="4034824040120875894">প্ৰিণ্টাৰ</translation>
@@ -588,6 +589,7 @@
 <translation id="5620281292257375798">কেৱল অভ্যন্তৰীণ</translation>
 <translation id="5649768706273821470">শুনক</translation>
 <translation id="5655283760733841251">কীব’ৰ্ডৰ উজ্জ্বলতা আপ</translation>
+<translation id="5655776422854483175">কোনো প্ৰিণ্টিং কাৰ্য নাই</translation>
 <translation id="5659593005791499971">ইমেইল</translation>
 <translation id="5662240986744577912">গোপনীয়তাৰ স্ক্ৰীন ট’গল কৰক</translation>
 <translation id="5669267381087807207">সক্ৰিয় কৰা হৈছে</translation>
@@ -668,7 +670,7 @@
 <translation id="6278428485366576908">থীম</translation>
 <translation id="6280912520669706465">এআৰচি</translation>
 <translation id="6284632978374966585">গাঢ় ৰঙৰ থীম অন কৰক</translation>
-<translation id="6285899124799306373">লঞ্চাৰ খোলক</translation>
+<translation id="628726841779494414">প্ৰিণ্টাৰৰ ছেটিঙত আপোনাৰ প্ৰিণ্টাৰ পৰিচালনা কৰক</translation>
 <translation id="629550705077076970">কীব’ৰ্ড ডিমিং</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> পৰীক্ষাটো বাতিল কৰা হৈছে</translation>
 <translation id="631063167932043783">Explore এপ্‌</translation>
@@ -917,7 +919,6 @@
 <translation id="8312330582793120272">মিডিয়া প্লে’ কৰক</translation>
 <translation id="8318753676953949627">কোনো প্ৰতিচ্ছবি নাই</translation>
 <translation id="8329018942023753850">কেলকুলেটৰ এপ্</translation>
-<translation id="8335869473001018124">সন্ধান খোলক</translation>
 <translation id="8336739000755212683">ডিভাইচ একাউণ্টৰ প্ৰতিচ্ছবি সলনি কৰক</translation>
 <translation id="8347227221149377169">প্ৰিণ্টিঙৰ কামসমূহ</translation>
 <translation id="8351855506390808906">কীমেপিং টাচ্চ পইণ্ট</translation>

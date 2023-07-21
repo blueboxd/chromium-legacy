@@ -1,11 +1,9 @@
-#!/usr/bin/env python3
 # Copyright 2012 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Extracts native methods from a Java file and generates the JNI bindings.
-If you change this, please run and update the tests."""
-import argparse
+"""Entry point for "intermediates" command."""
+
 import base64
 import collections
 import dataclasses
@@ -19,13 +17,6 @@ import sys
 import tempfile
 import textwrap
 import zipfile
-
-# TODO(crbug.com/1410871): Move nested classes into separate files and remove
-#     this hack (or create a separate main.py).
-# https://stackoverflow.com/questions/15159854/python-namespace-main-class-not-isinstance-of-package-class
-if __name__ == '__main__':
-  import jni_generator
-  sys.exit(jni_generator.main())
 
 _FILE_DIR = os.path.dirname(__file__)
 _CHROMIUM_SRC = os.path.join(_FILE_DIR, os.pardir, os.pardir, os.pardir)
@@ -103,12 +94,10 @@ class NativeMethod(object):
     else:
       self.proxy_signature = self.signature
 
-    ptr_type = kwargs.get('ptr_type', 'int')
     first_param = self.params and self.params[0]
     if (first_param and first_param.java_type.is_primitive()
-        and first_param.java_type.primitive_name == ptr_type
+        and first_param.java_type.primitive_name == 'long'
         and first_param.name.startswith('native')):
-      self.ptr_type = ptr_type
       self.type = 'method'
       self.p0_type = kwargs.get('p0_type')
       if self.p0_type is None:
@@ -229,10 +218,10 @@ def GetParamsInStub(native):
 
 
 def _NameIsTestOnly(name):
-  return name.endswith('ForTest') or name.endswith('ForTesting')
+  return name.endswith(('ForTest', 'ForTests', 'ForTesting'))
 
 
-def ExtractNatives(type_resolver, contents, ptr_type):
+def ExtractNatives(type_resolver, contents):
   """Returns a list of dict containing information about a native method."""
   natives = []
   for match in _EXTRACT_NATIVES_REGEX.finditer(contents):
@@ -242,11 +231,9 @@ def ExtractNatives(type_resolver, contents, ptr_type):
                           native_class_name=match.group('native_class_name'),
                           return_type=return_type,
                           params=params,
-                          name=match.group('name').replace('native', ''),
-                          ptr_type=ptr_type)
+                          name=match.group('name').replace('native', ''))
     natives.append(native)
-  # TODO(agrieve): Enable sorting.
-  #natives.sort(key=lambda x: (x.name, x.signature))
+  natives.sort(key=lambda x: (x.name, x.signature))
   return natives
 
 
@@ -385,9 +372,7 @@ def ExtractCalledByNatives(type_resolver, contents):
     if '@CalledByNative' in line1:
       raise ParseError('could not parse @CalledByNative method signature',
                        line1, line2)
-  # TODO(agrieve): Enable sorting.
-  # called_by_natives.sort(
-  #     key=lambda x: (x.java_class_name, x.name, x.signature))
+  called_by_natives.sort(key=lambda x: (x.java_class_name, x.name, x.signature))
   return MangleCalledByNatives(called_by_natives)
 
 
@@ -521,8 +506,7 @@ class JNIFromJavaSource(object):
                        name=parsed_method.name,
                        return_type=parsed_method.return_type,
                        params=parsed_method.params,
-                       native_class_name=parsed_method.native_class_name,
-                       ptr_type='long'))
+                       native_class_name=parsed_method.native_class_name))
 
     self.natives = proxy_natives + parsed_file.non_proxy_natives
     self.called_by_natives = parsed_file.called_by_natives
@@ -559,8 +543,8 @@ class HeaderFileGeneratorHelper(object):
                class_name,
                module_name,
                fully_qualified_class,
-               use_proxy_hash,
-               package_prefix,
+               use_proxy_hash=False,
+               package_prefix=None,
                split_name=None,
                enable_jni_multiplexing=False):
     self.class_name = class_name
@@ -692,14 +676,20 @@ class InlHeaderFileGenerator(object):
     self.constant_fields = constant_fields
     self.type_resolver = type_resolver
     self.options = options
+
+    # from-jar does not define these flags.
+    kwargs = {}
+    if hasattr(options, 'use_proxy_hash'):
+      kwargs['use_proxy_hash'] = options.use_proxy_hash
+      kwargs['enable_jni_multiplexing'] = options.enable_jni_multiplexing
+      kwargs['package_prefix'] = options.package_prefix
+
     self.helper = HeaderFileGeneratorHelper(
         java_class.name,
         module_name,
         self.java_class.full_name_with_slashes,
-        self.options.use_proxy_hash,
-        self.options.package_prefix,
-        split_name=self.options.split_name,
-        enable_jni_multiplexing=self.options.enable_jni_multiplexing)
+        split_name=options.split_name,
+        **kwargs)
 
   def GetContent(self):
     """Returns the content of the JNI binding file."""
@@ -784,9 +774,9 @@ $METHOD_STUBS
     ]
 
   def GetIncludesString(self):
-    if not self.options.includes:
+    if not self.options.extra_includes:
       return ''
-    includes = self.options.includes.split(',')
+    includes = self.options.extra_includes
     return '\n'.join('#include "%s"' % x for x in includes) + '\n'
 
   def GetOpenNamespaceString(self):
@@ -1142,151 +1132,72 @@ def _CreateSrcJar(srcjar_path, gen_jni_class, jni_objs, *, script_name):
       zip_helpers.add_to_zip_hermetic(srcjar, zip_path, data=content)
 
 
-def DoGeneration(options):
-  try:
-    if options.jar_file:
-      jni_objs = _ParseClassFiles(options.jar_file, options.input_files,
-                                  options)
-    else:
-      jni_objs = [
-          JNIFromJavaSource.CreateFromFile(f, options)
-          for f in options.input_files
-      ]
-      _CheckNotEmpty(jni_objs)
-      _CheckSameModule(jni_objs)
-  except (ParseError, SyntaxError) as e:
-    sys.stderr.write(f'{e}\n')
-    sys.exit(1)
-
-  # Write .h files
-  for jni_obj, header_name in zip(jni_objs, options.output_names):
-    output_file = os.path.join(options.output_dir, header_name)
+def _WriteHeaders(jni_objs, output_names, output_dir):
+  for jni_obj, header_name in zip(jni_objs, output_names):
+    output_file = os.path.join(output_dir, header_name)
     content = jni_obj.GetContent()
     with action_helpers.atomic_output(output_file, 'w') as f:
       f.write(content)
 
+
+def _ParseSourceFiles(args):
+  jni_objs = []
+  for f in args.input_files:
+    parsed_file = parse.parse_java_file(f, package_prefix=args.package_prefix)
+    jni_objs.append(JNIFromJavaSource(parsed_file, args))
+  return jni_objs
+
+
+def GenerateFromSource(parser, args):
+  # Remove existing headers so that moving .java source files but not updating
+  # the corresponding C++ include will be a compile failure (otherwise
+  # incremental builds will usually not catch this).
+  _RemoveStaleHeaders(args.output_dir, args.output_names)
+
+  try:
+    jni_objs = _ParseSourceFiles(args)
+    _CheckNotEmpty(jni_objs)
+    _CheckSameModule(jni_objs)
+  except SyntaxError as e:
+    sys.stderr.write(f'{e}\n')
+    sys.exit(1)
+
+  _WriteHeaders(jni_objs, args.output_names, args.output_dir)
+
   # Write .srcjar
-  if options.srcjar_path:
+  if args.srcjar_path:
     # module_name is set only for proxy_natives.
     jni_objs = [x for x in jni_objs if x.proxy_natives]
     if jni_objs:
       gen_jni_class = proxy.get_gen_jni_class(
           short=False,
           name_prefix=jni_objs[0].module_name,
-          package_prefix=options.package_prefix)
-      _CreateSrcJar(options.srcjar_path,
+          package_prefix=args.package_prefix)
+      _CreateSrcJar(args.srcjar_path,
                     gen_jni_class,
                     jni_objs,
                     script_name=GetScriptName())
     else:
       # Only @CalledByNatives.
-      zipfile.ZipFile(options.srcjar_path, 'w').close()
+      zipfile.ZipFile(args.srcjar_path, 'w').close()
 
 
-def main():
-  description = """
-This script will parse the given java source code extracting the native
-declarations and print the header file to stdout (or a file).
-See SampleForTests.java for more details.
-  """
-  parser = argparse.ArgumentParser(description=description)
-
-  parser.add_argument(
-      '-j',
-      '--jar_file',
-      dest='jar_file',
-      help='Extract the list of input files from'
-      ' a specified jar file.'
-      ' Uses javap to extract the methods from a'
-      ' pre-compiled class. --input should point'
-      ' to pre-compiled Java .class files.')
-  parser.add_argument(
-      '-n',
-      dest='namespace',
-      help='Uses as a namespace in the generated header '
-      'instead of the javap class name, or when there is '
-      'no JNINamespace annotation in the java source.')
-  parser.add_argument('--input_file',
-                      action='append',
-                      required=True,
-                      dest='input_files',
-                      help='Input filenames, or paths within a .jar if '
-                      '--jar-file is used.')
-  parser.add_argument('--output_dir', required=True, help='Output directory.')
-  # TODO(agrieve): --prev_output_dir used only to make incremental builds work.
-  #     Remove --prev_output_dir at some point after 2022.
-  parser.add_argument('--prev_output_dir',
-                      help='Delete headers found in this directory.')
-  parser.add_argument('--output_name',
-                      action='append',
-                      dest='output_names',
-                      help='Output filenames within output directory.')
-  parser.add_argument('--srcjar-path',
-                      help='Path to output srcjar for generated .java files.')
-  parser.add_argument(
-      '--includes',
-      help='The comma-separated list of header files to '
-      'include in the generated header.')
-  parser.add_argument(
-      '--ptr_type',
-      default='int',
-      choices=['int', 'long'],
-      help='The type used to represent native pointers in '
-      'Java code. For 32-bit, use int; '
-      'for 64-bit, use long.')
-  parser.add_argument('--cpp', default='cpp', help='The path to cpp command.')
-  parser.add_argument(
-      '--javap',
-      default=build_utils.JAVAP_PATH,
-      help='The path to javap command.')
-  parser.add_argument(
-      '--enable_profiling',
-      action='store_true',
-      help='Add additional profiling instrumentation.')
-  parser.add_argument('--unchecked_exceptions',
-                      action='store_true',
-                      help='Do not check that no exceptions were thrown.')
-  parser.add_argument(
-      '--use_proxy_hash',
-      action='store_true',
-      help='Hashes the native declaration of methods used '
-      'in @JniNatives interface.')
-  parser.add_argument('--enable_jni_multiplexing',
-                      action='store_true',
-                      help='Enables JNI multiplexing for Java native methods')
-  parser.add_argument(
-      '--split_name',
-      help='Split name that the Java classes should be loaded from.')
-  parser.add_argument(
-      '--package_prefix',
-      help='Adds a prefix to the classes fully qualified-name. Effectively '
-      'changing a class name fromfoo.bar -> prefix.foo.bar')
-  # TODO(agrieve): --stamp used only to make incremental builds work.
-  #     Remove --stamp at some point after 2022.
-  parser.add_argument('--stamp',
-                      help='Process --prev_output_dir and touch this file.')
-  args = parser.parse_args()
-  if args.jar_file and args.package_prefix:
-    parser.error('--package_prefix not implemented for --jar_file')
-
-  # Kotlin files are not supported by jni_generator.py, but they do end up in
-  # the list of source files passed to jni_generator.py.
-  input_files = [f for f in args.input_files if not f.endswith('.kt')]
-
-  if args.prev_output_dir:
-    _RemoveStaleHeaders(args.prev_output_dir, [])
-
-  if args.stamp:
-    build_utils.Touch(args.stamp)
-    sys.exit(0)
+def GenerateFromJar(parser, args):
+  if not args.javap:
+    args.javap = shutil.which('javap')
+    if not args.javap:
+      parser.error('Could not find "javap" on your PATH. Use --javap to '
+                   'specify its location.')
 
   # Remove existing headers so that moving .java source files but not updating
   # the corresponding C++ include will be a compile failure (otherwise
   # incremental builds will usually not catch this).
   _RemoveStaleHeaders(args.output_dir, args.output_names)
 
-  DoGeneration(args)
+  try:
+    jni_objs = _ParseClassFiles(args.jar_file, args.input_files, args)
+  except SyntaxError as e:
+    sys.stderr.write(f'{e}\n')
+    sys.exit(1)
 
-
-if __name__ == '__main__':
-  sys.exit(main())
+  _WriteHeaders(jni_objs, args.output_names, args.output_dir)

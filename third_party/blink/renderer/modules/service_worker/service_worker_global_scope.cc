@@ -33,7 +33,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
@@ -87,6 +86,7 @@
 #include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
@@ -386,7 +386,7 @@ ServiceWorkerGlobalScope::GetInstalledScriptsManager() {
 }
 
 void ServiceWorkerGlobalScope::DidEvaluateScript() {
-  CHECK(!did_evaluate_script_);
+  DCHECK(!did_evaluate_script_);
   did_evaluate_script_ = true;
 
   int number_of_fetch_handlers =
@@ -1344,22 +1344,6 @@ void ServiceWorkerGlobalScope::OnBeforeStartEvent(bool is_offline_event) {
 
 void ServiceWorkerGlobalScope::OnIdleTimeout() {
   DCHECK(IsContextThread());
-  if (!did_evaluate_script_) {
-    // TODO(crbug.com/1462568): After investigating crash bug, the following
-    // DumpWithoutCrashing should be removed.
-    static bool has_dumped_without_crashing = false;
-    if (!has_dumped_without_crashing) {
-      has_dumped_without_crashing = true;
-      SCOPED_CRASH_KEY_BOOL("SWGlobalScope", "requested_termination",
-                            RequestedTermination());
-      SCOPED_CRASH_KEY_BOOL("SWGlobalScope", "is_installing", is_installing_);
-      SCOPED_CRASH_KEY_BOOL("SWGlobalScope", "did_idle_timeout",
-                            event_queue_->did_idle_timeout());
-      base::debug::DumpWithoutCrashing();
-    }
-  }
-  // Still we are not sure this is always true, hence DCHECK.
-  DCHECK(did_evaluate_script_);
   // RequestedTermination() returns true if ServiceWorkerEventQueue agrees
   // we should request the host to terminate this worker now.
   DCHECK(RequestedTermination());
@@ -1577,8 +1561,9 @@ void ServiceWorkerGlobalScope::StartFetchEvent(
 void ServiceWorkerGlobalScope::SetFetchHandlerExistence(
     FetchHandlerExistence fetch_handler_existence) {
   DCHECK(IsContextThread());
-  if (fetch_handler_existence == FetchHandlerExistence::EXISTS)
-    GetThread()->GetIsolate()->IsolateInForegroundNotification();
+  if (fetch_handler_existence == FetchHandlerExistence::EXISTS) {
+    GetThread()->GetWorkerBackingThread().SetForegrounded();
+  }
 }
 
 void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(

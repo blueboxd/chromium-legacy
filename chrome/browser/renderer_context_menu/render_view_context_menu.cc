@@ -286,6 +286,7 @@
 #include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/intent_helper/arc_intent_helper_mojo_ash.h"
+#include "chrome/browser/ash/input_method/editor_mediator.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/ash/url_handler.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
@@ -326,6 +327,11 @@ namespace {
 
 constexpr char kOpenLinkAsProfileHistogram[] =
     "RenderViewContextMenu.OpenLinkAsProfile";
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// TODO(b/289859230): Replace with finalized display string and translate.
+constexpr char16_t kContentContextOrca[] = u"Orca";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 base::OnceCallback<void(RenderViewContextMenu*)>* GetMenuShownCallback() {
   static base::NoDestructor<base::OnceCallback<void(RenderViewContextMenu*)>>
@@ -790,8 +796,7 @@ RenderViewContextMenu::RenderViewContextMenu(
       accessibility_labels_submenu_model_(this),
       embedder_web_contents_(GetWebContentsToUse(&render_frame_host)),
       autofill_context_menu_manager_(
-          autofill::PersonalDataManagerFactory::GetForProfile(
-              GetProfile()->GetOriginalProfile()),
+          autofill::PersonalDataManagerFactory::GetForProfile(GetProfile()),
           this,
           &menu_model_,
           GetBrowser(),
@@ -812,6 +817,8 @@ RenderViewContextMenu::RenderViewContextMenu(
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   pdf_ocr_submenu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+
+  observers_.AddObserver(&autofill_context_menu_manager_);
 }
 
 RenderViewContextMenu::~RenderViewContextMenu() = default;
@@ -2184,12 +2191,25 @@ void RenderViewContextMenu::AppendSpellingAndSearchSuggestionItems() {
     AppendSearchProvider();
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
-  if (params_.misspelled_word.empty() &&
-      DoesInputFieldTypeSupportEmoji(params_.input_field_type) &&
-      ui::IsEmojiPanelSupported()) {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_EMOJI,
-                                    IDS_CONTENT_CONTEXT_EMOJI);
-    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  if (params_.misspelled_word.empty()) {
+    bool render_separator = false;
+    if (DoesInputFieldTypeSupportEmoji(params_.input_field_type) &&
+        ui::IsEmojiPanelSupported()) {
+      render_separator = true;
+      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_EMOJI,
+                                      IDS_CONTENT_CONTEXT_EMOJI);
+    }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    if (ash::features::IsOrcaEnabled()) {
+      render_separator = true;
+      menu_model_.AddItem(IDC_CONTENT_CONTEXT_ORCA, kContentContextOrca);
+    }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    if (render_separator) {
+      menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    }
   }
 }
 
@@ -2490,13 +2510,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
     return extension_items_.IsCommandIdEnabled(id);
 
-  // Autofill items.
-  if (autofill::AutofillContextMenuManager::IsAutofillCustomCommandId(
-          autofill::AutofillContextMenuManager::CommandId(id))) {
-    return autofill_context_menu_manager_.IsCommandIdEnabled(
-        autofill::AutofillContextMenuManager::CommandId(id));
-  }
-
   if (id >= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST &&
       id <= IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_LAST) {
     return true;
@@ -2737,6 +2750,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return false;
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    case IDC_CONTENT_CONTEXT_ORCA:
+      return ash::features::IsOrcaEnabled() && params_.is_editable;
+#endif
+
     case IDC_FOLLOW:
     case IDC_UNFOLLOW:
       return !GetProfile()->IsOffTheRecord();
@@ -2774,11 +2792,6 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
 bool RenderViewContextMenu::IsCommandIdVisible(int id) const {
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
     return extension_items_.IsCommandIdVisible(id);
-  if (autofill::AutofillContextMenuManager::IsAutofillCustomCommandId(
-          autofill::AutofillContextMenuManager::CommandId(id))) {
-    return autofill_context_menu_manager_.IsCommandIdVisible(
-        autofill::AutofillContextMenuManager::CommandId(id));
-  }
   return RenderViewContextMenuBase::IsCommandIdVisible(id);
 }
 
@@ -2812,13 +2825,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       extension_items_.ExecuteCommand(id, source_web_contents_,
                                       render_frame_host, params_);
     }
-    return;
-  }
-
-  if (autofill::AutofillContextMenuManager::IsAutofillCustomCommandId(
-          autofill::AutofillContextMenuManager::CommandId(id))) {
-    autofill_context_menu_manager_.ExecuteCommand(
-        autofill::AutofillContextMenuManager::CommandId(id));
     return;
   }
 
@@ -3203,6 +3209,14 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 #endif  // BUILDFLAG(IS_CHROMEOS)
       break;
     }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    case IDC_CONTENT_CONTEXT_ORCA: {
+      CHECK(ash::features::IsOrcaEnabled());
+      ash::input_method::EditorMediator::Get()->HandleTrigger();
+      break;
+    }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     case IDC_FOLLOW:
       feed::FollowSite(source_web_contents_);

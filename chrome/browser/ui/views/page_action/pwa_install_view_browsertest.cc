@@ -261,11 +261,11 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
   void UninstallWebApp(const web_app::AppId& app_id) {
     base::RunLoop run_loop;
     web_app::WebAppProvider::GetForTest(browser()->profile())
-        ->install_finalizer()
+        ->scheduler()
         .UninstallWebApp(
             app_id, webapps::WebappUninstallSource::kAppMenu,
             base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
-              EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
+              EXPECT_TRUE(UninstallSucceeded(code));
               run_loop.Quit();
             }));
     run_loop.Run();
@@ -326,9 +326,11 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
   std::string intercept_request_path_;
   std::string intercept_request_response_;
 
-  raw_ptr<PageActionIconView, DanglingAcrossTasks> pwa_install_view_ = nullptr;
-  raw_ptr<content::WebContents, DanglingAcrossTasks> web_contents_ = nullptr;
-  raw_ptr<webapps::TestAppBannerManagerDesktop, DanglingAcrossTasks>
+  raw_ptr<PageActionIconView, AcrossTasksDanglingUntriaged> pwa_install_view_ =
+      nullptr;
+  raw_ptr<content::WebContents, AcrossTasksDanglingUntriaged> web_contents_ =
+      nullptr;
+  raw_ptr<webapps::TestAppBannerManagerDesktop, AcrossTasksDanglingUntriaged>
       app_banner_manager_ = nullptr;
 
  private:

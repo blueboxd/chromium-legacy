@@ -15,6 +15,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/layout/box_layout_view.h"
 #include "ui/views/view_observer.h"
 
 namespace ash {
@@ -128,6 +129,11 @@ class ASH_EXPORT DeskMiniView : public views::View,
   // Invoked when the user has clicked a desk close button.
   void OnRemovingDesk(DeskCloseType close_type);
 
+  // Notifies the mini-view that the preview is about to request focus from a
+  // reverse tab traversal so that it can show and focus the desk action view
+  // first if it was not already focused.
+  void OnPreviewAboutToBeFocusedByReverseTab();
+
   // views::View:
   const char* GetClassName() const override;
   void Layout() override;
@@ -185,6 +191,13 @@ class ASH_EXPORT DeskMiniView : public views::View,
   // The context menu that appears when `desk_preview_` is right-clicked or
   // long-pressed.
   std::unique_ptr<DeskActionContextMenu> context_menu_;
+
+  // The view containing the desk shortcut icons and labels displaying the
+  // shortcut to activate the desk.
+  raw_ptr<views::BoxLayoutView, ExperimentalAsh> desk_shortcut_view_ = nullptr;
+
+  // The label for the desk shortcut view containing the desk number.
+  raw_ptr<views::Label, ExperimentalAsh> desk_shortcut_label_ = nullptr;
 
   // True when this mini view is being animated to be removed from the bar.
   bool is_animating_to_remove_ = false;

@@ -253,7 +253,7 @@ void IsolatedWebAppApplyUpdateCommand::OnFinalized(
   } else {
     std::stringstream ss;
     ss << "Error during finalization: " << update_result_code;
-    ReportFailure(ss.view());
+    ReportFailure(ss.str());
   }
 }
 
@@ -302,8 +302,7 @@ void IsolatedWebAppApplyUpdateCommand::ReportFailure(base::StringPiece message,
 
 void IsolatedWebAppApplyUpdateCommand::CleanupUpdateInfoOnFailure(
     base::OnceClosure next_step_callback) {
-  ScopedRegistryUpdate update(
-      &lock_->sync_bridge(),
+  ScopedRegistryUpdate update = lock_->sync_bridge().BeginUpdate(
       // We don't really care whether committing the update succeeds or fails.
       // However, we want to wait for the write of the database to disk, so that
       // a potential crash during that write happens before the

@@ -29,7 +29,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/single_thread_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -932,6 +932,7 @@ std::unique_ptr<WebApp> CreateRandomWebApp(CreateRandomWebAppParams params) {
     app->SetIsolationData(isolation_data);
   }
 
+  app->SetIsDefaultAppForSupportedLinks(random.next_bool());
   return app;
 }
 
@@ -939,7 +940,7 @@ void TestAcceptDialogCallback(
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
     WebAppInstallationAcceptanceCallback acceptance_callback) {
-  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(acceptance_callback), true /*accept*/,
                                 std::move(web_app_info)));
 }
@@ -948,7 +949,7 @@ void TestDeclineDialogCallback(
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
     WebAppInstallationAcceptanceCallback acceptance_callback) {
-  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(acceptance_callback),
                                 false /*accept*/, std::move(web_app_info)));
 }
@@ -995,7 +996,7 @@ void AddInstallUrlData(PrefService* pref_service,
                        const AppId& app_id,
                        const GURL& url,
                        const ExternalInstallSource& source) {
-  ScopedRegistryUpdate update(sync_bridge);
+  ScopedRegistryUpdate update = sync_bridge->BeginUpdate();
   WebApp* app_to_update = update->UpdateApp(app_id);
   DCHECK(app_to_update);
 
@@ -1010,7 +1011,7 @@ void AddInstallUrlAndPlaceholderData(PrefService* pref_service,
                                      const GURL& url,
                                      const ExternalInstallSource& source,
                                      bool is_placeholder) {
-  ScopedRegistryUpdate update(sync_bridge);
+  ScopedRegistryUpdate update = sync_bridge->BeginUpdate();
   WebApp* app_to_update = update->UpdateApp(app_id);
   DCHECK(app_to_update);
 

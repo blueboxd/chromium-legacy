@@ -148,6 +148,10 @@
 #import "ios/chrome/app/dump_documents_statistics.h"
 #endif  // BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
 
+// To get access to UseSessionSerializationOptimizations().
+// TODO(crbug.com/1383087): remove once the feature is fully launched.
+#import "ios/web/common/features.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -721,7 +725,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)sceneState:(SceneState*)sceneState
     transitionedToActivationLevel:(SceneActivationLevel)level {
-  if (level == SceneActivationLevelUnattached) {
+  if (level <= SceneActivationLevelDisconnected) {
     [sceneState removeObserver:self];
   } else if (level > SceneActivationLevelBackground) {
     // Stop observing all scenes since we only needed to know when the app
@@ -807,7 +811,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // connected scene states as disconnected in order to allow services to
   // properly unregister their observers and tear down remaining UI.
   for (SceneState* sceneState in self.appState.connectedScenes) {
-    sceneState.activationLevel = SceneActivationLevelUnattached;
+    sceneState.activationLevel = SceneActivationLevelDisconnected;
   }
 
 #if BUILDFLAG(FAST_APP_TERMINATE_ENABLED)
@@ -824,7 +828,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
         dispatch_semaphore_signal(semaphore);
       }
     };
-    [[SessionServiceIOS sharedService] shutdownWithCompletion:completionBlock];
+    if (!web::features::UseSessionSerializationOptimizations()) {
+      [[SessionServiceIOS sharedService]
+          shutdownWithCompletion:completionBlock];
+    } else {
+      completionBlock();
+    }
 
     if (metrics) {
       metrics->Stop();

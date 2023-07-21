@@ -440,9 +440,8 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   }
 
   // Sets the associated FrameTree for this node. The node can change FrameTrees
-  // when blink::features::Prerender2 is enabled, which allows a page loaded in
-  // the prerendered FrameTree to be used for a navigation in the primary frame
-  // tree.
+  // as part of prerendering, which allows a page loaded in the prerendered
+  // FrameTree to be used for a navigation in the primary frame tree.
   void SetFrameTree(FrameTree& frame_tree);
 
   using TraceProto = perfetto::protos::pbzero::FrameTreeNodeInfo;
@@ -580,7 +579,13 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
       const std::string& event_data,
       const std::vector<blink::FencedFrame::ReportingDestination>& destinations,
       network::AttributionReportingRuntimeFeatures
-          attribution_reporting_runtime_features) override;
+          attribution_reporting_runtime_features,
+      bool once) override;
+
+  // Helper function to clear out automatic beacon data after one automatic
+  // beacon if `once` was set to true when calling
+  // `setReportEventDataForAutomaticBeacons()`.
+  void MaybeResetFencedFrameAutomaticBeaconReportEventData();
 
   // Returns the number of fenced frame boundaries above this frame. The
   // outermost main frame's frame tree has fenced frame depth 0, a topmost

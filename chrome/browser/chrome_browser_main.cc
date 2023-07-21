@@ -688,8 +688,9 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
 void ChromeBrowserMainParts::RecordBrowserStartupTime() {
   // Don't record any metrics if UI was displayed before this point e.g.
   // warning dialogs or browser was started in background mode.
-  if (startup_metric_utils::WasMainWindowStartupInterrupted())
+  if (startup_metric_utils::GetBrowser().WasMainWindowStartupInterrupted()) {
     return;
+  }
 
   bool is_first_run = false;
 #if !BUILDFLAG(IS_ANDROID)
@@ -700,7 +701,7 @@ void ChromeBrowserMainParts::RecordBrowserStartupTime() {
 #endif  // BUILDFLAG(IS_ANDROID)
 
   // Record collected startup metrics.
-  startup_metric_utils::RecordBrowserMainMessageLoopStart(
+  startup_metric_utils::GetBrowser().RecordBrowserMainMessageLoopStart(
       base::TimeTicks::Now(), is_first_run);
 }
 
@@ -1898,7 +1899,8 @@ void ChromeBrowserMainParts::WillRunMainMessageLoop(
 }
 
 void ChromeBrowserMainParts::OnFirstIdle() {
-  startup_metric_utils::RecordBrowserMainLoopFirstIdle(base::TimeTicks::Now());
+  startup_metric_utils::GetBrowser().RecordBrowserMainLoopFirstIdle(
+      base::TimeTicks::Now());
 #if BUILDFLAG(IS_ANDROID)
   sharing::ShareHistory::CreateForProfile(
       ProfileManager::GetPrimaryUserProfile());
@@ -2004,6 +2006,14 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
 
   profile_init_manager_.reset();
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // These controllers make use of `browser_process_->local_state()`, so they
+  // must be destroyed before `browser_process_`.
+  ash::HWDataUsageController::Shutdown();
+  arc::StabilityMetricsManager::Shutdown();
+  ash::StatsReportingController::Shutdown();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   // The below call to browser_shutdown::ShutdownPostThreadsStop() deletes
   // |browser_process_|. We release it so that we don't keep holding onto an
   // invalid reference.
@@ -2035,9 +2045,10 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   device_event_log::Shutdown();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  ash::HWDataUsageController::Shutdown();
-  arc::StabilityMetricsManager::Shutdown();
-  ash::StatsReportingController::Shutdown();
+  // CrosSettings must out-live `browser_process_->browser_policy_connector()`.
+  // TODO(elkurin): CrosSettings should be shutdown before
+  // `browser_process_->local_state()` but there is a circular dependency here.
+  // Resolve this after browser policy connector dependency is resolved.
   ash::CrosSettings::Shutdown();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // BUILDFLAG(IS_ANDROID)

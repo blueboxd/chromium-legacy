@@ -165,6 +165,8 @@
   E_CPONLY(kColorNewTabButtonCRForegroundFrameInactive) \
   E_CPONLY(kColorNewTabButtonCRBackgroundFrameActive) \
   E_CPONLY(kColorNewTabButtonCRBackgroundFrameInactive) \
+  E_CPONLY(kColorTabSearchButtonCRForegroundFrameActive) \
+  E_CPONLY(kColorTabSearchButtonCRForegroundFrameInactive) \
   /* New Tab Page colors. */ \
   E_CPONLY(kColorNewTabPageActionButtonBackground) \
   E_CPONLY(kColorNewTabPageActionButtonBorder) \
@@ -278,7 +280,10 @@
   E_CPONLY(kColorOmniboxResultsUrlSelected) \
   E_CPONLY(kColorOmniboxSecurityChipDangerous) \
   E_CPONLY(kColorOmniboxSecurityChipDefault) \
+  E_CPONLY(kColorOmniboxSecurityChipInkDropHover) \
+  E_CPONLY(kColorOmniboxSecurityChipInkDropRipple) \
   E_CPONLY(kColorOmniboxSecurityChipSecure) \
+  E_CPONLY(kColorOmniboxSecurityChipText) \
   E_CPONLY(kColorOmniboxText) \
   E_CPONLY(kColorOmniboxTextDimmed) \
   /* Page Info colors */ \
@@ -387,9 +392,11 @@
   E_CPONLY(kColorSidePanelCardSecondaryForeground) \
   E_CPONLY(kColorSidePanelContentAreaSeparator) \
   E_CPONLY(kColorSidePanelContentBackground) \
+  E_CPONLY(kColorSidePanelCustomizeChromeClassicChromeTileBorder) \
   E_CPONLY(kColorSidePanelCustomizeChromeColorPickerCheckmarkBackground) \
   E_CPONLY(kColorSidePanelCustomizeChromeColorPickerCheckmarkForeground) \
   E_CPONLY(kColorSidePanelCustomizeChromeColorPickerOptionBackground) \
+  E_CPONLY(kColorSidePanelCustomizeChromeCornerNtpBackground) \
   E_CPONLY(kColorSidePanelCustomizeChromeCustomOptionBackground) \
   E_CPONLY(kColorSidePanelCustomizeChromeCustomOptionForeground) \
   E_CPONLY(kColorSidePanelCustomizeChromeMiniNtpActiveTab) \
@@ -405,7 +412,7 @@
   E_CPONLY(kColorSidePanelCustomizeChromeThemeCheckmarkBackground) \
   E_CPONLY(kColorSidePanelCustomizeChromeThemeCheckmarkForeground) \
   E_CPONLY(kColorSidePanelCustomizeChromeThemeSnapshotBackground) \
-  E_CPONLY(kColorSidePanelCustomizeChromeWebStoreOptionBorder) \
+  E_CPONLY(kColorSidePanelCustomizeChromeWebStoreBorder) \
   E_CPONLY(kColorSidePanelDialogBackground) \
   E_CPONLY(kColorSidePanelDialogDivider) \
   E_CPONLY(kColorSidePanelDialogPrimaryForeground) \

@@ -75,7 +75,7 @@ class SegmentResultProviderImpl : public SegmentResultProvider {
  private:
   struct RequestState {
     std::unordered_map<DefaultModelManager::SegmentSource,
-                       raw_ptr<ModelProvider, DanglingAcrossTasks>>
+                       raw_ptr<ModelProvider, AcrossTasksDanglingUntriaged>>
         model_providers;
     DefaultModelManager::SegmentInfoList available_segments;
     std::unique_ptr<GetResultOptions> options;
@@ -359,7 +359,7 @@ void SegmentResultProviderImpl::OnModelExecuted(
                              : ResultState::kTfliteModelScoreUsed;
     prediction_result = metadata_utils::CreatePredictionResult(
         result->scores, segment_info->model_metadata().output_config(),
-        clock_->Now());
+        clock_->Now(), segment_info->model_version());
     segment_info->mutable_prediction_result()->CopyFrom(prediction_result);
     float rank = ComputeDiscreteMapping(
         request_state->options->discrete_mapping_key, *segment_info);

@@ -1147,6 +1147,9 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_FIRST_RUN_SCREEN_READ_MORE" desc="The label on the primary button of some screens in the first run experience if the content requires scrolling to the end [iOS only]">
         More
       </message>
+      <message name="IDS_IOS_FIRST_RUN_SIGNIN_BENEFITS_SUBTITLE_SHORT" desc="This string is on a promotion about signing in to Chrome with the user's Google Account. It explains the overarching user benefit of signing in (access to bookmarks, passwords, history, settings, etc.). We want users to understand why signing in is beneficial, and click 'Continue as name' to sign in to their Google Account. The tone should be informative and lightweight.">
+        Sign in to get your bookmarks, passwords, and more on all your devices.
+      </message>
       <message name="IDS_IOS_FIRST_RUN_SIGNIN_CONTINUE" desc="In Title Case: Button on the very first screen of Chrome to continue into Chrome. [iOS only]">
         Continue
       </message>
@@ -1744,6 +1747,9 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_SEE_ALL_OPEN_TABS_IPH_TEXT" desc="Text for the tab grid button's in-product help, explaining that all open tabs can be seen. [iOS only]">
         See all open tabs
       </message>
+      <message name="IDS_IOS_SHARE_THIS_PAGE_IPH_TEXT" desc="Text for the share button's in-product help, explaining that this button can be used to share this page. [iOS only]">
+        Share this page
+      </message>
       <message name="IDS_IOS_NEW_TAB_LEARN_MORE_ABOUT_SUGGESTED_CONTENT" desc="Text in the footer of the New Tab Page. Part of the text is a link to a help center page where the user can learn more about suggested content.">
         <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph> about suggested content
       </message>
@@ -1773,9 +1779,6 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_NTP_FEED_SIGNIN_PROMO_DISABLE_SNACKBAR_MESSAGE" desc="The test shown in the snackbar message when sign-in promo is trigger when sign-in is disabled. [iOS only]">
         Not available on your device
-      </message>
-      <message name="IDS_IOS_NTP_FEED_SIGNIN_PROMO_TITLE" desc="In Title Case: Title   of the new tab page Feed Signin Promo. [iOS only]">
-        See Content for You
       </message>
       <message name="IDS_IOS_OPEN_IN" desc="Label of the button that lets users open a document in another application. [Length: 15em] [iOS only]">
         Open in...
@@ -2295,6 +2298,33 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SAFE_BROWSING_NO_PROTECTION_CONFIRMATION_DIALOG_CONFIRM" desc="Message for Safe Browsing no protection confirmation button.">
         Turn Off
       </message>
+      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_ACCOUNT_ICON_DESCRIPTION" desc="Description for Safe Browsing enhanced protection account icon.">
+        When you're signed in, this data is linked to your Google Account to protect you across Google services, for example increasing protection in Gmail after a security incident.
+      </message>
+      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_DOWNLOAD_ICON_DESCRIPTION" desc="Description for Safe Browsing enhanced protection download icon.">
+        Offers in-depth scans for suspicious downloads.
+      </message>
+      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_G_ICON_DESCRIPTION" desc="Description for Safe Browsing enhanced protection G icon.">
+        When you're signed in, protects you across Google services.
+      </message>
+      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_GLOBE_ICON_DESCRIPTION" desc="Description for Safe Browsing enhanced protection globe icon.">
+        Improves security for you and everyone on the web.
+      </message>
+      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_WHEN_ON_HEADER" desc="Header for Safe Browsing enhanced protection mode When On section.">
+        When On
+      </message>
+      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_THINGS_TO_CONSIDER_HEADER" desc="Header for Safe Browsing enhanced protection mode Things To Consider section.">
+        Things To Consider
+      </message>
+      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_KEY_ICON_DESCRIPTION" desc="Description for Safe Browsing enhanced protection key icon.">
+        Warns you if you use a password that has been compromised by a data breach.
+      </message>
+      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_LINK_ICON_DESCRIPTION" desc="Description for Safe Browsing enhanced protection link icon.">
+        Sends the URLs you visit and a small sample of page content, downloads, extension activity, and system information to Google Safe Browsing to check if they're harmful. If safe, this data is deleted after 30 days.
+      </message>
+      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_PERFORMANCE_ICON_DESCRIPTION" desc="Description for Safe Browsing enhanced protection performance icon.">
+        Doesn't noticeably slow down your browser or device.
+      </message>
       <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_TITLE" desc="Title for Safe Browsing enhanced protection mode.">
         Enhanced Protection
       </message>
@@ -2496,9 +2526,6 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_BULLET_ONE" desc="First bullet point under the Safe Browsing enhanced protection mode">
          Predicts and warns you about dangerous events before they happen.
        </message>
-      <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_BULLET_THREE" desc="Third bullet point under the Safe Browsing enhanced protection mode">
-        Improves security for you and everyone on the web.
-      </message>
       <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_BULLET_FOUR" desc="Fourth bullet point under the Safe Browsing enhanced protection mode">
         Warns you if passwords are exposed in a data breach.
       </message>
@@ -2801,6 +2828,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PASSWORD_SETTINGS_ON_DEVICE_ENCRYPTION_OPTED_IN_LEARN_MORE" desc="Section title in settings > password, allow to learn more about on-device encryption. [iOS Only]">
         Learn More
       </message>
+      <message name="IDS_IOS_PASSWORD_SHARING_FAMILY_PICKER_SUBTITLE" desc="Header text in the view that allows to choose recipients for password sharing from a list of family members explaining what happens when the user shares their password with them. [iOS Only]">
+        When you share a copy of your username and password, your family member can fill them using Google Password Manager.
+      </message>
       <message name="IDS_IOS_SETTINGS_ADD_PASSWORD_DESCRIPTION" desc="Footer text shown when the user is trying to add a new credential manually via settings [iOS only]" meaning="Telling user to ensure provided password matches password on the website.">
         Make sure you're saving your current password for this site.
       </message>
@@ -2936,6 +2966,10 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_ENTERPRISE_MANAGED_SYNC" desc="Text displayed to inform the user that syncable types are limited (i.e. managed). [iOS only]">
         Your organization limits what you can sync.
+      </message>
+      <!-- TODO(crbug.com/1449220): Introduce final strings. -->
+      <message translateable="false" name="IDS_IOS_ENTERPRISE_MANAGED_SAVE_IN_ACCOUNT" desc="Text displayed to inform the user that types that can be stored on their account are limited (i.e. managed). [iOS only]">
+        **Your organization limits what you can save in your Google Account.**
       </message>
       <message name="IDS_IOS_ENTERPRISE_SIGNED_OUT" desc="Text displayed in an alert when the user is signed out due to browser sign-in becoming disabled by policy. [iOS only]">
         You're Signed Out
@@ -4331,6 +4365,12 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_TOOLBAR_SHOW_TAB_GRID" desc="The accessibility label for the toolbar show tab grid button [iOS only].">
         Show Tab Grid
+      </message>
+      <message name="IDS_IOS_TOOLBAR_MENU_TOP_OMNIBOX" desc="The iOS menu item for moving the address bar to the top of the screen [iOS only].">
+        Show Top Address Bar
+      </message>
+      <message name="IDS_IOS_TOOLBAR_MENU_BOTTOM_OMNIBOX" desc="The iOS menu item for moving the address bar to the bottom of the screen [iOS only].">
+        Show Bottom Address Bar
       </message>
       <message name="IDS_IOS_TOOLS_MENU" desc="The accessibility label for the iOS tools menu [iOS only]">
         Tools Menu

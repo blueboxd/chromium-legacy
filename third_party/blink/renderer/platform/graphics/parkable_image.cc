@@ -98,7 +98,7 @@ void NotifyWriteToDiskFinished(scoped_refptr<ParkableImageImpl>) {
 
 BASE_FEATURE(kUseParkableImageSegmentReader,
              "UseParkableImageSegmentReader",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 constexpr base::TimeDelta ParkableImageImpl::kParkingDelay;
 
@@ -226,6 +226,7 @@ void ParkableImageImpl::WriteToDiskInBackground(
 
   DCHECK(ParkableImageManager::IsParkableImagesToDiskEnabled());
   DCHECK(parkable_image);
+  DCHECK(parkable_image->reserved_chunk_);
   DCHECK(!parkable_image->on_disk_metadata_);
 
   AsanUnpoisonBuffer(parkable_image->rw_buffer_.get());
@@ -243,12 +244,14 @@ void ParkableImageImpl::WriteToDiskInBackground(
                   base::checked_cast<wtf_size_t>(it.size()));
   } while (it.Next());
 
+  auto reserved_chunk = std::move(parkable_image->reserved_chunk_);
+
   // Release the lock while writing, so we don't block for too long.
   parkable_image->lock_.Release();
 
   base::ElapsedTimer timer;
   auto metadata = ParkableImageManager::Instance().data_allocator().Write(
-      vector.data(), vector.size());
+      std::move(reserved_chunk), vector.data());
   base::TimeDelta elapsed = timer.Elapsed();
 
   // Acquire the lock again after writing.
@@ -337,6 +340,13 @@ bool ParkableImageImpl::MaybePark(
     DiscardData();
     return true;
   }
+
+  auto reserved_chunk =
+      ParkableImageManager::Instance().data_allocator().TryReserveChunk(size());
+  if (!reserved_chunk) {
+    return false;
+  }
+  reserved_chunk_ = std::move(reserved_chunk);
 
   background_task_in_progress_ = true;
 

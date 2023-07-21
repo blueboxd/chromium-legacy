@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.android.fyi builder group."""
 
+load("//lib/args.star", "args")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "os", "reclient")
 load("//lib/ci.star", "ci")
@@ -27,33 +28,6 @@ consoles.console_view(
     ordering = {
         None: ["android", "memory", "weblayer", "webview"],
     },
-)
-
-ci.builder(
-    name = "Android ASAN (dbg) (reclient)",
-    schedule = "triggered",  # triggered manually via Scheduler UI
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = ["android"],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "android_clang",
-            apply_configs = ["errorprone"],
-            build_config = builder_config.build_config.DEBUG,
-            target_bits = 32,
-            target_platform = builder_config.target_platform.ANDROID,
-        ),
-        android_config = builder_config.android_config(config = "clang_builder_mb"),
-        build_gs_bucket = "chromium-android-archive",
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "builder|arm",
-        short_name = "san",
-    ),
-    # Higher build timeout since dbg ASAN builds can take a while on a clobber
-    # build.
-    execution_timeout = 4 * time.hour,
 )
 
 ci.builder(
@@ -394,4 +368,37 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "cronet|asan",
     ),
+)
+
+ci.builder(
+    name = "android-cronet-mainline-clang-arm-dbg",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "cronet_builder",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 32,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|mainline_clang|arm",
+        short_name = "dbg",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    notifies = ["cronet"],
 )

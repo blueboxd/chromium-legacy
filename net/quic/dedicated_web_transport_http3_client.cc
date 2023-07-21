@@ -295,6 +295,37 @@ void RecordNegotiatedHttpDatagramSupport(quic::HttpDatagramSupport support) {
       "Net.WebTransport.NegotiatedHttpDatagramVersion", negotiated);
 }
 
+const char* WebTransportHttp3VersionString(
+    quic::WebTransportHttp3Version version) {
+  switch (version) {
+    case quic::WebTransportHttp3Version::kDraft02:
+      return "draft-02";
+    case quic::WebTransportHttp3Version::kDraft07:
+      return "draft-07";
+  }
+}
+
+enum class NegotiatedWebTransportVersion {
+  kDraft02 = 0,
+  kDraft07 = 1,
+  kMaxValue = kDraft07,
+};
+
+void RecordNegotiatedWebTransportVersion(
+    quic::WebTransportHttp3Version version) {
+  NegotiatedWebTransportVersion negotiated;
+  switch (version) {
+    case quic::WebTransportHttp3Version::kDraft02:
+      negotiated = NegotiatedWebTransportVersion::kDraft02;
+      break;
+    case quic::WebTransportHttp3Version::kDraft07:
+      negotiated = NegotiatedWebTransportVersion::kDraft07;
+      break;
+  }
+  base::UmaHistogramEnumeration(
+      "Net.WebTransport.NegotiatedWebTransportVersion", negotiated);
+}
+
 }  // namespace
 
 DedicatedWebTransportHttp3Client::DedicatedWebTransportHttp3Client(
@@ -774,8 +805,24 @@ void DedicatedWebTransportHttp3Client::SetErrorIfNecessary(
 }
 
 void DedicatedWebTransportHttp3Client::OnSessionReady() {
+  CHECK(session_->SupportsWebTransport());
+
   session_ready_ = true;
+
+  RecordNegotiatedWebTransportVersion(
+      *session_->SupportedWebTransportVersion());
   RecordNegotiatedHttpDatagramSupport(session_->http_datagram_support());
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_WEBTRANSPORT_SESSION_READY,
+                    [&] {
+                      base::Value::Dict dict;
+                      dict.Set("http_datagram_version",
+                               quic::HttpDatagramSupportToString(
+                                   session_->http_datagram_support()));
+                      dict.Set("webtransport_http3_version",
+                               WebTransportHttp3VersionString(
+                                   *session_->SupportedWebTransportVersion()));
+                      return dict;
+                    });
 }
 
 void DedicatedWebTransportHttp3Client::OnSessionClosed(

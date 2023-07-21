@@ -287,8 +287,6 @@ bool ShouldNotifyAboutCookie(net::CookieInclusionStatus status) {
          status.HasExclusionReason(
              net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES) ||
          status.HasExclusionReason(
-             net::CookieInclusionStatus::EXCLUDE_INVALID_SAMEPARTY) ||
-         status.HasExclusionReason(
              net::CookieInclusionStatus::EXCLUDE_DOMAIN_NON_ASCII);
 }
 
@@ -728,12 +726,6 @@ URLLoader::URLLoader(
       base::UmaHistogramEnumeration("Network.CacheTransparency.CacheNotUsed",
                                     cache_not_used_reason);
     }
-  }
-
-  // We don't allow using shared dictionary for no-cors requests to avoid
-  // information leak.
-  if (request_mode_ != mojom::RequestMode::kNoCors) {
-    request_load_flags |= net::LOAD_CAN_USE_SHARED_DICTIONARY;
   }
 
   url_request_->SetLoadFlags(request_load_flags);
@@ -1275,7 +1267,7 @@ PrivateNetworkAccessCheckResult URLLoader::PrivateNetworkAccessCheck(
   DCHECK(security_state);
 
   if (devtools_observer_) {
-    devtools_observer_->OnLocalNetworkRequest(
+    devtools_observer_->OnPrivateNetworkRequest(
         devtools_request_id(), url_request_->url(), is_warning,
         response_address_space, security_state->Clone());
   }
@@ -1373,6 +1365,7 @@ mojom::URLResponseHeadPtr URLLoader::BuildResponseHead() const {
   response->was_in_prefetch_cache =
       !(url_request_->load_flags() & net::LOAD_PREFETCH) &&
       response_info.unused_since_prefetch;
+  response->did_use_shared_dictionary = response_info.did_use_shared_dictionary;
 
   response->was_cookie_in_request = false;
   for (const auto& cookie_with_access_result :

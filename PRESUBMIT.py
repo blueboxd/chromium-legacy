@@ -1672,8 +1672,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
 _GENERIC_PYDEPS_FILES = [
     'android_webview/test/components/run_webview_component_smoketest.pydeps',
     'android_webview/tools/run_cts.pydeps',
-    'base/android/jni_generator/jni_generator.pydeps',
-    'base/android/jni_generator/jni_registration_generator.pydeps',
+    'base/android/jni_generator/jni_zero.pydeps',
     'build/android/apk_operations.pydeps',
     'build/android/devil_chromium.pydeps',
     'build/android/gyp/aar.pydeps',
@@ -4385,10 +4384,10 @@ class _PydepsCheckerResult:
     def GetError(self):
         """Returns an error message, or None."""
         import difflib
+        new_contents = self._process.stdout.read().splitlines()[2:]
         if self._process.wait() != 0:
             # STDERR should already be printed.
             return 'Command failed: ' + self._cmd
-        new_contents = self._process.stdout.read().splitlines()[2:]
         if self._old_contents != new_contents:
             diff = '\n'.join(
                 difflib.context_diff(self._old_contents, new_contents))
@@ -6706,6 +6705,7 @@ def CheckBatchAnnotation(input_api, output_api):
     robolectric_test = input_api.re.compile(r'[rR]obolectric')
     test_class_declaration = input_api.re.compile(r'^\s*public\sclass.*Test')
     uiautomator_test = input_api.re.compile(r'[uU]i[aA]utomator')
+    test_annotation_declaration = input_api.re.compile(r'^\s*public\s@interface\s.*{')
 
     missing_annotation_errors = []
     extra_annotation_errors = []
@@ -6720,6 +6720,7 @@ def CheckBatchAnnotation(input_api, output_api):
         batch_matched = None
         do_not_batch_matched = None
         is_instrumentation_test = True
+        test_annotation_declaration_matched = None
         for line in f.NewContents():
             if robolectric_test.search(line) or uiautomator_test.search(line):
                 # Skip Robolectric and UiAutomator tests.
@@ -6731,8 +6732,11 @@ def CheckBatchAnnotation(input_api, output_api):
                 do_not_batch_matched = do_not_batch_annotation.search(line)
             test_class_declaration_matched = test_class_declaration.search(
                 line)
-            if test_class_declaration_matched:
+            test_annotation_declaration_matched = test_annotation_declaration.search(line)
+            if test_class_declaration_matched or test_annotation_declaration_matched:
                 break
+        if test_annotation_declaration_matched:
+            continue
         if (is_instrumentation_test and
             not batch_matched and
             not do_not_batch_matched):

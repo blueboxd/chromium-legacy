@@ -170,6 +170,7 @@
 <translation id="2161656808144014275">文字</translation>
 <translation id="2163937499206714165">開啟暗光模式</translation>
 <translation id="2180197493692062006">發生錯誤，請嘗試重新開啟應用程式。</translation>
+<translation id="2189104374785738357">編輯 APN 詳情</translation>
 <translation id="2209788852729124853">重設流量計數器</translation>
 <translation id="2212733584906323460">名稱解析</translation>
 <translation id="2217935453350629363">目前速度</translation>
@@ -371,6 +372,7 @@
 <translation id="397105322502079400">計算中…</translation>
 <translation id="39823212440917567">超過 <ph name="NUMBER_OF_DAYS" /> 天前的列印工作將被移除</translation>
 <translation id="3993704782688964914">您的「<ph name="DEVICE_NAME" />」已是最新版本</translation>
+<translation id="3998976413398910035">管理打印機</translation>
 <translation id="4003384961948020559">失敗 - 輸出紙匣已滿</translation>
 <translation id="4021031199988160623">請切換至手提電腦模式以進行測試</translation>
 <translation id="4034824040120875894">打印機</translation>
@@ -587,6 +589,7 @@
 <translation id="5620281292257375798">只供內部使用</translation>
 <translation id="5649768706273821470">收聽</translation>
 <translation id="5655283760733841251">鍵盤校光亮度</translation>
+<translation id="5655776422854483175">沒有任何列印工作</translation>
 <translation id="5659593005791499971">電郵</translation>
 <translation id="5662240986744577912">轉換私隱保護畫面</translation>
 <translation id="5669267381087807207">啟用</translation>
@@ -667,7 +670,7 @@
 <translation id="6278428485366576908">主題背景</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">開啟深色主題背景</translation>
-<translation id="6285899124799306373">打開啟動器</translation>
+<translation id="628726841779494414">在打印機設定中管理你的打印機</translation>
 <translation id="629550705077076970">將鍵盤調暗</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />測試已取消</translation>
 <translation id="631063167932043783">探索應用程式</translation>
@@ -715,7 +718,7 @@
 <translation id="6566314079205407217">多頁掃瞄</translation>
 <translation id="6574762126505704998">填滿</translation>
 <translation id="6575134580692778371">未設定</translation>
-<translation id="6576005492601044801">左側</translation>
+<translation id="6576005492601044801">左邊</translation>
 <translation id="6579509898032828423">使用這張相片</translation>
 <translation id="6596816719288285829">IP 地址</translation>
 <translation id="6599673642868607614">多謝您的意見。您的意見有助於我們改善 Chromebook 體驗，並將經由我們的團隊審核。由於報告數量眾多，我們將不會逐一回覆。</translation>
@@ -820,7 +823,7 @@
 <translation id="7497215489070763236">伺服器 CA 憑證</translation>
 <translation id="7501957181231305652">或</translation>
 <translation id="7502658306369382406">IPv6 位址</translation>
-<translation id="7513770521371759388">下方</translation>
+<translation id="7513770521371759388">底部</translation>
 <translation id="7515998400212163428">Android</translation>
 <translation id="7528507600602050979">無法查看說明內容</translation>
 <translation id="7535791657097741517">開啟淺色主題背景</translation>
@@ -916,7 +919,6 @@
 <translation id="8312330582793120272">播媒體</translation>
 <translation id="8318753676953949627">沒有圖片</translation>
 <translation id="8329018942023753850">計算機應用程式</translation>
-<translation id="8335869473001018124">打開搜尋</translation>
 <translation id="8336739000755212683">變更裝置的帳戶圖片</translation>
 <translation id="8347227221149377169">列印工作</translation>
 <translation id="8351855506390808906">對應緊接觸點</translation>
@@ -958,7 +960,7 @@
 <translation id="8655295600908251630">版本</translation>
 <translation id="8655828773034788261">分享網址：</translation>
 <translation id="8660881923941176839">磅</translation>
-<translation id="8670574982334489519">右側</translation>
+<translation id="8670574982334489519">右邊</translation>
 <translation id="8675354002693747642">預先共用密鑰</translation>
 <translation id="8677859815076891398">沒有相簿。請在「<ph name="LINK_BEGIN" />Google 相片<ph name="LINK_END" />」中建立相簿。</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" />用向左或者向右箭咀掣就可以管理呢個功能。</translation>
@@ -1004,7 +1006,7 @@
 <translation id="8936793075252196307">用戶端 IP 位址</translation>
 <translation id="8944651180182756621">啟動器顏色</translation>
 <translation id="894617464444543719">裝置類型係手機。</translation>
-<translation id="8950424402482976779">上方</translation>
+<translation id="8950424402482976779">頂部</translation>
 <translation id="8968751544471797276">充電率</translation>
 <translation id="8970109610781093811">再次執行</translation>
 <translation id="8983038754672563810">HSPA</translation>

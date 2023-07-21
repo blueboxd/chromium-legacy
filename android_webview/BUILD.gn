@@ -257,7 +257,7 @@ if (android_64bit_target_cpu) {
   }
 }
 
-if (is_official_build) {
+if (is_official_build && !skip_secondary_abi_for_cq) {
   # Used for binary size monitoring.
   create_app_bundle_minimal_apks("trichrome_webview_minimal_apks") {
     deps = [ ":trichrome_webview_bundle" ]
@@ -476,6 +476,7 @@ generate_jni("browser_jni_headers") {
     "java/src/org/chromium/android_webview/AwWebResourceInterceptResponse.java",
     "java/src/org/chromium/android_webview/JsReplyProxy.java",
     "java/src/org/chromium/android_webview/PopupTouchHandleDrawable.java",
+    "java/src/org/chromium/android_webview/SystemStateUtil.java",
     "java/src/org/chromium/android_webview/WebMessageListenerHolder.java",
     "java/src/org/chromium/android_webview/WebMessageListenerInfo.java",
     "java/src/org/chromium/android_webview/gfx/AwDrawFnImpl.java",
@@ -567,6 +568,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/ScriptHandler.java",
     "java/src/org/chromium/android_webview/ScrollAccessibilityHelper.java",
     "java/src/org/chromium/android_webview/SslUtil.java",
+    "java/src/org/chromium/android_webview/SystemStateUtil.java",
     "java/src/org/chromium/android_webview/ViewPositionObserver.java",
     "java/src/org/chromium/android_webview/WebAddressParser.java",
     "java/src/org/chromium/android_webview/WebMessageListener.java",
@@ -621,6 +623,7 @@ android_library("browser_java") {
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/embedder_support/android/metrics:java",
+    "//components/environment_integrity/android:java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/policy/android:policy_java",

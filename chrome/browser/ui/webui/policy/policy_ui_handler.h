@@ -64,6 +64,7 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   void HandleReloadPolicies(const base::Value::List& args);
   void HandleCopyPoliciesJson(const base::Value::List& args);
   void HandleSetLocalTestPolicies(const base::Value::List& args);
+  void HandleRevertLocalTestPolicies(const base::Value::List& args);
 
 #if !BUILDFLAG(IS_CHROMEOS)
   void HandleUploadReport(const base::Value::List& args);
@@ -107,6 +108,11 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
       policy_value_and_status_observation_{this};
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  uint32_t reload_policies_count_ = 0;
+  uint32_t export_to_json_count_ = 0;
+  uint32_t copy_to_json_count_ = 0;
+  uint32_t upload_report_count_ = 0;
 
   base::WeakPtrFactory<PolicyUIHandler> weak_factory_{this};
 };

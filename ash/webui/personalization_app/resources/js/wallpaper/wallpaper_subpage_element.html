@@ -2,9 +2,9 @@
   #wallpaperContainer {
     display: grid;
     grid-template-areas:
-      '. leftspacertop    selected   rightspacertop    .'
-      '. leftspacerbottom imagegrid  rightspacerbottom .';
-    grid-template-columns: 1fr 16px minmax(568px, 920px) 16px 1fr;
+      'leftspacertop    selected   rightspacertop   '
+      'leftspacerbottom imagegrid  rightspacerbottom';
+    grid-template-columns: minmax(16px, 1fr) minmax(568px, 920px) minmax(16px, 1fr);
     grid-template-rows: 172px minmax(0, 1fr);
     height: 100%;
     min-height: var(--personalization-app-subpage-container-min-height);
@@ -60,10 +60,10 @@
   <template is="dom-if" if="[[shouldShowCollectionImages_(path)]]" restamp>
     <wallpaper-images collection-id="[[queryParams.id]]"></wallpaper-images>
   </template>
-  <template is="dom-if" if="[[isGooglePhotosIntegrationEnabled_]]">
+  <template is="dom-if" if="[[shouldShowGooglePhotosCollection_(path)]]"
+      restamp>
     <google-photos-collection path="[[path]]"
-        album-id="[[queryParams.googlePhotosAlbumId]]"
-        hidden="[[!shouldShowGooglePhotosCollection_(path)]]">
+        album-id="[[queryParams.googlePhotosAlbumId]]">
     </google-photos-collection>
   </template>
   <template is="dom-if" if="[[shouldShowLocalCollection_(path)]]" restamp>

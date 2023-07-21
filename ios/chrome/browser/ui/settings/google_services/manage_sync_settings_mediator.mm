@@ -71,7 +71,8 @@ static const syncer::UserSelectableType kSyncSwitchItems[] = {
     syncer::UserSelectableType::kTabs,
     syncer::UserSelectableType::kPasswords,
     syncer::UserSelectableType::kReadingList,
-    syncer::UserSelectableType::kPreferences};
+    syncer::UserSelectableType::kPreferences,
+    syncer::UserSelectableType::kPayments};
 
 // Ordered list of all account data type switches.
 // This is the list of available datatypes for account state `kSignedIn`.
@@ -81,7 +82,8 @@ static const syncer::UserSelectableType kAccountSwitchItems[] = {
     syncer::UserSelectableType::kBookmarks,
     syncer::UserSelectableType::kPasswords,
     syncer::UserSelectableType::kReadingList,
-    syncer::UserSelectableType::kPreferences};
+    syncer::UserSelectableType::kPreferences,
+    syncer::UserSelectableType::kPayments};
 
 // Returns the configuration to be used for the accessory.
 UIImageConfiguration* AccessoryConfiguration() {
@@ -104,8 +106,6 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
 @property(nonatomic, strong) TableViewItem* syncEverythingItem;
 // Model item for each data types.
 @property(nonatomic, strong) NSArray<TableViewItem*>* syncSwitchItems;
-// Autocomplete wallet item.
-@property(nonatomic, strong) TableViewItem* autocompleteWalletItem;
 // Encryption item.
 @property(nonatomic, strong) TableViewImageItem* encryptionItem;
 // Sync error item.
@@ -152,7 +152,6 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
   if (self) {
     DCHECK(syncService);
     CHECK(authenticationService);
-    _authenticationService = authenticationService;
     _syncService = syncService;
     _syncObserver = std::make_unique<SyncObserverBridge>(self, syncService);
     _identityManagerObserver =
@@ -171,7 +170,6 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
 }
 
 - (void)disconnect {
-  _authenticationService = nullptr;
   _syncObserver.reset();
   _syncService = nullptr;
   _identityManagerObserver.reset();
@@ -276,23 +274,6 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
   }
   self.syncSwitchItems = syncSwitchItems;
 
-  if (![self isManagedSyncSettingsDataType:syncer::UserSelectableType::
-                                               kAutofill]) {
-    SyncSwitchItem* button =
-        [[SyncSwitchItem alloc] initWithType:AutocompleteWalletItemType];
-    button.text =
-        GetNSString(IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL);
-    self.autocompleteWalletItem = button;
-  } else {
-    TableViewInfoButtonItem* button = [[TableViewInfoButtonItem alloc]
-        initWithType:AutocompleteWalletItemType];
-    button.text =
-        GetNSString(IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL);
-    button.statusText = GetNSString(IDS_IOS_SETTING_OFF);
-    self.autocompleteWalletItem = button;
-  }
-  [model addItem:self.autocompleteWalletItem
-      toSectionWithIdentifier:SyncDataTypeSectionIdentifier];
   [self updateSyncItemsNotifyConsumer:NO];
 }
 
@@ -358,16 +339,9 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
   [self.consumer reloadItem:identityAccountItem];
 }
 
-// Updates all the items related to sync (sync data items and autocomplete
-// wallet item). The consumer is notified if `notifyConsumer` is set to YES.
-- (void)updateSyncItemsNotifyConsumer:(BOOL)notifyConsumer {
-  [self updateSyncDataItemsNotifyConsumer:notifyConsumer];
-  [self updateAutocompleteWalletItemNotifyConsumer:notifyConsumer];
-}
-
 // Updates all the sync data type items, and notify the consumer if
 // `notifyConsumer` is set to YES.
-- (void)updateSyncDataItemsNotifyConsumer:(BOOL)notifyConsumer {
+- (void)updateSyncItemsNotifyConsumer:(BOOL)notifyConsumer {
   for (TableViewItem* item in self.syncSwitchItems) {
     if ([item isKindOfClass:[TableViewInfoButtonItem class]])
       continue;
@@ -379,6 +353,15 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
         self.syncSetupService->IsDataTypePreferred(dataType);
     BOOL isEnabled = self.shouldSyncDataItemEnabled &&
                      ![self isManagedSyncSettingsDataType:dataType];
+
+    // kPayments can only be selected if kAutofill is also selected.
+    // TODO(crbug.com/1435431): Remove this coupling.
+    if (dataType == syncer::UserSelectableType::kPayments &&
+        !self.syncSetupService->IsDataTypePreferred(
+            syncer::UserSelectableType::kAutofill)) {
+      isEnabled = false;
+    }
+
     if (self.syncAccountState == SyncSettingsAccountState::kSignedIn &&
         dataType == syncer::UserSelectableType::kHistory) {
       // kHistory toggle represents both kHistory and kTabs in this case.
@@ -403,30 +386,6 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
     if (needsUpdate && notifyConsumer) {
       [self.consumer reloadItem:syncSwitchItem];
     }
-  }
-}
-
-// Updates the autocomplete wallet item. The consumer is notified if
-// `notifyConsumer` is set to YES.
-- (void)updateAutocompleteWalletItemNotifyConsumer:(BOOL)notifyConsumer {
-  if ([self.autocompleteWalletItem
-          isKindOfClass:[TableViewInfoButtonItem class]])
-    return;
-
-  SyncSwitchItem* syncSwitchItem =
-      base::mac::ObjCCast<SyncSwitchItem>(self.autocompleteWalletItem);
-  BOOL isAutofillOn = self.syncSetupService->IsDataTypePreferred(
-      syncer::UserSelectableType::kAutofill);
-  BOOL autocompleteWalletEnabled =
-      isAutofillOn && self.shouldSyncDataItemEnabled;
-  BOOL autocompleteWalletOn =
-      _syncService->GetUserSettings()->IsPaymentsIntegrationEnabled();
-  BOOL needsUpdate = (syncSwitchItem.enabled != autocompleteWalletEnabled) ||
-                     (syncSwitchItem.on != autocompleteWalletOn);
-  syncSwitchItem.enabled = autocompleteWalletEnabled;
-  syncSwitchItem.on = autocompleteWalletOn;
-  if (needsUpdate && notifyConsumer) {
-    [self.consumer reloadItem:self.autocompleteWalletItem];
   }
 }
 
@@ -703,6 +662,11 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
       textStringID = IDS_SYNC_DATATYPE_AUTOFILL;
       accessibilityIdentifier = kSyncAutofillIdentifier;
       break;
+    case syncer::UserSelectableType::kPayments:
+      itemType = PaymentsDataTypeItemType;
+      textStringID = IDS_SYNC_DATATYPE_PAYMENTS;
+      accessibilityIdentifier = kSyncPaymentsIdentifier;
+      break;
     case syncer::UserSelectableType::kPreferences:
       itemType = SettingsDataTypeItemType;
       textStringID = IDS_SYNC_DATATYPE_PREFERENCES;
@@ -888,12 +852,6 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
           return;
 
         self.syncSetupService->SetSyncEverythingEnabled(value);
-        if (value) {
-          // When sync everything is turned on, the autocomplete wallet
-          // should be turned on. This code can be removed once
-          // crbug.com/937234 is fixed.
-          _syncService->GetUserSettings()->SetPaymentsIntegrationEnabled(true);
-        }
         break;
       case HistoryDataTypeItemType: {
         DCHECK(syncSwitchItem);
@@ -913,6 +871,7 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
         }
         break;
       }
+      case PaymentsDataTypeItemType:
       case AutofillDataTypeItemType:
       case BookmarksDataTypeItemType:
       case OpenTabsDataTypeItemType:
@@ -933,18 +892,13 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
           // should be updated too. Autocomplete wallet should not be enabled
           // when auto fill data type disabled. This behaviour not be
           // implemented in the UI code. This code can be removed once
-          // crbug.com/937234 is fixed.
-          _syncService->GetUserSettings()->SetPaymentsIntegrationEnabled(value);
+          // either of crbug.com/937234 (move logic to infra layers) or
+          // crbug.com/1435431 (remove the coupling) is fixed.
+          _syncService->GetUserSettings()->SetSelectedType(
+              syncer::UserSelectableType::kPayments, value);
         }
         break;
       }
-      case AutocompleteWalletItemType:
-        if ([self isManagedSyncSettingsDataType:syncer::UserSelectableType::
-                                                    kAutofill]) {
-          break;
-        }
-        _syncService->GetUserSettings()->SetPaymentsIntegrationEnabled(value);
-        break;
       case SignOutAndTurnOffSyncItemType:
       case ManageGoogleAccountItemType:
       case ManageAccountsItemType:
@@ -1030,7 +984,7 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
     case PasswordsDataTypeItemType:
     case ReadingListDataTypeItemType:
     case SettingsDataTypeItemType:
-    case AutocompleteWalletItemType:
+    case PaymentsDataTypeItemType:
     case SyncDisabledByAdministratorErrorItemType:
     case SignOutItemFooterType:
     case TypesListHeaderOrFooterType:

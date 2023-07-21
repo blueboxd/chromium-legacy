@@ -25,6 +25,7 @@ class View;
 namespace ash {
 
 struct AnchoredNudgeData;
+class ScopedAnchoredNudgePause;
 
 // Class managing anchored nudge requests.
 class ASH_EXPORT AnchoredNudgeManagerImpl : public AnchoredNudgeManager,
@@ -39,6 +40,7 @@ class ASH_EXPORT AnchoredNudgeManagerImpl : public AnchoredNudgeManager,
   void Show(AnchoredNudgeData& nudge_data) override;
   void Cancel(const std::string& id) override;
   void MaybeRecordNudgeAction(NudgeCatalogName catalog_name) override;
+  std::unique_ptr<ScopedAnchoredNudgePause> CreateScopedPause() override;
 
   // Closes all `shown_nudges_`.
   void CloseAllNudges();
@@ -72,6 +74,9 @@ class ASH_EXPORT AnchoredNudgeManagerImpl : public AnchoredNudgeManager,
   // Resets the registry map that records the time a nudge was last shown.
   void ResetNudgeRegistryForTesting();
 
+  // Records button pressed metrics.
+  void RecordButtonPressed(NudgeCatalogName catalog_name, bool first_button);
+
  private:
   friend class AnchoredNudgeManagerImplTest;
   class AnchorViewObserver;
@@ -91,7 +96,13 @@ class ASH_EXPORT AnchoredNudgeManagerImpl : public AnchoredNudgeManager,
   // `id`, and returns this chained callback. If the provided `callback` is
   // empty, only a `Cancel()` callback will be returned.
   base::RepeatingClosure ChainCancelCallback(base::RepeatingClosure callback,
-                                             const std::string& id);
+                                             NudgeCatalogName catalog_name,
+                                             const std::string& id,
+                                             bool first_button);
+
+  // AnchoredNudgeManager:
+  void Pause() override;
+  void Resume() override;
 
   // Maps an `AnchoredNudge` `id` to pointer to the nudge with that id.
   // Used to cache and keep track of nudges that are currently displayed, so
@@ -116,6 +127,9 @@ class ASH_EXPORT AnchoredNudgeManagerImpl : public AnchoredNudgeManager,
   // Maps an `AnchoredNudge` `id` to a timer that's used to dismiss the nudge
   // after its duration has passed. Hovering over the nudge pauses the timer.
   std::map<std::string, PausableTimer> dismiss_timers_;
+
+  // Keeps track of the number of `ScopedAnchoredNudgePause`.
+  int pause_counter_ = 0;
 
   base::WeakPtrFactory<AnchoredNudgeManagerImpl> weak_ptr_factory_{this};
 };

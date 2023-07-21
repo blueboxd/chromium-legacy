@@ -87,6 +87,14 @@ NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
 // Update protocol using ALPN information in HTTPS DNS records.
 NET_EXPORT BASE_DECLARE_FEATURE(kUseDnsHttpsSvcbAlpn);
 
+// If the `kUseAlternativePortForGloballyReachableCheck` flag is enabled, the
+// globally reachable check will use the port number specified by
+// `kAlternativePortForGloballyReachableCheck` flag. Otherwise, the globally
+// reachable check will use 443 port.
+NET_EXPORT extern const base::FeatureParam<int>
+    kAlternativePortForGloballyReachableCheck;
+NET_EXPORT BASE_DECLARE_FEATURE(kUseAlternativePortForGloballyReachableCheck);
+
 // If enabled allows the use of SHA-1 by the server for signatures
 // in the TLS handshake.
 NET_EXPORT BASE_DECLARE_FEATURE(kSHA1ServerSignature);
@@ -286,12 +294,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kUdpSocketPosixAlwaysUpdateBytesReceived);
 // See spec changes in https://github.com/httpwg/http-extensions/pull/1348
 NET_EXPORT BASE_DECLARE_FEATURE(kCookieSameSiteConsidersRedirectChain);
 
-// When this feature is enabled, the SameParty attribute is enabled. (Note that
-// when this feature is disabled, the SameParty attribute is still parsed and
-// saved for cookie-sets, but it has no associated semantics (when setting or
-// reading cookies).)
-NET_EXPORT BASE_DECLARE_FEATURE(kSamePartyAttributeEnabled);
-
 // When this feature is enabled, the network service will wait until First-Party
 // Sets are initialized before issuing requests that use the HTTP cache or
 // cookies.
@@ -415,6 +417,10 @@ NET_EXPORT BASE_DECLARE_FEATURE(kEnableWebTransportDraft07);
 
 // Enables Zstandard Content-Encoding support.
 NET_EXPORT BASE_DECLARE_FEATURE(kZstdContentEncoding);
+
+// When enabled, the Clear-Site-Data HTTP Response header supports clearing all
+// targets as "*" rather than requiring all targets be listed out.
+NET_EXPORT BASE_DECLARE_FEATURE(kClearSiteDataWildcardSupport);
 
 }  // namespace net::features
 

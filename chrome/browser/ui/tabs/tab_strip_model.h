@@ -20,8 +20,6 @@
 #include "base/observer_list.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_group_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_scrubbing_metrics.h"
@@ -114,7 +112,7 @@ class TabStripModel : public TabGroupController {
     // guaranteed to be valid for the life time of the notification (and
     // possibly longer).
     std::unique_ptr<content::WebContents> owned_contents;
-    raw_ptr<content::WebContents, DanglingAcrossTasks> contents;
+    raw_ptr<content::WebContents, AcrossTasksDanglingUntriaged> contents;
 
     // The index of the WebContents in the original selection model of the tab
     // strip [prior to any tabs being removed, if multiple tabs are being
@@ -821,7 +819,7 @@ class TabStripModel : public TabGroupController {
   base::ObserverList<TabStripModelObserver>::Unchecked observers_;
 
   // A profile associated with this TabStripModel.
-  raw_ptr<Profile, DanglingAcrossTasks> profile_;
+  raw_ptr<Profile, AcrossTasksDanglingUntriaged> profile_;
 
   // True if all tabs are currently being closed via CloseAllTabs.
   bool closing_all_ = false;

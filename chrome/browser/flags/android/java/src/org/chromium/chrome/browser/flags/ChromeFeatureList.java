@@ -106,6 +106,9 @@ public abstract class ChromeFeatureList {
     public static final String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2 =
             "AdaptiveButtonInTopToolbarCustomizationV2";
     public static final String ADD_TO_HOMESCREEN_IPH = "AddToHomescreenIPH";
+    public static final String ADVANCED_PERIPHERALS_SUPPORT = "AdvancedPeripheralsSupport";
+    public static final String ADVANCED_PERIPHERALS_SUPPORT_TAB_STRIP =
+            "AdvancedPeripheralsSupportTabStrip";
     public static final String ALLOW_NEW_INCOGNITO_TAB_INTENTS = "AllowNewIncognitoTabIntents";
     public static final String ANDROID_APP_INTEGRATION = "AndroidAppIntegration";
     public static final String ANDROID_APP_INTEGRATION_SAFE_SEARCH =
@@ -273,6 +276,8 @@ public abstract class ChromeFeatureList {
             "ForceDisableExtendedSyncPromos";
     public static final String FORCE_STARTUP_SIGNIN_PROMO = "ForceStartupSigninPromo";
     public static final String FORCE_WEB_CONTENTS_DARK_MODE = "WebContentsForceDark";
+    public static final String GRID_TAB_SWITCHER_LANDSCAPE_ASPECT_RATIO_PHONES =
+            "GridTabSwitcherLandscapeAspectRatioPhones";
     public static final String HISTORY_JOURNEYS = "Journeys";
     public static final String HISTORY_ORGANIC_REPEATABLE_QUERIES = "OrganicRepeatableQueries";
     public static final String HTTPS_FIRST_MODE = "HttpsOnlyMode";
@@ -311,8 +316,6 @@ public abstract class ChromeFeatureList {
             "OfflinePagesDescriptivePendingStatus";
     public static final String OFFLINE_PAGES_LIVE_PAGE_SHARING = "OfflinePagesLivePageSharing";
     public static final String OMAHA_MIN_SDK_VERSION_ANDROID = "OmahaMinSdkVersionAndroid";
-    public static final String OMNIBOX_ADAPTIVE_SUGGESTIONS_VISIBLE_GROUP_ELIGIBILITY_UPDATE =
-            "AdaptiveSuggestionsVisibleGroupEligibilityUpdate";
     public static final String OMNIBOX_ADAPT_NARROW_TABLET_WINDOWS =
             "OmniboxAdaptNarrowTabletWindows";
     public static final String OMNIBOX_CACHE_SUGGESTION_RESOURCES =
@@ -400,7 +403,6 @@ public abstract class ChromeFeatureList {
             "RequestDesktopSiteOptInControlSynthetic";
     public static final String REQUEST_DESKTOP_SITE_OPT_IN_SYNTHETIC =
             "RequestDesktopSiteOptInSynthetic";
-    public static final String REQUEST_DESKTOP_SITE_PER_SITE_IPH = "RequestDesktopSitePerSiteIph";
     public static final String RESIZE_ONLY_ACTIVE_TAB = "ResizeOnlyActiveTab";
     public static final String SAFE_BROWSING_DELAYED_WARNINGS = "SafeBrowsingDelayedWarnings";
     public static final String SAFE_MODE_FOR_CACHED_FLAGS = "SafeModeForCachedFlags";
@@ -525,8 +527,6 @@ public abstract class ChromeFeatureList {
             new CachedFlag(CCT_RESIZABLE_SIDE_SHEET, false);
     public static final CachedFlag sCctResizableSideSheetForThirdParties =
             new CachedFlag(CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES, false);
-    public static final CachedFlag sCctRetainableStateInMemory =
-            new CachedFlag(CCT_RETAINING_STATE_IN_MEMORY, false);
     public static final CachedFlag sCctToolbarCustomizations =
             new CachedFlag(CCT_TOOLBAR_CUSTOMIZATIONS, true);
     public static final CachedFlag sCloseTabSuggestions =
@@ -541,12 +541,16 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sDelayTempStripRemoval =
             new CachedFlag(DELAY_TEMP_STRIP_REMOVAL, true);
     public static final CachedFlag sDiscoverMultiColumn = new CachedFlag(FEED_MULTI_COLUMN, true);
+    public static final CachedFlag sDragDropIntoOmnibox =
+            new CachedFlag(DRAG_DROP_INTO_OMNIBOX, false);
     public static final CachedFlag sEarlyLibraryLoad = new CachedFlag(EARLY_LIBRARY_LOAD, true);
     public static final CachedFlag sEmptyStates = new CachedFlag(EMPTY_STATES, false);
     public static final CachedFlag sExperimentsForAgsa = new CachedFlag(EXPERIMENTS_FOR_AGSA, true);
     public static final CachedFlag sFeedLoadingPlaceholder =
             new CachedFlag(FEED_LOADING_PLACEHOLDER, false);
     public static final CachedFlag sFoldableJankFix = new CachedFlag(FOLDABLE_JANK_FIX, true);
+    public static final CachedFlag sGridTabSwitcherLandscapeAspectRatioPhones =
+            new CachedFlag(GRID_TAB_SWITCHER_LANDSCAPE_ASPECT_RATIO_PHONES, false);
     public static final CachedFlag sIncognitoReauthenticationForAndroid =
             new CachedFlag(INCOGNITO_REAUTHENTICATION_FOR_ANDROID, false);
     public static final CachedFlag sInstanceSwitcher = new CachedFlag(INSTANCE_SWITCHER, true);
@@ -593,7 +597,7 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sTabGroupsAndroid = new CachedFlag(
             TAB_GROUPS_ANDROID, ChromePreferenceKeys.FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED, true);
     public static final CachedFlag sTabGroupsContinuationAndroid =
-            new CachedFlag(TAB_GROUPS_CONTINUATION_ANDROID, false);
+            new CachedFlag(TAB_GROUPS_CONTINUATION_ANDROID, true);
     public static final CachedFlag sTabGroupsForTablets =
             new CachedFlag(TAB_GROUPS_FOR_TABLETS, true);
     public static final CachedFlag sTabStripRedesign = new CachedFlag(TAB_STRIP_REDESIGN, false);
@@ -634,7 +638,6 @@ public abstract class ChromeFeatureList {
         sCctResizableMultiWindowMode,
         sCctResizableSideSheet,
         sCctResizableSideSheetForThirdParties,
-        sCctRetainableStateInMemory,
         sCctToolbarCustomizations,
         sCloseTabSuggestions,
         sCloseTabSaveTabList,
@@ -642,10 +645,12 @@ public abstract class ChromeFeatureList {
         sCriticalPersistedTabData,
         sDelayTempStripRemoval,
         sDiscoverMultiColumn,
+        sDragDropIntoOmnibox,
         sEarlyLibraryLoad,
         sEmptyStates,
         sFeedLoadingPlaceholder,
         sFoldableJankFix,
+        sGridTabSwitcherLandscapeAspectRatioPhones,
         sIncognitoReauthenticationForAndroid,
         sInstanceSwitcher,
         sInstantStart,

@@ -34,6 +34,7 @@
 #import "components/payments/core/payment_prefs.h"
 #import "components/policy/core/browser/browser_policy_connector.h"
 #import "components/policy/core/browser/url_blocklist_manager.h"
+#import "components/policy/core/common/local_test_policy_provider.h"
 #import "components/policy/core/common/policy_pref_names.h"
 #import "components/policy/core/common/policy_statistics_collector.h"
 #import "components/pref_registry/pref_registry_syncable.h"
@@ -269,6 +270,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   HostContentSettingsMap::RegisterProfilePrefs(registry);
   invalidation::InvalidatorRegistrarWithMemory::RegisterProfilePrefs(registry);
   invalidation::PerUserTopicSubscriptionManager::RegisterProfilePrefs(registry);
+  policy::LocalTestPolicyProvider::RegisterProfilePrefs(registry);
   language::LanguagePrefs::RegisterProfilePrefs(registry);
   metrics::RegisterDemographicsProfilePrefs(registry);
   ntp_tiles::MostVisitedSites::RegisterProfilePrefs(registry);
@@ -348,9 +350,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterInt64Pref(prefs::kNtpShownBookmarksFolder, 3);
 
   // The Following feed sort type comes from
-  // ios/chrome/browser/discover_feed/feed_constants.h Defaults to 1, which is
-  // grouped by publisher.
-  registry->RegisterIntegerPref(prefs::kNTPFollowingFeedSortType, 1);
+  // ios/chrome/browser/discover_feed/feed_constants.h Defaults to 2, which is
+  // sort by latest.
+  registry->RegisterIntegerPref(prefs::kNTPFollowingFeedSortType, 2);
 
   // Register pref to determine if the user changed the Following sort type.
   registry->RegisterBooleanPref(prefs::kDefaultFollowingFeedSortTypeChanged,
@@ -507,4 +509,5 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
 
   // Added 07/2023.
   prefs->ClearPref(kUnifiedConsentMigrationState);
+  syncer::SyncPrefs::MigrateAutofillWalletImportEnabledPref(prefs);
 }

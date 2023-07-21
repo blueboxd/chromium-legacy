@@ -271,7 +271,11 @@ export class SettingsChromeVoxSubpageElement extends
           return [
             'activedescendantchanged',
             'alert',
-            'ariaAttributeChanged',
+            // TODO(crbug.com/1464633) Fully remove
+            // ARIA_ATTRIBUTE_CHANGED_DEPRECATED starting in 122, because
+            // although it was removed in 118, it is still present in earlier
+            // versions of LaCros.
+            'ariaAttributeChangedDeprecated',
             'autocorrectionOccured',
             'blur',
             'checkedStateChanged',
@@ -337,7 +341,6 @@ export class SettingsChromeVoxSubpageElement extends
     ];
   }
 
-  private route_: Route;
   private capitalStrategyOptions_: DropdownMenuOptionList;
   private numberReadingStyleOptions_: DropdownMenuOptionList;
   private punctuationEchoOptions_: DropdownMenuOptionList;
@@ -357,7 +360,7 @@ export class SettingsChromeVoxSubpageElement extends
         ChromeVoxSubpageBrowserProxyImpl.getInstance();
 
     /** RouteOriginMixin override */
-    this.route_ = routes.A11Y_CHROMEVOX;
+    this.route = routes.A11Y_CHROMEVOX;
   }
 
   override ready() {
@@ -378,7 +381,7 @@ export class SettingsChromeVoxSubpageElement extends
     super.currentRouteChanged(newRoute, prevRoute);
 
     // Does not apply to this page.
-    if (newRoute !== this.route_) {
+    if (newRoute !== this.route) {
       return;
     }
 

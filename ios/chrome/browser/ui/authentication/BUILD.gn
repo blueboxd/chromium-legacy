@@ -54,6 +54,7 @@ source_set("authentication") {
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/model/web_state_list",
     "//ios/chrome/browser/shared/public/commands",
+    "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/public/features:system_flags",
     "//ios/chrome/browser/shared/ui/symbols",
     "//ios/chrome/browser/shared/ui/util",
@@ -114,6 +115,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "authentication_flow_performer_unittest.mm",
     "authentication_flow_unittest.mm",
     "authentication_ui_util_unittest.mm",
     "re_signin_infobar_delegate_unittest.mm",
@@ -193,6 +195,7 @@ source_set("eg_app_support+eg2") {
     "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager:test_support",
     "//components/supervised_user/core/browser:supervised_user_preferences",
+    "//components/sync",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/chrome/browser/shared/model/application_context",
@@ -204,6 +207,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/signin:capabilities_types",
     "//ios/chrome/browser/signin:fake_system_identity",
     "//ios/chrome/browser/signin:fake_system_identity_manager",
+    "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui/authentication/cells",
     "//ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt",
     "//ios/chrome/browser/ui/authentication/unified_consent:unified_consent_ui",

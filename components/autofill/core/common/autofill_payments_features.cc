@@ -23,12 +23,6 @@ namespace autofill::features {
 
 // Features
 
-// Controls whether or not Autofill client will populate form with CPAN and
-// dCVV, rather than FPAN.
-BASE_FEATURE(kAutofillAlwaysReturnCloudTokenizedCard,
-             "AutofillAlwaysReturnCloudTokenizedCard",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // When enabled, card art images (instead of network icons) will be shown in
 // Payments Autofill UI.
 BASE_FEATURE(kAutofillEnableCardArtImage,
@@ -59,7 +53,7 @@ BASE_FEATURE(kAutofillEnableCvcStorageAndFilling,
 // challenge options.
 BASE_FEATURE(kAutofillEnableEmailOtpForVcnYellowPath,
              "AutofillEnableEmailOtpForVcnYellowPath",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, user's will see network card art images and network icons which
 // are larger, having a white border, and don't have the standard grey overlay
@@ -227,12 +221,6 @@ BASE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields,
              "AutofillParseVcnCardOnFileStandaloneCvcFields",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, Expiration and Type titles will be removed from Chrome
-// payment settings page.
-BASE_FEATURE(kAutofillRemoveCardExpirationAndTypeTitles,
-             "AutofillRemoveCardExpirationAndTypeTitles_LAUNCHED",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled, the Save Card infobar supports editing before submitting.
 BASE_FEATURE(kAutofillSaveCardInfobarEditSupport,
              "AutofillSaveCardInfobarEditSupport_LAUNCHED",
@@ -303,6 +291,14 @@ const base::FeatureParam<int>
 // card number. (E.g., '•• 8888' rather than '•••• 8888').
 BASE_FEATURE(kAutofillUseTwoDotsForLastFourDigits,
              "AutofillUseTwoDotsForLastFourDigits",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When this and the above `kAutofillEnablePaymentsMandatoryReauth` are both
+// enabled, in use-cases where we would not have triggered any user-visible
+// authentication to autofill payment methods, we will trigger a device
+// authentication on Bling.
+BASE_FEATURE(kAutofillEnablePaymentsMandatoryReauthOnBling,
+             "AutofillEnablePaymentsMandatoryReauthOnBling",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 

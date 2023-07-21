@@ -124,7 +124,6 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> und <ph name="SECOND_ITEM_TITLE" /> haben die Plätze getauscht</translation>
 <translation id="1500926532737552529">Alle Vorschläge anzeigen</translation>
-<translation id="1503394326855300303">Dieses Inhaberkonto muss in einer Sitzung mit Mehrfachanmeldung das erste angemeldete Konto sein.</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1516740043221086139">„Bitte nicht stören“ ist aktiviert.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Benachrichtigungseinstellungen anzeigen. Benachrichtigungen sind für eine App deaktiviert.}other{Benachrichtigungseinstellungen anzeigen. Benachrichtigungen sind für # Apps deaktiviert.}}</translation>
@@ -160,7 +159,6 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1677507110654891115">"<ph name="FEATURE_NAME" />" ist nicht verbunden.</translation>
 <translation id="1677582821739292812">Jemand sieht auf deinen Bildschirm</translation>
 <translation id="1679841710523778799">Helligkeit erhöhen</translation>
-<translation id="1683399938733266832">Aktuelle CPU-Auslastung: <ph name="CPU_USEAGE" /> %</translation>
 <translation id="169515659049020177">Umschalttaste</translation>
 <translation id="1698080062160024910">Timer: <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6-Adresse: <ph name="ADDRESS" /></translation>
@@ -185,6 +183,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1770726142253415363">In Zeile <ph name="ROW_NUMBER" />, Spalte <ph name="COLUMN_NUMBER" /> verschoben.</translation>
 <translation id="1771761307086386028">Nach rechts scrollen</translation>
 <translation id="1774796056689732716">Kalender, <ph name="CURRENT_MONTH_YEAR" />, momentan ist der <ph name="DATE" /> ausgewählt.</translation>
+<translation id="1775598828170459419"><ph name="NUM_SHOWN_ITEMS" /> von <ph name="NUM_TOTAL_ITEMS" /> werden angezeigt</translation>
 <translation id="1787955149152357925">Aus</translation>
 <translation id="181103072419391116">Signalstärke bei <ph name="SIGNAL_STRENGTH" />, von deinem Administrator verwaltet</translation>
 <translation id="1815245884418711390">Hotspot ein-/ausschalten. Hotspot ist deaktiviert.</translation>
@@ -201,7 +200,6 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1824922790784036530">Standortzugriff aktivieren</translation>
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" /> wurde losgelöst</translation>
-<translation id="183465528887726323">Stelle eine Verbindung zu mobilen Daten her, um den Hotspot zu verwenden</translation>
 <translation id="1838895407229022812">Nachtlicht ist ausgeschaltet.</translation>
 <translation id="1854180393107901205">Übertragung beenden</translation>
 <translation id="1862380676329487333">Aktualisieren und abmelden</translation>
@@ -225,7 +223,6 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1961239773406905488">Kameravorschau wird nicht angezeigt</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">Gesperrter Bildschirm</translation>
-<translation id="1962972976741217487">1 Gerät mit deinem <ph name="DEVICE_NAME" />-Hotspot verbunden</translation>
 <translation id="1967970931040389207">Hotspot aktivieren</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Hallo <ph name="USERNAME" /></translation>
@@ -372,7 +369,6 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="263399434338050016">„Alles auswählen“</translation>
 <translation id="2644422758626431000">Fenster links anpinnen</translation>
 <translation id="2645435784669275700">Chrome OS</translation>
-<translation id="2647092942972307022"><ph name="USED_MEMORY" /> von <ph name="TOTAL_MEMORY" /> verfügbar</translation>
 <translation id="2653019840645008922">Fensteraufnahme</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2658778018866295321">Klicken und ziehen</translation>
@@ -511,6 +507,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="3294437725009624529">Gast</translation>
 <translation id="3298690094479023523">Deine PIN oder dein Passwort konnte noch immer nicht bestätigt werden. Versuche es noch einmal.</translation>
 <translation id="3300193645498960160">Du wirst benachrichtigt, wenn du zu sprechen anfängst, während das Mikrofon stummgeschaltet ist. Von deinem Gerät wird kein Audio gesendet.</translation>
+<translation id="3306386552969601301"><ph name="DEVICECOUNT" /> Geräte mit <ph name="DEVICE_NAME" />-Hotspot verbunden</translation>
 <translation id="3307642347673023554">Zum Laptopmodus gewechselt</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kann sich später weiterhin anmelden.</translation>
 <translation id="3321628682574733415">Falscher Elterncode</translation>
@@ -550,6 +547,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3445925074670675829">USB-C-Gerät</translation>
 <translation id="3455468639467374593">Vorlage, <ph name="TEMPLATE_NAME" /></translation>
+<translation id="3456931972722214204">1 Gerät mit <ph name="DEVICE_NAME" />-Hotspot verbunden</translation>
 <translation id="346243998268439747">Zoomstufe zurücksetzen</translation>
 <translation id="3465223694362104965">Seit deiner letzten Anmeldung wurde eine andere Tastatur an dieses Gerät angeschlossen. Bevor du diese Tastatur verwendest, solltest du überprüfen, ob sie vertrauenswürdig ist.</translation>
 <translation id="3465356146291925647">Von deinem Administrator verwaltet</translation>
@@ -595,7 +593,6 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="3621202678540785336">Eingang</translation>
 <translation id="3621712662352432595">Audioeinstellungen</translation>
 <translation id="3626281679859535460">Helligkeit</translation>
-<translation id="3629640897379005903">Hotspot-Details anzeigen. Hotspot wird deaktiviert.</translation>
 <translation id="3630697955794050612">aus</translation>
 <translation id="3631369015426612114">Benachrichtigungen zulassen von:</translation>
 <translation id="3633097874324966332">Öffne die Bluetooth-Einstellungen, um das Gerät zu koppeln</translation>
@@ -734,7 +731,6 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="423685346499232137">Inhalte können momentan nicht kopiert oder eingefügt werden</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4240486403425279990">Übersichtsmodus</translation>
-<translation id="4240756737570479726">Wird deaktiviert…</translation>
 <translation id="4242533952199664413">Einstellungen öffnen</translation>
 <translation id="4247123849143712100">Aktualisieren und herunterfahren</translation>
 <translation id="4250229828105606438">Screenshot</translation>
@@ -761,6 +757,7 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="4324840740119394760">Dies erlaubt den Kamerazugriff für <ph name="APP_NAME" /> sowie alle Apps und Websites mit Kameraberechtigung</translation>
 <translation id="4333628967105022692">Lacros wird nicht unterstützt, wenn viele Nutzer angemeldet sind.</translation>
 <translation id="4338109981321384717">Lupe</translation>
+<translation id="4356872429719185452">Hotspot-Details anzeigen. Hotspot wird aktiviert.</translation>
 <translation id="4371348193907997655">Streaming-Einstellungen</translation>
 <translation id="4375482231364171368">In Adressleiste suchen</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, Signalstärke <ph name="SIGNAL_STRENGTH" /> %</translation>
@@ -927,7 +924,6 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="5034421018520995080">Zum Seitenanfang springen</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ist mit einem neuen Smartphone verbunden</translation>
 <translation id="5035389544768382859">Displaykonfiguration bestätigen</translation>
-<translation id="5038863510258510803">Wird aktiviert...</translation>
 <translation id="5042305953558921026">Taste für Übersichtsmodus</translation>
 <translation id="5043679421800073804">Auf das letzte Symbol in der Ablage klicken oder tippen</translation>
 <translation id="504465286040788597">Vorheriger Absatz</translation>
@@ -983,7 +979,6 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="5297704307811127955">Aus</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5302048478445481009">Sprache</translation>
-<translation id="5303783651764314393"><ph name="DEVICECOUNT" /> Geräte mit deinem <ph name="DEVICE_NAME" />-Hotspot verbunden</translation>
 <translation id="5308380583665731573">Verbinden</translation>
 <translation id="5313326810920013265">Bluetooth-Einstellungen</translation>
 <translation id="5314219114274263156">Bildschirmaufzeichnung aufgenommen</translation>
@@ -1107,6 +1102,7 @@ Schließe dein Gerät an eine Steckdose an.</translation>
 <translation id="5825969630400862129">Einstellungen für verbundene Geräte</translation>
 <translation id="5837036133683224804"><ph name="ROUTE_TITLE" /> auf <ph name="RECEIVER_NAME" /> beenden</translation>
 <translation id="5841296711770970362">Zum nächsten Titel wechseln</translation>
+<translation id="5842553299352339114"><ph name="DEVICE_NAME" />-Hotspot ist aktiviert, keine Geräte verbunden</translation>
 <translation id="584525477304726060">Zum Maximieren gedrückt halten</translation>
 <translation id="5856638668464565213"><ph name="NETWORK_NAME" /> ist nicht aktiviert.</translation>
 <translation id="5860033963881614850">Aus</translation>
@@ -1319,7 +1315,6 @@ Neuinstallation</translation>
 <translation id="6752912906630585008">Desktop <ph name="REMOVED_DESK" /> wurde entfernt und mit Desktop <ph name="RECEIVE_DESK" /> zusammengeführt</translation>
 <translation id="6753390234084146956">Tabs</translation>
 <translation id="6757237461819837179">Keine Medien werden abgespielt</translation>
-<translation id="6759628406555734414">Hotspot-Details anzeigen. Hotspot wird aktiviert.</translation>
 <translation id="6768043681523654438">Speicher</translation>
 <translation id="6777216307882431711">Stromversorgung für verbundene USB-C-Geräte</translation>
 <translation id="6781002679438061620">Desktop 9</translation>
@@ -1369,6 +1364,7 @@ Neuinstallation</translation>
 <translation id="6981291220124935078">Zugriff aktivieren</translation>
 <translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="698231206551913481">Durch das Entfernen des Nutzers werden alle mit ihm verknüpften Dateien und lokalen Daten endgültig gelöscht.</translation>
+<translation id="7004910047186208204">Mit Mobilfunknetz verbinden</translation>
 <translation id="7005239792648594238">Öffne eine App, um loszulegen</translation>
 <translation id="7007983414944123363">Deine PIN oder dein Passwort konnten nicht bestätigt werden. Bitte versuche es noch einmal.</translation>
 <translation id="7014684956566476813">Mit einem Gerät namens „<ph name="DEVICE_NAME" />“ verbunden</translation>
@@ -1407,7 +1403,6 @@ Neuinstallation</translation>
 <translation id="7165278925115064263">Alt + Umschalttaste + K</translation>
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
-<translation id="7187711731540696127"><ph name="DEVICE_NAME" />-Hotspot ist aktiviert, keine Geräte verbunden</translation>
 <translation id="7188494361780961876">Menü wurde nach links oben auf dem Bildschirm verschoben.</translation>
 <translation id="7189412385142492784">Wie weit ist die Venus entfernt?</translation>
 <translation id="7198435252016571249">Kamera ist an der unteren rechten Ecke angepinnt. Konflikt mit der Systemoberfläche.</translation>
@@ -1456,7 +1451,6 @@ Neuinstallation</translation>
 <translation id="743058460480092004">Kamera und Mikrofon werden verwendet.</translation>
 <translation id="7452560014878697800">Eine Anwendung verwendet deine Kamera</translation>
 <translation id="7453330308669753048">Ergebnis aus dem Suchverlauf entfernt</translation>
-<translation id="7455047553373871740"><ph name="BATTERY_PERCENTAGE" /> % | vollständig geladen in <ph name="TIME" /></translation>
 <translation id="7459485586006128091">Aufgrund eines internen Fehlers wurde der Hotspot deaktiviert. Versuche in ein paar Minuten noch einmal, eine Verbindung herzustellen.</translation>
 <translation id="7461924472993315131">Anpinnen</translation>
 <translation id="746232733191930409">Modus zur Aufzeichnung des Bildschirms</translation>
@@ -1524,6 +1518,7 @@ Halte zum Herunterfahren des Geräts die Ein-/Aus-Taste noch einmal gedrückt.</
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 Benachrichtigung}other{# Benachrichtigungen}}</translation>
 <translation id="7723703419796509666">Entwicklertools-Konsole ein- oder ausblenden</translation>
 <translation id="7724603315864178912">Ausschneiden</translation>
+<translation id="7725108879223146004">Hotspot-Details anzeigen. Hotspot wird deaktiviert.</translation>
 <translation id="7727952505535211425">Website in Adressleiste auf neuem Tab öffnen</translation>
 <translation id="77365090426890123">Arbeitsspeichernutzung</translation>
 <translation id="7742327441377685481">Keine Benachrichtigungen</translation>
@@ -1581,6 +1576,7 @@ Halte zum Herunterfahren des Geräts die Ein-/Aus-Taste noch einmal gedrückt.</
 <translation id="797512352675305461">Vollbildlupe aktivieren oder deaktivieren</translation>
 <translation id="7977927628060636163">Nach Mobilfunknetzen wird gesucht…</translation>
 <translation id="7982789257301363584">Netzwerk</translation>
+<translation id="7982878511129296052">Wird deaktiviert…</translation>
 <translation id="7984197416080286869">Zu viele Entsperrversuche mit Fingerabdruck</translation>
 <translation id="798779949890829624">Diese Einstellung wird von deinem Administrator verwaltet</translation>
 <translation id="799296642788192631">Du kannst wichtige Dateien anpinnen. Bewege dazu den Mauszeiger auf ein Element oder öffne die App „Dateien“ und klicke mit der rechten Maustaste auf ein Element.</translation>
@@ -1658,6 +1654,7 @@ Halte zum Herunterfahren des Geräts die Ein-/Aus-Taste noch einmal gedrückt.</
 <translation id="8308637677604853869">Vorheriges Menü</translation>
 <translation id="830868413617744215">Beta</translation>
 <translation id="8314772463905284467">Die Feststelltaste ist aktiviert.</translation>
+<translation id="8315514906653279104">Wird aktiviert…</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /> <ph name="GET_STARTED" /></translation>
 <translation id="8345019317483336363">Fenster „<ph name="WINDOW_TITLE" />“ ausgewählt</translation>
 <translation id="8349964124165471584">Link in neuem Fenster öffnen</translation>
@@ -1837,7 +1834,6 @@ Halte zum Herunterfahren des Geräts die Ein-/Aus-Taste noch einmal gedrückt.</
 <translation id="9178475906033259337">1 Ergebnis für "<ph name="QUERY" />"</translation>
 <translation id="9179259655489829027">Dank dieser Funktion kannst du schnell auf alle angemeldeten Nutzerkonten zugreifen, ohne ein Passwort eingeben zu müssen. Verwende diese Funktion nur bei Konten, denen du vertraust.</translation>
 <translation id="9183456764293710005">Vollbildlupe</translation>
-<translation id="9186811218777709815"><ph name="BATTERY_PERCENTAGE" /> % | <ph name="TIME" /> verbleibend</translation>
 <translation id="9193626018745640770">Streaming an unbekannten Empfänger</translation>
 <translation id="9194617393863864469">Weiteren Nutzer anmelden...</translation>
 <translation id="9198992156681343238">Die Auflösung von <ph name="DISPLAY_NAME" /> wurde zu <ph name="RESOLUTION" /> geändert. Bitte bestätigen, um die Änderungen beizubehalten. Die vorherigen Einstellungen werden in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>

@@ -27,7 +27,15 @@
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/user_selectable_type.h"
 
+namespace syncer {
+
 namespace {
+
+// Historic artifact for payment methods, migrated since 2023/07 to
+// prefs::internal::kSyncPayments to make the name consistent with other
+// user-selectable types.
+constexpr char kObsoleteAutofillWalletImportEnabled[] =
+    "autofill.wallet_import_enabled";
 
 // State of the migration done by
 // MaybeMigratePrefsForSyncToSigninPart1() and
@@ -41,8 +49,6 @@ constexpr int kMigratedPart1ButNot2 = 1;
 constexpr int kMigratedPart2AndFullyDone = 2;
 
 }  // namespace
-
-namespace syncer {
 
 SyncPrefObserver::~SyncPrefObserver() = default;
 
@@ -97,11 +103,12 @@ void SyncPrefs::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::internal::kSyncAppsEnabledByOs, false);
 #endif
 
-  registry->RegisterBooleanPref(prefs::internal::kAutofillWalletImportEnabled,
-                                true);
-
   registry->RegisterIntegerPref(kSyncToSigninMigrationState, kNotMigrated);
 
+  // The passphrase type, determined upon the first engine initialization.
+  registry->RegisterIntegerPref(
+      prefs::internal::kSyncCachedPassphraseType,
+      sync_pb::NigoriSpecifics_PassphraseType_UNKNOWN);
   // The encryption bootstrap token represents a user-entered passphrase.
   registry->RegisterStringPref(prefs::internal::kSyncEncryptionBootstrapToken,
                                std::string());
@@ -111,6 +118,9 @@ void SyncPrefs::RegisterProfilePrefs(PrefRegistrySimple* registry) {
       prefs::internal::kSyncPassphrasePromptMutedProductVersion, 0);
   registry->RegisterBooleanPref(prefs::kEnableLocalSyncBackend, false);
   registry->RegisterFilePathPref(prefs::kLocalSyncBackendDir, base::FilePath());
+
+  // Obsolete prefs (registered for migrations only).
+  registry->RegisterBooleanPref(kObsoleteAutofillWalletImportEnabled, true);
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -179,7 +189,7 @@ UserSelectableTypeSet SyncPrefs::GetSelectedTypesForAccount(
     const char* pref_name = GetPrefNameForType(type);
     DCHECK(pref_name);
     bool type_enabled = false;
-    if (IsTypeManagedByPolicy(type)) {
+    if (IsTypeManagedByPolicy(type) || IsTypeManagedByCustodian(type)) {
       type_enabled = pref_service_->GetBoolean(pref_name);
     } else {
       const base::Value::Dict* account_settings =
@@ -227,8 +237,6 @@ UserSelectableTypeSet SyncPrefs::GetSelectedTypes(
 
         // TODO(crbug.com/1455963): Find a better solution than manually
         // overriding the prefs' default values.
-        // TODO(crbug.com/1455963): This should return true by default only if
-        // a given type can actually run in transport mode.
         if (pref_service_->GetBoolean(pref_name) ||
             pref_service_->FindPreference(pref_name)->IsDefaultValue()) {
           // In transport-mode, individual types are considered enabled by
@@ -256,7 +264,7 @@ UserSelectableTypeSet SyncPrefs::GetSelectedTypes(
         const char* pref_name = GetPrefNameForType(type);
         DCHECK(pref_name);
         if (pref_service_->GetBoolean(pref_name) ||
-            (!IsTypeManagedByPolicy(type) &&
+            (!IsTypeManagedByPolicy(type) && !IsTypeManagedByCustodian(type) &&
              pref_service_->GetBoolean(
                  prefs::internal::kSyncKeepEverythingSynced))) {
           // In full-sync mode, the "sync everything" bit is honored. If it's
@@ -278,6 +286,12 @@ bool SyncPrefs::IsTypeManagedByPolicy(UserSelectableType type) const {
   return pref_service_->IsManagedPreference(pref_name);
 }
 
+bool SyncPrefs::IsTypeManagedByCustodian(UserSelectableType type) const {
+  const char* pref_name = GetPrefNameForType(type);
+  CHECK(pref_name);
+  return pref_service_->IsPreferenceManagedByCustodian(pref_name);
+}
+
 void SyncPrefs::SetSelectedTypes(bool keep_everything_synced,
                                  UserSelectableTypeSet registered_types,
                                  UserSelectableTypeSet selected_types) {
@@ -291,11 +305,10 @@ void SyncPrefs::SetSelectedTypes(bool keep_everything_synced,
     pref_service_->SetBoolean(pref_name, selected_types.Has(type));
   }
 
-  // Note that payments integration is controlled via
-  // SetPaymentsIntegrationEnabled(), hence it cannot have changed here.
+  // Payments integration might have changed, so report as true.
   for (SyncPrefObserver& observer : sync_pref_observers_) {
     observer.OnPreferredDataTypesPrefChange(
-        /*payments_integration_enabled_changed=*/false);
+        /*payments_integration_enabled_changed=*/true);
   }
 }
 
@@ -313,29 +326,10 @@ void SyncPrefs::SetSelectedTypeForAccount(
     account_settings->Set(GetPrefNameForType(type), is_type_on);
   }
 
-  // Note that payments integration is controlled via
-  // SetPaymentsIntegrationEnabled(), hence it cannot have changed here.
   for (SyncPrefObserver& observer : sync_pref_observers_) {
     observer.OnPreferredDataTypesPrefChange(
-        /*payments_integration_enabled_changed=*/false);
-  }
-}
-
-bool SyncPrefs::IsPaymentsIntegrationEnabled() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return pref_service_->GetBoolean(
-      prefs::internal::kAutofillWalletImportEnabled);
-}
-
-void SyncPrefs::SetPaymentsIntegrationEnabled(bool enabled) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  pref_service_->SetBoolean(prefs::internal::kAutofillWalletImportEnabled,
-                            enabled);
-
-  for (SyncPrefObserver& observer : sync_pref_observers_) {
-    observer.OnPreferredDataTypesPrefChange(
-        /*payments_integration_enabled_changed=*/true);
+        /*payments_integration_enabled_changed=*/
+        type == UserSelectableType::kPayments);
   }
 }
 
@@ -482,6 +476,20 @@ bool SyncPrefs::IsSyncClientDisabledByPolicy() const {
   return pref_service_->GetBoolean(prefs::internal::kSyncManaged);
 }
 
+absl::optional<PassphraseType> SyncPrefs::GetCachedPassphraseType() const {
+  return ProtoPassphraseInt32ToEnum(
+      pref_service_->GetInteger(prefs::internal::kSyncCachedPassphraseType));
+}
+
+void SyncPrefs::SetCachedPassphraseType(PassphraseType passphrase_type) {
+  pref_service_->SetInteger(prefs::internal::kSyncCachedPassphraseType,
+                            EnumPassphraseTypeToProto(passphrase_type));
+}
+
+void SyncPrefs::ClearCachedPassphraseType() {
+  pref_service_->ClearPref(prefs::internal::kSyncCachedPassphraseType);
+}
+
 std::string SyncPrefs::GetEncryptionBootstrapToken() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return pref_service_->GetString(
@@ -531,6 +539,8 @@ const char* SyncPrefs::GetPrefNameForType(UserSelectableType type) {
       return prefs::internal::kSyncTabs;
     case UserSelectableType::kSavedTabGroups:
       return prefs::internal::kSyncSavedTabGroups;
+    case UserSelectableType::kPayments:
+      return prefs::internal::kSyncPayments;
   }
   NOTREACHED();
   return nullptr;
@@ -541,7 +551,17 @@ void SyncPrefs::SetTypeDisabledByPolicy(PrefValueMap* policy_prefs,
                                         UserSelectableType type) {
   const char* pref_name = syncer::SyncPrefs::GetPrefNameForType(type);
   CHECK(pref_name);
+  CHECK(policy_prefs);
   policy_prefs->SetValue(pref_name, base::Value(false));
+}
+
+// static void
+void SyncPrefs::SetTypeDisabledByCustodian(PrefValueMap* supervised_user_prefs,
+                                           UserSelectableType type) {
+  const char* pref_name = syncer::SyncPrefs::GetPrefNameForType(type);
+  CHECK(pref_name);
+  CHECK(supervised_user_prefs);
+  supervised_user_prefs->SetValue(pref_name, base::Value(false));
 }
 
 // static
@@ -563,14 +583,18 @@ bool SyncPrefs::IsTypeSupportedInTransportMode(UserSelectableType type) {
       return base::FeatureList::IsEnabled(
           password_manager::features::kEnablePasswordsAccountStorage);
     case UserSelectableType::kAutofill:
-      // Always supported, since AUTOFILL_WALLET_DATA (which is supported in
-      // transport mode everywhere) is covered by UserSelectableType::kAutofill.
+      // Note that this logic may lead to kPayments being treated as supported
+      // (or even selected) while kAutofill isn't. This goes against the general
+      // practice that kPayments depends on kAutofill (when it comes to user
+      // choice).
+      // TODO(crbug.com/1435431): Update comment once the decoupling is removed.
+      return base::FeatureList::IsEnabled(kSyncEnableContactInfoDataType) &&
+             base::FeatureList::IsEnabled(
+                 kSyncEnableContactInfoDataTypeInTransportMode);
+    case UserSelectableType::kPayments:
+      // Always supported, since AUTOFILL_WALLET_DATA is supported in
+      // transport mode everywhere.
       return true;
-      // TODO(crbug.com/1435431): Once "Payments" is decoupled from "Autofill",
-      // check that the addresses type (CONTACT_INFO) is supported:
-      // return base::FeatureList::IsEnabled(kSyncEnableContactInfoDataType) &&
-      //        base::FeatureList::IsEnabled(
-      //            kSyncEnableContactInfoDataTypeInTransportMode);
     case UserSelectableType::kHistory:
     case UserSelectableType::kTabs:
       return base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos) &&
@@ -627,18 +651,25 @@ void SyncPrefs::ClearPassphrasePromptMutedProductVersion() {
 }
 
 void SyncPrefs::MaybeMigratePrefsForSyncToSigninPart1(
-    SyncAccountState account_state) {
+    SyncAccountState account_state,
+    signin::GaiaIdHash gaia_id_hash) {
   if (!base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos)) {
     // Ensure that the migration runs again when the feature gets enabled.
     pref_service_->ClearPref(kSyncToSigninMigrationState);
     return;
   }
 
-  // TODO(crbug.com/1447020, crbug.com/1451509): Update the migration logic to
-  // write to the gaia-keyed pref when kReplaceSyncPromosWithSignInPromos is
-  // enabled.
   // Don't migrate again if this profile was previously migrated.
   if (pref_service_->GetInteger(kSyncToSigninMigrationState) != kNotMigrated) {
+    return;
+  }
+
+  if (IsLocalSyncEnabled()) {
+    // Special case for local sync: There isn't necessarily a signed-in user
+    // (even if the SyncAccountState is kSyncing), so just mark the migration as
+    // done.
+    pref_service_->SetInteger(kSyncToSigninMigrationState,
+                              kMigratedPart2AndFullyDone);
     return;
   }
 
@@ -650,35 +681,66 @@ void SyncPrefs::MaybeMigratePrefsForSyncToSigninPart1(
       // later sign in / turn on sync.
       pref_service_->SetInteger(kSyncToSigninMigrationState,
                                 kMigratedPart2AndFullyDone);
-      break;
+      return;
     }
     case SyncAccountState::kSignedInNotSyncing: {
       pref_service_->SetInteger(kSyncToSigninMigrationState,
                                 kMigratedPart1ButNot2);
-      // For pre-existing signed-in users, some state needs to be migrated:
+      // For pre-existing signed-in users, some state needs to be migrated from
+      // the global to the account-scoped settings.
+      CHECK(gaia_id_hash.IsValid());
+      ScopedDictPrefUpdate update_selected_types_dict(
+          pref_service_, prefs::internal::kSelectedTypesPerAccount);
+      base::Value::Dict* account_settings =
+          update_selected_types_dict->EnsureDict(gaia_id_hash.ToBase64());
 
-      // Settings aka preferences remains off by default.
-      pref_service_->SetBoolean(
-          GetPrefNameForType(UserSelectableType::kPreferences), false);
+      // Mostly, the values of the "global" data type prefs get copied to the
+      // account-specific ones. But some data types get special treatment.
+      for (UserSelectableType type : UserSelectableTypeSet::All()) {
+        const char* pref_name = GetPrefNameForType(type);
+        CHECK(pref_name);
+
+        // Initial default value: From the global datatype pref (compare to
+        // GetSelectedTypes()).
+        // TODO(crbug.com/1455963): Find a better solution than manually
+        // overriding the prefs' default values.
+        bool enabled =
+            pref_service_->GetBoolean(pref_name) ||
+            pref_service_->FindPreference(pref_name)->IsDefaultValue();
+
+        // History and open tabs do *not* get migrated; they always start out
+        // "off".
+        if (type == UserSelectableType::kHistory ||
+            type == UserSelectableType::kTabs) {
+          enabled = false;
+        }
+
+        // Settings aka preferences always starts out "off".
+        if (type == UserSelectableType::kPreferences) {
+          enabled = false;
+        }
 
 #if BUILDFLAG(IS_IOS)
-      // Bookmarks and reading list remain enabled only if the user previously
-      // explicitly opted in.
-      if (!pref_service_->GetBoolean(
-              prefs::internal::kBookmarksAndReadingListAccountStorageOptIn)) {
-        pref_service_->SetBoolean(
-            GetPrefNameForType(UserSelectableType::kBookmarks), false);
-        pref_service_->SetBoolean(
-            GetPrefNameForType(UserSelectableType::kReadingList), false);
-      }
+        // Bookmarks and reading list remain enabled only if the user previously
+        // explicitly opted in.
+        if ((type == UserSelectableType::kBookmarks ||
+             type == UserSelectableType::kReadingList) &&
+            !pref_service_->GetBoolean(
+                prefs::internal::kBookmarksAndReadingListAccountStorageOptIn)) {
+          enabled = false;
+        }
 #endif  // BUILDFLAG(IS_IOS)
 
-      break;
+        account_settings->Set(pref_name, enabled);
+      }
+
+      return;
     }
   }
 }
 
 void SyncPrefs::MaybeMigratePrefsForSyncToSigninPart2(
+    signin::GaiaIdHash gaia_id_hash,
     bool is_using_explicit_passphrase) {
   // The migration pref shouldn't be set if the feature is disabled, but if it
   // somehow happened, do *not* run the migration, and clear the pref so that
@@ -699,10 +761,31 @@ void SyncPrefs::MaybeMigratePrefsForSyncToSigninPart2(
 
   // The actual migration: For explicit-passphrase users, addresses sync gets
   // disabled by default.
-  if (is_using_explicit_passphrase) {
-    pref_service_->SetBoolean(GetPrefNameForType(UserSelectableType::kAutofill),
-                              false);
+  if (is_using_explicit_passphrase && !IsLocalSyncEnabled()) {
+    CHECK(gaia_id_hash.IsValid());
+    ScopedDictPrefUpdate update_selected_types_dict(
+        pref_service_, prefs::internal::kSelectedTypesPerAccount);
+    base::Value::Dict* account_settings =
+        update_selected_types_dict->EnsureDict(gaia_id_hash.ToBase64());
+    account_settings->Set(GetPrefNameForType(UserSelectableType::kAutofill),
+                          false);
   }
+}
+
+// static
+void SyncPrefs::MigrateAutofillWalletImportEnabledPref(
+    PrefService* pref_service) {
+  if (!pref_service->GetUserPrefValue(kObsoleteAutofillWalletImportEnabled)) {
+    // Nothing to migrate.
+    return;
+  }
+
+  pref_service->SetBoolean(
+      prefs::internal::kSyncPayments,
+      pref_service->GetBoolean(kObsoleteAutofillWalletImportEnabled));
+  pref_service->ClearPref(kObsoleteAutofillWalletImportEnabled);
+
+  CHECK(!pref_service->GetUserPrefValue(kObsoleteAutofillWalletImportEnabled));
 }
 
 void SyncPrefs::MarkPartialSyncToSigninMigrationFullyDone() {

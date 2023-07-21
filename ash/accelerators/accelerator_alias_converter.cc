@@ -13,10 +13,12 @@
 #include "base/containers/fixed_flat_set.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
+#include "base/notreached.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/ash/keyboard_capability.h"
 #include "ui/events/ash/keyboard_layout_util.h"
+#include "ui/events/ash/mojom/six_pack_shortcut_modifier.mojom-shared.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/keyboard_device.h"
@@ -179,6 +181,36 @@ bool ShouldShowExternalTopRowActionKeyAlias(
   return should_show_action_key && !alias_is_suppressed;
 }
 
+ui::mojom::SixPackShortcutModifier GetSixPackShortcutModifier(
+    ui::KeyboardCode key_code,
+    absl::optional<int> device_id) {
+  if (!features::IsAltClickAndSixPackCustomizationEnabled() ||
+      !device_id.has_value()) {
+    return ui::mojom::SixPackShortcutModifier::kSearch;
+  }
+  CHECK(ui::KeyboardCapability::IsSixPackKey(key_code));
+  const auto* settings =
+      Shell::Get()->input_device_settings_controller()->GetKeyboardSettings(
+          device_id.value());
+  CHECK(settings);
+  switch (key_code) {
+    case ui::VKEY_DELETE:
+      return settings->six_pack_key_remappings->del;
+    case ui::VKEY_INSERT:
+      return settings->six_pack_key_remappings->insert;
+    case ui::VKEY_HOME:
+      return settings->six_pack_key_remappings->home;
+    case ui::VKEY_END:
+      return settings->six_pack_key_remappings->end;
+    case ui::VKEY_PRIOR:
+      return settings->six_pack_key_remappings->page_up;
+    case ui::VKEY_NEXT:
+      return settings->six_pack_key_remappings->page_down;
+    default:
+      NOTREACHED_NORETURN();
+  }
+}
+
 }  // namespace
 
 std::vector<ui::Accelerator> AcceleratorAliasConverter::CreateAcceleratorAlias(
@@ -239,17 +271,18 @@ std::vector<ui::Accelerator> AcceleratorAliasConverter::CreateAcceleratorAlias(
     return FilterAliasBySupportedKeys(std::move(aliases_set).extract());
   }
 
-  // For |six_pack_key| and |reversed_six_pack_key|, show both the base
+  // For |six_pack_key|, show both the base
   // accelerator and the remapped accelerator if applicable. Otherwise, only
   // show base accelerator.
-  std::vector<ui::Accelerator> aliases = CreateSixPackAliases(accelerator);
-  std::vector<ui::Accelerator> reversed_aliases =
-      CreateReversedSixPackAliases(accelerator);
-  // An accelerator can never have both six pack alias and reversed six
-  // pack alias at the same time. Concatenating two vectors works here. Note
-  // that both vectors could be empty.
-  aliases.insert(aliases.end(), reversed_aliases.begin(),
-                 reversed_aliases.end());
+
+  absl::optional<int> device_id = absl::nullopt;
+  if (priority_external_keyboard.has_value()) {
+    device_id = priority_external_keyboard->id;
+  } else if (internal_keyboard.has_value()) {
+    device_id = internal_keyboard->id;
+  }
+  std::vector<ui::Accelerator> aliases =
+      CreateSixPackAliases(accelerator, device_id);
 
   // Add base accelerator.
   aliases.push_back(accelerator);
@@ -379,12 +412,18 @@ absl::optional<ui::Accelerator> AcceleratorAliasConverter::CreateTopRowAliases(
 }
 
 std::vector<ui::Accelerator> AcceleratorAliasConverter::CreateSixPackAliases(
-    const ui::Accelerator& accelerator) const {
+    const ui::Accelerator& accelerator,
+    absl::optional<int> device_id) const {
   // For all |six_pack_keys|, avoid remapping if [Search] is part of the
   // original accelerator.
   if (accelerator.IsCmdDown() ||
       !::features::IsImprovedKeyboardShortcutsEnabled() ||
       !ui::KeyboardCapability::IsSixPackKey(accelerator.key_code())) {
+    return std::vector<ui::Accelerator>();
+  }
+
+  if (features::IsAltClickAndSixPackCustomizationEnabled() &&
+      !device_id.has_value()) {
     return std::vector<ui::Accelerator>();
   }
 
@@ -399,48 +438,32 @@ std::vector<ui::Accelerator> AcceleratorAliasConverter::CreateSixPackAliases(
     return std::vector<ui::Accelerator>();
   }
 
+  const ui::KeyboardCode accel_key_code = accelerator.key_code();
+  const ui::mojom::SixPackShortcutModifier six_pack_shortcut_modifier =
+      GetSixPackShortcutModifier(accel_key_code, device_id);
+  int modifiers;
+  ui::KeyboardCode key_code;
+  if (six_pack_shortcut_modifier ==
+      ui::mojom::SixPackShortcutModifier::kSearch) {
+    key_code = ui::kSixPackKeyToSearchSystemKeyMap.at(accel_key_code);
+    modifiers = ui::EF_COMMAND_DOWN;
+  } else {
+    key_code = ui::kSixPackKeyToAltSystemKeyMap.at(accel_key_code);
+    modifiers = (accel_key_code == ui::KeyboardCode::VKEY_END ||
+                 accel_key_code == ui::KeyboardCode::VKEY_HOME)
+                    ? (ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN)
+                    : ui::EF_ALT_DOWN;
+  }
+
   // For Insert: [modifiers] = [Search] + [Shift] + [original_modifiers].
-  // For other |six_pack_keys|: [modifiers] = [Search] + [original_modifiers].
+  // For other |six_pack_keys|:
+  // [modifiers] = [Search/Alt] + [original_modifiers].
   int updated_modifiers =
-      accelerator.key_code() == ui::KeyboardCode::VKEY_INSERT
+      accel_key_code == ui::KeyboardCode::VKEY_INSERT
           ? accelerator.modifiers() | ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN
-          : accelerator.modifiers() | ui::EF_COMMAND_DOWN;
+          : accelerator.modifiers() | modifiers;
   return {
-      ui::Accelerator(ui::kSixPackKeyToSystemKeyMap.at(accelerator.key_code()),
-                      updated_modifiers, accelerator.key_state())};
-}
-
-std::vector<ui::Accelerator>
-AcceleratorAliasConverter::CreateReversedSixPackAliases(
-    const ui::Accelerator& accelerator) const {
-  // To find the reversed six pack alias, an accelerator must include [Search]
-  // key, and must be one of the reversed six pack keys. And the connected
-  // keyboards must have six pack keys.
-  if (!accelerator.IsCmdDown() ||
-      !::features::IsImprovedKeyboardShortcutsEnabled() ||
-      !ui::KeyboardCapability::IsReversedSixPackKey(accelerator.key_code()) ||
-      !ui::KeyboardCapability::HasSixPackOnAnyKeyboard()) {
-    return std::vector<ui::Accelerator>();
-  }
-
-  int modifiers = accelerator.modifiers() & ~ui::EF_COMMAND_DOWN;
-  // [Back] maps back to [Insert] if modifier contains [Shift]. Otherwise,
-  // it maps back to [Delete].
-  if (accelerator.key_code() == ui::KeyboardCode::VKEY_BACK) {
-    if (!accelerator.IsShiftDown()) {
-      return {ui::Accelerator(ui::KeyboardCode::VKEY_DELETE, modifiers,
-                              accelerator.key_state())};
-    }
-
-    modifiers &= ~ui::EF_SHIFT_DOWN;
-    return {ui::Accelerator(ui::KeyboardCode::VKEY_INSERT, modifiers,
-                            accelerator.key_state())};
-  }
-
-  // Handle modifiers other than [Back].
-  return {ui::Accelerator(
-      ui::kReversedSixPackKeyToSystemKeyMap.at(accelerator.key_code()),
-      modifiers, accelerator.key_state())};
+      ui::Accelerator(key_code, updated_modifiers, accelerator.key_state())};
 }
 
 std::vector<ui::Accelerator>
@@ -565,13 +588,6 @@ AcceleratorAliasConverter::FilterAliasBySupportedKeys(
     // Search should be shown in the shortcuts app.
     if (accelerator.key_code() == ui::VKEY_MENU &&
         accelerator.modifiers() == ui::EF_COMMAND_DOWN) {
-      continue;
-    }
-
-    // VKEY_PLAY/PAUSE should not be shown as they are conceptual duplicates of
-    // VKEY_MEDIA_PLAY/VKEY_MEDIA_PAUSE.
-    if (accelerator.key_code() == ui::VKEY_PLAY ||
-        accelerator.key_code() == ui::VKEY_PAUSE) {
       continue;
     }
 

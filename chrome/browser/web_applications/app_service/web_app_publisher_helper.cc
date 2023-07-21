@@ -237,8 +237,9 @@ apps::InstallReason GetHighestPriorityInstallReason(const WebApp* web_app) {
 
 apps::InstallSource GetInstallSource(
     absl::optional<webapps::WebappInstallSource> source) {
-  if (!source)
+  if (!source) {
     return apps::InstallSource::kUnknown;
+  }
 
   switch (*source) {
     case webapps::WebappInstallSource::MENU_BROWSER_TAB:
@@ -314,8 +315,9 @@ bool IsNoteTakingWebApp(const WebApp& web_app) {
 }
 
 bool IsLockScreenCapable(const WebApp& web_app) {
-  if (!base::FeatureList::IsEnabled(features::kWebLockScreenApi))
+  if (!base::FeatureList::IsEnabled(features::kWebLockScreenApi)) {
     return false;
+  }
   return web_app.lock_screen_start_url().is_valid();
 }
 
@@ -587,8 +589,7 @@ apps::Permissions WebAppPublisherHelper::CreatePermissions(
     host_content_settings_map->GetWebsiteSetting(url, url, type, &setting_info);
 
     permissions.push_back(std::make_unique<apps::Permission>(
-        GetPermissionType(type),
-        std::make_unique<apps::PermissionValue>(setting_val),
+        GetPermissionType(type), setting_val,
         /*is_managed=*/setting_info.source ==
             content_settings::SETTING_SOURCE_POLICY));
   }
@@ -596,8 +597,7 @@ apps::Permissions WebAppPublisherHelper::CreatePermissions(
   // File handling permission.
   permissions.push_back(std::make_unique<apps::Permission>(
       apps::PermissionType::kFileHandling,
-      std::make_unique<apps::PermissionValue>(
-          !registrar().IsAppFileHandlerPermissionBlocked(web_app->app_id())),
+      !registrar().IsAppFileHandlerPermissionBlocked(web_app->app_id()),
       /*is_managed=*/false));
 
   return permissions;
@@ -655,8 +655,9 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
           : apps::Readiness::kDisabledByUser;
 #if BUILDFLAG(IS_CHROMEOS)
   DCHECK(web_app->chromeos_data().has_value());
-  if (web_app->chromeos_data()->is_disabled)
+  if (web_app->chromeos_data()->is_disabled) {
     readiness = apps::Readiness::kDisabledByPolicy;
+  }
 #endif
 
   auto app = apps::AppPublisher::MakeApp(
@@ -690,8 +691,9 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
   SetWebAppShowInFields(web_app, *app);
 
 #if BUILDFLAG(IS_CHROMEOS)
-  if (readiness != apps::Readiness::kReady)
+  if (readiness != apps::Readiness::kReady) {
     UpdateAppDisabledMode(*app);
+  }
 
   app->has_badge = ShouldShowBadge(
       web_app->app_id(), app_notifications_.HasNotification(web_app->app_id()));
@@ -727,11 +729,13 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
         {extensions_set.begin(), extensions_set.end()}));
   }
 
-  if (IsNoteTakingWebApp(*web_app))
+  if (IsNoteTakingWebApp(*web_app)) {
     app->intent_filters.push_back(apps_util::CreateNoteTakingFilter());
+  }
 
-  if (IsLockScreenCapable(*web_app))
+  if (IsLockScreenCapable(*web_app)) {
     app->intent_filters.push_back(apps_util::CreateLockScreenFilter());
+  }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (web_app->app_id() == guest_os::kTerminalSystemAppId) {
@@ -791,7 +795,7 @@ void WebAppPublisherHelper::UninstallWebApp(
       provider_->registrar_unsafe().CanUserUninstallWebApp(web_app->app_id()));
   webapps::WebappUninstallSource webapp_uninstall_source =
       ConvertUninstallSourceToWebAppUninstallSource(uninstall_source);
-  provider_->install_finalizer().UninstallWebApp(
+  provider_->scheduler().UninstallWebApp(
       web_app->app_id(), webapp_uninstall_source, base::DoNothing());
   web_app = nullptr;
 
@@ -1099,10 +1103,9 @@ void WebAppPublisherHelper::SetPermission(const std::string& app_id,
   }
 
   if (permission->permission_type == apps::PermissionType::kFileHandling) {
-    if (permission->value &&
-        absl::holds_alternative<bool>(permission->value->value)) {
+    if (absl::holds_alternative<bool>(permission->value)) {
       provider_->scheduler().PersistFileHandlersUserChoice(
-          app_id, absl::get<bool>(permission->value->value), base::DoNothing());
+          app_id, absl::get<bool>(permission->value), base::DoNothing());
     }
     return;
   }
@@ -1119,10 +1122,9 @@ void WebAppPublisherHelper::SetPermission(const std::string& app_id,
     return;
   }
 
-  DCHECK(permission->value);
-  DCHECK(absl::holds_alternative<apps::TriState>(permission->value->value));
+  DCHECK(absl::holds_alternative<apps::TriState>(permission->value));
   ContentSetting permission_value = CONTENT_SETTING_DEFAULT;
-  switch (absl::get<apps::TriState>(permission->value->value)) {
+  switch (absl::get<apps::TriState>(permission->value)) {
     case apps::TriState::kAllow:
       permission_value = CONTENT_SETTING_ALLOW;
       break;
@@ -1174,8 +1176,9 @@ void WebAppPublisherHelper::OpenNativeSettings(const std::string& app_id) {
 apps::WindowMode WebAppPublisherHelper::GetWindowMode(
     const std::string& app_id) {
   const WebApp* web_app = GetWebApp(app_id);
-  if (!web_app)
+  if (!web_app) {
     return apps::WindowMode::kUnknown;
+  }
 
   auto display_mode = registrar().GetAppEffectiveDisplayMode(web_app->app_id());
   return ConvertDisplayModeToWindowMode(display_mode);
@@ -1716,8 +1719,9 @@ void WebAppPublisherHelper::UpdateAppDisabledMode(apps::App& app) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   auto* swa_manager = ash::SystemWebAppManager::Get(profile());
-  if (!swa_manager)
+  if (!swa_manager) {
     return;
+  }
   auto system_app_type = swa_manager->GetSystemAppTypeForAppId(app.app_id);
   if (system_app_type.has_value()) {
     auto* system_app = swa_manager->GetSystemApp(*system_app_type);
@@ -1783,8 +1787,9 @@ bool WebAppPublisherHelper::ShouldShowBadge(const std::string& app_id,
   // We show a badge if either the Web Badging API recently has a badge set, or
   // the Badging API has not been recently used by the app and a notification is
   // showing.
-  if (!badge_manager_ || !badge_manager_->HasRecentApiUsage(app_id))
+  if (!badge_manager_ || !badge_manager_->HasRecentApiUsage(app_id)) {
     return has_notification;
+  }
 
   return badge_manager_->GetBadgeValue(app_id).has_value();
 }

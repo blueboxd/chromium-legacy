@@ -565,7 +565,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // Sets the layout-overflow from the current set of layout-results.
   void SetLayoutOverflowFromLayoutResults();
 
-  void AddLayoutOverflow(const LayoutRect&);
   void AddSelfVisualOverflow(const PhysicalRect& r) {
     NOT_DESTROYED();
     AddSelfVisualOverflow(RuntimeEnabledFeatures::LayoutNGNoLocationEnabled()
@@ -769,25 +768,22 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   int PixelSnappedScrollWidth() const;
   int PixelSnappedScrollHeight() const;
 
-  NGPhysicalBoxStrut MarginBoxOutsets() const {
-    NOT_DESTROYED();
-    return margin_box_outsets_;
-  }
+  NGPhysicalBoxStrut MarginBoxOutsets() const;
   LayoutUnit MarginTop() const override {
     NOT_DESTROYED();
-    return margin_box_outsets_.top;
+    return MarginBoxOutsets().top;
   }
   LayoutUnit MarginBottom() const override {
     NOT_DESTROYED();
-    return margin_box_outsets_.bottom;
+    return MarginBoxOutsets().bottom;
   }
   LayoutUnit MarginLeft() const override {
     NOT_DESTROYED();
-    return margin_box_outsets_.left;
+    return MarginBoxOutsets().left;
   }
   LayoutUnit MarginRight() const override {
     NOT_DESTROYED();
-    return margin_box_outsets_.right;
+    return MarginBoxOutsets().right;
   }
   void SetMargin(const NGPhysicalBoxStrut&);
 
@@ -1656,6 +1652,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool HasAnchorPositionScrollTranslation() const;
   PhysicalOffset AnchorPositionScrollTranslationOffset() const;
 
+  bool HasAnchorPositionScrollTranslationAffectedByViewportScrolling() const;
+
   bool HasScrollbarGutters(ScrollbarOrientation orientation) const;
 
   // This should be called when the border-box size of this box is changed.
@@ -1840,6 +1838,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const LayoutObject& container,
       const LayoutBoxModelObject* ancestor_to_stop_at) const;
 
+  // TODO(crbug.com/1353190): Remove this data member after enabling
+  // LayoutNGNoCopyBack flag.
   NGPhysicalBoxStrut margin_box_outsets_;
 
   void AddSnapArea(LayoutBox&);

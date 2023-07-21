@@ -25,6 +25,7 @@
 #include "chromeos/ash/components/quick_start/fake_quick_start_decoder.h"
 #include "chromeos/ash/components/quick_start/quick_start_message.h"
 #include "chromeos/ash/components/quick_start/quick_start_requests.h"
+#include "chromeos/ash/components/quick_start/types.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder.mojom.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom-forward.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom-shared.h"
@@ -50,7 +51,7 @@ const int kAccountRequirementSingle = 2;
 const int kFlowTypeTargetChallenge = 2;
 const int kDeviceTypeChrome = 7;
 
-const char kChallengeBase64Url[] = "testchallenge";
+const char kChallengeBase64[] = "aQ==";
 
 const std::vector<uint8_t> kTestBytes = {0x00, 0x01, 0x02};
 const std::vector<uint8_t> kExpectedGetInfoRequest = {0x04};
@@ -160,6 +161,8 @@ class ConnectionTest : public testing::Test {
       authenticated_connection_;
   std::unique_ptr<FakeQuickStartDecoder> fake_quick_start_decoder_;
   absl::optional<FidoAssertionInfo> assertion_info_;
+  const Base64UrlString kChallenge_ =
+      *Base64UrlTranscode(Base64String(kChallengeBase64));
 };
 
 TEST_F(ConnectionTest, RequestWifiCredentials) {
@@ -246,18 +249,16 @@ TEST_F(ConnectionTest, RequestAccountTransferAssertion) {
   // Start the Quick Start account transfer flow by initially sending
   // BootstrapOptions.
   authenticated_connection_->RequestAccountTransferAssertion(
-      kChallengeBase64Url, base::BindOnce(&ConnectionTest::VerifyAssertionInfo,
-                                          base::Unretained(this)));
+      kChallenge_, base::BindOnce(&ConnectionTest::VerifyAssertionInfo,
+                                  base::Unretained(this)));
 
   std::vector<uint8_t> bootstrap_options_data =
       fake_nearby_connection_->GetWrittenData();
-  std::unique_ptr<ash::quick_start::QuickStartMessage>
-      bootstrap_options_message =
-          ash::quick_start::QuickStartMessage::ReadMessage(
-              bootstrap_options_data, QuickStartMessageType::kBootstrapOptions);
-  ASSERT_TRUE(bootstrap_options_message != nullptr);
-  base::Value::Dict& bootstrap_options =
-      *bootstrap_options_message->GetPayload();
+  QuickStartMessage::ReadResult read_result =
+      ash::quick_start::QuickStartMessage::ReadMessage(
+          bootstrap_options_data, QuickStartMessageType::kBootstrapOptions);
+  ASSERT_TRUE(read_result.has_value());
+  base::Value::Dict& bootstrap_options = *read_result.value()->GetPayload();
 
   // Verify that BootstrapOptions is written as expected.
   EXPECT_EQ(*bootstrap_options.FindInt(kAccountRequirementKey),
@@ -278,13 +279,13 @@ TEST_F(ConnectionTest, RequestAccountTransferAssertion) {
   std::vector<uint8_t> fido_get_info_data =
       fake_nearby_connection_->GetWrittenData();
 
-  std::unique_ptr<ash::quick_start::QuickStartMessage> fido_message =
+  QuickStartMessage::ReadResult get_info_request =
       ash::quick_start::QuickStartMessage::ReadMessage(
           fido_get_info_data, QuickStartMessageType::kSecondDeviceAuthPayload);
-  ASSERT_TRUE(fido_message != nullptr);
+  ASSERT_TRUE(get_info_request.has_value());
 
   // Verify that FIDO GetInfo request is written as expected
-  base::Value::Dict* get_info_payload = fido_message->GetPayload();
+  base::Value::Dict* get_info_payload = get_info_request.value()->GetPayload();
   std::string get_info_message = *get_info_payload->FindString("fidoMessage");
   absl::optional<std::vector<uint8_t>> get_info_command =
       base::Base64Decode(get_info_message);
@@ -299,20 +300,19 @@ TEST_F(ConnectionTest, RequestAccountTransferAssertion) {
   std::vector<uint8_t> fido_assertion_request_data =
       fake_nearby_connection_->GetWrittenData();
 
-  std::unique_ptr<ash::quick_start::QuickStartMessage> assertion_message =
+  QuickStartMessage::ReadResult assertion_read_result =
       ash::quick_start::QuickStartMessage::ReadMessage(
           fido_assertion_request_data,
           QuickStartMessageType::kSecondDeviceAuthPayload);
 
-  ASSERT_TRUE(assertion_message != nullptr);
+  ASSERT_TRUE(assertion_read_result.has_value());
 
   std::string get_assertion_message_payload =
-      *assertion_message->GetPayload()->FindString("fidoMessage");
+      *assertion_read_result.value()->GetPayload()->FindString("fidoMessage");
   absl::optional<std::vector<uint8_t>> get_assertion_command =
       base::Base64Decode(get_assertion_message_payload);
   EXPECT_TRUE(get_assertion_command);
-  cbor::Value request =
-      requests::GenerateGetAssertionRequest(kChallengeBase64Url);
+  cbor::Value request = requests::GenerateGetAssertionRequest(kChallenge_);
   std::vector<uint8_t> cbor_encoded_request =
       requests::CBOREncodeGetAssertionRequest(std::move(request));
   EXPECT_EQ(*get_assertion_command, cbor_encoded_request);
@@ -332,11 +332,11 @@ TEST_F(ConnectionTest, RequestAccountTransferAssertion) {
 
   fake_quick_start_decoder_->SetExpectedData(data);
   fake_quick_start_decoder_->SetAssertionResponse(
-      /*status=*/mojom::GetAssertionResponse::GetAssertionStatus::kSuccess,
-      /*decoder_status=*/kSuccess,
-      /*decoder_error=*/kSuccess, /*email=*/email,
-      /*credential_id=*/expected_credential_id,
-      /*signature=*/signature, auth_data);
+      mojom::FidoAssertionResponse::New(
+          /*email=*/email,
+          /*credential_id=*/expected_credential_id,
+          /*auth_data=*/auth_data,
+          /*signature=*/signature));
   fake_nearby_connection_->AppendReadableData(data);
   EXPECT_FALSE(fake_nearby_connection_->IsClosed());
 
@@ -363,11 +363,11 @@ TEST_F(ConnectionTest, NotifySourceOfUpdate_Success) {
   std::vector<uint8_t> notify_source_data =
       fake_nearby_connection_->GetWrittenData();
 
-  std::unique_ptr<ash::quick_start::QuickStartMessage> notify_source_message =
+  QuickStartMessage::ReadResult read_result =
       ash::quick_start::QuickStartMessage::ReadMessage(
           notify_source_data, QuickStartMessageType::kQuickStartPayload);
-  ASSERT_TRUE(notify_source_message != nullptr);
-  base::Value::Dict& parsed_payload = *notify_source_message->GetPayload();
+  ASSERT_TRUE(read_result.has_value());
+  base::Value::Dict& parsed_payload = *read_result.value()->GetPayload();
 
   EXPECT_EQ(parsed_payload.FindBool(kNotifySourceOfUpdateMessageKey), true);
 

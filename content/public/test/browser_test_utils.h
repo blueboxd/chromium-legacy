@@ -940,16 +940,14 @@ std::vector<net::CanonicalCookie> GetCanonicalCookies(
     net::CookiePartitionKeyCollection key_collection =
         net::CookiePartitionKeyCollection::ContainsAll());
 
-// Sets a cookie for the given url. Uses inclusive SameSiteCookieContext and
-// SamePartyContext::Type by default, which get cookies regardless of their
-// SameSite and SameParty attributes. Returns true on success.
+// Sets a cookie for the given url. Uses inclusive SameSiteCookieContext by
+// default, which gets cookies regardless of their SameSite attribute. Returns
+// true on success.
 bool SetCookie(BrowserContext* browser_context,
                const GURL& url,
                const std::string& value,
                net::CookieOptions::SameSiteCookieContext context =
-                   net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
-               net::SamePartyContext::Type party_context =
-                   net::SamePartyContext::Type::kSameParty);
+                   net::CookieOptions::SameSiteCookieContext::MakeInclusive());
 
 // Same as `SetCookie`, but sets a Partitioned cookie with the given partition
 // key. `value` is expected to use the `Partitioned` attribute.
@@ -959,9 +957,7 @@ bool SetPartitionedCookie(
     const std::string& value,
     const net::CookiePartitionKey& cookie_partition_key,
     net::CookieOptions::SameSiteCookieContext context =
-        net::CookieOptions::SameSiteCookieContext::MakeInclusive(),
-    net::SamePartyContext::Type party_context =
-        net::SamePartyContext::Type::kSameParty);
+        net::CookieOptions::SameSiteCookieContext::MakeInclusive());
 
 // Deletes cookies matching the provided filter. Returns the number of cookies
 // that were deleted.
@@ -1321,7 +1317,7 @@ class WebContentsAddedObserver {
 
   base::CallbackListSubscription creation_subscription_;
 
-  raw_ptr<WebContents, DanglingAcrossTasks> web_contents_ = nullptr;
+  raw_ptr<WebContents, AcrossTasksDanglingUntriaged> web_contents_ = nullptr;
   base::OnceClosure quit_closure_;
 };
 
@@ -1861,7 +1857,7 @@ class NavigationHandleCommitObserver : public content::WebContentsObserver {
 class WebContentsConsoleObserver : public WebContentsObserver {
  public:
   struct Message {
-    raw_ptr<RenderFrameHost, DanglingAcrossTasks> source_frame;
+    raw_ptr<RenderFrameHost, AcrossTasksDanglingUntriaged> source_frame;
     blink::mojom::ConsoleMessageLevel log_level;
     std::u16string message;
     int32_t line_no;
@@ -2380,6 +2376,19 @@ RegisterWebContentsCreationCallback(
 [[nodiscard]] bool HistoryGoToOffset(WebContents* wc, int offset);
 [[nodiscard]] bool HistoryGoBack(WebContents* wc);
 [[nodiscard]] bool HistoryGoForward(WebContents* wc);
+
+// The following functions are similar to the previous ones, but will wait until
+// the navigation finally commits, even if the loading is stopped halfway (e.g.,
+// if a BackForwardCache entry is evicted during restoration, causing the old
+// NavigationRequest to be reset and a new NavigationRequest to be restarted).
+[[nodiscard]] bool HistoryGoToIndexAndWaitForNavigationFinished(WebContents* wc,
+                                                                int index);
+[[nodiscard]] bool HistoryGoToOffsetAndWaitForNavigationFinished(
+    WebContents* wc,
+    int offset);
+[[nodiscard]] bool HistoryGoBackAndWaitForNavigationFinished(WebContents* wc);
+[[nodiscard]] bool HistoryGoForwardAndWaitForNavigationFinished(
+    WebContents* wc);
 
 #if BUILDFLAG(IS_MAC)
 // Grant native windows the ability to activate, allowing them to become key

@@ -29,6 +29,10 @@ namespace updater {
 enum class UpdaterScope;
 }  // namespace updater
 
+namespace wireless_android_enterprise_devicemanagement {
+class OmahaSettingsClientProto;
+}  // namespace wireless_android_enterprise_devicemanagement
+
 namespace updater::test {
 
 enum class AppBundleWebCreateMode {
@@ -41,7 +45,8 @@ enum class AppBundleWebCreateMode {
 // the platforms where a setup program is not provided.
 base::FilePath GetSetupExecutablePath();
 
-// Returns the names for processes which may be running during unit tests.
+// Returns the non-duplicate, unique names for processes which may be running
+// during unit tests.
 std::set<base::FilePath::StringType> GetTestProcessNames();
 
 // Ensures test processes are not running after the function is called.
@@ -291,6 +296,18 @@ base::CommandLine MakeElevated(base::CommandLine command_line);
 
 void DMDeregisterDevice(UpdaterScope scope);
 void DMCleanup(UpdaterScope scope);
+
+void ExpectDeviceManagementRegistrationRequest(
+    ScopedServer* test_server,
+    const std::string& enrollment_token,
+    const std::string& dm_token);
+void ExpectDeviceManagementPolicyFetchRequest(
+    ScopedServer* test_server,
+    const std::string& dm_token,
+    const ::wireless_android_enterprise_devicemanagement::
+        OmahaSettingsClientProto& omaha_settings);
+void ExpectDeviceManagementPolicyValidationRequest(ScopedServer* test_server,
+                                                   const std::string& dm_token);
 
 }  // namespace updater::test
 

@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/process/process_iterator.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/updater/tag.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
@@ -86,15 +87,14 @@ base::FilePath StartProcmonLogging();
 // `C:\\tools\\Procmon.exe`, and `pml_file` needs to be a valid path to a
 // procmon PML file returned from `StartProcmonLogging`.
 void StopProcmonLogging(const base::FilePath& pml_file);
+#endif
 
 // Returns a list of processes matching `executable_name`.
 const base::ProcessIterator::ProcessEntries FindProcesses(
     const base::FilePath::StringType& executable_name);
 
-// Returns a log string of processes matching `executable_name`.
-base::FilePath::StringType PrintProcesses(
-    const base::FilePath::StringType& executable_name);
-#endif
+// Returns a formatted string of processes matching `executable_name`.
+std::string PrintProcesses(const base::FilePath::StringType& executable_name);
 
 // Waits for a given `predicate` to become true. Invokes `still_waiting`
 // periodically to provide a indication of progress. Returns true if the
@@ -134,6 +134,10 @@ void SetupMockUpdater(const base::FilePath& mock_updater_path);
 // Expect only a single file `mock_updater_path` and nothing else under
 // `mock_updater_path.DirName()`.
 void ExpectOnlyMockUpdater(const base::FilePath& mock_updater_path);
+
+// Expects that all members of `actual` and `expected` are the same.
+void ExpectTagArgsEqual(const updater::tagging::TagArgs& actual,
+                        const updater::tagging::TagArgs& expected);
 
 }  // namespace updater::test
 

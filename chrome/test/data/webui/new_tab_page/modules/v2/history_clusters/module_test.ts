@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://webui-test/mojo_webui_test_support.js';
-
-import {Cart} from 'chrome://new-tab-page/cart.mojom-webui.js';
-import {Cluster} from 'chrome://new-tab-page/history_cluster_types.mojom-webui.js';
-import {PageHandlerRemote} from 'chrome://new-tab-page/history_clusters.mojom-webui.js';
-import {HistoryClustersProxyImpl, historyClustersV2Descriptor, HistoryClustersV2ModuleElement} from 'chrome://new-tab-page/lazy_load.js';
+import {Cluster, InteractionState, URLVisit} from 'chrome://new-tab-page/history_cluster_types.mojom-webui.js';
+import {PageHandlerRemote} from 'chrome://new-tab-page/history_clusters_v2.mojom-webui.js';
+import {DismissModuleInstanceEvent, HistoryClustersProxyImplV2, historyClustersV2Descriptor, HistoryClustersV2ModuleElement} from 'chrome://new-tab-page/lazy_load.js';
 import {$$} from 'chrome://new-tab-page/new_tab_page.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {TestMock} from 'chrome://webui-test/test_mock.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 import {installMock} from '../../../test_support.js';
 import {assertModuleHeaderTitle, createRelatedSearches, createSampleVisits} from '../../history_clusters/test_support.js';
@@ -49,14 +47,13 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     handler = installMock(
         PageHandlerRemote,
-        mock => HistoryClustersProxyImpl.setInstance(
-            new HistoryClustersProxyImpl(mock)));
+        mock => HistoryClustersProxyImplV2.setInstance(
+            new HistoryClustersProxyImplV2(mock)));
   });
 
-  async function initializeModule(clusters: Cluster[], cart: Cart|null = null):
+  async function initializeModule(clusters: Cluster[]):
       Promise<HistoryClustersV2ModuleElement[]> {
     handler.setResultFor('getClusters', Promise.resolve({clusters}));
-    handler.setResultFor('getCartForCluster', Promise.resolve({cart}));
     const moduleElements = await historyClustersV2Descriptor.initialize(0) as
         HistoryClustersV2ModuleElement[];
     if (moduleElements) {
@@ -69,7 +66,7 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
     return moduleElements;
   }
 
-  suite('core', () => {
+  suite('Core', () => {
     test('No module created if no history cluster data', async () => {
       // Arrange.
       const moduleElements = await initializeModule([]);
@@ -142,6 +139,36 @@ suite('NewTabPageModulesHistoryClustersV2ModuleTest', () => {
       // Assert.
       assertEquals((label as HTMLElement).hidden, true);
       assertEquals((suggestionChip as HTMLElement).hidden, false);
+    });
+
+    test('Backend is notified when module is dismissed', async () => {
+      // Arrange.
+      const sampleClusterLabel = '"Sample Journey"';
+      const sampleCluster = createSampleCluster(2, {label: sampleClusterLabel});
+      const moduleElements = await initializeModule([sampleCluster]);
+      const moduleElement = moduleElements[0];
+      assertTrue(!!moduleElement);
+
+      // Act.
+      const waitForDismissEvent =
+          eventToPromise('dismiss-module-instance', moduleElement);
+      const dismissButton =
+          moduleElement.shadowRoot!.querySelector('history-clusters-header-v2')!
+              .shadowRoot!.querySelector<HTMLElement>('#dismissButton')!;
+      dismissButton.click();
+
+      // Assert.
+      const dismissEvent: DismissModuleInstanceEvent =
+          await waitForDismissEvent;
+      assertEquals(
+          `${sampleCluster.label!} hidden`, dismissEvent.detail.message);
+      const [visits, interactionState] =
+          await handler.whenCalled('updateClusterVisitsInteractionState');
+      assertEquals(3, visits.length);
+      visits.forEach((visit: URLVisit, index: number) => {
+        assertEquals(index, Number(visit.visitId));
+      });
+      assertEquals(InteractionState.kHidden, interactionState);
     });
   });
 });

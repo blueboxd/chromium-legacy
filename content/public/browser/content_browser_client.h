@@ -222,6 +222,7 @@ class NavigationHandle;
 class NavigationThrottle;
 class NavigationUIData;
 class PrefetchServiceDelegate;
+class PrerenderWebContentsDelegate;
 class PresentationObserver;
 class PrivateNetworkDeviceDelegate;
 class ReceiverPresentationServiceDelegate;
@@ -1053,9 +1054,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns a callback that cancels the UI element corresponding to this
   // request. The callback should expect to be invoked on the UI thread. The
   // callback may be null. The callback is not required to be invoked.
-  //
-  // TODO(davidben): Move this hook to WebContentsDelegate.
+  // `web_contents` may be null if the requestor was called from something
+  // without an associated WebContents, like a service worker. In this case, UI
+  // should not be shown, but a certificate may still be provided (such as when
+  // the certificate is auto-selected by policy).
   virtual base::OnceClosure SelectClientCertificate(
+      BrowserContext* browser_context,
       WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       net::ClientCertIdentityList client_certs,
@@ -2451,6 +2455,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // to make prefetches.
   virtual std::unique_ptr<PrefetchServiceDelegate>
   CreatePrefetchServiceDelegate(BrowserContext* browser_context);
+
+  // Allows the embedder to provide a PrerenderWebContentsDelegate that will be
+  // used to start prerendering in a new WebContents (i.e. new tab).
+  virtual std::unique_ptr<PrerenderWebContentsDelegate>
+  CreatePrerenderWebContentsDelegate();
 
   // Returns true if find-in-page should be disabled for a given `origin`.
   virtual bool IsFindInPageDisabledForOrigin(const url::Origin& origin);

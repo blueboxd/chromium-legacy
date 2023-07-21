@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 
+#import "base/time/time.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
@@ -26,6 +27,13 @@
 namespace {
 const CGFloat kVerticalOffset = 6;
 const CGFloat kPopupBottomPaddingTablet = 80;
+
+/// Duration of the fade in animation.
+constexpr NSTimeInterval kFadeInAnimationDuration =
+    base::Milliseconds(300).InSecondsF();
+/// Vertical offset of the suggestions when fading in.
+const CGFloat kFadeAnimationVerticalOffset = 12;
+
 }  // namespace
 
 @interface OmniboxPopupPresenter ()
@@ -45,7 +53,12 @@ const CGFloat kPopupBottomPaddingTablet = 80;
 
 @end
 
-@implementation OmniboxPopupPresenter
+@implementation OmniboxPopupPresenter {
+  /// Type of the toolbar that contains the omnibox when it's not focused. The
+  /// animation of focusing/defocusing the omnibox changes depending on this
+  /// position.
+  ToolbarType _unfocusedOmniboxToolbarType;
+}
 
 - (instancetype)
     initWithPopupPresenterDelegate:(id<OmniboxPopupPresenterDelegate>)delegate
@@ -121,7 +134,7 @@ const CGFloat kPopupBottomPaddingTablet = 80;
   return self;
 }
 
-- (void)updatePopup {
+- (void)updatePopupOnFocus:(BOOL)isFocusingOmnibox {
   BOOL popupHasContent = self.viewController.hasContent;
   BOOL popupIsOnscreen = self.popupContainerView.superview != nil;
   if (!popupHasContent && popupIsOnscreen) {
@@ -149,7 +162,11 @@ const CGFloat kPopupBottomPaddingTablet = 80;
         addSubview:self.popupContainerView];
     [self.viewController didMoveToParentViewController:parentVC];
 
-    [self initialLayout];
+    BOOL enableFocusAnimation =
+        IsBottomOmniboxSteadyStateEnabled() && isFocusingOmnibox &&
+        _unfocusedOmniboxToolbarType == ToolbarType::kSecondary;
+
+    [self initialLayoutAnimated:enableFocusAnimation];
 
     if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
       self.bottomConstraintPhone.active = YES;
@@ -181,7 +198,7 @@ const CGFloat kPopupBottomPaddingTablet = 80;
       addSubview:self.popupContainerView];
 
   // Re-add necessary constraints.
-  [self initialLayout];
+  [self initialLayoutAnimated:NO];
 
   if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
     self.bottomConstraintPhone.active = YES;
@@ -189,10 +206,16 @@ const CGFloat kPopupBottomPaddingTablet = 80;
   }
 }
 
+#pragma mark - ToolbarOmniboxConsumer
+
+- (void)steadyStateOmniboxMovedToToolbar:(ToolbarType)toolbarType {
+  _unfocusedOmniboxToolbarType = toolbarType;
+}
+
 #pragma mark - Private
 
 /// Layouts the popup when it is just added to the view hierarchy.
-- (void)initialLayout {
+- (void)initialLayoutAnimated:(BOOL)isAnimated {
   UIView* popup = self.popupContainerView;
   // Creates the constraints if the view is newly added to the view hierarchy.
 
@@ -237,6 +260,20 @@ const CGFloat kPopupBottomPaddingTablet = 80;
   [NSLayoutConstraint activateConstraints:constraintsToActivate];
 
   [[popup superview] layoutIfNeeded];
+
+  if (isAnimated) {
+    CHECK(IsBottomOmniboxSteadyStateEnabled());
+    popup.alpha = 0.0;
+    topConstraint.constant = kVerticalOffset + kFadeAnimationVerticalOffset;
+    [[popup superview] layoutIfNeeded];
+
+    [UIView animateWithDuration:kFadeInAnimationDuration
+                     animations:^{
+                       popup.alpha = 1.0;
+                       topConstraint.constant = kVerticalOffset;
+                       [[popup superview] layoutIfNeeded];
+                     }];
+  }
 }
 
 @end

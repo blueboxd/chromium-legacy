@@ -91,11 +91,13 @@ enum class WhitespaceMode {
 };
 
 class AtomicHTMLToken;
+class ChildNodePart;
 class CustomElementDefinition;
 class Document;
 class Element;
 class HTMLFormElement;
 class HTMLParserReentryPermit;
+class PartRoot;
 enum class DeclarativeShadowRootType;
 
 class HTMLConstructionSite final {
@@ -106,13 +108,13 @@ class HTMLConstructionSite final {
 
   HTMLConstructionSite(HTMLParserReentryPermit*,
                        Document&,
-                       ParserContentPolicy);
+                       ParserContentPolicy,
+                       DocumentFragment*,
+                       Element*);
   HTMLConstructionSite(const HTMLConstructionSite&) = delete;
   HTMLConstructionSite& operator=(const HTMLConstructionSite&) = delete;
   ~HTMLConstructionSite();
   void Trace(Visitor*) const;
-
-  void InitFragmentParsing(DocumentFragment*, Element* context_element);
 
   void Detach();
 
@@ -331,6 +333,28 @@ class HTMLConstructionSite final {
   };
 
   PendingText pending_text_;
+
+  class PendingDOMParts final : public GarbageCollected<PendingDOMParts> {
+   public:
+    explicit PendingDOMParts(ContainerNode* attachment_root);
+
+    void AddNodePart(Comment& node_part_comment, Vector<String> metadata);
+    void AddChildNodePartStart(Node& previous_sibling, Vector<String> metadata);
+    void AddChildNodePartEnd(Node& next_sibling);
+    void MaybeConstructNodePart(Node& last_node);
+    PartRoot* CurrentPartRoot() const;
+
+    void Trace(Visitor*) const;
+
+   private:
+    Member<Comment> pending_node_part_comment_node_;
+    Vector<String> pending_node_part_metadata_;
+    HeapVector<Member<ChildNodePart>> child_node_part_stack_;
+    Member<DocumentPartRoot> document_part_root_;
+  };
+
+  // Only non-nullptr if RuntimeEnabledFeatures::DOMPartsAPIEnabled().
+  Member<PendingDOMParts> pending_dom_parts_;
 
   const ParserContentPolicy parser_content_policy_;
   const bool is_scripting_content_allowed_;

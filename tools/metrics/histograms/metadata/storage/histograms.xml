@@ -154,7 +154,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="API.TopLevelStorageAccess.RequestOutcome"
-    enum="TopLevelStorageAccessRequestOutcome" expires_after="2023-08-31">
+    enum="TopLevelStorageAccessRequestOutcome" expires_after="2024-08-31">
   <owner>cfredric@chromium.org</owner>
   <owner>mreichhoff@chromium.org</owner>
   <summary>
@@ -166,7 +166,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="API.TopLevelStorageAccess.RequestStorageAccessFor"
-    enum="RequestStorageResult" expires_after="2023-08-31">
+    enum="RequestStorageResult" expires_after="2024-08-31">
   <owner>cfredric@chromium.org</owner>
   <owner>mreichhoff@chromium.org</owner>
   <summary>
@@ -178,7 +178,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="API.TopLevelStorageAccess.RequestStorageAccessForOrigin"
-    enum="RequestStorageResult" expires_after="2023-08-31">
+    enum="RequestStorageResult" expires_after="2024-08-31">
   <obsolete>
     The function was renamed. See
     API.TopLevelStorageAccess.RequestStorageAccessFor.
@@ -673,7 +673,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.SharedStorage.Database.Error" enum="SqliteErrorCode"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>cammie@chromium.org</owner>
   <owner>yaoxia@chromium.org</owner>
   <owner>chrome-ads-histograms@google.com</owner>

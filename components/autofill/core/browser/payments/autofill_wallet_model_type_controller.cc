@@ -30,7 +30,8 @@ AutofillWalletModelTypeController::AutofillWalletModelTypeController(
                           std::move(delegate_for_transport_mode)),
       pref_service_(pref_service),
       sync_service_(sync_service) {
-  DCHECK(type == syncer::AUTOFILL_WALLET_DATA ||
+  DCHECK(type == syncer::AUTOFILL_WALLET_CREDENTIAL ||
+         type == syncer::AUTOFILL_WALLET_DATA ||
          type == syncer::AUTOFILL_WALLET_METADATA ||
          type == syncer::AUTOFILL_WALLET_OFFER ||
          type == syncer::AUTOFILL_WALLET_USAGE);
@@ -54,13 +55,7 @@ void AutofillWalletModelTypeController::Stop(syncer::SyncStopMetadataFate fate,
 syncer::DataTypeController::PreconditionState
 AutofillWalletModelTypeController::GetPreconditionState() const {
   DCHECK(CalledOnValidThread());
-  // Note that IsPaymentsIntegrationEnabled() doesn't need an explicit
-  // observation and corresponding DataTypePreconditionChanged(), because
-  // SyncService has built-in support for reacting to changes.
-  // TODO(crbug.com/1459963): Remove this asymmetry by avoiding
-  // IsPaymentsIntegrationEnabled() altogether as precondition state.
   bool preconditions_met =
-      sync_service_->GetUserSettings()->IsPaymentsIntegrationEnabled() &&
       pref_service_->GetBoolean(autofill::prefs::kAutofillCreditCardEnabled);
   return preconditions_met ? PreconditionState::kPreconditionsMet
                            : PreconditionState::kMustStopAndClearData;

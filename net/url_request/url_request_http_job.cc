@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
+#include "base/feature_list.h"
 #include "base/file_version_info.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -60,7 +61,6 @@
 #include "net/filter/source_stream.h"
 #include "net/filter/zstd_source_stream.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
-#include "net/first_party_sets/same_party_context.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_network_session.h"
@@ -145,22 +145,11 @@ void LogTrustAnchor(const net::HashValueVector& spki_hashes) {
 }
 
 net::CookieOptions CreateCookieOptions(
-    net::CookieOptions::SameSiteCookieContext same_site_context,
-    const net::SamePartyContext& same_party_context,
-    const net::IsolationInfo& isolation_info,
-    bool is_in_nontrivial_first_party_set) {
+    net::CookieOptions::SameSiteCookieContext same_site_context) {
   net::CookieOptions options;
   options.set_return_excluded_cookies();
   options.set_include_httponly();
   options.set_same_site_cookie_context(same_site_context);
-  options.set_same_party_context(same_party_context);
-  if (isolation_info.party_context().has_value()) {
-    // Count the top-frame site since it's not in the party_context.
-    options.set_full_party_context_size(isolation_info.party_context()->size() +
-                                        1);
-  }
-  options.set_is_in_nontrivial_first_party_set(
-      is_in_nontrivial_first_party_set);
   return options;
 }
 
@@ -669,11 +658,7 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
           request_->site_for_cookies(), request_->initiator(),
           is_main_frame_navigation, force_ignore_site_for_cookies);
 
-  bool is_in_nontrivial_first_party_set =
-      first_party_set_metadata_.frame_entry().has_value();
-  CookieOptions options = CreateCookieOptions(
-      same_site_context, first_party_set_metadata_.context(),
-      request_->isolation_info(), is_in_nontrivial_first_party_set);
+  CookieOptions options = CreateCookieOptions(same_site_context);
 
   cookie_store->GetCookieListWithOptionsAsync(
       request_->url(), options,
@@ -876,8 +861,10 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
       ClearSiteDataHeaderContents(clear_site_data_header);
   std::set<std::string> clear_site_data_set(clear_site_data_types.begin(),
                                             clear_site_data_types.end());
-  // TODO(crbug.com/1464260): Add support for wildcard clears too.
-  if (clear_site_data_set.find(kDatatypeCookies) != clear_site_data_set.end()) {
+  if (clear_site_data_set.find(kDatatypeCookies) != clear_site_data_set.end() ||
+      (base::FeatureList::IsEnabled(features::kClearSiteDataWildcardSupport) &&
+       clear_site_data_set.find(kDatatypeWildcard) !=
+           clear_site_data_set.end())) {
     clear_site_data_prevents_cookies_from_being_stored = true;
   }
 
@@ -903,11 +890,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
           request_->initiator(), is_main_frame_navigation,
           force_ignore_site_for_cookies);
 
-  bool is_in_nontrivial_first_party_set =
-      first_party_set_metadata_.frame_entry().has_value();
-  CookieOptions options = CreateCookieOptions(
-      same_site_context, first_party_set_metadata_.context(),
-      request_->isolation_info(), is_in_nontrivial_first_party_set);
+  CookieOptions options = CreateCookieOptions(same_site_context);
 
   // Set all cookies, without waiting for them to be set. Any subsequent
   // read will see the combined result of all cookie operation.
@@ -939,7 +922,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
       // Make a copy of the cookie if we successfully made one.
       cookie_to_return = *cookie;
     }
-    if (cookie && !CanSetCookie(*cookie, &options)) {
+    if (cookie && !CanSetCookie(*cookie, &options, &returned_status)) {
       returned_status.AddExclusionReason(
           CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     }
@@ -1704,6 +1687,10 @@ void URLRequestHttpJob::RecordCompletionHistograms(CompletionCause reason) {
                                   prefilter_bytes_read(), 1, 50000000, 50);
     } else {
       UMA_HISTOGRAM_TIMES("Net.HttpJob.TotalTimeNotCached", total_time);
+      if (response_info_->was_ip_protected) {
+        UMA_HISTOGRAM_TIMES("Net.HttpJob.IpProtection.TotalTimeNotCached",
+                            total_time);
+      }
       UMA_HISTOGRAM_CUSTOM_COUNTS("Net.HttpJob.PrefilterBytesRead.Net",
                                   prefilter_bytes_read(), 1, 50000000, 50);
 

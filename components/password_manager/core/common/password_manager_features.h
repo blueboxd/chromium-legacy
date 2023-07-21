@@ -24,7 +24,6 @@ namespace password_manager::features {
 // alongside the definition of their values in the .cc file.
 BASE_DECLARE_FEATURE(kEnableOverwritingPlaceholderUsernames);
 
-BASE_DECLARE_FEATURE(kFillOnAccountSelect);
 BASE_DECLARE_FEATURE(kPasswordManagerLogToTerminal);
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 BASE_DECLARE_FEATURE(kForceInitialSyncWhenDecryptionFails);
@@ -41,9 +40,6 @@ BASE_DECLARE_FEATURE(kNewRegexForOtpFields);
 BASE_DECLARE_FEATURE(kPasswordIssuesInSpecificsMetadata);
 BASE_DECLARE_FEATURE(kSendPasswords);
 BASE_DECLARE_FEATURE(kPasswordChangeWellKnown);
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
-BASE_DECLARE_FEATURE(kPasswordManagerRedesign);
-#endif
 BASE_DECLARE_FEATURE(kPasswordReuseDetectionEnabled);
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
 BASE_DECLARE_FEATURE(kPasswordGenerationExperiment);

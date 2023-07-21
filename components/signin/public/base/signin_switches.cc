@@ -68,4 +68,6 @@ BASE_FEATURE(kTangibleSync,
 
 );
 
+BASE_FEATURE(kWaffle, "WaffleDesktop", base::FEATURE_DISABLED_BY_DEFAULT);
+
 }  // namespace switches

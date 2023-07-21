@@ -630,9 +630,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithPSL) {
   expected_results.push_back(
       std::make_unique<PasswordForm>(*all_credentials[2]));
   expected_results[0]->match_type = PasswordForm::MatchType::kExact;
-  expected_results[1]->is_public_suffix_match = true;
   expected_results[1]->match_type = PasswordForm::MatchType::kPSL;
-  expected_results[2]->is_public_suffix_match = true;
   expected_results[2]->match_type = PasswordForm::MatchType::kPSL;
 
   MockPasswordStoreConsumer mock_consumer;
@@ -736,7 +734,6 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
       std::make_unique<PasswordForm>(*all_credentials[1]));
   for (const auto& result : expected_results) {
     if (result->signon_realm != observed_form.signon_realm) {
-      result->is_public_suffix_match = true;
       result->match_type = PasswordForm::MatchType::kPSL;
     } else {
       result->match_type = PasswordForm::MatchType::kExact;
@@ -853,10 +850,8 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
   for (const auto& result : expected_results) {
     if (result->signon_realm != observed_form.signon_realm) {
       if (IsValidAndroidFacetURI(result->signon_realm)) {
-        result->is_affiliation_based_match = true;
         result->match_type = PasswordForm::MatchType::kAffiliated;
       } else {
-        result->is_public_suffix_match = true;
         result->match_type = PasswordForm::MatchType::kPSL;
       }
     } else {
@@ -963,7 +958,6 @@ TEST_F(PasswordStoreTest, GetLoginsWithBrandingInformationForAffiliatedLogins) {
 
   std::vector<std::unique_ptr<PasswordForm>> expected_results;
   expected_results.push_back(std::make_unique<PasswordForm>(*credential));
-  expected_results.back()->is_affiliation_based_match = true;
   expected_results.back()->match_type = PasswordForm::MatchType::kAffiliated;
 
   mock_affiliated_match_helper->ExpectCallToGetAffiliatedAndGrouped(
@@ -1053,13 +1047,9 @@ TEST_P(PasswordStoreFederationTest, GetLoginsWithWebAffiliations) {
       std::make_unique<PasswordForm>(*all_credentials[3]));
 
   expected_results[0]->match_type = PasswordForm::MatchType::kExact;
-  expected_results[1]->is_public_suffix_match = true;
   expected_results[1]->match_type = PasswordForm::MatchType::kPSL;
-  expected_results[2]->is_public_suffix_match = true;
-  expected_results[2]->is_affiliation_based_match = true;
   expected_results[2]->match_type =
       PasswordForm::MatchType::kAffiliated | PasswordForm::MatchType::kPSL;
-  expected_results[3]->is_affiliation_based_match = true;
   expected_results[3]->match_type = PasswordForm::MatchType::kAffiliated;
 
   // In the production 'kTestWebRealm1' won't be in the list but the code should
@@ -1176,14 +1166,11 @@ TEST_P(PasswordStoreGroupsTest, GetLoginsWithWebGroup) {
   // Credential that is a PSL, non affiliated match of the observed form.
   expected_results.push_back(
       std::make_unique<PasswordForm>(*all_credentials[1]));
-  expected_results.back()->is_public_suffix_match = true;
   expected_results.back()->match_type = PasswordForm::MatchType::kPSL;
 
   // Credential that is a PSL and affiliated match of the observed form.
   expected_results.push_back(
       std::make_unique<PasswordForm>(*all_credentials[2]));
-  expected_results.back()->is_public_suffix_match = true;
-  expected_results.back()->is_affiliation_based_match = true;
   expected_results.back()->match_type =
       PasswordForm::MatchType::kAffiliated | PasswordForm::MatchType::kPSL;
 
@@ -1191,8 +1178,6 @@ TEST_P(PasswordStoreGroupsTest, GetLoginsWithWebGroup) {
   if (base::FeatureList::IsEnabled(features::kFillingAcrossGroupedSites)) {
     expected_results.push_back(
         std::make_unique<PasswordForm>(*all_credentials[3]));
-    expected_results.back()->is_affiliation_based_match = true;
-    expected_results.back()->is_grouped_match = true;
     expected_results.back()->match_type = PasswordForm::MatchType::kAffiliated |
                                           PasswordForm::MatchType::kGrouped;
   }

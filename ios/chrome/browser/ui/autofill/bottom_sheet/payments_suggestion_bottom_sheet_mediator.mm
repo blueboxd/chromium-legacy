@@ -39,7 +39,7 @@
                               icon:(UIImage*)icon;
 
 @property(nonatomic, strong) NSString* cardNameAndLastFourDigits;
-@property(nonatomic, strong) NSString* expirationDate;
+@property(nonatomic, strong) NSString* cardDetails;
 @property(nonatomic, strong) NSString* backendIdentifier;
 @property(nonatomic, strong) UIImage* icon;
 
@@ -52,9 +52,12 @@
   if (self = [super init]) {
     self.cardNameAndLastFourDigits =
         base::SysUTF16ToNSString(creditCard->CardNameAndLastFourDigits());
-    self.expirationDate = base::SysUTF16ToNSString(
-        creditCard->AbbreviatedExpirationDateForDisplay(
-            /* with_prefix=*/false));
+    self.cardDetails = base::SysUTF16ToNSString(
+        (creditCard->record_type() == autofill::CreditCard::VIRTUAL_CARD)
+            ? l10n_util::GetStringUTF16(
+                  IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE)
+            : creditCard->AbbreviatedExpirationDateForDisplay(
+                  /* with_prefix=*/false));
     self.backendIdentifier = base::SysUTF8ToNSString(creditCard->guid());
     self.icon = icon;
   }
@@ -211,10 +214,10 @@
 
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
-                    selection:(const WebStateSelection&)selection {
+                       status:(const WebStateListStatus&)status {
   DCHECK_EQ(_webStateList, webStateList);
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
+    case WebStateListChange::Type::kStatusOnly:
       // TODO(crbug.com/1442546): Move the implementation from
       // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
       // here. Note that here is reachable only when `reason` ==
@@ -227,7 +230,7 @@
       // Do nothing when a WebState is moved.
       break;
     case WebStateListChange::Type::kReplace: {
-      if (selection.index == webStateList->active_index()) {
+      if (status.index == webStateList->active_index()) {
         [self onWebStateChange];
       }
       break;

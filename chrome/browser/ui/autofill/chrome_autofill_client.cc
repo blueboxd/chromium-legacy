@@ -98,6 +98,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
+#include "delete_address_profile_dialog_controller_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/origin.h"
@@ -130,6 +131,7 @@
 #include "components/webauthn/android/internal_authenticator_android.h"
 #include "ui/android/window_android.h"
 #else  // BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/ui/autofill/delete_address_profile_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/offer_notification_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/save_upi_bubble_controller_impl.h"
@@ -203,8 +205,7 @@ AutofillOptimizationGuide* ChromeAutofillClient::GetAutofillOptimizationGuide()
 PersonalDataManager* ChromeAutofillClient::GetPersonalDataManager() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  return PersonalDataManagerFactory::GetForProfile(
-      profile->GetOriginalProfile());
+  return PersonalDataManagerFactory::GetForProfile(profile);
 }
 
 AutocompleteHistoryManager*
@@ -790,6 +791,19 @@ void ChromeAutofillClient::ConfirmCreditCardFillAssist(
 #endif
 }
 
+void ChromeAutofillClient::ShowDeleteAddressProfileDialog() {
+#if !BUILDFLAG(IS_ANDROID)
+  DeleteAddressProfileDialogControllerImpl::CreateForWebContents(
+      web_contents());
+  DeleteAddressProfileDialogControllerImpl* controller =
+      DeleteAddressProfileDialogControllerImpl::FromWebContents(web_contents());
+  controller->OfferDelete();
+#else
+  // Delete address profile dialog is only available is desktop.
+  NOTREACHED();
+#endif
+}
+
 void ChromeAutofillClient::ConfirmSaveAddressProfile(
     const AutofillProfile& profile,
     const AutofillProfile* original_profile,
@@ -909,7 +923,8 @@ void ChromeAutofillClient::PinPopupView() {
 }
 
 autofill::AutofillClient::PopupOpenArgs
-ChromeAutofillClient::GetReopenPopupArgs() const {
+ChromeAutofillClient::GetReopenPopupArgs(
+    AutofillSuggestionTriggerSource trigger_source) const {
   const AutofillPopupController* controller = popup_controller_.get();
   if (!controller)
     return autofill::AutofillClient::PopupOpenArgs();
@@ -919,19 +934,15 @@ ChromeAutofillClient::GetReopenPopupArgs() const {
   gfx::Rect client_area = web_contents()->GetContainerBounds();
   gfx::RectF screen_space_independent_bounds =
       controller->element_bounds() - client_area.OffsetFromOrigin();
-  // Reopening the popup is currently only used for password suggestions, so the
-  // trigger source can be set to `kPasswordManager`.
-  // TODO(crbug.com/1446318): Make the suggestion trigger source a parameter.
-  CHECK_EQ(controller->GetPopupType(), PopupType::kPasswords);
   return autofill::AutofillClient::PopupOpenArgs(
       screen_space_independent_bounds, controller->GetElementTextDirection(),
-      controller->GetSuggestions(),
-      AutofillSuggestionTriggerSource::kPasswordManager);
+      controller->GetSuggestions(), trigger_source);
 }
 
 void ChromeAutofillClient::UpdatePopup(
     const std::vector<Suggestion>& suggestions,
-    PopupType popup_type) {
+    PopupType popup_type,
+    AutofillSuggestionTriggerSource trigger_source) {
   if (!popup_controller_.get())
     return;  // Update only if there is a popup.
 
@@ -947,12 +958,7 @@ void ChromeAutofillClient::UpdatePopup(
   }
 
   // Calling show will reuse the existing view automatically.
-  // Updating the popup is currently only used for password suggestions, so the
-  // trigger source can be set to `kPasswordManager`.
-  // TODO(crbug.com/1446318): Make the suggestion trigger source a parameter.
-  CHECK_EQ(popup_type, PopupType::kPasswords);
-  popup_controller_->Show(suggestions,
-                          AutofillSuggestionTriggerSource::kPasswordManager);
+  popup_controller_->Show(suggestions, trigger_source);
 }
 
 void ChromeAutofillClient::HideAutofillPopup(PopupHidingReason reason) {

@@ -89,10 +89,12 @@ BASE_DECLARE_FEATURE(kOmniboxTriggerForPrerender2);
 // crbug.com/1422819 for more details of Bookmark triggered prerendering.
 BASE_DECLARE_FEATURE(kBookmarkTriggerForPrerender2);
 
+// This flag is used for enabling New Tab Page triggered prerendering. See
+// crbug.com/1462832 for more details of New Tab Page triggered prerendering.
+BASE_DECLARE_FEATURE(kNewTabPageTriggerForPrerender2);
+
 // This flag controls whether to trigger prerendering when the default search
-// engine suggests to prerender a search result. It also enables
-// Prerender2-related features on the blink side. This flag takes effect only
-// when blink::features::Prerender2 is enabled.
+// engine suggests to prerender a search result.
 BASE_DECLARE_FEATURE(kSupportSearchSuggestionForPrerender2);
 enum class SearchSuggestionPrerenderImplementationType {
   kUsePrefetch,
@@ -110,6 +112,13 @@ enum class SearchPreloadShareableCacheType {
 
 extern const base::FeatureParam<SearchPreloadShareableCacheType>
     kSearchPreloadShareableCacheTypeParam;
+
+// Disables prerendering on the default search engine predictor. This is useful
+// in comparing the impact of the SupportSearchSuggestionForPrerender2 feature
+// during its rollout. Once that rollout is complete, this feature should be
+// removed and instead we should add a new long-term holdback to
+// PreloadingConfig.
+BASE_DECLARE_FEATURE(kPrerenderDSEHoldback);
 
 // This is used to enable an experiment for modifying confidence cutoff of
 // prerender and preconnect for autocomplete action predictor.

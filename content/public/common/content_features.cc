@@ -285,11 +285,6 @@ BASE_FEATURE(kCriticalClientHint,
              "CriticalClientHint",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enable debugging the issue crbug.com/1201355
-BASE_FEATURE(kDebugHistoryInterventionNoUserActivation,
-             "DebugHistoryInterventionNoUserActivation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enable changing source dynamically for desktop capture.
 BASE_FEATURE(kDesktopCaptureChangeSource,
              "DesktopCaptureChangeSource",
@@ -795,16 +790,6 @@ BASE_FEATURE(kHighPriorityBeforeUnload,
 // Preload cookie database on NetworkContext creation.
 BASE_FEATURE(kPreloadCookies,
              "PreloadCookies",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Prerender2 holdback feature disables prerendering on all predictors. This is
-// useful in comparing the impact of blink::features::kPrerender2 experiment
-// with and without Prerendering.
-
-// Please note this feature is only used for experimental purposes, please don't
-// enable this feature by default.
-BASE_FEATURE(kPrerender2Holdback,
-             "Prerender2Holdback",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Preloading holdback feature disables preloading (e.g., preconnect, prefetch,
@@ -1349,6 +1334,12 @@ BASE_FEATURE(kVideoPlaybackQuality,
              "VideoPlaybackQuality",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enable the viewport segments API.
+// Tracking bug for enabling viewport segments API: https://crbug.com/1039050.
+BASE_FEATURE(kViewportSegments,
+             "ViewportSegments",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables future V8 VM features
 BASE_FEATURE(kV8VmFuture, "V8VmFuture", base::FEATURE_DISABLED_BY_DEFAULT);
 
@@ -1425,11 +1416,6 @@ BASE_FEATURE(kWebBluetooth, "WebBluetooth", base::FEATURE_DISABLED_BY_DEFAULT);
 // and WebBluetoothGetDevices blink features are also enabled.
 BASE_FEATURE(kWebBluetoothNewPermissionsBackend,
              "WebBluetoothNewPermissionsBackend",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables the Web Environment Integrity API.
-BASE_FEATURE(kWebEnvironmentIntegrity,
-             "WebEnvironmentIntegrity",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If WebGL Image Chromium is allowed, this feature controls whether it is
@@ -1530,6 +1516,11 @@ BASE_FEATURE(kRequestDesktopSiteWindowSetting,
 // when desktop user agent is used.
 BASE_FEATURE(kRequestDesktopSiteZoom,
              "RequestDesktopSiteZoom",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Send background signal to GPU stack for synchronous compositor.
+BASE_FEATURE(kSynchronousCompositorBackgroundSignal,
+             "SynchronousCompositorBackgroundSignal",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Text autosizing uses heuristics to inflate text sizes on devices with

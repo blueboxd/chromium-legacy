@@ -10,7 +10,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/single_thread_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -58,10 +58,16 @@
 #include "chrome/browser/ash/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ash/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ash/app_list/extension_app_utils.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/shelf/app_shortcut_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/web_app_service.mojom.h"
+#include "chromeos/lacros/lacros_service.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_WIN)
 #include "base/process/process.h"
@@ -188,7 +194,7 @@ void WebAppUiManagerImpl::NotifyOnAllAppWindowsClosed(
 
   const size_t num_windows_for_app = GetNumWindowsForApp(app_id);
   if (num_windows_for_app == 0) {
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, std::move(callback));
     return;
   }
@@ -297,23 +303,39 @@ base::Value WebAppUiManagerImpl::LaunchWebApp(
                                  std::move(callback), lock);
 }
 
-void WebAppUiManagerImpl::MaybeTransferAppAttributes(
-    const AppId& from_extension_or_app,
-    const AppId& to_app) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Grid position in app list.
+#if BUILDFLAG(IS_CHROMEOS)
+void WebAppUiManagerImpl::MigrateLauncherState(const AppId& from_app_id,
+                                               const AppId& to_app_id,
+                                               base::OnceClosure callback) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto* lacros_service = chromeos::LacrosService::Get();
+  if (!lacros_service ||
+      lacros_service->GetInterfaceVersion<crosapi::mojom::WebAppService>() <
+          int{crosapi::mojom::WebAppService::MethodMinVersions::
+                  kMigrateLauncherStateMinVersion}) {
+    LOG(WARNING) << "Ash version does not support MigrateLauncherState().";
+    std::move(callback).Run();
+    return;
+  }
+  // Forward the call to the Ash build of this method (see next #if branch).
+  lacros_service->GetRemote<crosapi::mojom::WebAppService>()
+      ->MigrateLauncherState(from_app_id, to_app_id, std::move(callback));
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   auto* app_list_syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile_);
   bool to_app_in_shelf =
-      app_list_syncable_service->GetPinPosition(to_app).IsValid();
+      app_list_syncable_service->GetPinPosition(to_app_id).IsValid();
   // If the new app is already pinned to the shelf don't transfer UI prefs
   // across as that could cause it to become unpinned.
   if (!to_app_in_shelf) {
-    app_list_syncable_service->TransferItemAttributes(from_extension_or_app,
-                                                      to_app);
+    app_list_syncable_service->TransferItemAttributes(from_app_id, to_app_id);
   }
+  std::move(callback).Run();
+#else
+  static_assert(false);
 #endif
 }
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 content::WebContents* WebAppUiManagerImpl::CreateNewTab() {
   NavigateParams params(profile_, GURL(url::kAboutBlankURL),

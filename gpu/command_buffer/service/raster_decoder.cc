@@ -65,6 +65,7 @@
 #include "gpu/vulkan/buildflags.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "skia/ext/rgba_to_yuva.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
@@ -972,7 +973,7 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   const bool is_drdc_enabled_;
 
-  raw_ptr<gl::GLApi, DanglingAcrossTasks> api_ = nullptr;
+  raw_ptr<gl::GLApi, AcrossTasksDanglingUntriaged> api_ = nullptr;
 
   base::WeakPtrFactory<DecoderContext> weak_ptr_factory_{this};
 };
@@ -1257,10 +1258,7 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
                  feature_info()->workarounds().max_3d_array_texture_size);
   }
   caps.sync_query = feature_info()->feature_flags().chromium_sync_query;
-  caps.msaa_is_slow =
-      base::FeatureList::IsEnabled(features::kEnableMSAAOnNewIntelGPUs)
-          ? feature_info()->workarounds().msaa_is_slow_2
-          : feature_info()->workarounds().msaa_is_slow;
+  caps.msaa_is_slow = gles2::MSAAIsSlow(feature_info()->workarounds());
   caps.avoid_stencil_buffers =
       feature_info()->workarounds().avoid_stencil_buffers;
 
@@ -2623,6 +2621,12 @@ void RasterDecoderImpl::DoReadbackYUVImagePixelsINTERNAL(
                        "Source shared image is not accessible");
     return;
   }
+
+  // Perform ApplyBackendSurfaceEndState() on the ScopedReadAccess before
+  // exiting.
+  absl::Cleanup cleanup = [&]() {
+    source_scoped_access->ApplyBackendSurfaceEndState();
+  };
 
   auto sk_image =
       source_scoped_access->CreateSkImage(shared_context_state_.get());

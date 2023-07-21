@@ -170,6 +170,7 @@
 <translation id="2161656808144014275">ಪಠ್ಯ</translation>
 <translation id="2163937499206714165">ಕತ್ತಲೆ ಮೋಡ್ ಆನ್ ಮಾಡಿ</translation>
 <translation id="2180197493692062006">ಏನೋ ತಪ್ಪಾಗಿದೆ. ಆ್ಯಪ್ ಅನ್ನು ಪುನಃ ತೆರೆಯಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="2189104374785738357">APN ವಿವರಗಳನ್ನು ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="2209788852729124853">ಟ್ರಾಫಿಕ್ ಕೌಂಟರ್‌ಗಳನ್ನು ರೀಸೆಟ್ ಮಾಡಿ</translation>
 <translation id="2212733584906323460">ಹೆಸರಿನ ರೆಸಲ್ಯೂಷನ್</translation>
 <translation id="2217935453350629363">ಪ್ರಸ್ತುತ ವೇಗ</translation>
@@ -181,7 +182,7 @@
 <translation id="2240366984605217732">ಲೇಔಟ್ ಸ್ವಿಚ್</translation>
 <translation id="225692081236532131">ಸಕ್ರಿಯ ಸ್ಥಿತಿ</translation>
 <translation id="2271469253353559191">ಕತ್ತಲೆ ಮೋಡ್ ವೇಳಾಪಟ್ಟಿ</translation>
-<translation id="2276999893457278469">ಟಾಪ್ ಸಹಾಯ ವಿಷಯ</translation>
+<translation id="2276999893457278469">ಟಾಪ್ ಸಹಾಯ ಕಂಟೆಂಟ್</translation>
 <translation id="2287186687001756809">ಯಾವುದೇ ಚಿತ್ರ ಲಭ್ಯವಿಲ್ಲ. ಫೋಟೋಗಳನ್ನು ಸೇರಿಸಲು, <ph name="LINK" /> ಗೆ ಹೋಗಿ</translation>
 <translation id="2307344026739914387">ಪ್ರಸ್ತುತ ಕೀ ಜೋಡಿಯನ್ನು ಬಳಸಿ</translation>
 <translation id="2320295602967756579">ಲೈಟ್ ಥೀಮ್‌ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
@@ -213,7 +214,7 @@
 <translation id="2521835766824839541">ಹಿಂದಿನ ಟ್ರ್ಯಾಕ್</translation>
 <translation id="2526590354069164005">ಡೆಸ್ಕ್‌ಟಾಪ್</translation>
 <translation id="253029298928638905">ಮರುಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ...</translation>
-<translation id="2533048460510040082">ಸೂಚಿಸಲಾದ ಸಹಾಯ ವಿಷಯ</translation>
+<translation id="2533048460510040082">ಸೂಚಿಸಲಾದ ಸಹಾಯ ಕಂಟೆಂಟ್</translation>
 <translation id="2536159006530886390">ಇಂಟರ್ನೆಟ್‌ಗೆ ಕನೆಕ್ಟ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> ಪರೀಕ್ಷೆ ರನ್ ಆಗುತ್ತಿದೆ...</translation>
 <translation id="2584559707064218956">ಸೆಟಪ್ ಮಾಡಲು, ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಹೋಗಿ</translation>
@@ -371,6 +372,7 @@
 <translation id="397105322502079400">ಎಣಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> ದಿನಗಳಿಗಿಂತ ಹಳೆಯದಾದ ಮುದ್ರಣ ಕಾರ್ಯಗಳನ್ನು ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ</translation>
 <translation id="3993704782688964914">ನಿಮ್ಮ <ph name="DEVICE_NAME" /> ಈಗ ಅಪ್‌ ಟು ಡೇಟ್‌‌ ಆಗಿದೆ</translation>
+<translation id="3998976413398910035">ಪ್ರಿಂಟರ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="4003384961948020559">ವಿಫಲವಾಗಿದೆ - ಔಟ್‌ಪುಟ್ ಭರ್ತಿಯಾಗಿದೆ</translation>
 <translation id="4021031199988160623">ಪರೀಕ್ಷಿಸಲು ಲ್ಯಾಪ್‌ಟಾಪ್ ಮೋಡ್‌ಗೆ ಬದಲಿಸಿ</translation>
 <translation id="4034824040120875894">ಪ್ರಿಂಟರ್</translation>
@@ -587,6 +589,7 @@
 <translation id="5620281292257375798">ಆಂತರಿಕ ಮಾತ್ರ</translation>
 <translation id="5649768706273821470">ಆಲಿಸು</translation>
 <translation id="5655283760733841251">ಕೀ ಬೋರ್ಡ್ ಪ್ರಖರತೆ ಹೆಚ್ಚಿಸಿ</translation>
+<translation id="5655776422854483175">ಯಾವುದೇ ಪ್ರಿಂಟಿಂಗ್ ಕಾರ್ಯಗಳಿಲ್ಲ</translation>
 <translation id="5659593005791499971">ಇಮೇಲ್</translation>
 <translation id="5662240986744577912">ಗೌಪ್ಯತೆ ಪರದೆಯನ್ನು ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="5669267381087807207">ಸಕ್ರಿಯವಾಗುತ್ತಿದೆ</translation>
@@ -667,7 +670,7 @@
 <translation id="6278428485366576908">ಥೀಮ್</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆನ್ ಮಾಡಿ</translation>
-<translation id="6285899124799306373">ಲಾಂಚರ್ ತೆರೆಯಿರಿ</translation>
+<translation id="628726841779494414">ಪ್ರಿಂಟರ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಪ್ರಿಂಟರ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="629550705077076970">ಕೀಬೋರ್ಡ್ ಡಿಮ್ಮಿಂಗ್</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" /> ಪರೀಕ್ಷೆಯನ್ನು ರದ್ದುಪಡಿಸಲಾಗಿದೆ</translation>
 <translation id="631063167932043783">Explore ಆ್ಯಪ್</translation>
@@ -916,7 +919,6 @@
 <translation id="8312330582793120272">ಮಾಧ್ಯಮವನ್ನು ಪ್ಲೇ ಮಾಡಿ</translation>
 <translation id="8318753676953949627">ಯಾವುದೇ ಚಿತ್ರಗಳಿಲ್ಲ</translation>
 <translation id="8329018942023753850">ಕ್ಯಾಲ್ಕ್ಯುಲೇಟರ್ ಆ್ಯಪ್</translation>
-<translation id="8335869473001018124">ಹುಡುಕಾಟ ತೆರೆಯಿರಿ</translation>
 <translation id="8336739000755212683">ಸಾಧನದ ಖಾತೆ ಚಿತ್ರವನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="8347227221149377169">ಮುದ್ರಣ ಕಾರ್ಯಗಳು</translation>
 <translation id="8351855506390808906">ಕೀ ಮ್ಯಾಪಿಂಗ್ ಟಚ್ ಪಾಯಿಂಟ್</translation>

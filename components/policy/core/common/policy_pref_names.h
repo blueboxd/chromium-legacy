@@ -52,6 +52,7 @@ extern const char kIntensiveWakeUpThrottlingEnabled[];
 extern const char kUserAgentClientHintsGREASEUpdateEnabled[];
 #if BUILDFLAG(IS_ANDROID)
 extern const char kBackForwardCacheEnabled[];
+extern const char kReadAloudEnabled[];
 #endif  // BUILDFLAG(IS_ANDROID)
 extern const char kIsolatedAppsDeveloperModeAllowed[];
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
@@ -69,6 +70,7 @@ extern const char kIncognitoModeAvailability[];
 extern const char kBeforeunloadEventCancelByPreventDefaultEnabled[];
 extern const char kPolicyTestPageEnabled[];
 extern const char kAllowBackForwardCacheForCacheControlNoStorePageEnabled[];
+extern const char kLocalTestPoliciesForNextStartup[];
 
 }  // namespace policy_prefs
 }  // namespace policy

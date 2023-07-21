@@ -247,19 +247,43 @@ class PrerenderDevToolsProtocolTest : public DevToolsProtocolTest {
 
   WebContents* web_contents() const { return shell()->web_contents(); }
 
- private:
-  std::unique_ptr<test::PrerenderTestHelper> prerender_helper_;
-};
+  std::string AttachToTabTargetAndGetSessionId() {
+    AttachToTabTarget(shell()->web_contents());
+    shell()->web_contents()->SetDelegate(this);
 
-class PrerenderHoldbackDevToolsProtocolTest
-    : public PrerenderDevToolsProtocolTest {
- public:
-  PrerenderHoldbackDevToolsProtocolTest() {
-    feature_list_.InitAndEnableFeature(features::kPrerender2Holdback);
+    {
+      base::Value::Dict params;
+      params.Set("discover", true);
+      SendCommandSync("Target.setDiscoverTargets", std::move(params));
+    }
+
+    std::string frame_target_id;
+    for (int targetCount = 1; true; targetCount++) {
+      base::Value::Dict result;
+      result = WaitForNotification("Target.targetCreated", true);
+      if (*result.FindStringByDottedPath("targetInfo.type") == "page") {
+        frame_target_id =
+            std::string(*result.FindStringByDottedPath("targetInfo.targetId"));
+        break;
+      }
+      CHECK_LT(targetCount, 2);
+    }
+
+    {
+      base::Value::Dict params;
+      params.Set("targetId", frame_target_id);
+      params.Set("flatten", true);
+      const base::Value::Dict* result =
+          SendCommandSync("Target.attachToTarget", std::move(params));
+      CHECK(result);
+      std::string session_id(*result->FindString("sessionId"));
+      CHECK(session_id != "");
+      return session_id;
+    }
   }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<test::PrerenderTestHelper> prerender_helper_;
 };
 
 class PreloadingHoldbackDevToolsProtocolTest
@@ -2645,6 +2669,41 @@ class DevToolsProtocolDeviceEmulationPrerenderTest
 
   WebContents* GetWebContents() const { return shell()->web_contents(); }
 
+  std::string AttachToTabTargetAndGetSessionId() {
+    AttachToTabTarget(shell()->web_contents());
+    shell()->web_contents()->SetDelegate(this);
+
+    {
+      base::Value::Dict params;
+      params.Set("discover", true);
+      SendCommandSync("Target.setDiscoverTargets", std::move(params));
+    }
+
+    std::string frame_target_id;
+    for (int targetCount = 1; true; targetCount++) {
+      base::Value::Dict result;
+      result = WaitForNotification("Target.targetCreated", true);
+      if (*result.FindStringByDottedPath("targetInfo.type") == "page") {
+        frame_target_id =
+            std::string(*result.FindStringByDottedPath("targetInfo.targetId"));
+        break;
+      }
+      CHECK_LT(targetCount, 2);
+    }
+
+    {
+      base::Value::Dict params;
+      params.Set("targetId", frame_target_id);
+      params.Set("flatten", true);
+      const base::Value::Dict* result =
+          SendCommandSync("Target.attachToTarget", std::move(params));
+      CHECK(result);
+      std::string session_id(*result->FindString("sessionId"));
+      CHECK(session_id != "");
+      return session_id;
+    }
+  }
+
  protected:
   test::PrerenderTestHelper prerender_helper_;
 };
@@ -2662,13 +2721,22 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolDeviceEmulationPrerenderTest,
 
   GURL test_url = embedded_test_server()->GetURL("/devtools/navigation.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
-  Attach();
+  std::string session_id = AttachToTabTargetAndGetSessionId();
 
   const gfx::Size original_size = GetViewSize();
   const gfx::Size emulated_size =
       gfx::Size(original_size.width() - 50, original_size.height() - 50);
 
-  EmulateDeviceSize(emulated_size);
+  {
+    const gfx::Size size = emulated_size;
+    base::Value::Dict params;
+    params.Set("width", size.width());
+    params.Set("height", size.height());
+    params.Set("deviceScaleFactor", 0);
+    params.Set("mobile", false);
+    SendSessionCommand("Emulation.setDeviceMetricsOverride", std::move(params),
+                       session_id, true);
+  }
   EXPECT_EQ(emulated_size, GetViewSize());
 
   // Start a prerender and ensure frame size isn't changed.
@@ -2681,7 +2749,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolDeviceEmulationPrerenderTest,
   prerender_helper_.NavigatePrimaryPage(prerender_url);
   EXPECT_EQ(emulated_size, GetViewSize());
 
-  SendCommandSync("Emulation.clearDeviceMetricsOverride");
+  SendSessionCommand("Emulation.clearDeviceMetricsOverride",
+                     base::Value::Dict(), session_id, true);
   EXPECT_EQ(original_size, GetViewSize());
 }
 
@@ -3860,29 +3929,13 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderDevToolsProtocolTest,
-                       CheckReportedPrerenderFeatures) {
+                       CheckReportedPreloadingFeatures) {
   AttachToBrowserTarget();
-  base::Value::Dict paramsPrerenderHoldback;
-  paramsPrerenderHoldback.Set("featureState", "PrerenderHoldback");
-  const base::Value::Dict* result = SendCommand(
-      "SystemInfo.getFeatureState", std::move(paramsPrerenderHoldback));
-  EXPECT_THAT(result->FindBool("featureEnabled"), false);
-
   base::Value::Dict paramsPreloadingHolback;
   paramsPreloadingHolback.Set("featureState", "PreloadingHoldback");
-  result = SendCommand("SystemInfo.getFeatureState",
-                       std::move(paramsPreloadingHolback));
+  const base::Value::Dict* result = SendCommand(
+      "SystemInfo.getFeatureState", std::move(paramsPreloadingHolback));
   EXPECT_THAT(result->FindBool("featureEnabled"), false);
-}
-
-IN_PROC_BROWSER_TEST_F(PrerenderHoldbackDevToolsProtocolTest,
-                       CheckReportedPrerenderFeatures) {
-  AttachToBrowserTarget();
-  base::Value::Dict params;
-  params.Set("featureState", "PrerenderHoldback");
-  const base::Value::Dict* result =
-      SendCommand("SystemInfo.getFeatureState", std::move(params));
-  EXPECT_THAT(result->FindBool("featureEnabled"), true);
 }
 
 IN_PROC_BROWSER_TEST_F(PreloadingHoldbackDevToolsProtocolTest,
@@ -3964,29 +4017,6 @@ IN_PROC_BROWSER_TEST_F(MultiplePrerendersDevToolsProtocolTest,
   // properly when crbug/1350676 is ready. kPrerenderingUrl2 should be canceled
   // as navigating to kPrerenderingUrl2.
   result = WaitForNotification("Preload.prerenderAttemptCompleted", true);
-  EXPECT_THAT(*result.FindString("finalStatus"), Eq("Activated"));
-}
-
-IN_PROC_BROWSER_TEST_F(PrerenderHoldbackDevToolsProtocolTest,
-                       PrerenderActivation) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL kInitialUrl = GetUrl("/empty.html");
-  const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender1");
-
-  // Navigate to an initial page.
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-
-  Attach();
-  SendCommandSync("Preload.enable");
-  SendCommandSync("Runtime.enable");
-
-  AddPrerender(kPrerenderingUrl);
-
-  EXPECT_TRUE(HasHostForUrl(kPrerenderingUrl));
-
-  NavigatePrimaryPage(kPrerenderingUrl);
-  base::Value::Dict result =
-      WaitForNotification("Preload.prerenderAttemptCompleted", true);
   EXPECT_THAT(*result.FindString("finalStatus"), Eq("Activated"));
 }
 

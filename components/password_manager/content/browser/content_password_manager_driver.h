@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
@@ -144,6 +143,9 @@ class ContentPasswordManagerDriver
       const std::u16string& value,
       bool autocomplete_attribute_has_username) override;
   void ShowPasswordSuggestions(autofill::FieldRendererId element_id,
+                               const autofill::FormData& form,
+                               uint64_t username_field_index,
+                               uint64_t password_field_index,
                                base::i18n::TextDirection text_direction,
                                const std::u16string& typed_username,
                                int options,
@@ -171,8 +173,8 @@ class ContentPasswordManagerDriver
   const mojo::AssociatedRemote<autofill::mojom::PasswordGenerationAgent>&
   GetPasswordGenerationAgent();
 
-  raw_ptr<content::RenderFrameHost, DanglingUntriaged> render_frame_host_;
-  raw_ptr<PasswordManagerClient> client_;
+  const raw_ptr<content::RenderFrameHost> render_frame_host_;
+  const raw_ptr<PasswordManagerClient> client_;
   PasswordGenerationFrameHelper password_generation_helper_;
   PasswordAutofillManager password_autofill_manager_;
 

@@ -68,7 +68,6 @@ Vaše šifrovaná data mohou číst pouze uživatelé, kteří mají vaši heslo
 <translation id="1303507811548703290"><ph name="DOMAIN" /> – odesláno ze zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="1311657260431405215">Tento QR kód není adresa URL: <ph name="QRCODEVALUE" /></translation>
 <translation id="1316212908214730110">chrome_stylized_highlight_</translation>
-<translation id="131655401280401879">Pokud zámek profilu později odstraníte, vaše uložené informace budou vymazány.</translation>
 <translation id="1320912611264252795">Složky v postupu uložení záložky otevřené na celou výšku</translation>
 <translation id="1327257854815634930">Historie navigace je otevřená</translation>
 <translation id="1331212799747679585">Chrome nelze aktualizovat. Další možnosti</translation>
@@ -193,7 +192,6 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="2056878612599315956">Web je pozastaven</translation>
 <translation id="2065944887543506430">{FILE_COUNT,plural, =1{Stažení 1 souboru se nezdařilo}few{Stažení # souborů se nezdařilo}many{Stažení # souboru se nezdařilo}other{Stažení # souborů se nezdařilo}}</translation>
 <translation id="2067805253194386918">text</translation>
-<translation id="2079545284768500474">Vrátit zpět</translation>
 <translation id="2082238445998314030">Výsledek <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Synchronizovat a přizpůsobit na různých zařízeních</translation>
 <translation id="2100273922101894616">Přihlásit se automaticky</translation>
@@ -278,7 +276,7 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="2571711316400087311">Nabízet odeslání stránek v jiných jazycích do Překladače Google</translation>
 <translation id="2571834852878229351">Vytvořit vlastní</translation>
 <translation id="2573452357057307036">Přečtěte si, jak Chrome nastavit jako výchozí prohlížeč</translation>
-<translation id="257470231920177468">Když je tato funkce zapnutá, zobrazuje se zde seznam navštívených webů, které odhadují vaše zájmy.</translation>
+<translation id="2574249610672786438">Chcete-li mít své karty k dispozici všude, kde používáte Chrome, na všech zařízeních se přihlaste</translation>
 <translation id="2580436639406015883">Omezení spamu a podvodů závisí na tokenech soukromého stavu, které webům pomáhají bojovat proti podvodům a odlišit lidi od robotů.
 
 Na základě vaší interakce, jako je například pravidelné přihlašování k účtu, může web vašemu prohlížeči vystavit token soukromého stavu. Když potom jiné weby, které navštívíte, najdou platný token soukromého stavu, s větší pravděpodobností s vámi budou nakládat jako s člověkem a ne jako s robotem.
@@ -376,6 +374,7 @@ Tokeny soukromého stavu zvyšují ochranu soukromí na webu a nelze pomocí ni
 <translation id="3027644380269727216">Na základě vaší aktivity na webu. Toto nastavení je zapnuté.</translation>
 <translation id="3029276696788198026">Žádné předběžné načítání</translation>
 <translation id="3029704984691124060">Heslové fráze se neshodují</translation>
+<translation id="303514781271618814">Chrome zkoumá nové funkce, které webům umožňují poskytovat stejné prostředí a využívat při tom méně dat</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Zobrazit nápovědu<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Cena sledována</translation>
 <translation id="3037517125981011456">Zobrazuje výzvy k přihlášení do Chromu</translation>
@@ -396,7 +395,6 @@ Tokeny soukromého stavu zvyšují ochranu soukromí na webu a nelze pomocí ni
 <translation id="3123734510202723619">Oznámení</translation>
 <translation id="3134784203083076891">“</translation>
 <translation id="314939179385989105">Domovská stránka Chromu</translation>
-<translation id="3157931365184549694">Obnovit</translation>
 <translation id="3166827708714933426">Zkratky pro okna a karty</translation>
 <translation id="316694332262407393">Chrome už je spuštěný.</translation>
 <translation id="3167258285411721858">Můžete požádat o web <ph name="HOST_NAME" /> pro mobily</translation>
@@ -430,11 +428,11 @@ Tokeny soukromého stavu zvyšují ochranu soukromí na webu a nelze pomocí ni
 <translation id="3303414029551471755">Chcete pokračovat ke stažení obsahu?</translation>
 <translation id="3305130791745726624">Poslat do zařízení</translation>
 <translation id="3305795716056605962">Stránky přeložíte pomocí tlačítka Další možnosti</translation>
-<translation id="3319664549618064419">Pokud chcete získat lepší zobrazení tohoto webu, přepněte na web pro počítače</translation>
 <translation id="3334729583274622784">Změnit příponu souboru?</translation>
 <translation id="3341262203274374114">Sledování nelze zrušit. Něco se pokazilo.</translation>
 <translation id="3359667936385849800">Použít aktuálního poskytovatele služeb</translation>
 <translation id="3365271666488085187">Chrome může vzít v úvahu tento zájem</translation>
+<translation id="3373701465337594448">Když je tato funkce zapnutá, zobrazuje se zde seznam navštívených webů, které odhadují vaše zájmy</translation>
 <translation id="3373979091428520308">Chcete-li tuto stránku sdílet s jiným zařízením, v nastavení Chromu na druhém zařízení zapněte synchronizaci</translation>
 <translation id="3374023511497244703">Vaše záložky, historie, hesla a další data v Chromu se již nebudou synchronizovat do vašeho účtu Google</translation>
 <translation id="3384347053049321195">Sdílet obrázek</translation>
@@ -448,6 +446,7 @@ Tokeny soukromého stavu zvyšují ochranu soukromí na webu a nelze pomocí ni
 <translation id="3429160811076349561">Zkušební funkce jsou vypnuté</translation>
 <translation id="3435465986463792564">Otevřeli jste si víc oken? Tady je můžete spravovat</translation>
 <translation id="3435738964857648380">Zabezpečení</translation>
+<translation id="3439276997620616816">Zde najdete své nedávno zavřené karty</translation>
 <translation id="3443221991560634068">Znovu načíst aktuální stránku</translation>
 <translation id="3444179773590444986">Poskytnout zpětnou vazbu k tmavému motivu pro weby?</translation>
 <translation id="3452832259067974318">Aby Chrome chránil vaše soukromí, nebude do tohoto pole automaticky vyplňovat heslo.</translation>
@@ -456,6 +455,7 @@ Tokeny soukromého stavu zvyšují ochranu soukromí na webu a nelze pomocí ni
 <translation id="3479552764303398839">Teď ne</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /> o navrhovaném obsahu</translation>
 <translation id="3495219333887281978">Spodní tabulka s přihlášením je otevřená na polovinu výšky</translation>
+<translation id="3498338220321963224">Pokud zámek profilu později odstraníte, vaše uložená data budou vymazána.</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="350276055892098337">Seřadit od nejstarších</translation>
 <translation id="3507132249039706973">Je zapnutá standardní ochrana</translation>
@@ -547,7 +547,6 @@ Tokeny soukromého stavu zvyšují ochranu soukromí na webu a nelze pomocí ni
 <translation id="4024768890073681126">Tvůj prohlížeč spravují rodiče</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}few{# h}many{# h}other{# h}}</translation>
 <translation id="4035877632587724847">Nepovolovat</translation>
-<translation id="4036177530563778041">Jednoduše pokračujte tam, kde jste přestali</translation>
 <translation id="4042941173059740150">Pokračujte na web <ph name="SITE_ETLD_PLUS_ONE" /> pomocí služby <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
 <translation id="4044708993631234325">Spodní tabulka</translation>
 <translation id="4045764304651014138">Údaje o využití</translation>
@@ -620,8 +619,8 @@ Tokeny soukromého stavu zvyšují ochranu soukromí na webu a nelze pomocí ni
 <translation id="4405224443901389797">Přesunout do…</translation>
 <translation id="4405636711880428279">Odstranit virtuální kartu?</translation>
 <translation id="4409271659088619928">Váš vyhledávač je <ph name="DSE" />. Prostudujte si pokyny vyhledávače pro smazání historie vyhledávání (pokud je k dispozici).</translation>
-<translation id="441383202534727410">Může trvat až týden, než se zde seznam webů na základě vaší historie prohlížení objeví.</translation>
 <translation id="4415276339145661267">Spravovat účet Google</translation>
+<translation id="4417111749295506837">Pokud chcete synchronizovat své informace v Chromu a mít svá data v autě v bezpečí, musíte si vytvořit zámek profilu. Při každém nastoupení do auta bude potřeba použít kód nebo heslo.</translation>
 <translation id="4425140285732600465">Sledování ceny. Pokud cena na některém webu klesne, dostanete upozornění.</translation>
 <translation id="442518031075347249">Virtuální kartu již se službou Google Pay nebudete moci používat. <ph name="BEGIN_LINK1" />Další informace o virtuálních kartách<ph name="END_LINK1" /></translation>
 <translation id="4428065317363009941">Personalizace reklam</translation>
@@ -902,7 +901,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5864419784173784555">Čekání na další stahování…</translation>
 <translation id="5865733239029070421">Automaticky odesílá statistiky o využívání a zprávy o selhání do Googlu</translation>
 <translation id="5869522115854928033">Uložená hesla</translation>
-<translation id="5876496397064130037">Úloha byla obnovena</translation>
 <translation id="587735546353481577">Pokud nějaký web chcete sledovat, přejděte na něj, otevřené nabídku Chrome a klepněte na Sledovat.</translation>
 <translation id="5879072387416556377">Získejte lepší návrhy</translation>
 <translation id="5916664084637901428">Zapnuto</translation>
@@ -990,6 +988,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6363990818884053551">Pokud chcete zahájit synchronizaci, ověřte svoji totožnost</translation>
 <translation id="6364438453358674297">Odstranit návrh z historie?</translation>
 <translation id="6380100320871303656">Častěji předběžně načítá stránky, které byste podle Chromu mohli navštívit. Toto nastavení může vést ke zvýšenému využití dat.</translation>
+<translation id="6391355955030242704">Pokud chcete synchronizovat své informace v Chromu a mít svá data v autě v bezpečí, musíte si v nastavení zabezpečení vytvořit zámek profilu. Při každém nastoupení do auta bude potřeba použít kód nebo heslo.</translation>
 <translation id="6394791151443660613">Vyhledat: <ph name="SEARCH_QUERY" /></translation>
 <translation id="6395288395575013217">ODKAZ</translation>
 <translation id="6397616442223433927">Opět online</translation>
@@ -1038,7 +1037,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6590471736817333463">Ušetřete až 60 % dat</translation>
 <translation id="6590680911007613645">Zkontrolujte, zda se ukládané heslo shoduje s heslem pro web <ph name="SITE" />.</translation>
 <translation id="6593061639179217415">Stránky pro počítač</translation>
-<translation id="6594121454516132231">Podívejte se, jak vás Chrome plánuje chránit před sledováním mezi weby, aniž by omezoval otevřenost webu</translation>
 <translation id="6594347733515723558">Řazení a zobrazení</translation>
 <translation id="6595046016124923392">Za účelem zlepšení popisů se obrázky odesílají do Googlu.</translation>
 <translation id="6600954340915313787">Zkopírováno do Chromu</translation>
@@ -1131,7 +1129,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7029390216614421513">Do tohoto rámce umístěte QR kód nebo čárový kód.</translation>
 <translation id="7029809446516969842">Hesla</translation>
 <translation id="7030304022046916278">Odesílá adresy URL ke kontrole ve funkci Bezpečné prohlížení</translation>
-<translation id="7030585293819777123">Pokračovat v posledním úkolu?</translation>
 <translation id="7035701931849773472">Další možnosti</translation>
 <translation id="7037830628447527439">Přihlaste se do Chromu pomocí svého účtu Google</translation>
 <translation id="7038956721828960940">chrome_image_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
@@ -1146,7 +1143,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7088681679121566888">Chrome je aktuální</translation>
 <translation id="7105047059074518658">Přihlaste se, abyste internet mohli snáze procházet na různých zařízeních</translation>
 <translation id="7106762743910369165">Váš prohlížeč je spravován vaší organizací</translation>
-<translation id="7116420572655804716">Pokud chcete synchronizovat své informace a mít svá data v autě v bezpečí, musíte si v nastavení zabezpečení vytvořit zámek profilu. Při každém nastoupení do auta bude potřeba použít kód nebo heslo.</translation>
 <translation id="7116588989735740310">Pokud se chcete vracet na weby navštívené v jiných zařízeních, synchronizujte své karty a historii</translation>
 <translation id="7130504491556983216">Zde se bude zobrazovat seznam zájmů zjištěných z procházení internetu</translation>
 <translation id="7138678301420049075">Ostatní</translation>
@@ -1571,7 +1567,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="932327136139879170">Domovská stránka</translation>
 <translation id="938850635132480979">Chyba: <ph name="ERROR_CODE" /></translation>
 <translation id="939598580284253335">Zadat heslovou frázi</translation>
-<translation id="950679278154734362">Pokud chcete synchronizovat své informace a mít svá data v autě v bezpečí, musíte si vytvořit zámek profilu. Při každém nastoupení do auta bude potřeba použít kód nebo heslo.</translation>
 <translation id="952301137339791907">Spodní tabulka se statistikami stránky je otevřená</translation>
 <translation id="95817756606698420">Chrome může v Číně k vyhledávání používat službu <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />. Tuto volbu můžete změnit v <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>
 <translation id="962979164594783469">Nainstalovat aplikaci</translation>

@@ -42,11 +42,13 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/test/browser_test.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 namespace policy {
@@ -75,50 +77,6 @@ class FilesPolicyNotificationManagerBrowserTest : public InProcessBrowserTest {
       const FilesPolicyNotificationManagerBrowserTest&) = delete;
   ~FilesPolicyNotificationManagerBrowserTest() override = default;
 };
-
-// (b/273269211): This is a test for the crash that happens upon showing a
-// warning dialog when a file is moved to Google Drive.
-IN_PROC_BROWSER_TEST_F(FilesPolicyNotificationManagerBrowserTest,
-                       WarningDialog_ComponentDestination) {
-  auto* fpnm = FilesPolicyNotificationManagerFactory::GetForBrowserContext(
-      browser()->profile());
-  ASSERT_TRUE(fpnm);
-  std::vector<base::FilePath> warning_files;
-  warning_files.emplace_back(base::FilePath("file1.txt"));
-  fpnm->ShowDlpWarning(base::DoNothing(), absl::nullopt,
-                       std::move(warning_files),
-                       DlpFileDestination(data_controls::Component::kDrive),
-                       dlp::FileAction::kMove);
-}
-
-// (b/277594200): This is a test for the crash that happens upon showing a
-// warning dialog when a file is dragged to a webpage.
-IN_PROC_BROWSER_TEST_F(FilesPolicyNotificationManagerBrowserTest,
-                       WarningDialog_UrlDestination) {
-  auto* fpnm = FilesPolicyNotificationManagerFactory::GetForBrowserContext(
-      browser()->profile());
-  ASSERT_TRUE(fpnm);
-  std::vector<base::FilePath> warning_files;
-  warning_files.emplace_back(base::FilePath("file1.txt"));
-  fpnm->ShowDlpWarning(base::DoNothing(), absl::nullopt,
-                       std::move(warning_files),
-                       DlpFileDestination(kExampleUrl), dlp::FileAction::kMove);
-}
-
-// (b/281495499): This is a test for the crash that happens upon showing a
-// warning dialog for downloads.
-IN_PROC_BROWSER_TEST_F(FilesPolicyNotificationManagerBrowserTest,
-                       WarningDialog_Download) {
-  auto* fpnm = FilesPolicyNotificationManagerFactory::GetForBrowserContext(
-      browser()->profile());
-  ASSERT_TRUE(fpnm);
-  std::vector<base::FilePath> warning_files;
-  warning_files.emplace_back(base::FilePath("file1.txt"));
-  fpnm->ShowDlpWarning(base::DoNothing(), absl::nullopt,
-                       std::move(warning_files),
-                       DlpFileDestination(data_controls::Component::kDrive),
-                       dlp::FileAction::kDownload);
-}
 
 using BlockedFilesMap = std::map<DlpConfidentialFile, Policy>;
 
@@ -237,6 +195,50 @@ class OnDlpWarningNotificationClickedTest
     : public OnNotificationClickedTest,
       public ::testing::WithParamInterface<
           std::tuple<dlp::FileAction, DlpFileDestination>> {};
+
+// Tests that clicking on the warning notification, but no button is ignored.
+IN_PROC_BROWSER_TEST_P(OnDlpWarningNotificationClickedTest,
+                       SingleFileNoButtonIgnored) {
+  auto [action, destination] = GetParam();
+  auto* fpnm = FilesPolicyNotificationManagerFactory::GetForBrowserContext(
+      browser()->profile());
+  ASSERT_TRUE(fpnm);
+
+  // The callback is not invoked.
+  base::MockCallback<OnDlpRestrictionCheckedCallback> cb;
+  EXPECT_CALL(cb, Run).Times(0);
+
+  fpnm->ShowDlpWarning(cb.Get(), /*task_id=*/absl::nullopt,
+                       {base::FilePath("file1.txt")}, destination, action);
+
+  ASSERT_TRUE(bridge_->GetDisplayedNotification(kNotificationId).has_value());
+  bridge_->Click(kNotificationId, /*button_index=*/absl::nullopt);
+  // The notification shouldn't be closed.
+  EXPECT_TRUE(bridge_->GetDisplayedNotification(kNotificationId).has_value());
+}
+
+// Tests that closing the warning notification (e.g. by X or Dismiss all)
+// invokes the Cancel callback.
+IN_PROC_BROWSER_TEST_P(OnDlpWarningNotificationClickedTest,
+                       SingleFileCloseCancels) {
+  auto [action, destination] = GetParam();
+  auto* fpnm = FilesPolicyNotificationManagerFactory::GetForBrowserContext(
+      browser()->profile());
+  ASSERT_TRUE(fpnm);
+
+  // The task is cancelled.
+  base::MockCallback<OnDlpRestrictionCheckedCallback> cb;
+  EXPECT_CALL(cb, Run(/*should_proceed=*/false)).Times(1);
+
+  fpnm->ShowDlpWarning(cb.Get(), /*task_id=*/absl::nullopt,
+                       {base::FilePath("file1.txt")}, destination, action);
+
+  auto notification = bridge_->GetDisplayedNotification(kNotificationId);
+  ASSERT_TRUE(notification.has_value());
+  notification->delegate()->Close(
+      /*by_user=*/true);  // parameter doesn't matter
+  EXPECT_FALSE(bridge_->GetDisplayedNotification(kNotificationId).has_value());
+}
 
 // Tests that clicking the OK button on a warning notification for a single
 // file continues the action without showing the dialog.
@@ -455,6 +457,47 @@ IN_PROC_BROWSER_TEST_P(OnDlpErrorNotificationClickedTest,
   EXPECT_FALSE(bridge_->GetDisplayedNotification(kNotificationId).has_value());
 }
 
+// Tests that clicking on the error notification, but no button is ignored.
+IN_PROC_BROWSER_TEST_P(OnDlpErrorNotificationClickedTest,
+                       MultiFileNoButtonIgnored) {
+  auto [action, destination] = GetParam();
+  auto* fpnm = FilesPolicyNotificationManagerFactory::GetForBrowserContext(
+      browser()->profile());
+  ASSERT_TRUE(fpnm);
+
+  std::vector<base::FilePath> blocked_files;
+  blocked_files.emplace_back("file1.txt");
+  blocked_files.emplace_back("file2.txt");
+  fpnm->ShowDlpBlockedFiles(absl::nullopt, std::move(blocked_files), action);
+
+  ASSERT_TRUE(bridge_->GetDisplayedNotification(kNotificationId).has_value());
+  bridge_->Click(kNotificationId, /*button_index=*/absl::nullopt);
+  // The notification shouldn't be closed.
+  EXPECT_TRUE(bridge_->GetDisplayedNotification(kNotificationId).has_value());
+}
+
+// Tests that closing the error notification (e.g. by X or Dismiss all)
+// correctly closes it.
+IN_PROC_BROWSER_TEST_P(OnDlpErrorNotificationClickedTest,
+                       MultiFileCloseCancels) {
+  auto [action, destination] = GetParam();
+
+  auto* fpnm = FilesPolicyNotificationManagerFactory::GetForBrowserContext(
+      browser()->profile());
+  ASSERT_TRUE(fpnm);
+
+  std::vector<base::FilePath> blocked_files;
+  blocked_files.emplace_back("file1.txt");
+  blocked_files.emplace_back("file2.txt");
+  fpnm->ShowDlpBlockedFiles(absl::nullopt, std::move(blocked_files), action);
+
+  auto notification = bridge_->GetDisplayedNotification(kNotificationId);
+  ASSERT_TRUE(notification.has_value());
+  notification->delegate()->Close(
+      /*by_user=*/false);  // parameter doesn't matter
+  EXPECT_FALSE(bridge_->GetDisplayedNotification(kNotificationId).has_value());
+}
+
 // Tests that clicking the OK button on an error notification for multiple
 // files shows a system modal dialog when Files app doesn't launch before
 // timeout.
@@ -534,11 +577,11 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple(dlp::FileAction::kDownload,
                         DlpFileDestination(data_controls::Component::kUsb))));
 
-class OnIONotificationClickedTest
+class IOTaskBrowserTest
     : public OnNotificationClickedTest,
       public ::testing::WithParamInterface<
           std::tuple<file_manager::io_task::OperationType, dlp::FileAction>> {
- public:
+ protected:
   void SetUpOnMainThread() override {
     OnNotificationClickedTest::SetUpOnMainThread();
 
@@ -548,12 +591,15 @@ class OnIONotificationClickedTest
     // DLP Setup.
     policy::DlpRulesManagerFactory::GetInstance()->SetTestingFactory(
         browser()->profile(),
-        base::BindRepeating(&OnIONotificationClickedTest::SetDlpRulesManager,
+        base::BindRepeating(&IOTaskBrowserTest::SetDlpRulesManager,
                             base::Unretained(this)));
     ASSERT_TRUE(policy::DlpRulesManagerFactory::GetForPrimaryProfile());
     ASSERT_NE(policy::DlpRulesManagerFactory::GetForPrimaryProfile()
                   ->GetDlpFilesController(),
               nullptr);
+    fpnm_ = FilesPolicyNotificationManagerFactory::GetForBrowserContext(
+        browser()->profile());
+    ASSERT_TRUE(fpnm_);
   }
 
   void TearDownOnMainThread() override {
@@ -561,13 +607,6 @@ class OnIONotificationClickedTest
     OnNotificationClickedTest::TearDownOnMainThread();
   }
 
- protected:
-  base::ScopedTempDir temp_dir_;
-  scoped_refptr<storage::FileSystemContext> file_system_context_;
-  const blink::StorageKey kTestStorageKey =
-      blink::StorageKey::CreateFromStringForTesting("chrome://abc");
-
- private:
   std::unique_ptr<KeyedService> SetDlpRulesManager(
       content::BrowserContext* context) {
     auto dlp_rules_manager =
@@ -586,15 +625,115 @@ class OnIONotificationClickedTest
     return dlp_rules_manager;
   }
 
+  // Expects CheckIfTransferAllowed to be called. Once called, it calls
+  // FilesPolicyNotificationManager to show a warning.
+  void ExpectCheckIfTransferAllowedToWarn(
+      const file_manager::io_task::IOTaskId task_id,
+      const dlp::FileAction action,
+      const bool expected_should_proceed,
+      const std::vector<base::FilePath>& warning_files) {
+    bool is_move = (action == dlp::FileAction::kMove) ? true : false;
+    auto warn_on_check =
+        [=](absl::optional<file_manager::io_task::IOTaskId> task_id,
+            const std::vector<storage::FileSystemURL>& transferred_files,
+            storage::FileSystemURL destination, bool is_move,
+            DlpFilesControllerAsh::CheckIfTransferAllowedCallback
+                result_callback) {
+          auto warn_cb = base::BindOnce(
+              [](DlpFilesControllerAsh::CheckIfTransferAllowedCallback cb,
+                 const bool expected_should_proceed, bool should_proceed) {
+                EXPECT_EQ(should_proceed, expected_should_proceed);
+                // No file is blocked.
+                std::move(cb).Run({});
+              },
+              std::move(result_callback), expected_should_proceed);
+          fpnm_->ShowDlpWarning(std::move(warn_cb), task_id.value(),
+                                warning_files, DlpFileDestination(""), action);
+        };
+
+    EXPECT_CALL(*files_controller_,
+                CheckIfTransferAllowed(absl::make_optional(task_id), testing::_,
+                                       testing::_, is_move, testing::_))
+        .WillOnce(testing::Invoke(warn_on_check));
+  }
+
+  // Expects CheckIfTransferAllowed to be called. Once called, it calls
+  // FilesPolicyNotificationManager to show the blocked files.
+  void ExpectCheckIfTransferAllowedToBlock(
+      const file_manager::io_task::IOTaskId task_id,
+      const dlp::FileAction action,
+      const std::vector<base::FilePath>& blocked_files) {
+    bool is_move = (action == dlp::FileAction::kMove) ? true : false;
+    auto block_on_check =
+        [=](absl::optional<file_manager::io_task::IOTaskId> task_id,
+            const std::vector<storage::FileSystemURL>& transferred_files,
+            storage::FileSystemURL destination, bool is_move,
+            DlpFilesControllerAsh::CheckIfTransferAllowedCallback
+                result_callback) {
+          fpnm_->ShowDlpBlockedFiles(task_id.value(), blocked_files, action);
+          // Return transferred files as blocked.
+          std::move(result_callback).Run(transferred_files);
+        };
+
+    EXPECT_CALL(*files_controller_,
+                CheckIfTransferAllowed(absl::make_optional(task_id), testing::_,
+                                       testing::_, is_move, testing::_))
+        .WillOnce(testing::Invoke(block_on_check));
+  }
+
+  // Expects CheckIfTransferAllowed to be called. Once called, it calls
+  // FilesPolicyNotificationManager to show a warning then calls it again to
+  // show the blocked files.
+  void ExpectCheckIfTransferAllowedToWarnAndBlock(
+      const file_manager::io_task::IOTaskId task_id,
+      const dlp::FileAction action,
+      const bool expected_should_proceed,
+      const std::vector<base::FilePath>& warning_files,
+      const std::vector<base::FilePath>& blocked_files) {
+    bool is_move = (action == dlp::FileAction::kMove) ? true : false;
+    auto warn_on_check =
+        [=](absl::optional<file_manager::io_task::IOTaskId> task_id,
+            const std::vector<storage::FileSystemURL>& transferred_files,
+            storage::FileSystemURL destination, bool is_move,
+            DlpFilesControllerAsh::CheckIfTransferAllowedCallback
+                result_callback) {
+          auto warn_cb = base::BindOnce(
+              [](DlpFilesControllerAsh::CheckIfTransferAllowedCallback cb,
+                 const std::vector<storage::FileSystemURL>& transferred_files,
+                 const bool expected_should_proceed, bool should_proceed) {
+                EXPECT_EQ(should_proceed, expected_should_proceed);
+                // Return transferred files as blocked.
+                std::move(cb).Run(transferred_files);
+              },
+              std::move(result_callback), transferred_files,
+              expected_should_proceed);
+          fpnm_->ShowDlpWarning(std::move(warn_cb), task_id.value(),
+                                warning_files, DlpFileDestination(""), action);
+        };
+
+    EXPECT_CALL(*files_controller_,
+                CheckIfTransferAllowed(absl::make_optional(task_id), testing::_,
+                                       testing::_, is_move, testing::_))
+        .WillOnce(testing::Invoke(warn_on_check));
+    fpnm_->ShowDlpBlockedFiles(task_id, blocked_files, action);
+  }
+
+  base::ScopedTempDir temp_dir_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
+  const blink::StorageKey kTestStorageKey =
+      blink::StorageKey::CreateFromStringForTesting("chrome://abc");
+
   raw_ptr<policy::MockDlpRulesManager, ExperimentalAsh> mock_rules_manager_ =
       nullptr;
   std::unique_ptr<policy::MockDlpFilesControllerAsh> files_controller_;
+  raw_ptr<policy::FilesPolicyNotificationManager, ExperimentalAsh> fpnm_ =
+      nullptr;
 };
 
 // Tests that clicking the OK button on a warning notification shown for copy or
 // move IO task with multiple warning files shows a dialog instead of continuing
 // the action, and opens the Files App only if there's not one opened already.
-IN_PROC_BROWSER_TEST_P(OnIONotificationClickedTest,
+IN_PROC_BROWSER_TEST_P(IOTaskBrowserTest,
                        MultiFileOKShowsDialogOverFilesApp_Warning) {
   auto [type, action] = GetParam();
 
@@ -618,15 +757,19 @@ IN_PROC_BROWSER_TEST_P(OnIONotificationClickedTest,
         std::move(callback).Run(/*should_proceed=*/false);
         return nullptr;
       });
-  base::MockCallback<OnDlpRestrictionCheckedCallback> cb;
-  EXPECT_CALL(cb, Run(/*should_proceed=*/false)).Times(2);
 
   // No Files app opened.
   ASSERT_FALSE(FindFilesApp());
 
-  auto* fpnm = FilesPolicyNotificationManagerFactory::GetForBrowserContext(
-      browser()->profile());
-  ASSERT_TRUE(fpnm);
+  // CheckIfTransferAllowed will call FPNM to show the warning which will pause
+  // the IO task and trigger the notification. Do this before any Files App is
+  // opened so that we are sure we show system notifications.
+  ExpectCheckIfTransferAllowedToWarn(kTaskId1, action,
+                                     /*expected_should_proceed=*/false,
+                                     warning_files);
+  ExpectCheckIfTransferAllowedToWarn(kTaskId2, action,
+                                     /*expected_should_proceed=*/false,
+                                     warning_files);
 
   // Add the tasks.
   {
@@ -640,23 +783,17 @@ IN_PROC_BROWSER_TEST_P(OnIONotificationClickedTest,
                      temp_dir_.GetPath(), "test2.txt", kTestStorageKey)
                      .empty());
   }
-  ASSERT_TRUE(fpnm->HasIOTask(kTaskId1));
-  ASSERT_TRUE(fpnm->HasIOTask(kTaskId2));
 
-  // Pause the tasks and save the info in FPNM. Then, the
-  // file_manager::EventRouter notifies FPNM with the paused status, which
-  // triggers the notification. Do this before any Files App is opened so that
-  // we are sure we show system notifications.
-  fpnm->ShowDlpWarning(cb.Get(), kTaskId1, warning_files,
-                       DlpFileDestination(""), action);
+  ASSERT_TRUE(fpnm_->HasIOTask(kTaskId1));
+  ASSERT_TRUE(fpnm_->HasIOTask(kTaskId2));
+
   auto notification = bridge_->GetDisplayedNotification(kNotificationId1);
   ASSERT_TRUE(notification.has_value());
-  const std::u16string title = action == dlp::FileAction::kCopy
-                                   ? u"Review is required before copying"
-                                   : u"Review is required before moving";
+  const std::u16string title =
+      action == dlp::FileAction::kCopy
+          ? l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_COPY_REVIEW_TITLE)
+          : l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_MOVE_REVIEW_TITLE);
 
-  fpnm->ShowDlpWarning(cb.Get(), kTaskId2, warning_files,
-                       DlpFileDestination(""), action);
   notification = bridge_->GetDisplayedNotification(kNotificationId2);
   ASSERT_TRUE(notification.has_value());
   EXPECT_EQ(notification->title(), title);
@@ -686,10 +823,94 @@ IN_PROC_BROWSER_TEST_P(OnIONotificationClickedTest,
   EXPECT_FALSE(bridge_->GetDisplayedNotification(kNotificationId2).has_value());
 }
 
+// Tests that clicking the Cancel button on a warning notification shown for
+// copy or move IO task with multiple warning files will cancel the task.
+IN_PROC_BROWSER_TEST_P(IOTaskBrowserTest, MultiFileDismissCancels_Warning) {
+  auto [type, action] = GetParam();
+
+  // CheckIfTransferAllowed will call FPNM to show the warning which will pause
+  // the IO task and trigger the notification.
+  ExpectCheckIfTransferAllowedToWarn(
+      kTaskId1, action,
+      /*expected_should_proceed=*/false,
+      {base::FilePath("file1.txt"), base::FilePath("file2.txt")});
+
+  // Add the task.
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_FALSE(policy::AddCopyOrMoveIOTask(
+                     browser()->profile(), file_system_context_, kTaskId1, type,
+                     temp_dir_.GetPath(), "test1.txt", kTestStorageKey)
+                     .empty());
+  }
+
+  ASSERT_TRUE(fpnm_->HasIOTask(kTaskId1));
+
+  auto notification = bridge_->GetDisplayedNotification(kNotificationId1);
+  ASSERT_TRUE(notification.has_value());
+  const std::u16string title =
+      action == dlp::FileAction::kCopy
+          ? l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_COPY_REVIEW_TITLE)
+          : l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_MOVE_REVIEW_TITLE);
+
+  // Cancel the warning.
+  EXPECT_EQ(notification->title(), title);
+  bridge_->Click(kNotificationId1, NotificationButton::CANCEL);
+
+  // The notification should be closed.
+  EXPECT_FALSE(bridge_->GetDisplayedNotification(kNotificationId1).has_value());
+
+  // Task info is removed when the task is cancelled.
+  EXPECT_FALSE(fpnm_->HasIOTask(kTaskId1));
+}
+
+// Tests that clicking the OK button on a warning notification shown for
+// copy or move IO task with single warning file will proceed the task.
+IN_PROC_BROWSER_TEST_P(IOTaskBrowserTest, SingleFileOkProceeds_Warning) {
+  auto [type, action] = GetParam();
+
+  // CheckIfTransferAllowed will call FPNM to show the warning which will pause
+  // the IO task and trigger the notification.
+  ExpectCheckIfTransferAllowedToWarn(kTaskId1, action,
+                                     /*expected_should_proceed=*/true,
+                                     {base::FilePath("test1.txt")});
+
+  // Add the task.
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_FALSE(policy::AddCopyOrMoveIOTask(
+                     browser()->profile(), file_system_context_, kTaskId1, type,
+                     temp_dir_.GetPath(), "test1.txt", kTestStorageKey)
+                     .empty());
+  }
+  ASSERT_TRUE(fpnm_->HasIOTask(kTaskId1));
+
+  auto notification = bridge_->GetDisplayedNotification(kNotificationId1);
+  ASSERT_TRUE(notification.has_value());
+  const std::u16string title =
+      action == dlp::FileAction::kCopy
+          ? l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_COPY_REVIEW_TITLE)
+          : l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_MOVE_REVIEW_TITLE);
+
+  // Proceed the warning.
+  EXPECT_EQ(notification->title(), title);
+  bridge_->Click(kNotificationId1, NotificationButton::OK);
+
+  // The warning notification should be closed or replaced by in progress one.
+  notification = bridge_->GetDisplayedNotification(kNotificationId1);
+  EXPECT_TRUE(!notification.has_value() || notification->title() != title);
+
+  // Wait till IO task is complete.
+  base::RunLoop().RunUntilIdle();
+
+  // Task info should be cleared because there's not any blocked file.
+  ASSERT_FALSE(fpnm_->HasIOTask(kTaskId1));
+}
+
 // Tests that clicking the OK button on an error notification shown for copy or
 // move IO task with multiple blocked files shows a dialog, for which it opens
 // the Files App only if there's not one opened already.
-IN_PROC_BROWSER_TEST_P(OnIONotificationClickedTest,
+IN_PROC_BROWSER_TEST_P(IOTaskBrowserTest,
                        MultiFileOKShowsDialogOverFilesApp_Error) {
   auto [type, action] = GetParam();
 
@@ -703,9 +924,17 @@ IN_PROC_BROWSER_TEST_P(OnIONotificationClickedTest,
   // No Files app opened.
   ASSERT_FALSE(FindFilesApp());
 
-  auto* fpnm = FilesPolicyNotificationManagerFactory::GetForBrowserContext(
-      browser()->profile());
-  ASSERT_TRUE(fpnm);
+  // CheckIfTransferAllowed will call FPNM to save the blocked files. Once we
+  // complete the tasks with policy error, the file_manager::EventRouter will
+  // notify FPNM with the error status and trigger the notification. Do this
+  // before any Files App is opened so that we are sure we show system
+  // notifications.
+  ExpectCheckIfTransferAllowedToBlock(
+      kTaskId1, action,
+      {base::FilePath("file1.txt"), base::FilePath("file2.txt")});
+  ExpectCheckIfTransferAllowedToBlock(
+      kTaskId2, action,
+      {base::FilePath("file1.txt"), base::FilePath("file2.txt")});
 
   // Add the tasks.
   {
@@ -719,40 +948,22 @@ IN_PROC_BROWSER_TEST_P(OnIONotificationClickedTest,
                      temp_dir_.GetPath(), "test2.txt", kTestStorageKey)
                      .empty());
   }
-  ASSERT_TRUE(fpnm->HasIOTask(kTaskId1));
-  ASSERT_TRUE(fpnm->HasIOTask(kTaskId2));
+  ASSERT_TRUE(fpnm_->HasIOTask(kTaskId1));
+  ASSERT_TRUE(fpnm_->HasIOTask(kTaskId2));
 
-  // Save blocked files in FPNM. Once we complete the tasks with policy error,
-  // the file_manager::EventRouter will notify FPNM with the error status and
-  // trigger the notification. Do this before any Files App is opened so that
-  // we are sure we show system notifications.
-  fpnm->ShowDlpBlockedFiles(
-      kTaskId1, {base::FilePath("file1.txt"), base::FilePath("file2.txt")},
-      action);
-  GetIOTaskController(browser()->profile())
-      ->CompleteWithError(kTaskId1,
-                          file_manager::io_task::PolicyError(
-                              file_manager::io_task::PolicyErrorType::kDlp,
-                              /*blocked_files=*/2));
+  // Wait till IO tasks are complete.
+  base::RunLoop().RunUntilIdle();
+
   // Task Info shouldn't be removed after completion.
-  ASSERT_TRUE(fpnm->HasIOTask(kTaskId1));
+  ASSERT_TRUE(fpnm_->HasIOTask(kTaskId1));
+  ASSERT_TRUE(fpnm_->HasIOTask(kTaskId2));
 
   auto notification = bridge_->GetDisplayedNotification(kNotificationId1);
   ASSERT_TRUE(notification.has_value());
-  const std::u16string title =
-      action == dlp::FileAction::kCopy ? u"Blocked copy" : u"Blocked move";
+  const std::u16string title = action == dlp::FileAction::kCopy
+                                   ? u"2 files blocked from copying"
+                                   : u"2 files blocked from moving";
   EXPECT_EQ(notification->title(), title);
-
-  fpnm->ShowDlpBlockedFiles(
-      kTaskId2, {base::FilePath("file1.txt"), base::FilePath("file2.txt")},
-      action);
-  GetIOTaskController(browser()->profile())
-      ->CompleteWithError(kTaskId2,
-                          file_manager::io_task::PolicyError(
-                              file_manager::io_task::PolicyErrorType::kDlp,
-                              /*blocked_files=*/2));
-  // Task Info shouldn't be removed after completion.
-  ASSERT_TRUE(fpnm->HasIOTask(kTaskId2));
 
   notification = bridge_->GetDisplayedNotification(kNotificationId2);
   ASSERT_TRUE(notification.has_value());
@@ -766,33 +977,32 @@ IN_PROC_BROWSER_TEST_P(OnIONotificationClickedTest,
   ASSERT_TRUE(first_app);
   ASSERT_EQ(first_app, FindFilesApp());
   // Task info is removed after the dialog is shown.
-  EXPECT_FALSE(fpnm->HasIOTask(kTaskId1));
+  EXPECT_FALSE(fpnm_->HasIOTask(kTaskId1));
 
   // The notification should be closed.
-  // TODO(b/289903108): Uncomment when notifications are deduped.
-  //     EXPECT_FALSE(
-  //         bridge_->GetDisplayedNotification(kNotificationId1).has_value());
+  EXPECT_FALSE(bridge_->GetDisplayedNotification(kNotificationId1).has_value());
 
   // Show the second dialog. No new app should be opened.
-  ASSERT_TRUE(bridge_->GetDisplayedNotification(kNotificationId2).has_value());
   bridge_->Click(kNotificationId2, NotificationButton::OK);
 
   // Check that the last active Files app is the same as before.
   ASSERT_TRUE(first_app);
   ASSERT_EQ(first_app, FindFilesApp());
   // Task info is removed after the dialog is shown.
-  EXPECT_FALSE(fpnm->HasIOTask(kTaskId2));
+  EXPECT_FALSE(fpnm_->HasIOTask(kTaskId2));
 }
 
 // Tests that the IO task info for copy or move with multiple blocked files will
 // be removed upon clicking the DISMISS button on the error notification.
-IN_PROC_BROWSER_TEST_P(OnIONotificationClickedTest,
-                       MultiFileDismissRemovesIOInfo_Error) {
+IN_PROC_BROWSER_TEST_P(IOTaskBrowserTest, MultiFileDismissRemovesIOInfo_Error) {
   auto [type, action] = GetParam();
 
-  auto* fpnm = FilesPolicyNotificationManagerFactory::GetForBrowserContext(
-      browser()->profile());
-  ASSERT_TRUE(fpnm);
+  // CheckIfTransferAllowed will call FPNM to save the blocked files. Once we
+  // complete the tasks with policy error, the file_manager::EventRouter will
+  // notify FPNM with the error status and trigger the notification.
+  ExpectCheckIfTransferAllowedToBlock(
+      kTaskId1, action,
+      {base::FilePath("file1.txt"), base::FilePath("file2.txt")});
 
   // Add the task.
   {
@@ -802,47 +1012,41 @@ IN_PROC_BROWSER_TEST_P(OnIONotificationClickedTest,
                      temp_dir_.GetPath(), "test1.txt", kTestStorageKey)
                      .empty());
   }
-  ASSERT_TRUE(fpnm->HasIOTask(kTaskId1));
+  ASSERT_TRUE(fpnm_->HasIOTask(kTaskId1));
 
-  // Save blocked files in FPNM. Once we complete the tasks with policy error,
-  // the file_manager::EventRouter will notify FPNM with the error status and
-  // trigger the notification. Do this before any Files App is opened so that
-  // we are sure we show system notifications.
-  fpnm->ShowDlpBlockedFiles(
-      kTaskId1, {base::FilePath("file1.txt"), base::FilePath("file2.txt")},
-      action);
-  GetIOTaskController(browser()->profile())
-      ->CompleteWithError(kTaskId1,
-                          file_manager::io_task::PolicyError(
-                              file_manager::io_task::PolicyErrorType::kDlp,
-                              /*blocked_files=*/2));
+  // Wait till IO tasks are complete.
+  base::RunLoop().RunUntilIdle();
+
   // Task Info shouldn't be removed after completion.
-  ASSERT_TRUE(fpnm->HasIOTask(kTaskId1));
+  ASSERT_TRUE(fpnm_->HasIOTask(kTaskId1));
 
   auto notification = bridge_->GetDisplayedNotification(kNotificationId1);
   ASSERT_TRUE(notification.has_value());
-  const std::u16string title =
-      action == dlp::FileAction::kCopy ? u"Blocked copy" : u"Blocked move";
+  const std::u16string title = action == dlp::FileAction::kCopy
+                                   ? u"2 files blocked from copying"
+                                   : u"2 files blocked from moving";
   EXPECT_EQ(notification->title(), title);
 
   // Dismiss the notification.
   bridge_->Click(kNotificationId1, NotificationButton::CANCEL);
   // Task info is removed after the notification is dismissed.
-  EXPECT_FALSE(fpnm->HasIOTask(kTaskId1));
+  EXPECT_FALSE(fpnm_->HasIOTask(kTaskId1));
 
   // The notification should be closed.
   EXPECT_FALSE(bridge_->GetDisplayedNotification(kNotificationId1).has_value());
 }
 
 // Tests that the IO task info for copy or move with single blocked file will
-// be removed upon the error notification is clicked.
-IN_PROC_BROWSER_TEST_P(OnIONotificationClickedTest,
+// be removed after the error notification is clicked.
+IN_PROC_BROWSER_TEST_P(IOTaskBrowserTest,
                        SingleFileNotificationRemovesIOInfo_Error) {
   auto [type, action] = GetParam();
 
-  auto* fpnm = FilesPolicyNotificationManagerFactory::GetForBrowserContext(
-      browser()->profile());
-  ASSERT_TRUE(fpnm);
+  // CheckIfTransferAllowed will call FPNM to save the blocked files. Once we
+  // complete the tasks with policy error, the file_manager::EventRouter will
+  // notify FPNM with the error status and trigger the notification.
+  ExpectCheckIfTransferAllowedToBlock(kTaskId1, action,
+                                      {base::FilePath("test1.txt")});
 
   // Add the task.
   {
@@ -852,39 +1056,87 @@ IN_PROC_BROWSER_TEST_P(OnIONotificationClickedTest,
                      temp_dir_.GetPath(), "test1.txt", kTestStorageKey)
                      .empty());
   }
-  ASSERT_TRUE(fpnm->HasIOTask(kTaskId1));
+  ASSERT_TRUE(fpnm_->HasIOTask(kTaskId1));
 
-  // Save blocked files in FPNM. Once we complete the tasks with policy error,
-  // the file_manager::EventRouter will notify FPNM with the error status and
-  // trigger the notification. Do this before any Files App is opened so that
-  // we are sure we show system notifications.
-  fpnm->ShowDlpBlockedFiles(kTaskId1, {base::FilePath("file1.txt")}, action);
-  GetIOTaskController(browser()->profile())
-      ->CompleteWithError(kTaskId1,
-                          file_manager::io_task::PolicyError(
-                              file_manager::io_task::PolicyErrorType::kDlp,
-                              /*blocked_files=*/1));
+  // Wait till IO task is complete.
+  base::RunLoop().RunUntilIdle();
+
   // Task Info shouldn't be removed after completion.
-  EXPECT_TRUE(fpnm->HasIOTask(kTaskId1));
+  EXPECT_TRUE(fpnm_->HasIOTask(kTaskId1));
+
   auto notification = bridge_->GetDisplayedNotification(kNotificationId1);
   ASSERT_TRUE(notification.has_value());
-  const std::u16string title =
-      action == dlp::FileAction::kCopy ? u"Blocked copy" : u"Blocked move";
+  const std::u16string title = action == dlp::FileAction::kCopy
+                                   ? u"File blocked from copying"
+                                   : u"File blocked from moving";
   EXPECT_EQ(notification->title(), title);
 
   // Click Learn more.
-  ASSERT_TRUE(bridge_->GetDisplayedNotification(kNotificationId1).has_value());
   bridge_->Click(kNotificationId1, NotificationButton::OK);
   // Task info is removed after the notification is clicked.
-  EXPECT_FALSE(fpnm->HasIOTask(kTaskId1));
+  EXPECT_FALSE(fpnm_->HasIOTask(kTaskId1));
 
   // The notification should be closed.
   EXPECT_FALSE(bridge_->GetDisplayedNotification(kNotificationId1).has_value());
 }
 
+// Tests that clicking the OK button on a warning notification shown for
+// copy or move IO task with single warning file and a single blocked file will
+// proceed the task but a block notification will appear in the end for the
+// blocked file.
+IN_PROC_BROWSER_TEST_P(IOTaskBrowserTest, SingleFileOkProceeds_Mix) {
+  auto [type, action] = GetParam();
+
+  // CheckIfTransferAllowed will call FPNM to show the warning which will pause
+  // the IO task and trigger the notification.
+  ExpectCheckIfTransferAllowedToWarnAndBlock(kTaskId1, action,
+                                             /*expected_should_proceed=*/true,
+                                             {base::FilePath("file1.txt")},
+                                             {base::FilePath("file2.txt")});
+
+  // Add the task.
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_FALSE(policy::AddCopyOrMoveIOTask(
+                     browser()->profile(), file_system_context_, kTaskId1, type,
+                     temp_dir_.GetPath(), "test1.txt", kTestStorageKey)
+                     .empty());
+  }
+  ASSERT_TRUE(fpnm_->HasIOTask(kTaskId1));
+
+  auto notification = bridge_->GetDisplayedNotification(kNotificationId1);
+  ASSERT_TRUE(notification.has_value());
+  const std::u16string title1 =
+      action == dlp::FileAction::kCopy
+          ? l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_COPY_REVIEW_TITLE)
+          : l10n_util::GetStringUTF16(IDS_POLICY_DLP_FILES_MOVE_REVIEW_TITLE);
+  EXPECT_EQ(notification->title(), title1);
+
+  // Proceed the warning.
+  bridge_->Click(kNotificationId1, NotificationButton::OK);
+
+  // The warning notification should be closed or replaced by in progress one.
+  notification = bridge_->GetDisplayedNotification(kNotificationId1);
+  EXPECT_TRUE(!notification.has_value() || notification->title() != title1);
+
+  // Wait till IO task is complete.
+  base::RunLoop().RunUntilIdle();
+
+  // Task info should be cleared because there's one blocked file.
+  EXPECT_TRUE(fpnm_->HasIOTask(kTaskId1));
+
+  // Error notification.
+  const std::u16string title2 = action == dlp::FileAction::kCopy
+                                    ? u"File blocked from copying"
+                                    : u"File blocked from moving";
+  notification = bridge_->GetDisplayedNotification(kNotificationId1);
+  ASSERT_TRUE(notification.has_value());
+  EXPECT_EQ(notification->title(), title2);
+}
+
 INSTANTIATE_TEST_SUITE_P(
     FPNM,
-    OnIONotificationClickedTest,
+    IOTaskBrowserTest,
     ::testing::Values(
         std::make_tuple(file_manager::io_task::OperationType::kCopy,
                         dlp::FileAction::kCopy),

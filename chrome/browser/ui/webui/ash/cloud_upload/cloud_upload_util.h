@@ -36,6 +36,13 @@ enum class SourceType {
   kMaxValue = CLOUD,
 };
 
+// Type of upload of a file to the Cloud.
+enum class UploadType {
+  kCopy = 0,
+  kMove = 1,
+  kMaxValue = kMove,
+};
+
 // The result of the "Upload to cloud" workflow for Office files.
 //
 // These values are persisted to logs. Entries should not be renumbered and
@@ -55,7 +62,8 @@ enum class OfficeFilesUploadResult {
   kCloudMetadataError = 11,
   kCloudQuotaFull = 12,
   kCloudError = 13,
-  kMaxValue = kCloudError,
+  kNoConnection = 14,
+  kMaxValue = kNoConnection,
 };
 
 // Query actions for this path to get ODFS Metadata.
@@ -92,11 +100,10 @@ void CreateDirectoryOnIOThread(
 SourceType GetSourceType(Profile* profile,
                          const storage::FileSystemURL& source_path);
 
-// Returns the operation type (move or copy) for the upload flow based on the
+// Returns the upload type (move or copy) for the upload flow based on the
 // source path of the file to upload.
-::file_manager::io_task::OperationType GetOperationTypeForUpload(
-    Profile* profile,
-    const storage::FileSystemURL& source_path);
+UploadType GetUploadType(Profile* profile,
+                         const storage::FileSystemURL& source_path);
 
 // Get information of the currently provided ODFS. Expect there to be exactly
 // one ODFS.

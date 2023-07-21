@@ -78,6 +78,9 @@ config("skia_config") {
     "SK_DISABLE_LEGACY_SKSURFACE_FLUSH",
     "SK_DISABLE_LEGACY_SKSURFACE_AS_IMAGE",
     "SK_DISABLE_LEGACY_SKSURFACE_DISPLAYLIST",
+    "SK_DISABLE_LEGACY_IMAGE_SUBSET_METHODS",
+    "SK_DISABLE_LEGACY_IMAGE_COLORSPACE_METHODS",
+    "SK_DISABLE_LEGACY_IMAGE_RELEASE_PROCS",
   ]
 
   include_dirs = [
@@ -386,6 +389,7 @@ component("skia") {
   # The imported Skia gni source paths are made absolute by gn.
   defines = []
   sources += skia_sksl_sources
+  sources += skia_needs_sksl_sources
   sources += skia_codec_core
   sources += skia_utils_private
   sources += skia_xps_sources
@@ -549,7 +553,7 @@ component("skia") {
     ":skia_library_config",
     "//build/config/compiler:no_chromium_code",
   ]
-  public_configs = [ ":skia_config" ]
+  all_dependent_configs = [ ":skia_config" ]
 
   deps += [
     ":skcms",

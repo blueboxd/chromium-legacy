@@ -482,6 +482,9 @@ std::string GetGuestOsMountPointName(Profile* profile,
   if (id.vm_type == guest_os::VmType::ARCVM) {
     return kAndroidFilesMountPointName;
   }
+  if (id == crostini::DefaultContainerId()) {
+    return GetCrostiniMountPointName(profile);
+  }
   return base::JoinString(
       {"guestos", ash::ProfileHelper::GetUserIdHashFromProfile(profile),
        base::EscapeAllExceptUnreserved(id.vm_name),

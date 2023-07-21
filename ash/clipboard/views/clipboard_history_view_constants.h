@@ -13,6 +13,9 @@ namespace ash::ClipboardHistoryViews {
 constexpr int kContentsVerticalInset = 8;
 constexpr auto kContentsInsets = gfx::Insets::VH(kContentsVerticalInset, 16);
 
+// The padding vertically separating the Ctrl+V label from the contents view.
+constexpr int kCtrlVLabelPadding = 6;
+
 // The size of the `DeleteButton`.
 constexpr int kDeleteButtonSizeDip = 16;
 
@@ -39,10 +42,14 @@ constexpr int kLabelPreferredHeight = 20;
 constexpr int kImageViewPreferredHeight = 72;
 
 // The radius of the image view's rounded corners when offset by a background.
-constexpr int kImageBackgroundCornerRadius = 12;
+constexpr float kImageBackgroundCornerRadius = 12.f;
 
 // The radius of the image view's rounded corners when surrounded by a border.
-constexpr int kImageBorderCornerRadius = 4;
+constexpr float kImageBorderCornerRadius = 4.f;
+
+// The height of the region cut out from a contents view when the refresh is
+// enabled and the menu item's delete button is showing.
+constexpr float kCornerCutoutHeight = 38.f;
 
 // The preferred size for an item's icon.
 constexpr gfx::Size kIconSize(20, 20);

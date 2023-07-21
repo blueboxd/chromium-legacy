@@ -1036,6 +1036,10 @@ inline constexpr char kLastChildScreenTimeReset[] =
 inline constexpr char kHelpAppNotificationLastShownMilestone[] =
     "help_app_notification_last_shown_milestone";
 
+// Last milestone on which an `UpdateNotification` was shown.
+inline constexpr char kUpdateNotificationLastShownMilestone[] =
+    "update_notification_last_shown_milestone";
+
 // Amount of times the release notes suggestion chip should be
 // shown before it disappears.
 inline constexpr char kReleaseNotesSuggestionChipTimesLeftToShow[] =
@@ -1226,6 +1230,18 @@ inline constexpr char kTotalUniqueOsSettingsChanged[] =
 // days have passed since the user completed OOBE.
 inline constexpr char kHasResetFirst7DaysSettingsUsedCount[] =
     "settings.has_reset_first_seven_days_settings_used_count";
+
+// A boolean representing whether the user has revoked their consent
+// for UMA at least one time in the lifetime of the device.
+//
+// If the value is true, the user has revoked consent for recording their
+// metrics at least once in the device's lifetime. This is the final value of
+// this pref, ie. once the pref is set to true, the value will never change
+// again. Even if the user grants consent again, we will not record their metric
+// in the histogram
+// "ChromeOS.Settings.NumUniqueSettingsChanged.DeviceLifetime.{Time}".
+const char kHasEverRevokedMetricsConsent[] =
+    "settings.has_ever_revoked_metrics_consent";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -2776,15 +2792,6 @@ inline constexpr char kNetworkThrottlingEnabled[] = "net.throttling_enabled";
 // ash::PowerMetricsReporter.
 inline constexpr char kPowerMetricsDailySample[] = "power.metrics.daily_sample";
 
-// Integer prefs used to back event counts reported by
-// ash::PowerMetricsReporter.
-inline constexpr char kPowerMetricsIdleScreenOffCount[] =
-    "power.metrics.idle_screen_off_count";
-inline constexpr char kPowerMetricsIdleSuspendCount[] =
-    "power.metrics.idle_suspend_count";
-inline constexpr char kPowerMetricsLidClosedSuspendCount[] =
-    "power.metrics.lid_closed_suspend_count";
-
 // Key for list of users that should be reported.
 inline constexpr char kReportingUsers[] = "reporting_users";
 
@@ -2919,8 +2926,10 @@ inline constexpr char kMacRestoreLocationPermissionsExperimentCount[] =
 // A list of base::Time value indicating the timestamps when hardware secure
 // decryption was disabled due to errors or crashes. The implementation
 // maintains a max size of the list (e.g. 2).
-inline constexpr char kHardwareSecureDecryptionDisabledTimes[] =
+inline constexpr char kGlobalHardwareSecureDecryptionDisabledTimes[] =
     "media.hardware_secure_decryption.disabled_times";
+inline constexpr char kHardwareSecureDecryptionDisabledTimes[] =
+    "hardware_secure_decryption.disabled_times";
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -3201,6 +3210,10 @@ inline constexpr char kSecurityKeyPermitAttestation[] =
 // latter if necessary. The timestamp therefore represents the "freshness" of
 // the CWS information saved.
 inline constexpr char kCWSInfoTimestamp[] = "extensions.cws_info_timestamp";
+
+// A bool value for running GarbageCollectStoragePartitionCommand.
+inline constexpr char kShouldGarbageCollectStoragePartitions[] =
+    "storage_partitions.should_garbage_collect";
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

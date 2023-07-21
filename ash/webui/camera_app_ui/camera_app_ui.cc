@@ -9,6 +9,7 @@
 #include "ash/webui/camera_app_ui/camera_app_helper_impl.h"
 #include "ash/webui/camera_app_ui/resources.h"
 #include "ash/webui/camera_app_ui/url_constants.h"
+#include "ash/webui/common/trusted_types_util.h"
 #include "ash/webui/grit/ash_camera_app_resources_map.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
@@ -32,6 +33,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "ui/aura/window.h"
 #include "ui/webui/color_change_listener/color_change_handler.h"
 #include "ui/webui/webui_allowlist.h"
@@ -82,7 +84,7 @@ void CreateAndAddCameraAppUIHTMLSource(content::BrowserContext* browser_context,
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
       browser_context, kChromeUICameraAppHost);
 
-  source->DisableTrustedTypesCSP();
+  ash::EnableTrustedTypesCSP(source);
 
   // Add all settings resources.
   source->AddResourcePaths(
@@ -145,6 +147,7 @@ void TranslateVideoDeviceId(
     base::OnceCallback<void(const absl::optional<std::string>&)> callback) {
   if (salt_service) {
     salt_service->GetSalt(
+        blink::StorageKey::CreateFirstParty(origin),
         base::BindOnce(&GotSalt, origin, source_id, std::move(callback)));
   } else {
     // If the embedder does not provide a salt service, use the browser

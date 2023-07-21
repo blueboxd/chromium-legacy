@@ -26,6 +26,8 @@
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/metrics/demographics/user_demographics.h"
 #import "components/password_manager/core/browser/password_store_interface.h"
+#import "components/password_manager/core/browser/sharing/password_receiver_service.h"
+#import "components/password_manager/core/browser/sharing/password_sender_service.h"
 #import "components/reading_list/core/reading_list_model.h"
 #import "components/sync/base/report_unrecoverable_error.h"
 #import "components/sync/base/sync_util.h"
@@ -33,6 +35,7 @@
 #import "components/sync/service/sync_service.h"
 #import "components/sync_sessions/session_sync_service.h"
 #import "components/sync_user_events/user_event_service.h"
+#import "components/trusted_vault/trusted_vault_service.h"
 #import "components/variations/service/google_groups_updater_service.h"
 #import "ios/chrome/browser/bookmarks/account_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_sync_service_factory.h"
@@ -50,14 +53,13 @@
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/chrome/browser/signin/trusted_vault_client_backend_factory.h"
 #import "ios/chrome/browser/sync/device_info_sync_service_factory.h"
-#import "ios/chrome/browser/sync/ios_trusted_vault_client.h"
 #import "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #import "ios/chrome/browser/sync/model_type_store_service_factory.h"
 #import "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #import "ios/chrome/browser/sync/session_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_invalidations_service_factory.h"
+#import "ios/chrome/browser/trusted_vault/ios_trusted_vault_service_factory.h"
 #import "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #import "ios/chrome/common/channel_info.h"
 #import "ios/web/public/thread/web_task_traits.h"
@@ -96,14 +98,6 @@ IOSChromeSyncClient::IOSChromeSyncClient(ChromeBrowserState* browser_state)
           ios::AccountBookmarkSyncServiceFactory::GetForBrowserState(
               browser_state_),
           PowerBookmarkServiceFactory::GetForBrowserState(browser_state_));
-
-  // TODO(crbug.com/1434661): introduce ios version of
-  // TrustedVaultServiceFactory.
-  trusted_vault_client_ = std::make_unique<IOSTrustedVaultClient>(
-      ChromeAccountManagerServiceFactory::GetForBrowserState(browser_state_),
-      GetIdentityManager(),
-      TrustedVaultClientBackendFactory::GetForBrowserState(browser_state_),
-      browser_state_->GetSharedURLLoaderFactory());
 }
 
 IOSChromeSyncClient::~IOSChromeSyncClient() {}
@@ -167,6 +161,20 @@ IOSChromeSyncClient::GetSessionSyncService() {
   return SessionSyncServiceFactory::GetForBrowserState(browser_state_);
 }
 
+password_manager::PasswordReceiverService*
+IOSChromeSyncClient::GetPasswordReceiverService() {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  // TODO(crbug.com/1445868): return the service once there is a factory.
+  return nullptr;
+}
+
+password_manager::PasswordSenderService*
+IOSChromeSyncClient::GetPasswordSenderService() {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  // TODO(crbug.com/1445868): return the service once there is a factory.
+  return nullptr;
+}
+
 syncer::DataTypeController::TypeVector
 IOSChromeSyncClient::CreateDataTypeControllers(
     syncer::SyncService* sync_service) {
@@ -192,7 +200,8 @@ IOSChromeSyncClient::GetSyncInvalidationsService() {
 
 trusted_vault::TrustedVaultClient*
 IOSChromeSyncClient::GetTrustedVaultClient() {
-  return trusted_vault_client_.get();
+  return IOSTrustedVaultServiceFactory::GetForBrowserState(browser_state_)
+      ->GetTrustedVaultClient();
 }
 
 scoped_refptr<syncer::ExtensionsActivity>

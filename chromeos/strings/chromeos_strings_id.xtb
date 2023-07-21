@@ -170,6 +170,7 @@
 <translation id="2161656808144014275">Teks</translation>
 <translation id="2163937499206714165">Aktifkan mode gelap</translation>
 <translation id="2180197493692062006">Terjadi error. Coba buka aplikasi kembali.</translation>
+<translation id="2189104374785738357">Edit detail APN</translation>
 <translation id="2209788852729124853">Reset Penghitung Traffic</translation>
 <translation id="2212733584906323460">Resolusi Nama</translation>
 <translation id="2217935453350629363">Kecepatan saat ini</translation>
@@ -371,6 +372,7 @@
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="39823212440917567">Tugas pencetakan yang sudah lebih dari <ph name="NUMBER_OF_DAYS" /> hari akan dihapus</translation>
 <translation id="3993704782688964914"><ph name="DEVICE_NAME" /> Anda sekarang sudah diupdate</translation>
+<translation id="3998976413398910035">Kelola printer</translation>
 <translation id="4003384961948020559">Gagal - Baki hasil cetak penuh</translation>
 <translation id="4021031199988160623">Beralih ke mode laptop untuk menguji</translation>
 <translation id="4034824040120875894">Printer</translation>
@@ -587,6 +589,7 @@
 <translation id="5620281292257375798">Khusus internal</translation>
 <translation id="5649768706273821470">Dengar</translation>
 <translation id="5655283760733841251">Tingkatkan kecerahan keyboard</translation>
+<translation id="5655776422854483175">Tidak ada tugas pencetakan</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5662240986744577912">aktifkan/nonaktifkan layar privasi</translation>
 <translation id="5669267381087807207">Mengaktifkan</translation>
@@ -667,7 +670,7 @@
 <translation id="6278428485366576908">Tema</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Aktifkan tema gelap</translation>
-<translation id="6285899124799306373">buka peluncur</translation>
+<translation id="628726841779494414">Kelola printer Anda di setelan printer</translation>
 <translation id="629550705077076970">peredupan keyboard</translation>
 <translation id="6302401976930124515">Pengujian <ph name="TEST_NAME" /> telah dibatalkan</translation>
 <translation id="631063167932043783">Aplikasi Jelajahi</translation>
@@ -916,7 +919,6 @@
 <translation id="8312330582793120272">putar media</translation>
 <translation id="8318753676953949627">Tidak Ada Gambar</translation>
 <translation id="8329018942023753850">aplikasi kalkulator</translation>
-<translation id="8335869473001018124">buka penelusuran</translation>
 <translation id="8336739000755212683">Ubah gambar akun perangkat</translation>
 <translation id="8347227221149377169">Pekerjaan cetak</translation>
 <translation id="8351855506390808906">Titik sentuh konfigurasi tombol</translation>

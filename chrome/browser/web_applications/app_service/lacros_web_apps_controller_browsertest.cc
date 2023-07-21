@@ -18,7 +18,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -420,9 +419,9 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, ContentSettings) {
       base::ranges::find(permissions, apps::PermissionType::kCamera,
                          &apps::Permission::permission_type);
   ASSERT_TRUE(camera_permission != permissions.end());
-  EXPECT_TRUE(absl::holds_alternative<apps::TriState>(
-      (*camera_permission)->value->value));
-  EXPECT_EQ(absl::get<apps::TriState>((*camera_permission)->value->value),
+  EXPECT_TRUE(
+      absl::holds_alternative<apps::TriState>((*camera_permission)->value));
+  EXPECT_EQ(absl::get<apps::TriState>((*camera_permission)->value),
             apps::TriState::kAllow);
 }
 
@@ -540,10 +539,13 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppsControllerBrowserTest, LaunchWithFiles) {
   launch_params->intent->files = std::move(files);
 
   // Skip past the permission dialog.
-  ScopedRegistryUpdate(
-      &WebAppProvider::GetForTest(profile())->sync_bridge_unsafe())
-      ->UpdateApp(app_id)
-      ->SetFileHandlerApprovalState(ApiApprovalState::kAllowed);
+  {
+    ScopedRegistryUpdate update = WebAppProvider::GetForTest(profile())
+                                      ->sync_bridge_unsafe()
+                                      .BeginUpdate();
+    update->UpdateApp(app_id)->SetFileHandlerApprovalState(
+        ApiApprovalState::kAllowed);
+  }
 
   lacros_web_apps_controller.Launch(std::move(launch_params),
                                     base::DoNothing());

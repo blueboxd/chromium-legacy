@@ -324,7 +324,8 @@ class CredentialManagerImplTest : public testing::Test,
 
   void TearDown() override {
     cm_service_impl_.reset();
-
+    // Reset the match helper, since it references an object owned by the store.
+    mock_match_helper_ = nullptr;
     if (account_store_) {
       account_store_->ShutdownOnUIThread();
     }
@@ -427,7 +428,7 @@ class CredentialManagerImplTest : public testing::Test,
   scoped_refptr<TestPasswordStore> account_store_;
   std::unique_ptr<testing::NiceMock<MockPasswordManagerClient>> client_;
   std::unique_ptr<FakeAffiliationService> fake_affiliation_service_;
-  raw_ptr<MockAffiliatedMatchHelper, DanglingUntriaged> mock_match_helper_;
+  raw_ptr<MockAffiliatedMatchHelper> mock_match_helper_ = nullptr;
   std::unique_ptr<CredentialManagerImpl> cm_service_impl_;
 };
 
@@ -713,6 +714,7 @@ TEST_P(CredentialManagerImplTest,
   form_.password_value = std::u16string();
   form_.skip_zero_click = true;
   form_.signon_realm = "federation://example.com/example.com";
+  form_.match_type = PasswordForm::MatchType::kExact;
   store_->AddLogin(form_);
   RunAllPendingTasks();
 
@@ -927,7 +929,6 @@ TEST_P(CredentialManagerImplTest,
 TEST_P(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialWithPSLCredential) {
   store_->AddLogin(subdomain_form_);
-  subdomain_form_.is_public_suffix_match = true;
   subdomain_form_.match_type = PasswordForm::MatchType::kPSL;
   EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(
                             UnorderedElementsAre(Pointee(

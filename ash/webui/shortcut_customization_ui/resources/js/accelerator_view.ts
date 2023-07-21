@@ -20,7 +20,7 @@ import {getShortcutProvider} from './mojo_interface_provider.js';
 import {mojoString16ToString} from './mojo_utils.js';
 import {ModifierKeyCodes} from './shortcut_input.js';
 import {Accelerator, AcceleratorConfigResult, AcceleratorSource, AcceleratorState, Modifier, ShortcutProviderInterface, StandardAcceleratorInfo} from './shortcut_types.js';
-import {createEmptyAcceleratorInfo, getAccelerator, getModifiersForAcceleratorInfo, isCustomizationDisabled, isFunctionKey, isStandardAcceleratorInfo, keyCodeToModifier, LWIN_KEY, META_KEY} from './shortcut_utils.js';
+import {createEmptyAcceleratorInfo, getAccelerator, getModifiersForAcceleratorInfo, isCustomizationDisabled, isFunctionKey, isStandardAcceleratorInfo, keyCodeToModifier, LWIN_KEY, META_KEY, unidentifiedKeyCodeToKey} from './shortcut_utils.js';
 
 export interface AcceleratorViewElement {
   $: {
@@ -39,6 +39,11 @@ export enum ViewState {
   ADD,
   EDIT,
 }
+
+// This delay should match the animation timing in `input_key.html`. Matching
+// the delay allows the user to see the full animation before requesting a
+// change to the backend.
+const kAnimationTimeoutMs: number = 300;
 
 /**
  * @fileoverview
@@ -206,27 +211,71 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
       return;
     }
 
-    this.viewState = ViewState.VIEW;
-    this.statusMessage = '';
-    this.hasError = false;
     this.isCapturing = false;
-    this.pendingAcceleratorInfo = createEmptyAcceleratorInfo();
-
     this.dispatchEvent(new CustomEvent('accelerator-capturing-ended', {
       bubbles: true,
       composed: true,
     }));
 
     await this.shortcutProvider.preventProcessingAccelerators(false);
+
+    setTimeout(() => {
+      this.viewState = ViewState.VIEW;
+      this.statusMessage = '';
+      this.hasError = false;
+      this.pendingAcceleratorInfo = createEmptyAcceleratorInfo();
+    }, kAnimationTimeoutMs);
   }
 
   private onKeyDown(e: KeyboardEvent): void {
-    this.handleKey(e);
+    if (!this.isCapturing) {
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    this.handleKeyDown(e);
   }
 
   private onKeyUp(e: KeyboardEvent): void {
+    if (!this.isCapturing || this.hasError) {
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
+    this.handleKeyUp(e);
+  }
+
+  private handleKeyDown(e: KeyboardEvent): void {
+    if (this.hasError) {
+      // Reset status state when pressing the a new key.
+      this.statusMessage = '';
+      this.hasError = false;
+    }
+
+    // Add the key pressed to pendingAccelerator.
+    this.set(
+        'pendingAcceleratorInfo.layoutProperties.standardAccelerator.accelerator',
+        this.keystrokeToAccelerator(e));
+
+    if (this.isModifierKey(e)) {
+      // Reset the keyDisplay property if the key is a modifier.
+      this.set(
+          'pendingAcceleratorInfo.layoutProperties.standardAccelerator.keyDisplay',
+          '');
+    } else {
+      // Set keyDisplay property.
+      this.set(
+          'pendingAcceleratorInfo.layoutProperties.standardAccelerator.keyDisplay',
+          this.getKeyDisplay(e));
+    }
+
+    // Only process valid accelerators.
+    if (this.isValidDefaultAccelerator(this.pendingAcceleratorInfo)) {
+      this.processPendingAccelerator(this.pendingAcceleratorInfo);
+    }
+  }
+
+  private handleKeyUp(e: KeyboardEvent): void {
     const pendingAccelerator = this.pendingAcceleratorInfo.layoutProperties
                                    .standardAccelerator.accelerator;
     // Remove the modifier that was just released.
@@ -254,35 +303,6 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
           'pendingAcceleratorInfo.layoutProperties.standardAccelerator' +
               '.keyDisplay',
           '');
-    }
-  }
-
-  private handleKey(e: KeyboardEvent): void {
-    // While capturing, we prevent all events from bubbling, to prevent
-    // shortcuts from executing and interrupting the input capture.
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Add the key pressed to pendingAccelerator.
-    this.set(
-        'pendingAcceleratorInfo.layoutProperties.standardAccelerator.accelerator',
-        this.keystrokeToAccelerator(e));
-
-    if (this.isModifierKey(e)) {
-      // Reset the keyDisplay property if the key is a modifier.
-      this.set(
-          'pendingAcceleratorInfo.layoutProperties.standardAccelerator.keyDisplay',
-          '');
-    } else {
-      // Set keyDisplay property.
-      this.set(
-          'pendingAcceleratorInfo.layoutProperties.standardAccelerator.keyDisplay',
-          this.getKeyDisplay(e));
-    }
-
-    // Only process valid accelerators.
-    if (this.isValidDefaultAccelerator(this.pendingAcceleratorInfo)) {
-      this.processPendingAccelerator(this.pendingAcceleratorInfo);
     }
   }
 
@@ -365,7 +385,6 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
         return;
       }
       case AcceleratorConfigResult.kSuccess: {
-        this.pendingAcceleratorInfo = createEmptyAcceleratorInfo();
         this.fireUpdateEvent();
         return;
       }
@@ -411,6 +430,10 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
                               // 'LaunchApplication1' and will display as
                               // 'overview' icon.
         return 'LaunchApplication1';
+      case '':
+        // If there is no `code`, check the `key`. If the `key` is
+        // `unidentified`, we need to manually lookup the key.
+        return unidentifiedKeyCodeToKey[e.keyCode] || e.key;
       default:  // All other keys: Use the original e.key as keyDisplay.
         return e.key;
     }
@@ -529,14 +552,16 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
       }));
     }
 
-    this.dispatchEvent(new CustomEvent('request-update-accelerator', {
-      bubbles: true,
-      composed: true,
-      detail: {source: this.source, action: this.action},
-    }));
-
     // Always end input capturing if an update event was fired.
     this.endCapture();
+
+    setTimeout(() => {
+      this.dispatchEvent(new CustomEvent('request-update-accelerator', {
+        bubbles: true,
+        composed: true,
+        detail: {source: this.source, action: this.action},
+      }));
+    }, kAnimationTimeoutMs);
   }
 
   private shouldShowLockIcon(): boolean {

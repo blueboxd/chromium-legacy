@@ -8,7 +8,8 @@
 
 #include "base/containers/contains.h"
 #include "base/functional/callback.h"
-#include "base/task/single_thread_task_runner.h"
+#include "base/functional/callback_helpers.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
@@ -27,6 +28,25 @@ void FakeWebAppUiManager::Shutdown() {}
 void FakeWebAppUiManager::SetNumWindowsForApp(const AppId& app_id,
                                               size_t num_windows_for_app) {
   app_id_to_num_windows_map_[app_id] = num_windows_for_app;
+
+  if (num_windows_for_app != 0) {
+    return;
+  }
+
+  auto it = windows_closed_requests_map_.find(app_id);
+  if (it == windows_closed_requests_map_.end()) {
+    return;
+  }
+  for (auto& callback : it->second) {
+    std::move(callback).Run();
+  }
+
+  windows_closed_requests_map_.erase(it);
+}
+
+void FakeWebAppUiManager::SetOnNotifyOnAllAppWindowsClosedCallback(
+    base::RepeatingCallback<void(AppId)> callback) {
+  notify_on_all_app_windows_closed_callback_ = std::move(callback);
 }
 
 void FakeWebAppUiManager::SetOnLaunchWebAppCallback(
@@ -48,12 +68,15 @@ size_t FakeWebAppUiManager::GetNumWindowsForApp(const AppId& app_id) {
 void FakeWebAppUiManager::NotifyOnAllAppWindowsClosed(
     const AppId& app_id,
     base::OnceClosure callback) {
-  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE, base::BindLambdaForTesting(
-                     [&, app_id, callback = std::move(callback)]() mutable {
-                       app_id_to_num_windows_map_[app_id] = 0;
-                       std::move(callback).Run();
-                     }));
+  notify_on_all_app_windows_closed_callback_.Run(app_id);
+
+  if (GetNumWindowsForApp(app_id) == 0) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(callback));
+    return;
+  }
+
+  windows_closed_requests_map_[app_id].push_back(std::move(callback));
 }
 
 bool FakeWebAppUiManager::CanAddAppToQuickLaunchBar() const {
@@ -122,9 +145,13 @@ base::Value FakeWebAppUiManager::LaunchWebApp(
   return base::Value("FakeWebAppUiManager::LaunchWebApp");
 }
 
-void FakeWebAppUiManager::MaybeTransferAppAttributes(
-    const AppId& from_extension_or_app,
-    const AppId& to_app) {}
+#if BUILDFLAG(IS_CHROMEOS)
+void FakeWebAppUiManager::MigrateLauncherState(const AppId& from_app_id,
+                                               const AppId& to_app_id,
+                                               base::OnceClosure callback) {
+  std::move(callback).Run();
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 content::WebContents* FakeWebAppUiManager::CreateNewTab() {
   return nullptr;

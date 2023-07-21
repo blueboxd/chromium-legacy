@@ -141,21 +141,31 @@ KeystoreKeysHandler* ModelTypeRegistry::keystore_keys_handler() {
 }
 
 ModelTypeSet ModelTypeRegistry::GetTypesWithUnsyncedData() const {
-  // TODO(crbug.com/1447032): Implementation and tests.
-  NOTIMPLEMENTED();
-  return ModelTypeSet();
+  ModelTypeSet types;
+  for (const std::unique_ptr<ModelTypeWorker>& worker :
+       connected_model_type_workers_) {
+    if (worker->HasLocalChanges()) {
+      types.Put(worker->GetModelType());
+    }
+  }
+  return types;
 }
 
 bool ModelTypeRegistry::HasUnsyncedItems() const {
   // For model type workers, we ask them individually.
   for (const std::unique_ptr<ModelTypeWorker>& worker :
        connected_model_type_workers_) {
-    if (worker->HasLocalChangesForTest()) {
+    if (worker->HasLocalChanges()) {
       return true;
     }
   }
 
   return false;
+}
+
+const std::vector<std::unique_ptr<ModelTypeWorker>>&
+ModelTypeRegistry::GetConnectedModelTypeWorkersForTest() const {
+  return connected_model_type_workers_;
 }
 
 base::WeakPtr<ModelTypeConnector> ModelTypeRegistry::AsWeakPtr() {

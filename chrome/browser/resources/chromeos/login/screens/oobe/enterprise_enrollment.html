@@ -221,16 +221,14 @@ found in the LICENSE file.
       [[i18nDynamic(locale, 'oauthEnrollExplainAttributeLink')]]
     </a>
   </p>
-  <div slot="content" class="flex layout vertical">
-    <div class="oobe-form">
-      <cr-input id="assetId" type="text" value="{{assetId_}}"
-          class="focus-on-show"
-          label="[[i18nDynamic(locale, 'enrollmentAssetIdLabel')]]">
-      </cr-input>
-      <cr-input id="location" type="text" value="{{deviceLocation_}}"
-          label="[[i18nDynamic(locale, 'enrollmentLocationLabel')]]">
-      </cr-input>
-    </div>
+  <div slot="content" class="landscape-header-aligned">
+    <cr-input id="assetId" type="text" value="{{assetId_}}"
+        class="focus-on-show"
+        label="[[i18nDynamic(locale, 'enrollmentAssetIdLabel')]]">
+    </cr-input>
+    <cr-input id="location" type="text" value="{{deviceLocation_}}"
+        label="[[i18nDynamic(locale, 'enrollmentLocationLabel')]]">
+    </cr-input>
   </div>
   <div slot="bottom-buttons">
     <oobe-text-button id="attributesSkip"

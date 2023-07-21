@@ -14,20 +14,25 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.password_manager.PasswordStoreBridge;
 import org.chromium.chrome.browser.password_manager.settings.PasswordListObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningMediator.MigrationWarningOptionsHandler;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.ScreenType;
 import org.chromium.chrome.browser.ui.signin.SyncConsentActivityLauncher;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-import org.chromium.utils.ContextUtils;
 
 /** The coordinator of the password migration warning. */
 public class PasswordMigrationWarningCoordinator implements MigrationWarningOptionsHandler {
+    // The prefix for the histograms, which will be used log the export flow metrics.
+    private static final String EXPORT_METRICS_ID =
+            "PasswordManager.PasswordMigrationWarning.Export";
     private final PasswordMigrationWarningMediator mMediator;
     private final SyncConsentActivityLauncher mSyncConsentActivityLauncher;
     private final SettingsLauncher mSettingsLauncher;
@@ -36,19 +41,23 @@ public class PasswordMigrationWarningCoordinator implements MigrationWarningOpti
 
     private ExportFlowInterface mExportFlow;
     private PasswordMigrationWarningView mView;
+    private FragmentManager mFragmentManager;
+    private PasswordStoreBridge mPasswordStoreBridge;
 
     public PasswordMigrationWarningCoordinator(Context context, Profile profile,
             BottomSheetController sheetController,
             SyncConsentActivityLauncher syncConsentActivityLauncher,
             SettingsLauncher settingsLauncher, Class<? extends Fragment> syncSettingsFragment,
             ExportFlowInterface exportFlow,
-            Callback<PasswordListObserver> passwordListObserverCallback) {
+            Callback<PasswordListObserver> passwordListObserverCallback,
+            PasswordStoreBridge passwordStoreBridge) {
         mContext = context;
         mSyncConsentActivityLauncher = syncConsentActivityLauncher;
         mSettingsLauncher = settingsLauncher;
         mSyncSettingsFragment = syncSettingsFragment;
         mExportFlow = exportFlow;
         mMediator = new PasswordMigrationWarningMediator(profile, this);
+        mPasswordStoreBridge = passwordStoreBridge;
         PropertyModel model = PasswordMigrationWarningProperties.createDefaultModel(
                 mMediator::onDismissed, mMediator);
         mMediator.initializeModel(model);
@@ -80,7 +89,7 @@ public class PasswordMigrationWarningCoordinator implements MigrationWarningOpti
 
     @Override
     public void startExportFlow(FragmentManager fragmentManager) {
-        // TODO(crbug.com/1445065): Hide the sheet when the export is done.
+        mFragmentManager = fragmentManager;
         mExportFlow.onCreate(new Bundle(), new ExportFlowInterface.Delegate() {
             @Override
             public Activity getActivity() {
@@ -104,7 +113,17 @@ public class PasswordMigrationWarningCoordinator implements MigrationWarningOpti
                 mView.runCreateFileOnDiskIntent(intent);
             }
 
-        });
+            @Override
+            public void onExportFlowSucceeded() {
+                ExportDeletionDialogFragment deletionDialogFragment =
+                        new ExportDeletionDialogFragment();
+                deletionDialogFragment.initialize(mFragmentManager, () -> {
+                    mMediator.onDismissed(StateChangeReason.INTERACTION_COMPLETE);
+                    mPasswordStoreBridge.destroy();
+                }, mPasswordStoreBridge);
+                deletionDialogFragment.show(mFragmentManager, null);
+            }
+        }, EXPORT_METRICS_ID);
         mExportFlow.startExporting();
     }
 
@@ -121,5 +140,9 @@ public class PasswordMigrationWarningCoordinator implements MigrationWarningOpti
     @Override
     public void passwordsAvailable() {
         mExportFlow.passwordsAvailable();
+    }
+
+    public PasswordMigrationWarningMediator getMediatorForTesting() {
+        return mMediator;
     }
 }

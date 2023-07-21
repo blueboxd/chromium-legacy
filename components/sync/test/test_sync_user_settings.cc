@@ -69,6 +69,8 @@ void TestSyncUserSettings::SetSelectedTypes(bool sync_everything,
   } else {
     selected_types_ = types;
   }
+
+  service_->FirePaymentsIntegrationEnabledChanged();
 }
 
 void TestSyncUserSettings::SetSelectedType(UserSelectableType type,
@@ -78,18 +80,7 @@ void TestSyncUserSettings::SetSelectedType(UserSelectableType type,
   } else {
     selected_types_.Remove(type);
   }
-}
 
-bool TestSyncUserSettings::IsPaymentsIntegrationEnabled() const {
-  return is_payments_integration_enabled_;
-}
-
-void TestSyncUserSettings::SetPaymentsIntegrationEnabled(bool enabled) {
-  if (is_payments_integration_enabled_ == enabled) {
-    return;
-  }
-
-  is_payments_integration_enabled_ = enabled;
   service_->FirePaymentsIntegrationEnabledChanged();
 }
 
@@ -108,6 +99,11 @@ UserSelectableTypeSet TestSyncUserSettings::GetSelectedTypes() const {
 bool TestSyncUserSettings::IsTypeManagedByPolicy(
     UserSelectableType type) const {
   return managed_types_.Has(type);
+}
+
+bool TestSyncUserSettings::IsTypeManagedByCustodian(
+    UserSelectableType type) const {
+  return false;
 }
 
 ModelTypeSet TestSyncUserSettings::GetPreferredDataTypes() const {
@@ -236,7 +232,7 @@ base::Time TestSyncUserSettings::GetExplicitPassphraseTime() const {
   return base::Time();
 }
 
-PassphraseType TestSyncUserSettings::GetPassphraseType() const {
+absl::optional<PassphraseType> TestSyncUserSettings::GetPassphraseType() const {
   return IsUsingExplicitPassphrase() ? PassphraseType::kCustomPassphrase
                                      : PassphraseType::kImplicitPassphrase;
 }

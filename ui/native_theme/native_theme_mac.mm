@@ -44,6 +44,11 @@ bool IsDarkMode() {
   return false;
 }
 
+bool PrefersReducedTransparency() {
+  return NSWorkspace.sharedWorkspace
+      .accessibilityDisplayShouldReduceTransparency;
+}
+
 bool IsHighContrast() {
   NSWorkspace* workspace = [NSWorkspace sharedWorkspace];
   if ([workspace respondsToSelector:@selector
@@ -544,20 +549,25 @@ NativeThemeMac::NativeThemeMac(bool configure_web_instance,
 
   static NSString * const*NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr = reinterpret_cast<NSString* const*>(dlsym(((void *) -2), "NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification"));
   if(NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr) {
+    set_prefers_reduced_transparency(PrefersReducedTransparency());
     if (!IsForcedHighContrast()) {
       SetPreferredContrast(CalculatePreferredContrast());
-      __block auto theme = this;
-      high_contrast_notification_token_ =
-          [NSWorkspace.sharedWorkspace.notificationCenter
-              addObserverForName:
-                  NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
-                          object:nil
-                           queue:nil
-                      usingBlock:^(NSNotification* notification) {
-                        theme->SetPreferredContrast(CalculatePreferredContrast());
-                        theme->NotifyOnNativeThemeUpdated();
-                      }];
     }
+    __block auto theme = this;
+    display_accessibility_notification_token_ =
+        [NSWorkspace.sharedWorkspace.notificationCenter
+            addObserverForName:
+                NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
+                        object:nil
+                         queue:nil
+                    usingBlock:^(NSNotification* notification) {
+                      if (!IsForcedHighContrast()) {
+                        theme->SetPreferredContrast(CalculatePreferredContrast());
+                      }
+                      theme->set_prefers_reduced_transparency(
+                          PrefersReducedTransparency());
+                      theme->NotifyOnNativeThemeUpdated();
+                    }];
   }
   if (configure_web_instance)
     ConfigureWebInstance();
@@ -565,7 +575,7 @@ NativeThemeMac::NativeThemeMac(bool configure_web_instance,
 
 NativeThemeMac::~NativeThemeMac() {
   [NSNotificationCenter.defaultCenter
-      removeObserver:high_contrast_notification_token_];
+      removeObserver:display_accessibility_notification_token_];
 }
 
 void NativeThemeMac::PaintSelectedMenuItem(
@@ -600,6 +610,7 @@ void NativeThemeMac::ConfigureWebInstance() {
   web_instance->set_use_dark_colors(IsDarkMode());
   web_instance->set_preferred_color_scheme(CalculatePreferredColorScheme());
   web_instance->SetPreferredContrast(CalculatePreferredContrast());
+  web_instance->set_prefers_reduced_transparency(PrefersReducedTransparency());
 
   // Add the web native theme as an observer to stay in sync with color scheme
   // changes.

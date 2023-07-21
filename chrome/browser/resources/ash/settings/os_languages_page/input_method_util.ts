@@ -258,6 +258,10 @@ export enum SettingsHeaders {
   SUGGESTIONS = 'suggestions',
   USER_DICTIONARIES = 'userDictionaries',
   VIRTUAL_KEYBOARD = 'virtualKeyboard',
+  VIETNAMESE_FLEXIBLE_TYPING_EMPTY_HEADER =
+      'vietnameseFlexibleTypingEmptyHeader',
+  VIETNAMESE_SHORTHAND = 'vietnameseShorthand',
+  VIETNAMESE_SHOW_UNDERLINE_EMPTY_HEADER = 'vietnameseShowUnderlineEmptyHeader',
 }
 
 /**
@@ -401,27 +405,57 @@ const Settings = {
       name: OptionType.PHYSICAL_KEYBOARD_AUTO_CORRECTION_LEVEL,
     }],
   }],
-  [SettingsType.VIETNAMESE_TELEX_SETTINGS]: [{
-    // TODO(b/288763256): Remove this placeholder and add correct title.
-    title: SettingsHeaders.PHYSICAL_KEYBOARD,
-    optionNames: [
-      {name: OptionType.VIETNAMESE_TELEX_ALLOW_FLEXIBLE_DIACRITICS},
-      {name: OptionType.VIETNAMESE_TELEX_NEW_STYLE_TONE_MARK_PLACEMENT},
-      {name: OptionType.VIETNAMESE_TELEX_INSERT_DOUBLE_HORN_ON_UO},
-      {name: OptionType.VIETNAMESE_TELEX_INSERT_U_HORN_ON_W},
-      {name: OptionType.VIETNAMESE_TELEX_SHOW_UNDERLINE},
-    ],
-  }],
-  [SettingsType.VIETNAMESE_VNI_SETTINGS]: [{
-    // TODO(b/288763256): Remove this placeholder and add correct title.
-    title: SettingsHeaders.PHYSICAL_KEYBOARD,
-    optionNames: [
-      {name: OptionType.VIETNAMESE_VNI_ALLOW_FLEXIBLE_DIACRITICS},
-      {name: OptionType.VIETNAMESE_VNI_NEW_STYLE_TONE_MARK_PLACEMENT},
-      {name: OptionType.VIETNAMESE_VNI_INSERT_DOUBLE_HORN_ON_UO},
-      {name: OptionType.VIETNAMESE_VNI_SHOW_UNDERLINE},
-    ],
-  }],
+  [SettingsType.VIETNAMESE_TELEX_SETTINGS]: [
+    {
+      title: SettingsHeaders.VIETNAMESE_FLEXIBLE_TYPING_EMPTY_HEADER,
+      optionNames: [
+        {
+          name: OptionType.VIETNAMESE_TELEX_ALLOW_FLEXIBLE_DIACRITICS,
+          dependentOptions: [
+            OptionType.VIETNAMESE_TELEX_NEW_STYLE_TONE_MARK_PLACEMENT,
+          ],
+        },
+      ],
+    },
+    {
+      title: SettingsHeaders.VIETNAMESE_SHORTHAND,
+      optionNames: [
+        {name: OptionType.VIETNAMESE_TELEX_INSERT_DOUBLE_HORN_ON_UO},
+        {name: OptionType.VIETNAMESE_TELEX_INSERT_U_HORN_ON_W},
+      ],
+    },
+    {
+      title: SettingsHeaders.VIETNAMESE_SHOW_UNDERLINE_EMPTY_HEADER,
+      optionNames: [
+        {name: OptionType.VIETNAMESE_TELEX_SHOW_UNDERLINE},
+      ],
+    },
+  ],
+  [SettingsType.VIETNAMESE_VNI_SETTINGS]: [
+    {
+      title: SettingsHeaders.VIETNAMESE_FLEXIBLE_TYPING_EMPTY_HEADER,
+      optionNames: [
+        {
+          name: OptionType.VIETNAMESE_VNI_ALLOW_FLEXIBLE_DIACRITICS,
+          dependentOptions: [
+            OptionType.VIETNAMESE_VNI_NEW_STYLE_TONE_MARK_PLACEMENT,
+          ],
+        },
+      ],
+    },
+    {
+      title: SettingsHeaders.VIETNAMESE_SHORTHAND,
+      optionNames: [
+        {name: OptionType.VIETNAMESE_VNI_INSERT_DOUBLE_HORN_ON_UO},
+      ],
+    },
+    {
+      title: SettingsHeaders.VIETNAMESE_SHOW_UNDERLINE_EMPTY_HEADER,
+      optionNames: [
+        {name: OptionType.VIETNAMESE_VNI_SHOW_UNDERLINE},
+      ],
+    },
+  ],
 } satisfies Record<SettingsType, Array<{
                      title: SettingsHeaders,
                      optionNames: Array<{
@@ -729,6 +763,16 @@ export function getOptionSubtitleName(option: OptionType): string {
     // an issue in other languages or with future strings which may be shorter.
     case OptionType.JAPANESE_MANAGE_USER_DICTIONARY:
       return 'inputMethodOptionsJapaneseManageUserDictionarySubtitle';
+    case OptionType.VIETNAMESE_TELEX_NEW_STYLE_TONE_MARK_PLACEMENT:
+    case OptionType.VIETNAMESE_VNI_NEW_STYLE_TONE_MARK_PLACEMENT:
+      return 'inputMethodOptionsVietnameseModernToneMarkPlacementDescription';
+    case OptionType.VIETNAMESE_TELEX_SHOW_UNDERLINE:
+    case OptionType.VIETNAMESE_VNI_SHOW_UNDERLINE:
+      return 'inputMethodOptionsVietnameseShowUnderlineDescription';
+    case OptionType.VIETNAMESE_TELEX_ALLOW_FLEXIBLE_DIACRITICS:
+      return 'inputMethodOptionsVietnameseTelexFlexibleTypingDescription';
+    case OptionType.VIETNAMESE_VNI_ALLOW_FLEXIBLE_DIACRITICS:
+      return 'inputMethodOptionsVietnameseVniFlexibleTypingDescription';
     default:
       return '';
   }

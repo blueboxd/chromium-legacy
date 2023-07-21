@@ -1525,10 +1525,12 @@ NGLayoutResult::EStatus NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSize(
       const auto& physical_fragment =
           To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
 
-      NGBoxFragment fragment(ConstraintSpace().GetWritingDirection(),
-                             physical_fragment);
+      const auto writing_direction = ConstraintSpace().GetWritingDirection();
+      NGBoxFragment fragment(writing_direction, physical_fragment);
       if (!InvolvedInBlockFragmentation(container_builder_)) {
-        container_builder_.AddResult(*layout_result, offset);
+        container_builder_.AddResult(
+            *layout_result, offset,
+            item->physical_margins_.ConvertToLogical(writing_direction));
         baseline_accumulator.AccumulateItem(fragment, offset.block_offset,
                                             is_first_line, is_last_line);
       } else {
@@ -2081,8 +2083,6 @@ NGLayoutResult::EStatus NGFlexLayoutAlgorithm::PropagateFlexItemInfo(
     layout_info_for_devtools_->lines[flex_line_idx].items.push_back(item);
   }
 
-  flex_item->ng_input_node_.StoreMargins(flex_item->physical_margins_);
-
   // Detect if the flex-item had its scrollbar state change. If so we need
   // to relayout as the input to the flex algorithm is incorrect.
   if (!ignore_child_scrollbar_changes_) {
@@ -2448,6 +2448,8 @@ MinMaxSizesResult NGFlexLayoutAlgorithm::ComputeMinMaxSizeOfRowContainerV3() {
     const ComputedStyle& child_style = item.style_;
     const LayoutUnit flex_base_size_border_box =
         item.flex_base_content_size_ + item.main_axis_border_padding_;
+    const LayoutUnit hypothetical_main_size_border_box =
+        item.hypothetical_main_content_size_ + item.main_axis_border_padding_;
     const bool is_used_flex_basis_definite =
         IsUsedFlexBasisDefinite(item.ng_input_node_);
 
@@ -2466,7 +2468,7 @@ MinMaxSizesResult NGFlexLayoutAlgorithm::ComputeMinMaxSizeOfRowContainerV3() {
                              (min_contribution < flex_base_size_border_box &&
                               child_style.ResolvedFlexShrink(Style()) == 0.f);
       if (cant_move && is_used_flex_basis_definite) {
-        item_final_contribution.min_size = flex_base_size_border_box;
+        item_final_contribution.min_size = hypothetical_main_size_border_box;
       } else {
         item_final_contribution.min_size = min_contribution;
       }
@@ -2479,18 +2481,10 @@ MinMaxSizesResult NGFlexLayoutAlgorithm::ComputeMinMaxSizeOfRowContainerV3() {
                            (max_contribution < flex_base_size_border_box &&
                             child_style.ResolvedFlexShrink(Style()) == 0.f);
     if (cant_move && is_used_flex_basis_definite) {
-      item_final_contribution.max_size = flex_base_size_border_box;
+      item_final_contribution.max_size = hypothetical_main_size_border_box;
     } else {
       item_final_contribution.max_size = max_contribution;
     }
-
-    // TODO(dgrogan): Can probably remove these calls if we use
-    // hypothetical_main_size instead of flex_base_size_border_box in a few
-    // places above.
-    item_final_contribution.Constrain(item.min_max_main_sizes_.max_size +
-                                      item.main_axis_border_padding_);
-    item_final_contribution.Encompass(item.min_max_main_sizes_.min_size +
-                                      item.main_axis_border_padding_);
 
     container_sizes += item_final_contribution;
 

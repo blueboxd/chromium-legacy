@@ -51,8 +51,10 @@ class HistoryClustersPageHandler
                           const absl::optional<std::string>& tab_group_name =
                               absl::nullopt) override;
   void DismissCluster(
-      const std::vector<history_clusters::mojom::URLVisitPtr> visits) override;
+      const std::vector<history_clusters::mojom::URLVisitPtr> visits,
+      int64_t cluster_id) override;
   void RecordClick(int64_t cluster_id) override;
+  void RecordDisabled(int64_t cluster_id) override;
   void RecordLayoutTypeShown(
       ntp::history_clusters::mojom::LayoutType layout_type,
       int64_t cluster_id) override;

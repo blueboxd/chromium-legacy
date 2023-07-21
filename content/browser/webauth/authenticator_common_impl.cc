@@ -19,6 +19,7 @@
 #include "base/strings/string_piece.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "components/webauthn/json/value_conversions.h"
 #include "content/browser/renderer_host/back_forward_cache_disable.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/webauth/authenticator_environment.h"
@@ -456,7 +457,7 @@ struct AuthenticatorCommonImpl::RequestState {
   // WebAuthnDevtoolsAutofillIntegrationTest.SelectAccountWithAllowCredentials
   // https://ci.chromium.org/ui/p/chromium/builders/try/mac-rel/1357012/test-results?q=ExactID%3Aninja%3A%2F%2Fchrome%2Ftest%3Ainteractive_ui_tests%2FWebAuthnDevtoolsAutofillIntegrationTest.SelectAccountWithAllowCredentials+VHash%3A81d118f1ad0b63a6
   raw_ptr<device::FidoDiscoveryFactory,
-          FlakyDanglingUntriaged | DanglingAcrossTasks>
+          FlakyDanglingUntriaged | AcrossTasksDanglingUntriaged>
       discovery_factory_testing_override = nullptr;
   blink::mojom::Authenticator::MakeCredentialCallback
       make_credential_response_callback;
@@ -550,8 +551,9 @@ void AuthenticatorCommonImpl::StartMakeCredentialRequest(
   InitDiscoveryFactory();
 
   discovery_factory()->no_cable_linking = req_state_->no_cable_linking;
-  req_state_->request_delegate->ConfigureCable(
-      req_state_->caller_origin, device::FidoRequestType::kMakeCredential,
+  req_state_->request_delegate->ConfigureDiscoveries(
+      req_state_->caller_origin, req_state_->relying_party_id,
+      device::FidoRequestType::kMakeCredential,
       req_state_->make_credential_options->resident_key,
       base::span<const device::CableDiscoveryData>(), discovery_factory());
 
@@ -598,8 +600,9 @@ void AuthenticatorCommonImpl::StartGetAssertionRequest(
   if (req_state_->ctap_get_assertion_request->cable_extension && IsFocused()) {
     cable_pairings = *req_state_->ctap_get_assertion_request->cable_extension;
   }
-  req_state_->request_delegate->ConfigureCable(
-      req_state_->caller_origin, device::FidoRequestType::kGetAssertion,
+  req_state_->request_delegate->ConfigureDiscoveries(
+      req_state_->caller_origin, req_state_->relying_party_id,
+      device::FidoRequestType::kGetAssertion,
       /*resident_key_requirement=*/absl::nullopt, cable_pairings,
       discovery_factory());
 #if BUILDFLAG(IS_CHROMEOS)
@@ -806,6 +809,10 @@ void AuthenticatorCommonImpl::MakeCredential(
               : device::AuthenticatorSelectionCriteria();
   req_state_->make_credential_options =
       device::MakeCredentialOptions(authenticator_selection_criteria);
+  if (base::FeatureList::IsEnabled(device::kWebAuthnJSONSerializeRequests)) {
+    req_state_->make_credential_options->json =
+        base::MakeRefCounted<device::JSONRequest>(webauthn::ToValue(options));
+  }
 
   const bool might_create_resident_key =
       req_state_->make_credential_options->resident_key !=
@@ -1156,12 +1163,12 @@ void AuthenticatorCommonImpl::GetAssertion(
 
   req_state_->request_delegate->SetConditionalRequest(options->is_conditional);
 
-  if (options->is_conditional && !options->allow_credentials.empty()) {
+  req_state_->request_delegate->SetCredentialIdFilter(
+      options->allow_credentials);
+  if (options->is_conditional) {
     // Conditional mediation requests can only be fulfilled by discoverable
     // credentials. The provided allowCredentials list is stripped and will be
     // used to filter returned passkeys
-    req_state_->request_delegate->SetCredentialIdFilter(
-        std::move(options->allow_credentials));
     options->allow_credentials =
         std::vector<device::PublicKeyCredentialDescriptor>();
   }
@@ -1199,6 +1206,10 @@ void AuthenticatorCommonImpl::GetAssertion(
   req_state_->ctap_get_assertion_options.emplace();
   req_state_->ctap_get_assertion_options->is_off_the_record_context =
       GetBrowserContext()->IsOffTheRecord();
+  if (base::FeatureList::IsEnabled(device::kWebAuthnJSONSerializeRequests)) {
+    req_state_->ctap_get_assertion_options->json =
+        base::MakeRefCounted<device::JSONRequest>(webauthn::ToValue(options));
+  }
 
   if (options->extensions->prf) {
     req_state_->requested_extensions.insert(RequestExtension::kPRF);

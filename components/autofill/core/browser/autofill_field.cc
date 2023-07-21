@@ -82,7 +82,8 @@ bool IsDefaultPrediction(const FieldPrediction& prediction) {
   constexpr DenseSet<FieldPrediction::Source> default_sources = {
       FieldPrediction::SOURCE_AUTOFILL_DEFAULT,
       FieldPrediction::SOURCE_PASSWORDS_DEFAULT,
-      FieldPrediction::SOURCE_OVERRIDE};
+      FieldPrediction::SOURCE_OVERRIDE,
+      FieldPrediction::SOURCE_MANUAL_OVERRIDE};
   return default_sources.contains(prediction.source());
 }
 
@@ -249,13 +250,15 @@ AutofillField::AutofillField(FieldSignature field_signature) : AutofillField() {
 }
 
 AutofillField::AutofillField(const FormFieldData& field)
-    : FormFieldData(field),
-      parseable_name_(field.name),
-      parseable_label_(field.label) {
+    : FormFieldData(field), parseable_name_(name), parseable_label_(label) {
   field_signature_ =
       CalculateFieldSignatureByNameAndType(name, form_control_type);
   local_type_predictions_.fill(NO_SERVER_DATA);
 }
+
+AutofillField::AutofillField(AutofillField&&) = default;
+
+AutofillField& AutofillField::operator=(AutofillField&&) = default;
 
 AutofillField::~AutofillField() = default;
 

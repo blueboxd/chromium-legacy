@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ref.h"
+#include "base/time/time.h"
 #include "net/http/http_transaction.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -103,11 +104,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SharedDictionaryNetworkTransaction
     kFinished,
     kFailed,
   };
-  enum class HeaderStatus {
-    kUnknown,
-    kSharedBrotliUsed,
-    kSharedBrotliNotUsed,
-  };
 
   class PendingReadTask {
    public:
@@ -125,17 +121,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SharedDictionaryNetworkTransaction
     net::CompletionOnceCallback callback;
   };
 
+  void OnStartCompleted(net::CompletionOnceCallback callback, int result);
+
   void ModifyRequestHeaders(const GURL& request_url,
                             net::HttpRequestHeaders* request_headers);
 
-  void OnReadSharedDictionary(int result);
+  void OnReadSharedDictionary(base::Time read_start_time, int result);
 
   raw_ref<SharedDictionaryManager> shared_dictionary_manager_;
   scoped_refptr<SharedDictionaryStorage> shared_dictionary_storage_;
   std::unique_ptr<SharedDictionary> shared_dictionary_;
 
   DictionaryStatus dictionary_status_ = DictionaryStatus::kNoDictionary;
-  HeaderStatus header_status_ = HeaderStatus::kUnknown;
 
   std::unique_ptr<PendingReadTask> pending_read_task_;
 
@@ -145,6 +142,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SharedDictionaryNetworkTransaction
   std::unique_ptr<net::HttpTransaction> network_transaction_;
 
   std::unique_ptr<net::SourceStream> shared_brotli_stream_;
+
+  // This is set only when a shared dictionary is used for decoding the body.
+  std::unique_ptr<net::HttpResponseInfo> shared_dictionary_used_response_info_;
 };
 
 }  // namespace network

@@ -9,20 +9,27 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/clear_site_data_utils.h"
+#include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_content_browser_client.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
@@ -32,7 +39,13 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/extras/shared_dictionary/shared_dictionary_isolation_key.h"
 #include "net/extras/shared_dictionary/shared_dictionary_usage_info.h"
+#include "net/ssl/client_cert_identity.h"
+#include "net/ssl/client_cert_identity_test_util.h"
+#include "net/ssl/client_cert_store.h"
+#include "net/ssl/ssl_private_key.h"
+#include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/test_data_directory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/shared_dictionary_access_observer.mojom.h"
@@ -59,29 +72,30 @@ namespace {
 //  Signature (Base64):
 //      rQhlXQ0eRMV/mXUd7hJ3M+kVYMcsH4YKt2Tk6aNuUwKLooNKKLi0cQLrGnTB6sVPV/pryxXV
 //      DNJ9HZ1z8KNzCw==
-constexpr char kOriginTrialToken[] =
+constexpr base::StringPiece kOriginTrialToken =
     "A60IZV0NHkTFf5l1He4SdzPpFWDHLB+GCrdk5OmjblMCi6KDSii4tHEC6xp0werFT1f6a8sV1Q"
     "zSfR2dc/CjcwsAAABzeyJvcmlnaW4iOiAiaHR0cHM6Ly9zaGFyZWQtZGljdGlvbmFyeS50ZXN0"
     "OjQ0MyIsICJmZWF0dXJlIjogIkNvbXByZXNzaW9uRGljdGlvbmFyeVRyYW5zcG9ydCIsICJleH"
     "BpcnkiOiAxOTk5ODQzODIwfQ==";
 
 // The SHA256 hash of dictionary
-// (content/test/data/shared_dictionary/test.dict).
-const std::string kExpectedDictionaryHash =
+// (content/test/data/shared_dictionary/test.dict and test_dict.html).
+constexpr base::StringPiece kExpectedDictionaryHash =
     "53969bcf5e960e0edbf0a4bdde6b0b3e9381e156de7f5b91ce8391624270f416";
-const net::SHA256HashValue kExpectedDictionaryHashValue = {
+constexpr net::SHA256HashValue kExpectedDictionaryHashValue = {
     {0x53, 0x96, 0x9b, 0xcf, 0x5e, 0x96, 0x0e, 0x0e, 0xdb, 0xf0, 0xa4,
      0xbd, 0xde, 0x6b, 0x0b, 0x3e, 0x93, 0x81, 0xe1, 0x56, 0xde, 0x7f,
      0x5b, 0x91, 0xce, 0x83, 0x91, 0x62, 0x42, 0x70, 0xf4, 0x16}};
-const std::string kUncompressedDataString = "test(\"This is uncompressed.\");";
-const std::string kErrorInvalidHashString =
+constexpr base::StringPiece kUncompressedDataString =
+    "test(\"This is uncompressed.\");";
+constexpr base::StringPiece kErrorInvalidHashString =
     "test(\"Invalid dictionary hash.\");";
-const std::string kErrorNoSbrAcceptEncodingString =
+constexpr base::StringPiece kErrorNoSbrAcceptEncodingString =
     "test(\"sbr is not set in accept-encoding header.\");";
 
-const std::string kCompressedDataOriginalString =
+constexpr base::StringPiece kCompressedDataOriginalString =
     "test(\"This is compressed test data using a test dictionary\");";
-const uint8_t kCompressedData[] = {
+constexpr uint8_t kCompressedData[] = {
     0xa1, 0xe0, 0x01, 0x00, 0x64, 0x9c, 0xa4, 0xaa, 0xd7, 0x47, 0xe0, 0x26,
     0x4b, 0x95, 0x91, 0xb4, 0x46, 0x36, 0x09, 0xc9, 0xc7, 0x0e, 0x38, 0xe4,
     0x44, 0xe8, 0x72, 0x0d, 0x3c, 0x6e, 0xab, 0x35, 0x9b, 0x0f, 0x4b, 0xd1,
@@ -89,6 +103,14 @@ const uint8_t kCompressedData[] = {
 const std::string kCompressedDataString =
     std::string(reinterpret_cast<const char*>(kCompressedData),
                 sizeof(kCompressedData));
+
+constexpr base::StringPiece kUncompressedDataResultString =
+    "This is uncompressed.";
+constexpr base::StringPiece kCompressedDataResultString =
+    "This is compressed test data using a test dictionary";
+
+constexpr base::StringPiece kHttpAuthPath = "/shared_dictionary/path/http_auth";
+const std::string kTestPath = "/shared_dictionary/path/test";
 
 class SharedDictionaryAccessObserver : public WebContentsObserver {
  public:
@@ -145,6 +167,7 @@ enum class FetchType {
   kFetchApiFromDedicatedWorker,
   kFetchApiFromSharedWorker,
   kFetchApiFromServiceWorker,
+  kIframeNavigation,
 };
 
 std::string LinkRelDictionaryScript(const GURL& dictionary_url) {
@@ -249,6 +272,24 @@ std::string FetchTargetDataScript(const GURL& dictionary_url) {
                    dictionary_url);
 }
 
+std::string IframeLoadScript(const GURL& url) {
+  return JsReplace(R"(
+  (async () => {
+    const iframe = document.createElement('iframe');
+    iframe.src = $1;
+    const promise =
+        new Promise(resolve => { iframe.addEventListener('load', resolve); });
+    document.body.appendChild(iframe);
+    await promise;
+    try {
+      return iframe.contentDocument.body.innerText;
+    } catch {
+      return 'failed to access iframe';
+    }
+  })()
+                  )",
+                   url);
+}
 absl::optional<std::string> GetSecAvailableDictionary(
     const net::test_server::HttpRequest::HeaderMap& headers) {
   auto it = headers.find("sec-available-dictionary");
@@ -266,6 +307,143 @@ bool HasSbrAcceptEncoding(
   }
   return it->second == "sbr" || base::EndsWith(it->second, ", sbr");
 }
+
+// A dummy ContentBrowserClient for testing HTTP Auth.
+class DummyAuthContentBrowserClient
+    : public ContentBrowserTestContentBrowserClient {
+ public:
+  DummyAuthContentBrowserClient() = default;
+  ~DummyAuthContentBrowserClient() override = default;
+  DummyAuthContentBrowserClient(const DummyAuthContentBrowserClient&) = delete;
+  DummyAuthContentBrowserClient& operator=(
+      const DummyAuthContentBrowserClient&) = delete;
+
+  // ContentBrowserClient method:
+  std::unique_ptr<LoginDelegate> CreateLoginDelegate(
+      const net::AuthChallengeInfo& auth_info,
+      content::WebContents* web_contents,
+      const GlobalRequestID& request_id,
+      bool is_request_for_primary_main_frame,
+      const GURL& url,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
+      bool first_auth_attempt,
+      LoginAuthRequiredCallback auth_required_callback) override {
+    create_login_delegate_called_ = true;
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(auth_required_callback),
+                       net::AuthCredentials(u"username", u"password")));
+    return std::make_unique<LoginDelegate>();
+  }
+
+  bool create_login_delegate_called() const {
+    return create_login_delegate_called_;
+  }
+
+ private:
+  bool create_login_delegate_called_ = false;
+};
+
+// A dummy ContentBrowserClient for allowing all certificate errors.
+class CertificateErrorAllowingContentBrowserClient
+    : public ContentBrowserTestContentBrowserClient {
+ public:
+  CertificateErrorAllowingContentBrowserClient() = default;
+  ~CertificateErrorAllowingContentBrowserClient() override = default;
+  CertificateErrorAllowingContentBrowserClient(
+      const CertificateErrorAllowingContentBrowserClient&) = delete;
+  CertificateErrorAllowingContentBrowserClient& operator=(
+      const CertificateErrorAllowingContentBrowserClient&) = delete;
+
+  // ContentBrowserClient method:
+  void AllowCertificateError(
+      WebContents* web_contents,
+      int cert_error,
+      const net::SSLInfo& ssl_info,
+      const GURL& request_url,
+      bool is_primary_main_frame_request,
+      bool strict_enforcement,
+      base::OnceCallback<void(CertificateRequestResultType)> callback)
+      override {
+    allow_certificate_error_called_ = true;
+    std::move(callback).Run(CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE);
+  }
+
+  bool allow_certificate_error_called() const {
+    return allow_certificate_error_called_;
+  }
+
+ private:
+  bool allow_certificate_error_called_ = false;
+};
+
+// A dummy ContentBrowserClient for setting client certificate.
+class DummyClientCertStoreContentBrowserClient
+    : public ContentBrowserTestContentBrowserClient {
+ public:
+  DummyClientCertStoreContentBrowserClient() = default;
+  ~DummyClientCertStoreContentBrowserClient() override = default;
+  DummyClientCertStoreContentBrowserClient(
+      const DummyClientCertStoreContentBrowserClient&) = delete;
+  DummyClientCertStoreContentBrowserClient& operator=(
+      const DummyClientCertStoreContentBrowserClient&) = delete;
+
+  // ContentBrowserClient methods:
+  std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
+      BrowserContext* browser_context) override {
+    net::ClientCertIdentityList cert_identity_list;
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      std::unique_ptr<net::FakeClientCertIdentity> cert_identity =
+          net::FakeClientCertIdentity::CreateFromCertAndKeyFiles(
+              net::GetTestCertsDirectory(), "client_1.pem", "client_1.pk8");
+      EXPECT_TRUE(cert_identity.get());
+      cert_identity_list.push_back(std::move(cert_identity));
+    }
+    return std::make_unique<DummyClientCertStore>(
+        std::move(cert_identity_list));
+  }
+  base::OnceClosure SelectClientCertificate(
+      BrowserContext* browser_context,
+      WebContents* web_contents,
+      net::SSLCertRequestInfo* cert_request_info,
+      net::ClientCertIdentityList client_certs,
+      std::unique_ptr<ClientCertificateDelegate> delegate) override {
+    select_client_certificate_called_ = true;
+    CHECK_EQ(1u, client_certs.size());
+    scoped_refptr<net::X509Certificate> cert(client_certs[0]->certificate());
+    client_certs[0]->AcquirePrivateKey(base::BindOnce(
+        [](std::unique_ptr<ClientCertificateDelegate> delegate,
+           scoped_refptr<net::X509Certificate> cert,
+           scoped_refptr<net::SSLPrivateKey> key) {
+          delegate->ContinueWithCertificate(std::move(cert), std::move(key));
+        },
+        std::move(delegate), std::move(cert)));
+    return base::OnceClosure();
+  }
+
+  bool select_client_certificate_called() const {
+    return select_client_certificate_called_;
+  }
+
+ private:
+  class DummyClientCertStore : public net::ClientCertStore {
+   public:
+    explicit DummyClientCertStore(net::ClientCertIdentityList list)
+        : list_(std::move(list)) {}
+    ~DummyClientCertStore() override = default;
+
+    // net::ClientCertStore:
+    void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
+                        ClientCertListCallback callback) override {
+      std::move(callback).Run(std::move(list_));
+    }
+
+   private:
+    net::ClientCertIdentityList list_;
+  };
+  bool select_client_certificate_called_ = false;
+};
 
 class SharedDictionaryBrowserTestBase : public ContentBrowserTest {
  public:
@@ -336,6 +514,9 @@ class SharedDictionaryBrowserTestBase : public ContentBrowserTest {
         break;
       case FetchType::kFetchApiFromServiceWorker:
         script = RegisterTestServiceWorkerScript(dictionary_url);
+        break;
+      case FetchType::kIframeNavigation:
+        script = IframeLoadScript(dictionary_url);
         break;
     }
     EXPECT_TRUE(ExecJs(shell->web_contents()->GetPrimaryMainFrame(), script));
@@ -419,8 +600,7 @@ class SharedDictionaryBrowserTestBase : public ContentBrowserTest {
  private:
   std::unique_ptr<net::test_server::HttpResponse> RequestHandler(
       const net::test_server::HttpRequest& request) {
-    if (!base::StartsWith(request.relative_url,
-                          "/shared_dictionary/path/test")) {
+    if (!base::StartsWith(request.relative_url, kTestPath)) {
       return nullptr;
     }
     auto response = std::make_unique<net::test_server::BasicHttpResponse>();
@@ -432,8 +612,11 @@ class SharedDictionaryBrowserTestBase : public ContentBrowserTest {
       response->set_content_type("application/javascript");
     }
 
-    if (request.GetURL().query() != "no_acao") {
-      response->AddCustomHeader("access-control-allow-origin", "*");
+    if (request.GetURL().query() != "no_acao" &&
+        request.headers.find("origin") != request.headers.end()) {
+      response->AddCustomHeader("Access-Control-Allow-Credentials", "true");
+      response->AddCustomHeader("Access-Control-Allow-Origin",
+                                request.headers.at("origin"));
     }
     absl::optional<std::string> dict_hash =
         GetSecAvailableDictionary(request.headers);
@@ -776,12 +959,15 @@ class SharedDictionaryBrowserTest
   // ContentBrowserTest implementation:
   void SetUpOnMainThread() override {
     RegisterTestRequestHandler(*embedded_test_server());
+    RegisterRedirectRequestHandler(*embedded_test_server());
     RegisterClearSiteDataRequestHandler(*embedded_test_server());
+    RegisterHttpAuthRequestHandler(*embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
 
     cross_origin_server_ = std::make_unique<net::EmbeddedTestServer>();
     cross_origin_server()->AddDefaultHandlers(GetTestDataFilePath());
     RegisterTestRequestHandler(*cross_origin_server());
+    RegisterRedirectRequestHandler(*cross_origin_server());
     RegisterClearSiteDataRequestHandler(*cross_origin_server());
     ASSERT_TRUE(cross_origin_server()->Start());
 
@@ -789,9 +975,80 @@ class SharedDictionaryBrowserTest
   }
   void TearDownOnMainThread() override { off_the_record_shell_ = nullptr; }
 
+  std::string FetchSameOriginRequest(const GURL& url) {
+    return EvalJs(GetTargetShell()->web_contents()->GetPrimaryMainFrame(),
+                  JsReplace(R"(
+          (async () => {
+            try {
+              const res = await fetch($1, {mode: 'same-origin'});
+              return await res.text();
+            } catch {
+              return 'failed to fetch';
+            }
+          })();
+        )",
+                            url))
+        .ExtractString();
+  }
+
+  std::string LoadTestScript(const GURL& url) {
+    return EvalJs(GetTargetShell()->web_contents()->GetPrimaryMainFrame(),
+                  JsReplace(R"(
+          (async () => {
+            return await new Promise(resolve => {
+              window.test = resolve;
+              const script = document.createElement('script');
+              script.src = $1;
+              document.body.appendChild(script);
+            });
+          })();
+        )",
+                            url))
+        .ExtractString();
+  }
+  std::string LoadTestScriptWithCrossOriginAnonymous(const GURL& url) {
+    return EvalJs(GetTargetShell()->web_contents()->GetPrimaryMainFrame(),
+                  JsReplace(R"(
+          (async () => {
+            return await new Promise(resolve => {
+              window.test = resolve;
+              const script = document.createElement('script');
+              script.src = $1;
+              script.addEventListener('error', () => {resolve('load failed');});
+              script.crossOrigin = 'anonymous';
+              document.body.appendChild(script);
+            });
+          })();
+        )",
+                            url))
+        .ExtractString();
+  }
+  std::string LoadTestScriptWithCrossOriginUseCredentials(const GURL& url) {
+    return EvalJs(GetTargetShell()->web_contents()->GetPrimaryMainFrame(),
+                  JsReplace(R"(
+          (async () => {
+            return await new Promise(resolve => {
+              window.test = resolve;
+              const script = document.createElement('script');
+              script.src = $1;
+              script.addEventListener('error', () => {resolve('load failed');});
+              script.crossOrigin = 'use-credentials';
+              document.body.appendChild(script);
+            });
+          })();
+        )",
+                            url))
+        .ExtractString();
+  }
+  std::string LoadTestIframe(const GURL& url) {
+    return EvalJs(GetTargetShell()->web_contents()->GetPrimaryMainFrame(),
+                  IframeLoadScript(url))
+        .ExtractString();
+  }
+
  protected:
   BrowserType GetBrowserType() const { return GetParam(); }
-  net::EmbeddedTestServer* cross_origin_server() {
+  net::EmbeddedTestServer* cross_origin_server() const {
     return cross_origin_server_.get();
   }
 
@@ -824,7 +1081,40 @@ class SharedDictionaryBrowserTest
         expect_success);
   }
 
+  GURL GetURL(base::StringPiece relative_url) const {
+    return embedded_test_server()->GetURL(relative_url);
+  }
+  GURL GetURL(base::StringPiece hostname,
+              base::StringPiece relative_url) const {
+    return embedded_test_server()->GetURL(hostname, relative_url);
+  }
+  GURL GetCrossOriginURL(base::StringPiece relative_url) const {
+    return cross_origin_server()->GetURL(relative_url);
+  }
+
  private:
+  void RegisterRedirectRequestHandler(net::EmbeddedTestServer& server) {
+    server.RegisterRequestHandler(base::BindRepeating(
+        &SharedDictionaryBrowserTest::RedirectRequestHandler,
+        base::Unretained(this)));
+  }
+  std::unique_ptr<net::test_server::HttpResponse> RedirectRequestHandler(
+      const net::test_server::HttpRequest& request) {
+    if (!base::StartsWith(request.relative_url, "/redirect")) {
+      return nullptr;
+    }
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+    response->set_code(net::HTTP_MOVED_PERMANENTLY);
+    const std::string location = request.GetURL().query();
+    response->AddCustomHeader("Location", location);
+    if (request.headers.find("origin") != request.headers.end()) {
+      response->AddCustomHeader("Access-Control-Allow-Credentials", "true");
+      response->AddCustomHeader("Access-Control-Allow-Origin",
+                                request.headers.at("origin"));
+    }
+    return response;
+  }
+
   void RegisterClearSiteDataRequestHandler(net::EmbeddedTestServer& server) {
     server.RegisterRequestHandler(base::BindRepeating(
         &SharedDictionaryBrowserTest::ClearSiteDataRequestHandler,
@@ -840,9 +1130,11 @@ class SharedDictionaryBrowserTest
     response->set_code(net::HTTP_OK);
 
     // We need these Access-Control-Allow-* headers for cross origin tests.
-    response->AddCustomHeader("Access-Control-Allow-Credentials", "true");
-    response->AddCustomHeader("Access-Control-Allow-Origin",
-                              embedded_test_server()->GetOrigin().Serialize());
+    if (request.headers.find("origin") != request.headers.end()) {
+      response->AddCustomHeader("Access-Control-Allow-Credentials", "true");
+      response->AddCustomHeader("Access-Control-Allow-Origin",
+                                request.headers.at("origin"));
+    }
 
     if (request.GetURL().query() == "cache") {
       response->AddCustomHeader("Clear-Site-Data", "\"cache\"");
@@ -852,6 +1144,42 @@ class SharedDictionaryBrowserTest
       response->AddCustomHeader("Clear-Site-Data", "\"storage\"");
     }
     response->set_content("");
+    return response;
+  }
+  void RegisterHttpAuthRequestHandler(net::EmbeddedTestServer& server) {
+    server.RegisterRequestHandler(base::BindRepeating(
+        &SharedDictionaryBrowserTest::HttpAuthRequestHandler,
+        base::Unretained(this)));
+  }
+  std::unique_ptr<net::test_server::HttpResponse> HttpAuthRequestHandler(
+      const net::test_server::HttpRequest& request) {
+    if (!base::StartsWith(request.relative_url, kHttpAuthPath)) {
+      return nullptr;
+    }
+    auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+    if (base::Contains(request.headers, "Authorization")) {
+      response->set_code(net::HTTP_OK);
+      absl::optional<std::string> dict_hash =
+          GetSecAvailableDictionary(request.headers);
+      if (dict_hash) {
+        if (*dict_hash == kExpectedDictionaryHash) {
+          if (HasSbrAcceptEncoding(request.headers)) {
+            response->AddCustomHeader("content-encoding", "sbr");
+            response->set_content(kCompressedDataString);
+          } else {
+            response->set_content(kErrorNoSbrAcceptEncodingString);
+          }
+        } else {
+          response->set_content(kErrorInvalidHashString);
+        }
+      } else {
+        response->set_content(kUncompressedDataString);
+      }
+    } else {
+      response->set_code(net::HTTP_UNAUTHORIZED);
+      response->AddCustomHeader("WWW-Authenticate",
+                                "Basic realm=\"test realm\"");
+    }
     return response;
   }
 
@@ -877,37 +1205,32 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        LinkRelDictionarySecureContext) {
   // http://127.0.0.1:PORT/ is secure context, so the dictionary should be
   // written.
-  RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
 }
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        FetchDictionarySecureContext) {
   // http://127.0.0.1:PORT/ is secure context, so the dictionary should be
   // written.
-  RunWriteDictionaryTest(
-      FetchType::kFetchApi,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
 }
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        FetchDictionaryWithSameOriginMode) {
-  RunWriteDictionaryTest(
-      FetchType::kFetchApiWithSameOriginMode,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kFetchApiWithSameOriginMode,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
 }
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        FetchDictionaryWithNoCorsMode) {
-  RunWriteDictionaryTest(
-      FetchType::kFetchApiWithNoCorsMode,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"),
-      /*expect_success=*/false);
+  RunWriteDictionaryTest(FetchType::kFetchApiWithNoCorsMode,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
 }
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
@@ -915,10 +1238,8 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
   // http://www.test/ is insecure context, so the dictionary should not be
   // written.
   RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
-                         embedded_test_server()->GetURL(
-                             "www.test", "/shared_dictionary/blank.html"),
-                         embedded_test_server()->GetURL(
-                             "www.test", "/shared_dictionary/test.dict"),
+                         GetURL("www.test", "/shared_dictionary/blank.html"),
+                         GetURL("www.test", "/shared_dictionary/test.dict"),
                          /*expect_success=*/false);
 }
 
@@ -927,106 +1248,271 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
   // http://www.test/ is insecure context, so the dictionary should not be
   // written.
   RunWriteDictionaryTest(FetchType::kFetchApi,
-                         embedded_test_server()->GetURL(
-                             "www.test", "/shared_dictionary/blank.html"),
-                         embedded_test_server()->GetURL(
-                             "www.test", "/shared_dictionary/test.dict"),
+                         GetURL("www.test", "/shared_dictionary/blank.html"),
+                         GetURL("www.test", "/shared_dictionary/test.dict"),
                          /*expect_success=*/false);
 }
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        FetchDictionaryFromDedicatedWorker) {
-  RunWriteDictionaryTest(
-      FetchType::kFetchApiFromDedicatedWorker,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kFetchApiFromDedicatedWorker,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
 }
 
 #if !BUILDFLAG(IS_ANDROID)
 // Shared workers are not supported on Android.
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        FetchDictionaryFromSharedWorker) {
-  RunWriteDictionaryTest(
-      FetchType::kFetchApiFromSharedWorker,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kFetchApiFromSharedWorker,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        FetchDictionaryFromServiceWorker) {
-  RunWriteDictionaryTest(
-      FetchType::kFetchApiFromServiceWorker,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kFetchApiFromServiceWorker,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       FetchDictionaryUingIframeNavigation) {
+  RunWriteDictionaryTest(FetchType::kIframeNavigation,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test_dict.html"),
+                         /*expect_success=*/false);
 }
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        CrossOriginLinkRelDictionary) {
-  RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      cross_origin_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetCrossOriginURL("/shared_dictionary/test.dict"));
 }
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        CrossOriginFetchDictionary) {
-  RunWriteDictionaryTest(
-      FetchType::kFetchApi,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      cross_origin_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetCrossOriginURL("/shared_dictionary/test.dict"));
 }
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        CrossOriginLinkRelDictionaryWithoutACAO) {
   RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      cross_origin_server()->GetURL("/shared_dictionary/test_no_acao.dict"),
+      FetchType::kLinkRelDictionary, GetURL("/shared_dictionary/blank.html"),
+      GetCrossOriginURL("/shared_dictionary/test_no_acao.dict"),
       /*expect_success=*/false);
 }
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        CrossOriginFetchDictionaryWithoutACAO) {
   RunWriteDictionaryTest(
-      FetchType::kFetchApi,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      cross_origin_server()->GetURL("/shared_dictionary/test_no_acao.dict"),
+      FetchType::kFetchApi, GetURL("/shared_dictionary/blank.html"),
+      GetCrossOriginURL("/shared_dictionary/test_no_acao.dict"),
       /*expect_success=*/false);
 }
 
-IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, CrossOriginDataNoCors) {
-  // Registers a dictionary as same as CrossOriginFetchDictionary test.
-  RunWriteDictionaryTest(
-      FetchType::kFetchApi,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      cross_origin_server()->GetURL("/shared_dictionary/test.dict"));
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       CrossOriginFetchDictionaryWithNoCorsMode) {
+  RunWriteDictionaryTest(FetchType::kFetchApiWithNoCorsMode,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetCrossOriginURL("/shared_dictionary/test.dict"),
+                         /*expect_success=*/false);
+}
 
-  EXPECT_EQ("This is uncompressed.",
-            EvalJs(GetTargetShell()->web_contents()->GetPrimaryMainFrame(),
-                   JsReplace(R"(
-          (async () => {
-            return await new Promise(resolve => {
-              window.test = resolve;
-              const script = document.createElement('script');
-              script.src = $1;
-              document.body.appendChild(script);
-            });
-          })();
-        )",
-                             cross_origin_server()->GetURL(
-                                 "/shared_dictionary/path/test")))
-                .ExtractString());
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       CrossOriginFetchDictionaryUingIframeNavigation) {
+  RunWriteDictionaryTest(FetchType::kIframeNavigation,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetCrossOriginURL("/shared_dictionary/test_dict.html"),
+                         /*expect_success=*/false);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       SameOriginModeRequestSameOriginResource) {
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
+
+  EXPECT_EQ(kCompressedDataOriginalString,
+            FetchSameOriginRequest(GetURL(kTestPath)));
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       NoCorsModeRequestSameOriginResource) {
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
+
+  EXPECT_EQ(kCompressedDataResultString,
+            LoadTestScript(GetURL(kTestPath + "?1")))
+      << "Same origin resource";
+
+  EXPECT_EQ(kCompressedDataResultString,
+            LoadTestScript(GURL(GetURL("/redirect?").spec() +
+                                GetURL(kTestPath + "?2").spec())))
+      << "Redirected from same origin to same origin resource";
+
+  EXPECT_EQ(kUncompressedDataResultString,
+            LoadTestScript(GURL(GetCrossOriginURL("/redirect?").spec() +
+                                GetURL(kTestPath + "?3").spec())))
+      << "Redirected from cross origin to same origin resource";
+
+  EXPECT_EQ(kUncompressedDataResultString,
+            LoadTestScript(GURL(GetURL("/redirect?").spec() +
+                                GetCrossOriginURL("/redirect?").spec() +
+                                GetURL(kTestPath + "?4").spec())))
+      << "Redirected from same origin via cross origin to same origin resource";
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       NoCorsModeRequestCrossOriginResource) {
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetCrossOriginURL("/shared_dictionary/test.dict"));
+
+  EXPECT_EQ(kUncompressedDataResultString,
+            LoadTestScript(GetCrossOriginURL(kTestPath + "?1")))
+      << "Cross origin resource";
+
+  EXPECT_EQ(kUncompressedDataResultString,
+            LoadTestScript(GURL(GetURL("/redirect?").spec() +
+                                GetCrossOriginURL(kTestPath + "?2").spec())))
+      << "Redirected from same origin to cross origin resource";
+
+  EXPECT_EQ(kUncompressedDataResultString,
+            LoadTestScript(GURL(GetCrossOriginURL("/redirect?").spec() +
+                                GetCrossOriginURL(kTestPath + "?3").spec())))
+      << "Redirected from cross origin to cross origin resource";
+
+  EXPECT_EQ(kUncompressedDataResultString,
+            LoadTestScript(GURL(GetCrossOriginURL("/redirect?").spec() +
+                                GetURL("/redirect?").spec() +
+                                GetCrossOriginURL(kTestPath + "?4").spec())))
+      << "Redirected from cross origin via same origin to cross origin "
+         "resource";
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       CorsModeRequestSameOriginResource) {
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
+
+  EXPECT_EQ(kCompressedDataResultString,
+            LoadTestScriptWithCrossOriginAnonymous(GetURL(kTestPath + "?1")))
+      << "Same origin resource";
+  EXPECT_EQ(kCompressedDataResultString,
+            LoadTestScriptWithCrossOriginAnonymous(GURL(
+                GetURL("/redirect?").spec() + GetURL(kTestPath + "?2").spec())))
+      << "Redirected from same origin to same origin resource";
+  EXPECT_EQ(kCompressedDataResultString,
+            LoadTestScriptWithCrossOriginAnonymous(
+                GURL(GetCrossOriginURL("/redirect?").spec() +
+                     GetURL(kTestPath + "?3").spec())))
+      << "Redirected from cross origin to same origin resource";
+  EXPECT_EQ(
+      kCompressedDataResultString,
+      LoadTestScriptWithCrossOriginAnonymous(GURL(
+          GetURL("/redirect?").spec() + GetCrossOriginURL("/redirect?").spec() +
+          GetURL(kTestPath + "?4").spec())))
+      << "Redirected from same origin via cross origin to same origin resource";
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       CorModeRequestCrossOriginResource) {
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetCrossOriginURL("/shared_dictionary/test.dict"));
+
+  EXPECT_EQ(kCompressedDataResultString,
+            LoadTestScriptWithCrossOriginAnonymous(
+                GetCrossOriginURL(kTestPath + "?1")))
+      << "Cross origin resource";
+  EXPECT_EQ(kCompressedDataResultString,
+            LoadTestScriptWithCrossOriginAnonymous(
+                GURL(GetURL("/redirect?").spec() +
+                     GetCrossOriginURL(kTestPath + "?2").spec())))
+      << "Redirected from same origin to cross origin resource";
+  EXPECT_EQ(kCompressedDataResultString,
+            LoadTestScriptWithCrossOriginAnonymous(
+                GURL(GetCrossOriginURL("/redirect?").spec() +
+                     GetCrossOriginURL(kTestPath + "?3").spec())))
+      << "Redirected from cross origin to cross origin resource";
+  EXPECT_EQ(
+      kCompressedDataResultString,
+      LoadTestScriptWithCrossOriginAnonymous(GURL(
+          GetCrossOriginURL("/redirect?").spec() + GetURL("/redirect?").spec() +
+          GetCrossOriginURL(kTestPath + "?4").spec())))
+      << "Redirected from cross origin via same origin to cross origin "
+         "resource";
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       CorsModeRequestWithCredentialsSameOriginResource) {
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
+
+  EXPECT_EQ(
+      kCompressedDataResultString,
+      LoadTestScriptWithCrossOriginUseCredentials(GetURL(kTestPath + "?1")))
+      << "Same origin resource";
+  EXPECT_EQ(kCompressedDataResultString,
+            LoadTestScriptWithCrossOriginUseCredentials(GURL(
+                GetURL("/redirect?").spec() + GetURL(kTestPath + "?2").spec())))
+      << "Redirected from same origin to same origin resource";
+  EXPECT_EQ(kCompressedDataResultString,
+            LoadTestScriptWithCrossOriginUseCredentials(
+                GURL(GetCrossOriginURL("/redirect?").spec() +
+                     GetURL(kTestPath + "?3").spec())))
+      << "Redirected from cross origin to same origin resource";
+  EXPECT_EQ(
+      kCompressedDataResultString,
+      LoadTestScriptWithCrossOriginUseCredentials(GURL(
+          GetURL("/redirect?").spec() + GetCrossOriginURL("/redirect?").spec() +
+          GetURL(kTestPath + "?4").spec())))
+      << "Redirected from same origin via cross origin to same origin resource";
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       CorModeRequestWithCredentialsCrossOriginResource) {
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetCrossOriginURL("/shared_dictionary/test.dict"));
+
+  EXPECT_EQ(kCompressedDataResultString,
+            LoadTestScriptWithCrossOriginUseCredentials(
+                GetCrossOriginURL(kTestPath + "?1")))
+      << "Cross origin resource";
+  EXPECT_EQ(kCompressedDataResultString,
+            LoadTestScriptWithCrossOriginUseCredentials(
+                GURL(GetURL("/redirect?").spec() +
+                     GetCrossOriginURL(kTestPath + "?2").spec())))
+      << "Redirected from same origin to cross origin resource";
+  EXPECT_EQ(kCompressedDataResultString,
+            LoadTestScriptWithCrossOriginUseCredentials(
+                GURL(GetCrossOriginURL("/redirect?").spec() +
+                     GetCrossOriginURL(kTestPath + "?3").spec())))
+      << "Redirected from cross origin to cross origin resource";
+  EXPECT_EQ(
+      kCompressedDataResultString,
+      LoadTestScriptWithCrossOriginUseCredentials(GURL(
+          GetCrossOriginURL("/redirect?").spec() + GetURL("/redirect?").spec() +
+          GetCrossOriginURL(kTestPath + "?4").spec())))
+      << "Redirected from cross origin via same origin to cross origin "
+         "resource";
 }
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, Navigation) {
-  RunWriteDictionaryTest(
-      FetchType::kFetchApi,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
 
-  const GURL target_url =
-      embedded_test_server()->GetURL("/shared_dictionary/path/test?html");
+  const GURL target_url = GetURL(kTestPath + "?html");
 
   base::RunLoop loop;
   auto observer = std::make_unique<SharedDictionaryAccessObserver>(
@@ -1049,33 +1535,134 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, Navigation) {
                 .ExtractString());
 }
 
-IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, IframeNavigation) {
-  RunWriteDictionaryTest(
-      FetchType::kFetchApi,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       NavigationAfterSameOriginRedirect) {
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
 
-  const GURL target_url =
-      embedded_test_server()->GetURL("/shared_dictionary/path/test?html");
+  const GURL target_url = GetURL(kTestPath + "?html");
+  const GURL redirect_url =
+      GURL(GetURL("/redirect?").spec() + GetURL(kTestPath + "?html").spec());
+
+  base::RunLoop loop;
+  auto observer = std::make_unique<SharedDictionaryAccessObserver>(
+      GetTargetShell()->web_contents(), loop.QuitClosure());
+  EXPECT_TRUE(NavigateToURL(GetTargetShell(), redirect_url, target_url));
+  loop.Run();
+
+  ASSERT_TRUE(observer->details());
+  EXPECT_EQ(network::mojom::SharedDictionaryAccessDetails::Type::kRead,
+            observer->details()->type);
+  EXPECT_EQ(target_url, observer->details()->url);
+  EXPECT_EQ(net::SharedDictionaryIsolationKey(url::Origin::Create(target_url),
+                                              net::SchemefulSite(target_url)),
+            observer->details()->isolation_key);
+  EXPECT_FALSE(observer->details()->is_blocked);
+
+  EXPECT_EQ(kCompressedDataOriginalString,
+            EvalJs(GetTargetShell()->web_contents()->GetPrimaryMainFrame(),
+                   "document.body.innerText")
+                .ExtractString());
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       NavigationAfterCrossOriginRedirect) {
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
+
+  const GURL target_url = GetURL(kTestPath + "?html");
+  const GURL redirect_url = GURL(GetCrossOriginURL("/redirect?").spec() +
+                                 GetURL(kTestPath + "?html").spec());
+
+  base::RunLoop loop;
+  auto observer = std::make_unique<SharedDictionaryAccessObserver>(
+      GetTargetShell()->web_contents(), loop.QuitClosure());
+  EXPECT_TRUE(NavigateToURL(GetTargetShell(), redirect_url, target_url));
+  loop.Run();
+
+  ASSERT_TRUE(observer->details());
+  EXPECT_EQ(network::mojom::SharedDictionaryAccessDetails::Type::kRead,
+            observer->details()->type);
+  EXPECT_EQ(target_url, observer->details()->url);
+  EXPECT_EQ(net::SharedDictionaryIsolationKey(url::Origin::Create(target_url),
+                                              net::SchemefulSite(target_url)),
+            observer->details()->isolation_key);
+  EXPECT_FALSE(observer->details()->is_blocked);
+
+  EXPECT_EQ(kCompressedDataOriginalString,
+            EvalJs(GetTargetShell()->web_contents()->GetPrimaryMainFrame(),
+                   "document.body.innerText")
+                .ExtractString());
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, IframeNavigation) {
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
+
+  const GURL target_url = GetURL(kTestPath + "?html");
 
   base::RunLoop loop;
   auto observer = std::make_unique<SharedDictionaryAccessObserver>(
       GetTargetShell()->web_contents(), loop.QuitClosure());
 
-  EXPECT_EQ(kCompressedDataOriginalString,
-            EvalJs(GetTargetShell()->web_contents()->GetPrimaryMainFrame(),
-                   R"(
-  (async () => {
-    const iframe = document.createElement('iframe');
-    iframe.src = '/shared_dictionary/path/test?html';
-    const promise =
-        new Promise(resolve => { iframe.addEventListener('load', resolve); });
-    document.body.appendChild(iframe);
-    await promise;
-    return iframe.contentDocument.body.innerText;
-  })()
-                  )")
-                .ExtractString());
+  EXPECT_EQ(kCompressedDataOriginalString, LoadTestIframe(target_url));
+  loop.Run();
+
+  ASSERT_TRUE(observer->details());
+  EXPECT_EQ(network::mojom::SharedDictionaryAccessDetails::Type::kRead,
+            observer->details()->type);
+  EXPECT_EQ(target_url, observer->details()->url);
+  EXPECT_EQ(net::SharedDictionaryIsolationKey(url::Origin::Create(target_url),
+                                              net::SchemefulSite(target_url)),
+            observer->details()->isolation_key);
+  EXPECT_FALSE(observer->details()->is_blocked);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       IframeNavigationAfterSameOriginRedirect) {
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
+
+  const GURL target_url = GetURL(kTestPath + "?html");
+  const GURL redirect_url =
+      GURL(GetURL("/redirect?").spec() + GetURL(kTestPath + "?html").spec());
+
+  base::RunLoop loop;
+  auto observer = std::make_unique<SharedDictionaryAccessObserver>(
+      GetTargetShell()->web_contents(), loop.QuitClosure());
+
+  EXPECT_EQ(kCompressedDataOriginalString, LoadTestIframe(redirect_url));
+  loop.Run();
+
+  ASSERT_TRUE(observer->details());
+  EXPECT_EQ(network::mojom::SharedDictionaryAccessDetails::Type::kRead,
+            observer->details()->type);
+  EXPECT_EQ(target_url, observer->details()->url);
+  EXPECT_EQ(net::SharedDictionaryIsolationKey(url::Origin::Create(target_url),
+                                              net::SchemefulSite(target_url)),
+            observer->details()->isolation_key);
+  EXPECT_FALSE(observer->details()->is_blocked);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       IframeNavigationAfterCrossOriginRedirect) {
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
+
+  const GURL target_url = GetURL(kTestPath + "?html");
+  const GURL redirect_url = GURL(GetCrossOriginURL("/redirect?").spec() +
+                                 GetURL(kTestPath + "?html").spec());
+
+  base::RunLoop loop;
+  auto observer = std::make_unique<SharedDictionaryAccessObserver>(
+      GetTargetShell()->web_contents(), loop.QuitClosure());
+
+  EXPECT_EQ(kCompressedDataOriginalString, LoadTestIframe(redirect_url));
   loop.Run();
 
   ASSERT_TRUE(observer->details());
@@ -1091,15 +1678,13 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, IframeNavigation) {
 IN_PROC_BROWSER_TEST_P(
     SharedDictionaryBrowserTest,
     GetUsageInfoAndClearSharedDictionaryCacheForIsolationKey) {
-  RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
 
   net::SharedDictionaryIsolationKey isolation_key =
-      net::SharedDictionaryIsolationKey(
-          url::Origin::Create(embedded_test_server()->GetURL("/")),
-          net::SchemefulSite(embedded_test_server()->GetURL("/")));
+      net::SharedDictionaryIsolationKey(url::Origin::Create(GetURL("/")),
+                                        net::SchemefulSite(GetURL("/")));
 
   EXPECT_THAT(GetSharedDictionaryUsageInfo(GetTargetShell()),
               UnorderedElementsAreArray({net::SharedDictionaryUsageInfo{
@@ -1116,15 +1701,13 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, GetSharedDictionaryInfo) {
-  RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
 
   net::SharedDictionaryIsolationKey isolation_key =
-      net::SharedDictionaryIsolationKey(
-          url::Origin::Create(embedded_test_server()->GetURL("/")),
-          net::SchemefulSite(embedded_test_server()->GetURL("/")));
+      net::SharedDictionaryIsolationKey(url::Origin::Create(GetURL("/")),
+                                        net::SchemefulSite(GetURL("/")));
   {
     base::RunLoop loop;
     GetTargetNetworkContext()->GetSharedDictionaryInfo(
@@ -1134,8 +1717,7 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, GetSharedDictionaryInfo) {
               ASSERT_EQ(1u, result.size());
 
               EXPECT_EQ("/shared_dictionary/path/*", result[0]->match);
-              EXPECT_EQ(embedded_test_server()->GetURL(
-                            "/shared_dictionary/test.dict"),
+              EXPECT_EQ(GetURL("/shared_dictionary/test.dict"),
                         result[0]->dictionary_url);
               EXPECT_EQ(static_cast<uint64_t>(
                             GetTestDataFileSize("shared_dictionary/test.dict")),
@@ -1148,10 +1730,9 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, GetSharedDictionaryInfo) {
 }
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, ClearSiteData) {
-  RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
   base::RunLoop loop;
   content::ClearSiteData(
       /*browser_context_getter=*/base::BindRepeating(
@@ -1160,7 +1741,7 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, ClearSiteData) {
           },
           base::Unretained(
               GetTargetShell()->web_contents()->GetBrowserContext())),
-      /*origin=*/url::Origin::Create(embedded_test_server()->GetURL("/")),
+      /*origin=*/url::Origin::Create(GetURL("/")),
       content::ClearSiteDataTypeSet::All(),
       /*storage_buckets_to_remove=*/{},
       /*avoid_closing_connections=*/true,
@@ -1175,14 +1756,12 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, ClearSiteData) {
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        ClearSiteDataNavigationCacheDirective) {
-  RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
   EXPECT_EQ(1u, GetSharedDictionaryUsageInfo(GetTargetShell()).size());
-  EXPECT_TRUE(NavigateToURL(GetTargetShell(),
-                            embedded_test_server()->GetURL(
-                                "/shared_dictionary/clear_site_data?cache")));
+  EXPECT_TRUE(NavigateToURL(
+      GetTargetShell(), GetURL("/shared_dictionary/clear_site_data?cache")));
   // Navigation to a page which HTTP response header contains
   // `Clear-Site-Data: "cache"` should clear the shared dictionary.
   EXPECT_TRUE(GetSharedDictionaryUsageInfo(GetTargetShell()).empty());
@@ -1190,14 +1769,12 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        ClearSiteDataNavigationCookiesDirective) {
-  RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
   EXPECT_EQ(1u, GetSharedDictionaryUsageInfo(GetTargetShell()).size());
-  EXPECT_TRUE(NavigateToURL(GetTargetShell(),
-                            embedded_test_server()->GetURL(
-                                "/shared_dictionary/clear_site_data?cookies")));
+  EXPECT_TRUE(NavigateToURL(
+      GetTargetShell(), GetURL("/shared_dictionary/clear_site_data?cookies")));
   // Navigation to a page which HTTP response header contains
   // `Clear-Site-Data: "cookies"` should clear the shared dictionary.
   EXPECT_TRUE(GetSharedDictionaryUsageInfo(GetTargetShell()).empty());
@@ -1205,14 +1782,12 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        ClearSiteDataNavigationStorageDirective) {
-  RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
   EXPECT_EQ(1u, GetSharedDictionaryUsageInfo(GetTargetShell()).size());
-  EXPECT_TRUE(NavigateToURL(GetTargetShell(),
-                            embedded_test_server()->GetURL(
-                                "/shared_dictionary/clear_site_data?storage")));
+  EXPECT_TRUE(NavigateToURL(
+      GetTargetShell(), GetURL("/shared_dictionary/clear_site_data?storage")));
   // Navigation to a page which HTTP response header contains
   // `Clear-Site-Data: "storage"` should NOT clear the shared dictionary.
   EXPECT_EQ(1u, GetSharedDictionaryUsageInfo(GetTargetShell()).size());
@@ -1220,16 +1795,14 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        ClearSiteDataFetchCacheDirective) {
-  RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
   EXPECT_EQ(1u, GetSharedDictionaryUsageInfo(GetTargetShell()).size());
   EXPECT_TRUE(
       ExecJs(GetTargetShell(),
              JsReplace("fetch($1);",
-                       embedded_test_server()->GetURL(
-                           "/shared_dictionary/clear_site_data?cache"))));
+                       GetURL("/shared_dictionary/clear_site_data?cache"))));
   // Fetching a resource which HTTP response header contains
   // `Clear-Site-Data: "cache"` should clear the shared dictionary.
   EXPECT_TRUE(GetSharedDictionaryUsageInfo(GetTargetShell()).empty());
@@ -1237,16 +1810,14 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        ClearSiteDataFetchCookiesDirective) {
-  RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
   EXPECT_EQ(1u, GetSharedDictionaryUsageInfo(GetTargetShell()).size());
   EXPECT_TRUE(
       ExecJs(GetTargetShell(),
              JsReplace("fetch($1);",
-                       embedded_test_server()->GetURL(
-                           "/shared_dictionary/clear_site_data?cookies"))));
+                       GetURL("/shared_dictionary/clear_site_data?cookies"))));
   // Fetching a resource which HTTP response header contains
   // `Clear-Site-Data: "cookies"` should clear the shared dictionary.
   EXPECT_TRUE(GetSharedDictionaryUsageInfo(GetTargetShell()).empty());
@@ -1254,16 +1825,14 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        ClearSiteDataFetchStorageDirective) {
-  RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      embedded_test_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
   EXPECT_EQ(1u, GetSharedDictionaryUsageInfo(GetTargetShell()).size());
   EXPECT_TRUE(
       ExecJs(GetTargetShell(),
              JsReplace("fetch($1);",
-                       embedded_test_server()->GetURL(
-                           "/shared_dictionary/clear_site_data?storage"))));
+                       GetURL("/shared_dictionary/clear_site_data?storage"))));
   // Fetching a resource which HTTP response header contains
   // `Clear-Site-Data: "storage"` should NOT clear the shared dictionary.
   EXPECT_EQ(1u, GetSharedDictionaryUsageInfo(GetTargetShell()).size());
@@ -1271,18 +1840,17 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        ClearSiteDataCrossOriginFetchCacheDirective) {
-  RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      cross_origin_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetCrossOriginURL("/shared_dictionary/test.dict"));
   EXPECT_EQ(1u, GetSharedDictionaryUsageInfo(GetTargetShell()).size());
   // Setting the credentials flag because Clear-Site-Data header handling works
   // only when credentials flag is set.
-  EXPECT_TRUE(
-      ExecJs(GetTargetShell(),
-             JsReplace("fetch($1, {credentials: 'include'});",
-                       cross_origin_server()->GetURL(
-                           "/shared_dictionary/clear_site_data?cache"))));
+  EXPECT_TRUE(ExecJs(
+      GetTargetShell(),
+      JsReplace(
+          "fetch($1, {credentials: 'include'});",
+          GetCrossOriginURL("/shared_dictionary/clear_site_data?cache"))));
   // Fetching a cross origin resource which HTTP response header contains
   // `Clear-Site-Data: "cache"` should clear the shared dictionary.
   EXPECT_TRUE(GetSharedDictionaryUsageInfo(GetTargetShell()).empty());
@@ -1290,18 +1858,17 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        ClearSiteDataCrossOriginFetchCookiesDirective) {
-  RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      cross_origin_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetCrossOriginURL("/shared_dictionary/test.dict"));
   EXPECT_EQ(1u, GetSharedDictionaryUsageInfo(GetTargetShell()).size());
   // Setting the credentials flag because Clear-Site-Data header handling works
   // only when credentials flag is set.
-  EXPECT_TRUE(
-      ExecJs(GetTargetShell(),
-             JsReplace("fetch($1, {credentials: 'include'});",
-                       cross_origin_server()->GetURL(
-                           "/shared_dictionary/clear_site_data?cookies"))));
+  EXPECT_TRUE(ExecJs(
+      GetTargetShell(),
+      JsReplace(
+          "fetch($1, {credentials: 'include'});",
+          GetCrossOriginURL("/shared_dictionary/clear_site_data?cookies"))));
   // Fetching a cross origin resource which HTTP response header contains
   // `Clear-Site-Data: "cookies"` should clear the shared dictionary.
   EXPECT_TRUE(GetSharedDictionaryUsageInfo(GetTargetShell()).empty());
@@ -1309,18 +1876,17 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
                        ClearSiteDataCrossOriginFetchStorageDirective) {
-  RunWriteDictionaryTest(
-      FetchType::kLinkRelDictionary,
-      embedded_test_server()->GetURL("/shared_dictionary/blank.html"),
-      cross_origin_server()->GetURL("/shared_dictionary/test.dict"));
+  RunWriteDictionaryTest(FetchType::kLinkRelDictionary,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetCrossOriginURL("/shared_dictionary/test.dict"));
   EXPECT_EQ(1u, GetSharedDictionaryUsageInfo(GetTargetShell()).size());
   // Setting the credentials flag because Clear-Site-Data header handling works
   // only when credentials flag is set.
-  EXPECT_TRUE(
-      ExecJs(GetTargetShell(),
-             JsReplace("fetch($1, {credentials: 'include'});",
-                       cross_origin_server()->GetURL(
-                           "/shared_dictionary/clear_site_data?storage"))));
+  EXPECT_TRUE(ExecJs(
+      GetTargetShell(),
+      JsReplace(
+          "fetch($1, {credentials: 'include'});",
+          GetCrossOriginURL("/shared_dictionary/clear_site_data?storage"))));
   // Fetching a cross origin resource which HTTP response header contains
   // `Clear-Site-Data: "storage"` should NOT clear the shared dictionary.
   EXPECT_EQ(1u, GetSharedDictionaryUsageInfo(GetTargetShell()).size());
@@ -1336,14 +1902,82 @@ IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
     return;
   }
   base::HistogramTester histogram_tester;
-  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
-                                         "/shared_dictionary/blank.html")));
+  EXPECT_TRUE(NavigateToURL(shell(), GetURL("/shared_dictionary/blank.html")));
   const std::string histogram_name =
       "Net.SharedDictionaryStorageOnDisk.MetadataReadTime.Empty";
 
   EXPECT_TRUE(WaitForHistogram(histogram_name));
   histogram_tester.ExpectTotalCount(histogram_name,
                                     /*expected_count=*/1);
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest, RestartWithAuth) {
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         GetURL("/shared_dictionary/blank.html"),
+                         GetURL("/shared_dictionary/test.dict"));
+
+  DummyAuthContentBrowserClient browser_client;
+
+  EXPECT_FALSE(browser_client.create_login_delegate_called());
+  ASSERT_TRUE(NavigateToURL(GetTargetShell(), GetURL(kHttpAuthPath)));
+  EXPECT_TRUE(browser_client.create_login_delegate_called());
+  EXPECT_EQ(kCompressedDataOriginalString,
+            EvalJs(GetTargetShell()->web_contents()->GetPrimaryMainFrame(),
+                   "document.body.innerText")
+                .ExtractString());
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       RestartedAfterCertErrorPageUseSbr) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  RegisterTestRequestHandler(https_server);
+  ASSERT_TRUE(https_server.Start());
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         https_server.GetURL("/shared_dictionary/blank.html"),
+                         https_server.GetURL("/shared_dictionary/test.dict"));
+
+  // Resetting the SSL config of the server to trigger a certificate error.
+  ASSERT_TRUE(https_server.ResetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED,
+                                          net::SSLServerConfig()));
+
+  CertificateErrorAllowingContentBrowserClient browser_client;
+  EXPECT_FALSE(browser_client.allow_certificate_error_called());
+  EXPECT_TRUE(NavigateToURL(GetTargetShell(),
+                            https_server.GetURL(kTestPath + "?html")));
+  EXPECT_TRUE(browser_client.allow_certificate_error_called());
+
+  EXPECT_EQ(kCompressedDataOriginalString,
+            EvalJs(GetTargetShell()->web_contents()->GetPrimaryMainFrame(),
+                   "document.body.innerText")
+                .ExtractString());
+}
+
+IN_PROC_BROWSER_TEST_P(SharedDictionaryBrowserTest,
+                       RestartWithCertificatePageUseSbr) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  RegisterTestRequestHandler(https_server);
+  ASSERT_TRUE(https_server.Start());
+  RunWriteDictionaryTest(FetchType::kFetchApi,
+                         https_server.GetURL("/shared_dictionary/blank.html"),
+                         https_server.GetURL("/shared_dictionary/test.dict"));
+
+  // Resetting the SSL config of the server to require a client certificate.
+  net::SSLServerConfig server_config;
+  server_config.client_cert_type = net::SSLServerConfig::REQUIRE_CLIENT_CERT;
+  ASSERT_TRUE(https_server.ResetSSLConfig(net::EmbeddedTestServer::CERT_OK,
+                                          server_config));
+
+  DummyClientCertStoreContentBrowserClient browser_client;
+  EXPECT_FALSE(browser_client.select_client_certificate_called());
+  EXPECT_TRUE(NavigateToURL(GetTargetShell(),
+                            https_server.GetURL(kTestPath + "?html")));
+  EXPECT_TRUE(browser_client.select_client_certificate_called());
+  EXPECT_EQ(kCompressedDataOriginalString,
+            EvalJs(GetTargetShell()->web_contents()->GetPrimaryMainFrame(),
+                   "document.body.innerText")
+                .ExtractString());
 }
 
 }  // namespace

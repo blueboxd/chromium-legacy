@@ -29,7 +29,7 @@ static const int kMainMenuButtonVerticalPaddingDp = 3;
 // Toolbar padding from the border of the game window.
 static const int kToolbarEdgePadding = 10;
 
-std::unique_ptr<views::Widget> CreateTransientChildWidget(
+std::unique_ptr<GameDashboardWidget> CreateTransientChildWidget(
     aura::Window* game_window,
     const std::string& widget_name,
     std::unique_ptr<views::View> view) {
@@ -42,7 +42,7 @@ std::unique_ptr<views::Widget> CreateTransientChildWidget(
   params.parent = game_window;
   params.name = widget_name;
 
-  auto widget = std::make_unique<views::Widget>();
+  auto widget = std::make_unique<GameDashboardWidget>();
   widget->Init(std::move(params));
   wm::TransientWindowManager::GetOrCreate(widget->GetNativeWindow())
       ->set_parent_controls_visibility(true);
@@ -91,7 +91,7 @@ void GameDashboardContext::ToggleMainMenu() {
   }
 }
 
-void GameDashboardContext::ToggleToolbar() {
+bool GameDashboardContext::ToggleToolbar() {
   if (!toolbar_widget_) {
     toolbar_widget_ = CreateTransientChildWidget(
         game_window_, "GameDashboardToolbar",
@@ -100,15 +100,21 @@ void GameDashboardContext::ToggleToolbar() {
               wm::GetTransientParent(toolbar_widget_->GetNativeWindow()));
     MaybeUpdateToolbarWidgetBounds();
     toolbar_widget_->Show();
-  } else {
-    toolbar_widget_.reset();
+    return true;
   }
+
+  toolbar_widget_.reset();
+  return false;
 }
 
 void GameDashboardContext::MaybeUpdateToolbarWidgetBounds() {
   if (toolbar_widget_) {
     toolbar_widget_->SetBounds(CalculateToolbarWidgetBounds());
   }
+}
+
+bool GameDashboardContext::IsToolbarVisible() const {
+  return toolbar_widget_ && toolbar_widget_->IsVisible();
 }
 
 void GameDashboardContext::CreateAndAddMainMenuButtonWidget() {

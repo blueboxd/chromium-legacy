@@ -32,13 +32,15 @@ class SyncUserSettingsMock : public SyncUserSettings {
               IsTypeManagedByPolicy,
               (UserSelectableType),
               (const override));
+  MOCK_METHOD(bool,
+              IsTypeManagedByCustodian,
+              (UserSelectableType),
+              (const override));
   MOCK_METHOD(void,
               SetSelectedTypes,
               (bool, UserSelectableTypeSet),
               (override));
   MOCK_METHOD(void, SetSelectedType, (UserSelectableType, bool), (override));
-  MOCK_METHOD(bool, IsPaymentsIntegrationEnabled, (), (const override));
-  MOCK_METHOD(void, SetPaymentsIntegrationEnabled, (bool), (override));
   MOCK_METHOD(void,
               KeepAccountSettingsPrefsOnlyForUsers,
               (const std::vector<signin::GaiaIdHash>&),
@@ -102,7 +104,10 @@ class SyncUserSettingsMock : public SyncUserSettings {
   MOCK_METHOD(bool, IsTrustedVaultRecoverabilityDegraded, (), (const override));
   MOCK_METHOD(bool, IsUsingExplicitPassphrase, (), (const override));
   MOCK_METHOD(base::Time, GetExplicitPassphraseTime, (), (const override));
-  MOCK_METHOD(PassphraseType, GetPassphraseType, (), (const override));
+  MOCK_METHOD(absl::optional<PassphraseType>,
+              GetPassphraseType,
+              (),
+              (const override));
   MOCK_METHOD(void, SetEncryptionPassphrase, (const std::string&), (override));
   MOCK_METHOD(bool, SetDecryptionPassphrase, (const std::string&), (override));
   MOCK_METHOD(void,

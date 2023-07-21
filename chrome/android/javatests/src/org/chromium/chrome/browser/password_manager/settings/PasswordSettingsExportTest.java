@@ -61,7 +61,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Features.DisableFeatures;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.Matchers;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -71,6 +70,7 @@ import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.R;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -153,11 +153,13 @@ public class PasswordSettingsExportTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        var histogram = HistogramWatcher.newSingleRecordWatcher(
-                PasswordSettings.PASSWORD_EXPORT_EVENT_HISTOGRAM,
-                ExportFlow.PasswordExportEvent.EXPORT_OPTION_SELECTED);
-
         mTestHelper.startPasswordSettingsFromMainSettings(mSettingsActivityTestRule);
+
+        var histogram =
+                HistogramWatcher.newSingleRecordWatcher(mSettingsActivityTestRule.getFragment()
+                                                                .getExportFlowForTesting()
+                                                                .getExportEventHistogramName(),
+                        ExportFlow.PasswordExportEvent.EXPORT_OPTION_SELECTED);
 
         openActionBarOverflowOrOptionsMenu(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
@@ -390,17 +392,19 @@ public class PasswordSettingsExportTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        var histogram = HistogramWatcher.newBuilder()
-                                .expectIntRecords(PasswordSettings.PASSWORD_EXPORT_EVENT_HISTOGRAM,
-                                        ExportFlow.PasswordExportEvent.EXPORT_OPTION_SELECTED,
-                                        ExportFlow.PasswordExportEvent.EXPORT_DISMISSED,
-                                        ExportFlow.PasswordExportEvent.EXPORT_CONFIRMED)
-                                .build();
-
         final SettingsActivity settingsActivity =
                 mTestHelper.startPasswordSettingsFromMainSettings(mSettingsActivityTestRule);
 
         Intents.init();
+
+        var exportEventHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords(mSettingsActivityTestRule.getFragment()
+                                                  .getExportFlowForTesting()
+                                                  .getExportEventHistogramName(),
+                                ExportFlow.PasswordExportEvent.EXPORT_OPTION_SELECTED,
+                                ExportFlow.PasswordExportEvent.EXPORT_CONFIRMED)
+                        .build();
 
         reauthenticateAndRequestExport(settingsActivity);
         File tempFile = createFakeExportedPasswordsFile();
@@ -416,7 +420,7 @@ public class PasswordSettingsExportTest {
         onViewWaiting(
                 allOf(withText(R.string.password_settings_export_action_title), isCompletelyDisplayed()))
                 .perform(click());
-        histogram.assertExpected();
+        exportEventHistogram.assertExpected();
 
         intended(allOf(hasAction(equalTo(Intent.ACTION_CHOOSER)),
                 hasExtras(hasEntry(equalTo(Intent.EXTRA_INTENT),
@@ -442,15 +446,16 @@ public class PasswordSettingsExportTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
-        var histogram = HistogramWatcher.newBuilder()
-                                .expectIntRecords(PasswordSettings.PASSWORD_EXPORT_EVENT_HISTOGRAM,
-                                        ExportFlow.PasswordExportEvent.EXPORT_OPTION_SELECTED,
-                                        ExportFlow.PasswordExportEvent.EXPORT_DISMISSED,
-                                        ExportFlow.PasswordExportEvent.EXPORT_CONFIRMED)
-                                .build();
-
         final SettingsActivity settingsActivity =
                 mTestHelper.startPasswordSettingsFromMainSettings(mSettingsActivityTestRule);
+
+        var histogram = HistogramWatcher.newBuilder()
+                                .expectIntRecords(mSettingsActivityTestRule.getFragment()
+                                                          .getExportFlowForTesting()
+                                                          .getExportEventHistogramName(),
+                                        ExportFlow.PasswordExportEvent.EXPORT_OPTION_SELECTED,
+                                        ExportFlow.PasswordExportEvent.EXPORT_CONFIRMED)
+                                .build();
 
         Intents.init();
 
@@ -492,6 +497,7 @@ public class PasswordSettingsExportTest {
      */
     @Test
     @SmallTest
+    @DisableFeatures({UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING})
     @Feature({"Preferences"})
     public void testExportIntentPaused() throws Exception {
         mTestHelper.setPasswordSource(
@@ -507,9 +513,10 @@ public class PasswordSettingsExportTest {
         Intents.init();
 
         var histogram = HistogramWatcher.newBuilder()
-                                .expectIntRecords(PasswordSettings.PASSWORD_EXPORT_EVENT_HISTOGRAM,
+                                .expectIntRecords(mSettingsActivityTestRule.getFragment()
+                                                          .getExportFlowForTesting()
+                                                          .getExportEventHistogramName(),
                                         ExportFlow.PasswordExportEvent.EXPORT_OPTION_SELECTED,
-                                        ExportFlow.PasswordExportEvent.EXPORT_DISMISSED,
                                         ExportFlow.PasswordExportEvent.EXPORT_CONFIRMED)
                                 .build();
 
@@ -560,14 +567,16 @@ public class PasswordSettingsExportTest {
         ReauthenticationManager.setScreenLockSetUpOverride(
                 ReauthenticationManager.OverrideState.AVAILABLE);
 
+        final SettingsActivity settingsActivity =
+                mTestHelper.startPasswordSettingsFromMainSettings(mSettingsActivityTestRule);
+
         var histogram = HistogramWatcher.newBuilder()
-                                .expectIntRecords(PasswordSettings.PASSWORD_EXPORT_EVENT_HISTOGRAM,
+                                .expectIntRecords(mSettingsActivityTestRule.getFragment()
+                                                          .getExportFlowForTesting()
+                                                          .getExportEventHistogramName(),
                                         ExportFlow.PasswordExportEvent.EXPORT_OPTION_SELECTED,
                                         ExportFlow.PasswordExportEvent.EXPORT_DISMISSED)
                                 .build();
-
-        final SettingsActivity settingsActivity =
-                mTestHelper.startPasswordSettingsFromMainSettings(mSettingsActivityTestRule);
 
         reauthenticateAndRequestExport(settingsActivity);
 
@@ -696,8 +705,8 @@ public class PasswordSettingsExportTest {
      */
     @Test
     @SmallTest
+    @DisableFeatures({UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING})
     @Feature({"Preferences"})
-    @DisabledTest(message = "crbug.com/1223405")
     public void testExportProgressMinimalTime() throws Exception {
         mTestHelper.setPasswordSource(
                 new SavedPasswordEntry("https://example.com", "test user", "password"));

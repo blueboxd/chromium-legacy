@@ -201,6 +201,13 @@ class WaylandSurface {
       pending_state_.background_color = background_color;
   }
 
+  // Sets the clip rect for this surface.
+  void set_clip_rect(absl::optional<gfx::RectF> clip_rect) {
+    if (get_augmented_surface()) {
+      pending_state_.clip_rect = clip_rect;
+    }
+  }
+
   // Sets whether this surface contains a video.
   void set_contains_video(bool contains_video) {
     pending_state_.contains_video = contains_video;
@@ -259,7 +266,7 @@ class WaylandSurface {
 
     wl::Object<zwp_linux_buffer_release_v1> linux_buffer_release;
     // The buffer associated with this explicit release.
-    raw_ptr<wl_buffer, DanglingAcrossTasks> buffer;
+    raw_ptr<wl_buffer, AcrossTasksDanglingUntriaged> buffer;
     // The associated release callback with this request.
     ExplicitReleaseCallback explicit_release_callback;
   };
@@ -285,7 +292,7 @@ class WaylandSurface {
     // buffer_handle owning this wl_buffer is destroyed. Accessing this field
     // should ensure wl_buffer exists by calling
     // WaylandBufferManagerHost::EnsureBufferHandle(buffer_id).
-    raw_ptr<wl_buffer, DanglingAcrossTasks> buffer = nullptr;
+    raw_ptr<wl_buffer, AcrossTasksDanglingUntriaged> buffer = nullptr;
     gfx::Size buffer_size_px;
 
     // The buffer scale refers to the ratio between the buffer size and the
@@ -322,6 +329,9 @@ class WaylandSurface {
     // can be used by Wayland compositor to correctly display delegated textures
     // which require background color applied.
     absl::optional<SkColor4f> background_color;
+
+    // Optional clip rect for this surface on surface space coordinates.
+    absl::optional<gfx::RectF> clip_rect;
 
     // Whether or not this surface contains video, for wp_content_type_v1.
     bool contains_video = false;

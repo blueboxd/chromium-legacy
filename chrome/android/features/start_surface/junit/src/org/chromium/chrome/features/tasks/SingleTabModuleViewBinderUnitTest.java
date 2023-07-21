@@ -6,6 +6,7 @@ package org.chromium.chrome.features.tasks;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -23,6 +24,7 @@ import static org.chromium.chrome.features.tasks.SingleTabViewProperties.URL;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
@@ -44,6 +46,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
@@ -67,6 +70,8 @@ public class SingleTabModuleViewBinderUnitTest {
             mPropertyModelChangeProcessor;
     private PropertyModel mPropertyModel;
 
+    @Mock
+    private BrowserControlsStateProvider mBrowserControlsStateProvider;
     @Mock
     private View.OnClickListener mClickListener;
     @Mock
@@ -147,12 +152,38 @@ public class SingleTabModuleViewBinderUnitTest {
     @Test
     @SmallTest
     public void testSetTabThumbnail() {
+        // Fake a layout so the UI has a size.
+        mSingleTabModuleView.measure(0, 0);
+        mSingleTabModuleView.layout(0, 0, 100, 100);
+
         ImageView thumbnail = mSingleTabModuleView.findViewById(R.id.tab_thumbnail);
         assertNull(thumbnail.getDrawable());
 
         Bitmap bitmap = Bitmap.createBitmap(300, 400, Bitmap.Config.ALPHA_8);
         mPropertyModel.set(TAB_THUMBNAIL, bitmap);
         assertNotNull(thumbnail.getDrawable());
+
+        assertNotEquals(new Matrix(), thumbnail.getImageMatrix());
+    }
+
+    @Test
+    @SmallTest
+    public void testSetTabThumbnailUpdateMatrixOnResize() {
+        ImageView thumbnail = mSingleTabModuleView.findViewById(R.id.tab_thumbnail);
+        assertNull(thumbnail.getDrawable());
+
+        Bitmap bitmap = Bitmap.createBitmap(300, 400, Bitmap.Config.ALPHA_8);
+        mPropertyModel.set(TAB_THUMBNAIL, bitmap);
+        assertNotNull(thumbnail.getDrawable());
+
+        Matrix identityMatrix = new Matrix();
+        assertEquals(identityMatrix, thumbnail.getImageMatrix());
+
+        // Fake a layout so the UI has a size.
+        mSingleTabModuleView.measure(0, 0);
+        mSingleTabModuleView.layout(0, 0, 100, 100);
+
+        assertNotEquals(identityMatrix, thumbnail.getImageMatrix());
     }
 
     @Test
@@ -168,9 +199,9 @@ public class SingleTabModuleViewBinderUnitTest {
     public void testRecordHistogramSingleTabCardClick_StartSurface() {
         doReturn(mTabId).when(mTabModelSelector).getCurrentTabId();
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
-        SingleTabSwitcherMediator mediator =
-                new SingleTabSwitcherMediator(ContextUtils.getApplicationContext(), mPropertyModel,
-                        mTabModelSelector, mTabListFaviconProvider, null, false);
+        SingleTabSwitcherMediator mediator = new SingleTabSwitcherMediator(
+                ContextUtils.getApplicationContext(), mBrowserControlsStateProvider, mPropertyModel,
+                mTabModelSelector, mTabListFaviconProvider, null, false);
         mediator.setOnTabSelectingListener(mOnTabSelectingListener);
         mSingleTabModuleView.performClick();
         assertEquals(HISTOGRAM_START_SURFACE_MODULE_CLICK

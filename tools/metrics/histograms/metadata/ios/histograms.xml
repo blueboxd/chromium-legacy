@@ -1222,6 +1222,24 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.MagicStack.Module.Click" enum="IOSMagicStackModuleType"
+    expires_after="2024-07-03">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>scottyoder@chromium.org</owner>
+  <summary>
+    Records a user engagement with a module within the Magic Stack.
+  </summary>
+</histogram>
+
+<histogram name="IOS.MagicStack.Module.TopImpression"
+    enum="IOSMagicStackModuleType" expires_after="2024-07-03">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>scottyoder@chromium.org</owner>
+  <summary>
+    Records the first module shown for every Magic Stack impression.
+  </summary>
+</histogram>
+
 <histogram name="IOS.MainFrameNavigationIsInBrowserLockdownMode" enum="Boolean"
     expires_after="2023-11-23">
   <owner>joemerramos@chromium.org</owner>
@@ -1958,6 +1976,22 @@ chromium-metrics-reviews@google.com.
     power when processing remote notifications, iOS may not always wake up
     Chrome early to process future notifications. Thus, this histogram uses
     processing time as a proxy for iOS' three parameters.
+  </summary>
+</histogram>
+
+<histogram name="IOS.PushNotification.LifecyleEvents"
+    enum="PushNotificationLifecycleEvent" expires_after="2024-07-21">
+  <owner>ajuma@google.com</owner>
+  <owner>danieltwhite@google.com</owner>
+  <summary>
+    Logs various lifecycle stages a push notification can observe on the device.
+    This histogram is logged each time a push notification is received on the
+    device, displayed while Chrome is in the foreground, and tapped by the user.
+    An important stipulation to note is that if Chrome is neither in the
+    foreground nor the background and a push notification is received on the
+    device, iOS will not notify Chrome of this reception and thus will not be
+    represented in the histogram. Therefore, when interpreting this metric, the
+    push notification reception count may be lower than in reality.
   </summary>
 </histogram>
 

@@ -19,13 +19,13 @@
 #include "gpu/command_buffer/service/dawn_platform.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
-#include "third_party/dawn/include/dawn/dawn_proc.h"
 #include "third_party/skia/include/gpu/graphite/Context.h"
 #include "third_party/skia/include/gpu/graphite/dawn/DawnBackendContext.h"
 #include "third_party/skia/include/gpu/graphite/dawn/DawnUtils.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "third_party/dawn/include/dawn/native/D3D11Backend.h"
+#include "ui/gl/gl_angle_util_win.h"
 #endif
 
 namespace gpu {
@@ -39,9 +39,11 @@ void LogError(WGPUErrorType type, char const* message, void* userdata) {
   LOG(ERROR) << message;
 }
 
-void LogFatal(WGPUDeviceLostReason reason,
-              char const* message,
-              void* userdata) {
+void LogDeviceLost(WGPUDeviceLostReason reason,
+                   char const* message,
+                   void* userdata) {
+  if (reason == WGPUDeviceLostReason::WGPUDeviceLostReason_Destroyed)
+    return;
   LOG(FATAL) << message;
 }
 
@@ -72,6 +74,39 @@ class Platform : public webgpu::DawnPlatform {
         TRACE_DISABLED_BY_DEFAULT("gpu.graphite.dawn"));
   }
 };
+
+#if BUILDFLAG(IS_WIN)
+bool GetANGLED3D11DeviceLUID(LUID* luid) {
+  // On Windows, query the LUID of ANGLE's adapter.
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+  if (!d3d11_device) {
+    LOG(ERROR) << "Failed to query ID3D11Device from ANGLE.";
+    return false;
+  }
+
+  Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
+  if (!SUCCEEDED(d3d11_device.As(&dxgi_device))) {
+    LOG(ERROR) << "Failed to get IDXGIDevice from ANGLE.";
+    return false;
+  }
+
+  Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
+  if (!SUCCEEDED(dxgi_device->GetAdapter(&dxgi_adapter))) {
+    LOG(ERROR) << "Failed to get IDXGIAdapter from ANGLE.";
+    return false;
+  }
+
+  DXGI_ADAPTER_DESC adapter_desc;
+  if (!SUCCEEDED(dxgi_adapter->GetDesc(&adapter_desc))) {
+    LOG(ERROR) << "Failed to get DXGI_ADAPTER_DESC from ANGLE.";
+    return false;
+  }
+
+  *luid = adapter_desc.AdapterLuid;
+  return true;
+}
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace
 
@@ -115,15 +150,9 @@ bool DawnContextProvider::Initialize(CacheBlobCallback callback) {
 #endif
 
   instance_ = webgpu::DawnInstance::Create(platform_.get(), preferences);
-  instance_->DiscoverDefaultPhysicalDevices();
-
-  DawnProcTable backend_procs = dawn::native::GetProcs();
-  dawnProcSetProcs(&backend_procs);
 
   // If a new toggle is added here, ForceDawnTogglesForSkia() which collects
   // info for about:gpu should be updated as well.
-  wgpu::DeviceDescriptor descriptor;
-
   wgpu::DawnTogglesDescriptor toggles_desc;
   std::vector<const char*> enabled_toggles;
 #if DCHECK_IS_ON()
@@ -136,6 +165,8 @@ bool DawnContextProvider::Initialize(CacheBlobCallback callback) {
 #endif
   toggles_desc.enabledToggles = enabled_toggles.data();
   toggles_desc.enabledTogglesCount = enabled_toggles.size();
+
+  wgpu::DeviceDescriptor descriptor;
   descriptor.nextInChain = &toggles_desc;
 
   // TODO(crbug.com/1456492): verify the required features.
@@ -146,32 +177,49 @@ bool DawnContextProvider::Initialize(CacheBlobCallback callback) {
       wgpu::FeatureName::SurfaceCapabilities,
   };
 
-  wgpu::BackendType backend_type = GetDefaultBackendType();
-  std::vector<dawn::native::Adapter> adapters = instance_->EnumerateAdapters();
-  for (dawn::native::Adapter adapter : adapters) {
-    wgpu::AdapterProperties properties;
-    adapter.GetProperties(&properties);
-    if (properties.backendType == backend_type) {
-      if (wgpu::Adapter(adapter.Get()).HasFeature(
-              wgpu::FeatureName::TransientAttachments)) {
-        features.push_back(wgpu::FeatureName::TransientAttachments);
-      }
+  wgpu::RequestAdapterOptions adapter_options;
+  adapter_options.backendType = GetDefaultBackendType();
+  adapter_options.powerPreference = wgpu::PowerPreference::LowPower;
 
-      descriptor.requiredFeatures = features.data();
-      descriptor.requiredFeaturesCount = std::size(features);
+#if BUILDFLAG(IS_WIN)
+  // Request the GPU that ANGLE is using if possible.
+  dawn::native::d3d::RequestAdapterOptionsLUID adapter_options_luid;
+  if (GetANGLED3D11DeviceLUID(&adapter_options_luid.adapterLUID)) {
+    adapter_options.nextInChain = &adapter_options_luid;
+  }
+#endif  // BUILDFLAG(IS_WIN)
 
-      wgpu::Device device(adapter.CreateDevice(&descriptor));
-      if (device) {
-        device.SetUncapturedErrorCallback(&LogError, nullptr);
-        device.SetDeviceLostCallback(&LogFatal, nullptr);
-        device.SetLoggingCallback(&LogInfo, nullptr);
-      }
-      device_ = std::move(device);
-      return true;
-    }
+  std::vector<dawn::native::Adapter> adapters =
+      instance_->EnumerateAdapters(&adapter_options);
+  if (adapters.empty()) {
+    LOG(ERROR) << "No adapters found.";
+    return false;
   }
 
-  return false;
+  wgpu::Adapter adapter(adapters[0].Get());
+
+  wgpu::AdapterProperties properties;
+  adapter.GetProperties(&properties);
+  if (wgpu::Adapter(adapter.Get())
+          .HasFeature(wgpu::FeatureName::TransientAttachments)) {
+    features.push_back(wgpu::FeatureName::TransientAttachments);
+  }
+
+  descriptor.requiredFeatures = features.data();
+  descriptor.requiredFeaturesCount = std::size(features);
+
+  wgpu::Device device = adapter.CreateDevice(&descriptor);
+  if (!device) {
+    LOG(ERROR) << "Failed to create device.";
+    return false;
+  }
+
+  device.SetUncapturedErrorCallback(&LogError, nullptr);
+  device.SetDeviceLostCallback(&LogDeviceLost, nullptr);
+  device.SetLoggingCallback(&LogInfo, nullptr);
+  device_ = std::move(device);
+
+  return true;
 }
 
 bool DawnContextProvider::InitializeGraphiteContext(

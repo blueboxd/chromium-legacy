@@ -61,6 +61,14 @@ const char kAutofillEnableCardArtImageDescription[] =
     "When enabled, card product images (instead of network icons) will be "
     "shown in Payments Autofill UI.";
 
+const char kAutofillEnablePaymentsMandatoryReauthOnBlingName[] =
+    "Enable mandatory re-auth for payments autofill on Bling";
+const char kAutofillEnablePaymentsMandatoryReauthOnBlingDescription[] =
+    "When this and the kAutofillEnablePaymentsMandatoryReauth are both "
+    "enabled, in use-cases where we would not have triggered any user-visible "
+    "authentication to autofill payment methods, we will trigger a device "
+    "authentication a device authentication on Bling.";
+
 const char kAutofillEnableRankingFormulaAddressProfilesName[] =
     "Enable new Autofill suggestion ranking formula for address profiles";
 const char kAutofillEnableRankingFormulaAddressProfilesDescription[] =
@@ -328,6 +336,12 @@ const char kEnableFeedHeaderSettingsName[] =
 const char kEnableFeedHeaderSettingsDescription[] =
     "When enabled, some UI elements of the feed header can be modified.";
 
+const char kEnableFriendlierSafeBrowsingSettingsName[] =
+    "Enable Friendlier Safe Browsing Settings";
+const char kEnableFriendlierSafeBrowsingSettingsDescription[] =
+    "Updates the text, layout, and icons on both the privacy guide and the "
+    "security settings page.";
+
 const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
     "Enables password editing in settings.";
@@ -469,11 +483,6 @@ const char kEnableVariationsGoogleGroupFilteringDescription[] =
     "is experimental and is used only for dogfooding, and only for users who "
     "are signed in and have Chrome Sync enabled.";
 
-const char kEnableWebChannelsName[] = "Enable WebFeed";
-const char kEnableWebChannelsDescription[] =
-    "Enable folowing content from web and display Following feed on NTP based "
-    "on sites that users followed.";
-
 const char kTailoredSecurityIntegrationName[] =
     "Enable Tailored Security Integration";
 const char kTailoredSecurityIntegrationDescription[] =
@@ -502,11 +511,6 @@ const char kFeedInvisibleForegroundRefreshDescription[] =
     "from Feed in current tab). The second is when the Feed is refreshed at "
     "the moment the app is backgrounding (e.g., during extended execution "
     "time).";
-
-const char kFollowingFeedDefaultSortTypeName[] =
-    "Following feed default sort type.";
-const char kFollowingFeedDefaultSortTypeDescription[] =
-    "Sets the default sort type for Following feed content.";
 
 const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =
@@ -1017,6 +1021,12 @@ const char kTFLiteLanguageDetectionIgnoreDescription[] =
 const char kThemeColorInToolbarName[] = "Use page's theme color";
 const char kThemeColorInToolbarDescription[] =
     "When enabled, the omnibox background color is the page's theme color";
+
+const char kIOSLensUseDirectUploadName[] =
+    "Use direct upload for Lens searches";
+const char kIOSLensUseDirectUploadDescription[] =
+    "When enabled, use the direct upload Lens endpoint when searching images "
+    "with Lens.";
 
 const char kEnableLensInHomeScreenWidgetName[] =
     "Enable Google Lens in the Home Screen Widget";

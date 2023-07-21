@@ -13,14 +13,8 @@
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
-#include "third_party/blink/renderer/modules/indexeddb/mock_web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
-
-using testing::_;
-using testing::Invoke;
-using testing::StrictMock;
-using testing::WithArgs;
 
 namespace blink {
 
@@ -39,19 +33,24 @@ TEST_F(WebIDBTransactionTest, ValueSizeTest) {
   std::unique_ptr<IDBKey> key = IDBKey::CreateNumber(0);
   const int64_t transaction_id = 1;
   const int64_t object_store_id = 2;
-  std::unique_ptr<StrictMock<MockWebIDBCallbacks>> callbacks =
-      std::make_unique<StrictMock<MockWebIDBCallbacks>>();
 
   ASSERT_GT(value_data->size() + key->SizeEstimate(), kMaxValueSizeForTesting);
   ThreadState::Current()->CollectAllGarbageForTesting();
-  EXPECT_CALL(*callbacks, Error(_, _)).Times(1);
+
+  bool got_error = false;
+  auto callback = base::BindOnce(
+      [](bool* got_error, mojom::blink::IDBTransactionPutResultPtr result) {
+        *got_error = result->is_error_result();
+      },
+      &got_error);
 
   WebIDBTransaction transaction(
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(), transaction_id);
   transaction.max_put_value_size_ = kMaxValueSizeForTesting;
   transaction.Put(object_store_id, std::move(value), std::move(key),
-                  mojom::IDBPutMode::AddOrUpdate, std::move(callbacks),
-                  Vector<IDBIndexKeys>());
+                  mojom::IDBPutMode::AddOrUpdate, Vector<IDBIndexKeys>(),
+                  std::move(callback));
+  EXPECT_TRUE(got_error);
 }
 
 TEST_F(WebIDBTransactionTest, KeyAndValueSizeTest) {
@@ -67,8 +66,6 @@ TEST_F(WebIDBTransactionTest, KeyAndValueSizeTest) {
   auto value = std::make_unique<IDBValue>(value_data, blob_info);
   const int64_t transaction_id = 1;
   const int64_t object_store_id = 2;
-  std::unique_ptr<StrictMock<MockWebIDBCallbacks>> callbacks =
-      std::make_unique<StrictMock<MockWebIDBCallbacks>>();
 
   // For this test, we want IDBKey::SizeEstimate() minus kKeySize to be the
   // smallest value > 0.  An IDBKey with a string has a size_estimate_ equal to
@@ -87,14 +84,21 @@ TEST_F(WebIDBTransactionTest, KeyAndValueSizeTest) {
   DCHECK_GT(value_data->size() + key->SizeEstimate(), kMaxValueSizeForTesting);
 
   ThreadState::Current()->CollectAllGarbageForTesting();
-  EXPECT_CALL(*callbacks, Error(_, _)).Times(1);
+
+  bool got_error = false;
+  auto callback = base::BindOnce(
+      [](bool* got_error, mojom::blink::IDBTransactionPutResultPtr result) {
+        *got_error = result->is_error_result();
+      },
+      &got_error);
 
   WebIDBTransaction transaction(
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(), transaction_id);
   transaction.max_put_value_size_ = kMaxValueSizeForTesting;
   transaction.Put(object_store_id, std::move(value), std::move(key),
-                  mojom::IDBPutMode::AddOrUpdate, std::move(callbacks),
-                  Vector<IDBIndexKeys>());
+                  mojom::IDBPutMode::AddOrUpdate, Vector<IDBIndexKeys>(),
+                  std::move(callback));
+  EXPECT_TRUE(got_error);
 }
 
 }  // namespace blink

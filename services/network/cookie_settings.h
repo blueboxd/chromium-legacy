@@ -26,6 +26,7 @@ class GURL;
 
 namespace net {
 class SiteForCookies;
+class CookieInclusionStatus;
 }  // namespace net
 
 namespace url {
@@ -119,14 +120,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
       const absl::optional<url::Origin>& top_frame_origin,
       net::CookieSettingOverrides overrides) const;
 
-  // Returns true if the given cookie is accessible according to user
-  // cookie-blocking settings. Assumes that the cookie is otherwise accessible
-  // (i.e. that the cookie is otherwise valid with no other exclusion reasons).
-  bool IsCookieAccessible(const net::CanonicalCookie& cookie,
-                          const GURL& url,
-                          const net::SiteForCookies& site_for_cookies,
-                          const absl::optional<url::Origin>& top_frame_origin,
-                          net::CookieSettingOverrides overrides) const;
+  // Returns true and maybe update `cookie_inclusion_status` to include reason
+  // to warn about the given cookie if it is accessible according to user
+  // cookie-blocking settings.
+  bool IsCookieAccessible(
+      const net::CanonicalCookie& cookie,
+      const GURL& url,
+      const net::SiteForCookies& site_for_cookies,
+      const absl::optional<url::Origin>& top_frame_origin,
+      net::CookieSettingOverrides overrides,
+      net::CookieInclusionStatus* cookie_inclusion_status) const;
 
   // Annotates `maybe_included_cookies` and `excluded_cookies` with
   // ExclusionReasons if needed, per user's cookie blocking settings, and
@@ -158,15 +161,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
 
   // content_settings::CookieSettingsBase:
   //
-  // Note: |source| and |expiration| are not supported in the network service.
-  // They are properties of content setting exceptions.
+  // Note: |info| are not supported in the network service.
+  // It contains properties of content setting exceptions.
   ContentSetting GetCookieSettingInternal(
       const GURL& url,
       const GURL& first_party_url,
       bool is_third_party_request,
       net::CookieSettingOverrides overrides,
-      content_settings::SettingSource* source,
-      base::Time* expiration) const override;
+      content_settings::SettingInfo* info) const override;
 
   // An enum that represents the scope of cookies to which the user's
   // third-party-cookie-blocking setting applies, in a given context.
@@ -176,9 +178,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
    public:
     CookieSettingWithMetadata(
         ContentSetting cookie_setting,
-        absl::optional<ThirdPartyBlockingScope> third_party_blocking_scope)
+        absl::optional<ThirdPartyBlockingScope> third_party_blocking_scope,
+        bool is_explicit_setting)
         : CookieSettingWithMetadataBase(cookie_setting,
-                                        third_party_blocking_scope) {}
+                                        third_party_blocking_scope,
+                                        is_explicit_setting) {}
 
     // Returns whether the given cookie should be allowed to be sent, according
     // to the user's settings. Assumes that the `cookie.access_result` has been

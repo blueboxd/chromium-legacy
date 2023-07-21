@@ -90,15 +90,6 @@ void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
       intrinsic_sizing_info.aspect_ratio = view_box_size;
     }
   }
-  EAspectRatioType ar_type = StyleRef().AspectRatio().GetType();
-  if (ar_type == EAspectRatioType::kRatio ||
-      (ar_type == EAspectRatioType::kAutoAndRatio &&
-       intrinsic_sizing_info.aspect_ratio.IsEmpty())) {
-    intrinsic_sizing_info.aspect_ratio = StyleRef().AspectRatio().GetRatio();
-  }
-
-  if (!IsHorizontalWritingMode())
-    intrinsic_sizing_info.Transpose();
 }
 
 void LayoutSVGRoot::ComputeIntrinsicSizingInfo(
@@ -117,8 +108,9 @@ bool LayoutSVGRoot::IsEmbeddedThroughSVGImage() const {
 
 bool LayoutSVGRoot::IsEmbeddedThroughFrameContainingSVGDocument() const {
   NOT_DESTROYED();
-  if (!GetNode())
+  if (!IsDocumentElement() || !GetNode()) {
     return false;
+  }
 
   LocalFrame* frame = GetNode()->GetDocument().GetFrame();
   if (!frame || !frame->GetDocument()->IsSVGDocument())
@@ -136,8 +128,10 @@ bool LayoutSVGRoot::IsEmbeddedThroughFrameContainingSVGDocument() const {
 
 double LayoutSVGRoot::LogicalSizeScaleFactorForPercentageLengths() const {
   NOT_DESTROYED();
-  if (!IsDocumentElement() || !GetDocument().IsInOutermostMainFrame())
+  CHECK(IsDocumentElement());
+  if (!GetDocument().IsInOutermostMainFrame()) {
     return 1;
+  }
   if (GetDocument().GetLayoutView()->ShouldUsePrintingLayout())
     return 1;
   // This will return the zoom factor which is different from the typical usage

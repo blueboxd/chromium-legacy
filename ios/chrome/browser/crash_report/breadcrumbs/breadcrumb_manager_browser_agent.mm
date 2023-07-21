@@ -70,13 +70,24 @@ void BreadcrumbManagerBrowserAgent::PlatformLogEvent(const std::string& event) {
 void BreadcrumbManagerBrowserAgent::WebStateListDidChange(
     WebStateList* web_state_list,
     const WebStateListChange& change,
-    const WebStateSelection& selection) {
+    const WebStateListStatus& status) {
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // WebStateActivatedAt() to here. Note that here is reachable only when
-      // `reason` == ActiveWebStateChangeReason::Activated.
+    case WebStateListChange::Type::kStatusOnly: {
+      if (!status.active_web_state_change()) {
+        return;
+      }
+      absl::optional<int> old_tab_id =
+          status.old_active_web_state
+              ? absl::optional<int>(GetTabId(status.old_active_web_state))
+              : absl::nullopt;
+      absl::optional<int> new_tab_id =
+          status.new_active_web_state
+              ? absl::optional<int>(GetTabId(status.new_active_web_state))
+              : absl::nullopt;
+      LogActiveTabChanged(old_tab_id, new_tab_id,
+                          web_state_list->active_index());
       break;
+    }
     case WebStateListChange::Type::kDetach: {
       if (batch_operation_) {
         ++batch_operation_->close_count;
@@ -85,14 +96,14 @@ void BreadcrumbManagerBrowserAgent::WebStateListDidChange(
       const WebStateListChangeDetach& detach_change =
           change.As<WebStateListChangeDetach>();
       LogTabClosedAt(GetTabId(detach_change.detached_web_state()),
-                     selection.index);
+                     status.index);
       break;
     }
     case WebStateListChange::Type::kMove: {
       const WebStateListChangeMove& move_change =
           change.As<WebStateListChangeMove>();
       LogTabMoved(GetTabId(move_change.moved_web_state()),
-                  move_change.moved_from_index(), selection.index);
+                  move_change.moved_from_index(), status.index);
       break;
     }
     case WebStateListChange::Type::kReplace: {
@@ -100,7 +111,7 @@ void BreadcrumbManagerBrowserAgent::WebStateListDidChange(
           change.As<WebStateListChangeReplace>();
       LogTabReplaced(GetTabId(replace_change.replaced_web_state()),
                      GetTabId(replace_change.inserted_web_state()),
-                     selection.index);
+                     status.index);
       break;
     }
     case WebStateListChange::Type::kInsert: {
@@ -111,28 +122,10 @@ void BreadcrumbManagerBrowserAgent::WebStateListDidChange(
       const WebStateListChangeInsert& insert_change =
           change.As<WebStateListChangeInsert>();
       LogTabInsertedAt(GetTabId(insert_change.inserted_web_state()),
-                       selection.index, selection.active_state_change);
+                       status.index, status.active_web_state_change());
       break;
     }
   }
-}
-
-void BreadcrumbManagerBrowserAgent::WebStateActivatedAt(
-    WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int active_index,
-    ActiveWebStateChangeReason reason) {
-  if (reason != ActiveWebStateChangeReason::Activated) {
-    return;
-  }
-  absl::optional<int> old_tab_id =
-      old_web_state ? absl::optional<int>(GetTabId(old_web_state))
-                    : absl::nullopt;
-  absl::optional<int> new_tab_id =
-      new_web_state ? absl::optional<int>(GetTabId(new_web_state))
-                    : absl::nullopt;
-  LogActiveTabChanged(old_tab_id, new_tab_id, active_index);
 }
 
 void BreadcrumbManagerBrowserAgent::WillBeginBatchOperation(

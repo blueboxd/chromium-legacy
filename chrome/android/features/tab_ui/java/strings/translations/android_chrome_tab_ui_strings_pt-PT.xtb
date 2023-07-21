@@ -3,7 +3,6 @@
 <translationbundle lang="pt-PT">
 <translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> dos seus separadores não foram utilizados recentemente. Pretende fechá-los?</translation>
 <translation id="125153950246128346">Toque para ver outro separador.</translation>
-<translation id="1403228085774130835">Pode encontrar os seus separadores fechados em Separadores recentes no menu principal do Chrome</translation>
 <translation id="1455506303394048917">A sua atividade nestes separadores anónimos vai ser limpa deste dispositivo</translation>
 <translation id="1499635324672558517">Fechar todos os separadores anónimos?</translation>
 <translation id="1657719826150349398">Mover o separador para baixo</translation>
@@ -38,6 +37,7 @@
 <translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> separadores parecem estar relacionados. Pretende agrupá-los?</translation>
 <translation id="4212246570487010370">Continue a navegar</translation>
 <translation id="4648718555153979859">Os separadores estão agrupados aqui.</translation>
+<translation id="4763557557015254160">{INCOGNITO_TABS_COUNT,plural, =0{Pode encontrar os seus separadores fechados em Separadores recentes no menu principal do Chrome.}=1{Pode encontrar os seus separadores fechados em Separadores recentes no menu principal do Chrome. O separador de navegação anónima não estará disponível.}other{Pode encontrar os seus separadores fechados em Separadores recentes no menu principal do Chrome. Os # separadores de navegação anónima não estarão disponíveis.}}</translation>
 <translation id="4788280460033928884">{REVIEWS,plural, =1{(<ph name="REVIEWS_COUNT_ONE" /> crítica)}other{(<ph name="REVIEWS_COUNT_MANY" /> críticas)}}</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4870911314065352661">Fechar todos os separadores?</translation>

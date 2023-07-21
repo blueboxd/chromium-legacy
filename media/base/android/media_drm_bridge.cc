@@ -76,10 +76,6 @@ enum class KeyStatus : uint32_t {
   KEY_STATUS_USABLE_IN_FUTURE = 5,  // Added in API level 29.
 };
 
-const uint8_t kWidevineUuid[16] = {
-    0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,  //
-    0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED};
-
 // Convert |init_data_type| to a string supported by MediaDRM.
 // "audio"/"video" does not matter, so use "video".
 std::string ConvertInitDataType(media::EmeInitDataType init_data_type) {
@@ -181,9 +177,11 @@ KeySystemManager::KeySystemManager() {
   // Widevine is always supported in Android.
   key_system_uuid_map_[kWidevineKeySystem] =
       UUID(kWidevineUuid, kWidevineUuid + std::size(kWidevineUuid));
-  // ClearKey is always supported in Android.
-  key_system_uuid_map_[kExternalClearKeyKeySystem] =
-      UUID(kClearKeyUuid, kClearKeyUuid + std::size(kClearKeyUuid));
+  // External Clear Key is supported only for testing.
+  if (base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting)) {
+    key_system_uuid_map_[kExternalClearKeyKeySystem] =
+        UUID(kClearKeyUuid, kClearKeyUuid + std::size(kClearKeyUuid));
+  }
   MediaDrmBridgeClient* client = GetMediaDrmBridgeClient();
   if (client)
     client->AddKeySystemUUIDMappings(&key_system_uuid_map_);
@@ -561,6 +559,12 @@ bool MediaDrmBridge::IsSecureCodecRequired() {
   // See http://crbug.com/727918.
   if (base::ranges::equal(scheme_uuid_, kWidevineUuid))
     return SECURITY_LEVEL_1 == GetSecurityLevel();
+
+  // If UUID is ClearKey, we should automatically return false since secure
+  // codecs should not be required.
+  if (base::ranges::equal(scheme_uuid_, kClearKeyUuid)) {
+    return false;
+  }
 
   // For other key systems, assume true.
   return true;

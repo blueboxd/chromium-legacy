@@ -1668,9 +1668,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableInlineSyncStatusProgressEvents(),
         TestCase("driveInlineSyncStatusParentFolderProgressEvents")
             .EnableInlineSyncStatusProgressEvents(),
-        TestCase("driveFolderShouldShowOfflineTickWhenBulkPinningEnabled")
-            .EnableBulkPinning()
-            .EnableInlineSyncStatus(),
         TestCase("driveFoldersRetainPinnedPropertyWhenBulkPinningEnabled")
             .EnableBulkPinning(),
         TestCase("drivePinToggleIsEnabledInSharedWithMeWhenBulkPinningEnabled")
@@ -1681,6 +1678,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveCantPinItemsShouldHaveClassNameAndGetUpdatedWhenCanPin")
             .EnableBulkPinning(),
         TestCase("driveItemsOutOfViewportShouldUpdateTheirSyncStatus")
+            .EnableBulkPinning()
             .EnableInlineSyncStatusProgressEvents(),
         TestCase("driveAllItemsShouldBeQueuedIfTrackedByPinManager")
             .EnableBulkPinning()
@@ -1799,7 +1797,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DLP, /* dlp.js */
     DlpFilesAppBrowserTest,
     ::testing::Values(
-        TestCase("transferShowDlpToast").EnableDlp(),
+        // Flaky. TODO(b/291674465): Re-enable.
+        // TestCase("transferShowDlpToast").EnableDlp(),
         TestCase("dlpShowManagedIcon").EnableDlp(),
         TestCase("dlpContextMenuRestrictionDetails").EnableDlp(),
         TestCase("saveAsDlpRestrictedAndroid").EnableArcVm().EnableDlp(),

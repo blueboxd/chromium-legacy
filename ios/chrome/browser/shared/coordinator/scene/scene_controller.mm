@@ -163,6 +163,10 @@
 #import "net/base/mac/url_conversions.h"
 #import "ui/base/l10n/l10n_util.h"
 
+// To get access to UseSessionSerializationOptimizations().
+// TODO(crbug.com/1383087): remove once the feature is fully launched.
+#import "ios/web/common/features.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -720,8 +724,13 @@ void InjectNTP(Browser* browser) {
 // in one place.
 - (void)transitionToSceneActivationLevel:(SceneActivationLevel)level
                             appInitStage:(InitStage)appInitStage {
+  if (level == SceneActivationLevelDisconnected) {
+    //  The scene may become disconnected at any time. In that case, any UI that
+    //  was already set-up should be torn down.
+    [self teardownUI];
+  }
   if (appInitStage < InitStageNormalUI) {
-    // Nothing per-scene should happen before the app completes the global
+    // Nothing else per-scene should happen before the app completes the global
     // setup, like executing Safe mode, or creating the main BrowserState.
     return;
   }
@@ -766,14 +775,13 @@ void InjectNTP(Browser* browser) {
 
   [self recordWindowCreationForSceneState:self.sceneState];
 
-  if (self.sceneState.UIEnabled && level == SceneActivationLevelUnattached) {
+  if (self.sceneState.UIEnabled && level <= SceneActivationLevelDisconnected) {
     if (base::ios::IsMultipleScenesSupported()) {
       // If Multiple scenes are not supported, the session shouldn't be
       // removed as it can be used for normal restoration.
       [[PreviousSessionInfo sharedInstance]
           removeSceneSessionID:self.sceneState.sceneSessionID];
     }
-    [self teardownUI];
   }
 }
 
@@ -1159,7 +1167,7 @@ void InjectNTP(Browser* browser) {
       !HasUserInteractedWithTailoredFullscreenPromoBefore() &&
       (isMadeForIOSPromoEligible || isAllTabsPromoEligible ||
        isStaySafePromoEligible);
-  if (isTailoredPromoEligibleUser && !UserInPromoCooldown()) {
+  if (isTailoredPromoEligibleUser && !UserInFullscreenPromoCooldown()) {
     self.sceneState.appState.shouldShowDefaultBrowserPromo = YES;
     self.sceneState.appState.defaultBrowserPromoTypeToShow =
         MostRecentInterestDefaultPromoType(!isSignedIn);
@@ -1171,7 +1179,7 @@ void InjectNTP(Browser* browser) {
   if (!HasUserInteractedWithFullscreenPromoBefore() &&
       (IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeGeneral) ||
        isSignedIn) &&
-      !UserInPromoCooldown()) {
+      !UserInFullscreenPromoCooldown()) {
     self.sceneState.appState.shouldShowDefaultBrowserPromo = YES;
     self.sceneState.appState.defaultBrowserPromoTypeToShow =
         DefaultPromoTypeGeneral;
@@ -3173,9 +3181,9 @@ void InjectNTP(Browser* browser) {
 
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
-                    selection:(const WebStateSelection&)selection {
+                       status:(const WebStateListStatus&)status {
   switch (change.type()) {
-    case WebStateListChange::Type::kSelectionOnly:
+    case WebStateListChange::Type::kStatusOnly:
       // Do nothing when a WebState is selected and its status is updated.
       break;
     case WebStateListChange::Type::kDetach: {
@@ -3462,9 +3470,11 @@ void InjectNTP(Browser* browser) {
   // does not load the session, the only risk is if the application were to
   // crash before the deletion could complete (in which case the user may
   // see the previous state of the app before closing the last incognito tab).
-  [[SessionServiceIOS sharedService]
-      deleteAllSessionFilesInDirectory:otrBrowserState->GetStatePath()
-                            completion:base::DoNothing()];
+  if (!web::features::UseSessionSerializationOptimizations()) {
+    [[SessionServiceIOS sharedService]
+        deleteAllSessionFilesInDirectory:otrBrowserState->GetStatePath()
+                              completion:base::DoNothing()];
+  }
 
   // Record off-the-record metrics before detroying the BrowserState.
   SessionMetrics::FromBrowserState(otrBrowserState)

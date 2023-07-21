@@ -553,8 +553,9 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
                                               std::move(callback));
 }
 
-void ChromeAuthenticatorRequestDelegate::ConfigureCable(
+void ChromeAuthenticatorRequestDelegate::ConfigureDiscoveries(
     const url::Origin& origin,
+    const std::string& rp_id,
     device::FidoRequestType request_type,
     absl::optional<device::ResidentKeyRequirement> resident_key_requirement,
     base::span<const device::CableDiscoveryData> pairings_from_extension,
@@ -727,6 +728,11 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
         browser_window->GetNativeWindow().GetNativeNSWindow()));
   }
 #endif
+
+  if (base::FeatureList::IsEnabled(device::kWebAuthnEnclaveAuthenticator) &&
+      request_type == device::FidoRequestType::kGetAssertion) {
+    ConfigureEnclaveDiscovery(rp_id, discovery_factory);
+  }
 }
 
 void ChromeAuthenticatorRequestDelegate::SelectAccount(
@@ -791,7 +797,7 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     GetPhoneContactableGpmPasskeysForRpId(dialog_model_->relying_party_id(),
                                           &data.recognized_credentials);
   }
-  if (is_conditional_ && !credential_filter_.empty()) {
+  if (!credential_filter_.empty()) {
     std::vector<device::DiscoverableCredentialMetadata> filtered_list;
     for (auto& platform_credential : data.recognized_credentials) {
       for (auto& filter_credential : credential_filter_) {
@@ -1019,4 +1025,23 @@ void ChromeAuthenticatorRequestDelegate::GetPhoneContactableGpmPasskeysForRpId(
                                  passkey.user_id().end()),
             passkey.user_name(), passkey.user_display_name()));
   }
+}
+
+void ChromeAuthenticatorRequestDelegate::ConfigureEnclaveDiscovery(
+    const std::string& rp_id,
+    device::FidoDiscoveryFactory* discovery_factory) {
+  webauthn::PasskeyModel* passkey_model =
+      PasskeyModelFactory::GetInstance()->GetForProfile(
+          Profile::FromBrowserContext(GetBrowserContext()));
+  CHECK(passkey_model);
+
+  std::vector<sync_pb::WebauthnCredentialSpecifics> filtered_passkeys;
+  for (sync_pb::WebauthnCredentialSpecifics& entity :
+       passkey_model->GetAllPasskeys()) {
+    if (entity.rp_id() != rp_id) {
+      continue;
+    }
+    filtered_passkeys.emplace_back(std::move(entity));
+  }
+  discovery_factory->SetEnclavePasskeys(std::move(filtered_passkeys));
 }

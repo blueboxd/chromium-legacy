@@ -152,6 +152,13 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
     library_ui_visibility_ = library_ui_visibility;
   }
 
+  // Sets the animation abort handle. Please note, it will abort the existing
+  // animation first (if there is one) when a new one comes.
+  void set_animation_abort_handle(
+      std::unique_ptr<views::AnimationAbortHandle> animation_abort_handle) {
+    animation_abort_handle_ = std::move(animation_abort_handle);
+  }
+
   // views::View:
   void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -258,6 +265,11 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
   // is ended.
   bool HandleReleaseEvent(DeskMiniView* mini_view,
                           const ui::LocatedEvent& event);
+  // Handle the click event from a desk preview.
+  void HandleClickEvent(DeskMiniView* mini_view);
+
+  // Fires when `desk_activation_timer_` is over.
+  void OnActivateDeskTimer(const base::Uuid& uuid);
 
   // Finalize any unfinished drag & drop. Initialize a new drag proxy.
   void InitDragDesk(DeskMiniView* mini_view,
@@ -317,6 +329,10 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
 
   // Animate the bar from the zero state to the expanded state.
   void SwitchToExpandedState();
+
+  // Triggered when the bar UI update is done. This is triggered when the bar is
+  // done with its animation or when `desk_activation_timer_` fires.
+  void OnUiUpdateDone();
 
  protected:
   friend class DeskBarScrollViewLayout;
@@ -465,7 +481,15 @@ class ASH_EXPORT DeskBarViewBase : public views::View,
   base::CallbackListSubscription on_contents_scrolled_subscription_;
   base::CallbackListSubscription on_contents_scroll_ended_subscription_;
 
+  // A timer to wait on desk activation before desk bar animation is finished.
+  base::OneShotTimer desk_activation_timer_;
+
   raw_ptr<aura::Window> root_;
+
+  std::unique_ptr<views::AnimationAbortHandle> animation_abort_handle_;
+
+  // Test closure that runs after the UI has been updated asynchronously.
+  base::OnceClosure on_update_ui_closure_for_testing_;
 };
 
 }  // namespace ash

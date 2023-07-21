@@ -333,7 +333,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.HomedirEncryptionType" enum="HomedirEncryptionType"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>dspaid@chromium.org</owner>
   <summary>
     The encryption type used for a user's cryptohome directory. This is logged
@@ -342,7 +342,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.LECredential.LogReplayEntryCount" units="count"
-    expires_after="2023-12-24">
+    expires_after="2024-01-11">
   <owner>hcyang@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -357,7 +357,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.LECredential.Replay.{ReplayType}"
-    enum="CryptohomeLEReplayError" expires_after="2023-08-25">
+    enum="CryptohomeLEReplayError" expires_after="2024-01-11">
   <owner>hcyang@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -377,10 +377,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.LECredential.{Operation}{Action}"
-    enum="CryptohomeLECredError" expires_after="2023-07-22">
-  <owner>pmalani@chromium.org</owner>
-  <owner>apronin@chromium.org</owner>
-  <owner>allenwebb@chromium.org</owner>
+    enum="CryptohomeLECredError" expires_after="2024-01-11">
+  <owner>hcyang@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
     Events related to Low Entropy (LE) credential management. Specifically, the
@@ -688,7 +686,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToInitPkcs11" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-14">
   <owner>apronin@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -852,7 +850,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.WrappingKeyDerivation.Mount"
-    enum="WrappingKeyDerivation" expires_after="2023-11-12">
+    enum="WrappingKeyDerivation" expires_after="2024-01-14">
   <owner>tnagel@chromium.org</owner>
   <owner>zauri@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -1062,43 +1060,6 @@ chromium-metrics-reviews@google.com.
     This is useful to cryptohome developers because we're able to classify the
     CryptohomeError by the content of the stack, and identify new ways the error
     can occur if they do occur.
-  </summary>
-  <token key="ErrorOperation" variants="CryptohomeErrorOperations"/>
-  <token key="AuthFactorType" variants="CryptohomeAuthFactorTypes"/>
-</histogram>
-
-<histogram
-    name="Cryptohome.{ErrorOperation}{AuthFactorType}.LeafErrorWithoutTPM"
-    enum="CryptohomeErrorLocation" expires_after="2023-11-01">
-  <owner>zuan@chromium.org</owner>
-  <owner>cros-hwsec+uma@chromium.org</owner>
-  <summary>
-    Background context on this histogram: A CryptohomeError in this context
-    refers to an error that occurred in response to a dbus request to selected
-    cryptohomed APIs. The set of APIs with this CryptohomeError is generally
-    those related to authentication, and contains CryptohomeErrorInfo field in
-    the dbus Reply protobuf. Currently that includes methods that are called
-    during login. A CryptohomeError consists of a linear stack of
-    ErrorLocations, each one of them is an actual line in the cryptohomed
-    codebase which the error passed through, and could have certain attributes,
-    known as ErrorAction attached to them. The ErrorLocation in the bottom of
-    the stack could optionally have a TPM Error Code associated, if the source
-    of error is TPM related.
-
-    For this histogram, for every CryptohomeError that occurred, we report the
-    last ErrorLocation in the stack of ErrorLocation in the CryptohomeError, if
-    the last ErrorLocation does not have a TPM Error Code associated with it.
-
-    This histogram is also separated into several error buckets. The most
-    standard error bucket is 'Error', which collects the errors populated in
-    dbus responses. Other buckets are errors we collect in some subrountines,
-    like migration. Migration errors are not surfaced to dbus responses, but
-    silently fail instead. We collect those errors in separate buckets.
-
-    This is useful to cryptohome developers because frequently, the last
-    ErrorLocation in the stack would be able to uniquely identify the error, and
-    this histogram doesn't involve hashing, so it would be more convenient for
-    the developers.
   </summary>
   <token key="ErrorOperation" variants="CryptohomeErrorOperations"/>
   <token key="AuthFactorType" variants="CryptohomeAuthFactorTypes"/>

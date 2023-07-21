@@ -151,8 +151,8 @@ using password_manager::WarningType;
                      faviconLoader:faviconLoader
                        syncService:SyncServiceFactory::GetForBrowserState(
                                        browserState)];
-  self.reauthModule = [[ReauthenticationModule alloc]
-      initWithSuccessfulReauthTimeAccessor:self.mediator];
+  self.reauthModule = password_manager::BuildReauthenticationModule(
+      /*successfulReauthTimeAccessor=*/self.mediator);
   ChromeAccountManagerService* accountManagerService =
       ChromeAccountManagerServiceFactory::GetForBrowserState(browserState);
   self.passwordsViewController = [[PasswordManagerViewController alloc]
@@ -203,6 +203,10 @@ using password_manager::WarningType;
   self.passwordSettingsCoordinator.delegate = nil;
   self.passwordSettingsCoordinator = nil;
 
+  [self.addPasswordCoordinator stop];
+  self.addPasswordCoordinator.delegate = nil;
+  self.addPasswordCoordinator = nil;
+
   [self.mediator disconnect];
 }
 
@@ -220,8 +224,9 @@ using password_manager::WarningType;
   [self.passwordCheckupCoordinator start];
 }
 
+// TODO(crbug.com/1464966): Make sure there aren't mutiple active
+// `passwordIssuesCoordinator`s at once.
 - (void)showPasswordIssues {
-  DCHECK(!self.passwordIssuesCoordinator);
   self.passwordIssuesCoordinator = [[PasswordIssuesCoordinator alloc]
             initForWarningType:WarningType::kCompromisedPasswordsWarning
       baseNavigationController:self.baseNavigationController
@@ -270,7 +275,7 @@ using password_manager::WarningType;
 - (void)showPasswordDeleteDialogWithOrigins:(NSArray<NSString*>*)origins
                                  completion:(void (^)(void))completion {
   std::pair<NSString*, NSString*> titleAndMessage =
-      GetPasswordAlertTitleAndMessageForOrigins(origins);
+      password_manager::GetPasswordAlertTitleAndMessageForOrigins(origins);
   NSString* title = titleAndMessage.first;
   NSString* message = titleAndMessage.second;
 

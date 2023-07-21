@@ -16,6 +16,12 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
 
+namespace {
+
+constexpr int kMaxBubbleWidth = 1000;
+
+}  // namespace
+
 CookieControlsBubbleViewImpl::CookieControlsBubbleViewImpl(
     views::View* anchor_view,
     content::WebContents* web_contents,
@@ -37,20 +43,20 @@ void CookieControlsBubbleViewImpl::Init() {
   const int vertical_margin =
       provider->GetDistanceMetric(DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
   set_margins(gfx::Insets::VH(vertical_margin, 0));
-  set_fixed_width(provider->GetDistanceMetric(
-      views::DistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH));
 }
 
 void CookieControlsBubbleViewImpl::InitContentView(
     std::unique_ptr<CookieControlsContentView> view) {
   CHECK(!content_view_);
   content_view_ = AddChildView(std::move(view));
+  content_view_->SetProperty(views::kElementIdentifierKey, kContentView);
 }
 
 void CookieControlsBubbleViewImpl::InitReloadingView(
     std::unique_ptr<View> view) {
   CHECK(!reloading_view_);
   reloading_view_ = AddChildView(std::move(view));
+  reloading_view_->SetProperty(views::kElementIdentifierKey, kReloadingView);
 }
 
 void CookieControlsBubbleViewImpl::UpdateTitle(const std::u16string& title) {
@@ -71,14 +77,10 @@ void CookieControlsBubbleViewImpl::UpdateFaviconImage(const gfx::Image& image,
   favicon->SetImage(ui::ImageModel::FromImage(image));
 }
 
-void CookieControlsBubbleViewImpl::ShowContentView() {
-  GetReloadingView()->SetVisible(false);
-  GetContentView()->SetVisible(true);
-}
-
-void CookieControlsBubbleViewImpl::ShowReloadingView() {
+void CookieControlsBubbleViewImpl::SwitchToReloadingView() {
   GetReloadingView()->SetVisible(true);
   GetContentView()->SetVisible(false);
+  SizeToContents();
 }
 
 CookieControlsContentView* CookieControlsBubbleViewImpl::GetContentView() {
@@ -93,6 +95,25 @@ void CookieControlsBubbleViewImpl::CloseWidget() {
   GetWidget()->Close();
 }
 
+base::CallbackListSubscription
+CookieControlsBubbleViewImpl::RegisterOnUserClosedContentViewCallback(
+    base::RepeatingClosureList::CallbackType callback) {
+  return on_user_closed_content_view_callback_list_.Add(std::move(callback));
+}
+
+gfx::Size CookieControlsBubbleViewImpl::CalculatePreferredSize() const {
+  auto size = LocationBarBubbleDelegateView::CalculatePreferredSize();
+
+  // Enforce a range of valid widths.
+  auto* provider = ChromeLayoutProvider::Get();
+  int width =
+      std::clamp(size.width(),
+                 provider->GetDistanceMetric(
+                     views::DistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH),
+                 kMaxBubbleWidth);
+  return gfx::Size(width, size.height());
+}
+
 void CookieControlsBubbleViewImpl::ChildPreferredSizeChanged(
     views::View* child) {
   SizeToContents();
@@ -104,4 +125,15 @@ void CookieControlsBubbleViewImpl::CloseBubble() {
   }
   std::move(callback_).Run(this);
   LocationBarBubbleDelegateView::CloseBubble();
+}
+
+bool CookieControlsBubbleViewImpl::OnCloseRequested(
+    views::Widget::ClosedReason close_reason) {
+  if (close_reason == views::Widget::ClosedReason::kUnspecified ||
+      !GetContentView()->GetVisible()) {
+    return true;
+  }
+
+  on_user_closed_content_view_callback_list_.Notify();
+  return false;
 }

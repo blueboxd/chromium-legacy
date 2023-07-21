@@ -176,13 +176,12 @@ void WebIDBDatabase::DeleteRange(
                          std::move(key_range_ptr), std::move(success_callback));
 }
 
-void WebIDBDatabase::GetKeyGeneratorCurrentNumber(int64_t transaction_id,
-                                                  int64_t object_store_id,
-                                                  WebIDBCallbacks* callbacks) {
-  callbacks->SetState(transaction_id);
-  database_->GetKeyGeneratorCurrentNumber(
-      transaction_id, object_store_id,
-      GetCallbacksProxy(base::WrapUnique(callbacks)));
+void WebIDBDatabase::GetKeyGeneratorCurrentNumber(
+    int64_t transaction_id,
+    int64_t object_store_id,
+    mojom::blink::IDBDatabase::GetKeyGeneratorCurrentNumberCallback callback) {
+  database_->GetKeyGeneratorCurrentNumber(transaction_id, object_store_id,
+                                          std::move(callback));
 }
 
 void WebIDBDatabase::Clear(
@@ -229,7 +228,7 @@ void WebIDBDatabase::DidBecomeInactive() {
 
 mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks>
 WebIDBDatabase::GetCallbacksProxy(
-    std::unique_ptr<WebIDBCallbacks> callbacks_impl) {
+    std::unique_ptr<WebIDBCallbacksImpl> callbacks_impl) {
   mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> pending_callbacks;
   mojo::MakeSelfOwnedAssociatedReceiver(
       std::move(callbacks_impl),

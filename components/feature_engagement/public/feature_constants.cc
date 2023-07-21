@@ -50,7 +50,7 @@ BASE_FEATURE(kIPHExtensionsMenuFeature,
              "IPH_ExtensionsMenu",
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHExtensionsRequestAccessButtonFeature,
-             "IPH_ExtensionsRequestAccessFeature",
+             "IPH_ExtensionsRequestAccessButton",
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHFocusHelpBubbleScreenReaderPromoFeature,
              "IPH_FocusHelpBubbleScreenReaderPromo",
@@ -93,6 +93,9 @@ BASE_FEATURE(kIPHPriceInsightsPageActionIconLabelFeature,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHPriceTrackingChipFeature,
              "IPH_PriceTrackingChipFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHPriceTrackingEmailConsentFeature,
+             "IPH_PriceTrackingEmailConsentFeature",
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHPriceTrackingPageActionIconLabelFeature,
              "IPH_PriceTrackingPageActionIconLabelFeature",
@@ -242,9 +245,6 @@ BASE_FEATURE(kIPHRequestDesktopSiteOptInFeature,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHRequestDesktopSiteExceptionsGenericFeature,
              "IPH_RequestDesktopSiteExceptionsGeneric",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kIPHRequestDesktopSiteExceptionsSpecificFeature,
-             "IPH_RequestDesktopSiteExceptionsSpecific",
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHShoppingListSaveFlowFeature,
              "IPH_ShoppingListSaveFlow",

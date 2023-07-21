@@ -252,10 +252,26 @@ void RecordNetworkLoaderCompletionTime(const char* suffix,
       elapsed);
 }
 
-bool IsSharedDictionaryWriteAllowedMode(mojom::RequestMode mode) {
-  return mode == mojom::RequestMode::kCors ||
-         mode == mojom::RequestMode::kCorsWithForcedPreflight ||
-         mode == mojom::RequestMode::kSameOrigin;
+// The compressed dictionary transport feature supports storing dictionaries
+// if the request was fetched by cors enabled mode request or same-origin mode
+// request or no-cors mode same origin request.
+bool IsSharedDictionaryWriteAllowed(
+    mojom::RequestMode mode,
+    mojom::FetchResponseType response_tainting) {
+  switch (mode) {
+    case mojom::RequestMode::kSameOrigin:
+      return true;
+    case mojom::RequestMode::kNoCors:
+      // Basic `response_tainting` for no-cors request means that the response
+      // is from same origin without any cross origin redirect.
+      return response_tainting == mojom::FetchResponseType::kBasic;
+    case mojom::RequestMode::kCors:
+      return true;
+    case mojom::RequestMode::kCorsWithForcedPreflight:
+      return true;
+    case mojom::RequestMode::kNavigate:
+      return false;
+  }
 }
 
 constexpr const char kTimingAllowOrigin[] = "Timing-Allow-Origin";
@@ -326,6 +342,18 @@ CorsURLLoader::CorsURLLoader(
   SetCorsFlagIfNeeded();
 
   if (shared_dictionary_storage_) {
+    if (request_.mode != mojom::RequestMode::kNoCors) {
+      request_.load_flags |= net::LOAD_CAN_USE_SHARED_DICTIONARY;
+    } else if (request_.request_initiator &&
+               request_.request_initiator->IsSameOriginWith(request_.url)) {
+      // For no-cors mode requests, we can use shared dictionaries only for same
+      // origin requests. When redirected to another origin,
+      // net::URLRequest::Redirect() disables the LOAD_CAN_USE_SHARED_DICTIONARY
+      // flag.
+      request_.load_flags |= net::LOAD_CAN_USE_SHARED_DICTIONARY;
+      request_.load_flags |=
+          net::LOAD_DISABLE_SHARED_DICTIONARY_AFTER_CROSS_ORIGIN_REDIRECT;
+    }
     // This is intended to load the dictionary as soon as possible. Without
     // this, the dictionary will be loaded from the disk when
     // `HttpNetworkTransaction` builds the request header just before sending it
@@ -563,10 +591,10 @@ void CorsURLLoader::OnReceiveResponse(
   }
 
   if (request_.shared_dictionary_writer_enabled && shared_dictionary_storage_ &&
-      (IsSharedDictionaryWriteAllowedMode(request_.mode))) {
-    // The compressed dictionary transport feature supports storing
-    // dictionaries only if the request was fetched using cors enabled mode or
-    // same-origin mode.
+      IsSharedDictionaryWriteAllowed(request_.mode, response_tainting_)) {
+    // Opaque response tainting requests should not trigger dictionary
+    // registration.
+    CHECK_NE(mojom::FetchResponseType::kOpaque, response_tainting_);
     auto writer = shared_dictionary_storage_->MaybeCreateWriter(
         request_.url, response_head->response_time, *response_head->headers,
         base::BindOnce(
@@ -587,6 +615,10 @@ void CorsURLLoader::OnReceiveResponse(
       }
     }
   }
+
+  // Opaque response tainting requests must not use shared dictionary.
+  CHECK(!(response_head->did_use_shared_dictionary &&
+          (response_tainting_ == mojom::FetchResponseType::kOpaque)));
 
   has_forwarded_response_ = true;
   timing_allow_failed_flag_ = !PassesTimingAllowOriginCheck(*response_head);

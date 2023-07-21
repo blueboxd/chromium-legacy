@@ -8,6 +8,8 @@
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/policy_loader_local_test.h"
 #include "components/policy/policy_export.h"
+#include "components/prefs/pref_registry_simple.h"
+
 #include "components/version_info/channel.h"
 
 namespace policy {
@@ -28,10 +30,13 @@ class POLICY_EXPORT LocalTestPolicyProvider
   ~LocalTestPolicyProvider() override;
 
   void LoadJsonPolicies(const std::string& json_policies_string);
+  void ClearPolicies();
 
   // ConfigurationPolicyProvider implementation
   void RefreshPolicies() override;
   bool IsFirstPolicyLoadComplete(PolicyDomain domain) const override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
   explicit LocalTestPolicyProvider();

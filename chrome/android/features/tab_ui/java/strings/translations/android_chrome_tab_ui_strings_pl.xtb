@@ -3,7 +3,6 @@
 <translationbundle lang="pl">
 <translation id="1075622780330595106">Karty, które ostatnio nie były używane: <ph name="NUMBER_OF_TABS" />. Zamknąć je?</translation>
 <translation id="125153950246128346">Kliknij, by zobaczyć inną kartę</translation>
-<translation id="1403228085774130835">Zamknięte karty znajdziesz w sekcji Ostatnie karty w menu głównym Chrome</translation>
 <translation id="1455506303394048917">Twoja aktywność na tych kartach incognito zostanie usunięta z tego urządzenia</translation>
 <translation id="1499635324672558517">Zamknąć wszystkie karty incognito?</translation>
 <translation id="1657719826150349398">Przesuń kartę w dół</translation>
@@ -38,6 +37,7 @@
 <translation id="4133493477912226187">Liczba prawdopodobnie powiązanych kart wynosi <ph name="NUMBER_OF_TABS" />. Czy chcesz je pogrupować?</translation>
 <translation id="4212246570487010370">Przeglądaj dalej</translation>
 <translation id="4648718555153979859">Tutaj są zgrupowane Twoje karty</translation>
+<translation id="4763557557015254160">{INCOGNITO_TABS_COUNT,plural, =0{Zamknięte karty znajdziesz w sekcji Ostatnie karty w menu głównym Chrome.}=1{Zamknięte karty znajdziesz w sekcji Ostatnie karty w menu głównym Chrome. Karta incognito nie będzie dostępna.}few{Zamknięte karty znajdziesz w sekcji Ostatnie karty w menu głównym Chrome. # karty incognito nie będą dostępne.}many{Zamknięte karty znajdziesz w sekcji Ostatnie karty w menu głównym Chrome. # kart incognito nie będzie dostępnych.}other{Zamknięte karty znajdziesz w sekcji Ostatnie karty w menu głównym Chrome. # karty incognito nie będzie dostępne.}}</translation>
 <translation id="4788280460033928884">{REVIEWS,plural, =1{(<ph name="REVIEWS_COUNT_ONE" /> opinia)}few{(<ph name="REVIEWS_COUNT_MANY" /> opinie)}many{(<ph name="REVIEWS_COUNT_MANY" /> opinii)}other{(<ph name="REVIEWS_COUNT_MANY" /> opinii)}}</translation>
 <translation id="4850886885716139402">Widok</translation>
 <translation id="4870911314065352661">Zamknąć wszystkie karty?</translation>
@@ -47,6 +47,7 @@
 <translation id="5073204694187207510">Ukryj siatkę pełnego ekranu</translation>
 <translation id="5076161749301278626">Wyświetlić opinie o sklepie?</translation>
 <translation id="5082793167783849073">Możesz szybko porównać strony, tworząc ich grupę. Aby to zrobić, naciśnij i przytrzymaj link.</translation>
+<translation id="5339733443032484186">Ostatnia karta</translation>
 <translation id="5490235265819901748">Grupa kart została rozwinięta</translation>
 <translation id="5494920125229734069">Wybierz wszystko</translation>
 <translation id="5556417849629758491">Wyświetl informacje o sklepie, opcja dostępna u góry ekranu</translation>

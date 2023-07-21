@@ -7,12 +7,12 @@
 <translation id="1065672644894730302">Hindi mabasa ang iyong mga kagustuhan.
 
 Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago sa mga kagustuhan.</translation>
+<translation id="1083934481477628225">In-off ng iyong magulang ang "Mga pahintulot para sa mga site, app, at extension" para sa Chromium</translation>
 <translation id="1098170124587656448">Makakatulong ang Chromium na panatilihin kang ligtas laban sa mga paglabag sa data, sirang extension, at higit pa</translation>
 <translation id="1104942323762546749">Gustong i-export ng Chromium ang iyong mga password. I-type ang iyong password sa Windows para payagan ito.</translation>
 <translation id="113122355610423240">Chromium ang iyong default na browser</translation>
 <translation id="1131805035311359397">Para makita kung ligtas ang iyong mga password mula sa mga paglabag sa data at iba pang isyu sa seguridad, <ph name="BEGIN_LINK" />mag-sign in sa Chromium<ph name="END_LINK" />.</translation>
 <translation id="1153368717515616349">I-click ang menu ng Chromium</translation>
-<translation id="1157106475430165622">{NUM_DEVICES,plural, =0{Ina-access ng mga extension ng Chromium ang mga HID device}=1{Ina-access ng mga extension ng Chromium ang mga HID device}one{Ina-access ng mga extension ng Chromium ang # HID device}other{Ina-access ng mga extension ng Chromium ang # na HID device}}</translation>
 <translation id="1185134272377778587">Tungkol sa Chromium</translation>
 <translation id="1203500561924088507">Salamat sa pag-install. Dapat mong i-restart ang iyong browser bago gamitin ang <ph name="BUNDLE_NAME" />.</translation>
 <translation id="1261119230216066228">Pinabilis ng Memory Saver ang Chromium</translation>
@@ -61,6 +61,7 @@ Posibleng malapat sa account na ito ang mga pahintulot na naibigay mo na sa mga 
 <translation id="2359808026110333948">Magpatuloy</translation>
 <translation id="2384373936468275798">Hindi ma-sync ng ChromiumOS ang iyong data dahil hindi napapanahon ang mga detalye sa pag-sign in sa iyong account.</translation>
 <translation id="2396765026452590966">Binago ng extension na "<ph name="EXTENSION_NAME" />" ang ipinapakitang page kapag sinimulan mo ang Chromium.</translation>
+<translation id="2398377054246527950">{NUM_DEVICES,plural, =0{1 HID device ang ina-access ng isa o higit pang extension ng Chromium}=1{1 HID device ang ina-access ng isa o higit pang extension ng Chromium}one{# HID device ang ina-access ng isa o higit pang extension ng Chromium}other{# HID device ang ina-access ng isa o higit pang extension ng Chromium}}</translation>
 <translation id="2401032172288869980">Kailangan ng Chromium ng pahintulot sa camera at mikropono para sa site na ito</translation>
 <translation id="2451727308784734061">Gamitin ang iyong shortcut para mabilis na makarating sa Password Manager. Puwede mong ilipat ang iyong shortcut sa home screen o app launcher ng computer mo.</translation>
 <translation id="2478295928299953161">Magsasara na ang Chromium sa ilang saglit</translation>
@@ -93,6 +94,7 @@ Posibleng malapat sa account na ito ang mga pahintulot na naibigay mo na sa mga 
 <translation id="3032787606318309379">Idinaragdag sa Chromium...</translation>
 <translation id="3038232873781883849">Naghihintay sa pag-install...</translation>
 <translation id="3068515742935458733">Tumulong na gawing mas mahusay ang Chromium sa pamamagitan ng pagpapadala ng mga ulat ng pag-crash at <ph name="UMA_LINK" /> sa Google</translation>
+<translation id="3079753320517721795">{NUM_DEVICES,plural, =0{1 USB device ang ina-access ng isa o higit pang extension ng Chromium}=1{1 USB device ang ina-access ng isa o higit pang extension ng Chromium}one{# USB device ang ina-access ng isa o higit pang extension ng Chromium}other{# na USB device ang ina-access ng isa o higit pang extension ng Chromium}}</translation>
 <translation id="3101560983689755071">Naaapektuhan ng iyong history ng pag-browse ang mga ad na nakikita mo at mga interes tulad ng tinatantya sa ibaba. Para protektahan ang iyong privacy, awtomatikong ide-delete ng Chromium ang mga interes mo sa rolling na paraan bawat buwan. Puwedeng ma-refresh ang mga interes maliban na lang kung alisin mo ang mga ito.</translation>
 <translation id="3103660991484857065">Nabigong i-uncompress ng installer ang archive. Mangyaring i-download muli ang Chromium.</translation>
 <translation id="3130323860337406239">Ginagamit ng Chromium ang iyong mikropono.</translation>
@@ -155,6 +157,7 @@ Posibleng malapat sa account na ito ang mga pahintulot na naibigay mo na sa mga 
 <translation id="4222932583846282852">Kinakansela...</translation>
 <translation id="4230135487732243613">I-link ang iyong data sa Chromium sa account na ito?</translation>
 <translation id="4271805377592243930">Humingi ng tulong sa Chromium</translation>
+<translation id="4281844954008187215">Mga Tuntunin ng Serbisyo</translation>
 <translation id="4285930937574705105">Nabigo ang pag-install dahil sa hindi natukoy na error. Kung kasalukuyang tumatakbo ang Chromium, pakisara ito at subukan ulit.</translation>
 <translation id="4304713468139749426">Password Manager</translation>
 <translation id="4334294535648607276">Tapos na ang pag-download.</translation>
@@ -298,6 +301,7 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="7025789849649390912">Inihinto ang Pag-install.</translation>
 <translation id="705851970750939768">I-update ang Chromium</translation>
 <translation id="7067091210845072982">Kung hindi sapat ang deskripsyon ng isang larawan, susubukan ng Chromium na ayusin ito para sa iyo. Para gumawa ng mga deskripsyon, ipinapadala ang mga larawan sa Google.</translation>
+<translation id="7141270731789036260">I-customize ang Chrome for Testing</translation>
 <translation id="7173822816570314652">Nagde-delete ang iyong organisasyon ng data ng Chromium kapag hindi ito ginagamit sa loob ng <ph name="TIMEOUT_DURATION" />. Posibleng kasama rito ang history, autofill, at mga download.</translation>
 <translation id="718435575166326686">Kailangan ng Chromium ng pahintulot sa camera para sa site na ito</translation>
 <translation id="7196312274710523067">Hindi mailunsad ang Chromium. Subukang muli.</translation>
@@ -372,7 +376,6 @@ Hindi mabawi ng Chromium ang iyong mga setting.</translation>
 <translation id="8619360774459241877">Inilulunsad ang Chromium...</translation>
 <translation id="8621669128220841554">Nabigo ang pag-install dahil sa hindi natukoy na error. Mangyaring i-download muli ang Chromium.</translation>
 <translation id="8648201657708811153">Hindi puwedeng gawing default na browser mo ang Google Chrome na Pang-test.</translation>
-<translation id="867492205098279939">{NUM_DEVICES,plural, =0{Ina-access ng extension ng Chromium ang mga HID device}=1{Ina-access ng extension ng Chromium ang 1 HID device}one{Ina-access ng extension ng Chromium ang # HID device}other{Ina-access ng extension ng Chromium ang # na HID device}}</translation>
 <translation id="8697124171261953979">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chromium o naghanap mula sa Omnibox.</translation>
 <translation id="8704119203788522458">Ito ang iyong Chromium</translation>
 <translation id="8796602469536043152">Kailangan ng Chromium ng pahintulot na i-access ang iyong camera at mikropono para sa site na ito</translation>

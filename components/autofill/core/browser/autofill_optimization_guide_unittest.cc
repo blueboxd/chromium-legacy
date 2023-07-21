@@ -65,8 +65,9 @@ class AutofillOptimizationGuideTest : public testing::Test {
         autofill_optimization_guide_(
             std::make_unique<AutofillOptimizationGuide>(decider_.get())) {
     CreditCard card = test::GetVirtualCard();
-    CreditCardTestApi(&card).set_network_for_virtual_card(kVisaCard);
-    card.set_virtual_card_enrollment_type(CreditCard::NETWORK);
+    test_api(card).set_network_for_virtual_card(kVisaCard);
+    card.set_virtual_card_enrollment_type(
+        CreditCard::VirtualCardEnrollmentType::kNetwork);
     personal_data_manager_->Init(
         /*profile_database=*/nullptr,
         /*account_database=*/nullptr,
@@ -76,8 +77,7 @@ class AutofillOptimizationGuideTest : public testing::Test {
         /*history_service=*/nullptr,
         /*sync_service=*/&sync_service_,
         /*strike_database=*/nullptr,
-        /*image_fetcher=*/nullptr,
-        /*is_off_the_record=*/false);
+        /*image_fetcher=*/nullptr);
     personal_data_manager_->AddServerCreditCard(card);
   }
 
@@ -106,8 +106,7 @@ TEST_F(AutofillOptimizationGuideTest, IbanFieldFound_IbanAutofillBlocked) {
   FormData form_data;
   test::CreateTestIbanFormData(&form_data);
   FormStructure form_structure{form_data};
-  FormStructureTestApi(&form_structure)
-      .SetFieldTypes({IBAN_VALUE}, {IBAN_VALUE});
+  test_api(form_structure).SetFieldTypes({IBAN_VALUE}, {IBAN_VALUE});
 
   EXPECT_CALL(*decider_, RegisterOptimizationTypes(testing::ElementsAre(
                              optimization_guide::proto::IBAN_AUTOFILL_BLOCKED)))
@@ -127,8 +126,7 @@ TEST_F(AutofillOptimizationGuideTest,
   FormData form_data;
   test::CreateTestIbanFormData(&form_data);
   FormStructure form_structure{form_data};
-  FormStructureTestApi(&form_structure)
-      .SetFieldTypes({IBAN_VALUE}, {IBAN_VALUE});
+  test_api(form_structure).SetFieldTypes({IBAN_VALUE}, {IBAN_VALUE});
 
   EXPECT_CALL(*decider_, RegisterOptimizationTypes).Times(0);
 
@@ -172,7 +170,7 @@ TEST_F(AutofillOptimizationGuideTest,
   FormStructure form_structure{form_data};
   form_structure.DetermineHeuristicTypes(
       /*form_interactions_ukm_logger=*/nullptr, /*log_manager=*/nullptr);
-  CreditCardTestApi(personal_data_manager_->GetCreditCards()[0])
+  test_api(*personal_data_manager_->GetCreditCards()[0])
       .set_network_for_virtual_card(kMasterCard);
 
   EXPECT_CALL(*decider_, RegisterOptimizationTypes).Times(0);
@@ -196,7 +194,7 @@ TEST_F(AutofillOptimizationGuideTest,
   form_structure.DetermineHeuristicTypes(
       /*form_interactions_ukm_logger=*/nullptr, /*log_manager=*/nullptr);
   personal_data_manager_->GetCreditCards()[0]->set_virtual_card_enrollment_type(
-      CreditCard::ISSUER);
+      CreditCard::VirtualCardEnrollmentType::kIssuer);
 
   EXPECT_CALL(*decider_, RegisterOptimizationTypes).Times(0);
 
@@ -219,7 +217,8 @@ TEST_F(AutofillOptimizationGuideTest,
   form_structure.DetermineHeuristicTypes(
       /*form_interactions_ukm_logger=*/nullptr, /*log_manager=*/nullptr);
   personal_data_manager_->GetCreditCards()[0]
-      ->set_virtual_card_enrollment_state(CreditCard::UNENROLLED_AND_ELIGIBLE);
+      ->set_virtual_card_enrollment_state(
+          CreditCard::VirtualCardEnrollmentState::kUnenrolledAndEligible);
 
   EXPECT_CALL(*decider_, RegisterOptimizationTypes).Times(0);
 
@@ -282,7 +281,7 @@ TEST_F(AutofillOptimizationGuideTest, OptimizationTypeToRegisterNotFound) {
   FormData form_data;
   form_data.fields = {field};
   FormStructure form_structure{form_data};
-  FormStructureTestApi(&form_structure)
+  test_api(form_structure)
       .SetFieldTypes({MERCHANT_PROMO_CODE}, {MERCHANT_PROMO_CODE});
 
   EXPECT_CALL(*decider_, RegisterOptimizationTypes).Times(0);
@@ -309,7 +308,7 @@ TEST_F(AutofillOptimizationGuideTest,
   const std::vector<ServerFieldType> field_types = {
       IBAN_VALUE,         CREDIT_CARD_NAME_FIRST, CREDIT_CARD_NAME_LAST,
       CREDIT_CARD_NUMBER, CREDIT_CARD_EXP_MONTH,  CREDIT_CARD_EXP_4_DIGIT_YEAR};
-  FormStructureTestApi(&form_structure).SetFieldTypes(field_types, field_types);
+  test_api(form_structure).SetFieldTypes(field_types, field_types);
 
   EXPECT_CALL(*decider_,
               RegisterOptimizationTypes(testing::ElementsAre(
@@ -333,8 +332,7 @@ TEST_F(AutofillOptimizationGuideTest,
   FormData form_data;
   test::CreateTestIbanFormData(&form_data);
   FormStructure form_structure{form_data};
-  FormStructureTestApi(&form_structure)
-      .SetFieldTypes({IBAN_VALUE}, {IBAN_VALUE});
+  test_api(form_structure).SetFieldTypes({IBAN_VALUE}, {IBAN_VALUE});
   GURL url("https://example.com/");
   ON_CALL(*decider_,
           CanApplyOptimization(
@@ -359,8 +357,7 @@ TEST_F(AutofillOptimizationGuideTest,
   FormData form_data;
   test::CreateTestIbanFormData(&form_data);
   FormStructure form_structure{form_data};
-  FormStructureTestApi(&form_structure)
-      .SetFieldTypes({IBAN_VALUE}, {IBAN_VALUE});
+  test_api(form_structure).SetFieldTypes({IBAN_VALUE}, {IBAN_VALUE});
   GURL url("https://example.com/");
   EXPECT_CALL(*decider_,
               CanApplyOptimization(
@@ -386,8 +383,7 @@ TEST_F(AutofillOptimizationGuideTest,
   FormData form_data;
   test::CreateTestIbanFormData(&form_data);
   FormStructure form_structure{form_data};
-  FormStructureTestApi(&form_structure)
-      .SetFieldTypes({IBAN_VALUE}, {IBAN_VALUE});
+  test_api(form_structure).SetFieldTypes({IBAN_VALUE}, {IBAN_VALUE});
   GURL url("https://example.com/");
   ON_CALL(*decider_,
           CanApplyOptimization(
@@ -435,8 +431,9 @@ TEST_F(AutofillOptimizationGuideTest,
       features::kAutofillEnableMerchantOptOutClientSideUrlFiltering);
   GURL url("https://example.com/");
   CreditCard virtual_card = test::GetVirtualCard();
-  virtual_card.set_virtual_card_enrollment_type(CreditCard::NETWORK);
-  CreditCardTestApi(&virtual_card).set_network_for_virtual_card(kVisaCard);
+  virtual_card.set_virtual_card_enrollment_type(
+      CreditCard::VirtualCardEnrollmentType::kNetwork);
+  test_api(virtual_card).set_network_for_virtual_card(kVisaCard);
 
   ON_CALL(*decider_,
           CanApplyOptimization(
@@ -460,8 +457,9 @@ TEST_F(AutofillOptimizationGuideTest,
       features::kAutofillEnableMerchantOptOutClientSideUrlFiltering);
   GURL url("https://example.com/");
   CreditCard virtual_card = test::GetVirtualCard();
-  virtual_card.set_virtual_card_enrollment_type(CreditCard::NETWORK);
-  CreditCardTestApi(&virtual_card).set_network_for_virtual_card(kVisaCard);
+  virtual_card.set_virtual_card_enrollment_type(
+      CreditCard::VirtualCardEnrollmentType::kNetwork);
+  test_api(virtual_card).set_network_for_virtual_card(kVisaCard);
 
   ON_CALL(*decider_,
           CanApplyOptimization(
@@ -486,8 +484,9 @@ TEST_F(AutofillOptimizationGuideTest,
       features::kAutofillEnableMerchantOptOutClientSideUrlFiltering);
   GURL url("https://example.com/");
   CreditCard virtual_card = test::GetVirtualCard();
-  virtual_card.set_virtual_card_enrollment_type(CreditCard::NETWORK);
-  CreditCardTestApi(&virtual_card).set_network_for_virtual_card(kVisaCard);
+  virtual_card.set_virtual_card_enrollment_type(
+      CreditCard::VirtualCardEnrollmentType::kNetwork);
+  test_api(virtual_card).set_network_for_virtual_card(kVisaCard);
 
   EXPECT_CALL(
       *decider_,
@@ -511,8 +510,9 @@ TEST_F(AutofillOptimizationGuideTest,
       features::kAutofillEnableMerchantOptOutClientSideUrlFiltering);
   GURL url("https://example.com/");
   CreditCard virtual_card = test::GetVirtualCard();
-  virtual_card.set_virtual_card_enrollment_type(CreditCard::ISSUER);
-  CreditCardTestApi(&virtual_card).set_network_for_virtual_card(kVisaCard);
+  virtual_card.set_virtual_card_enrollment_type(
+      CreditCard::VirtualCardEnrollmentType::kIssuer);
+  test_api(virtual_card).set_network_for_virtual_card(kVisaCard);
 
   EXPECT_CALL(
       *decider_,
@@ -538,8 +538,9 @@ TEST_F(
       features::kAutofillEnableMerchantOptOutClientSideUrlFiltering);
   GURL url("https://example.com/");
   CreditCard virtual_card = test::GetVirtualCard();
-  virtual_card.set_virtual_card_enrollment_type(CreditCard::NETWORK);
-  CreditCardTestApi(&virtual_card).set_network_for_virtual_card(kMasterCard);
+  virtual_card.set_virtual_card_enrollment_type(
+      CreditCard::VirtualCardEnrollmentType::kNetwork);
+  test_api(virtual_card).set_network_for_virtual_card(kMasterCard);
 
   EXPECT_CALL(
       *decider_,

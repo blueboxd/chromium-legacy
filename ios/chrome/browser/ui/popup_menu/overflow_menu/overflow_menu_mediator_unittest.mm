@@ -164,6 +164,7 @@ class OverflowMenuMediatorTest : public PlatformTest {
         std::make_unique<web::FakeWebState>();
     test_web_state->SetNavigationManager(std::move(navigation_manager));
     test_web_state->SetLoading(true);
+    test_web_state->SetBrowserState(browser_state_.get());
     web_state_ = test_web_state.get();
 
     auto frames_manager = std::make_unique<web::FakeWebFramesManager>();
@@ -419,7 +420,7 @@ TEST_F(OverflowMenuMediatorTest, TestMenuItemsCount) {
     number_of_tab_actions++;
   }
 
-  NSUInteger number_of_help_items = 1;
+  NSUInteger number_of_help_items = 2;
 
   if (ios::provider::IsUserFeedbackSupported()) {
     number_of_help_items++;

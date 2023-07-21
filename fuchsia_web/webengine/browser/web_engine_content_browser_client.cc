@@ -260,16 +260,14 @@ void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
       *base::CommandLine::ForCurrentProcess();
 
   command_line->CopySwitchesFrom(browser_command_line,
-                                 kAllProcessSwitchesToCopy,
-                                 std::size(kAllProcessSwitchesToCopy));
+                                 kAllProcessSwitchesToCopy);
 
   std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);
 
   if (process_type == switches::kRendererProcess) {
     command_line->CopySwitchesFrom(browser_command_line,
-                                   kRendererSwitchesToCopy,
-                                   std::size(kRendererSwitchesToCopy));
+                                   kRendererSwitchesToCopy);
   } else if (process_type == switches::kUtilityProcess) {
     // Although only the Network process needs
     // kUnsafelyTreatInsecureOriginAsSecureSwitchToCopy, differentiating utility
@@ -277,8 +275,7 @@ void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
     // switch to all Utility processes so do the same here.
     // Do not add other switches here.
     command_line->CopySwitchesFrom(
-        browser_command_line, kUnsafelyTreatInsecureOriginAsSecureSwitchToCopy,
-        std::size(kUnsafelyTreatInsecureOriginAsSecureSwitchToCopy));
+        browser_command_line, kUnsafelyTreatInsecureOriginAsSecureSwitchToCopy);
   }
 }
 
@@ -296,6 +293,7 @@ std::string WebEngineContentBrowserClient::GetAcceptLangs(
 }
 
 base::OnceClosure WebEngineContentBrowserClient::SelectClientCertificate(
+    content::BrowserContext* browser_context,
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,

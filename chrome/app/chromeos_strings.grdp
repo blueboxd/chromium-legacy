@@ -280,6 +280,21 @@
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_CONFIRMATION_CODE_LOADING" desc="Message, informing the user the confirmation code entered to activate an eSIM profile is currently being verified.">
     Verifying confirmation code...
   </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_TITLE" desc="Title asking for consent to scan automatically for available eSIM profiles.">
+    Automatically scan for available eSIM profiles?
+  </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_MESSAGE" desc="Message, informing the user that device information will be shared with third parties.">
+    By continuing, you allow third parties to verify information that identifies this device on the network
+  </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_ENTER_MANUALLY" desc="Label for button that allows the user to manually scan for profiles.">
+    Enter manually
+  </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_SCAN" desc="Label for button to trigger automatic scanning.">
+    Scan
+  </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_PROFILE_DISCOVERY_CONSENT_CANCEL" desc="Label for button to cancel and return to previous page.">
+    Cancel
+  </message>
 
   <!-- ChromeOS Strings -->
   <message name="IDS_ECHO_CONSENT_DIALOG_TEXT" desc="Dialog text shown when user is asked to give consent to proceed with redeeming an ECHO offer.">
@@ -908,6 +923,15 @@
     <ph name="BEGIN_DESCRIPTION3">&lt;p&gt;</ph>The organization can remotely access a device session in order to provide troubleshooting.<ph name="END_DESCRIPTION3">&lt;/p&gt;</ph>
     <ph name="BEGIN_SUBTITLE4">&lt;p&gt;</ph><ph name="BEGIN_BOLD">&lt;b&gt;</ph>Enable access<ph name="END_BOLD">&lt;/b&gt;</ph><ph name="END_SUBTITLE4">&lt;/p&gt;</ph>
     <ph name="BEGIN_DESCRIPTION4">&lt;p&gt;</ph>Organization apps, services, and networks may only be available on enrolled devices.<ph name="END_DESCRIPTION4">&lt;/p&gt;</ph>
+  </message>
+
+  <!-- Strings for the OOBE consumer update screen -->
+  <!-- TODO(b/290598534): Add final string and remove translateable tags -->
+  <message name="IDS_CONSUMER_UPDATE_DECLINE_BUTTON" translateable="false" desc="Label on the button that decline using cellular data for the consumer update screen">
+    No thanks
+  </message>
+  <message name="IDS_CONSUMER_UPDATE_SKIP_BUTTON" translateable="false" desc="Label on the button that skip the consumer update screen.">
+    Skip
   </message>
 
    <!-- Strings for the OOBE demo setup flow -->
@@ -2186,9 +2210,6 @@
   </message>
   <message name="IDS_CONTROLLED_SETTING_DEMO_SESSION" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by demo session.">
     This setting can't be changed in a demo session.
-  </message>
-  <message name="IDS_CONTROLLED_SETTING_PARENT" desc="Text displayed in the controlled settings bubble when a setting's value is controlled by user's parent.">
-    This setting is managed by a parent.
   </message>
   <message name="IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK" desc="The menu option to disable spoken feedback accessibility feature.">
     Disable ChromeVox (spoken feedback)

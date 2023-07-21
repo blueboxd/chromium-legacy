@@ -11,7 +11,7 @@
 <translation id="1125124144982679672">Qui està utilitzant Chrome?</translation>
 <translation id="1142745911746664600">Chrome no es pot actualitzar</translation>
 <translation id="1149651794389918149">Inicia la sessió a Chrome. Si vols iniciar la sessió en un compte només una vegada, pots <ph name="GUEST_LINK_BEGIN" />utilitzar el dispositiu com a convidat<ph name="GUEST_LINK_END" />.</translation>
-<translation id="1152920704813762236">Sobre Chrome OS</translation>
+<translation id="1152920704813762236">Sobre ChromeOS</translation>
 <translation id="1154147086299354128">&amp;Obre a Chrome</translation>
 <translation id="1203500561924088507">T'agraïm la instal·lació. Has de reiniciar el navegador abans d'utilitzar <ph name="BUNDLE_NAME" />.</translation>
 <translation id="1278833599417554002">Reinicia per actualitzar &amp;Chrome</translation>
@@ -79,6 +79,7 @@
 <translation id="235650106824528204">L'administrador del perfil de treball pot suprimir qualsevol dada de Chrome que es generi durant l'ús d'aquest perfil, com ara les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració. <ph name="LEARN_MORE" /></translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2401189691232800402">Sistema Chrome OS</translation>
+<translation id="2409816192575564775">{NUM_DEVICES,plural, =0{Una o més extensions de Chrome estaven accedint a 1 dispositiu d'interfície humana}=1{Una o més extensions de Chrome estan accedint a 1 dispositiu d'interfície humana}other{Una o més extensions de Chrome estan accedint a # dispositius d'interfície humana}}</translation>
 <translation id="2424440923901031101">Aquesta extensió infringeix la política de Chrome Web Store i podria no ser segura. Suprimeix-la de Chrome perquè ja no pugui veure ni canviar les teves dades als llocs web que visitis, inclosa la teva informació personal.</translation>
 <translation id="2467438592969358367">Google Chrome vol exportar les teves contrasenyes. Escriu la contrasenya de Windows per permetre-ho.</translation>
 <translation id="2472092250898121027">Aquesta extensió conté programari maliciós i no és segura. Suprimeix-la de Chrome perquè ja no pugui veure ni canviar les teves dades als llocs web que visitis, inclosa la teva informació personal.</translation>
@@ -116,7 +117,6 @@
 <translation id="2929907241665500097">No s'ha actualitzat Chrome. S'ha produït un error. <ph name="BEGIN_LINK" />Soluciona els problemes i errors d'actualització de Chrome<ph name="END_LINK" />.</translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - Inici de sessió a la xarxa - Chrome</translation>
 <translation id="3019382870990049182">Reinicia per actualitzar &amp;ChromeOS Flex</translation>
-<translation id="3033660625209020231">{NUM_DEVICES,plural, =0{Les extensions de Google Chrome estaven accedint als dispositius HID}=1{Les extensions de Google Chrome estan accedint a un dispositiu HID}other{Les extensions de Google Chrome estan accedint a # dispositius HID}}</translation>
 <translation id="303514781271618814">Chrome està explorant noves funcions que permetin als llocs web oferir la mateixa experiència de navegació utilitzant menys dades</translation>
 <translation id="3037838751736561277">Google Chrome està en mode de segon pla.</translation>
 <translation id="3038232873781883849">S'està esperant per instal·lar...</translation>
@@ -224,7 +224,6 @@
 <translation id="4970947549776831107">Chrome ha bloquejat aquest fitxer perquè aquest tipus de fitxer és perillós</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5003967926796347400">Fes clic a Gestor de contrasenyes de Google</translation>
-<translation id="5005958605836556244">{NUM_DEVICES,plural, =0{Una extensió de Google Chrome estava accedint als dispositius HID}=1{Una extensió de Google Chrome està accedint a un dispositiu HID}other{Una extensió de Google Chrome està accedint a # dispositius HID}}</translation>
 <translation id="5098668839038261629">Si aquesta opció està activada, també se't tancarà la sessió de Chrome</translation>
 <translation id="5132929315877954718">Descobriu aplicacions, jocs, extensions i temes genials per a Google Chrome.</translation>
 <translation id="5139423532931106058">Personalitza el teu perfil de Chrome</translation>
@@ -240,6 +239,7 @@
 <translation id="5394833366792865639">Comparteix una pestanya de Chrome</translation>
 <translation id="5412485296464121825">Els llocs web poden emmagatzemar informació a Chrome sobre els teus interessos. Per exemple, si visites un lloc web per comprar sabatilles per a una marató, és possible que el lloc web defineixi que t'interessa córrer maratons. Més endavant, si visites un altre lloc web per inscriure't a una cursa, aquest altre lloc web et pot mostrar un anunci de sabatilles de curses basant-se en els teus interessos.</translation>
 <translation id="5430073640787465221">El fitxer de preferències està malmès o no és vàlid. Google Chrome no pot recuperar la configuració.</translation>
+<translation id="5521146392841465297">Chrome et recomana que revisis aquesta extensió.</translation>
 <translation id="5524761631371622910">Quan les proves estan activades, i si Chrome t'ha inclòs aleatòriament en una prova activa, el teu historial de navegació afecta els anuncis que veus i les estimacions d'interessos que es mostren més avall. Amb la finalitat de protegir la teva privadesa, Chrome suprimeix els interessos de manera contínua cada mes.</translation>
 <translation id="5530733413481476019">Fes que Chrome sigui més ràpid</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -277,6 +277,7 @@
 <translation id="624230925347970731">Chrome es tancarà aviat</translation>
 <translation id="6247557882553405851">Gestor de contrasenyes de Google</translation>
 <translation id="6273793429163604305">Preparats…</translation>
+<translation id="6277547788421725101">El teu pare o mare ha desactivat Permisos per a llocs web, aplicacions i extensions en relació amb Chrome</translation>
 <translation id="6291089322031436445">Aplicacions de Chrome Dev</translation>
 <translation id="6291549208091401781">Ja tens instal·lat Google Chrome per a tots els usuaris de l'ordinador.</translation>
 <translation id="6326175484149238433">Suprimeix de Chrome</translation>
@@ -332,6 +333,7 @@
 <translation id="7398801000654795464">Teníeu la sessió iniciada a Chrome com a <ph name="USER_EMAIL_ADDRESS" />. Utilitzeu el mateix compte per tornar-hi a iniciar la sessió.</translation>
 <translation id="7410958280246779049">Chrome ha bloquejat aquest fitxer perquè és perillós</translation>
 <translation id="7412494426921990001">Fes clic al menú de Chrome</translation>
+<translation id="742463671275348370">{NUM_DEVICES,plural, =0{Una o més extensions de Chrome estaven accedint a 1 dispositiu USB}=1{Una o més extensions de Chrome estan accedint a 1 dispositiu USB}other{Una o més extensions de Chrome estan accedint a # dispositius USB}}</translation>
 <translation id="7426611252293106642">Pot ser que Google Chrome no funcioni correctament perquè ja no és compatible amb aquesta distribució de Linux</translation>
 <translation id="7449333426561673451">{COUNT,plural, =1{La teva organització tanca Chrome automàticament quan no s'utilitza durant 1 minut.}other{La teva organització tanca Chrome automàticament quan no s'utilitza durant # minuts.}}</translation>
 <translation id="7452987490177144319">{COUNT,plural, =1{La teva organització suprimeix automàticament les dades de navegació quan Chrome no s'utilitza durant 1 minut. Això pot incloure l'historial, les dades d'Emplenament automàtic i les baixades. Les pestanyes continuaran obertes.}other{La teva organització suprimeix automàticament les dades de navegació quan Chrome no s'utilitza durant # minuts. Això pot incloure l'historial, les dades d'Emplenament automàtic i les baixades. Les pestanyes continuaran obertes.}}</translation>

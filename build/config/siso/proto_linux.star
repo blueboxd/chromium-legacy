@@ -10,18 +10,27 @@ load("./config.star", "config")
 load("./protoc_wrapper.star", "protoc_wrapper")
 
 __filegroups = {
+    "third_party/protobuf/python/google:pyprotolib": {
+        "type": "glob",
+        "includes": ["*.py"],
+    },
 }
 
 def __protoc_wrapper(ctx, cmd):
     inputs = protoc_wrapper.scandeps(ctx, cmd.args)
-    ctx.actions.fix(inputs = cmd.inputs + inputs)
+    ctx.actions.fix(inputs = cmd.expanded_inputs() + inputs)
 
 __handlers = {
     "protoc_wrapper": __protoc_wrapper,
 }
 
 def __step_config(ctx, step_config):
-    remote_run = config.get(ctx, "remote_proto") or config.get(ctx, "remote_all")
+    remote_run = True  # Turn this to False when you do file access trace.
+    step_config["input_deps"].update({
+        "third_party/dom_distiller_js/protoc_plugins/util/plugin_protos.py": [
+            "third_party/protobuf/python/google:pyprotolib",
+        ],
+    })
     step_config["rules"].extend([
         {
             "name": "proto_linux/protoc_wrapper",
@@ -37,7 +46,7 @@ def __step_config(ctx, step_config):
                 # "*_pb2.py",
             ],
             "handler": "protoc_wrapper",
-            "remote": True,
+            "remote": remote_run,
             # chromeos generates default.profraw?
             "ignore_extra_output_pattern": ".*default.profraw",
             # "deps": "depfile",

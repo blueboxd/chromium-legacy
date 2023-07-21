@@ -31,6 +31,12 @@ BASE_FEATURE(kCloudGamingDevice,
              "CloudGamingDevice",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables the use of cros-component UI elements. Contact:
+// cros-jellybean-team@google.com.
+BASE_FEATURE(kCrosComponents,
+             "CrosComponents",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables Demo Mode System Web App migration
 BASE_FEATURE(kDemoModeSWA, "DemoModeSWA", base::FEATURE_ENABLED_BY_DEFAULT);
 
@@ -63,6 +69,11 @@ BASE_FEATURE(kExperimentalWebAppProfileIsolation,
 // Enable experimental goldfish web app isolation.
 BASE_FEATURE(kExperimentalWebAppStoragePartitionIsolation,
              "ExperimentalWebAppStoragePartitionIsolation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable IWA support for Telemetry Extension API.
+BASE_FEATURE(kIWAForTelemetryExtensionAPI,
+             "IWAForTelemetryExtensionAPI",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables Jelly features. go/jelly-flags
@@ -110,8 +121,16 @@ bool IsCloudGamingDeviceEnabled() {
 #endif
 }
 
+bool IsCrosComponentsEnabled() {
+  return base::FeatureList::IsEnabled(kCrosComponents) && IsJellyEnabled();
+}
+
 bool IsDemoModeSWAEnabled() {
   return base::FeatureList::IsEnabled(kDemoModeSWA);
+}
+
+bool IsIWAForTelemetryExtensionAPIEnabled() {
+  return base::FeatureList::IsEnabled(kIWAForTelemetryExtensionAPI);
 }
 
 bool IsJellyEnabled() {

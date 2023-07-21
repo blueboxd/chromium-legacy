@@ -22,29 +22,32 @@
   "     to expire. Tests will not be run starting from the expiration date.   ",
 
   {
-    "prefix": "lna-permission",
+    "prefix": "pna-permission",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/fetch/local-network-access"],
+    "bases": ["external/wpt/fetch/private-network-access"],
     "args": [
       "--enable-features=PrivateNetworkAccessPermissionPrompt",
       "--enable-blink-features=PrivateNetworkAccessPermissionPrompt"],
+    "owners": ["phao@google.com", "lyf@google.com"],
     "expires": "Jan 1, 2024"
   },
   {
-    "prefix": "lna-workers-disabled",
+    "prefix": "pna-workers-disabled",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/fetch/local-network-access"],
+    "bases": ["external/wpt/fetch/private-network-access"],
     "args": ["--disable-features=PrivateNetworkAccessForWorkers"],
+    "owners": ["phao@google.com", "lyf@google.com"],
     "expires": "Jan 1, 2024"
   },
   {
-    "prefix": "lna-workers-enabled",
+    "prefix": "pna-workers-enabled",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/fetch/local-network-access"],
+    "bases": ["external/wpt/fetch/private-network-access"],
     "args": [
       "--enable-features=PrivateNetworkAccessForWorkers",
       "--disable-features=PrivateNetworkAccessForWorkersWarningOnly"
     ],
+    "owners": ["phao@google.com", "lyf@google.com"],
     "expires": "Jan 1, 2024"
   },
   {
@@ -130,6 +133,18 @@
               "http/tests/devtools/layers"],
     "args": ["--disable-features=CompositeScrollAfterPaint"],
     "expires": "Sep 1, 2023"
+  },
+  {
+    "prefix": "disable-intersection-optimization",
+    "platforms": ["Linux", "Mac"],
+    "bases": ["external/wpt/intersection-observer",
+              "external/wpt/html/semantics/embedded-content/the-img-element",
+              "external/wpt/html/semantics/embedded-content/the-iframe-element",
+              "http/tests/intersection-observer",
+              "intersection-observer",
+              "wpt_internal/display-lock"],
+    "args": ["--disable-features=IntersectionOptimization"],
+    "expires": "Oct 1, 2023"
   },
   {
     "prefix": "attribution-reporting-debug-mode",
@@ -916,13 +931,6 @@
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "mathml-disabled",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [],
-    "args": ["--disable-blink-features=MathMLCore"],
-    "expires": "Jul 1, 2023"
-  },
-  {
     "prefix": "hdr",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
@@ -1019,6 +1027,17 @@
       "external/wpt/shadow-dom/declarative"
     ],
     "args": ["--disable-features=StreamingDeclarativeShadowDOM"],
+    "expires": "Feb 1, 2024"
+  },
+  {
+    "prefix": "dom-parts-disabled",
+    "owners": ["masonf@chromium.org", "dom-dev@chromium.org"],
+    "platforms": ["Linux"],
+    "bases": [
+      "external/wpt/dom/parts",
+      "fast/parser"
+    ],
+    "args": ["--disable-features=DOMPartsAPI"],
     "expires": "Feb 1, 2024"
   },
   {
@@ -1204,6 +1223,7 @@
               "external/wpt/accessibility/",
               "external/wpt/dom/ranges/Range-deleteContents.html",
               "external/wpt/html/semantics/embedded-content/the-iframe-element/iframe-initially-empty-is-updated.html",
+              "external/wpt/html/semantics/interactive-elements/the-dialog-element/inert-svg-hittest.html",
               "editing/text-iterator/auto-expand-details.html",
               "editing/text-iterator/auto-expand-details-shadowdom.html"],
     "args": ["--force-renderer-accessibility"],
@@ -1588,18 +1608,18 @@
       "http/tests/inspector-protocol/fenced-frame",
       "external/wpt/html/anonymous-iframe",
       "external/wpt/fenced-frame",
-      "external/wpt/fetch/local-network-access/fenced-frame-subresource-fetch.tentative.https.window.js",
-      "external/wpt/fetch/local-network-access/fenced-frame.tentative.https.window.js",
-      "external/wpt/fetch/local-network-access/fenced-frame-no-preflight-required.tentative.https.window.js"
+      "external/wpt/fetch/private-network-access/fenced-frame-subresource-fetch.tentative.https.window.js",
+      "external/wpt/fetch/private-network-access/fenced-frame.tentative.https.window.js",
+      "external/wpt/fetch/private-network-access/fenced-frame-no-preflight-required.tentative.https.window.js"
     ],
     "exclusive_tests": [
       "http/tests/fenced_frame",
       "wpt_internal/fenced_frame",
       "external/wpt/fenced-frame",
       "http/tests/inspector-protocol/fenced-frame",
-      "external/wpt/fetch/local-network-access/fenced-frame-subresource-fetch.tentative.https.window.js",
-      "external/wpt/fetch/local-network-access/fenced-frame.tentative.https.window.js",
-      "external/wpt/fetch/local-network-access/fenced-frame-no-preflight-required.tentative.https.window.js"
+      "external/wpt/fetch/private-network-access/fenced-frame-subresource-fetch.tentative.https.window.js",
+      "external/wpt/fetch/private-network-access/fenced-frame.tentative.https.window.js",
+      "external/wpt/fetch/private-network-access/fenced-frame-no-preflight-required.tentative.https.window.js"
     ],
     "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies,Fledge,InterestGroupStorage,AdInterestGroupAPI,AllowURNsInIframes,BiddingAndScoringDebugReportingAPI,ComputePressure",
              "--enable-blink-features=FencedFramesAPIChanges,FencedFramesDefaultMode"],
@@ -1789,6 +1809,7 @@
   "rules prefetch.",
   {
     "prefix": "prefetch",
+    "owners": ["jbroman@chromium.org", "liviutinta@chromium.org"],
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/speculation-rules/prefetch",
@@ -1804,9 +1825,11 @@
   },
   {
     "prefix": "prefetch-no-vary-search",
+    "owners": ["jbroman@chromium.org", "liviutinta@chromium.org"],
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
-      "external/wpt/speculation-rules/prefetch/no-vary-search"
+      "external/wpt/speculation-rules/prefetch/no-vary-search",
+      "wpt_internal/speculation-rules/prefetch/no-vary-search"
     ],
     "exclusive_tests": "ALL",
     "args": [
@@ -1870,22 +1893,14 @@
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "orb-v01",
-    "platforms": ["Linux"],
-    "bases": [
-      "external/wpt/fetch/corb",
-      "external/wpt/fetch/api",
-      "external/wpt/fetch/nosniff"
-    ],
-    "args": ["--enable-features=OpaqueResponseBlockingV01"],
-    "expires": "Jul 1, 2024"
-  },
-  {
     "prefix": "orb-v02",
     "platforms": ["Linux"],
     "args": ["--enable-features=OpaqueResponseBlockingV01,OpaqueResponseBlockingV02", "--disable-features=OpaqueResponseBlockingErrorsForAllFetches"],
     "bases": [
-      "external/wpt/fetch/corb"
+      "external/wpt/fetch/orb",
+      "external/wpt/fetch/corb",
+      "external/wpt/fetch/api",
+      "external/wpt/fetch/nosniff"
     ],
     "expires": "Jul 1, 2024"
   },
@@ -1894,6 +1909,7 @@
     "platforms": ["Linux"],
     "args": ["--enable-features=OpaqueResponseBlockingV01,OpaqueResponseBlockingV02,OpaqueResponseBlockingErrorsForAllFetches"],
     "bases": [
+      "external/wpt/fetch/orb",
       "external/wpt/fetch/corb"
     ],
     "expires": "Jul 1, 2024"
@@ -2180,5 +2196,36 @@
     "args": ["--enable-features=ClearSiteDataClientHintsSupport"],
     "expires": "Jun 28, 2024",
     "owners": ["arichiv@chromium.org"]
+  },
+  {
+    "prefix": "clear-site-data-wildcard-support",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/clear-site-data"
+    ],
+    "args": ["--enable-features=ClearSiteDataWildcardSupport"],
+    "expires": "Jun 28, 2024",
+    "owners": ["arichiv@chromium.org"]
+  },
+  {
+    "prefix": "clear-site-data-client-hints-and-wildcard-support",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/clear-site-data",
+      "external/wpt/client-hints/clear-site-data"
+    ],
+    "args": ["--enable-features=ClearSiteDataClientHintsSupport,ClearSiteDataWildcardSupport"],
+    "expires": "Jun 28, 2024",
+    "owners": ["arichiv@chromium.org"]
+  },
+  {
+    "prefix": "static-routing-api",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/service-workers/service-worker/tentative/static-router"
+    ],
+    "args": ["--enable-features=ServiceWorkerStaticRouter"],
+    "expires": "Jul 14, 2024",
+    "owners": ["yyanagisawa@chromium.org", "sisidovski@chromium.org"]
   }
 ]

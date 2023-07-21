@@ -6,6 +6,8 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "chromeos/ash/services/auth_factor_config/auth_factor_config_utils.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 
 namespace ash::auth {
@@ -33,9 +35,36 @@ void AuthFactorConfig::ObserveFactorChanges(
   observers_.Add(std::move(observer));
 }
 
-void AuthFactorConfig::NotifyFactorObservers(mojom::AuthFactor changed_factor) {
-  for (auto& observer : observers_)
-    observer->OnFactorChanged(changed_factor);
+void AuthFactorConfig::NotifyFactorObserversAfterSuccess(
+    AuthFactorSet changed_factors,
+    std::unique_ptr<UserContext> context,
+    base::OnceCallback<void(mojom::ConfigureResult)> callback) {
+  CHECK(context);
+
+  auth_factor_editor_.GetAuthFactorsConfiguration(
+      std::move(context),
+      base::BindOnce(&AuthFactorConfig::OnGetAuthFactorsConfiguration,
+                     weak_factory_.GetWeakPtr(), changed_factors,
+                     std::move(callback)));
+}
+
+void AuthFactorConfig::NotifyFactorObserversAfterFailure(
+    std::unique_ptr<UserContext> context,
+    base::OnceCallback<void()> callback) {
+  CHECK(context);
+
+  // The original callback, but with an additional ignored parameter so that we
+  // can pass it to `OnGetAuthFactorsConfiguration`.
+  base::OnceCallback<void(mojom::ConfigureResult)> ignore_param_callback =
+      base::BindOnce([](base::OnceCallback<void()> callback,
+                        mojom::ConfigureResult) { std::move(callback).Run(); },
+                     std::move(callback));
+
+  auth_factor_editor_.GetAuthFactorsConfiguration(
+      std::move(context),
+      base::BindOnce(&AuthFactorConfig::OnGetAuthFactorsConfiguration,
+                     weak_factory_.GetWeakPtr(), AuthFactorSet::All(),
+                     std::move(ignore_param_callback)));
 }
 
 void AuthFactorConfig::IsSupported(const std::string& auth_token,
@@ -67,6 +96,15 @@ void AuthFactorConfig::IsSupported(const std::string& auth_token,
           cryptohome_supported_factors.Has(cryptohome::AuthFactorType::kPin));
       return;
     }
+    case mojom::AuthFactor::kGaiaPassword: {
+      std::move(callback).Run(true);
+      return;
+    }
+    case mojom::AuthFactor::kLocalPassword: {
+      std::move(callback).Run(
+          features::IsPasswordlessGaiaEnabledForConsumers());
+      return;
+    }
   }
 
   NOTREACHED();
@@ -92,8 +130,46 @@ void AuthFactorConfig::IsConfigured(const std::string& auth_token,
       return;
     }
     case mojom::AuthFactor::kPin: {
-      std::move(callback).Run(
-          config.HasConfiguredFactor(cryptohome::AuthFactorType::kPin));
+      // We have to consider both cryptohome based PIN and legacy pref PIN.
+      if (config.HasConfiguredFactor(cryptohome::AuthFactorType::kPin)) {
+        std::move(callback).Run(true);
+        return;
+      }
+
+      const PrefService* prefs = quick_unlock_storage_->GetPrefService(*user);
+      if (!prefs) {
+        LOG(ERROR) << "No pref service for user";
+        std::move(callback).Run(false);
+        return;
+      }
+
+      const bool has_prefs_pin =
+          !prefs->GetString(prefs::kQuickUnlockPinSecret).empty() &&
+          !prefs->GetString(prefs::kQuickUnlockPinSalt).empty();
+
+      std::move(callback).Run(has_prefs_pin);
+      return;
+    }
+    case mojom::AuthFactor::kGaiaPassword: {
+      const cryptohome::AuthFactor* password_factor =
+          config.FindFactorByType(cryptohome::AuthFactorType::kPassword);
+      if (!password_factor) {
+        std::move(callback).Run(false);
+        return;
+      }
+
+      std::move(callback).Run(IsGaiaPassword(*password_factor));
+      return;
+    }
+    case mojom::AuthFactor::kLocalPassword: {
+      const cryptohome::AuthFactor* password_factor =
+          config.FindFactorByType(cryptohome::AuthFactorType::kPassword);
+      if (!password_factor) {
+        std::move(callback).Run(false);
+        return;
+      }
+
+      std::move(callback).Run(IsLocalPassword(*password_factor));
       return;
     }
   }
@@ -132,6 +208,12 @@ void AuthFactorConfig::GetManagementType(
       } else {
         std::move(callback).Run(mojom::ManagementType::kNone);
       }
+      return;
+    }
+    case mojom::AuthFactor::kGaiaPassword:
+    case mojom::AuthFactor::kLocalPassword: {
+      // There are currently no policies related to Gaia/local passwords.
+      std::move(callback).Run(mojom::ManagementType::kNone);
       return;
     }
   }
@@ -215,9 +297,44 @@ void AuthFactorConfig::IsEditable(const std::string& auth_token,
       std::move(callback).Run(false);
       return;
     }
+    case mojom::AuthFactor::kGaiaPassword: {
+      // TODO(b/290916811): Decide upon when to return true here. For now we
+      // don't allow edits or removal of Gaia passwords once they're
+      // configured, so we always return false.
+      std::move(callback).Run(false);
+      return;
+    }
+    case mojom::AuthFactor::kLocalPassword: {
+      std::move(callback).Run(true);
+      return;
+    }
   }
 
   NOTREACHED();
+}
+
+void AuthFactorConfig::OnGetAuthFactorsConfiguration(
+    AuthFactorSet changed_factors,
+    base::OnceCallback<void(mojom::ConfigureResult)> callback,
+    std::unique_ptr<UserContext> context,
+    absl::optional<AuthenticationError> error) {
+  if (error.has_value()) {
+    LOG(ERROR) << "Refreshing list of configured auth factors failed, code "
+               << error->get_cryptohome_code();
+    std::move(callback).Run(mojom::ConfigureResult::kFatalError);
+    return;
+  }
+
+  const auto* user = ::user_manager::UserManager::Get()->GetPrimaryUser();
+  quick_unlock_storage_->SetUserContext(user, std::move(context));
+
+  std::move(callback).Run(mojom::ConfigureResult::kSuccess);
+
+  for (auto& observer : observers_) {
+    for (const auto changed_factor : changed_factors) {
+      observer->OnFactorChanged(changed_factor);
+    }
+  }
 }
 
 }  // namespace ash::auth

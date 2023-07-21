@@ -20,6 +20,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING;
 import static org.chromium.chrome.browser.pwd_migration.R.id.password_migration_more_options_button;
@@ -41,13 +42,17 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.FileUtils;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.password_manager.settings.ExportFlow;
+import org.chromium.chrome.browser.password_manager.settings.ExportFlow.HistogramExportResult;
 import org.chromium.chrome.browser.password_manager.settings.FakePasswordManagerHandler;
 import org.chromium.chrome.browser.password_manager.settings.ManualCallbackDelayer;
 import org.chromium.chrome.browser.password_manager.settings.PasswordListObserver;
@@ -82,9 +87,12 @@ public class PasswordMigrationWarningExportFlowTest {
     private FakePasswordManagerHandler mFakePasswordManagerHandler;
     private PasswordMigrationWarningCoordinator mCoordinator;
     private ExportFlow mExportFlow;
+    @Mock
+    private PasswordStoreBridge mPasswordStoreBridge;
 
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
         mChromeActivityRule.startMainActivityOnBlankPage();
         Context context = mChromeActivityRule.getActivity();
         BottomSheetController bottomSheetController = mChromeActivityRule.getActivity()
@@ -102,7 +110,8 @@ public class PasswordMigrationWarningExportFlowTest {
                     SyncConsentActivityLauncherImpl.get(), new SettingsLauncherImpl(),
                     ManageSyncSettings.class, mExportFlow,
                     (PasswordListObserver observer)
-                            -> PasswordManagerHandlerProvider.getInstance().addObserver(observer));
+                            -> PasswordManagerHandlerProvider.getInstance().addObserver(observer),
+                    mPasswordStoreBridge);
             PasswordManagerHandlerProvider.getInstance().passwordListAvailable(1);
             mCoordinator.showWarning();
         });
@@ -129,6 +138,14 @@ public class PasswordMigrationWarningExportFlowTest {
         Intents.init();
 
         requestExport();
+
+        var histogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords(mExportFlow.getExportEventHistogramName(),
+                                ExportFlow.PasswordExportEvent.EXPORT_CONFIRMED)
+                        .expectIntRecord(mExportFlow.getExportResultHistogramNameForTesting(),
+                                HistogramExportResult.SUCCESS)
+                        .build();
 
         File tempFile = null;
         File outputFile = null;
@@ -159,6 +176,7 @@ public class PasswordMigrationWarningExportFlowTest {
 
             // Assert that the output file was written.
             Assert.assertTrue(outputFile.length() > 0);
+            histogram.assertExpected();
         } finally {
             if (tempFile != null) {
                 tempFile.delete();
@@ -168,6 +186,12 @@ public class PasswordMigrationWarningExportFlowTest {
             }
         }
         Intents.release();
+
+        onViewWaiting(
+                allOf(withText(R.string.exported_passwords_delete_button), isCompletelyDisplayed()))
+                .perform(click());
+
+        verify(mPasswordStoreBridge).clearAllPasswords();
     }
 
     /**

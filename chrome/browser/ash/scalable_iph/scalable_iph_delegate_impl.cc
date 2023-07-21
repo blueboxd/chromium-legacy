@@ -6,8 +6,10 @@
 
 #include <memory>
 
+#include "apps/launcher.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/network_config_service.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/system/anchored_nudge_data.h"
 #include "ash/public/cpp/system/anchored_nudge_manager.h"
@@ -15,12 +17,28 @@
 #include "ash/system/message_center/message_view_factory.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ash/crosapi/crosapi_util.h"
+#include "chrome/browser/ash/crosapi/files_app_launcher.h"
+#include "chrome/browser/ash/crosapi/url_handler_ash.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
 #include "chromeos/ash/components/scalable_iph/iph_session.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_delegate.h"
+#include "chromeos/crosapi/cpp/gurl_os_handler_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
+#include "url/gurl.h"
 
 namespace ash {
 
@@ -37,11 +55,26 @@ using NotificationParams =
     ::scalable_iph::ScalableIphDelegate::NotificationParams;
 using NotificationImageType =
     ::scalable_iph::ScalableIphDelegate::NotificationImageType;
+using scalable_iph::ActionType;
 
 constexpr char kNotificationSourceName[] = "ChromeOS";
 constexpr char kWallpaperNotificationType[] = "wallpaper_notification_type";
 constexpr char kNotifierId[] = "scalable_iph";
 constexpr char kButtonIndex = 0;
+
+const base::flat_map<ActionType, std::string>& GetActionTypeURLs() {
+  static const base::NoDestructor<base::flat_map<ActionType, std::string>>
+      action_type_urls(
+          {{ActionType::kOpenChrome, "chrome://new-tab-page/"},
+           {ActionType::kOpenPersonalizationApp, "chrome://personalization/"},
+           {ActionType::kOpenGoogleDocs,
+            "https://docs.google.com/document/?usp=installed_webapp/"},
+           {ActionType::kOpenSettingsPrinter,
+            "chrome://os-settings/cupsPrinters/"},
+           {ActionType::kOpenPhoneHub, "chrome://os-settings/multidevice/"},
+           {ActionType::kOpenYouTube, "https://www.youtube.com/"}});
+  return *action_type_urls;
+}
 
 bool HasOnlineNetwork(const std::vector<NetworkStatePropertiesPtr>& networks) {
   for (const NetworkStatePropertiesPtr& network : networks) {
@@ -83,15 +116,49 @@ message_center::NotificationType GetNotificationType(
   NOTREACHED_NORETURN();
 }
 
+void OpenUrlForProfile(Profile* profile, const GURL& url) {
+  if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
+    const GURL sanitized_url =
+        crosapi::gurl_os_handler_utils::SanitizeAshURL(url);
+    // Handle settings-related urls to open in their respective windows
+    // rather than a browser window.
+    if (ChromeWebUIControllerFactory::GetInstance()->CanHandleUrl(
+            sanitized_url)) {
+      crosapi::UrlHandlerAsh().OpenUrl(sanitized_url);
+      return;
+    }
+
+    // TODO(b/291771298): Opening personalization hub links doesn't work in
+    // the lacros browser so we need to handle it separately.
+    if (url.spec() ==
+        GetActionTypeURLs().at(ActionType::kOpenPersonalizationApp)) {
+      NavigateParams navigate_params(
+          profile, url,
+          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                    ui::PAGE_TRANSITION_FROM_API));
+      navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+      navigate_params.window_action = NavigateParams::SHOW_WINDOW;
+      Navigate(&navigate_params);
+      return;
+    }
+  }
+
+  ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+      url, ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+      ash::NewWindowDelegate::Disposition::kNewWindow);
+}
+
 class ScalableIphNotificationDelegate
     : public message_center::NotificationDelegate {
  public:
   // TODO(b/284158779): Add `ActionType`.
   ScalableIphNotificationDelegate(
       std::unique_ptr<scalable_iph::IphSession> iph_session,
-      std::string notification_id)
+      std::string notification_id,
+      ActionType action_type)
       : iph_session_(std::move(iph_session)),
-        notification_id_(notification_id) {}
+        notification_id_(notification_id),
+        action_type_(action_type) {}
 
   // message_center::NotificationDelegate:
   void Click(const absl::optional<int>& button_index,
@@ -100,16 +167,9 @@ class ScalableIphNotificationDelegate
       return;
     }
 
-    // TODO(b/284158779): Handle action.
-    // iph_session->PerformAction(action_type_)
-
+    iph_session_->PerformAction(action_type_);
     message_center::MessageCenter::Get()->RemoveNotification(notification_id_,
                                                              /*by_user=*/false);
-  }
-
-  void Close(bool by_user) override {
-    // TODO(b/284158779): Handle dismiss.
-    // iph_session->Dismiss(action_type_, by_user);
   }
 
  private:
@@ -117,6 +177,7 @@ class ScalableIphNotificationDelegate
 
   std::unique_ptr<scalable_iph::IphSession> iph_session_;
   std::string notification_id_;
+  ActionType action_type_;
 };
 
 }  // namespace
@@ -191,7 +252,8 @@ void ScalableIphDelegateImpl::ShowNotification(
           base::UTF8ToUTF16(notification_source_name), GURL(), GetNotifierId(),
           rich_notification_data,
           base::MakeRefCounted<ScalableIphNotificationDelegate>(
-              std::move(iph_session), params.notification_id),
+              std::move(iph_session), params.notification_id,
+              params.button.action.action_type),
           gfx::kNoneIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   if (IsWallpaperNotification(params)) {
@@ -219,8 +281,80 @@ int ScalableIphDelegateImpl::ClientAgeInDays() {
 }
 
 void ScalableIphDelegateImpl::PerformActionForScalableIph(
-    scalable_iph::ActionType action_type) {
-  // TODO(b/284158779): Implement this.
+    ActionType action_type) {
+  switch (action_type) {
+    case ActionType::kOpenChrome: {
+      OpenUrlForProfile(profile_,
+                        GURL(GetActionTypeURLs().at(ActionType::kOpenChrome)));
+      break;
+    }
+    case ActionType::kOpenPersonalizationApp: {
+      OpenUrlForProfile(
+          profile_,
+          GURL(GetActionTypeURLs().at(ActionType::kOpenPersonalizationApp)));
+      break;
+    }
+    case ActionType::kOpenPlayStore: {
+      arc::LaunchApp(profile_, arc::kPlayStoreAppId, ui::EF_NONE,
+                     arc::UserInteractionType::APP_STARTED_FROM_OTHER_APP);
+      break;
+    }
+    case ActionType::kOpenGoogleDocs: {
+      OpenUrlForProfile(
+          profile_, GURL(GetActionTypeURLs().at(ActionType::kOpenGoogleDocs)));
+      break;
+    }
+    case ActionType::kOpenGooglePhotos: {
+      arc::LaunchApp(profile_, arc::kGooglePhotosAppId, ui::EF_NONE,
+                     arc::UserInteractionType::APP_STARTED_FROM_OTHER_APP);
+      break;
+    }
+    case ActionType::kOpenSettingsPrinter: {
+      OpenUrlForProfile(
+          profile_,
+          GURL(GetActionTypeURLs().at(ActionType::kOpenSettingsPrinter)));
+      break;
+    }
+    case ActionType::kOpenPhoneHub: {
+      OpenUrlForProfile(
+          profile_, GURL(GetActionTypeURLs().at(ActionType::kOpenPhoneHub)));
+      break;
+    }
+    case ActionType::kOpenYouTube: {
+      if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
+              profile_)) {
+        auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
+        proxy->LaunchAppWithUrl(
+            extension_misc::kYoutubePwaAppId,
+            apps::GetEventFlags(WindowOpenDisposition::NEW_WINDOW,
+                                /*prefer_container=*/true),
+            GURL(GetActionTypeURLs().at(ActionType::kOpenYouTube)),
+            apps::LaunchSource::kFromOtherApp,
+            std::make_unique<apps::WindowInfo>(display::kDefaultDisplayId));
+      } else {
+        OpenUrlForProfile(
+            profile_, GURL(GetActionTypeURLs().at(ActionType::kOpenYouTube)));
+      }
+      break;
+    }
+    case ActionType::kOpenFileManager: {
+      std::string user_id_hash =
+          ash::BrowserContextHelper::GetUserIdHashFromBrowserContext(profile_);
+      std::unique_ptr<crosapi::FilesAppLauncher> files_app_launcher =
+          std::make_unique<crosapi::FilesAppLauncher>(
+              apps::AppServiceProxyFactory::GetForProfile(profile_));
+      files_app_launcher->Launch(base::BindOnce(
+          crosapi::browser_util::ClearGotoFilesClicked,
+          g_browser_process->local_state(), std::move(user_id_hash)));
+      break;
+    }
+    case ActionType::kOpenLauncher:
+    case ActionType::kInvalid: {
+      DLOG(WARNING)
+          << "Action type does not have an implemented call-to-action.";
+      return;
+    }
+  }
 }
 
 void ScalableIphDelegateImpl::OnActiveNetworksChanged(
@@ -254,7 +388,7 @@ void ScalableIphDelegateImpl::OnNetworkStateList(
 
 void ScalableIphDelegateImpl::OnNudgeButtonClicked(
     const std::string& bubble_id,
-    scalable_iph::ActionType action_type) {
+    ActionType action_type) {
   if (bubble_id_ != bubble_id) {
     DCHECK(false) << "Callback for an obsolete bubble id gets called "
                   << bubble_id;

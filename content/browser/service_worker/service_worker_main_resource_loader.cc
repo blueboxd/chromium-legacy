@@ -65,6 +65,16 @@ const std::string ComposeNavigationTypeString(
              : "CrossOriginNavigation";
 }
 
+// Check the eligibility based on the allowlist. This doesn't mean the
+// experiment is actually enabled. The eligibility is checked and UMA is
+// reported for the analysis purpose.
+bool HasRaceNetworkRequestEligibleScript(
+    scoped_refptr<ServiceWorkerVersion> version) {
+  return content::service_worker_loader_helpers::
+      FetchHandlerBypassedHashStrings()
+          .contains(version->sha256_script_checksum());
+}
+
 bool IsEligibleForRaceNetworkRequestByOriginTrial(
     scoped_refptr<ServiceWorkerVersion> version) {
   return version->origin_trial_tokens() &&
@@ -93,9 +103,7 @@ bool IsEligibleForRaceNetworkRequest(
     // RaceNetworkRequest is allowed only when the sha256 checksum of the
     // script is in the allowlist.
     case features::ServiceWorkerBypassFetchHandlerStrategy::kAllowList:
-      return content::service_worker_loader_helpers::
-          FetchHandlerBypassedHashStrings()
-              .contains(version->sha256_script_checksum());
+      return HasRaceNetworkRequestEligibleScript(version);
   }
 }
 
@@ -243,8 +251,8 @@ void ServiceWorkerMainResourceLoader::StartRequest(
   // Check if registered static route rules match the request.
   if (active_worker->router_evaluator()) {
     CHECK(active_worker->router_evaluator()->IsValid());
-    auto sources =
-        active_worker->router_evaluator()->Evaluate(resource_request_);
+    auto sources = active_worker->router_evaluator()->Evaluate(
+        resource_request_, active_worker->running_status());
     // TODO(crbug.com/1371756) In some cases the router is evaluated only in the
     // renderer side. The same mechanism is needed in the subresource loader
     // as well.
@@ -333,6 +341,13 @@ bool ServiceWorkerMainResourceLoader::MaybeStartRaceNetworkRequest(
       IsEligibleForRaceNetworkRequestByOriginTrial(version);
 
   if (!(is_enabled_by_feature_flag || is_enabled_by_origin_trial)) {
+    // Even if the feature is not enabled, if the SW has an eligible script, set
+    // the option as |kRaceNetworkRequestHoldback| for the measuring purpose.
+    if (HasRaceNetworkRequestEligibleScript(version)) {
+      version->set_fetch_handler_bypass_option(
+          blink::mojom::ServiceWorkerFetchHandlerBypassOption::
+              kRaceNetworkRequestHoldback);
+    }
     return false;
   }
 
@@ -417,7 +432,6 @@ bool ServiceWorkerMainResourceLoader::StartRaceNetworkRequest(
   // Keep the URL loader related assets alive while the FetchEvent is ongoing in
   // the service worker.
   DCHECK(!race_network_request_url_loader_factory_);
-  DCHECK(!race_network_request_url_loader_);
   DCHECK(!race_network_request_loader_client_);
   race_network_request_url_loader_factory_ = std::move(factory);
   race_network_request_loader_client_ =

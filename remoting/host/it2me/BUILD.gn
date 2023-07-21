@@ -39,6 +39,7 @@ source_set("helpers") {
 
 source_set("common") {
   sources = [
+    "connection_details.h",
     "it2me_confirmation_dialog.h",
     "it2me_confirmation_dialog_proxy.cc",
     "it2me_confirmation_dialog_proxy.h",
@@ -331,16 +332,11 @@ if (!is_chromeos_ash && enable_remoting_host) {
           "VERSION_SHORT=$remoting_version_short",
           "MACOSX_DEPLOYMENT_TARGET=10.7",
         ]
-        extra_configs = [
-          "//build/config/compiler:wexit_time_destructors",
-          "//remoting/build/config:version",
-        ]
-      } else {
-        configs += [
-          "//build/config/compiler:wexit_time_destructors",
-          "//remoting/build/config:version",
-        ]
       }
+      configs += [
+        "//build/config/compiler:wexit_time_destructors",
+        "//remoting/build/config:version",
+      ]
 
       sources = [ "it2me_native_messaging_host_entry_point.cc" ]
 

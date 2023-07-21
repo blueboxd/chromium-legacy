@@ -10,6 +10,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/system/anchored_nudge_data.h"
+#include "ash/public/cpp/system/scoped_anchored_nudge_pause.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/toast/anchored_nudge.h"
@@ -255,6 +256,11 @@ void AnchoredNudgeManagerImpl::Show(AnchoredNudgeData& nudge_data) {
   std::string id = nudge_data.id;
   CHECK(!id.empty());
 
+  // If `pause_counter_` is greater than 0, no nudges should be shown.
+  if (pause_counter_ > 0) {
+    return;
+  }
+
   // If `id` is already in use, cancel the nudge so it can be replaced.
   if (IsNudgeShown(id)) {
     Cancel(id);
@@ -273,10 +279,17 @@ void AnchoredNudgeManagerImpl::Show(AnchoredNudgeData& nudge_data) {
   // Chain callbacks with `Cancel()` so nudge is dismissed on button pressed.
   // TODO(b/285023559): Add `ChainedCancelCallback` class so we don't have to
   // manually modify the provided callbacks.
-  nudge_data.first_button_callback =
-      ChainCancelCallback(nudge_data.first_button_callback, id);
-  nudge_data.second_button_callback =
-      ChainCancelCallback(nudge_data.second_button_callback, id);
+  if (!nudge_data.first_button_text.empty()) {
+    nudge_data.first_button_callback =
+        ChainCancelCallback(nudge_data.first_button_callback,
+                            nudge_data.catalog_name, id, /*first_button=*/true);
+  }
+
+  if (!nudge_data.second_button_text.empty()) {
+    nudge_data.second_button_callback = ChainCancelCallback(
+        nudge_data.second_button_callback, nudge_data.catalog_name, id,
+        /*first_button=*/false);
+  }
 
   auto anchored_nudge = std::make_unique<AnchoredNudge>(nudge_data);
   auto* anchored_nudge_ptr = anchored_nudge.get();
@@ -337,6 +350,11 @@ void AnchoredNudgeManagerImpl::MaybeRecordNudgeAction(
                                 catalog_name);
 
   nudge_registry.erase(it);
+}
+
+std::unique_ptr<ScopedAnchoredNudgePause>
+AnchoredNudgeManagerImpl::CreateScopedPause() {
+  return std::make_unique<ScopedAnchoredNudgePause>();
 }
 
 void AnchoredNudgeManagerImpl::CloseAllNudges() {
@@ -438,12 +456,36 @@ void AnchoredNudgeManagerImpl::RecordNudgeShown(NudgeCatalogName catalog_name) {
 
 base::RepeatingClosure AnchoredNudgeManagerImpl::ChainCancelCallback(
     base::RepeatingClosure callback,
-    const std::string& id) {
-  return callback ? std::move(callback).Then(
-                        base::BindRepeating(&AnchoredNudgeManagerImpl::Cancel,
-                                            base::Unretained(this), id))
-                  : base::BindRepeating(&AnchoredNudgeManagerImpl::Cancel,
-                                        base::Unretained(this), id);
+    NudgeCatalogName catalog_name,
+    const std::string& id,
+    bool first_button) {
+  return std::move(callback)
+      .Then(base::BindRepeating(&AnchoredNudgeManagerImpl::Cancel,
+                                base::Unretained(this), id))
+      .Then(base::BindRepeating(&AnchoredNudgeManagerImpl::RecordButtonPressed,
+                                base::Unretained(this), catalog_name,
+                                first_button));
+}
+
+void AnchoredNudgeManagerImpl::RecordButtonPressed(
+    NudgeCatalogName catalog_name,
+    bool first_button) {
+  base::UmaHistogramEnumeration(
+      first_button ? "Ash.NotifierFramework.Nudge.FirstButtonPressed"
+                   : "Ash.NotifierFramework.Nudge.SecondButtonPressed",
+      catalog_name);
+}
+
+void AnchoredNudgeManagerImpl::Pause() {
+  ++pause_counter_;
+
+  // Immediately closes all the nudges.
+  CloseAllNudges();
+}
+
+void AnchoredNudgeManagerImpl::Resume() {
+  CHECK_GT(pause_counter_, 0);
+  --pause_counter_;
 }
 
 }  // namespace ash

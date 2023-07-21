@@ -19,8 +19,9 @@ const GRAPH_BUBBLE_BOTTOM_MARGIN_PX = 8;
 const MIN_MONTH_LABEL_WIDTH_PX = 20;
 const LABEL_FONT_WEIGHT = '400';
 const LABEL_FONT_WEIGHT_BOLD = '700';
-const CIRCLE_RADIUS_PX = 6;
+const CIRCLE_RADIUS_PX = 4;
 const BUBBLE_PADDING_PX = 4;
+const BUBBLE_CORNER_RADIUS_PX = 3;
 const TICK_COUNT_Y = 4;
 
 enum CssClass {
@@ -62,6 +63,7 @@ export class ShoppingInsightsHistoryGraphElement extends PolymerElement {
   locale: string;
   currency: string;
   private points: Array<{date: Date, price: number}>;
+  private isGraphInteracted_: boolean = false;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -183,10 +185,13 @@ export class ShoppingInsightsHistoryGraphElement extends PolymerElement {
                        .attr('opacity', 0)
                        .attr('y', 0)
                        .attr('height', 2 * BUBBLE_PADDING_PX + tooltipHeight)
+                       .attr('rx', BUBBLE_CORNER_RADIUS_PX)
+                       .attr('ry', BUBBLE_CORNER_RADIUS_PX)
                        .classed(CssClass.BUBBLE, true);
 
     const tooltip = svg.append('text')
                         .attr('y', BUBBLE_PADDING_PX + tooltipHeight / 2)
+                        .attr('dominant-baseline', 'middle')
                         .attr('opacity', 0);
 
     const initialIndex = this.points.length - 1;
@@ -201,6 +206,11 @@ export class ShoppingInsightsHistoryGraphElement extends PolymerElement {
       if (mouseX < xRange[0] || mouseX > xRange[1] || mouseY < yRange[1] ||
           mouseY > yRange[0]) {
         return;
+      }
+      if (!this.isGraphInteracted_) {
+        chrome.metricsPrivate.recordUserAction(
+            'Commerce.PriceInsights.HistoryGraphInteraction');
+        this.isGraphInteracted_ = true;
       }
       const nearestIndex =
           this.points.reduce((minIndex, _, currentIndex, array) => {

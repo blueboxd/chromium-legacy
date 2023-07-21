@@ -105,11 +105,10 @@ std::vector<std::unique_ptr<PasswordForm>> CreateTestLogins() {
   std::vector<std::unique_ptr<PasswordForm>> forms;
   forms.push_back(CreateEntry("Todd Tester", "S3cr3t",
                               GURL(u"https://example.com"),
-                              /*psl=*/false,
-                              /*affiliation=*/false));
+                              PasswordForm::MatchType::kExact));
   forms.push_back(CreateEntry("Marcus McSpartanGregor", "S0m3th1ngCr34t1v3",
-                              GURL(u"https://m.example.com"), /*psl=*/true,
-                              /*affiliation=*/false));
+                              GURL(u"https://m.example.com"),
+                              PasswordForm::MatchType::kPSL));
   return forms;
 }
 
@@ -1508,10 +1507,8 @@ TEST_F(PasswordStoreAndroidBackendTest, GetGroupedMatchingLoginsAsync) {
   expected_logins.push_back(std::make_unique<PasswordForm>(exact_match));
   expected_logins.back()->match_type = PasswordForm::MatchType::kExact;
   expected_logins.push_back(std::make_unique<PasswordForm>(psl_match));
-  expected_logins.back()->is_public_suffix_match = true;
   expected_logins.back()->match_type = PasswordForm::MatchType::kPSL;
   expected_logins.push_back(std::make_unique<PasswordForm>(android_match));
-  expected_logins.back()->is_affiliation_based_match = true;
   expected_logins.back()->match_type = PasswordForm::MatchType::kAffiliated;
 
   EXPECT_CALL(mock_reply, Run(LoginsResultsOrErrorAre(&expected_logins)));

@@ -88,9 +88,11 @@ void PreloadingAttemptImpl::SetEligibility(PreloadingEligibility eligibility) {
   eligibility_ = eligibility;
 }
 
-// TODO(crbug.com/1383267): remove this once we've switched to the
-// PreloadingConfig feature. The holdback status should be determined by the
-// preloading configuration only.
+// TODO(crbug.com/1464836): most call sites of this should be removed, as
+// PreloadingConfig should subsume most feature-specific holdbacks that exist
+// today. Some cases can remain as specific overrides of the PreloadingConfig
+// logic, e.g. if DevTools is open, or for features that are still launching and
+// thus have their own separate holdback feature while they ramp up.
 void PreloadingAttemptImpl::SetHoldbackStatus(
     PreloadingHoldbackStatus holdback_status) {
   // Ensure that the holdback status is only set once and that it's set for
@@ -255,6 +257,9 @@ void PreloadingAttemptImpl::RecordPreloadingAttemptMetrics(
       builder.SetReadyTime(ukm::GetExponentialBucketMinForCounts1000(
           ready_time_->InMilliseconds()));
     }
+    if (eagerness_) {
+      builder.SetSpeculationEagerness(static_cast<int64_t>(eagerness_.value()));
+    }
     builder.Record(ukm_recorder);
   }
 
@@ -276,6 +281,9 @@ void PreloadingAttemptImpl::RecordPreloadingAttemptMetrics(
     if (ready_time_) {
       builder.SetReadyTime(ukm::GetExponentialBucketMinForCounts1000(
           ready_time_->InMilliseconds()));
+    }
+    if (eagerness_) {
+      builder.SetSpeculationEagerness(static_cast<int64_t>(eagerness_.value()));
     }
     builder.Record(ukm_recorder);
   }
@@ -305,6 +313,18 @@ void PreloadingAttemptImpl::SetIsAccurateTriggering(const GURL& navigated_url) {
   // Use the predicate to match the URLs as the matching logic varies for each
   // predictor.
   is_accurate_triggering_ |= url_match_predicate_.Run(navigated_url);
+}
+
+void PreloadingAttemptImpl::SetSpeculationEagerness(
+    blink::mojom::SpeculationEagerness eagerness) {
+  CHECK(predictor_type_.ukm_value() ==
+            content_preloading_predictor::kSpeculationRules.ukm_value() ||
+        predictor_type_.ukm_value() ==
+            content_preloading_predictor::kSpeculationRulesFromIsolatedWorld
+                .ukm_value())
+      << "predictor_type_: " << predictor_type_.name()
+      << " (ukm_value = " << predictor_type_.ukm_value() << ")";
+  eagerness_ = eagerness;
 }
 
 // Used for StateTransitions matching.

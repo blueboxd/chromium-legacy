@@ -208,6 +208,16 @@ class AutofillWebDataBackendImpl
   WebDatabase::State UpdateServerAddressMetadata(const AutofillProfile& profile,
                                                  WebDatabase* db);
 
+  // Methods to add, update, remove, clear server cvc in the web database.
+  WebDatabase::State AddServerCvc(int64_t instrument_id,
+                                  const std::u16string& cvc,
+                                  WebDatabase* db);
+  WebDatabase::State UpdateServerCvc(int64_t instrument_id,
+                                     const std::u16string& cvc,
+                                     WebDatabase* db);
+  WebDatabase::State RemoveServerCvc(int64_t instrument_id, WebDatabase* db);
+  WebDatabase::State ClearServerCvcs(WebDatabase* db);
+
   WebDatabase::State AddUpiId(const std::string& upi_id, WebDatabase* db);
 
   std::unique_ptr<WDTypedResult> GetAllUpiIds(WebDatabase* db);

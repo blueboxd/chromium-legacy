@@ -4,11 +4,14 @@
 
 import 'chrome://password-manager/password_manager.js';
 
-import {ShareFlowState, SharePasswordFlowElement} from 'chrome://password-manager/password_manager.js';
+import {PasswordManagerImpl, ShareFlowState, SharePasswordFlowElement} from 'chrome://password-manager/password_manager.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
+
+import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
+import {makeFamilyFetchResults} from './test_util.js';
 
 const SITE = 'test.com';
 
@@ -27,34 +30,30 @@ function assertVisibleTextContent(element: HTMLElement, expectedText: string) {
 }
 
 suite('SharePasswordFlowTest', function() {
+  let passwordManager: TestPasswordManagerProxy;
+
   setup(function() {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    passwordManager = new TestPasswordManagerProxy();
+    PasswordManagerImpl.setInstance(passwordManager);
   });
 
   test('Has correct loading state', async function() {
     const shareElement = startPasswordShare(/*passwordName=*/ SITE);
-    assertEquals(ShareFlowState.FETCHING, shareElement.flowState);
-    await flushTasks();
 
+    assertEquals(ShareFlowState.FETCHING, shareElement.flowState);
     const dialog =
         shareElement.shadowRoot!.querySelector('share-password-loading-dialog');
     assertTrue(!!dialog);
 
-    const header =
-        dialog.shadowRoot!.querySelector('share-password-dialog-header');
-    assertTrue(!!header);
-    assertEquals(
-        shareElement.i18n('shareDialogTitle', SITE), header.innerHTML!.trim());
-
-    const spinner = dialog.shadowRoot!.querySelector('paper-spinner-lite');
-    assertTrue(!!spinner);
-    assertTrue(spinner.active);
+    await passwordManager.whenCalled('fetchFamilyMembers');
   });
 
   test('Has correct error state', async function() {
+    passwordManager.data.familyFetchResults = makeFamilyFetchResults(
+        chrome.passwordsPrivate.FamilyFetchStatus.UNKNOWN_ERROR);
     const shareElement = startPasswordShare();
-    await flushTasks();
-    shareElement.flowState = ShareFlowState.ERROR;
+    await passwordManager.whenCalled('fetchFamilyMembers');
     await flushTasks();
 
     const dialog =
@@ -72,28 +71,25 @@ suite('SharePasswordFlowTest', function() {
   });
 
   test('Try again button restarts the flow', async function() {
+    passwordManager.data.familyFetchResults = makeFamilyFetchResults(
+        chrome.passwordsPrivate.FamilyFetchStatus.UNKNOWN_ERROR);
     const shareElement = startPasswordShare();
-    await flushTasks();
-    shareElement.flowState = ShareFlowState.ERROR;
+    await passwordManager.whenCalled('fetchFamilyMembers');
     await flushTasks();
 
     const dialog =
         shareElement.shadowRoot!.querySelector('share-password-error-dialog');
     assertTrue(!!dialog);
     dialog.$.tryAgain.click();
-    // TODO(crbug/1445526): Update the test after passwords private api changes.
-    await flushTasks();
-
     assertEquals(ShareFlowState.FETCHING, shareElement.flowState);
-    const loadingDialog =
-        shareElement.shadowRoot!.querySelector('share-password-loading-dialog');
-    assertTrue(!!loadingDialog);
+    await passwordManager.whenCalled('fetchFamilyMembers');
   });
 
   test('Cancel button should hide the error dialog', async function() {
+    passwordManager.data.familyFetchResults = makeFamilyFetchResults(
+        chrome.passwordsPrivate.FamilyFetchStatus.UNKNOWN_ERROR);
     const shareElement = startPasswordShare();
-    await flushTasks();
-    shareElement.flowState = ShareFlowState.ERROR;
+    await passwordManager.whenCalled('fetchFamilyMembers');
     await flushTasks();
 
     const shareFlowDone = eventToPromise('share-flow-done', shareElement);
@@ -108,9 +104,10 @@ suite('SharePasswordFlowTest', function() {
   });
 
   test('Has correct no members state', async function() {
+    passwordManager.data.familyFetchResults = makeFamilyFetchResults(
+        chrome.passwordsPrivate.FamilyFetchStatus.NO_MEMBERS);
     const shareElement = startPasswordShare();
-    await flushTasks();
-    shareElement.flowState = ShareFlowState.NO_MEMBERS;
+    await passwordManager.whenCalled('fetchFamilyMembers');
     await flushTasks();
 
     const dialog = shareElement.shadowRoot!.querySelector(
@@ -127,9 +124,10 @@ suite('SharePasswordFlowTest', function() {
   });
 
   test('Action button should hide the no members dialog', async function() {
+    passwordManager.data.familyFetchResults = makeFamilyFetchResults(
+        chrome.passwordsPrivate.FamilyFetchStatus.NO_MEMBERS);
     const shareElement = startPasswordShare();
-    await flushTasks();
-    shareElement.flowState = ShareFlowState.NO_MEMBERS;
+    await passwordManager.whenCalled('fetchFamilyMembers');
     await flushTasks();
 
     const shareFlowDone = eventToPromise('share-flow-done', shareElement);
@@ -138,6 +136,24 @@ suite('SharePasswordFlowTest', function() {
         'share-password-no-members-dialog');
     assertTrue(!!dialog);
     dialog.$.action.click();
+    await flushTasks();
+
+    await shareFlowDone;
+  });
+
+  test('Cancel button should hide family picker dialog', async function() {
+    passwordManager.data.familyFetchResults = makeFamilyFetchResults(
+        chrome.passwordsPrivate.FamilyFetchStatus.SUCCESS);
+    const shareElement = startPasswordShare();
+    await passwordManager.whenCalled('fetchFamilyMembers');
+    await flushTasks();
+
+    const shareFlowDone = eventToPromise('share-flow-done', shareElement);
+
+    const dialog = shareElement.shadowRoot!.querySelector(
+        'share-password-family-picker-dialog');
+    assertTrue(!!dialog);
+    dialog.$.cancel.click();
     await flushTasks();
 
     await shareFlowDone;

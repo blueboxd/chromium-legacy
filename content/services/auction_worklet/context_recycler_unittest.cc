@@ -56,6 +56,11 @@ class ContextRecyclerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     v8_scope_ =
         std::make_unique<AuctionV8Helper::FullIsolateScope>(helper_.get());
+    // Some of the tests fast-forward the mock time by half a second at a time,
+    // so give an unreasonably generous time limit.
+    time_limit_ = helper_->CreateTimeLimit(base::Seconds(500));
+    time_limit_scope_ =
+        std::make_unique<AuctionV8Helper::TimeLimitScope>(time_limit_.get());
   }
   ~ContextRecyclerTest() override = default;
 
@@ -81,19 +86,15 @@ class ContextRecyclerTest : public testing::Test {
     std::vector<v8::Local<v8::Value>> args;
     if (!maybe_arg.IsEmpty())
       args.push_back(maybe_arg);
-    auto total_timeout =
-        helper_->CreateTimeLimit(/*script_timeout=*/absl::nullopt);
     if (!helper_->RunScript(scope.GetContext(), script,
-                            /*debug_id=*/nullptr,
-                            /*script_timeout=*/total_timeout.get(),
+                            /*debug_id=*/nullptr, time_limit_.get(),
                             error_msgs)) {
       return {};
     }
     return helper_->CallFunction(
         scope.GetContext(),
         /*debug_id=*/nullptr, helper_->FormatScriptName(script), function_name,
-        args,
-        /*script_timeout=*/total_timeout.get(), error_msgs);
+        args, time_limit_.get(), error_msgs);
   }
 
   // Runs a function with a list of arguments.
@@ -102,25 +103,23 @@ class ContextRecyclerTest : public testing::Test {
                                 const std::string& function_name,
                                 std::vector<std::string>& error_msgs,
                                 std::vector<v8::Local<v8::Value>> args) {
-    auto total_timeout =
-        helper_->CreateTimeLimit(/*script_timeout=*/absl::nullopt);
     if (!helper_->RunScript(scope.GetContext(), script,
-                            /*debug_id=*/nullptr,
-                            /*script_timeout=*/total_timeout.get(),
+                            /*debug_id=*/nullptr, time_limit_.get(),
                             error_msgs)) {
       return {};
     }
     return helper_->CallFunction(
         scope.GetContext(),
         /*debug_id=*/nullptr, helper_->FormatScriptName(script), function_name,
-        args,
-        /*script_timeout=*/total_timeout.get(), error_msgs);
+        args, time_limit_.get(), error_msgs);
   }
 
  protected:
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<AuctionV8Helper> helper_;
   std::unique_ptr<AuctionV8Helper::FullIsolateScope> v8_scope_;
+  std::unique_ptr<AuctionV8Helper::TimeLimit> time_limit_;
+  std::unique_ptr<AuctionV8Helper::TimeLimitScope> time_limit_scope_;
 };
 
 // Test with no binding objects, just context creation.
@@ -324,9 +323,8 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     params->ads.emplace();
     params->ads.value().emplace_back(GURL("https://example.com/ad1"),
                                      absl::nullopt);
-
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(),
+        base::TimeTicks::Now(), time_limit_.get(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
@@ -363,7 +361,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                                      absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(),
+        base::TimeTicks::Now(), time_limit_.get(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
@@ -404,7 +402,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         GURL("https://example.com/portion2"), absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(),
+        base::TimeTicks::Now(), time_limit_.get(),
         /*has_top_level_seller_origin=*/true, params.get(),
         /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
@@ -445,7 +443,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         GURL("https://example.com/portion5"), absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(),
+        base::TimeTicks::Now(), time_limit_.get(),
         /*has_top_level_seller_origin=*/true, params.get(),
         /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
@@ -499,7 +497,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         GURL("https://example.com/portion8"), absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(),
+        base::TimeTicks::Now(), time_limit_.get(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
@@ -541,7 +539,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                                      absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(),
+        base::TimeTicks::Now(), time_limit_.get(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/matches_ad1,
@@ -574,7 +572,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                                      absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(),
+        base::TimeTicks::Now(), time_limit_.get(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/matches_ad1,
@@ -609,7 +607,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                                      absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(),
+        base::TimeTicks::Now(), time_limit_.get(),
         /*has_top_level_seller_origin=*/false, params.get(),
         blink::AdCurrency::From("USD"),
         /*is_ad_excluded=*/matches_ad1,
@@ -646,7 +644,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                                      absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(),
+        base::TimeTicks::Now(), time_limit_.get(),
         /*has_top_level_seller_origin=*/false, params.get(),
         blink::AdCurrency::From("CAD"),
         /*is_ad_excluded=*/matches_ad1,
@@ -681,7 +679,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                                      absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(),
+        base::TimeTicks::Now(), time_limit_.get(),
         /*has_top_level_seller_origin=*/false, params.get(),
         blink::AdCurrency::From("CAD"),
         /*is_ad_excluded=*/matches_ad1,
@@ -1443,6 +1441,25 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
         /*bucket=*/123, /*value=*/0);
   }
 
+  // Non-integer Number value (is converted to integer)
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
+    dict.Set("bucket", std::string("123"));
+    dict.Set("value", 4.5);
+
+    Run(scope, script, "test", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), dict));
+    EXPECT_THAT(error_msgs, ElementsAre());
+
+    ExpectOneHistogramRequestEqualTo(
+        context_recycler.private_aggregation_bindings()
+            ->TakePrivateAggregationRequests(),
+        /*bucket=*/123, /*value=*/4);
+  }
+
   // Multiple requests
   {
     ContextRecyclerScope scope(context_recycler);
@@ -1489,27 +1506,6 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
     ASSERT_EQ(pa_requests.size(), 2u);
     EXPECT_EQ(pa_requests[0], expected_request_1.Clone());
     EXPECT_EQ(pa_requests[1], expected_request_2.Clone());
-  }
-
-  // Non-integer value
-  {
-    ContextRecyclerScope scope(context_recycler);
-    std::vector<std::string> error_msgs;
-
-    gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
-    dict.Set("bucket", std::string("123"));
-    dict.Set("value", 4.5);
-
-    Run(scope, script, "test", error_msgs,
-        gin::ConvertToV8(helper_->isolate(), dict));
-    EXPECT_THAT(
-        error_msgs,
-        ElementsAre("https://example.org/script.js:8 Uncaught TypeError: "
-                    "Value must be an integer Number."));
-
-    EXPECT_TRUE(context_recycler.private_aggregation_bindings()
-                    ->TakePrivateAggregationRequests()
-                    .empty());
   }
 
   // Too large bucket
@@ -2437,6 +2433,33 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
         expected_contribution.Clone());
   }
 
+  // Non-integer Number value (is converted to integer)
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
+    dict.Set("bucket", std::string("123"));
+    dict.Set("value", 4.5);
+
+    Run(scope, script, "test", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), dict));
+    EXPECT_THAT(error_msgs, ElementsAre());
+
+    auction_worklet::mojom::AggregatableReportForEventContribution
+        expected_contribution(
+            /*bucket=*/auction_worklet::mojom::ForEventSignalBucket::
+                NewIdBucket(123),
+            /*value=*/
+            auction_worklet::mojom::ForEventSignalValue::NewIntValue(4),
+            /*event_type=*/kReservedWin);
+
+    ExpectOneForEventRequestEqualTo(
+        context_recycler.private_aggregation_bindings()
+            ->TakePrivateAggregationRequests(),
+        expected_contribution.Clone());
+  }
+
   // Invalid bucket dictionary, which has no "baseValue" key.
   {
     ContextRecyclerScope scope(context_recycler);
@@ -2669,21 +2692,21 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
                     .empty());
   }
 
-  // Non integer or dictionary value
+  // Non Number or dictionary value
   {
     ContextRecyclerScope scope(context_recycler);
     std::vector<std::string> error_msgs;
 
     gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
     dict.Set("bucket", std::string("123"));
-    dict.Set("value", 4.5);
+    dict.Set("value", std::string("4.5"));
 
     Run(scope, script, "test", error_msgs,
         gin::ConvertToV8(helper_->isolate(), dict));
     EXPECT_THAT(
         error_msgs,
         ElementsAre("https://example.org/script.js:12 Uncaught TypeError: "
-                    "Value must be an integer or a dictionary."));
+                    "Value must be a Number or a dictionary."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()

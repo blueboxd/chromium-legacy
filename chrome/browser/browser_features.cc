@@ -255,6 +255,11 @@ BASE_FEATURE(kBookmarkTriggerForPrerender2,
              "BookmarkTriggerForPrerender2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables New Tab Page trigger prerendering.
+BASE_FEATURE(kNewTabPageTriggerForPrerender2,
+             "NewTabPageTriggerForPrerender2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSupportSearchSuggestionForPrerender2,
              "SupportSearchSuggestionForPrerender2",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -279,6 +284,10 @@ const base::FeatureParam<SearchPreloadShareableCacheType>
         &kSupportSearchSuggestionForPrerender2, "shareable_cache",
         SearchPreloadShareableCacheType::kEnabled,
         &search_preload_shareable_cache_types};
+
+BASE_FEATURE(kPrerenderDSEHoldback,
+             "PrerenderDSEHoldback",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAutocompleteActionPredictorConfidenceCutoff,
              "AutocompleteActionPredictorConfidenceCutoff",

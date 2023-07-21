@@ -109,6 +109,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
       const AutofillProfile* original_profile,
       SaveAddressProfilePromptOptions options,
       AddressProfileSavePromptCallback callback) override;
+  void ShowDeleteAddressProfileDialog() override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
   bool IsTouchToFillCreditCardSupported() override;
@@ -124,15 +125,19 @@ class ChromeAutofillClientIOS : public AutofillClient {
       const std::vector<std::u16string>& labels) override;
   std::vector<Suggestion> GetPopupSuggestions() const override;
   void PinPopupView() override;
-  PopupOpenArgs GetReopenPopupArgs() const override;
+  PopupOpenArgs GetReopenPopupArgs(
+      AutofillSuggestionTriggerSource trigger_source) const override;
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
-                   PopupType popup_type) override;
+                   PopupType popup_type,
+                   AutofillSuggestionTriggerSource trigger_source) override;
   void HideAutofillPopup(PopupHidingReason reason) override;
   bool IsAutocompleteEnabled() const override;
   bool IsPasswordManagerEnabled() override;
   void PropagateAutofillPredictions(
       AutofillDriver* driver,
       const std::vector<FormStructure*>& forms) override;
+  void HandleParsedForms(AutofillDriver* driver,
+                         const std::vector<FormStructure*>& forms) override;
   void DidFillOrPreviewForm(mojom::RendererFormDataAction action,
                             AutofillTriggerSource trigger_source,
                             bool is_refill) override;

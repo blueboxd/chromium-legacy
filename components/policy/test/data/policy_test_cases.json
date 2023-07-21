@@ -2128,6 +2128,9 @@
           "sync.reading_list": {
             "default_value": false
           },
+          "sync.saved_tab_groups": {
+            "default_value": false
+          },
           "sync.tabs": {
             "default_value": false
           },
@@ -2149,6 +2152,7 @@
             "passwords",
             "preferences",
             "readingList",
+            "savedTabGroups",
             "tabs",
             "themes",
             "typedUrls"
@@ -2174,6 +2178,9 @@
             "value": false
           },
           "sync.reading_list": {
+            "value": false
+          },
+          "sync.saved_tab_groups": {
             "value": false
           },
           "sync.tabs": {
@@ -8155,7 +8162,7 @@
       }
     ]
   },
-  "ChargingSoundsEnabled": {
+  "DeviceChargingSoundsEnabled": {
     "os": [
       "chromeos_ash"
     ],
@@ -8164,33 +8171,36 @@
         "policies": {},
         "prefs": {
           "ash.charging_sounds.enabled": {
+            "location": "local_state",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceChargingSoundsEnabled": false
+        },
+        "prefs": {
+          "ash.charging_sounds.enabled": {
+            "location": "local_state",
             "value": false
           }
         }
       },
       {
         "policies": {
-          "ChargingSoundsEnabled": false
+          "DeviceChargingSoundsEnabled": true
         },
         "prefs": {
           "ash.charging_sounds.enabled": {
-            "value": false
-          }
-        }
-      },
-      {
-        "policies": {
-          "ChargingSoundsEnabled": true
-        },
-        "prefs": {
-          "ash.charging_sounds.enabled": {
+            "location": "local_state",
             "value": true
           }
         }
       }
     ]
   },
-  "LowBatterySoundEnabled": {
+  "DeviceLowBatterySoundEnabled": {
     "os": [
       "chromeos_ash"
     ],
@@ -8199,26 +8209,29 @@
         "policies": {},
         "prefs": {
           "ash.low_battery_sound.enabled": {
+            "location": "local_state",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceLowBatterySoundEnabled": false
+        },
+        "prefs": {
+          "ash.low_battery_sound.enabled": {
+            "location": "local_state",
             "value": false
           }
         }
       },
       {
         "policies": {
-          "LowBatterySoundEnabled": false
+          "DeviceLowBatterySoundEnabled": true
         },
         "prefs": {
           "ash.low_battery_sound.enabled": {
-            "value": false
-          }
-        }
-      },
-      {
-        "policies": {
-          "LowBatterySoundEnabled": true
-        },
-        "prefs": {
-          "ash.low_battery_sound.enabled": {
+            "location": "local_state",
             "value": true
           }
         }
@@ -23774,6 +23787,44 @@
         "prefs": {
           "native_client_force_allowed": {
             "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
+  "GlanceablesEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check default values (no policies set)",
+        "policies": { },
+        "prefs": {
+          "ash.glanceables_enabled" : {
+            "value": false
+          }
+        }
+      },
+      {
+        "note": "Check true policy value",
+        "policies": {
+          "GlanceablesEnabled": true
+        },
+        "prefs": {
+          "ash.glanceables_enabled" : {
+            "value": true
+          }
+        }
+      },
+      {
+        "note": "Check false policy value",
+        "policies": {
+          "GlanceablesEnabled": false
+        },
+        "prefs": {
+          "ash.glanceables_enabled" : {
+            "value": false
           }
         }
       }

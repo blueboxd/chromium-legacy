@@ -489,6 +489,10 @@ TEST_F(
                             .ZeroDefaultMarginsClearsHeaderFooter);
     });
 
+TEST_F('PrintPreviewPreviewGenerationTest', 'PageSizeCalculation', function() {
+  this.runMochaTest(preview_generation_test.TestNames.PageSizeCalculation);
+});
+
 GEN('#if !BUILDFLAG(IS_CHROMEOS)');
 var PrintPreviewLinkContainerTest = class extends PrintPreviewTest {
   /** @override */
@@ -668,9 +672,10 @@ TEST_F(
       this.runMochaTest(destination_store_test.TestNames.LoadSaveToDriveCros);
     });
 
-TEST_F('PrintPreviewDestinationStoreTestCros', 'DriveNotMounted', function() {
-  this.runMochaTest(destination_store_test.TestNames.DriveNotMounted);
-});
+TEST_F(
+    'PrintPreviewDestinationStoreTestCros', 'SaveToDriveDisabled', function() {
+      this.runMochaTest(destination_store_test.TestNames.SaveToDriveDisabled);
+    });
 
 var PrintPreviewPrinterSetupInfoCrosTest = class extends PrintPreviewTest {
   /** @override */
@@ -1135,6 +1140,20 @@ TEST_F(
       this.runMochaTest(destination_item_test_cros.TestNames
                             .PrinterIconMapsToPrinterStatus_FlagOn);
     });
+
+TEST_F(
+    'PrintPreviewDestinationItemTestCros',
+    'PrinterConnectionStatusClass_FlagOff', function() {
+      this.runMochaTest(destination_item_test_cros.TestNames
+                            .PrinterConnectionStatusClass_FlagOff);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationItemTestCros',
+    'PrinterConnectionStatusClass_FlagOn', function() {
+      this.runMochaTest(destination_item_test_cros.TestNames
+                            .PrinterConnectionStatusClass_FlagOn);
+    });
 GEN('#endif');
 
 var PrintPreviewAdvancedItemTest = class extends PrintPreviewTest {
@@ -1327,6 +1346,18 @@ TEST_F(
           printer_status_test_cros.TestNames.SuccessfulPrinterStatusAfterRetry);
     });
 
+TEST_F(
+    'PrintPreviewPrinterStatusTestCros', 'StatusTextClass_FlagOff', function() {
+      this.runMochaTest(
+          printer_status_test_cros.TestNames.StatusTextClass_FlagOff);
+    });
+
+TEST_F(
+    'PrintPreviewPrinterStatusTestCros', 'StatusTextClass_FlagOn', function() {
+      this.runMochaTest(
+          printer_status_test_cros.TestNames.StatusTextClass_FlagOn);
+    });
+
 var PrintPreviewDestinationDropdownCrosTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
@@ -1506,9 +1537,11 @@ TEST_F('PrintPreviewDestinationSettingsTest', 'EulaIsRetrieved', function() {
   this.runMochaTest(destination_settings_test.TestNames.EulaIsRetrieved);
 });
 
-TEST_F('PrintPreviewDestinationSettingsTest', 'DriveIsNotMounted', function() {
-  this.runMochaTest(destination_settings_test.TestNames.DriveIsNotMounted);
-});
+TEST_F(
+    'PrintPreviewDestinationSettingsTest', 'SaveToDriveDisabled', function() {
+      this.runMochaTest(
+          destination_settings_test.TestNames.SaveToDriveDisabled);
+    });
 GEN('#endif');
 
 var PrintPreviewScalingSettingsTest = class extends PrintPreviewTest {

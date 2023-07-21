@@ -146,12 +146,10 @@ apps::AppPtr MakeApp(apps::AppType app_type,
 apps::Permissions MakeFakePermissions() {
   apps::Permissions permissions;
   permissions.push_back(std::make_unique<apps::Permission>(
-      apps::PermissionType::kCamera,
-      std::make_unique<apps::PermissionValue>(apps::TriState::kBlock),
+      apps::PermissionType::kCamera, apps::TriState::kBlock,
       /*is_managed*/ false));
   permissions.push_back(std::make_unique<apps::Permission>(
-      apps::PermissionType::kLocation,
-      std::make_unique<apps::PermissionValue>(apps::TriState::kAllow),
+      apps::PermissionType::kLocation, apps::TriState::kAllow,
       /*is_managed*/ false));
   return permissions;
 }
@@ -662,69 +660,6 @@ TEST_F(PublisherTest, BuiltinAppsOnApps) {
   VerifyAppTypeIsInitialized(AppType::kBuiltIn);
 }
 
-class LegacyPackagedAppLacrosNotPrimaryPublisherTest : public PublisherTest {
- public:
-  LegacyPackagedAppLacrosNotPrimaryPublisherTest() {
-    scoped_feature_list_.Reset();
-    scoped_feature_list_.InitWithFeatures({ash::features::kLacrosSupport},
-                                          {ash::features::kLacrosPrimary});
-  }
-
-  LegacyPackagedAppLacrosNotPrimaryPublisherTest(
-      const LegacyPackagedAppLacrosNotPrimaryPublisherTest&) = delete;
-  LegacyPackagedAppLacrosNotPrimaryPublisherTest& operator=(
-      const LegacyPackagedAppLacrosNotPrimaryPublisherTest&) = delete;
-  ~LegacyPackagedAppLacrosNotPrimaryPublisherTest() override = default;
-
-  void SetUp() override {
-    auto user_manager = std::make_unique<ash::FakeChromeUserManager>();
-    auto* fake_user_manager = user_manager.get();
-    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
-        std::move(user_manager));
-
-    // Login a user. The "email" must match the TestingProfile's
-    // GetProfileUserName() so that profile() will be the primary profile.
-    const AccountId account_id = AccountId::FromUserEmail("testing_profile");
-    fake_user_manager->AddUser(account_id);
-    fake_user_manager->LoginUser(account_id);
-
-    PublisherTest::SetUp();
-
-    ASSERT_FALSE(crosapi::browser_util::IsLacrosPrimaryBrowser());
-  }
-
- private:
-  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
-};
-
-TEST_F(LegacyPackagedAppLacrosNotPrimaryPublisherTest,
-       LegacyPackagedAppsOnApps) {
-  // Re-init AppService to verify the init process.
-  AppServiceTest app_service_test;
-  app_service_test.SetUp(profile());
-
-  // Install a legacy packaged app.
-  scoped_refptr<extensions::Extension> legacy_app =
-      MakeLegacyPackagedApp("legacy_app", "0.0", "http://google.com",
-                            std::string(kLegacyPackagedAppId));
-  ASSERT_TRUE(legacy_app->is_legacy_packaged_app());
-
-  service_->AddExtension(legacy_app.get());
-
-  // Verify the legacy packaged app is published.
-  VerifyApp(AppType::kChromeApp, legacy_app->id(), legacy_app->name(),
-            Readiness::kReady, InstallReason::kDefault,
-            InstallSource::kChromeWebStore, {}, base::Time(), base::Time(),
-            apps::Permissions(),
-            /*is_platform_app=*/false, /*recommendable=*/true,
-            /*searchable=*/true,
-            /*show_in_launcher=*/true, /*show_in_shelf=*/true,
-            /*show_in_search=*/true, /*show_in_management=*/true,
-            /*handles_intents=*/true, /*allow_uninstall=*/true,
-            /*has_badge=*/false, /*paused=*/false);
-  VerifyAppTypeIsInitialized(AppType::kChromeApp);
-}
-
 class LegacyPackagedAppLacrosPrimaryPublisherTest : public PublisherTest {
  public:
   LegacyPackagedAppLacrosPrimaryPublisherTest() {
@@ -737,9 +672,9 @@ class LegacyPackagedAppLacrosPrimaryPublisherTest : public PublisherTest {
   }
 
   LegacyPackagedAppLacrosPrimaryPublisherTest(
-      const LegacyPackagedAppLacrosNotPrimaryPublisherTest&) = delete;
+      const LegacyPackagedAppLacrosPrimaryPublisherTest&) = delete;
   LegacyPackagedAppLacrosPrimaryPublisherTest& operator=(
-      const LegacyPackagedAppLacrosNotPrimaryPublisherTest&) = delete;
+      const LegacyPackagedAppLacrosPrimaryPublisherTest&) = delete;
   ~LegacyPackagedAppLacrosPrimaryPublisherTest() override = default;
 
   void SetUp() override {
@@ -1229,6 +1164,51 @@ TEST_F(StandaloneBrowserPublisherTest, WebAppsCrosapiUpdatedCapability) {
 
   // Disconnect crosapi.
   web_apps_crosapi->OnControllerDisconnected();
+}
+
+TEST_F(StandaloneBrowserPublisherTest, WebAppsCrosapiCapabilityReset) {
+  WebAppsCrosapi* web_apps_crosapi =
+      WebAppsCrosapiFactory::GetForProfile(profile());
+
+  mojo::PendingReceiver<crosapi::mojom::AppController> pending_receiver1;
+  mojo::PendingRemote<crosapi::mojom::AppController> pending_remote1 =
+      pending_receiver1.InitWithNewPipeAndPassRemote();
+  web_apps_crosapi->RegisterAppController(std::move(pending_remote1));
+
+  std::string app_id1 = "a";
+  std::string app_id2 = "b";
+
+  // Publish apps to both AppRegistryCache and AppCapabilityAccessCache.
+  std::vector<AppPtr> apps1;
+  apps1.push_back(MakeApp(AppType::kWeb, app_id1,
+                          /*name=*/"TestApp", Readiness::kReady));
+  apps1.push_back(MakeApp(AppType::kWeb, app_id2,
+                          /*name=*/"TestApp", Readiness::kReady));
+  web_apps_crosapi->OnApps(std::move(apps1));
+
+  std::vector<CapabilityAccessPtr> capability_access;
+  capability_access.push_back(MakeCapabilityAccess(app_id1,
+                                                   /*camera=*/absl::nullopt,
+                                                   /*microphone=*/true));
+  capability_access.push_back(
+      MakeCapabilityAccess(app_id2,
+                           /*camera=*/true,
+                           /*microphone=*/absl::nullopt));
+  web_apps_crosapi->OnCapabilityAccesses(std::move(capability_access));
+
+  VerifyCapabilityAccess(app_id1,
+                         /*accessing_camera=*/absl::nullopt,
+                         /*accessing_microphone=*/true);
+  VerifyCapabilityAccess(app_id2,
+                         /*accessing_camera=*/true,
+                         /*accessing_microphone=*/absl::nullopt);
+
+  // Disconnect crosapi.
+  web_apps_crosapi->OnControllerDisconnected();
+
+  // All apps should have their capability access reset.
+  VerifyCapabilityAccess(app_id1, false, false);
+  VerifyCapabilityAccess(app_id2, false, false);
 }
 
 // Verify if OnApps was never called, the registration of AppController will not

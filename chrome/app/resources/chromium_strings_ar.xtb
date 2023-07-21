@@ -5,12 +5,12 @@
 <translation id="1029669172902658969">‏إعادة التشغيل لتحديث نظام التشغيل &amp;Chromium</translation>
 <translation id="1040916596585577953">‏ينصح Chromium بمراجعة هذه الإضافة</translation>
 <translation id="1065672644894730302">لا يمكن قراءة إعداداتك المفضّلة. قد تكون بعض الميزات غير متاحة، ولن يتم حفظ التغييرات في الإعدادات المفضّلة.</translation>
+<translation id="1083934481477628225">‏أوقفَ أحد والدَيك "أذونات المواقع الإلكترونية والتطبيقات والإضافات" لمتصفِّح Chromium.</translation>
 <translation id="1098170124587656448">‏يستطيع Chromium مساعدتك في الحفاظ على أمان معلوماتك من عمليات اختراق البيانات والإضافات الضارة وغيرها من المشاكل.</translation>
 <translation id="1104942323762546749">‏يرغب Chromium في تصدير كلمات المرور، لذا يُرجى كتابة كلمة مرور Windows للسماح بذلك.</translation>
 <translation id="113122355610423240">‏Chromium هو متصفحك التلقائي</translation>
 <translation id="1131805035311359397">‏للتحقُّق مما إذا كانت كلمات المرور آمنة من عمليات اختراق البيانات ومشاكل الأمان الأخرى، يُرجى <ph name="BEGIN_LINK" />تسجيل الدخول إلى Chromium<ph name="END_LINK" />.</translation>
 <translation id="1153368717515616349">‏انقر على قائمة Chromium.</translation>
-<translation id="1157106475430165622">{NUM_DEVICES,plural, =0{‏إضافات Chromium كانت لديها إمكانية الوصول إلى أجهزة HID}=1{‏إضافات Chromium لديها إمكانية الوصول إلى جهاز HID واحد}two{‏إضافات Chromium لديها إمكانية الوصول إلى جهازَي HID}few{‏إضافات Chromium لديها إمكانية الوصول إلى # أجهزة HID}many{‏إضافات Chromium لديها إمكانية الوصول إلى # جهاز HID}other{‏إضافات Chromium لديها إمكانية الوصول إلى # جهاز HID}}</translation>
 <translation id="1185134272377778587">‏لمحة عن Chromium</translation>
 <translation id="1203500561924088507">شكرًا على التثبيت. عليك إعادة تشغيل المتصفِّح قبل استخدام <ph name="BUNDLE_NAME" />.</translation>
 <translation id="1261119230216066228">‏زيادة سرعة أداء Chromium من خلال ميزة "توفير الذاكرة"</translation>
@@ -57,6 +57,7 @@
 <translation id="2359808026110333948">متابعة</translation>
 <translation id="2384373936468275798">‏تعذّر على نظام التشغيل Chromium مزامنة بياناتك لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
 <translation id="2396765026452590966">‏غيّرت الإضافة "<ph name="EXTENSION_NAME" />" الصفحة التي تظهر عند بدء Chromium.</translation>
+<translation id="2398377054246527950">{NUM_DEVICES,plural, =0{‏كانت إضافة واحدة أو أكثر من إضافات Chromium تصل إلى جهاز HID واحد}=1{‏تصل إضافة واحدة أو أكثر من إضافات Chromium إلى جهاز HID واحد}two{‏تصل إضافة واحدة أو أكثر من إضافات Chromium إلى جهازَي HID}few{‏تصل إضافة واحدة أو أكثر من إضافات Chromium إلى # أجهزة HID}many{‏تصل إضافة واحدة أو أكثر من إضافات Chromium إلى # جهاز HID}other{‏تصل إضافة واحدة أو أكثر من إضافات Chromium إلى # جهاز HID}}</translation>
 <translation id="2401032172288869980">‏يحتاج Chromium إلى إذن للوصول إلى الكاميرا والميكروفون من أجل هذا الموقع الإلكتروني.</translation>
 <translation id="2451727308784734061">استخدِم الاختصار للوصول بسرعة إلى "مدير كلمات المرور". بإمكانك نقل هذا الاختصار إلى الشاشة الرئيسية أو مشغِّل التطبيقات في جهاز الكمبيوتر.</translation>
 <translation id="2478295928299953161">‏سيتم إغلاق Chromium قريبًا</translation>
@@ -89,6 +90,7 @@
 <translation id="3032787606318309379">‏جارٍ الإضافة إلى Chromium...</translation>
 <translation id="3038232873781883849">في انتظار التثبيت...</translation>
 <translation id="3068515742935458733">‏يمكنك المساعدة في تحسين Chromium عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK" /> إلى Google</translation>
+<translation id="3079753320517721795">{NUM_DEVICES,plural, =0{‏كانت إضافة واحدة أو أكثر من إضافات Chromium تصل إلى جهاز USB واحد}=1{‏تصل إضافة واحدة أو أكثر من إضافات Chromium إلى جهاز USB واحد}two{‏تصل إضافة واحدة أو أكثر من إضافات Chromium إلى # جهازَي USB}few{‏تصل إضافة واحدة أو أكثر من إضافات Chromium إلى # أجهزة USB}many{‏تصل إضافة واحدة أو أكثر من إضافات Chromium إلى # جهاز USB}other{‏تصل إضافة واحدة أو أكثر من إضافات Chromium إلى # جهاز USB}}</translation>
 <translation id="3101560983689755071">‏يؤثر سجلّ تصفّحك في الإعلانات التي تظهر لك وفي تقدير اهتماماتك على النحو الموضّح أدناه. ولحماية خصوصيتك، يحذف Chromium تلقائيًا اهتماماتك بشكل متواصل مرة واحدة على الأقل شهريًا. ويمكنك تحديث الاهتمامات ما لم تزِلها.</translation>
 <translation id="3103660991484857065">‏تعذّرت أداة التثبيت في فك ضغط الأرشيف. يُرجى إعادة تنزيل Chromium.</translation>
 <translation id="3130323860337406239">‏يستخدم Chromium الميكروفون.</translation>
@@ -151,6 +153,7 @@
 <translation id="4222932583846282852">جارٍ الإلغاء...</translation>
 <translation id="4230135487732243613">‏هل ترغب في ربط بياناتك في Chromium بهذا الحساب؟</translation>
 <translation id="4271805377592243930">‏الحصول على مساعدة في Chromium</translation>
+<translation id="4281844954008187215">بنود الخدمة</translation>
 <translation id="4285930937574705105">‏تعذّر إتمام عملية التثبيت بسبب خطأ غير محدد. إذا كان Chromium في حالة التشغيل حاليًا، يُرجى إغلاقه وإعادة المحاولة.</translation>
 <translation id="4304713468139749426">مدير كلمات المرور</translation>
 <translation id="4334294535648607276">اكتمل التنزيل.</translation>
@@ -294,6 +297,7 @@
 <translation id="7025789849649390912">تم إيقاف التثبيت.</translation>
 <translation id="705851970750939768">‏تحديث Chromium</translation>
 <translation id="7067091210845072982">‏في حال لم تتضمن صورة ما وصفًا مفيدًا، سيحاول Chromium توفير وصف لك. لإنشاء الأوصاف، سيتم إرسال الصور إلى Google.</translation>
+<translation id="7141270731789036260">‏تخصيص Chrome for Testing</translation>
 <translation id="7173822816570314652">‏تحذف مؤسستك بيانات Chromium في حال عدم استخدامها لمدّة <ph name="TIMEOUT_DURATION" />. ويمكن أن يشمل ذلك بيانات السجلّ والملء التلقائي وعمليات التنزيل.</translation>
 <translation id="718435575166326686">‏يحتاج Chromium إلى إذن للوصول إلى الكاميرا من أجل هذا الموقع الإلكتروني.</translation>
 <translation id="7196312274710523067">‏تعذَّر إطلاق Chromium. يُرجى إعادة المحاولة.</translation>
@@ -368,7 +372,6 @@
 <translation id="8619360774459241877">‏جارٍ إطلاق Chromium...</translation>
 <translation id="8621669128220841554">‏تعذّر التثبيت نظرًا لحدوث خطأ غير محدد. يُرجى إعادة تنزيل Chromium.</translation>
 <translation id="8648201657708811153">‏لا يمكن اختيار الإصدار Google Chrome for Test ليكون متصفِّحك التلقائي.</translation>
-<translation id="867492205098279939">{NUM_DEVICES,plural, =0{‏إحدى إضافات Chromium كانت لديها إمكانية الوصول إلى أجهزة HID}=1{‏إحدى إضافات Chromium لديها إمكانية الوصول إلى جهاز HID واحد}two{‏إحدى إضافات Chromium لديها إمكانية الوصول إلى جهازَي HID}few{‏إحدى إضافات Chromium لديها إمكانية الوصول إلى # أجهزة HID}many{‏إحدى إضافات Chromium لديها إمكانية الوصول إلى # جهاز HID}other{‏إحدى إضافات Chromium لديها إمكانية الوصول إلى # جهاز HID}}</translation>
 <translation id="8697124171261953979">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chromium أو إجراء بحث من المربع متعدد الاستخدامات.</translation>
 <translation id="8704119203788522458">‏هذا هو Chromium الخاص بك</translation>
 <translation id="8796602469536043152">‏يحتاج Chromium إلى إذن للوصول إلى الكاميرا والميكروفون من أجل الموقع الإلكتروني هذا.</translation>

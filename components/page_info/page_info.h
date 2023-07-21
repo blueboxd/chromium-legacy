@@ -47,7 +47,8 @@ class PageInfoUI;
 // information and allows users to change the permissions. |PageInfo|
 // objects must be created on the heap. They destroy themselves after the UI is
 // closed.
-class PageInfo : private content_settings::OldCookieControlsObserver {
+class PageInfo : private content_settings::CookieControlsObserver,
+                 content_settings::OldCookieControlsObserver {
  public:
   // Status of a connection to a website.
   enum SiteConnectionStatus {
@@ -344,6 +345,10 @@ class PageInfo : private content_settings::OldCookieControlsObserver {
   FRIEND_TEST_ALL_PREFIXES(PageInfoTest, StorageAccessGrantsAreFiltered);
   FRIEND_TEST_ALL_PREFIXES(PageInfoTest, IncognitoPermissionsEmptyByDefault);
   FRIEND_TEST_ALL_PREFIXES(PageInfoTest, IncognitoPermissionsDontShowAsk);
+  FRIEND_TEST_ALL_PREFIXES(PageInfoTest,
+                           ShowInfoBarWhenAllowingThirdPartyCookies);
+  FRIEND_TEST_ALL_PREFIXES(PageInfoTest,
+                           ShowInfoBarWhenBlockingThirdPartyCookies);
 
   // OldCookieControlsObserver:
   void OnStatusChanged(CookieControlsStatus status,
@@ -352,6 +357,15 @@ class PageInfo : private content_settings::OldCookieControlsObserver {
                        int blocked_cookies) override;
   void OnCookiesCountChanged(int allowed_cookies, int blocked_cookies) override;
   void OnStatefulBounceCountChanged(int bounce_count) override;
+
+  // CookieControlsObserver:
+  void OnStatusChanged(CookieControlsStatus status,
+                       CookieControlsEnforcement enforcement,
+                       base::Time expiration) override;
+  void OnSitesCountChanged(int allowed_third_party_sites_count,
+                           int blocked_third_party_sites_count) override;
+  void OnBreakageConfidenceLevelChanged(
+      CookieControlsBreakageConfidenceLevel level) override;
 
   // Populates this object's UI state with provided security context. This
   // function does not update visible UI-- that's part of Present*().
@@ -424,8 +438,6 @@ class PageInfo : private content_settings::OldCookieControlsObserver {
   // Get counts of allowed and blocked cookies.
   int GetFirstPartyAllowedCookiesCount(const GURL& site_url);
   int GetFirstPartyBlockedCookiesCount(const GURL& site_url);
-  int GetThirdPartyAllowedCookiesCount(const GURL& site_url);
-  int GetThirdPartyBlockedCookiesCount(const GURL& site_url);
 
   // Get the count of blocked and allowed sites.
   int GetSitesWithAllowedCookiesAccessCount();
@@ -525,13 +537,27 @@ class PageInfo : private content_settings::OldCookieControlsObserver {
 
   std::unique_ptr<content_settings::CookieControlsController> controller_;
   base::ScopedObservation<content_settings::CookieControlsController,
-                          content_settings::OldCookieControlsObserver>
+                          content_settings::CookieControlsObserver>
       observation_{this};
+  base::ScopedObservation<content_settings::CookieControlsController,
+                          content_settings::OldCookieControlsObserver>
+      old_observation_{this};
 
   CookieControlsStatus status_ = CookieControlsStatus::kUninitialized;
 
   CookieControlsEnforcement enforcement_ =
       CookieControlsEnforcement::kNoEnforcement;
+
+  base::Time cookie_exception_expiration_;
+
+  CookieControlsBreakageConfidenceLevel cookie_controls_confidence_ =
+      CookieControlsBreakageConfidenceLevel::kUninitialized;
+
+  // The number of third-party sites blocked from accessing storage.
+  absl::optional<int> blocked_third_party_sites_count_;
+
+  // The number of third-party sites allowed to access storage.
+  absl::optional<int> allowed_third_party_sites_count_;
 
   bool is_subscribed_to_permission_change_for_testing = false;
 

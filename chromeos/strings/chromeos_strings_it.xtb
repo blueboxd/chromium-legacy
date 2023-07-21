@@ -372,6 +372,7 @@
 <translation id="397105322502079400">Calcolo in corso...</translation>
 <translation id="39823212440917567">I processi di stampa risalenti a oltre <ph name="NUMBER_OF_DAYS" /> giorni fa verranno rimossi</translation>
 <translation id="3993704782688964914">Dispositivo (<ph name="DEVICE_NAME" />) aggiornato</translation>
+<translation id="3998976413398910035">Gestisci stampanti</translation>
 <translation id="4003384961948020559">Operazione non riuscita - Vassoio di uscita pieno</translation>
 <translation id="4021031199988160623">Passa alla modalità laptop per eseguire il test</translation>
 <translation id="4034824040120875894">Stampante</translation>
@@ -588,6 +589,7 @@
 <translation id="5620281292257375798">Solo per uso interno</translation>
 <translation id="5649768706273821470">Ascolta</translation>
 <translation id="5655283760733841251">Aumenta la luminosità della tastiera</translation>
+<translation id="5655776422854483175">Nessun processo di stampa</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5662240986744577912">attiva/disattiva Schermata privata</translation>
 <translation id="5669267381087807207">Attivazione</translation>
@@ -668,7 +670,7 @@
 <translation id="6278428485366576908">Tema</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Attiva il tema scuro</translation>
-<translation id="6285899124799306373">Apri Avvio app</translation>
+<translation id="628726841779494414">Gestisci le stampanti nelle impostazioni delle stampanti</translation>
 <translation id="629550705077076970">Oscuramento della tastiera</translation>
 <translation id="6302401976930124515">Il test <ph name="TEST_NAME" /> è stato annullato</translation>
 <translation id="631063167932043783">App Esplora</translation>
@@ -917,7 +919,6 @@
 <translation id="8312330582793120272">riproduci i contenuti multimediali</translation>
 <translation id="8318753676953949627">Nessuna immagine</translation>
 <translation id="8329018942023753850">app calcolatrice</translation>
-<translation id="8335869473001018124">Apri la ricerca</translation>
 <translation id="8336739000755212683">Modifica l'immagine dell'account del dispositivo</translation>
 <translation id="8347227221149377169">Processi di stampa</translation>
 <translation id="8351855506390808906">Mappatura tasti per il punto di contatto</translation>

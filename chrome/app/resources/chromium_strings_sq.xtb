@@ -3,15 +3,16 @@
 <translationbundle lang="sq">
 <translation id="1026101648481255140">Rifillo instalimin</translation>
 <translation id="1029669172902658969">Nise sërish për të përditësuar ChromiumOS</translation>
+<translation id="1040916596585577953">Chromium rekomandon që ta rinovosh këtë shtesë</translation>
 <translation id="1065672644894730302">Preferencat e tua nuk mund të lexohen.
 
 Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruhen.</translation>
+<translation id="1083934481477628225">Prindi yt ka çaktivizuar "Lejet për sajtet, aplikacionet dhe shtesat" për Chromium</translation>
 <translation id="1098170124587656448">Chromium mund të të ndihmojë të qëndrosh i sigurt nga nxjerrjet e paautorizuara të të dhënave, shtesat e papërshtatshme etj.</translation>
 <translation id="1104942323762546749">Chromium dëshiron të eksportojë fjalëkalimet e tua. Shkruaj fjalëkalimin tënd të Windows për ta lejuar këtë.</translation>
 <translation id="113122355610423240">Chromium është shfletuesi yt i parazgjedhur</translation>
 <translation id="1131805035311359397">Për të kontrolluar nëse fjalëkalimet e tua janë të sigurta nga nxjerrjet e paautorizuara të të dhënave dhe probleme të tjera të sigurisë, <ph name="BEGIN_LINK" />identifikohu në Chromium<ph name="END_LINK" />.</translation>
 <translation id="1153368717515616349">Kliko te menyja e Chromium</translation>
-<translation id="1157106475430165622">{NUM_DEVICES,plural, =0{Shtesat e Chromium nuk kanë qasje te pajisjet HID}=1{Shtesat e Chromium kanë qasje te pajisjet HID}other{Shtesat e Chromium kanë qasje te # pajisje HID}}</translation>
 <translation id="1185134272377778587">Rreth Chromium</translation>
 <translation id="1203500561924088507">Faleminderit që e instalove. Duhet të rinisësh shfletuesin përpara se të përdorësh <ph name="BUNDLE_NAME" />.</translation>
 <translation id="1261119230216066228">"Kursyesi i memories" e ka bërë Chromium më të shpejtë</translation>
@@ -60,6 +61,7 @@ Lejet që u ke dhënë sajteve të uebit dhe aplikacioneve mund të zbatohen pë
 <translation id="2359808026110333948">Vazhdo</translation>
 <translation id="2384373936468275798">ChromiumOS nuk mund t'i sinkronizonte të dhënat e tua sepse detajet e identifikimit të llogarisë janë të papërditësuara.</translation>
 <translation id="2396765026452590966">Shtesa "<ph name="EXTENSION_NAME" />" ka ndryshuar se cila faqe shfaqet kur nis Chromium.</translation>
+<translation id="2398377054246527950">{NUM_DEVICES,plural, =0{Një ose disa shtesa të Chromium kanë pasur qasje në 1 pajisje HID}=1{Një ose disa shtesa të Chromium kanë qasje në 1 pajisje HID}other{Një ose disa shtesa të Chromium kanë qasje në # pajisje HID}}</translation>
 <translation id="2401032172288869980">Chromium ka nevojë për lejet e kamerës dhe të mikrofonit për këtë sajt</translation>
 <translation id="2451727308784734061">Përdor shkurtoren tënde për të shkuar me shpejtësi te "Menaxheri i fjalëkalimeve". Mund ta zhvendosësh shkurtoren tënde tek ekrani bazë i kompjuterit ose te nisësi i aplikacionit.</translation>
 <translation id="2478295928299953161">Chromium do të mbyllet së shpejti</translation>
@@ -92,6 +94,7 @@ Lejet që u ke dhënë sajteve të uebit dhe aplikacioneve mund të zbatohen pë
 <translation id="3032787606318309379">Po shton në Chromium...</translation>
 <translation id="3038232873781883849">Në pritje të instalimit...</translation>
 <translation id="3068515742935458733">Ndihmo në përmirësimin e Chromium duke dërguar te Google raportet e ndërprerjeve aksidentale dhe <ph name="UMA_LINK" /></translation>
+<translation id="3079753320517721795">{NUM_DEVICES,plural, =0{Një ose disa shtesa të Chromium kanë pasur qasje në 1 pajisje USB}=1{Një ose disa shtesa të Chromium kanë qasje në 1 pajisje USB}other{Një ose disa shtesa të Chromium kanë qasje në # pajisje USB}}</translation>
 <translation id="3101560983689755071">Historiku yt i shfletimit ndikon te reklamat që shikon dhe tek interesat sipas përllogaritjes më poshtë. Për të mbrojtur privatësinë tënde, Chromium fshin automatikisht interesat e tua në vazhdimësi çdo muaj. Interesat mund të rifreskohen, përveçse nëse ti i heq ato.</translation>
 <translation id="3103660991484857065">Instaluesi nuk arriti ta nxjerrë arkivin. Shkarko përsëri Chromium.</translation>
 <translation id="3130323860337406239">Chromium po përdor mikrofonin tënd.</translation>
@@ -154,6 +157,7 @@ Lejet që u ke dhënë sajteve të uebit dhe aplikacioneve mund të zbatohen pë
 <translation id="4222932583846282852">Po e anulon...</translation>
 <translation id="4230135487732243613">Të lidhen të dhënat e tua të Chromium me këtë llogari?</translation>
 <translation id="4271805377592243930">Merr ndihmë me Chromium</translation>
+<translation id="4281844954008187215">Kushtet e shërbimit</translation>
 <translation id="4285930937574705105">Instalimi dështoi për shkak të një gabimi të paspecifikuar. Nëse Chromium është aktualisht në ekzekutim, mbylle dhe provo përsëri.</translation>
 <translation id="4304713468139749426">Menaxheri i fjalëkalimeve</translation>
 <translation id="4334294535648607276">Shkarkimi përfundoi</translation>
@@ -296,6 +300,7 @@ Disa funksione mund të mos ofrohen. Specifiko një direktori tjetër profili os
 <translation id="7025789849649390912">Instalimi ndaloi.</translation>
 <translation id="705851970750939768">Përditëso Chromium</translation>
 <translation id="7067091210845072982">Nëse një imazh nuk ka një përshkrim të dobishëm, Chromium do të përpiqet të të japë një përshkrim. Për të krijuar përshkrime, imazhet dërgohen te Google.</translation>
+<translation id="7141270731789036260">Personalizo Chrome for Testing</translation>
 <translation id="7173822816570314652">Organizata jote i fshin të dhënat e Chromium kur ato nuk përdoren për <ph name="TIMEOUT_DURATION" />. Kjo mund të përfshijë historikun, plotësimin automatik dhe shkarkimet.</translation>
 <translation id="718435575166326686">Chromium ka nevojë për lejen e kamerës për këtë sajt</translation>
 <translation id="7196312274710523067">Chromium nuk mund të hapej. Provo përsëri.</translation>
@@ -370,7 +375,6 @@ Chromium nuk është në gjendje të rikuperojë cilësimet e tua.</translation>
 <translation id="8619360774459241877">Po hapet Chromium...</translation>
 <translation id="8621669128220841554">Instalimi dështoi për shkak të një gabimi të papërcaktuar. Shkarko përsëri Chromium.</translation>
 <translation id="8648201657708811153">Google Chrome for Testing nuk mund të bëhet shfletuesi yt i parazgjedhur.</translation>
-<translation id="867492205098279939">{NUM_DEVICES,plural, =0{Një shtesë e Chromium nuk ka qasje te pajisjet HID}=1{Një shtesë e Chromium ka qasje te 1 pajisje HID}other{Një shtesë e Chromium ka qasje te # pajisje HID}}</translation>
 <translation id="8697124171261953979">Kontrollon po ashtu se cila faqe shfaqet kur nis Chromium ose kur kërkon nga Omnibox.</translation>
 <translation id="8704119203788522458">Ky është Chromium për ty</translation>
 <translation id="8796602469536043152">Chromium ka nevojë për leje për t'u qasur te kamera dhe mikrofoni yt për këtë sajt</translation>

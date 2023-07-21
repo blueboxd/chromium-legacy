@@ -9,6 +9,7 @@
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ref.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -106,7 +107,7 @@ struct ReadbackTextureInfo {
 
   gfx::Size size;
   SkColorType color_type;
-  SkBitmap& out_bitmap;
+  const raw_ref<SkBitmap> out_bitmap;
 };
 
 void ReadbackTexturesOnGpuThread(gpu::SharedImageManager* shared_image_manager,
@@ -137,7 +138,7 @@ void ReadbackTexturesOnGpuThread(gpu::SharedImageManager* shared_image_manager,
 
     auto& texture_size = readback_texture_infos[i].size;
     auto color_type = readback_texture_infos[i].color_type;
-    auto& out_bitmap = readback_texture_infos[i].out_bitmap;
+    auto& out_bitmap = readback_texture_infos[i].out_bitmap.get();
 
     DCHECK(color_type == kAlpha_8_SkColorType ||
            color_type == kR8G8_unorm_SkColorType);
@@ -172,6 +173,7 @@ void ReadbackTexturesOnGpuThread(gpu::SharedImageManager* shared_image_manager,
   if (GrDirectContext* direct_context = context_state->gr_context()) {
     direct_context->flush(flush_info);
   }
+  scoped_write->ApplyBackendSurfaceEndState();
 }
 
 void WriteTextureOnGpuMainThread(gpu::SharedImageManager* shared_image_manager,
@@ -223,6 +225,7 @@ void WriteTextureOnGpuMainThread(gpu::SharedImageManager* shared_image_manager,
   if (GrDirectContext* direct_context = context_state->gr_context()) {
     direct_context->flush(flush_info);
   }
+  scoped_write->ApplyBackendSurfaceEndState();
 }
 
 // Reads back NV12 planes from textures returned in the result.

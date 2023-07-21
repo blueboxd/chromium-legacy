@@ -51,29 +51,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
-namespace {
-String OverflowForReplacedElementRules() {
-  return RuntimeEnabledFeatures::CSSOverflowForReplacedElementsEnabled()
-             ? UncompressResourceAsASCIIString(
-                   IDR_UASTYLE_OVERFLOW_REPLACED_CSS)
-             : "";
-}
-
-String OverflowForSVGRules() {
-  if (!RuntimeEnabledFeatures::CSSOverflowForReplacedElementsEnabled()) {
-    return "";
-  }
-
-  // SVG uses an overflow value of 'hidden' for backwards compatibility with
-  // flex layout. 'overflow-clip-margin' below still applies because the used
-  // value of overflow at paint time is 'clip'.
-  // See https://github.com/w3c/csswg-drafts/issues/7714 for context.
-  return String(R"CSS(svg:not(:root) {
-    overflow-clip-margin: content-box;
-        })CSS");
-}
-
-}  // namespace
 
 CSSDefaultStyleSheets& CSSDefaultStyleSheets::Instance() {
   DEFINE_STATIC_LOCAL(Persistent<CSSDefaultStyleSheets>,
@@ -126,7 +103,6 @@ CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     : media_controls_style_sheet_loader_(nullptr) {
   // Strict-mode rules.
   String default_rules = UncompressResourceAsASCIIString(IDR_UASTYLE_HTML_CSS) +
-                         OverflowForReplacedElementRules() +
                          LayoutTheme::GetTheme().ExtraDefaultStyleSheet();
 
   default_style_sheet_ = ParseUASheet(default_rules);
@@ -152,7 +128,6 @@ void CSSDefaultStyleSheets::PrepareForLeakDetection() {
   form_controls_not_vertical_style_sheet_.Clear();
   // Recreate the default style sheet to clean up possible SVG resources.
   String default_rules = UncompressResourceAsASCIIString(IDR_UASTYLE_HTML_CSS) +
-                         OverflowForReplacedElementRules() +
                          LayoutTheme::GetTheme().ExtraDefaultStyleSheet();
   default_style_sheet_ = ParseUASheet(default_rules);
 
@@ -175,8 +150,7 @@ void CSSDefaultStyleSheets::VerifyUniversalRuleCount() {
   // consciously add more universal bucket rules.
   if (mathml_style_sheet_) {
     default_mathml_style_->CompactRulesIfNeeded();
-    DCHECK_EQ(default_mathml_style_->UniversalRules().size(),
-              RuntimeEnabledFeatures::MathMLCoreEnabled() ? 24u : 0u);
+    DCHECK_EQ(default_mathml_style_->UniversalRules().size(), 24u);
   }
 
   if (svg_style_sheet_) {
@@ -276,8 +250,7 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
   // FIXME: We should assert that the sheet only styles SVG elements.
   if (element.IsSVGElement() && !svg_style_sheet_) {
     svg_style_sheet_ =
-        ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_SVG_CSS) +
-                     OverflowForSVGRules());
+        ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_SVG_CSS));
     AddRulesToDefaultStyleSheets(svg_style_sheet_, NamespaceType::kSVG);
     changed_default_style = true;
   }
@@ -285,10 +258,8 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
   // FIXME: We should assert that the sheet only styles MathML elements.
   if (element.namespaceURI() == mathml_names::kNamespaceURI &&
       !mathml_style_sheet_) {
-    mathml_style_sheet_ = ParseUASheet(
-        RuntimeEnabledFeatures::MathMLCoreEnabled()
-            ? UncompressResourceAsASCIIString(IDR_UASTYLE_MATHML_CSS)
-            : UncompressResourceAsASCIIString(IDR_UASTYLE_MATHML_FALLBACK_CSS));
+    mathml_style_sheet_ =
+        ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_MATHML_CSS));
     AddRulesToDefaultStyleSheets(mathml_style_sheet_, NamespaceType::kMathML);
     changed_default_style = true;
   }

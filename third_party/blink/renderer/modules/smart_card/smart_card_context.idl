@@ -39,13 +39,18 @@ enum SmartCardProtocol {
 
 dictionary SmartCardConnectResult {
   required SmartCardConnection connection;
-  required SmartCardProtocol activeProtocol;
+  SmartCardProtocol activeProtocol;
 };
 
 enum SmartCardAccessMode {
   "shared",
   "exclusive",
   "direct"
+};
+
+dictionary SmartCardGetStatusChangeOptions {
+  DOMHighResTimeStamp timeout;
+  AbortSignal signal;
 };
 
 [
@@ -60,7 +65,7 @@ enum SmartCardAccessMode {
   [CallWith=ScriptState, RaisesException]
   Promise<sequence<SmartCardReaderStateOut>> getStatusChange(
       sequence<SmartCardReaderStateIn> readerStates,
-      AbortSignal signal);
+      optional SmartCardGetStatusChangeOptions options = {});
 
   [CallWith=ScriptState, RaisesException]
   Promise<SmartCardConnectResult> connect(

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://webui-test/mojo_webui_test_support.js';
-
 import {Cart} from 'chrome://new-tab-page/cart.mojom-webui.js';
 import {Cluster, URLVisit} from 'chrome://new-tab-page/history_cluster_types.mojom-webui.js';
 import {PageHandlerRemote} from 'chrome://new-tab-page/history_clusters.mojom-webui.js';
@@ -100,7 +98,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
     return moduleElement;
   }
 
-  suite('core', () => {
+  suite('Core', () => {
     test('No module created if no history cluster data', async () => {
       // Arrange.
       const moduleElement = await initializeModule([]);
@@ -219,6 +217,25 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
           await waitForUsageEvent;
         });
 
+    test('Backend is notified when module is disabled', async () => {
+      // Arrange.
+      const sampleClusterLabel = '"Sample Journey"';
+      const sampleCluster = createSampleCluster(
+          undefined, undefined, {label: sampleClusterLabel});
+      const moduleElement = await initializeModule([sampleCluster]);
+      assertTrue(!!moduleElement);
+
+      // Act.
+      const disableButton =
+          moduleElement.shadowRoot!.querySelector('ntp-module-header')!
+              .shadowRoot!.querySelector<HTMLElement>('#disableButton')!;
+      disableButton.click();
+
+      // Assert.
+      const clusterId = await handler.whenCalled('recordDisabled');
+      assertEquals(BigInt(111), clusterId);
+    });
+
     test('Backend is notified when module is dismissed', async () => {
       // Arrange.
       const sampleClusterLabel = '"Sample Journey"';
@@ -239,15 +256,16 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
       const dismissEvent: DismissModuleEvent = await waitForDismissEvent;
       assertEquals(
           `${sampleCluster.label!} hidden`, dismissEvent.detail.message);
-      const visits = await handler.whenCalled('dismissCluster');
+      const [visits, clusterId] = await handler.whenCalled('dismissCluster');
       assertEquals(3, visits.length);
       visits.forEach((visit: URLVisit, index: number) => {
         assertEquals(index, Number(visit.visitId));
       });
+      assertEquals(BigInt(111), clusterId);
     });
   });
 
-  suite('layouts', () => {
+  suite('Layouts', () => {
     function removeHrefAndClick(element: HTMLElement) {
       element.removeAttribute('href');
       element.click();
@@ -384,7 +402,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
         });
   });
 
-  suite('unload metric no images', () => {
+  suite('UnloadMetricNoImages', () => {
     test('Module records no images state metric on unload', async () => {
       imageServiceHandler.setResultFor(
           'getPageImageUrl', Promise.resolve(null));
@@ -410,7 +428,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
     });
   });
 
-  suite('unload metric all images', () => {
+  suite('UnloadMetricAllImages', () => {
     test('Module records all images state metric on unload', async () => {
       imageServiceHandler.setResultFor('getPageImageUrl', Promise.resolve({
         result: {imageUrl: {url: 'https://example.com/image.png'}},
@@ -437,7 +455,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
     });
   });
 
-  suite('cart tile rendering', () => {
+  suite('CartTileRendering', () => {
     test('Cart tile is not rendererd when feature is disabled', async () => {
       loadTimeData.overrideValues({
         modulesChromeCartInHistoryClustersModuleEnabled: false,

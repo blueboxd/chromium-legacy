@@ -107,10 +107,18 @@ void InspectorDOMDebuggerAgent::CollectEventListeners(
   // bottom).
   Vector<AtomicString> event_types = target->EventTypes();
   for (AtomicString& type : event_types) {
-    EventListenerVector* listeners = target->GetEventListeners(type);
-    if (!listeners)
+    // We need to clone the EventListenerVector because `GetEffectiveFunction`
+    // can execute script which may invalidate the iterator.
+    EventListenerVector listeners;
+    if (auto* registered_listeners = target->GetEventListeners(type)) {
+      listeners = *registered_listeners;
+    } else {
       continue;
-    for (auto& registered_event_listener : *listeners) {
+    }
+    for (auto& registered_event_listener : listeners) {
+      if (registered_event_listener->Removed()) {
+        continue;
+      }
       EventListener* event_listener = registered_event_listener->Callback();
       JSBasedEventListener* v8_event_listener =
           DynamicTo<JSBasedEventListener>(event_listener);
@@ -235,7 +243,7 @@ protocol::Response InspectorDOMDebuggerAgent::setEventListenerBreakpoint(
     const String& event_name,
     Maybe<String> target_name) {
   return SetBreakpoint(String(listenerEventCategoryType) + event_name,
-                       target_name.fromMaybe(String()));
+                       target_name.value_or(String()));
 }
 
 protocol::Response InspectorDOMDebuggerAgent::setInstrumentationBreakpoint(
@@ -259,7 +267,7 @@ protocol::Response InspectorDOMDebuggerAgent::removeEventListenerBreakpoint(
     const String& event_name,
     Maybe<String> target_name) {
   return RemoveBreakpoint(String(listenerEventCategoryType) + event_name,
-                          target_name.fromMaybe(String()));
+                          target_name.value_or(String()));
 }
 
 protocol::Response InspectorDOMDebuggerAgent::removeInstrumentationBreakpoint(
@@ -462,9 +470,8 @@ protocol::Response InspectorDOMDebuggerAgent::getEventListeners(
   v8::Context::Scope scope(context);
   V8EventListenerInfoList event_information;
   InspectorDOMDebuggerAgent::EventListenersInfoForTarget(
-      context->GetIsolate(), object, depth.fromMaybe(1),
-      pierce.fromMaybe(false), dom_agent_->IncludeWhitespace(),
-      &event_information);
+      context->GetIsolate(), object, depth.value_or(1), pierce.value_or(false),
+      dom_agent_->IncludeWhitespace(), &event_information);
   *listeners_array = BuildObjectsForEventListeners(event_information, context,
                                                    object_group->string());
   return protocol::Response::Success();

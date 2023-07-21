@@ -2262,6 +2262,16 @@ bool AutofillTable::ClearServerCvcs() {
   return db_->GetLastChangeCount() > 0;
 }
 
+bool AutofillTable::ReconcileServerCvcs() {
+  sql::Statement s(db_->GetUniqueStatement(
+      base::StrCat({"DELETE FROM ", kServerStoredCvcTable, " WHERE ",
+                    kInstrumentId, " NOT IN (SELECT ", kInstrumentId, " FROM ",
+                    kMaskedCreditCardsTable, ")"})
+          .c_str()));
+  s.Run();
+  return db_->GetLastChangeCount() > 0;
+}
+
 std::u16string AutofillTable::GetServerCvcForTesting(int64_t instrument_id) {
   sql::Statement s;
   SelectBuilder(db_, s, kServerStoredCvcTable, {kValueEncrypted},
@@ -2273,7 +2283,7 @@ std::u16string AutofillTable::GetServerCvcForTesting(int64_t instrument_id) {
 }
 
 base::flat_map<int64_t, std::u16string>
-AutofillTable::GetAllServerCvcForTesting() {
+AutofillTable::GetAllServerCvcsForTesting() {
   return GetAllServerCvcs();
 }
 
@@ -2903,6 +2913,16 @@ bool AutofillTable::RemoveAutofillDataModifiedBetween(
   if (!s_credit_cards.Run())
     return false;
 
+  // Remove credit card cvcs in the time range.
+  sql::Statement s_cvc;
+  DeleteBuilder(db_, s_cvc, kLocalStoredCvcTable,
+                "last_updated_timestamp >= ? AND last_updated_timestamp < ?");
+  s_cvc.BindInt64(0, delete_begin_t);
+  s_cvc.BindInt64(1, delete_end_t);
+  if (!s_cvc.Run()) {
+    return false;
+  }
+
   // Remove unmasked credit cards in the time range.
   sql::Statement s_unmasked_cards;
   DeleteBuilder(db_, s_unmasked_cards, kUnmaskedCreditCardsTable,
@@ -2948,8 +2968,9 @@ bool AutofillTable::RemoveOriginURLsModifiedBetween(
   return true;
 }
 
-bool AutofillTable::ClearCreditCards() {
-  return Delete(db_, kCreditCardsTable) || Delete(db_, kLocalStoredCvcTable);
+void AutofillTable::ClearCreditCards() {
+  Delete(db_, kLocalStoredCvcTable);
+  Delete(db_, kCreditCardsTable);
 }
 
 bool AutofillTable::GetAllSyncMetadata(syncer::ModelType model_type,
@@ -3727,8 +3748,10 @@ void AutofillTable::AddMaskedCreditCards(
     masked_insert.BindInt(index++, static_cast<int>(card.card_issuer()));
     masked_insert.BindString(index++, card.issuer_id());
     masked_insert.BindInt64(index++, card.instrument_id());
-    masked_insert.BindInt(index++, card.virtual_card_enrollment_state());
-    masked_insert.BindInt(index++, card.virtual_card_enrollment_type());
+    masked_insert.BindInt(
+        index++, static_cast<int>(card.virtual_card_enrollment_state()));
+    masked_insert.BindInt(index++, static_cast<int>(
+                                   card.virtual_card_enrollment_type()));
     masked_insert.BindString(index++, card.card_art_url().spec());
     masked_insert.BindString16(index++, card.product_description());
     masked_insert.Run();

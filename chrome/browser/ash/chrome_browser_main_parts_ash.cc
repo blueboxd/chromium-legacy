@@ -98,6 +98,7 @@
 #include "chrome/browser/ash/extensions/default_app_order.h"
 #include "chrome/browser/ash/extensions/login_screen_ui/ui_handler.h"
 #include "chrome/browser/ash/external_metrics.h"
+#include "chrome/browser/ash/input_method/editor_mediator.h"
 #include "chrome/browser/ash/input_method/input_method_configuration.h"
 #include "chrome/browser/ash/language_preferences.h"
 #include "chrome/browser/ash/lock_screen_apps/state_controller.h"
@@ -942,6 +943,8 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
   // must be placed after UserManager initialization.
   MagnificationManager::Initialize();
 
+  g_browser_process->platform_part()->InitializeAshProxyMonitor();
+
   // Has to be initialized before |assistant_delegate_|;
   image_downloader_ = std::make_unique<ImageDownloaderImpl>();
 
@@ -1240,6 +1243,10 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
         g_browser_process->local_state(), ash::SessionController::Get());
 
     misconfigured_user_cleaner_->ScheduleCleanup();
+
+    if (features::IsOrcaEnabled()) {
+      editor_mediator_ = std::make_unique<input_method::EditorMediator>();
+    }
 
     g_browser_process->platform_part()->session_manager()->Initialize(
         *base::CommandLine::ForCurrentProcess(), profile,
@@ -1653,6 +1660,10 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   // is destroyed inside ChromeBrowserMainPartsLinux::PostMainMessageLoopRun().
   browser_manager_.reset();
   crosapi_manager_.reset();
+
+  // The `AshProxyMonitor` instance needs to outlive the `crosapi_manager_`
+  // because crosapi depends on it.
+  g_browser_process->platform_part()->ShutdownAshProxyMonitor();
 
   // Destroy classes that may have ash observers or dependencies.
   arc_kiosk_app_manager_.reset();

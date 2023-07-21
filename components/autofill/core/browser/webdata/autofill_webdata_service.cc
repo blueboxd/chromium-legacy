@@ -241,6 +241,32 @@ void AutofillWebDataService::RemoveIBAN(const std::string& guid) {
                                        autofill_backend_, guid));
 }
 
+void AutofillWebDataService::AddServerCvc(int64_t instrument_id,
+                                          const std::u16string& cvc) {
+  wdbs_->ScheduleDBTask(
+      FROM_HERE, base::BindOnce(&AutofillWebDataBackendImpl::AddServerCvc,
+                                autofill_backend_, instrument_id, cvc));
+}
+
+void AutofillWebDataService::UpdateServerCvc(int64_t instrument_id,
+                                             const std::u16string& cvc) {
+  wdbs_->ScheduleDBTask(
+      FROM_HERE, base::BindOnce(&AutofillWebDataBackendImpl::UpdateServerCvc,
+                                autofill_backend_, instrument_id, cvc));
+}
+
+void AutofillWebDataService::RemoveServerCvc(int64_t instrument_id) {
+  wdbs_->ScheduleDBTask(
+      FROM_HERE, base::BindOnce(&AutofillWebDataBackendImpl::RemoveServerCvc,
+                                autofill_backend_, instrument_id));
+}
+
+void AutofillWebDataService::ClearServerCvcs() {
+  wdbs_->ScheduleDBTask(
+      FROM_HERE, base::BindOnce(&AutofillWebDataBackendImpl::ClearServerCvcs,
+                                autofill_backend_));
+}
+
 WebDataServiceBase::Handle AutofillWebDataService::GetCreditCards(
     WebDataServiceConsumer* consumer) {
   return wdbs_->ScheduleDBTaskWithResult(

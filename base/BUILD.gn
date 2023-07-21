@@ -1005,9 +1005,14 @@ component("base") {
       "process/process_linux.cc",
       "process/process_metrics_linux.cc",
       "threading/platform_thread_linux.cc",
+      "threading/platform_thread_linux_base.cc",
       "threading/thread_type_delegate.cc",
       "threading/thread_type_delegate.h",
     ]
+  }
+
+  if (is_chromeos) {
+    sources += [ "threading/platform_thread_cros.cc" ]
   }
 
   if (is_linux || is_chromeos || is_android) {
@@ -1522,7 +1527,8 @@ component("base") {
       "rand_util_nacl.cc",
       "sync_socket_nacl.cc",
       "system/sys_info_nacl.cc",
-      "threading/platform_thread_linux.cc",
+      "threading/platform_thread_linux_base.cc",
+      "threading/platform_thread_nacl.cc",
     ]
   } else {
     sources += [
@@ -1953,7 +1959,6 @@ component("base") {
       "mac/mac_logging.mm",
       "mac/mach_logging.cc",
       "mac/mach_logging.h",
-      "mac/scoped_block.h",
       "mac/scoped_mach_port.cc",
       "mac/scoped_mach_port.h",
       "mac/scoped_mach_vm.cc",
@@ -1968,8 +1973,7 @@ component("base") {
       "memory/platform_shared_memory_region_mac.cc",
       "message_loop/message_pump_mac.h",
       "message_loop/message_pump_mac.mm",
-      "process/process_metrics_apple_internal.cc",
-      "process/process_metrics_apple_internal.h",
+      "process/process_metrics_apple.cc",
       "profiler/module_cache_mac.cc",
       "strings/sys_string_conversions_mac.mm",
       "synchronization/waitable_event_mac.cc",
@@ -2934,10 +2938,7 @@ if (is_ios) {
 if (is_apple) {
   source_set("base_unittests_noarc") {
     testonly = true
-    sources = [
-      "mac/bind_objc_block_unittest.mm",
-      "mac/scoped_nsobject_unittest.mm",
-    ]
+    sources = [ "mac/scoped_nsobject_unittest.mm" ]
     deps = [
       ":base",
       "//base/test:test_support",
@@ -3443,6 +3444,7 @@ test("base_unittests") {
     ":base_stack_sampling_profiler_test_util",
     ":feature_list_buildflags",
     ":i18n",
+    ":partition_alloc_test_support",
     ":path_service_unittest",
     ":sanitizer_buildflags",
     "//base/allocator:buildflags",
@@ -4905,6 +4907,7 @@ source_set("partition_alloc_test_support") {
     "allocator/partition_allocator/extended_api.h",
     "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_for_testing.h",
     "allocator/partition_allocator/partition_alloc_for_testing.h",
+    "allocator/partition_allocator/pointers/raw_ptr_counting_impl_wrapper_for_test.h",
   ]
   if (is_posix) {
     sources += [ "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_posix_for_testing.cc" ]

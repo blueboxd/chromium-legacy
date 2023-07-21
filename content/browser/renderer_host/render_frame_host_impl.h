@@ -130,6 +130,7 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/back_forward_cache_not_restored_reasons.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-forward.h"
+#include "third_party/blink/public/mojom/blob/file_backed_blob_factory.mojom-forward.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-forward.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
 #include "third_party/blink/public/mojom/buckets/bucket_manager_host.mojom.h"
@@ -2442,7 +2443,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::string& event_data,
       const std::vector<blink::FencedFrame::ReportingDestination>& destinations,
       network::AttributionReportingRuntimeFeatures
-          attribution_reporting_runtime_features) override;
+          attribution_reporting_runtime_features,
+      bool once) override;
   void SendLegacyTechEvent(
       const std::string& type,
       blink::mojom::LegacyTechEventCodeLocationPtr code_location) override;
@@ -2791,9 +2793,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // FrameTreeNode or RenderFrameHostManager.
   RenderFrameProxyHost* GetProxyToParent();
 
-  // Returns the proxy to inner WebContents in the outer WebContents's
-  // SiteInstance. Note that this is not allowed to call this function on
-  // inactive RenderFrameHost.
+  // Returns the proxy representing `this` to its outer document's SiteInstance.
+  // Note that this can only be called for active main RenderFrameHosts. Returns
+  // nullptr if `this` is not the main frame of an inner frame tree.
   RenderFrameProxyHost* GetProxyToOuterDelegate();
 
   void DidChangeReferrerPolicy(network::mojom::ReferrerPolicy referrer_policy);
@@ -2975,6 +2977,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns if the RenderFrameHostImpl is loaded with the "Cache-Control:
   // no-store" header.
   bool LoadedWithCacheControlNoStoreHeader();
+
+  // Binds the receiver end of the FileBackedBlobFactory interface. The
+  // FileBackedBlobFactory implementation follows the lifetime of a document in
+  // the browser process and it is responsible for registering file backed blobs
+  // capturing the URL from which they are accessed. FileBackedBlobFactory is a
+  // navigation-associated interface.
+  void BindFileBackedBlobFactory(
+      mojo::PendingAssociatedReceiver<blink::mojom::FileBackedBlobFactory>
+          receiver);
 
  protected:
   friend class RenderFrameHostFactory;

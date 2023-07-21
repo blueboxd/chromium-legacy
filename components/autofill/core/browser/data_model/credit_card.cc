@@ -170,7 +170,7 @@ CreditCard::CreditCard(const std::string& guid, const std::string& origin)
       network_(kGenericCard),
       expiration_month_(0),
       expiration_year_(0),
-      card_issuer_(ISSUER_UNKNOWN),
+      card_issuer_(Issuer::kIssuerUnknown),
       instrument_id_(0) {}
 
 CreditCard::CreditCard(RecordType type, const std::string& server_id)
@@ -510,7 +510,7 @@ double CreditCard::GetRankingScore(base::Time current_time) const {
   if (base::FeatureList::IsEnabled(
           features::kAutofillEnableRankingFormulaCreditCards)) {
     int virtual_card_boost =
-        virtual_card_enrollment_state_ != VirtualCardEnrollmentState::ENROLLED
+        virtual_card_enrollment_state_ != VirtualCardEnrollmentState::kEnrolled
             ? 0
             : features::kAutofillRankingFormulaVirtualCardBoost.Get() *
                   exp(-GetDaysSinceLastUse(current_time) /
@@ -1314,11 +1314,15 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
             << " " << credit_card.record_type() << " "
             << credit_card.use_count() << " " << credit_card.use_date() << " "
             << credit_card.billing_address_id() << " " << credit_card.nickname()
-            << " " << credit_card.card_issuer() << " "
+            << " "
+            << static_cast<
+                   typename std::underlying_type<CreditCard::Issuer>::type>(
+                   credit_card.card_issuer())
+            << " "
             << " " << credit_card.issuer_id() << " "
             << credit_card.instrument_id() << " "
-            << credit_card.virtual_card_enrollment_state() << " "
-            << credit_card.card_art_url().spec() << " "
+            << base::to_underlying(credit_card.virtual_card_enrollment_state())
+            << " " << credit_card.card_art_url().spec() << " "
             << base::UTF16ToUTF8(credit_card.product_description()) << " "
             << credit_card.cvc();
 }

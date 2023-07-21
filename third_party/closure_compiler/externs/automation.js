@@ -25,7 +25,10 @@ chrome.automation.EventType = {
   ACCESS_KEY_CHANGED: 'accessKeyChanged',
   ACTIVE_DESCENDANT_CHANGED: 'activeDescendantChanged',
   ALERT: 'alert',
-  ARIA_ATTRIBUTE_CHANGED: 'ariaAttributeChanged',
+  // TODO(crbug.com/1464633) Fully remove ARIA_ATTRIBUTE_CHANGED_DEPRECATED
+  // starting in 122, because although it was removed in 118, it is still
+  // present in earlier versions of LaCros.
+  ARIA_ATTRIBUTE_CHANGED_DEPRECATED: 'ariaAttributeChangedDeprecated',
   ARIA_CURRENT_CHANGED: 'ariaCurrentChanged',
   ATOMIC_CHANGED: 'atomicChanged',
   AUTO_COMPLETE_CHANGED: 'autoCompleteChanged',
@@ -1447,8 +1450,8 @@ chrome.automation.AutomationNode.prototype.inPageLinkTarget;
 chrome.automation.AutomationNode.prototype.details;
 
 /**
- * A node that provides an error message for a current node.
- * @type {(!chrome.automation.AutomationNode|undefined)}
+ * The nodes, if any, that provide an error message for a current node.
+ * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-errorMessage
  */
 chrome.automation.AutomationNode.prototype.errorMessage;
@@ -2485,24 +2488,6 @@ chrome.automation.AutomationNode.prototype.addEventListener = function(eventType
  * @see https://developer.chrome.com/extensions/automation#method-removeEventListener
  */
 chrome.automation.AutomationNode.prototype.removeEventListener = function(eventType, listener, capture) {};
-
-/**
- * <p>Gets the first node in this node's subtree which matches the given CSS
- * selector and is within the same DOM context.</p><p>If this node doesn't
- * correspond directly with an HTML node in the DOM, querySelector will be run
- * on this node's nearest HTML node ancestor. Note that this may result in the
- * query returning a node which is not a descendant of this node.</p><p>If the
- * selector matches a node which doesn't directly correspond to an automation
- * node (for example an element within an ARIA widget, where the ARIA widget
- * forms one node of the automation tree, or an element which is hidden from
- * accessibility via hiding it using CSS or using aria-hidden), this will return
- * the nearest ancestor which does correspond to an automation node.</p>
- * @param {string} selector
- * @param {function(!chrome.automation.AutomationNode): void} callback Called
- *     when the result for a <code>query</code> is available.
- * @see https://developer.chrome.com/extensions/automation#method-domQuerySelector
- */
-chrome.automation.AutomationNode.prototype.domQuerySelector = function(selector, callback) {};
 
 /**
  * Finds the first AutomationNode in this node's subtree which matches the given

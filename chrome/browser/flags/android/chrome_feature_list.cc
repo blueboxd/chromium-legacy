@@ -160,6 +160,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAdaptiveButtonInTopToolbarAddToBookmarks,
     &kAdaptiveButtonInTopToolbarCustomizationV2,
     &kAddToHomescreenIPH,
+    &kAdvancedPeripheralsSupport,
+    &kAdvancedPeripheralsSupportTabStrip,
     &kAllowNewIncognitoTabIntents,
     &kAndroidAppIntegration,
     &kAndroidAppIntegrationSafeSearch,
@@ -202,7 +204,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableMultiWindowMode,
     &kCCTResizableSideSheet,
     &kCCTResizableSideSheetForThirdParties,
-    &kCCTRetainingStateInMemory,
     &kCCTResourcePrefetch,
     &kCCTTextFragmentLookupApiEnabled,
     &kCCTToolbarCustomizations,
@@ -236,7 +237,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kExploreSites,
     &kFocusOmniboxInIncognitoTabIntents,
     &kFoldableJankFix,
-    &kGridTabSwitcherForTablets,
+    &kGridTabSwitcherLandscapeAspectRatioPhones,
     &kImprovedIncognitoScreenshot,
     &kIncognitoReauthenticationForAndroid,
     &kIncognitoScreenshot,
@@ -252,7 +253,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kBookmarksImprovedSaveFlow,
     &kBookmarksRefresh,
     &kOmahaMinSdkVersionAndroid,
-    &kOmniboxAdaptiveSuggestionsVisibleGroupEligibilityUpdate,
     &kOmniboxAdaptNarrowTabletWindows,
     &kOmniboxCacheSuggestionResources,
     &kOmniboxConsumesImeInsets,
@@ -286,7 +286,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kRequestDesktopSiteOptInSynthetic,
     &kRequestDesktopSiteDefaultsDowngrade,
     &kRequestDesktopSiteDefaultsLogging,
-    &kRequestDesktopSitePerSiteIph,
     &kRestoreTabsOnFRE,
     &kSafeModeForCachedFlags,
     &kShowScrollableMVTOnNTPAndroid,
@@ -438,6 +437,14 @@ BASE_FEATURE(kAdaptiveButtonInTopToolbarCustomizationV2,
 
 BASE_FEATURE(kAddToHomescreenIPH,
              "AddToHomescreenIPH",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAdvancedPeripheralsSupport,
+             "AdvancedPeripheralsSupport",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAdvancedPeripheralsSupportTabStrip,
+             "AdvancedPeripheralsSupportTabStrip",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAllowNewIncognitoTabIntents,
@@ -603,13 +610,10 @@ BASE_FEATURE(kCCTResourcePrefetch,
              "CCTResourcePrefetch",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kCCTRetainingStateInMemory,
-             "CCTRetainingStateInMemory",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kCCTTextFragmentLookupApiEnabled,
              "CCTTextFragmentLookupApiEnabled",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
 
 BASE_FEATURE(kCCTToolbarCustomizations,
              "CCTToolbarCustomizations",
@@ -743,9 +747,9 @@ BASE_FEATURE(kFoldableJankFix,
              "FoldableJankFix",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kGridTabSwitcherForTablets,
-             "GridTabSwitcherForTablets",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kGridTabSwitcherLandscapeAspectRatioPhones,
+             "GridTabSwitcherLandscapeAspectRatioPhones",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Only affects devices on API version >= 33.
 BASE_FEATURE(kImprovedIncognitoScreenshot,
@@ -810,12 +814,6 @@ BASE_FEATURE(kOmahaMinSdkVersionAndroid,
              "OmahaMinSdkVersionAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, considers suggestions exposed 50% or more as fully visible and
-// 49% or less as hidden for Adaptive Suggestions partial grouping.
-BASE_FEATURE(kOmniboxAdaptiveSuggestionsVisibleGroupEligibilityUpdate,
-             "AdaptiveSuggestionsVisibleGroupEligibilityUpdate",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kOmniboxAdaptNarrowTabletWindows,
              "OmniboxAdaptNarrowTabletWindows",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -826,7 +824,7 @@ BASE_FEATURE(kOmniboxCacheSuggestionResources,
 
 BASE_FEATURE(kOmniboxConsumesImeInsets,
              "OmniboxConsumesImeInsets",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kOmniboxNoopEditUrlSuggestionClicks,
              "OmniboxNoopEditUrlSuggestionClicks",
@@ -945,10 +943,6 @@ BASE_FEATURE(kRequestDesktopSiteDefaultsLogging,
              "RequestDesktopSiteDefaultsLogging",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kRequestDesktopSitePerSiteIph,
-             "RequestDesktopSitePerSiteIph",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kRestoreTabsOnFRE,
              "RestoreTabsOnFRE",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1014,7 +1008,7 @@ BASE_FEATURE(kTabGroupsAndroid,
 
 BASE_FEATURE(kTabGroupsContinuationAndroid,
              "TabGroupsContinuationAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabGroupsForTablets,
              "TabGroupsForTablets",

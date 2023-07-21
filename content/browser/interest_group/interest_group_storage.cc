@@ -148,8 +148,8 @@ base::Value ToValue(const blink::InterestGroup::Ad& ad) {
   }
   return value;
 }
-blink::InterestGroup::Ad FromInterestGroupAdValue(
-    const base::Value::Dict& dict) {
+blink::InterestGroup::Ad FromInterestGroupAdValue(const base::Value::Dict& dict,
+                                                  bool for_components) {
   blink::InterestGroup::Ad result;
   const std::string* maybe_url = dict.FindString("url");
   if (maybe_url)
@@ -158,15 +158,18 @@ blink::InterestGroup::Ad FromInterestGroupAdValue(
   if (maybe_size_group) {
     result.size_group = *maybe_size_group;
   }
-  const std::string* maybe_buyer_reporting_id =
-      dict.FindString("buyer_reporting_id");
-  if (maybe_buyer_reporting_id) {
-    result.buyer_reporting_id = *maybe_buyer_reporting_id;
-  }
-  const std::string* maybe_buyer_and_seller_reporting_id =
-      dict.FindString("buyer_and_seller_reporting_id");
-  if (maybe_buyer_and_seller_reporting_id) {
-    result.buyer_and_seller_reporting_id = *maybe_buyer_and_seller_reporting_id;
+  if (!for_components) {
+    const std::string* maybe_buyer_reporting_id =
+        dict.FindString("buyer_reporting_id");
+    if (maybe_buyer_reporting_id) {
+      result.buyer_reporting_id = *maybe_buyer_reporting_id;
+    }
+    const std::string* maybe_buyer_and_seller_reporting_id =
+        dict.FindString("buyer_and_seller_reporting_id");
+    if (maybe_buyer_and_seller_reporting_id) {
+      result.buyer_and_seller_reporting_id =
+          *maybe_buyer_and_seller_reporting_id;
+    }
   }
   const std::string* maybe_metadata = dict.FindString("metadata");
   if (maybe_metadata)
@@ -217,15 +220,17 @@ std::string Serialize(
   return Serialize(list);
 }
 absl::optional<std::vector<blink::InterestGroup::Ad>>
-DeserializeInterestGroupAdVector(const std::string& serialized_ads) {
+DeserializeInterestGroupAdVector(const std::string& serialized_ads,
+                                 bool for_components) {
   std::unique_ptr<base::Value> ads_value = DeserializeValue(serialized_ads);
   if (!ads_value || !ads_value->is_list())
     return absl::nullopt;
   std::vector<blink::InterestGroup::Ad> result;
   for (const auto& ad_value : ads_value->GetList()) {
     const base::Value::Dict* dict = ad_value.GetIfDict();
-    if (dict)
-      result.emplace_back(FromInterestGroupAdValue(*dict));
+    if (dict) {
+      result.emplace_back(FromInterestGroupAdValue(*dict, for_components));
+    }
   }
   return result;
 }
@@ -962,12 +967,13 @@ bool UpgradeV7SchemaToV8(sql::Database& db, sql::MetaTable& meta_table) {
 bool UpgradeV6SchemaToV7(sql::Database& db, sql::MetaTable& meta_table) {
   // Index on group expiration by owner.
   DCHECK(db.DoesIndexExist("interest_group_owner"));
-  static const char kRemoveInterstGroupOwnerIndexSql[] =
+  static const char kRemoveInterestGroupOwnerIndexSql[] =
       // clang-format off
       "DROP INDEX interest_group_owner";
   // clang-format on
-  if (!db.Execute(kRemoveInterstGroupOwnerIndexSql))
+  if (!db.Execute(kRemoveInterestGroupOwnerIndexSql)) {
     return false;
+  }
   DCHECK(!db.DoesIndexExist("interest_group_owner"));
   static const char kInterestGroupOwnerIndexSql[] =
       // clang-format off
@@ -1192,8 +1198,10 @@ bool DoLoadInterestGroup(sql::Database& db,
       DeserializeStringVector(load.ColumnString(15));
   if (load.GetColumnType(16) != sql::ColumnType::kNull)
     group.user_bidding_signals = load.ColumnString(16);
-  group.ads = DeserializeInterestGroupAdVector(load.ColumnString(17));
-  group.ad_components = DeserializeInterestGroupAdVector(load.ColumnString(18));
+  group.ads = DeserializeInterestGroupAdVector(load.ColumnString(17),
+                                               /*for_components=*/false);
+  group.ad_components = DeserializeInterestGroupAdVector(
+      load.ColumnString(18), /*for_components=*/true);
   group.ad_sizes = DeserializeStringSizeMap(load.ColumnString(19));
   group.size_groups = DeserializeStringStringVectorMap(load.ColumnString(20));
 
@@ -1265,17 +1273,27 @@ bool DoJoinInterestGroup(sql::Database& db,
 
   blink::InterestGroup old_group;
   url::Origin old_joining_origin;
-  if (DoLoadInterestGroup(db, blink::InterestGroupKey(data.owner, data.name),
-                          old_group, &old_joining_origin,
+  blink::InterestGroupKey interest_group_key(data.owner, data.name);
+  if (DoLoadInterestGroup(db, interest_group_key, old_group,
+                          &old_joining_origin,
                           /*exact_join_time=*/nullptr,
-                          /*last_updated=*/nullptr) &&
-      old_group.execution_mode ==
-          blink::InterestGroup::ExecutionMode::kGroupedByOriginMode &&
-      joining_origin != old_joining_origin) {
-    // Clear all interest groups with same owner and mode GroupedByOriginMode
-    // and same old_joining_origin.
-    if (!DoClearClusteredBiddingGroups(db, data.owner, old_joining_origin))
-      return false;
+                          /*last_updated=*/nullptr)) {
+    if (old_group.expiry <= base::Time::Now()) {
+      // If there's a matching old interest group that's expired but that hasn't
+      // yet been cleaned up, delete it. This removes its associated tables,
+      // which should expire at the same time as the old interest group.
+      if (!DoRemoveInterestGroup(db, interest_group_key)) {
+        return false;
+      }
+    } else if (old_group.execution_mode ==
+                   blink::InterestGroup::ExecutionMode::kGroupedByOriginMode &&
+               joining_origin != old_joining_origin) {
+      // Clear all interest groups with same owner and mode GroupedByOriginMode
+      // and same `old_joining_origin`.
+      if (!DoClearClusteredBiddingGroups(db, data.owner, old_joining_origin)) {
+        return false;
+      }
+    }
   }
 
   // clang-format off
@@ -1287,7 +1305,7 @@ bool DoJoinInterestGroup(sql::Database& db,
             "next_update_after,"
             "owner,"
             "joining_origin,"
-           "exact_join_time,"
+            "exact_join_time,"
             "name,"
             "priority,"
             "enable_bidding_signals_prioritization,"
@@ -1435,8 +1453,9 @@ bool DoUpdateInterestGroup(sql::Database& db,
   }
 
   // (Optimization) Don't do anything for expired interest groups.
-  if (stored_group.expiry < now)
+  if (stored_group.expiry <= now) {
     return false;
+  }
   if (update.priority)
     stored_group.priority = *update.priority;
   if (update.enable_bidding_signals_prioritization) {
@@ -1703,7 +1722,7 @@ absl::optional<std::vector<url::Origin>> DoGetAllInterestGroupOwners(
   sql::Statement load(db.GetCachedStatement(SQL_FROM_HERE,
                                             "SELECT DISTINCT owner "
                                             "FROM interest_groups "
-                                            "WHERE expiration>=? "
+                                            "WHERE expiration>? "
                                             "ORDER BY expiration DESC"));
   if (!load.is_valid()) {
     DLOG(ERROR) << "LoadAllInterestGroups SQL statement did not compile: "
@@ -1727,7 +1746,7 @@ absl::optional<std::vector<url::Origin>> DoGetAllInterestGroupJoiningOrigins(
   sql::Statement load(db.GetCachedStatement(SQL_FROM_HERE,
                                             "SELECT DISTINCT joining_origin "
                                             "FROM interest_groups "
-                                            "WHERE expiration>=?"));
+                                            "WHERE expiration>?"));
   if (!load.is_valid()) {
     DLOG(ERROR)
         << "LoadAllInterestGroupJoiningOrigins SQL statement did not compile: "
@@ -1757,7 +1776,7 @@ bool DoRemoveInterestGroupsMatchingOwnerAndJoiner(sql::Database& db,
       SQL_FROM_HERE,
       "SELECT name "
       "FROM interest_groups "
-      "WHERE owner=? AND joining_origin=? AND expiration>=?"));
+      "WHERE owner=? AND joining_origin=? AND expiration>?"));
 
   if (!load.is_valid())
     return false;
@@ -1787,7 +1806,7 @@ DoGetAllInterestGroupOwnerJoinerPairs(sql::Database& db,
       db.GetCachedStatement(SQL_FROM_HERE,
                             "SELECT DISTINCT owner,joining_origin "
                             "FROM interest_groups "
-                            "WHERE expiration>=?"));
+                            "WHERE expiration>?"));
   if (!load.is_valid()) {
     DLOG(ERROR) << "LoadAllInterestGroupOwnerJoinerPairs SQL statement did not "
                    "compile: "
@@ -1932,7 +1951,7 @@ absl::optional<std::vector<std::string>> DoGetInterestGroupNamesForOwner(
     db.GetCachedStatement(SQL_FROM_HERE,
     "SELECT name "
     "FROM interest_groups "
-    "WHERE owner=? AND expiration>=? AND ?>=next_update_after "
+    "WHERE owner=? AND expiration>? AND ?>=next_update_after "
     "ORDER BY expiration DESC"));
   // clang-format on
 
@@ -2073,7 +2092,7 @@ DoGetInterestGroupNamesForJoiningOrigin(sql::Database& db,
       db.GetCachedStatement(SQL_FROM_HERE,
         "SELECT owner,name "
         "FROM interest_groups "
-        "WHERE joining_origin = ? AND expiration >=?"));
+        "WHERE joining_origin=? AND expiration>?"));
   // clang-format on
 
   if (!load.is_valid()) {
@@ -2295,7 +2314,7 @@ bool ClearExpiredInterestGroups(sql::Database& db,
       db.GetCachedStatement(SQL_FROM_HERE,
                             "SELECT owner, name "
                             "FROM interest_groups "
-                            "WHERE expiration <= ?"));
+                            "WHERE expiration<=?"));
   if (!expired_interest_group.is_valid()) {
     DLOG(ERROR) << "ClearExpiredInterestGroups SQL statement did not compile.";
     return false;

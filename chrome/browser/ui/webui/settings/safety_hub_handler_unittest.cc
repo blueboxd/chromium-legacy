@@ -10,7 +10,8 @@
 #include "base/time/clock.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/permissions/notification_permission_review_service_factory.h"
+#include "chrome/browser/ui/safety_hub/notification_permission_review_service_factory.h"
+#include "chrome/browser/ui/safety_hub/unused_site_permissions_service.h"
 #include "chrome/browser/ui/webui/settings/safety_hub_handler.h"
 #include "chrome/browser/ui/webui/settings/site_settings_helper.h"
 #include "chrome/common/chrome_features.h"
@@ -21,7 +22,6 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/permissions/constants.h"
-#include "components/permissions/unused_site_permissions_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
@@ -62,12 +62,10 @@ class SafetyHubHandlerTest : public testing::Test {
     handler()->AllowJavascript();
 
     // Create a revoked permission.
-    base::Value::Dict dict = base::Value::Dict();
-    base::Value::List permission_type_list = base::Value::List();
-    permission_type_list.Append(
-        static_cast<int32_t>(ContentSettingsType::GEOLOCATION));
-    dict.Set(permissions::kRevokedKey,
-             base::Value::List(std::move(permission_type_list)));
+    auto dict = base::Value::Dict().Set(
+        permissions::kRevokedKey,
+        base::Value::List().Append(
+            static_cast<int32_t>(ContentSettingsType::GEOLOCATION)));
 
     hcsm()->SetWebsiteSettingDefaultScope(
         GURL(kUnusedTestSite), GURL(kUnusedTestSite),

@@ -51,7 +51,6 @@ enum AuthenticationState {
   CLEAR_DATA,
   SIGN_IN,
   COMMIT_SYNC,
-  ENABLE_BOOKMARK_READING_LIST_ACCOUNT_STORAGE,
   REGISTER_FOR_USER_POLICY,
   FETCH_USER_POLICY,
   COMPLETE_WITH_SUCCESS,
@@ -177,18 +176,24 @@ enum AuthenticationState {
   });
 }
 
-- (void)cancelAndDismissAnimated:(BOOL)animated {
-  if (_state == DONE)
+- (void)interruptWithAction:(SigninCoordinatorInterrupt)action {
+  if (_state == DONE) {
     return;
+  }
+  __weak __typeof(self) weakSelf = self;
+  [_performer interruptWithAction:action
+                       completion:^() {
+                         [weakSelf performerInterrupted];
+                       }];
+}
 
-  [_performer cancelAndDismissAnimated:animated];
+- (void)performerInterrupted {
   if (_state != DONE) {
     // The performer might not have been able to continue the flow if it was
     // waiting for a callback (e.g. waiting for AccountReconcilor). In this
     // case, we force the flow to finish synchronously.
     [self cancelFlow];
   }
-
   DCHECK_EQ(DONE, _state);
 }
 
@@ -211,7 +216,6 @@ enum AuthenticationState {
     case CLEAR_DATA:
     case SIGN_IN:
     case COMMIT_SYNC:
-    case ENABLE_BOOKMARK_READING_LIST_ACCOUNT_STORAGE:
     case REGISTER_FOR_USER_POLICY:
     case FETCH_USER_POLICY:
       return COMPLETE_WITH_FAILURE;
@@ -241,7 +245,7 @@ enum AuthenticationState {
       // If the user enabled Sync, expect the data clearing strategy to be set.
       switch (self.postSignInAction) {
         case PostSignInAction::kNone:
-        case PostSignInAction::kEnableBookmarkReadingListAccountStorage:
+        case PostSignInAction::kShowSnackbar:
           // `localDataClearingStrategy` is not required.
           break;
         case PostSignInAction::kCommitSync:
@@ -274,16 +278,15 @@ enum AuthenticationState {
       switch (self.postSignInAction) {
         case PostSignInAction::kCommitSync:
           return COMMIT_SYNC;
-        case PostSignInAction::kEnableBookmarkReadingListAccountStorage:
-          return ENABLE_BOOKMARK_READING_LIST_ACCOUNT_STORAGE;
+        case PostSignInAction::kShowSnackbar:
+          _shouldShowSigninSnackbar = YES;
+          return COMPLETE_WITH_SUCCESS;
         case PostSignInAction::kNone:
           return COMPLETE_WITH_SUCCESS;
       }
     case COMMIT_SYNC:
       if (policy::IsUserPolicyEnabled() && _shouldFetchUserPolicy)
         return REGISTER_FOR_USER_POLICY;
-      return COMPLETE_WITH_SUCCESS;
-    case ENABLE_BOOKMARK_READING_LIST_ACCOUNT_STORAGE:
       return COMPLETE_WITH_SUCCESS;
     case REGISTER_FOR_USER_POLICY:
       if (!_dmToken.length || !_clientID.length) {
@@ -363,10 +366,6 @@ enum AuthenticationState {
       [self continueSignin];
       return;
 
-    case ENABLE_BOOKMARK_READING_LIST_ACCOUNT_STORAGE:
-      [self optInBookmarkReadingListAccountStorage];
-      return;
-
     case REGISTER_FOR_USER_POLICY:
       [_performer registerUserPolicy:browserState
                          forIdentity:_identityToSignIn];
@@ -415,7 +414,7 @@ enum AuthenticationState {
     case PostSignInAction::kCommitSync:
       [self checkMergeCaseForUnsupervisedAccounts];
       break;
-    case PostSignInAction::kEnableBookmarkReadingListAccountStorage:
+    case PostSignInAction::kShowSnackbar:
     case PostSignInAction::kNone:
       [self continueSignin];
       break;
@@ -538,29 +537,6 @@ enum AuthenticationState {
                        }
                        viewController:_presentingViewController
                               browser:_browser];
-}
-
-// Opts in the bookmark and reading list account storage and continues the
-// sign-in flow.
-- (void)optInBookmarkReadingListAccountStorage {
-  bool bookmarksAccountStorageEnabled =
-      base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage);
-  bool dualReadingListModelEnabled = base::FeatureList::IsEnabled(
-      syncer::kReadingListEnableDualReadingListModel);
-  bool readingListTransportUponSignInEnabled = base::FeatureList::IsEnabled(
-      syncer::kReadingListEnableSyncTransportModeUponSignIn);
-  CHECK(bookmarksAccountStorageEnabled ||
-        (dualReadingListModelEnabled && readingListTransportUponSignInEnabled))
-      << "bookmarksAccountStorageEnabled: " << bookmarksAccountStorageEnabled
-      << ", dualReadingListModelEnabled: " << dualReadingListModelEnabled
-      << ", readingListTransportUponSignInEnabled: "
-      << readingListTransportUponSignInEnabled;
-  syncer::SyncService* syncService =
-      SyncServiceFactory::GetForBrowserState([self originalBrowserState]);
-  syncer::SyncUserSettings* syncUserSettings = syncService->GetUserSettings();
-  syncUserSettings->SetBookmarksAndReadingListAccountStorageOptIn(true);
-  _shouldShowSigninSnackbar = YES;
-  [self continueSignin];
 }
 
 #pragma mark AuthenticationFlowPerformerDelegate

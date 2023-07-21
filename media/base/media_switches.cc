@@ -336,12 +336,12 @@ BASE_FEATURE(kPlatformHEVCDecoderSupport,
              "PlatformHEVCDecoderSupport",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-// Enables HEVC hardware accelerated encoding for Windows and Mac.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_ANDROID)
+// Enables HEVC hardware accelerated encoding for Windows, Mac, and Android.
 BASE_FEATURE(kPlatformHEVCEncoderSupport,
              "PlatformHEVCEncoderSupport",
              base::FEATURE_DISABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_ANDROID)
 #endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 
 // Only decode preload=metadata elements upon visibility.
@@ -532,6 +532,10 @@ BASE_FEATURE(kIgnoreUiGains,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kShowForceRespectUiGainsToggle,
              "ShowForceRespectUiGainsToggle",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCrOSSystemVoiceIsolationOption,
+             "CrOSSystemVoiceIsolationOption",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -950,6 +954,12 @@ BASE_FEATURE(kHardwareSecureDecryptionFallback,
              "HardwareSecureDecryptionFallback",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Whether disabling hardware secure Content Decryption Module
+// (CDM) after failures or crashes to fallback to software secure CDMs should
+// use per site logic.
+const base::FeatureParam<bool> kHardwareSecureDecryptionFallbackPerSite{
+    &kHardwareSecureDecryptionFallback, "per_site", false};
+
 // The minimum and maximum number of days to disable hardware secure Content
 // Decryption Module (CDM) as part of the fallback logic.
 const base::FeatureParam<int> kHardwareSecureDecryptionFallbackMinDisablingDays{
@@ -1138,6 +1148,14 @@ BASE_FEATURE(kUSeSequencedTaskRunnerForVEA,
 // frames. This flag enables an experimental GL-based conversion method.
 BASE_FEATURE(kPreferGLImageProcessor,
              "PreferGLImageProcessor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+// Experimental support for software based MT21 conversion. On some (older)
+// architectures, the hardware video decoder outputs frames in a pixel format
+// known as MT21. Normally a hardware block performs to the conversion between
+// this pixel format and NV12, but this flag will use a software equivalent
+// instead.
+BASE_FEATURE(kPreferSoftwareMT21,
+             "PreferSoftwareMT21",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // defined(ARCH_CPU_ARM_FAMILY)
 #if BUILDFLAG(IS_CHROMEOS)

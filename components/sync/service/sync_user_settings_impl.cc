@@ -15,6 +15,7 @@
 #include "components/signin/public/base/gaia_id_hash.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/base/features.h"
+#include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/engine/nigori/nigori.h"
 #include "components/sync/service/sync_prefs.h"
@@ -125,6 +126,11 @@ bool SyncUserSettingsImpl::IsTypeManagedByPolicy(
   return prefs_->IsTypeManagedByPolicy(type);
 }
 
+bool SyncUserSettingsImpl::IsTypeManagedByCustodian(
+    UserSelectableType type) const {
+  return prefs_->IsTypeManagedByCustodian(type);
+}
+
 void SyncUserSettingsImpl::SetSelectedTypes(bool sync_everything,
                                             UserSelectableTypeSet types) {
   UserSelectableTypeSet registered_types = GetRegisteredSelectableTypes();
@@ -160,16 +166,6 @@ void SyncUserSettingsImpl::SetSelectedType(UserSelectableType type,
     }
     SetSelectedTypes(IsSyncEverythingEnabled(), selected_types);
   }
-}
-
-bool SyncUserSettingsImpl::IsPaymentsIntegrationEnabled() const {
-  return sync_account_state_for_prefs_callback_.Run() !=
-             SyncPrefs::SyncAccountState::kNotSignedIn &&
-         prefs_->IsPaymentsIntegrationEnabled();
-}
-
-void SyncUserSettingsImpl::SetPaymentsIntegrationEnabled(bool enabled) {
-  prefs_->SetPaymentsIntegrationEnabled(enabled);
 }
 
 void SyncUserSettingsImpl::KeepAccountSettingsPrefsOnlyForUsers(
@@ -287,14 +283,21 @@ bool SyncUserSettingsImpl::IsTrustedVaultRecoverabilityDegraded() const {
 }
 
 bool SyncUserSettingsImpl::IsUsingExplicitPassphrase() const {
-  return crypto_->IsUsingExplicitPassphrase();
+  // TODO(crbug.com/1466401): Either make this method return a Tribool, so the
+  // "unknown" case is properly communicated, or just remove it altogether
+  // (callers can always use the global IsExplicitPassphrase() helper).
+  absl::optional<PassphraseType> type = GetPassphraseType();
+  if (!type.has_value()) {
+    return false;
+  }
+  return IsExplicitPassphrase(*type);
 }
 
 base::Time SyncUserSettingsImpl::GetExplicitPassphraseTime() const {
   return crypto_->GetExplicitPassphraseTime();
 }
 
-PassphraseType SyncUserSettingsImpl::GetPassphraseType() const {
+absl::optional<PassphraseType> SyncUserSettingsImpl::GetPassphraseType() const {
   return crypto_->GetPassphraseType();
 }
 
@@ -335,7 +338,7 @@ ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
   // though they're technically not registered.
   types.PutAll(ControlTypes());
 
-  static_assert(48 == GetNumModelTypes(),
+  static_assert(49 == GetNumModelTypes(),
                 "If adding a new sync data type, update the list below below if"
                 " you want to disable the new data type for local sync.");
   if (prefs_->IsLocalSyncEnabled()) {

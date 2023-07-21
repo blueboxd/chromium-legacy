@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.night_mode;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
@@ -63,12 +63,14 @@ public class GlobalNightModeStateProviderHolder {
                         PowerSavingModeMonitor.getInstance(),
                         SharedPreferencesManager.getInstance());
             }
+            // Do not cache the singleton between tests since the creation logic depends on flags.
+            ResettersForTesting.register(() -> sInstance = null);
         }
         return sInstance;
     }
 
-    @VisibleForTesting
     static void setInstanceForTesting(NightModeStateProvider instance) {
         sInstance = instance;
+        ResettersForTesting.register(() -> sInstance = null);
     }
 }

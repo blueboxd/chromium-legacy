@@ -544,11 +544,10 @@ class UserMetricsActionTest(unittest.TestCase):
 
 class PydepsNeedsUpdatingTest(unittest.TestCase):
   class MockPopen:
-    def __init__(self, stdout_func):
-      self._stdout_func = stdout_func
+    def __init__(self, stdout):
+      self.stdout = io.StringIO(stdout)
 
     def wait(self):
-      self.stdout = io.StringIO(self._stdout_func())
       return 0
 
   class MockSubprocess:
@@ -562,7 +561,7 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
       self._popen_func = func
 
     def Popen(self, cmd, *args, **kwargs):
-      return PydepsNeedsUpdatingTest.MockPopen(lambda: self._popen_func(cmd))
+      return PydepsNeedsUpdatingTest.MockPopen(self._popen_func(cmd))
 
   def _MockParseGclientArgs(self, is_android=True):
     return lambda: {'checkout_android': 'true' if is_android else 'false' }
@@ -4844,7 +4843,7 @@ class CheckBatchAnnotation(unittest.TestCase):
                   'import org.chromium.base.test.BaseRobolectricTestRunner;',
                   'public class Three {']),
         MockFile('path/FourTest.java',
-                 ['@DoNotBatch(reason = "dummy reason 1")',
+                 ['@DoNotBatch(reason = "placeholder reason 1")',
                   'import org.chromium.base.test.BaseRobolectricTestRunner;',
                   'public class Four {']),
     ]
@@ -4865,7 +4864,7 @@ class CheckBatchAnnotation(unittest.TestCase):
         MockFile('path/OneTest.java',
                  ['@Batch(Batch.PER_CLASS)', 'public class One {']),
         MockFile('path/TwoTest.java',
-                 ['@DoNotBatch(reason = "dummy reasons.")', 'public class Two {'
+                 ['@DoNotBatch(reason = "placeholder reasons.")', 'public class Two {'
                  ]),
         MockFile('path/ThreeTest.java',
                  ['@Batch(Batch.PER_CLASS)',
@@ -4873,9 +4872,9 @@ class CheckBatchAnnotation(unittest.TestCase):
                  ['@Batch(Batch.PER_CLASS)',
                   'public class Three extends BaseTestB {']),
         MockFile('path/FourTest.java',
-                 ['@DoNotBatch(reason = "dummy reason 1")',
+                 ['@DoNotBatch(reason = "placeholder reason 1")',
                   'public class Four extends BaseTestA {'],
-                 ['@DoNotBatch(reason = "dummy reason 2")',
+                 ['@DoNotBatch(reason = "placeholder reason 2")',
                   'public class Four extends BaseTestB {']),
         MockFile('path/FiveTest.java',
                  ['import androidx.test.uiautomator.UiDevice;',
@@ -4898,7 +4897,9 @@ class CheckBatchAnnotation(unittest.TestCase):
         ),
         MockFile('path/PRESUBMIT.py',
                  ['@Batch(Batch.PER_CLASS)',
-                  '@DoNotBatch(reason = "dummy reason)']),
+                  '@DoNotBatch(reason = "placeholder reason)']),
+        MockFile('path/AnnotationTest.java',
+          ['public @interface SomeAnnotation {'],),
     ]
     errors = PRESUBMIT.CheckBatchAnnotation(mock_input, MockOutputApi())
     self.assertEqual(0, len(errors))

@@ -538,41 +538,36 @@ DawnIOSurfaceRepresentation::DawnIOSurfaceRepresentation(
     SharedImageManager* manager,
     SharedImageBacking* backing,
     MemoryTypeTracker* tracker,
-    WGPUDevice device,
+    wgpu::Device device,
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const gfx::Size& io_surface_size,
-    WGPUTextureFormat wgpu_format,
-    std::vector<WGPUTextureFormat> view_formats)
+    wgpu::TextureFormat wgpu_format,
+    std::vector<wgpu::TextureFormat> view_formats)
     : DawnImageRepresentation(manager, backing, tracker),
-      device_(device),
+      device_(std::move(device)),
       io_surface_(std::move(io_surface)),
       io_surface_size_(io_surface_size),
       wgpu_format_(wgpu_format),
-      view_formats_(std::move(view_formats)),
-      dawn_procs_(dawn::native::GetProcs()) {
+      view_formats_(std::move(view_formats)) {
   CHECK(device_);
   CHECK(io_surface_);
-
-  // Keep a reference to the device so that it stays valid (it might become
-  // lost in which case operations will be noops).
-  dawn_procs_.deviceReference(device_);
 }
 
 DawnIOSurfaceRepresentation::~DawnIOSurfaceRepresentation() {
   EndAccess();
-  dawn_procs_.deviceRelease(device_);
 }
 
-WGPUTexture DawnIOSurfaceRepresentation::BeginAccess(
-    WGPUTextureUsage wgpu_texture_usage) {
+wgpu::Texture DawnIOSurfaceRepresentation::BeginAccess(
+    wgpu::TextureUsage wgpu_texture_usage) {
   const std::string debug_label =
       "IOSurface(" + CreateLabelForSharedImageUsage(usage()) + ")";
 
-  WGPUTextureDescriptor texture_descriptor = {};
+  wgpu::TextureDescriptor texture_descriptor;
   texture_descriptor.label = debug_label.c_str();
   texture_descriptor.format = wgpu_format_;
-  texture_descriptor.usage = wgpu_texture_usage;
-  texture_descriptor.dimension = WGPUTextureDimension_2D;
+  texture_descriptor.usage =
+      static_cast<wgpu::TextureUsage>(wgpu_texture_usage);
+  texture_descriptor.dimension = wgpu::TextureDimension::e2D;
   texture_descriptor.size = {static_cast<uint32_t>(io_surface_size_.width()),
                              static_cast<uint32_t>(io_surface_size_.height()),
                              1};
@@ -585,19 +580,18 @@ WGPUTexture DawnIOSurfaceRepresentation::BeginAccess(
   // for video frame import, which has bi-planar format, we also need
   // RenderAttachment usage for clears, and TextureBinding for
   // copyTextureForBrowser.
-  WGPUDawnTextureInternalUsageDescriptor internalDesc = {};
-  internalDesc.chain.sType = WGPUSType_DawnTextureInternalUsageDescriptor;
+  wgpu::DawnTextureInternalUsageDescriptor internalDesc;
   internalDesc.internalUsage =
-      WGPUTextureUsage_CopySrc | WGPUTextureUsage_TextureBinding;
-  if (wgpu_format_ != WGPUTextureFormat_R8BG8Biplanar420Unorm) {
-    internalDesc.internalUsage |= WGPUTextureUsage_RenderAttachment;
+      wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::TextureBinding;
+  if (wgpu_format_ != wgpu::TextureFormat::R8BG8Biplanar420Unorm) {
+    internalDesc.internalUsage |= wgpu::TextureUsage::RenderAttachment;
   }
 
-  texture_descriptor.nextInChain =
-      reinterpret_cast<WGPUChainedStruct*>(&internalDesc);
+  texture_descriptor.nextInChain = &internalDesc;
 
   dawn::native::metal::ExternalImageDescriptorIOSurface descriptor;
-  descriptor.cTextureDescriptor = &texture_descriptor;
+  descriptor.cTextureDescriptor =
+      reinterpret_cast<WGPUTextureDescriptor*>(&texture_descriptor);
   descriptor.isInitialized = IsCleared();
   descriptor.ioSurface = io_surface_.get();
 
@@ -621,8 +615,9 @@ WGPUTexture DawnIOSurfaceRepresentation::BeginAccess(
     }
   }
 
-  texture_ = dawn::native::metal::WrapIOSurface(device_, &descriptor);
-  return texture_;
+  texture_ = wgpu::Texture::Acquire(
+      dawn::native::metal::WrapIOSurface(device_.Get(), &descriptor));
+  return texture_.Get();
 }
 
 void DawnIOSurfaceRepresentation::EndAccess() {
@@ -631,7 +626,7 @@ void DawnIOSurfaceRepresentation::EndAccess() {
   }
 
   dawn::native::metal::ExternalImageIOSurfaceEndAccessDescriptor descriptor;
-  dawn::native::metal::IOSurfaceEndAccess(texture_, &descriptor);
+  dawn::native::metal::IOSurfaceEndAccess(texture_.Get(), &descriptor);
 
   if (descriptor.isInitialized) {
     SetCleared();
@@ -651,7 +646,7 @@ void DawnIOSurfaceRepresentation::EndAccess() {
 
   // All further operations on the textures are errors (they would be racy
   // with other backings).
-  dawn_procs_.textureDestroy(texture_);
+  texture_.Destroy();
 
   // TODO(b/252731382): the following WaitForCommandsToBeScheduled call should
   // no longer be necessary, but for some reason it is. Removing it
@@ -667,9 +662,8 @@ void DawnIOSurfaceRepresentation::EndAccess() {
   // scheduling races between commands using the IOSurface on different APIs.
   // This is a blocking call but should be almost instant.
   TRACE_EVENT0("gpu", "DawnIOSurfaceRepresentation::EndAccess");
-  dawn::native::metal::WaitForCommandsToBeScheduled(device_);
+  dawn::native::metal::WaitForCommandsToBeScheduled(device_.Get());
 
-  dawn_procs_.textureRelease(texture_);
   texture_ = nullptr;
 }
 #endif  // BUILDFLAG(USE_DAWN)
@@ -915,28 +909,29 @@ IOSurfaceImageBacking::ProduceOverlay(SharedImageManager* manager,
 std::unique_ptr<DawnImageRepresentation> IOSurfaceImageBacking::ProduceDawn(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
-    WGPUDevice device,
-    WGPUBackendType backend_type,
-    std::vector<WGPUTextureFormat> view_formats) {
+    const wgpu::Device& device,
+    wgpu::BackendType backend_type,
+    std::vector<wgpu::TextureFormat> view_formats) {
 #if BUILDFLAG(USE_DAWN)
-  WGPUTextureFormat wgpu_format = ToWGPUFormat(format());
+  wgpu::TextureFormat wgpu_format = ToDawnFormat(format());
   // See comments in IOSurfaceImageBackingFactory::CreateSharedImage about
   // RGBA versus BGRA when using Skia Ganesh GL backend or ANGLE.
   if (io_surface_format_ == 'BGRA') {
-    wgpu_format = WGPUTextureFormat_BGRA8Unorm;
+    wgpu_format = wgpu::TextureFormat::BGRA8Unorm;
   }
   // TODO(crbug.com/1293514): Remove this if condition after using single
   // multiplanar mailbox for which wgpu_format should already be correct.
   if (io_surface_format_ == '420v') {
-    wgpu_format = WGPUTextureFormat_R8BG8Biplanar420Unorm;
+    wgpu_format = wgpu::TextureFormat::R8BG8Biplanar420Unorm;
   }
-  if (wgpu_format == WGPUTextureFormat_Undefined) {
+  if (wgpu_format == wgpu::TextureFormat::Undefined) {
     LOG(ERROR) << "Unsupported format for Dawn: " << format().ToString();
     return nullptr;
   }
+
   return std::make_unique<DawnIOSurfaceRepresentation>(
-      manager, this, tracker, device, io_surface_, io_surface_size_,
-      wgpu_format, std::move(view_formats));
+      manager, this, tracker, wgpu::Device(device), io_surface_,
+      io_surface_size_, wgpu_format, std::move(view_formats));
 #else
   return nullptr;
 #endif
@@ -989,9 +984,8 @@ IOSurfaceImageBacking::ProduceSkiaGraphite(
   CHECK(context_state->graphite_context());
   if (context_state->gr_context_type() == GrContextType::kGraphiteDawn) {
 #if BUILDFLAG(SKIA_USE_DAWN)
-    WGPUDevice device =
-        context_state->dawn_context_provider()->GetDevice().Get();
-    auto backend_type = WGPUBackendType::WGPUBackendType_Metal;
+    auto device = context_state->dawn_context_provider()->GetDevice();
+    auto backend_type = wgpu::BackendType::Metal;
     auto dawn_representation = ProduceDawn(manager, tracker, device,
                                            backend_type, /*view_formats=*/{});
     if (!dawn_representation) {
@@ -1244,8 +1238,8 @@ void IOSurfaceImageBacking::IOSurfaceBackingEGLStateEndAccess(
   // to be copied to the internal texture via a Bind() when the GPU starts a
   // subsequent read. Note also that this logic assumes that writes are
   // serialized with respect to reads (so that the end of a write always
-  // triggers a release and copy). By design, GLImageBackingFactory enforces
-  // this property for this use case.
+  // triggers a release and copy). By design, IOSurfaceImageBackingFactory
+  // enforces this property for this use case.
   bool needs_sync_for_swangle =
       (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader &&
        (num_ongoing_read_accesses_ == 0));
@@ -1253,11 +1247,12 @@ void IOSurfaceImageBacking::IOSurfaceBackingEGLStateEndAccess(
   // Similarly, when ANGLE's metal backend is used, we have to signal a call to
   // waitUntilScheduled() using the same method on EndAccess to ensure IOSurface
   // synchronization. In this case, it is sufficient to release the image at the
-  // end of a write. As above, GLImageBackingFactory enforces serialization of
-  // reads and writes for this use case.
+  // end of a write. As above, IOSurfaceImageBackingFactory enforces
+  // serialization of reads and writes for this use case.
   // TODO(https://anglebug.com/7626): Enable on Metal only when
   // CPU_READ or SCANOUT is specified. When doing so, adjust the conditions for
-  // disallowing concurrent read/write in GLImageBackingFactory as suitable.
+  // disallowing concurrent read/write in IOSurfaceImageBackingFactory as
+  // suitable.
   bool needs_sync_for_metal =
       (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal &&
        !readonly);

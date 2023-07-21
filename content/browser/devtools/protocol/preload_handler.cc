@@ -39,9 +39,6 @@ Preload::PrerenderFinalStatus PrerenderFinalStatusToProtocol(
       return Preload::PrerenderFinalStatusEnum::DidFailLoad;
     case PrerenderFinalStatus::kDownload:
       return Preload::PrerenderFinalStatusEnum::Download;
-    case PrerenderFinalStatus::kEmbedderTriggeredAndCrossOriginRedirected:
-      return Preload::PrerenderFinalStatusEnum::
-          EmbedderTriggeredAndCrossOriginRedirected;
     case PrerenderFinalStatus::kFailToGetMemoryUsage:
       return Preload::PrerenderFinalStatusEnum::FailToGetMemoryUsage;
     case PrerenderFinalStatus::kInProgressNavigation:
@@ -168,6 +165,9 @@ Preload::PrerenderFinalStatus PrerenderFinalStatusToProtocol(
       return Preload::PrerenderFinalStatusEnum::ResourceLoadBlockedByClient;
     case PrerenderFinalStatus::kSpeculationRuleRemoved:
       return Preload::PrerenderFinalStatusEnum::SpeculationRuleRemoved;
+    case PrerenderFinalStatus::kActivatedWithAuxiliaryBrowsingContexts:
+      return Preload::PrerenderFinalStatusEnum::
+          ActivatedWithAuxiliaryBrowsingContexts;
   }
 }
 

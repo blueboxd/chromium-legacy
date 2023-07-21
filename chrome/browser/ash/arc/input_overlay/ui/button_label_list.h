@@ -6,19 +6,15 @@
 #define CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_UI_BUTTON_LABEL_LIST_H_
 
 #include "base/memory/raw_ptr.h"
-#include "ui/views/view.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/arrow_container.h"
 
 namespace ash {
 class RadioButtonGroup;
 }  // namespace ash
 
-namespace gfx {
-class Size;
-}  // namespace gfx
-
 namespace arc::input_overlay {
 
-class ButtonOptionsMenu;
+class Action;
 class DisplayOverlayController;
 
 // ButtonLabelList displays a list of action names that can be assigned to the
@@ -36,13 +32,10 @@ class DisplayOverlayController;
 // |----------------------------------|
 // ||<Action string>|                 |
 // +----------------------------------+
-class ButtonLabelList : public views::View {
+class ButtonLabelList : public ArrowContainer {
  public:
-  static ButtonLabelList* Show(DisplayOverlayController* controller,
-                               ButtonOptionsMenu* button_options_menu);
-
   ButtonLabelList(DisplayOverlayController* display_overlay_controller,
-                  ButtonOptionsMenu* button_options_menu);
+                  Action* action);
   ButtonLabelList(const ButtonLabelList&) = delete;
   ButtonLabelList& operator=(const ButtonLabelList&) = delete;
   ~ButtonLabelList() override;
@@ -53,20 +46,13 @@ class ButtonLabelList : public views::View {
   void AddHeader();
   void AddActionLabels();
 
-  // Calculate and set position.
-  void CalculatePosition();
-
   // Handle button functions.
   void OnActionLabelPressed();
   void OnBackButtonPressed();
 
-  // views::View:
-  void OnPaintBackground(gfx::Canvas* canvas) override;
-  gfx::Size CalculatePreferredSize() const override;
-
   // DisplayOverlayController owns this class, no need to deallocate.
   const raw_ptr<DisplayOverlayController> display_overlay_controller_ = nullptr;
-  raw_ptr<ButtonOptionsMenu> button_options_menu_ = nullptr;
+  raw_ptr<Action> action_ = nullptr;
   raw_ptr<ash::RadioButtonGroup> button_group_ = nullptr;
 };
 

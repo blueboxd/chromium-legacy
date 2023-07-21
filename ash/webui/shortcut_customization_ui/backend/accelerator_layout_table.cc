@@ -16,7 +16,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/dom_us_layout_data.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
@@ -385,19 +387,19 @@ const NonConfigurableActionsMap& GetNonConfigurableActionsMap() {
                ui::VKEY_A, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)})},
           {NonConfigurableActions::kBrowserBottomPage,
            NonConfigurableAcceleratorDetails(
-               {ui::Accelerator(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN)})},
+               {ui::Accelerator(ui::VKEY_END, ui::EF_NONE)})},
           {NonConfigurableActions::kBrowserTopPage,
            NonConfigurableAcceleratorDetails(
-               {ui::Accelerator(ui::VKEY_LEFT, ui::EF_COMMAND_DOWN)})},
+               {ui::Accelerator(ui::VKEY_HOME, ui::EF_NONE)})},
           {NonConfigurableActions::kBrowserPageUp,
            NonConfigurableAcceleratorDetails(
-               {ui::Accelerator(ui::VKEY_UP, ui::EF_COMMAND_DOWN)})},
+               {ui::Accelerator(ui::VKEY_PRIOR, ui::EF_NONE)})},
           {NonConfigurableActions::kBrowserPageDown,
            NonConfigurableAcceleratorDetails(
-               {ui::Accelerator(ui::VKEY_DOWN, ui::EF_COMMAND_DOWN)})},
+               {ui::Accelerator(ui::VKEY_NEXT, ui::EF_NONE)})},
           {NonConfigurableActions::kAmbientDeleteNextWord,
            NonConfigurableAcceleratorDetails(
-               {ui::Accelerator(ui::VKEY_BACK, ui::EF_COMMAND_DOWN)})},
+               {ui::Accelerator(ui::VKEY_DELETE, ui::EF_NONE)})},
           // TODO(longbowei): Re-enable these shortcuts. these conflict with
           // kBrowserTopPage(Search + <) and kBrowserBottomPage(Search + >);
           //    {NonConfigurableActions::kAmbientGoToBeginningOfLine,
@@ -458,11 +460,11 @@ const NonConfigurableActionsMap& GetNonConfigurableActionsMap() {
            NonConfigurableAcceleratorDetails(
                {ui::Accelerator(ui::VKEY_A, ui::EF_CONTROL_DOWN)})},
           {NonConfigurableActions::kAmbientSelectTextToBeginning,
-           NonConfigurableAcceleratorDetails({ui::Accelerator(
-               ui::VKEY_LEFT, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN)})},
+           NonConfigurableAcceleratorDetails(
+               {ui::Accelerator(ui::VKEY_HOME, ui::EF_SHIFT_DOWN)})},
           {NonConfigurableActions::kAmbientSelectTextToEndOfLine,
-           NonConfigurableAcceleratorDetails({ui::Accelerator(
-               ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN)})},
+           NonConfigurableAcceleratorDetails(
+               {ui::Accelerator(ui::VKEY_END, ui::EF_SHIFT_DOWN)})},
           {NonConfigurableActions::kAmbientSelectPreviousWord,
            NonConfigurableAcceleratorDetails({ui::Accelerator(
                ui::VKEY_LEFT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN)})},
@@ -470,11 +472,11 @@ const NonConfigurableActionsMap& GetNonConfigurableActionsMap() {
            NonConfigurableAcceleratorDetails({ui::Accelerator(
                ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN)})},
           {NonConfigurableActions::kAmbientGoToBeginningOfDocument,
-           NonConfigurableAcceleratorDetails({ui::Accelerator(
-               ui::VKEY_LEFT, ui::EF_CONTROL_DOWN | ui::EF_COMMAND_DOWN)})},
+           NonConfigurableAcceleratorDetails(
+               {ui::Accelerator(ui::VKEY_HOME, ui::EF_CONTROL_DOWN)})},
           {NonConfigurableActions::kAmbientGoToEndOfDocument,
-           NonConfigurableAcceleratorDetails({ui::Accelerator(
-               ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN | ui::EF_COMMAND_DOWN)})},
+           NonConfigurableAcceleratorDetails(
+               {ui::Accelerator(ui::VKEY_END, ui::EF_CONTROL_DOWN)})},
           {NonConfigurableActions::kAmbientMoveStartOfPreviousWord,
            NonConfigurableAcceleratorDetails(
                {ui::Accelerator(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN)})},
@@ -525,11 +527,21 @@ std::u16string GetKeyDisplay(ui::KeyboardCode key_code) {
         base::UTF16ToUTF8(KeycodeToKeyString(key_code));
     // If `KeycodeToKeyString` fails to get a proper string, fallback to
     // the domcode string.
-    if (converted_string == kUnidentifiedKeyString) {
+    if (converted_string == kUnidentifiedKeyString || converted_string == "") {
       ui::DomCode converted_domcode =
           ui::UsLayoutKeyboardCodeToDomCode(key_code);
-      return base::UTF8ToUTF16(
-          ui::KeycodeConverter::DomCodeToCodeString(converted_domcode));
+      if (converted_domcode != ui::DomCode::NONE) {
+        return base::UTF8ToUTF16(
+            ui::KeycodeConverter::DomCodeToCodeString(converted_domcode));
+      }
+
+      // If no DomCode can be mapped, attempt reverse DomKey mappings.
+      for (const auto& domkey_it : ui::kDomKeyToKeyboardCodeMap) {
+        if (domkey_it.key_code == key_code) {
+          return base::UTF8ToUTF16(
+              ui::KeycodeConverter::DomKeyToKeyString(domkey_it.dom_key));
+        }
+      }
     }
     // Otherwise, get the key_display from a util function.
     return KeycodeToKeyString(key_code);

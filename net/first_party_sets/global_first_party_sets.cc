@@ -11,9 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/function_ref.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
-#include "base/timer/elapsed_timer.h"
 #include "base/types/optional_util.h"
 #include "net/base/schemeful_site.h"
 #include "net/first_party_sets/addition_overlaps_union_find.h"
@@ -29,13 +27,6 @@ namespace {
 
 using FlattenedSets = base::flat_map<SchemefulSite, FirstPartySetEntry>;
 using SingleSet = base::flat_map<SchemefulSite, FirstPartySetEntry>;
-
-// Converts WS to HTTP, and WSS to HTTPS.
-SchemefulSite NormalizeScheme(const SchemefulSite& site) {
-  SchemefulSite normalized_site = site;
-  normalized_site.ConvertWebSocketToHttp();
-  return normalized_site;
-}
 
 // Converts a list of First-Party Sets from a SingleSet to a FlattenedSet
 // representation.
@@ -66,11 +57,6 @@ void UpdateCustomizations(
 const SchemefulSite& ProjectKey(
     const std::pair<SchemefulSite, FirstPartySetEntryOverride>& p) {
   return p.first;
-}
-
-SamePartyContext::Type ContextTypeFromBool(bool is_same_party) {
-  return is_same_party ? SamePartyContext::Type::kSameParty
-                       : SamePartyContext::Type::kCrossParty;
 }
 
 }  // namespace
@@ -140,11 +126,9 @@ absl::optional<FirstPartySetEntry> GlobalFirstPartySets::FindEntry(
 absl::optional<FirstPartySetEntry> GlobalFirstPartySets::FindEntry(
     const SchemefulSite& site,
     const FirstPartySetsContextConfig* config) const {
-  const SchemefulSite normalized_site = NormalizeScheme(site);
-
-  // Check if `normalized_site` can be found in the customizations first.
+  // Check if `site` can be found in the customizations first.
   if (config) {
-    if (const auto override = config->FindOverride(normalized_site);
+    if (const auto override = config->FindOverride(site);
         override.has_value()) {
       return override->IsDeletion() ? absl::nullopt
                                     : absl::make_optional(override->GetEntry());
@@ -152,7 +136,7 @@ absl::optional<FirstPartySetEntry> GlobalFirstPartySets::FindEntry(
   }
 
   // Now see if it's in the manual config (with or without a manual alias).
-  if (const auto manual_override = manual_config_.FindOverride(normalized_site);
+  if (const auto manual_override = manual_config_.FindOverride(site);
       manual_override.has_value()) {
     return manual_override->IsDeletion()
                ? absl::nullopt
@@ -160,9 +144,9 @@ absl::optional<FirstPartySetEntry> GlobalFirstPartySets::FindEntry(
   }
 
   // Finally, look up in `entries_`, applying an alias if applicable.
-  const auto canonical_it = aliases_.find(normalized_site);
+  const auto canonical_it = aliases_.find(site);
   const SchemefulSite& canonical_site =
-      canonical_it == aliases_.end() ? normalized_site : canonical_it->second;
+      canonical_it == aliases_.end() ? site : canonical_it->second;
   if (const auto entry_it = entries_.find(canonical_site);
       entry_it != entries_.end()) {
     return entry_it->second;
@@ -190,50 +174,13 @@ FirstPartySetMetadata GlobalFirstPartySets::ComputeMetadata(
     const SchemefulSite* top_frame_site,
     const std::set<SchemefulSite>& party_context,
     const FirstPartySetsContextConfig& fps_context_config) const {
-  const base::ElapsedTimer timer;
-
-  SamePartyContext::Type context_type =
-      ContextTypeFromBool(IsContextSamePartyWithSite(
-          site, top_frame_site, party_context, fps_context_config));
-
-  SamePartyContext context(context_type);
-
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "Cookie.FirstPartySets.ComputeContext.Latency", timer.Elapsed(),
-      base::Microseconds(1), base::Milliseconds(100), 50);
-
   absl::optional<FirstPartySetEntry> top_frame_entry =
       top_frame_site ? FindEntry(*top_frame_site, fps_context_config)
                      : absl::nullopt;
 
   return FirstPartySetMetadata(
-      context, base::OptionalToPtr(FindEntry(site, fps_context_config)),
+      base::OptionalToPtr(FindEntry(site, fps_context_config)),
       base::OptionalToPtr(top_frame_entry));
-}
-
-bool GlobalFirstPartySets::IsContextSamePartyWithSite(
-    const SchemefulSite& site,
-    const SchemefulSite* top_frame_site,
-    const std::set<SchemefulSite>& party_context,
-    const FirstPartySetsContextConfig& fps_context_config) const {
-  const absl::optional<FirstPartySetEntry> site_entry =
-      FindEntry(site, fps_context_config);
-  if (!site_entry.has_value())
-    return false;
-
-  const auto is_in_same_set_as_frame_site =
-      [this, &site_entry,
-       &fps_context_config](const SchemefulSite& context_site) -> bool {
-    const absl::optional<FirstPartySetEntry> context_entry =
-        FindEntry(context_site, fps_context_config);
-    return context_entry.has_value() &&
-           context_entry->primary() == site_entry->primary();
-  };
-
-  if (top_frame_site && !is_in_same_set_as_frame_site(*top_frame_site))
-    return false;
-
-  return base::ranges::all_of(party_context, is_in_same_set_as_frame_site);
 }
 
 void GlobalFirstPartySets::ApplyManuallySpecifiedSet(

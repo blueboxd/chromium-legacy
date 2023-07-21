@@ -45,9 +45,14 @@ public final class ProductionSupportedFlagList {
     private ProductionSupportedFlagList() {}
 
     /**
-     * A list of commandline flags supported on user devices. If updating this list, please also
-     * update enums.xml. See android_webview/docs/developer-ui.md
+     * A list of commandline flags supported on user devices.
+     * See android_webview/docs/developer-ui.md for info about how this is used
      * (https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/developer-ui.md#Adding-your-flags-and-features-to-the-UI).
+     *
+     * <p>See
+     * https://chromium.googlesource.com/chromium/src/+/HEAD/tools/metrics/histograms/README.md#Flag-Histograms
+     * for more info about flag labels if you want histogram data about usage. This involves
+     * updating the "LoginCustomFlags" field in tools/metrics/histograms/enums.xml.
      */
     public static final Flag[] sFlagList = {
             Flag.commandLine(AwSwitches.HIGHLIGHT_ALL_WEBVIEWS,
@@ -305,9 +310,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.VIEW_TRANSITION_ON_NAVIGATION,
                     "Enables the experimental View Transitions API for navigations."
                             + " See https://github.com/WICG/view-transitions/blob/main/explainer.md."),
-            Flag.baseFeature(BlinkFeatures.CSS_OVERFLOW_FOR_REPLACED_ELEMENTS,
-                    "Enables respecting the CSS overflow property on replaced elements."
-                            + " See https://chromestatus.com/feature/5137515594383360."),
             Flag.baseFeature(GpuFeatures.INCREASED_CMD_BUFFER_PARSE_SLICE,
                     "Enable the use of an increased parse slice size per command buffer before"
                             + " each forced context switch."),
@@ -335,12 +337,15 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.SVG_RASTER_OPTIMIZATIONS),
             Flag.baseFeature(BlinkFeatures.COMPOSITE_BACKGROUND_ATTACHMENT_FIXED),
             Flag.baseFeature(BlinkFeatures.COMPOSITE_SCROLL_AFTER_PAINT),
+            Flag.baseFeature(BlinkFeatures.INTERSECTION_OPTIMIZATION),
             Flag.baseFeature(BlinkFeatures.DELAY_OUT_OF_VIEWPORT_LAZY_IMAGES,
                     "Delays out-of-viewport lazy loaded images."),
             Flag.baseFeature(BlinkFeatures.SEND_MOUSE_EVENTS_DISABLED_FORM_CONTROLS,
                     "This changes event propagation for disabled form controls."),
             Flag.baseFeature(ContentFeatures.SURFACE_SYNC_FULLSCREEN_KILLSWITCH,
                     "Disable to turn off the new SurfaceSync Fullscreen path."),
+            Flag.baseFeature(ContentFeatures.SYNCHRONOUS_COMPOSITOR_BACKGROUND_SIGNAL,
+                    "Send foreground / background signal to GPU stack."),
             Flag.baseFeature(ContentFeatures.PERSISTENT_ORIGIN_TRIALS,
                     "If enabled, servers will be able to use persistent origin trials "
                             + "on this device."),
@@ -360,6 +365,9 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(MetricsFeatures.METRICS_SERVICE_ALLOW_EARLY_LOG_CLOSE,
                     "Controls whether a log is allowed to be closed when Chrome"
                             + " is backgrounded/foregrounded early."),
+            Flag.baseFeature(MetricsFeatures.METRICS_SERVICE_ASYNC_INDEPENDENT_LOGS,
+                    "Controls whether the metrics service should finalize certain independent"
+                            + " logs asynchronously."),
             Flag.baseFeature(MetricsFeatures.METRICS_CLEAR_LOGS_ON_CLONED_INSTALL,
                     "Controls whether UMA logs are cleared when a cloned "
                             + "install is detected."),
@@ -464,7 +472,7 @@ public final class ProductionSupportedFlagList {
                             + "Only onNetwork(Connected|Disconnected|SoonToDisconnect|MadeDefault) signals are propagated."),
             Flag.baseFeature(BlinkFeatures.REMOVE_NON_STANDARD_APPEARANCE_VALUE,
                     "Remove non-standard CSS appearance values."),
-            Flag.baseFeature(ContentFeatures.WEB_ENVIRONMENT_INTEGRITY,
+            Flag.baseFeature(BlinkFeatures.WEB_ENVIRONMENT_INTEGRITY,
                     "Enables Web Environment Integrity APIs. "
                             + "See https://chromestatus.com/feature/5796524191121408."),
             // Add new commandline switches and features above. The final entry should have a

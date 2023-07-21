@@ -78,6 +78,7 @@
 #import "ios/chrome/browser/ui/sharing/sharing_params.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_commands.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_mediator_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/incognito/incognito_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/regular/regular_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_button_mediator.h"
@@ -93,6 +94,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_coordinator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/legacy_tab_grid_transition_handler.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/tab_grid_transition_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -109,7 +111,7 @@ namespace {
 // active in the current web state of `browser`, this returns true. Otherwise,
 // returns false.
 bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
-  if (!IsNativeFindInPageAvailable()) {
+  if (!IsNativeFindInPageAvailable() || !browser) {
     return false;
   }
 
@@ -161,6 +163,9 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 
   // Coordinator for the toolbars.
   TabGridToolbarsCoordinator* _toolbarsCoordinator;
+
+  // Mediator of the tab grid.
+  TabGridMediator* _mediator;
 }
 
 // Browser that contain tabs from the main pane (i.e. non-incognito).
@@ -176,6 +181,8 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 // Handler for the transitions between the TabGrid and the Browser.
 @property(nonatomic, strong)
     LegacyTabGridTransitionHandler* legacyTransitionHandler;
+// New handler for the transitions between the TabGrid and the Browser.
+@property(nonatomic, strong) TabGridTransitionHandler* transitionHandler;
 // Mediator for regular Tabs.
 @property(nonatomic, strong) RegularGridMediator* regularTabsMediator;
 // Mediator for incognito Tabs.
@@ -340,6 +347,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 - (void)setActivePage:(TabGridPage)page {
   DCHECK(page != TabGridPageRemoteTabs);
   self.baseViewController.activePage = page;
+  [_mediator setPage:page];
 }
 
 - (void)setActiveMode:(TabGridMode)mode {
@@ -423,11 +431,19 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
       return;
     }
 
-    [strongSelf
-        performBrowserToTabGridTransitionWithActivePage:currentActivePage
-                                       animationEnabled:animated
-                                             completion:
-                                                 transitionCompletionBlock];
+    if (IsNewTabGridTransitionsEnabled()) {
+      [self
+          performBrowserToTabGridTransitionWithAnimationEnabled:animated
+                                                     completion:
+                                                         transitionCompletionBlock];
+    } else {
+      [strongSelf
+          performLegacyBrowserToTabGridTransitionWithActivePage:
+              currentActivePage
+                                               animationEnabled:animated
+                                                     completion:
+                                                         transitionCompletionBlock];
+    }
     // On iOS 15+, snapshotting views with afterScreenUpdates:YES waits 0.5s
     // for the status bar style to update. Work around that delay by taking
     // the snapshot first (during
@@ -524,10 +540,17 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 
   [self.baseViewController contentWillDisappearAnimated:animated];
 
-  [self performTabGridToBrowserTransitionWithActivePage:self.baseViewController
-                                                            .activePage
-                                       animationEnabled:animated
-                                             completion:extendedCompletion];
+  if (IsNewTabGridTransitionsEnabled()) {
+    [self performTabGridToBrowserTransitionWithAnimationEnabled:animated
+                                                     completion:
+                                                         extendedCompletion];
+  } else {
+    [self performLegacyTabGridToBrowserTransitionWithActivePage:
+              self.baseViewController.activePage
+                                               animationEnabled:animated
+                                                     completion:
+                                                         extendedCompletion];
+  }
 
   // On iOS 15+, snapshotting views with afterScreenUpdates:YES waits 0.5s for
   // the status bar style to update. Work around that delay by taking the
@@ -577,11 +600,51 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   }
 }
 
-// Performs the Browser to Tab Grid transition.
-- (void)performBrowserToTabGridTransitionWithActivePage:(TabGridPage)activePage
-                                       animationEnabled:(BOOL)animationEnabled
-                                             completion:
-                                                 (ProceduralBlock)completion {
+// Performs the new Browser to Tab Grid transition.
+- (void)performBrowserToTabGridTransitionWithAnimationEnabled:
+            (BOOL)animationEnabled
+                                                   completion:
+                                                       (ProceduralBlock)
+                                                           completionHandler {
+  TabGridTransitionDirection direction =
+      TabGridTransitionDirection::kFromBrowserToTabGrid;
+  TabGridTransitionType transitionType = [self
+      determineTabGridTransitionTypeWithAnimationEnabled:animationEnabled];
+
+  self.transitionHandler = [[TabGridTransitionHandler alloc]
+          initWithTransitionType:transitionType
+                       direction:direction
+           tabGridViewController:self.baseViewController
+      bvcContainerViewController:self.bvcContainer];
+  [self.transitionHandler performTransitionWithCompletion:completionHandler];
+}
+
+// Performs the new Tab Grid to Browser transition.
+- (void)performTabGridToBrowserTransitionWithAnimationEnabled:
+            (BOOL)animationEnabled
+                                                   completion:
+                                                       (ProceduralBlock)
+                                                           completionHandler {
+  TabGridTransitionDirection direction =
+      TabGridTransitionDirection::kFromTabGridToBrowser;
+  TabGridTransitionType transitionType = [self
+      determineTabGridTransitionTypeWithAnimationEnabled:animationEnabled];
+
+  self.transitionHandler = [[TabGridTransitionHandler alloc]
+          initWithTransitionType:transitionType
+                       direction:direction
+           tabGridViewController:self.baseViewController
+      bvcContainerViewController:self.bvcContainer];
+  [self.transitionHandler performTransitionWithCompletion:completionHandler];
+}
+
+// Performs the legacy Browser to Tab Grid transition.
+- (void)
+    performLegacyBrowserToTabGridTransitionWithActivePage:
+        (TabGridPage)activePage
+                                         animationEnabled:(BOOL)animationEnabled
+                                               completion:
+                                                   (ProceduralBlock)completion {
   self.legacyTransitionHandler =
       [self createTransitionHanlderWithAnimationEnabled:animationEnabled];
   [self.legacyTransitionHandler transitionFromBrowser:self.bvcContainer
@@ -590,11 +653,13 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
                                        withCompletion:completion];
 }
 
-// Performs the Tab Grid to Browser transition.
-- (void)performTabGridToBrowserTransitionWithActivePage:(TabGridPage)activePage
-                                       animationEnabled:(BOOL)animationEnabled
-                                             completion:
-                                                 (ProceduralBlock)completion {
+// Performs the legacy Tab Grid to Browser transition.
+- (void)
+    performLegacyTabGridToBrowserTransitionWithActivePage:
+        (TabGridPage)activePage
+                                         animationEnabled:(BOOL)animationEnabled
+                                               completion:
+                                                   (ProceduralBlock)completion {
   self.legacyTransitionHandler =
       [self createTransitionHanlderWithAnimationEnabled:animationEnabled];
   [self.legacyTransitionHandler transitionFromTabGrid:self.baseViewController
@@ -614,6 +679,18 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   return transitionHandler;
 }
 
+// Determines the transion type to be used in the transition.
+- (TabGridTransitionType)determineTabGridTransitionTypeWithAnimationEnabled:
+    (BOOL)animationEnabled {
+  if (!animationEnabled) {
+    return TabGridTransitionType::kAnimationDisabled;
+  } else if (UIAccessibilityIsReduceMotionEnabled()) {
+    return TabGridTransitionType::kReducedMotion;
+  }
+
+  return TabGridTransitionType::kNormal;
+}
+
 #pragma mark - ChromeCoordinator
 
 - (void)start {
@@ -626,8 +703,9 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   [self.dispatcher startDispatchingToTarget:reauthAgent
                                 forProtocol:@protocol(IncognitoReauthCommands)];
 
-  TabGridViewController* baseViewController;
-  baseViewController = [[TabGridViewController alloc]
+  _mediator = [[TabGridMediator alloc] init];
+
+  TabGridViewController* baseViewController = [[TabGridViewController alloc]
       initWithPageConfiguration:_pageConfiguration];
   baseViewController.handler =
       HandlerForProtocol(self.dispatcher, ApplicationCommands);
@@ -637,7 +715,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   baseViewController.tabPresentationDelegate = self;
   baseViewController.layoutGuideCenter = LayoutGuideCenterForBrowser(nil);
   baseViewController.delegate = self;
-  baseViewController.mutator = [[TabGridMediator alloc] init];
+  baseViewController.mutator = _mediator;
   _baseViewController = baseViewController;
 
   _toolbarsCoordinator =
@@ -787,6 +865,10 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
     [self.remoteTabsMediator refreshSessionsView];
   }
 
+  _mediator.regularPageMutator = self.regularTabsMediator;
+  _mediator.incognitoPageMutator = self.incognitoTabsMediator;
+  _mediator.remotePageMutator = self.remoteTabsMediator;
+
   self.snackbarCoordinator =
       [[SnackbarCoordinator alloc] initWithBaseViewController:baseViewController
                                                       browser:_regularBrowser
@@ -847,8 +929,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   self.baseViewController.remoteTabsViewController.browser = nil;
   [self.remoteTabsMediator disconnect];
   self.remoteTabsMediator = nil;
-  [self.actionSheetCoordinator stop];
-  self.actionSheetCoordinator = nil;
+  [self dismissActionSheetCoordinator];
 
   [self.snackbarCoordinator stop];
   self.snackbarCoordinator = nil;
@@ -941,6 +1022,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   self.actionSheetCoordinator.alertStyle = UIAlertControllerStyleActionSheet;
 
   __weak BaseGridMediator* weakBaseGridMediator = baseGridMediator;
+  __weak TabGridCoordinator* weakSelf = self;
   [self.actionSheetCoordinator
       addItemWithTitle:base::SysUTF16ToNSString(
                            l10n_util::GetPluralStringFUTF16(
@@ -950,6 +1032,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
                   base::RecordAction(base::UserMetricsAction(
                       "MobileTabGridSelectionCloseTabsConfirmed"));
                   [weakBaseGridMediator closeItemsWithIDs:items];
+                  [weakSelf dismissActionSheetCoordinator];
                 }
                  style:UIAlertActionStyleDestructive];
   [self.actionSheetCoordinator
@@ -957,6 +1040,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
                 action:^{
                   base::RecordAction(base::UserMetricsAction(
                       "MobileTabGridSelectionCloseTabsCanceled"));
+                  [weakSelf dismissActionSheetCoordinator];
                 }
                  style:UIAlertActionStyleCancel];
   [self.actionSheetCoordinator start];
@@ -977,9 +1061,13 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   [self.sharingCoordinator start];
 }
 
-- (void)dismissPopovers {
+- (void)dismissActionSheetCoordinator {
   [self.actionSheetCoordinator stop];
   self.actionSheetCoordinator = nil;
+}
+
+- (void)dismissPopovers {
+  [self dismissActionSheetCoordinator];
   [self.sharingCoordinator stop];
   self.sharingCoordinator = nil;
 }

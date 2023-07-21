@@ -304,7 +304,7 @@ targets.mixin(
                 "cpu": "x86",
                 "kvm": "1",
                 "gce": "1",
-                "os": "Ubuntu-18.04",
+                "os": "Ubuntu-22.04",
                 "pool": "chrome.tests.finch",
             },
         ],
@@ -685,6 +685,15 @@ targets.mixin(
     ),
 )
 
+targets.mixin(
+    name = "linux-jammy-or-focal",
+    swarming = targets.swarming(
+        dimensions = {
+            "os": "Ubuntu-22.04|Ubuntu-20.04",
+        },
+    ),
+)
+
 # TODO(crbug.com/1260217): Remove the xenial mixin once the MSAN bots have
 # migrated to focal.
 targets.mixin(
@@ -944,7 +953,7 @@ targets.mixin(
         dimensions = {
             "cpu": "x86-64",
             "gpu": "8086:3e9b",
-            "os": "Mac-13.3.1",
+            "os": "Mac-13.4.1",
             "display_attached": "1",
         },
     ),
@@ -1146,19 +1155,19 @@ targets.mixin(
 targets.mixin(
     name = "oreo-x86-emulator",
     args = [
-        "--avd-config=../../tools/android/avd/proto/generic_android27.textpb",
+        "--avd-config=../../tools/android/avd/proto/generic_android26.textpb",
     ],
     swarming = targets.swarming(
         # soft affinity so that bots with caches will be picked first
         optional_dimensions = {
             60: {
-                "caches": "generic_android27",
+                "caches": "generic_android26",
             },
         },
         named_caches = [
             swarming.cache(
-                name = "generic_android27",
-                path = ".android_emulator/generic_android27",
+                name = "generic_android26",
+                path = ".android_emulator/generic_android26",
             ),
         ],
     ),
@@ -1596,12 +1605,12 @@ targets.mixin(
     name = "xcode_15_beta",
     args = [
         "--xcode-build-version",
-        "15a5195k",
+        "15a5195m",
     ],
     swarming = targets.swarming(
         named_caches = [
             swarming.cache(
-                name = "xcode_ios_15a5195k",
+                name = "xcode_ios_15a5195m",
                 path = "Xcode.app",
             ),
         ],

@@ -3,13 +3,14 @@
 <translationbundle lang="fa">
 <translation id="1026101648481255140">ازسر گرفتن نصب</translation>
 <translation id="1029669172902658969">‏راه‌اندازی مجدد برای به‌روزرسانی ChromiumOS</translation>
+<translation id="1040916596585577953">‏Chromium توصیه می‌کند این افزونه را بررسی کنید</translation>
 <translation id="1065672644894730302">اولویت‌های شما را نمی‌توان خواند. بعضی ویژگی‌ها ممکن است در دسترس نباشند و تغییرات تنظیمات برگزیده ذخیره نخواهد شد.</translation>
+<translation id="1083934481477628225">‏ولی‌تان «اجازه‌های مربوط به سایت‌ها، برنامه‌ها، و افزونه‌ها» را برای Chromium خاموش کرده است</translation>
 <translation id="1098170124587656448">‏Chromium می‌تواند به ایمن ماندن شما در برابر نقض داده، افزونه‌های مخرب، و خطرهای دیگر کمک کند</translation>
 <translation id="1104942323762546749">‏Chromium می‌خواهد گذرواژه‌های شما را صادر کند. برای اجازه به این کار، گذرواژه Windows خود را تایپ کنید.</translation>
 <translation id="113122355610423240">‏Chromium مرورگر پیش‌فرضتان است</translation>
 <translation id="1131805035311359397">‏برای بررسی اینکه از گذرواژه‌هایتان دربرابر نقض داده یا دیگر مشکلات امنیتی محافظت می‌شود، <ph name="BEGIN_LINK" />به سیستم Chromium وارد شوید<ph name="END_LINK" />.</translation>
 <translation id="1153368717515616349">‏روی منوی Chromium کلیک کنید</translation>
-<translation id="1157106475430165622">{NUM_DEVICES,plural, =0{‏افزونه‌های Chromium به «دستگاه‌های میانای انسانی» دسترسی داشتند}=1{‏افزونه‌های Chromium به «دستگاه‌های میانای انسانی» دسترسی دارند}one{‏افزونه‌های Chromium به # «دستگاه میانای انسانی» دسترسی دارند}other{‏افزونه‌های Chromium به # «دستگاه میانای انسانی» دسترسی دارند}}</translation>
 <translation id="1185134272377778587">‏درباره Chromium</translation>
 <translation id="1203500561924088507">بابت نصب از شما سپاس‌گزاریم. قبل‌از استفاده از <ph name="BUNDLE_NAME" />، باید مرورگر را بازراه‌اندازی کنید.</translation>
 <translation id="1261119230216066228">‏«بهینه‌سازی حافظه» سرعت Chromium را بیشتر کرده است</translation>
@@ -58,6 +59,7 @@
 <translation id="2359808026110333948">ادامه</translation>
 <translation id="2384373936468275798">‏ChromiumOS نتوانست داده‌های شما را همگام‌سازی کند زیرا جزئیات ورود به حساب شما به‌روز نیست.</translation>
 <translation id="2396765026452590966">‏افزونه «<ph name="EXTENSION_NAME" />»، صفحه‌ای را تغییر داده است که هنگام راه‌اندازی Chromium نشان داده می‌شود.</translation>
+<translation id="2398377054246527950">{NUM_DEVICES,plural, =0{‏یک یا چند افزونه Chromium به یک «دستگاه میانای انسانی» (HID) دسترسی داشتند}=1{‏یک یا چند افزونه Chromium به یک «دستگاه میانای انسانی» (HID) دسترسی دارند}one{‏یک یا چند افزونه Chromium به # «دستگاه میانای انسانی» (HID) دسترسی دارند}other{‏یک یا چند افزونه Chromium به # «دستگاه میانای انسانی» (HID) دسترسی دارند}}</translation>
 <translation id="2401032172288869980">‏Chromium برای این سایت به اجازه دوربین و میکروفون نیاز دارد</translation>
 <translation id="2451727308784734061">از میان‌بر برای دسترسی سریع به «مدیر گذرواژه» استفاده کنید. می‌توانید میان‌برتان را به صفحه اصلی رایانه یا راه‌انداز برنامه منتقل کنید.</translation>
 <translation id="2478295928299953161">‏Chromium به‌زودی بسته می‌شود</translation>
@@ -90,6 +92,7 @@
 <translation id="3032787606318309379">‏افزودن به Chromium…</translation>
 <translation id="3038232873781883849">درانتظار نصب…</translation>
 <translation id="3068515742935458733">‏با ارسال گزارش‌های خرابی و <ph name="UMA_LINK" /> به Google، به بهبود Google کمک کنید</translation>
+<translation id="3079753320517721795">{NUM_DEVICES,plural, =0{‏یک یا چند افزونه Chromium به یک دستگاه USB دسترسی داشتند}=1{‏یک یا چند افزونه Chromium به یک دستگاه USB دسترسی دارند}one{‏یک یا چند افزونه Chromium به # دستگاه USB دسترسی دارند}other{‏یک یا چند افزونه Chromium به # دستگاه USB دسترسی دارند}}</translation>
 <translation id="3101560983689755071">‏سابقه مرور شما بر آگهی‌هایی که می‌بینید و علایقتان که در زیر برآورد شده است تأثیر می‌گذارد. برای محافظت از حریم خصوصی شما، Chromium علایقتان را هر ماه به‌طور خودکار و چرخشی حذف می‌کند. ممکن است علایق بازآوری شود، مگر اینکه آن‌ها را بردارید.</translation>
 <translation id="3103660991484857065">‏نصب‌کننده در خارج کردن بایگانی از حالت فشرده ناموفق بود. لطفاً دوباره Chromium را بارگیری کنید.</translation>
 <translation id="3130323860337406239">‏Chromium درحال استفاده از میکروفون شما است.</translation>
@@ -151,6 +154,7 @@
 <translation id="4222932583846282852">درحال لغو کردن…</translation>
 <translation id="4230135487732243613">‏داده‌های Chromium به این حساب مرتبط شود؟</translation>
 <translation id="4271805377592243930">‏دریافت کمک برای Chromium</translation>
+<translation id="4281844954008187215">شرایط استفاده از سرویس</translation>
 <translation id="4285930937574705105">‏به دلیل خطای نامشخص نصب ناموفق بود. اگر Chromium در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
 <translation id="4304713468139749426">مدیر گذرواژه</translation>
 <translation id="4334294535648607276">بارگیری کامل شد.</translation>
@@ -294,6 +298,7 @@
 <translation id="7025789849649390912">نصب متوقف شد.</translation>
 <translation id="705851970750939768">‏به‌روزرسانی Chromium</translation>
 <translation id="7067091210845072982">‏اگر تصویری توضیح مفیدی نداشته باشد، Chromium توضیحی برای شما ارائه خواهد کرد. برای ایجاد توضیحات، تصاویر به Google ارسال می‌شود.</translation>
+<translation id="7141270731789036260">‏سفارشی‌سازی Chrome for Testing</translation>
 <translation id="7173822816570314652">‏اگر <ph name="TIMEOUT_DURATION" /> از Chromium استفاده نشود، سازمانتان داده‌های آن را حذف می‌کند. این داده‌ها می‌تواند شامل سابقه، تکمیل خودکار، و بارگیری‌ها شود.</translation>
 <translation id="718435575166326686">‏Chromium برای این سایت به اجازه دوربین نیاز دارد</translation>
 <translation id="7196312274710523067">‏Chromium راه‌اندازی نشد. دوباره امتحان کنید.</translation>
@@ -367,7 +372,6 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="8619360774459241877">‏درحال راه‌اندازی Chromium…</translation>
 <translation id="8621669128220841554">‏به دلیل خطای نامشخص، نصب ناموفق بود. لطفاً دوباره Chromium را بارگیری کنید.</translation>
 <translation id="8648201657708811153">‏نمی‌توان Google Chrome for Testing را به‌عنوان مرورگر پیش‌فرض تنظیم کرد.</translation>
-<translation id="867492205098279939">{NUM_DEVICES,plural, =0{‏یک افزونه Chromium به «دستگاه‌های میانای انسانی» دسترسی داشت}=1{‏یک افزونه Chromium به یک «دستگاه میانای انسانی» دسترسی دارد}one{‏یک افزونه Chromium به # «دستگاه میانای انسانی» دسترسی دارد}other{‏یک افزونه Chromium به # «دستگاه میانای انسانی» دسترسی دارد}}</translation>
 <translation id="8697124171261953979">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chromium یا جستجو از Omnibox نشان داده می‌شود، کنترل می‌کند.</translation>
 <translation id="8704119203788522458">‏این Chromium شماست</translation>
 <translation id="8796602469536043152">‏Chromium به مجوز دسترسی به دوربین و میکروفون برای این سایت نیاز دارد</translation>

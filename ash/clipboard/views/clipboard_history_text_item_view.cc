@@ -8,18 +8,22 @@
 
 #include "ash/clipboard/clipboard_history_item.h"
 #include "ash/clipboard/views/clipboard_history_label.h"
+#include "ash/clipboard/views/clipboard_history_view_constants.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkPathBuilder.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view_class_properties.h"
 
 namespace ash {
 
-namespace {
-
 ////////////////////////////////////////////////////////////////////////////////
 // TextContentsView
 
-class TextContentsView : public views::View {
+class ClipboardHistoryTextItemView::TextContentsView
+    : public ClipboardHistoryTextItemView::ContentsView {
  public:
   METADATA_HEADER(TextContentsView);
   explicit TextContentsView(const std::u16string& text) {
@@ -34,12 +38,47 @@ class TextContentsView : public views::View {
   TextContentsView(const TextContentsView& rhs) = delete;
   TextContentsView& operator=(const TextContentsView& rhs) = delete;
   ~TextContentsView() override = default;
+
+ private:
+  // ContentsView:
+  SkPath GetClipPath() override {
+    if (!chromeos::features::IsClipboardHistoryRefreshEnabled() ||
+        !is_delete_button_visible()) {
+      return SkPath();
+    }
+
+    const SkRect contents_bounds = gfx::RectToSkRect(GetContentsBounds());
+    const auto width = contents_bounds.width();
+    // Ensure that the clip path is tall enough for the full corner cutout to be
+    // drawn. No visual problem presents if this ultimately makes the clip path
+    // taller than the contents.
+    const auto height = std::max(contents_bounds.height(),
+                                 ClipboardHistoryViews::kCornerCutoutHeight);
+
+    return SkPathBuilder()
+        // Start at the top-left corner.
+        .moveTo(0.f, 0.f)
+        // Draw a vertical line to the bottom-left corner.
+        .rLineTo(0.f, height)
+        // Draw a horizontal line to the bottom-right corner.
+        .rLineTo(width, 0.f)
+        // Draw a vertical line to the start of the top-right corner's cutout.
+        .lineTo(width, ClipboardHistoryViews::kCornerCutoutHeight)
+        // Draw the top-right corner's cutout.
+        .rCubicTo(0.f, -8.f, -6.7f, -10.f, -10.f, -10.f)
+        .rLineTo(-4.f, 0.f)
+        .rCubicTo(-7.7f, 0.f, -14.f, -6.3f, -14.f, -14.f)
+        .rLineTo(0.f, -4.f)
+        .rCubicTo(0.f, -3.3f, -2.f, -10.f, -10.f, -10.f)
+        // Draw a horizontal line back to the starting point.
+        .lineTo(0.f, 0.f)
+        .close()
+        .detach();
+  }
 };
 
-BEGIN_METADATA(TextContentsView, views::View)
+BEGIN_METADATA(ClipboardHistoryTextItemView, TextContentsView, ContentsView)
 END_METADATA
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // ClipboardHistoryTextItemView
@@ -55,7 +94,7 @@ ClipboardHistoryTextItemView::ClipboardHistoryTextItemView(
 
 ClipboardHistoryTextItemView::~ClipboardHistoryTextItemView() = default;
 
-std::unique_ptr<views::View>
+std::unique_ptr<ClipboardHistoryTextItemView::ContentsView>
 ClipboardHistoryTextItemView::CreateContentsView() {
   return std::make_unique<TextContentsView>(text_);
 }

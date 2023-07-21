@@ -4,14 +4,14 @@
 
 import 'chrome://os-settings/lazy_load.js';
 
-import {AppManagementPinToShelfItemElement, AppManagementPwaDetailViewElement, AppManagementSubAppsItemElement} from 'chrome://os-settings/lazy_load.js';
+import {AppManagementPermissionHeadingElement, AppManagementPinToShelfItemElement, AppManagementPwaDetailViewElement, AppManagementSubAppsItemElement} from 'chrome://os-settings/lazy_load.js';
 import {AppManagementStore, updateSelectedAppId, updateSubAppToParentAppId} from 'chrome://os-settings/os_settings.js';
-import {App} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
+import {App, InstallReason} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 import {PermissionTypeIndex} from 'chrome://resources/cr_components/app_management/permission_constants.js';
 import {AppManagementToggleRowElement} from 'chrome://resources/cr_components/app_management/toggle_row.js';
 import {convertOptionalBoolToBool, getPermissionValueBool} from 'chrome://resources/cr_components/app_management/util.js';
 import {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
-import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertFalse, assertNull, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {FakePageHandler} from '../../app_management/fake_page_handler.js';
 import {getPermissionCrToggleByType, getPermissionToggleByType, replaceBody, replaceStore, setupFakeHandler} from '../../app_management/test_util.js';
@@ -126,8 +126,11 @@ suite('<app-management-pwa-detail-view>', () => {
   });
 
   test('Show sub apps correctly', async () => {
-    const sub1 = await fakeHandler.addApp();
-    const sub2 = await fakeHandler.addApp();
+    const subAppOptions = {
+      installReason: InstallReason.kSubApp,
+    };
+    const sub1 = await fakeHandler.addApp('Sub1', subAppOptions);
+    const sub2 = await fakeHandler.addApp('Sub2', subAppOptions);
     const parent = await fakeHandler.addApp();
     AppManagementStore.getInstance().dispatch(
         updateSubAppToParentAppId(sub1.id, parent.id));
@@ -141,10 +144,21 @@ suite('<app-management-pwa-detail-view>', () => {
             .querySelector<AppManagementSubAppsItemElement>('#subAppsItem');
     assertTrue(!!subAppsItem);
 
+    const permissionHeading =
+        pwaDetailView.shadowRoot!
+            .querySelector<AppManagementPermissionHeadingElement>(
+                '#permissionHeading');
+    assertTrue(!!permissionHeading);
+
     // Default app is shown, has neither parents nor sub apps.
     assertEquals(
         0, subAppsItem.subApps.length, 'list of sub apps is not empty');
     assertTrue(subAppsItem.hidden, 'list of sub apps should be hidden');
+
+    assertNull(
+        permissionHeading.shadowRoot!.querySelector(
+            '#parentAppPermissionExplanation'),
+        'permission explanation should not be shown');
 
     // Parent app with two sub apps gets selected.
     AppManagementStore.getInstance().dispatch(updateSelectedAppId(parent.id));
@@ -154,6 +168,12 @@ suite('<app-management-pwa-detail-view>', () => {
         2, subAppsItem.subApps.length, 'list of sub apps should show two apps');
     assertFalse(subAppsItem.hidden, 'list of sub apps should not be hidden');
 
+    const permissionHeadingWithExplanation =
+        permissionHeading.shadowRoot!.querySelector(
+            '#parentAppPermissionExplanation');
+    assertTrue(!!permissionHeadingWithExplanation),
+        'permission explanation should be shown';
+
     // Select a sub app, has one parent and no sub apps of its own.
     AppManagementStore.getInstance().dispatch(updateSelectedAppId(sub1.id));
     await fakeHandler.flushPipesForTesting();
@@ -161,5 +181,21 @@ suite('<app-management-pwa-detail-view>', () => {
     assertEquals(
         0, subAppsItem.subApps.length, 'list of sub apps is not empty');
     assertTrue(subAppsItem.hidden, 'list of sub apps should be hidden');
+
+    assertFalse(permissionHeadingWithExplanation.checkVisibility()),
+        'permission explanation should not be shown';
+
+    const checkToggleDisabled = (permissionType: PermissionTypeIndex) => {
+      assertTrue(getPermissionBoolByType(permissionType));
+      assertTrue(
+          (getPermissionCrToggleByType(pwaDetailView, permissionType) as
+           CrToggleElement)
+              .disabled,
+          'permission toggle should be disabled on sub app setting page');
+    };
+
+    checkToggleDisabled('kLocation');
+    checkToggleDisabled('kCamera');
+    checkToggleDisabled('kMicrophone');
   });
 });

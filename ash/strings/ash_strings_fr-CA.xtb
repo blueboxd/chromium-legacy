@@ -32,6 +32,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1117719261843403176">Basculer les données cellulaires. <ph name="STATE" />.</translation>
 <translation id="112308213915226829">Masquer automatiquement l'étagère</translation>
 <translation id="1142002900084379065">Photos récentes</translation>
+<translation id="114221662579355151">Cela autorise l'accès à l'appareil photo pour <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> et pour toutes les applications et tous les sites Web disposant de l'autorisation d'accès à l'appareil photo. Vous devrez peut-être actualiser la page Web ou redémarrer l'application.</translation>
 <translation id="1148499908455722006">Ouvrir la boîte de dialogue d'information pour <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Agenda</translation>
 <translation id="1153356358378277386">Appareils associés</translation>
@@ -118,16 +119,17 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="14648076227129703">Cela donne à l'appareil photo l'accès à <ph name="APP1_NAME" />, à <ph name="APP2_NAME" /> et à toutes les applications et tous les sites Web disposant de l'autorisation pour l'appareil photo</translation>
 <translation id="1467432559032391204">À gauche</translation>
 <translation id="146902737843070955">Votre administrateur a demandé cette modification</translation>
+<translation id="1469148162491666137">Cela autorise l'accès pour <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> et pour toutes les applications et tous les sites Web disposant de l'autorisation d'accès à l'appareil photo et au microphone. Vous devrez peut-être actualiser la page Web ou redémarrer l'application.</translation>
 <translation id="147310119694673958">Pile du téléphone : <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="1479909375538722835">Menu d'accessibilité flottant</translation>
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />, Appuyez sur Entrée pour ouvrir la vue d'Agenda</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1487931858675166540"><ph name="FIRST_ITEM_TITLE" /> a changé de place avec <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1500926532737552529">Afficher toutes les suggestions</translation>
-<translation id="1503394326855300303">Ce compte de propriétaire doit être le premier compte à être connecté lors de sessions de connexion multicompte.</translation>
 <translation id="1510238584712386396">Lanceur</translation>
 <translation id="1516740043221086139">Le mode Ne pas déranger est activé.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Afficher les paramètres de notification. Les notifications sont désactivées pour une application}one{Afficher les paramètres de notification. Les notifications sont désactivées pour # application}other{Afficher les paramètres de notification. Les notifications sont désactivées pour # applications}}</translation>
+<translation id="1523032696246003">Pile à <ph name="BATTERY_PERCENTAGE" /> % | Recharge complète dans <ph name="TIME" /></translation>
 <translation id="1525508553941733066">IGNORER</translation>
 <translation id="1526448108126799339">Ouvrir un nouvel onglet dans une nouvelle fenêtre</translation>
 <translation id="1528259147807435347">Modifié au cours de la semaine dernière</translation>
@@ -139,6 +141,8 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1550406609415860283">Appareils disponibles</translation>
 <translation id="1550523713251050646">Cliquez pour afficher plus d'options</translation>
 <translation id="1555130319947370107">Bleu</translation>
+<translation id="1557622599341396706">Afficher le nom du bureau</translation>
+<translation id="1569384531973824928">Cela autorise l'accès pour toutes les applications et tous les sites Web disposant des autorisations d'accès à l'appareil photo et au microphone. Vous devrez peut-être actualiser la page Web ou redémarrer l'application.</translation>
 <translation id="1576623706766186887">Dézoomer lorsque la loupe est activée</translation>
 <translation id="1586324912145647027">Accédez aux bureaux 1 à 8</translation>
 <translation id="1589090746204042747">Accédez à toute l'activité de votre session</translation>
@@ -159,7 +163,6 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1677507110654891115">La fonctionnalité <ph name="FEATURE_NAME" /> n'est pas connectée.</translation>
 <translation id="1677582821739292812">Quelqu'un regarde votre écran</translation>
 <translation id="1679841710523778799">Augmenter la luminosité</translation>
-<translation id="1683399938733266832">Utilisation actuelle du processeur : <ph name="CPU_USEAGE" /> %</translation>
 <translation id="169515659049020177">Maj</translation>
 <translation id="1698080062160024910">Minuterie de <ph name="TOTAL_TIME" /> : <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Adresse IPv6 : <ph name="ADDRESS" /></translation>
@@ -184,6 +187,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1770726142253415363">Déplacée à la ligne <ph name="ROW_NUMBER" />, colonne <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="1771761307086386028">Faire défiler vers la droite</translation>
 <translation id="1774796056689732716">Agenda, <ph name="CURRENT_MONTH_YEAR" />, le <ph name="DATE" /> est actuellement sélectionné.</translation>
+<translation id="1775598828170459419">Affichage de <ph name="NUM_SHOWN_ITEMS" /> sur <ph name="NUM_TOTAL_ITEMS" /></translation>
 <translation id="1787955149152357925">Désactivé</translation>
 <translation id="181103072419391116">Force du signal : <ph name="SIGNAL_STRENGTH" />, géré par votre administrateur</translation>
 <translation id="1815245884418711390">Activer le point d'accès sans fil. Le point d'accès sans fil est désactivé</translation>
@@ -200,7 +204,6 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1823873187264960516">Ethernet : <ph name="ADDRESS" /></translation>
 <translation id="1824922790784036530">Activer l'accès aux données de localisation</translation>
 <translation id="1830308660060964064">L'épinglage de <ph name="ITEM_TITLE" /> été annulé</translation>
-<translation id="183465528887726323">Connectez-vous aux données cellulaires pour utiliser le point d'accès sans fil</translation>
 <translation id="1838895407229022812">Le mode Éclairage nocturne est désactivé.</translation>
 <translation id="1854180393107901205">Arrêter l'envoi de contenu</translation>
 <translation id="1862380676329487333">Mettre à jour et se déconnecter</translation>
@@ -224,7 +227,6 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1961239773406905488">Aperçu de la caméra masqué</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">Écran de verrouillage</translation>
-<translation id="1962972976741217487">1 appareil connecté à votre point d'accès sans fil <ph name="DEVICE_NAME" /></translation>
 <translation id="1967970931040389207">Activer le point d'accès sans fil</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Bonjour, <ph name="USERNAME" /></translation>
@@ -313,6 +315,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="2369165858548251131">Comment dit-on « Bonjour » en chinois?</translation>
 <translation id="2382875860893882175">La diffusion est actuellement en pause. Vous pouvez reprendre ou arrêter la diffusion à tout moment.</translation>
 <translation id="2386292613071805067">Tout sélectionner sur la page</translation>
+<translation id="2396594569364254378">Mémoire <ph name="USED_MEMORY" /> | Total de <ph name="TOTAL_MEMORY" /></translation>
 <translation id="2397416548179033562">Afficher le menu Chrome</translation>
 <translation id="240006516586367791">Commandes multimédias</translation>
 <translation id="2402411679569069051">Pour déverrouiller votre Chromebook, utilisez votre empreinte digitale ou déverrouillez votre téléphone</translation>
@@ -371,7 +374,6 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="263399434338050016">« Tout sélectionner »</translation>
 <translation id="2644422758626431000">Épingler la fenêtre à gauche</translation>
 <translation id="2645435784669275700">ChromeOS</translation>
-<translation id="2647092942972307022"><ph name="USED_MEMORY" /> disponibles sur <ph name="TOTAL_MEMORY" /></translation>
 <translation id="2653019840645008922">Capturer la fenêtre</translation>
 <translation id="2653659639078652383">Envoyer</translation>
 <translation id="2658778018866295321">Cliquez et faites glisser</translation>
@@ -510,6 +512,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3294437725009624529">Invité</translation>
 <translation id="3298690094479023523">Votre NIP ou votre mot de passe n'a toujours pas pu être vérifié. Réessayez.</translation>
 <translation id="3300193645498960160">Vous serez averti si vous parlez en sourdine. Le son ne quitte jamais votre appareil.</translation>
+<translation id="3306386552969601301"><ph name="DEVICECOUNT" /> appareils connectés au point d'accès sans fil <ph name="DEVICE_NAME" /></translation>
 <translation id="3307642347673023554">Mode ordinateur portable activé</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> peut toujours se connecter plus tard.</translation>
 <translation id="3321628682574733415">Code parental incorrect</translation>
@@ -549,6 +552,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3445925074670675829">Appareil USB-C</translation>
 <translation id="3455468639467374593">Modèle, <ph name="TEMPLATE_NAME" /></translation>
+<translation id="3456931972722214204">Un appareil connecté au point d'accès sans fil <ph name="DEVICE_NAME" /></translation>
 <translation id="346243998268439747">Restaurer le niveau de zoom</translation>
 <translation id="3465223694362104965">Un autre clavier a été connecté à cet appareil depuis votre dernière connexion. Assurez-vous qu'il s'agit d'un clavier de confiance avant de l'utiliser.</translation>
 <translation id="3465356146291925647">Géré par votre administrateur</translation>
@@ -595,7 +599,6 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3621202678540785336">Entrée</translation>
 <translation id="3621712662352432595">Paramètres audio</translation>
 <translation id="3626281679859535460">Luminosité</translation>
-<translation id="3629640897379005903">Afficher les détails du point d'accès sans fil. Le point d'accès sans fil est désactivé.</translation>
 <translation id="3630697955794050612">désactivé</translation>
 <translation id="3631369015426612114">Autoriser les notifications de :</translation>
 <translation id="3633097874324966332">Ouvrez les paramètres Bluetooth pour associer votre appareil</translation>
@@ -643,6 +646,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="3799080171973636491">Vous avez appuyé sur le raccourci-clavier de loupe en mode plein écran. Voulez-vous l'activer?</translation>
 <translation id="380165613292957338">Bonjour, comment puis-je vous aider?</translation>
 <translation id="3804737937830804242">Réduire le bouton caméra</translation>
+<translation id="3824784079442479685">Cela autorise l'accès à l'appareil photo pour <ph name="APP_NAME" /> et pour toutes les applications et tous les sites Web disposant de l'autorisation d'accès à l'appareil photo. Vous devrez peut-être actualiser la page Web ou redémarrer l'application.</translation>
 <translation id="3826099427150913765">Passer au mot de passe</translation>
 <translation id="383058930331066723">Le mode Économiseur de pile est activé</translation>
 <translation id="383629559565718788">Afficher les paramètres du clavier</translation>
@@ -698,6 +702,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="4066027111132117168">Activé, <ph name="REMAINING_TIME" /></translation>
 <translation id="4069532248403319695">Ouvrir la page de téléchargements</translation>
 <translation id="4072264167173457037">Signal moyen</translation>
+<translation id="4076455981957565732"><ph name="NUM_TURNED_IN" />/<ph name="TOTAL_NUM_OF_SUBMISSIONS" /> rendus • <ph name="NUM_GRADED" /> notés</translation>
 <translation id="4086921558679520050">Activer le commutateur du micro physique sur votre appareil</translation>
 <translation id="4101772068965291327">Ouvrir la page d'accueil</translation>
 <translation id="4112140312785995938">Rechercher vers l'arrière</translation>
@@ -734,7 +739,6 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="423685346499232137">Impossible de copier ni de coller du contenu pour le moment</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4240486403425279990">Mode Aperçu</translation>
-<translation id="4240756737570479726">Désactivation…</translation>
 <translation id="4242533952199664413">Ouvrir les paramètres</translation>
 <translation id="4247123849143712100">Mettre à jour et éteindre</translation>
 <translation id="4250229828105606438">Saisie d'écran</translation>
@@ -761,6 +765,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="4324840740119394760">Cela donne à l'appareil photo l'accès à <ph name="APP_NAME" /> et à toutes les applications et à tous les sites Web disposant de l'autorisation pour l'appareil photo</translation>
 <translation id="4333628967105022692">Lacros ne peut pas fonctionner lorsque plusieurs utilisateurs sont connectés.</translation>
 <translation id="4338109981321384717">Loupe</translation>
+<translation id="4356872429719185452">Afficher les détails du point d'accès sans fil. Activation du point d'accès sans fil en cours…</translation>
 <translation id="4371348193907997655">Paramètres de diffusion</translation>
 <translation id="4375482231364171368">Recherche dans la barre d'adresse</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, force du signal : <ph name="SIGNAL_STRENGTH" /> %</translation>
@@ -857,6 +862,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="4752784485658729358">Vous pouvez utiliser jusqu'à six bureaux. Retirez un bureau pour en enregistrer un nouveau.</translation>
 <translation id="4759238208242260848">Téléchargements</translation>
 <translation id="4762573482154983647">Masquer les applications</translation>
+<translation id="4763885921995354846">Cela autorise l'accès à l'appareil photo pour toutes les applications et tous les sites Web disposant de l'autorisation d'accès à l'appareil photo. Vous devrez peut-être actualiser la page Web ou redémarrer l'application.</translation>
 <translation id="4774338217796918551">Reviens demain à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776584068981882959">Votre mot de passe n'a toujours pas pu être vérifié. Réessayez.</translation>
 <translation id="4776917500594043016">Mot de passe pour <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -884,6 +890,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="4871905435473761992">Afficher les détails du point d'accès sans fil. Votre réseau mobile ne prend pas en charge les points d'accès sans fil.</translation>
 <translation id="4872237917498892622">Alt + Recherche ou Maj.</translation>
 <translation id="4872852897273142380">Sélectionner ou mettre en évidence la barre de favoris (si elle est visible)</translation>
+<translation id="4881323000405981760">Les effets ne sont pas pris en charge dans les applications Linux</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
 <translation id="4889868803215848840">Fournissez des commentaires facultatifs pour améliorer les suggestions :</translation>
 <translation id="4890187583552566966">L'Assistant Google est désactivé par votre administrateur.</translation>
@@ -927,7 +934,6 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="5034421018520995080">Aller au début de la page</translation>
 <translation id="5035236842988137213">L'appareil <ph name="DEVICE_NAME" /> est connecté à un nouveau téléphone</translation>
 <translation id="5035389544768382859">Confirmer la configuration de l'écran</translation>
-<translation id="5038863510258510803">Activation en cours…</translation>
 <translation id="5042305953558921026">Clé du mode Aperçu</translation>
 <translation id="5043679421800073804">Cliquer sur la dernière icône sur l'étagère ou la toucher</translation>
 <translation id="504465286040788597">Paragraphe précédent</translation>
@@ -983,7 +989,6 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="5297704307811127955">Désactivé</translation>
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5302048478445481009">Langue</translation>
-<translation id="5303783651764314393"><ph name="DEVICECOUNT" /> appareils connectés à votre point d'accès sans fil <ph name="DEVICE_NAME" /></translation>
 <translation id="5308380583665731573">Connecter</translation>
 <translation id="5313326810920013265">Paramètres Bluetooth</translation>
 <translation id="5314219114274263156">Enregistrement de l'écran effectué</translation>
@@ -992,6 +997,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5319712128756744240">Associer un appareil</translation>
 <translation id="5322611492012084517">Impossible de trouver votre téléphone</translation>
+<translation id="5323994101633366939">Masquer le nom du bureau</translation>
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5329548388331921293">Connexion en cours…</translation>
 <translation id="5331975486040154427">Appareil USB-C (port arrière-gauche)</translation>
@@ -1059,6 +1065,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="5601503069213153581">NIP</translation>
 <translation id="5618148318840095371">Nous vous avons connecté à un meilleur réseau</translation>
 <translation id="5619862035903135339">La politique définie par l'administrateur désactive les captures d'écran</translation>
+<translation id="5620979661744857819">Cela autorise l'accès pour <ph name="APP_NAME" /> et pour toutes les applications et tous les sites Web disposant des autorisations d'accès à l'appareil photo et au microphone. Vous devrez peut-être actualiser la page Web ou redémarrer l'application.</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5627392655516693966">Votre mot de passe n'a pas pu être vérifié. Réessayez.</translation>
 <translation id="5646376287012673985">Lieu</translation>
@@ -1106,10 +1113,12 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="5825969630400862129">Paramètres des appareils connectés</translation>
 <translation id="5837036133683224804">Arrêter <ph name="ROUTE_TITLE" /> sur <ph name="RECEIVER_NAME" /></translation>
 <translation id="5841296711770970362">Passer à la chanson suivante</translation>
+<translation id="5842553299352339114">Le point d'accès sans fil <ph name="DEVICE_NAME" /> est activé, aucun appareil connecté</translation>
 <translation id="584525477304726060">Maintenez le doigt sur la fenêtre pour l'agrandir</translation>
 <translation id="5856638668464565213"><ph name="NETWORK_NAME" /> n'est pas activé.</translation>
 <translation id="5860033963881614850">Désactivé</translation>
 <translation id="5860491529813859533">Activer</translation>
+<translation id="5864748620896638071">Pile à <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="5867217927013474703">Collecte de renseignements relatifs au réseau en cours…</translation>
 <translation id="5867606971598166637">Votre administrateur système surveille vos écrans</translation>
 <translation id="5876666360658629066">Entrez le code d'accès parental</translation>
@@ -1175,6 +1184,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="6103838137565245112">système</translation>
 <translation id="6114505516289286752">Fichiers vocaux en <ph name="LANGUAGE" /> téléchargés</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
+<translation id="6119972796024789243">Correction des couleurs</translation>
 <translation id="6121838516699723042">Confirmer le téléchargement de <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">L'Assistant Google n'est pas accessible dans une session d'invité.</translation>
 <translation id="6129953537138746214">Espace</translation>
@@ -1317,7 +1327,6 @@ Nouvelle installation</translation>
 <translation id="6752912906630585008">Le bureau <ph name="REMOVED_DESK" /> a été supprimé et fusionné avec le bureau <ph name="RECEIVE_DESK" /></translation>
 <translation id="6753390234084146956">onglets</translation>
 <translation id="6757237461819837179">Aucun élément multimédia en cours de lecture</translation>
-<translation id="6759628406555734414">Afficher les détails du point d'accès sans fil. Le point d'accès sans fil est activé.</translation>
 <translation id="6768043681523654438">stockage</translation>
 <translation id="6777216307882431711">Alimente des appareils connectés par USB-C</translation>
 <translation id="6781002679438061620">Bureau 9</translation>
@@ -1367,6 +1376,7 @@ Nouvelle installation</translation>
 <translation id="6981291220124935078">Activer l'accès</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
 <translation id="698231206551913481">Tous les fichiers et toutes les données locales associés à l'utilisateur seront définitivement supprimés en même temps que ce dernier.</translation>
+<translation id="7004910047186208204">Se connecter à un réseau de données cellulaires</translation>
 <translation id="7005239792648594238">Ouvrez une application pour commencer</translation>
 <translation id="7007983414944123363">Votre NIP ou votre mot de passe n'a pas pu être vérifié. Réessayez.</translation>
 <translation id="7014684956566476813">Connecté à un appareil nommé <ph name="DEVICE_NAME" /></translation>
@@ -1405,7 +1415,6 @@ Nouvelle installation</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Actualiser</translation>
-<translation id="7187711731540696127">Votre point d'accès sans fil <ph name="DEVICE_NAME" /> est activé, aucun appareil connecté</translation>
 <translation id="7188494361780961876">Le menu a été déplacé vers le coin supérieur gauche de l'écran.</translation>
 <translation id="7189412385142492784">À quelle distance se trouve Vénus?</translation>
 <translation id="7198435252016571249">Caméra alignée sur le coin inférieur droit. Conflit avec la surface du système.</translation>
@@ -1454,7 +1463,6 @@ Nouvelle installation</translation>
 <translation id="743058460480092004">La caméra et le microphone sont actuellement utilisés.</translation>
 <translation id="7452560014878697800">Une application utilise votre caméra</translation>
 <translation id="7453330308669753048">Résultat de l'historique de recherche retiré</translation>
-<translation id="7455047553373871740"><ph name="BATTERY_PERCENTAGE" /> % - <ph name="TIME" /> avant le chargement complet</translation>
 <translation id="7459485586006128091">En raison d'une erreur interne, le point d'accès sans fil a été désactivé. Essayez de vous reconnecter dans quelques minutes.</translation>
 <translation id="7461924472993315131">NIP</translation>
 <translation id="746232733191930409">Mode d'enregistrement de l'écran</translation>
@@ -1485,6 +1493,7 @@ Pour éteindre l'appareil, appuyez à nouveau sur le bouton d'alimentation de l'
 <translation id="7561982940498449837">Fermer le menu</translation>
 <translation id="7564874036684306347">Si vous déplacez des fenêtres sur un autre bureau, elles peuvent présenter des comportements inattendus. À la suite d'une telle opération, les notifications, les fenêtres et les boîtes de dialogue peuvent s'afficher sur les deux écrans.</translation>
 <translation id="7569509451529460200">Braille et ChromeVox activés</translation>
+<translation id="7571361473021531288">Pile à <ph name="BATTERY_PERCENTAGE" /> % | <ph name="TIME" /> d'autonomie</translation>
 <translation id="7573585051776738856">Fenêtre active ancrée à droite.</translation>
 <translation id="7579778809502851308">Capture d'écran</translation>
 <translation id="7593891976182323525">Recherche ou Majuscule</translation>
@@ -1522,6 +1531,7 @@ Pour éteindre l'appareil, appuyez à nouveau sur le bouton d'alimentation de l'
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notification}one{# notification}other{# notifications}}</translation>
 <translation id="7723703419796509666">Afficher ou masquer la console des outils pour les développeurs</translation>
 <translation id="7724603315864178912">Couper</translation>
+<translation id="7725108879223146004">Afficher les détails du point d'accès sans fil. Désactivation du point d'accès sans fil en cours…</translation>
 <translation id="7727952505535211425">Ouvrir le site Web dans la barre d'adresse dans un nouvel onglet</translation>
 <translation id="77365090426890123">utilisation de la mémoire</translation>
 <translation id="7742327441377685481">Aucune notification</translation>
@@ -1579,6 +1589,7 @@ Pour éteindre l'appareil, appuyez à nouveau sur le bouton d'alimentation de l'
 <translation id="797512352675305461">Activer ou désactiver la loupe plein écran</translation>
 <translation id="7977927628060636163">Recherche de réseaux mobiles en cours...</translation>
 <translation id="7982789257301363584">Réseau</translation>
+<translation id="7982878511129296052">Désactivation en cours…</translation>
 <translation id="7984197416080286869">Trop de tentatives de déverrouillage avec empreinte digitale</translation>
 <translation id="798779949890829624">Ce paramètre est géré par votre administrateur</translation>
 <translation id="799296642788192631">Vous pouvez épingler des fichiers importants. Pour épingler, pointez un élément ou ouvrez Fichiers et faites un clic droit sur un élément.</translation>
@@ -1647,6 +1658,7 @@ Pour éteindre l'appareil, appuyez à nouveau sur le bouton d'alimentation de l'
 <translation id="8247998213073982446"><ph name="APP_NAME" />, application</translation>
 <translation id="8255234195843591763">Réinitialiser pour mettre à jour</translation>
 <translation id="8261506727792406068">Supprimer</translation>
+<translation id="8262312463845990408">Activer/Désactiver la lecture</translation>
 <translation id="8270450402312105425">{0,plural, =1{Restaurez la version antérieure de l'appareil dans un délai d'une heure}one{Restaurez la version antérieure de l'appareil dans un délai de # heure}other{Restaurez la version antérieure de l'appareil dans un délai de # heures}}</translation>
 <translation id="8277261673056602147">Mettre du texte en évidence sur votre écran</translation>
 <translation id="8284362522226889623">Balayez vers la gauche avec quatre doigts pour passer au bureau précédent</translation>
@@ -1655,6 +1667,7 @@ Pour éteindre l'appareil, appuyez à nouveau sur le bouton d'alimentation de l'
 <translation id="8308637677604853869">Menu précédent</translation>
 <translation id="830868413617744215">Bêta</translation>
 <translation id="8314772463905284467">Verrouillage des majuscules activé</translation>
+<translation id="8315514906653279104">Activation en cours…</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /> <ph name="GET_STARTED" /></translation>
 <translation id="8345019317483336363">Fenêtre <ph name="WINDOW_TITLE" /> sélectionnée</translation>
 <translation id="8349964124165471584">Ouvrir le lien dans une nouvelle fenêtre</translation>
@@ -1804,6 +1817,7 @@ Pour éteindre l'appareil, appuyez à nouveau sur le bouton d'alimentation de l'
 <translation id="9024331582947483881">plein écran</translation>
 <translation id="9029736946581028033">L'appareil va s'éteindre sous peu</translation>
 <translation id="9030319654231318877">Désactivé jusqu'au couchant</translation>
+<translation id="9030665205623277906">Aperçu de l'utilisation du processeur : <ph name="CPU_USEAGE" /> %</translation>
 <translation id="9034924485347205037">Fichiers Linux</translation>
 <translation id="9047624247355796468">Ouvrir les paramètres pour <ph name="NETWORK_NAME" /></translation>
 <translation id="9059834730836941392">Réduire la notification</translation>
@@ -1833,7 +1847,6 @@ Pour éteindre l'appareil, appuyez à nouveau sur le bouton d'alimentation de l'
 <translation id="9178475906033259337">Affichage de 1 résultat pour <ph name="QUERY" /></translation>
 <translation id="9179259655489829027">Cette fonctionnalité vous permet d'accéder rapidement à tout compte connecté sans mot de passe. N'utilisez cette fonctionnalité que lorsqu'il s'agit de comptes fiables.</translation>
 <translation id="9183456764293710005">Loupe en mode plein écran</translation>
-<translation id="9186811218777709815"><ph name="BATTERY_PERCENTAGE" /> % | <ph name="TIME" /> restant</translation>
 <translation id="9193626018745640770">Diffusion sur un récepteur inconnu en cours…</translation>
 <translation id="9194617393863864469">Ouvrir une session avec un autre compte d'utilisateur...</translation>
 <translation id="9198992156681343238">La résolution de l'écran <ph name="DISPLAY_NAME" /> est maintenant de <ph name="RESOLUTION" />. Cliquez sur Confirmer pour garder les changements. Les paramètres précédents seront restaurés dans <ph name="TIMEOUT_SECONDS" />.</translation>

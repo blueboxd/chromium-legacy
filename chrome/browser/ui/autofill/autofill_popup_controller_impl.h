@@ -143,6 +143,8 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
                                   std::u16string* title,
                                   std::u16string* body) override;
   PopupType GetPopupType() const override;
+  AutofillSuggestionTriggerSource GetAutofillSuggestionTriggerSource()
+      const override;
 
   // Returns true if the popup still has non-options entries to show the user.
   bool HasSuggestions() const;
@@ -225,7 +227,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   void SetViewForTesting(base::WeakPtr<AutofillPopupView> view);
 
   PopupControllerCommon controller_common_;
-  raw_ptr<content::WebContents, DanglingAcrossTasks> web_contents_;
+  raw_ptr<content::WebContents, AcrossTasksDanglingUntriaged> web_contents_;
   AutofillPopupViewPtr view_;
   base::WeakPtr<AutofillPopupDelegate> delegate_;
 

@@ -147,6 +147,7 @@ export interface OsSettingsRoutes extends MinimumRoutes {
   BRUSCHETTA_SHARED_USB_DEVICES: Route;
   BRUSCHETTA_SHARED_PATHS: Route;
   CHANGE_PICTURE: Route;
+  CUSTOMIZE_PEN_BUTTONS: Route;
   CUSTOMIZE_TABLET_BUTTONS: Route;
   CUPS_PRINTERS: Route;
   CUSTOMIZE_MOUSE_BUTTONS: Route;
@@ -214,7 +215,7 @@ export interface OsSettingsRoutes extends MinimumRoutes {
   SYNC_ADVANCED: Route;
 }
 
-export function createSection(
+function createSection(
     parent: Route|null, path: string, section: routesMojom.Section,
     title?: string): Route {
   let route: Route;
@@ -227,7 +228,7 @@ export function createSection(
   return route;
 }
 
-export function createSubpage(
+function createSubpage(
     parent: Route, path: string, _subpage: routesMojom.Subpage): Route {
   // TODO(khorimoto): Add |subpage| to the Route object.
   return parent.createChild('/' + path);
@@ -369,6 +370,9 @@ export function createRoutes(): OsSettingsRoutes {
     r.CUSTOMIZE_TABLET_BUTTONS = createSubpage(
         r.GRAPHICS_TABLET, routesMojom.CUSTOMIZE_TABLET_BUTTONS_SUBPAGE_PATH,
         Subpage.kCustomizeTabletButtons);
+    r.CUSTOMIZE_PEN_BUTTONS = createSubpage(
+        r.GRAPHICS_TABLET, routesMojom.CUSTOMIZE_PEN_BUTTONS_SUBPAGE_PATH,
+        Subpage.kCustomizePenButtons);
   }
   r.STORAGE = createSubpage(
       r.DEVICE, routesMojom.STORAGE_SUBPAGE_PATH, Subpage.kStorage);

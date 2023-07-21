@@ -265,15 +265,20 @@ void HTMLAnchorElement::AttributeChanged(
 void HTMLAnchorElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == html_names::kHrefAttr) {
+    if (params.old_value == params.new_value) {
+      return;
+    }
     bool was_link = IsLink();
     SetIsLink(!params.new_value.IsNull());
     if (was_link || IsLink()) {
       PseudoStateChanged(CSSSelector::kPseudoLink);
       PseudoStateChanged(CSSSelector::kPseudoVisited);
-      PseudoStateChanged(CSSSelector::kPseudoWebkitAnyLink);
-      PseudoStateChanged(CSSSelector::kPseudoAnyLink);
+      if (was_link != IsLink()) {
+        PseudoStateChanged(CSSSelector::kPseudoWebkitAnyLink);
+        PseudoStateChanged(CSSSelector::kPseudoAnyLink);
+      }
     }
-    if (isConnected()) {
+    if (isConnected() && params.old_value != params.new_value) {
       if (auto* document_rules =
               DocumentSpeculationRules::FromIfExists(GetDocument())) {
         document_rules->HrefAttributeChanged(this, params.old_value,
@@ -288,21 +293,21 @@ void HTMLAnchorElement::ParseAttribute(
   } else if (params.name == html_names::kRelAttr) {
     SetRel(params.new_value);
     rel_list_->DidUpdateAttributeValue(params.old_value, params.new_value);
-    if (isConnected() && IsLink()) {
+    if (isConnected() && IsLink() && params.old_value != params.new_value) {
       if (auto* document_rules =
               DocumentSpeculationRules::FromIfExists(GetDocument())) {
         document_rules->RelAttributeChanged(this);
       }
     }
   } else if (params.name == html_names::kReferrerpolicyAttr) {
-    if (isConnected() && IsLink()) {
+    if (isConnected() && IsLink() && params.old_value != params.new_value) {
       if (auto* document_rules =
               DocumentSpeculationRules::FromIfExists(GetDocument())) {
         document_rules->ReferrerPolicyAttributeChanged(this);
       }
     }
   } else if (params.name == html_names::kTargetAttr) {
-    if (isConnected() && IsLink()) {
+    if (isConnected() && IsLink() && params.old_value != params.new_value) {
       if (auto* document_rules =
               DocumentSpeculationRules::FromIfExists(GetDocument())) {
         document_rules->TargetAttributeChanged(this);

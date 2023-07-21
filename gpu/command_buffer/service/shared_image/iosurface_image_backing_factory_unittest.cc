@@ -39,7 +39,6 @@
 #endif
 
 #if BUILDFLAG(USE_DAWN)
-#include <dawn/dawn_proc.h>
 #include <dawn/native/DawnNative.h>
 #include <dawn/webgpu_cpp.h>
 #endif  // BUILDFLAG(USE_DAWN)
@@ -193,8 +192,6 @@ TEST_F(IOSurfaceImageBackingFactoryTest, Dawn_SkiaGL) {
 
   wgpu::Device device =
       wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
-  DawnProcTable procs = dawn::native::GetProcs();
-  dawnProcSetProcs(&procs);
 
   // Create a backing using mailbox.
   auto mailbox = Mailbox::GenerateForSharedImage();
@@ -215,13 +212,13 @@ TEST_F(IOSurfaceImageBackingFactoryTest, Dawn_SkiaGL) {
 
   // Create a DawnImageRepresentation.
   auto dawn_representation = shared_image_representation_factory_.ProduceDawn(
-      mailbox, device.Get(), WGPUBackendType_Metal, {});
+      mailbox, device, wgpu::BackendType::Metal, {});
   EXPECT_TRUE(dawn_representation);
 
   // Clear the shared image to green using Dawn.
   {
     auto scoped_access = dawn_representation->BeginScopedAccess(
-        WGPUTextureUsage_RenderAttachment,
+        wgpu::TextureUsage::RenderAttachment,
         SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(scoped_access);
     wgpu::Texture texture(scoped_access->texture());
@@ -251,7 +248,6 @@ TEST_F(IOSurfaceImageBackingFactoryTest, Dawn_SkiaGL) {
 
   // Shut down Dawn
   device = wgpu::Device();
-  dawnProcSetProcs(nullptr);
 
   factory_ref.reset();
 }
@@ -337,15 +333,13 @@ TEST_F(IOSurfaceImageBackingFactoryTest, GL_Dawn_Skia_UnclearTexture) {
 
   wgpu::Device device =
       wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
-  DawnProcTable procs = dawn::native::GetProcs();
-  dawnProcSetProcs(&procs);
   {
     auto dawn_representation = shared_image_representation_factory_.ProduceDawn(
-        mailbox, device.Get(), WGPUBackendType_Metal, {});
+        mailbox, device, wgpu::BackendType::Metal, {});
     ASSERT_TRUE(dawn_representation);
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
-        WGPUTextureUsage_RenderAttachment,
+        wgpu::TextureUsage::RenderAttachment,
         SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(dawn_scoped_access);
 
@@ -376,7 +370,6 @@ TEST_F(IOSurfaceImageBackingFactoryTest, GL_Dawn_Skia_UnclearTexture) {
 
   // Shut down Dawn
   device = wgpu::Device();
-  dawnProcSetProcs(nullptr);
 
   factory_ref.reset();
 }
@@ -427,15 +420,13 @@ TEST_F(IOSurfaceImageBackingFactoryTest, UnclearDawn_SkiaFails) {
 
   wgpu::Device device =
       wgpu::Device::Acquire(adapter_it->CreateDevice(&device_descriptor));
-  DawnProcTable procs = dawn::native::GetProcs();
-  dawnProcSetProcs(&procs);
   {
     auto dawn_representation = shared_image_representation_factory_.ProduceDawn(
-        mailbox, device.Get(), WGPUBackendType_Metal, {});
+        mailbox, device, wgpu::BackendType::Metal, {});
     ASSERT_TRUE(dawn_representation);
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
-        WGPUTextureUsage_RenderAttachment,
+        wgpu::TextureUsage::RenderAttachment,
         SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(dawn_scoped_access);
 
@@ -463,7 +454,6 @@ TEST_F(IOSurfaceImageBackingFactoryTest, UnclearDawn_SkiaFails) {
 
   // Shut down Dawn
   device = wgpu::Device();
-  dawnProcSetProcs(nullptr);
 
   EXPECT_FALSE(factory_ref->IsCleared());
 
@@ -644,13 +634,13 @@ TEST_P(IOSurfaceImageBackingFactoryScanoutTest, Basic) {
     // First, validate a DawnImageRepresentation.
     auto device = context_state_->dawn_context_provider()->GetDevice();
     auto dawn_representation = shared_image_representation_factory_.ProduceDawn(
-        mailbox, device.Get(), WGPUBackendType_Metal, {});
+        mailbox, device, wgpu::BackendType::Metal, {});
     ASSERT_TRUE(dawn_representation);
     EXPECT_EQ(usage, dawn_representation->usage());
     EXPECT_EQ(color_space, dawn_representation->color_space());
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
-        WGPUTextureUsage_RenderAttachment,
+        wgpu::TextureUsage::RenderAttachment,
         SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(dawn_scoped_access);
 
@@ -784,13 +774,13 @@ TEST_P(IOSurfaceImageBackingFactoryScanoutTest, InitialData) {
     // First, validate a DawnImageRepresentation.
     auto device = context_state_->dawn_context_provider()->GetDevice();
     auto dawn_representation = shared_image_representation_factory_.ProduceDawn(
-        mailbox, device.Get(), WGPUBackendType_Metal, {});
+        mailbox, device, wgpu::BackendType::Metal, {});
     ASSERT_TRUE(dawn_representation);
     EXPECT_EQ(usage, dawn_representation->usage());
     EXPECT_EQ(color_space, dawn_representation->color_space());
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
-        WGPUTextureUsage_RenderAttachment,
+        wgpu::TextureUsage::RenderAttachment,
         SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(dawn_scoped_access);
 
@@ -851,13 +841,13 @@ TEST_P(IOSurfaceImageBackingFactoryScanoutTest, InitialDataImage) {
     // First, validate a DawnImageRepresentation.
     auto device = context_state_->dawn_context_provider()->GetDevice();
     auto dawn_representation = shared_image_representation_factory_.ProduceDawn(
-        mailbox, device.Get(), WGPUBackendType_Metal, {});
+        mailbox, device, wgpu::BackendType::Metal, {});
     ASSERT_TRUE(dawn_representation);
     EXPECT_EQ(usage, dawn_representation->usage());
     EXPECT_EQ(color_space, dawn_representation->color_space());
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
-        WGPUTextureUsage_RenderAttachment,
+        wgpu::TextureUsage::RenderAttachment,
         SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(dawn_scoped_access);
 
@@ -1109,13 +1099,13 @@ TEST_P(IOSurfaceImageBackingFactoryGMBTest, Basic) {
     // First, validate a DawnImageRepresentation.
     auto device = context_state_->dawn_context_provider()->GetDevice();
     auto dawn_representation = shared_image_representation_factory_.ProduceDawn(
-        mailbox, device.Get(), WGPUBackendType_Metal, {});
+        mailbox, device, wgpu::BackendType::Metal, {});
     ASSERT_TRUE(dawn_representation);
     EXPECT_EQ(usage, dawn_representation->usage());
     EXPECT_EQ(color_space, dawn_representation->color_space());
 
     auto dawn_scoped_access = dawn_representation->BeginScopedAccess(
-        WGPUTextureUsage_RenderAttachment,
+        wgpu::TextureUsage::RenderAttachment,
         SharedImageRepresentation::AllowUnclearedAccess::kYes);
     ASSERT_TRUE(dawn_scoped_access);
 

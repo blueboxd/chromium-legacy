@@ -11,6 +11,7 @@
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_type.h"
 
+@protocol ToolbarOmniboxConsumer;
 class WebStateList;
 
 /// Delegate for events in `ToolbarMediator`.
@@ -22,12 +23,18 @@ class WebStateList;
 /// Transitions the omnibox position to the toolbar of type `toolbarType`.
 - (void)transitionOmniboxToToolbarType:(ToolbarType)toolbarType;
 
+/// Transitions the steady state omnibox position to the toolbar of type
+/// `toolbarType`. The steady state omnibox is when the omnibox is not focused.
+- (void)transitionSteadyStateOmniboxToToolbarType:(ToolbarType)toolbarType;
+
 @end
 
 @interface ToolbarMediator : NSObject
 
 /// Delegate for events in `ToolbarMediator`.
 @property(nonatomic, weak) id<ToolbarMediatorDelegate> delegate;
+/// The omnibox consumer for this object.
+@property(nonatomic, weak) id<ToolbarOmniboxConsumer> omniboxConsumer;
 /// Observe user preference changes for preferred omnibox position.
 @property(nonatomic, assign) PrefService* prefService;
 

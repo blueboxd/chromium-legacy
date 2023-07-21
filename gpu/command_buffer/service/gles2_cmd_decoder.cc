@@ -3614,9 +3614,13 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
   caps.surface_origin =
       !is_offscreen ? surface_->GetOrigin() : gfx::SurfaceOrigin::kBottomLeft;
+  // Only query the kEnableMSAAOnNewIntelGPUs feature flag if the host device
+  // is affected by the experiment.
+  bool eligible_for_experiment =
+      workarounds().msaa_is_slow && !workarounds().msaa_is_slow_2;
   caps.msaa_is_slow =
-      base::FeatureList::IsEnabled(features::kEnableMSAAOnNewIntelGPUs)
-          ? workarounds().msaa_is_slow_2
+      eligible_for_experiment
+          ? !base::FeatureList::IsEnabled(features::kEnableMSAAOnNewIntelGPUs)
           : workarounds().msaa_is_slow;
   caps.avoid_stencil_buffers = workarounds().avoid_stencil_buffers;
   caps.multisample_compatibility =
@@ -14429,14 +14433,9 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     // vs. "actual" internal format, so this will have to do for now. See
     // Table 3.12 and associated explanatory text in the OpenGL ES 3.0.6
     // spec for more information.
-    //
-    // Unfortunately, changing the internal format here conflicts with a
-    // macos workaround flag, so don't do it if the workaround applies.
     bool attempt_sized_upgrade =
-        (!workarounds().use_intermediary_for_copy_texture_image ||
-         target == GL_TEXTURE_2D) &&
-        (read_format == GL_RGB || read_format == GL_RGB8 ||
-         read_format == GL_RGBA || read_format == GL_RGBA8);
+        read_format == GL_RGB || read_format == GL_RGB8 ||
+        read_format == GL_RGBA || read_format == GL_RGBA8;
     switch (internal_format) {
       case GL_RGB:
         if (attempt_sized_upgrade) {

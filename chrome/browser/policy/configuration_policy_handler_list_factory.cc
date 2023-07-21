@@ -1469,15 +1469,18 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kReportAppUsageCollectionRateMs,
     ash::reporting::kReportAppUsageCollectionRateMs,
     base::Value::Type::INTEGER },
-  { key::kChargingSoundsEnabled,
+  { key::kDeviceChargingSoundsEnabled,
     ash::prefs::kChargingSoundsEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kLowBatterySoundEnabled,
+  { key::kDeviceLowBatterySoundEnabled,
     ash::prefs::kLowBatterySoundEnabled,
     base::Value::Type::BOOLEAN },
   { key::kArcVmDataMigrationStrategy,
     arc::prefs::kArcVmDataMigrationStrategy,
     base::Value::Type::INTEGER },
+  { key::kGlanceablesEnabled,
+    ash::prefs::kGlanceablesEnabled,
+    base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX)

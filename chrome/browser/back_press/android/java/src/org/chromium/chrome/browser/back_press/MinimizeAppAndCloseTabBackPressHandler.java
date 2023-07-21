@@ -11,6 +11,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ResettersForTesting;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.lifetime.Destroyable;
 import org.chromium.base.metrics.RecordHistogram;
@@ -146,6 +147,9 @@ public class MinimizeAppAndCloseTabBackPressHandler implements BackPressHandler,
                         : TimeUtils.elapsedRealtimeMillis() - mLastBackPressSupplier.get();
                 var msg = "Tab should be navigated back before closing or exiting app; interval %s";
                 assert false : String.format(msg, interval);
+                if (BackPressManager.correctTabNavigationOnFallback()) {
+                    return BackPressResult.FAILURE;
+                }
             }
             // At this point we know either the tab will close or the app will minimize.
             NativePage nativePage = currentTab.getNativePage();
@@ -205,6 +209,7 @@ public class MinimizeAppAndCloseTabBackPressHandler implements BackPressHandler,
 
     static void setVersionForTesting(Integer version) {
         sVersionForTesting = version;
+        ResettersForTesting.register(() -> sVersionForTesting = null);
     }
 
     public static String getHistogramNameForTesting() {

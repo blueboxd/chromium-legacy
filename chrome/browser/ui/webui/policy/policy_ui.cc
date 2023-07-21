@@ -12,6 +12,7 @@
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/policy/value_provider/chrome_policies_value_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/policy/policy_ui_handler.h"
@@ -166,7 +167,12 @@ void CreateAndAddPolicyUIHtmlSource(Profile* profile) {
   source->AddResourcePath("logs/", IDR_POLICY_LOGS_POLICY_LOGS_HTML);
   source->AddResourcePath("logs", IDR_POLICY_LOGS_POLICY_LOGS_HTML);
 
-  if (policy::utils::IsPolicyTestingEnabled(profile->GetPrefs())) {
+  // Test page should only load if testing is enabled and the profile is not
+  // managed by cloud.
+  if (policy::utils::IsPolicyTestingEnabled(profile->GetPrefs()) &&
+      !policy::ManagementServiceFactory::GetForProfile(profile)
+           ->HasManagementAuthority(
+               policy::EnterpriseManagementAuthority::CLOUD)) {
     // Localized strings for chrome://policy/test.
     static constexpr webui::LocalizedString kPolicyTestStrings[] = {
         {"testTitle", IDS_POLICY_TEST_TITLE},
@@ -174,6 +180,8 @@ void CreateAndAddPolicyUIHtmlSource(Profile* profile) {
         {"testApply", IDS_POLICY_TEST_APPLY},
         {"testImport", IDS_POLICY_TEST_IMPORT},
         {"testDesc", IDS_POLICY_TEST_DESC},
+        {"testRevertAppliedPolicies", IDS_POLICY_TEST_REVERT},
+        {"testClearPolicies", IDS_CLEAR},
         {"testTableName", IDS_POLICY_HEADER_NAME},
         {"testTableSource", IDS_POLICY_HEADER_SOURCE},
         {"testTableTarget", IDS_POLICY_TEST_TABLE_TARGET},

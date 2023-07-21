@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/user_education/chrome_user_education_delegate.h"
 
-#include "ash/user_education/user_education_constants.h"
+#include "ash/ash_element_identifiers.h"
 #include "ash/user_education/user_education_types.h"
 #include "ash/user_education/user_education_util.h"
 #include "base/check.h"
@@ -25,6 +25,7 @@
 #include "components/user_education/common/tutorial_registry.h"
 #include "components/user_education/common/tutorial_service.h"
 #include "components/user_manager/user_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/interaction/element_tracker.h"
 
 namespace {
@@ -175,6 +176,20 @@ void ChromeUserEducationDelegate::LaunchSystemWebAppAsync(
   ash::LaunchSystemWebAppAsync(profile, system_web_app_type,
                                ash::SystemAppLaunchParams(),
                                std::make_unique<apps::WindowInfo>(display_id));
+}
+
+bool ChromeUserEducationDelegate::IsRunningTutorial(
+    const AccountId& account_id,
+    absl::optional<ash::TutorialId> tutorial_id) const {
+  Profile* const profile = Profile::FromBrowserContext(
+      ash::BrowserContextHelper::Get()->GetBrowserContextByAccountId(
+          account_id));
+  return UserEducationServiceFactory::GetForProfile(profile)
+      ->tutorial_service()
+      .IsRunningTutorial(
+          tutorial_id ? absl::make_optional(
+                            ash::user_education_util::ToString(*tutorial_id))
+                      : absl::nullopt);
 }
 
 void ChromeUserEducationDelegate::OnProfileAdded(Profile* profile) {

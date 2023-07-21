@@ -189,6 +189,20 @@ may sacrifice a little bit of correctness in favor of simplicity.
     * Implements `AutofillClient` interface.
     * Has siblings `AwAutofillClient`, `ChromeAutofillClientIOS` and
       `WebViewAutofillClientIOS`.
+  * `PersonalDataManager`
+    * One instance per `BrowserContext` (Chrome profile). In incognito mode, the
+      original profile's instance is used. This enables filling even in
+      incognito mode. Imports are disabled in incognito mode by the
+      `BrowserAutofillManager`.
+    * Responsibilities:
+      * Reading/writing/updating AutofillProfiles and payment information from
+        `AutofillTable` - an SQLite database used to persist data across browser
+        shutdown.
+      * Keeps a copy of `AutofillTable`'s data in memory, making them available
+        to the rest of Autofill.
+      * Modifications triggered through the `PersonalDataManager` generally
+        happen asynchronously. For details, see
+        [go/pdm-autofill-table-interface](http://go/pdm-autofill-table-interface).
 
 ## What's the difference between Autofill and Autocomplete?
 
@@ -254,6 +268,19 @@ may sacrifice a little bit of correctness in favor of simplicity.
     the server can handle small forms differently, see
     [`http://cs/IsSmallForm%20file:autofill`](http://cs/IsSmallForm%20file:autofill).
   * Crowd sourcing trumps local heuristics.
+  * For testing purposes, crowd sourcing can be overridden manually by command
+    line parameter:
+    ```
+    chrome --enable-features=AutofillOverridePredictions:spec/1_2_4-7_8_9
+    ```
+
+    This creates two manual overrides that supersede server predictions as
+    follows:
+    * The server prediction for the field with signature 2 in the form with
+      signature 1 is overridden to be 4 (`NAME_MIDDLE`).
+    * The server prediction for the field with signature 8 in the form with
+      signature 7 is overridden to be 9 (`EMAIL_ADDRESS`).
+    For more detail, see the documentation of [`ServerPredictionOverrides`](https://source.chromium.org/chromium/chromium/src/+/main:components/autofill/core/browser/server_prediction_overrides.h).
 * Autocomplete attribute
   * The autocomplete attribute is parsed in `ParseAutocompleteAttribute`.
   * The autocomplete attribute trumps local heuristics and crowd sourcing

@@ -103,15 +103,6 @@ bool IsTextBasedAudioDescriptionEnabled() {
   return base::FeatureList::IsEnabled(::features::kTextBasedAudioDescription);
 }
 
-bool IsUnserializeOptimizationsEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kAccessibilityUnserializeOptimizations);
-}
-
-BASE_FEATURE(kAccessibilityUnserializeOptimizations,
-             "AccessibilityUnserializeOptimizations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 #if BUILDFLAG(IS_WIN)
 BASE_FEATURE(kIChromeAccessible,
              "IChromeAccessible",
@@ -174,7 +165,7 @@ bool IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled() {
 
 BASE_FEATURE(kExperimentalAccessibilityColorEnhancementSettings,
              "ExperimentalAccessibilityColorEnhancementSettings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool AreExperimentalAccessibilityColorEnhancementSettingsEnabled() {
   return base::FeatureList::IsEnabled(
@@ -217,14 +208,6 @@ bool IsAccessibilityAcceleratorNotificationsTimeoutEnabled() {
       ::features::kAccessibilityAcceleratorNotificationsTimeout);
 }
 
-BASE_FEATURE(kAccessibilityDeprecateChromeVoxTabs,
-             "AccessibilityDeprecateChromeVoxTabs",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool IsAccessibilityDeprecateChromeVoxTabsEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kAccessibilityDeprecateChromeVoxTabs);
-}
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 BASE_FEATURE(kAugmentExistingImageLabels,
@@ -314,6 +297,14 @@ bool IsScreenAIDebugModeEnabled() {
 BASE_FEATURE(kEmergencyDisableScreenAIOCR,
              "EmergencyDisableScreenAIOCR",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kReadAnythingWebUIToolbar,
+             "ReadAnythingWebUIToolbar",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsReadAnythingWebUIToolbarEnabled() {
+  return base::FeatureList::IsEnabled(::features::kReadAnythingWebUIToolbar);
+}
 
 BASE_FEATURE(kPdfOcr, "PdfOcr", base::FEATURE_DISABLED_BY_DEFAULT);
 

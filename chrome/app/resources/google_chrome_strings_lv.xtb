@@ -80,6 +80,7 @@
 <translation id="235650106824528204">Darba profila administrators var noņemt šī profila lietošanas laikā ģenerētos Chrome datus (piemēram, grāmatzīmes, vēsturi, paroles un citus iestatījumus). <ph name="LEARN_MORE" /></translation>
 <translation id="2359808026110333948">Turpināt</translation>
 <translation id="2401189691232800402">Chrome OS sistēma</translation>
+<translation id="2409816192575564775">{NUM_DEVICES,plural, =0{Vismaz viens Chrome paplašinājums piekļuva 1 HID ierīcei}=1{Vismaz viens Chrome paplašinājums piekļūst 1 HID ierīcei}zero{Vismaz viens Chrome paplašinājums piekļūst # HID ierīcēm}one{Vismaz viens Chrome paplašinājums piekļūst # HID ierīcei}other{Vismaz viens Chrome paplašinājums piekļūst # HID ierīcēm}}</translation>
 <translation id="2424440923901031101">Šis paplašinājums pārkāpj Chrome interneta veikala politiku, un, iespējams, tas nav drošs. Noņemiet to no pārlūka Chrome, lai tas jūsu apmeklētajās vietnēs vairs nevarētu skatīt un mainīt jūsu datus, tostarp jūsu personas informāciju.</translation>
 <translation id="2467438592969358367">Pārlūkā Google Chrome tiek mēģināts eksportēt jūsu paroles. Lai to atļautu, ierakstiet savu Windows paroli.</translation>
 <translation id="2472092250898121027">Šis paplašinājums satur ļaunprātīgu programmatūru un nav drošs. Noņemiet to no pārlūka Chrome, lai tas jūsu apmeklētajās vietnēs vairs nevarētu skatīt un mainīt jūsu datus, tostarp jūsu personas informāciju.</translation>
@@ -117,7 +118,6 @@
 <translation id="2929907241665500097">Pārlūkprogramma Chrome netika atjaunināta. Radās problēma. <ph name="BEGIN_LINK" />Novērsiet Chrome atjaunināšanas problēmas.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> — pierakstīšanās tīklā — Chrome</translation>
 <translation id="3019382870990049182">Palaist atkārtoti, lai atjauninātu &amp;Chrome OS Flex</translation>
-<translation id="3033660625209020231">{NUM_DEVICES,plural, =0{Google Chrome paplašinājumi piekļuva HID ierīcēm}=1{Google Chrome paplašinājumi piekļūst HID ierīcei}zero{Google Chrome paplašinājumi piekļūst # HID ierīcēm}one{Google Chrome paplašinājumi piekļūst # HID ierīcei}other{Google Chrome paplašinājumi piekļūst # HID ierīcēm}}</translation>
 <translation id="303514781271618814">Chrome pēta jaunas funkcijas, kas ļauj vietnēm nodrošināt tādas pašas pārlūkošanas iespējas, izmantojot mazāk datu.</translation>
 <translation id="3037838751736561277">Google Chrome darbojas fona režīmā.</translation>
 <translation id="3038232873781883849">Gaida, lai instalētu...</translation>
@@ -225,7 +225,6 @@
 <translation id="4970947549776831107">Pārlūkā Chrome šis fails tika bloķēts, jo šī tipa faili ir bīstami.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5003967926796347400">Noklikšķiniet uz Google paroļu pārvaldnieks.</translation>
-<translation id="5005958605836556244">{NUM_DEVICES,plural, =0{Google Chrome paplašinājums piekļuva HID ierīcēm}=1{Google Chrome paplašinājums piekļūst vienai HID ierīcei}zero{Google Chrome paplašinājums piekļūst # HID ierīcēm}one{Google Chrome paplašinājums piekļūst # HID ierīcei}other{Google Chrome paplašinājums piekļūst # HID ierīcēm}}</translation>
 <translation id="5098668839038261629">Iestatījumam esot ieslēgtam, jūs tiksiet izrakstīts arī no pārlūka Chrome.</translation>
 <translation id="5132929315877954718">Atklājiet lieliskas lietotnes, spēles, paplašinājumus un motīvus, ko varat izmantot pārlūkā Google Chrome.</translation>
 <translation id="5139423532931106058">Pielāgot Chrome profilu</translation>
@@ -243,6 +242,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="5394833366792865639">Chrome cilnes kopīgošana</translation>
 <translation id="5412485296464121825">Vietnes pārlūkā Chrome var glabāt informāciju par jūsu interesēm. Piemēram, ja apmeklējat kādu vietni, lai iegādātos apavus maratona skriešanai, vietne var noteikt, ka interesējaties par maratonu skriešanu. Ja vēlāk apmeklēsiet citu vietni, lai reģistrētos sacensībām, šajā vietnē var tikt rādīta skriešanas apavu reklāma, pamatojoties uz jūsu interesēm.</translation>
 <translation id="5430073640787465221">Jūsu preferenču fails ir bojāts vai nederīgs. Google Chrome nespēj atkopt jūsu iestatījumus.</translation>
+<translation id="5521146392841465297">Chrome komanda iesaka pārskatīt šo paplašinājumu.</translation>
 <translation id="5524761631371622910">Ja izmēģināšana ir ieslēgta un jūs esat iesaistīts aktīvā izmēģinājumā pārlūkā Chrome, jūsu pārlūkošanas vēsture ietekmē to, kādas reklāmas jums tiek rādītas, un tālāk redzamās aptuveni noteiktās intereses. Lai aizsargātu jūsu konfidencialitāti, Chrome katru mēnesi pakāpeniski dzēš jūsu intereses.</translation>
 <translation id="5530733413481476019">Pārlūka Chrome darbības paātrināšana</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS ienākošā datplūsma)</translation>
@@ -280,6 +280,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="624230925347970731">Chrome drīz tiks aizvērts</translation>
 <translation id="6247557882553405851">Google paroļu pārvaldnieks</translation>
 <translation id="6273793429163604305">Lūdzu, uzgaidiet...</translation>
+<translation id="6277547788421725101">Viens no jūsu vecākiem ir izslēdzis iestatījumu “Atļaujas vietnēm, lietotnēm un paplašinājumiem” pārlūkam Chrome.</translation>
 <translation id="6291089322031436445">Chrome Dev lietotnes</translation>
 <translation id="6291549208091401781">Pārlūks Google Chrome jau ir instalēts visiem jūsu datora lietotājiem.</translation>
 <translation id="6326175484149238433">Noņemt no pārlūka Chrome</translation>
@@ -335,6 +336,7 @@ Uz šo kontu var attiekties atļaujas, ko esat jau piešķīris vietnēm un liet
 <translation id="7398801000654795464">Pārlūkā Chrome iepriekš pierakstījāties kā lietotājs <ph name="USER_EMAIL_ADDRESS" />. Lai pierakstītos vēlreiz, lūdzu, izmantojiet to pašu kontu.</translation>
 <translation id="7410958280246779049">Pārlūkā Chrome tika bloķēts šis fails, jo tas ir bīstams.</translation>
 <translation id="7412494426921990001">Noklikšķiniet uz Chrome izvēlnes.</translation>
+<translation id="742463671275348370">{NUM_DEVICES,plural, =0{Vismaz viens Chrome paplašinājums piekļuva 1 USB ierīcei}=1{Vismaz viens Chrome paplašinājums piekļūst 1 USB ierīcei}zero{Vismaz viens Chrome paplašinājums piekļūst # USB ierīcēm}one{Vismaz viens Chrome paplašinājums piekļūst # USB ierīcei}other{Vismaz viens Chrome paplašinājums piekļūst # USB ierīcēm}}</translation>
 <translation id="7426611252293106642">Iespējams, pārlūks Google Chrome nedarbosies pareizi, jo tas vairs netiek atbalstīts šajā Linux izdevumā.</translation>
 <translation id="7449333426561673451">{COUNT,plural, =1{Jūsu organizācija automātiski aizver pārlūku Chrome, ja tas nav izmantots vienu minūti.}zero{Jūsu organizācija automātiski aizver pārlūku Chrome, ja tas nav izmantots # minūtes.}one{Jūsu organizācija automātiski aizver pārlūku Chrome, ja tas nav izmantots # minūti.}other{Jūsu organizācija automātiski aizver pārlūku Chrome, ja tas nav izmantots # minūtes.}}</translation>
 <translation id="7452987490177144319">{COUNT,plural, =1{Jūsu organizācija automātiski dzēš pārlūkošanas datus, ja pārlūks Chrome nav izmantots vienu minūti. Tie var ietvert vēsturi, automātiskās aizpildes datus un lejupielādes. Cilnes joprojām būs atvērtas.}zero{Jūsu organizācija automātiski dzēš pārlūkošanas datus, ja pārlūks Chrome nav izmantots # minūtes. Tie var ietvert vēsturi, automātiskās aizpildes datus un lejupielādes. Cilnes joprojām būs atvērtas.}one{Jūsu organizācija automātiski dzēš pārlūkošanas datus, ja pārlūks Chrome nav izmantots # minūti. Tie var ietvert vēsturi, automātiskās aizpildes datus un lejupielādes. Cilnes joprojām būs atvērtas.}other{Jūsu organizācija automātiski dzēš pārlūkošanas datus, ja pārlūks Chrome nav izmantots # minūtes. Tie var ietvert vēsturi, automātiskās aizpildes datus un lejupielādes. Cilnes joprojām būs atvērtas.}}</translation>

@@ -520,7 +520,7 @@ NativeThemeMac::NativeThemeMac(bool configure_web_instance,
   if (!should_only_use_dark_colors)
     InitializeDarkModeStateAndObserver();
 
-  static NSString * const*NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification"));
+  static NSString * const*NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr = reinterpret_cast<NSString* const*>(dlsym(((void *) -2), "NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification"));
   if(NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr) {
     if (!IsForcedHighContrast()) {
       SetPreferredContrast(CalculatePreferredContrast());
@@ -528,7 +528,7 @@ NativeThemeMac::NativeThemeMac(bool configure_web_instance,
       high_contrast_notification_token_.reset(
           [NSWorkspace.sharedWorkspace.notificationCenter
               addObserverForName:
-                  NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
+                  *NSWorkspaceAccessibilityDisplayOptionsDidChangeNotificationStr
                           object:nil
                            queue:nil
                       usingBlock:^(NSNotification* notification) {

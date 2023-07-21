@@ -362,26 +362,28 @@ class ClipboardDataBuilder {
     clipboard->WriteData(TakeCurrentData());
   }
 
-  static void WriteText(base::StringPiece text) {
+  static void WriteText(const char* text_data, size_t text_len) {
     ClipboardData* data = GetCurrentData();
-    data->set_text(text);
+    data->set_text(std::string(text_data, text_len));
   }
 
-  static void WriteHTML(base::StringPiece markup,
-                        absl::optional<base::StringPiece> source_url) {
+  static void WriteHTML(const char* markup_data,
+                        size_t markup_len,
+                        const char* url_data,
+                        size_t url_len) {
     ClipboardData* data = GetCurrentData();
-    data->set_markup_data(markup);
-    data->set_url(source_url ? *source_url : std::string());
+    data->set_markup_data(std::string(markup_data, markup_len));
+    data->set_url(std::string(url_data, url_len));
   }
 
-  static void WriteSvg(base::StringPiece markup) {
+  static void WriteSvg(const char* markup_data, size_t markup_len) {
     ClipboardData* data = GetCurrentData();
-    data->set_svg_data(markup);
+    data->set_svg_data(std::string(markup_data, markup_len));
   }
 
-  static void WriteRTF(base::StringPiece rtf) {
+  static void WriteRTF(const char* rtf_data, size_t rtf_len) {
     ClipboardData* data = GetCurrentData();
-    data->SetRTFData(rtf);
+    data->SetRTFData(std::string(rtf_data, rtf_len));
   }
 
   static void WriteFilenames(std::vector<ui::FileInfo> filenames) {
@@ -389,10 +391,13 @@ class ClipboardDataBuilder {
     data->set_filenames(std::move(filenames));
   }
 
-  static void WriteBookmark(base::StringPiece title, base::StringPiece url) {
+  static void WriteBookmark(const char* title_data,
+                            size_t title_len,
+                            const char* url_data,
+                            size_t url_len) {
     ClipboardData* data = GetCurrentData();
-    data->set_bookmark_title(title);
-    data->set_bookmark_url(url);
+    data->set_bookmark_title(std::string(title_data, title_len));
+    data->set_bookmark_url(std::string(url_data, url_len));
   }
 
   static void WriteWebSmartPaste() {
@@ -406,11 +411,10 @@ class ClipboardDataBuilder {
   }
 
   static void WriteData(const std::string& format,
-                        base::span<const uint8_t> data) {
-    ClipboardData* clipboard_data = GetCurrentData();
-    clipboard_data->SetCustomData(
-        format,
-        std::string(reinterpret_cast<const char*>(data.data()), data.size()));
+                        const char* data_data,
+                        size_t data_len) {
+    ClipboardData* data = GetCurrentData();
+    data->SetCustomData(format, std::string(data_data, data_len));
   }
 
  private:
@@ -825,43 +829,47 @@ void ClipboardNonBacked::WritePortableAndPlatformRepresentations(
 
   DispatchPlatformRepresentations(std::move(platform_representations));
   for (const auto& object : objects)
-    DispatchPortableRepresentation(object.second);
+    DispatchPortableRepresentation(object.first, object.second);
 
   ClipboardDataBuilder::CommitToClipboard(clipboard_internal_.get(),
                                           std::move(data_src));
 }
 
-void ClipboardNonBacked::WriteText(base::StringPiece text) {
-  ClipboardDataBuilder::WriteText(text);
+void ClipboardNonBacked::WriteText(const char* text_data, size_t text_len) {
+  ClipboardDataBuilder::WriteText(text_data, text_len);
 }
 
-void ClipboardNonBacked::WriteHTML(
-    base::StringPiece markup,
-    absl::optional<base::StringPiece> source_url) {
-  ClipboardDataBuilder::WriteHTML(markup, source_url);
+void ClipboardNonBacked::WriteHTML(const char* markup_data,
+                                   size_t markup_len,
+                                   const char* url_data,
+                                   size_t url_len) {
+  ClipboardDataBuilder::WriteHTML(markup_data, markup_len, url_data, url_len);
 }
 
-void ClipboardNonBacked::WriteUnsanitizedHTML(
-    base::StringPiece markup,
-    absl::optional<base::StringPiece> source_url) {
-  ClipboardDataBuilder::WriteHTML(markup, source_url);
+void ClipboardNonBacked::WriteUnsanitizedHTML(const char* markup_data,
+                                              size_t markup_len,
+                                              const char* url_data,
+                                              size_t url_len) {
+  ClipboardDataBuilder::WriteHTML(markup_data, markup_len, url_data, url_len);
 }
 
-void ClipboardNonBacked::WriteSvg(base::StringPiece markup) {
-  ClipboardDataBuilder::WriteSvg(markup);
+void ClipboardNonBacked::WriteSvg(const char* markup_data, size_t markup_len) {
+  ClipboardDataBuilder::WriteSvg(markup_data, markup_len);
 }
 
-void ClipboardNonBacked::WriteRTF(base::StringPiece rtf) {
-  ClipboardDataBuilder::WriteRTF(rtf);
+void ClipboardNonBacked::WriteRTF(const char* rtf_data, size_t data_len) {
+  ClipboardDataBuilder::WriteRTF(rtf_data, data_len);
 }
 
 void ClipboardNonBacked::WriteFilenames(std::vector<ui::FileInfo> filenames) {
   ClipboardDataBuilder::WriteFilenames(std::move(filenames));
 }
 
-void ClipboardNonBacked::WriteBookmark(base::StringPiece title,
-                                       base::StringPiece url) {
-  ClipboardDataBuilder::WriteBookmark(title, url);
+void ClipboardNonBacked::WriteBookmark(const char* title_data,
+                                       size_t title_len,
+                                       const char* url_data,
+                                       size_t url_len) {
+  ClipboardDataBuilder::WriteBookmark(title_data, title_len, url_data, url_len);
 }
 
 void ClipboardNonBacked::WriteWebSmartPaste() {
@@ -873,8 +881,9 @@ void ClipboardNonBacked::WriteBitmap(const SkBitmap& bitmap) {
 }
 
 void ClipboardNonBacked::WriteData(const ClipboardFormatType& format,
-                                   base::span<const uint8_t> data) {
-  ClipboardDataBuilder::WriteData(format.GetName(), data);
+                                   const char* data_data,
+                                   size_t data_len) {
+  ClipboardDataBuilder::WriteData(format.GetName(), data_data, data_len);
 }
 
 }  // namespace ui

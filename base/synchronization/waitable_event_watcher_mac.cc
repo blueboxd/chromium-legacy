@@ -51,15 +51,15 @@ bool WaitableEventWatcher::StartWatching(
   if (!WaitableEvent::UseSlowWatchList(event->policy_)) {
     // Use the global concurrent queue here, since it is only used to thunk
     // to the real callback on the target task runner.
-    source_.reset(dispatch_source_create(
+    storage_->dispatch_source.reset(dispatch_source_create(
         DISPATCH_SOURCE_TYPE_MACH_RECV, receive_right_->Name(), 0,
         dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)));
 
     // Additional locals for block capture.
-    dispatch_source_t source = source_.get();
+    dispatch_source_t source = storage_->dispatch_source.get();
     mach_port_t name = receive_right_->Name();
 
-    dispatch_source_set_event_handler(source_, ^{
+    dispatch_source_set_event_handler(storage_->dispatch_source, ^{
       // For automatic-reset events, only fire the callback if this watcher
       // can claim/dequeue the event. For manual-reset events, all watchers can
       // be called back.
@@ -75,7 +75,7 @@ bool WaitableEventWatcher::StartWatching(
           FROM_HERE,
           BindOnce(&WaitableEventWatcher::InvokeCallback, weak_this));
     });
-    dispatch_resume(source_);
+    dispatch_resume(storage_->dispatch_source);
   } else {
     // The |event->watch_list_| closures can be run from any thread, so bind
     // the callback as an invocation of PostTask.

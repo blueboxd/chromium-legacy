@@ -22,7 +22,7 @@ bool GetBackupExclusion(const FilePath& file_path) {
                                                 base::BlockingType::MAY_BLOCK);
 
 #if BUILDFLAG(IS_MAC)
-  return CSBackupIsItemExcluded(FilePathToCFURL(file_path), nullptr);
+  return CSBackupIsItemExcluded(mac::FilePathToCFURL(file_path), nullptr);
 #elif BUILDFLAG(IS_IOS)
   NSURL* file_url = mac::FilePathToNSURL(file_path);
   DCHECK([file_url checkPromisedItemIsReachableAndReturnError:nil]);
@@ -55,7 +55,7 @@ bool SetBackupState(const FilePath& file_path, bool excluded) {
   // non-root (or admin) users don't get their TimeMachine drive filled up with
   // unnecessary backups.
   OSStatus os_err =
-      CSBackupSetItemExcluded(FilePathToCFURL(file_path), excluded,
+      CSBackupSetItemExcluded(mac::FilePathToCFURL(file_path), excluded,
                               /*excludeByPath=*/FALSE);
   OSSTATUS_DLOG_IF(WARNING, os_err != noErr, os_err)
       << "Failed to set backup exclusion for file '"

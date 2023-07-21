@@ -441,7 +441,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '0cf55911ad11d31444f05a16e887fd86e4566db6',
+  'quiche_revision': 'f45df57a4b14efe5dbfd9064f09410c62e787300',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -1924,7 +1924,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'f3351ce131a724fe67449ae1b411eceff2d93159',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'e546ff99a6b0298336eb3160b55096baddae252d',
+    Var('webrtc_git') + '/src.git' + '@' + '0689cfc6ce15d7c622ce225475c60817493fb048',
 
   # Wuffs' canonical repository is at github.com/google/wuffs, but we use
   # Skia's mirror of Wuffs, the same as in upstream Skia's DEPS file.
@@ -4211,7 +4211,7 @@ deps = {
 
   'src/ios_internal':  {
       'url': Var('chrome_git') + '/chrome/ios_internal.git' + '@' +
-        '15f944a41ae730db6c826f553dc05b4d9525e359',
+        '70e76f8998fe0df84debf6585cb3d96d128d2f98',
       'condition': 'checkout_ios and checkout_src_internal',
   },
 

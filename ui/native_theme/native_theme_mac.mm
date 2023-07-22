@@ -45,8 +45,11 @@ bool IsDarkMode() {
 }
 
 bool PrefersReducedTransparency() {
-  return NSWorkspace.sharedWorkspace
-      .accessibilityDisplayShouldReduceTransparency;
+  if (@available(macOS 10.10, *)) {
+    return NSWorkspace.sharedWorkspace
+        .accessibilityDisplayShouldReduceTransparency;
+  }
+  return false;
 }
 
 bool IsHighContrast() {

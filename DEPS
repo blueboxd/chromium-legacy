@@ -308,7 +308,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3e827bac0cc99f8cb552079a4bc8c2a79ac2460b',
+  'skia_revision': 'e68cd70add190f86f82964e7e1b93edf20c2dbb2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -1246,7 +1246,7 @@ deps = {
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
 
   'src/third_party/devtools-frontend-internal': {
-      'url': Var('chrome_git') + '/devtools/devtools-internal.git' + '@' + '0391307996d03ac4114c942f64a846aabd65e7e2',
+      'url': Var('chrome_git') + '/devtools/devtools-internal.git' + '@' + '2c5a73e20e6c93406ebb0dd46199e924db0eb7d7',
     'condition': 'checkout_src_internal',
   },
 

@@ -188,7 +188,7 @@ void SafariImporter::ParseBookmarks(
 
   // Load the plist file.
   NSDictionary* bookmarks_dict =
-      [NSDictionary dictionaryWithContentsOfURL:bookmarks_plist error:nil];
+      [NSDictionary dictionaryWithContentsOfURL:bookmarks_plist];
   if (!bookmarks_dict) {
     return;
   }

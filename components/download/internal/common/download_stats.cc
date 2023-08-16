@@ -174,9 +174,6 @@ void RecordDownloadCompleted(
     UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DownloadSize.Parallelizable",
                                 download_len, 1, max, 256);
   }
-
-  RecordConnectionType("Download.NetworkConnectionType.Complete",
-                       connection_type, download_source);
 }
 
 void RecordDownloadInterrupted(DownloadInterruptReason reason,
@@ -635,10 +632,6 @@ void RecordDownloadHttpResponseCode(int response_code,
 
 void RecordInProgressDBCount(InProgressDBCountTypes type) {
   UMA_HISTOGRAM_ENUMERATION("Download.InProgressDB.Counts", type);
-}
-
-void RecordDownloadLaterEvent(DownloadLaterEvent event) {
-  base::UmaHistogramEnumeration("Download.Later.Events", event);
 }
 
 void RecordInputStreamReadError(MojoResult mojo_result) {

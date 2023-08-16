@@ -19,6 +19,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
@@ -33,10 +34,6 @@
 #include "net/cert/cert_status_flags.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/page_transition_types.h"
-
-#if BUILDFLAG(IS_ANDROID)
-#include "components/webauthn/android/webauthn_cred_man_delegate.h"
-#endif  // BUILDFLAG(IS_ANDROID)
 
 using autofill::mojom::FocusedFieldType;
 
@@ -196,7 +193,7 @@ void ContentPasswordManagerDriver::FillIntoFocusedField(
 
 #if BUILDFLAG(IS_ANDROID)
 void ContentPasswordManagerDriver::KeyboardReplacingSurfaceClosed(
-    ShowVirtualKeyboard show_virtual_keyboard) {
+    ToShowVirtualKeyboard show_virtual_keyboard) {
   GetPasswordAutofillAgent()->KeyboardReplacingSurfaceClosed(
       show_virtual_keyboard.value());
 }
@@ -437,6 +434,21 @@ void ContentPasswordManagerDriver::ShowPasswordSuggestions(
   if (!password_manager::bad_message::CheckFrameNotPrerendering(
           render_frame_host_))
     return;
+
+#if BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(
+          features::kPasswordSuggestionBottomSheetV2)) {
+    // TODO (crbug.com/1448579): Fix the autosubmission and remove the parameter
+    // autofill::mojom::SubmissionReadinessState::kNoInformation.
+    // TODO (crbug.com/1448579): Make ShowTouchToFill to return bool (whether it
+    // was shown or not) and do not call the OnShowPasswordSuggestions on the
+    // password autofill manager if TTF was shown.
+    client_->ShowKeyboardReplacingSurface(
+        this, autofill::mojom::SubmissionReadinessState::kNoInformation,
+        options & autofill::ACCEPTS_WEBAUTHN_CREDENTIALS);
+  }
+#endif  // BUILDFLAG(IS_ANDROID)
+
   GetPasswordAutofillManager()->OnShowPasswordSuggestions(
       text_direction, typed_username, options,
       TransformToRootCoordinates(render_frame_host_, bounds));
@@ -450,26 +462,8 @@ void ContentPasswordManagerDriver::ShowKeyboardReplacingSurface(
           render_frame_host_)) {
     return;
   }
-  if (is_webauthn_form && WebAuthnCredManDelegate::IsCredManEnabled()) {
-    WebAuthnCredManDelegate* cred_man_delegate =
-        WebAuthnCredManDelegate::GetRequestDelegate(
-            content::WebContents::FromRenderFrameHost(render_frame_host_));
-    // webauthn forms without passkeys should show TouchToFill bottom sheet.
-    if (cred_man_delegate->HasResults()) {
-      auto cred_man_request_completion_cb =
-          base::BindRepeating(
-              [](bool success) { return ShowVirtualKeyboard(!success); })
-              .Then(base::BindRepeating(
-                  &ContentPasswordManagerDriver::KeyboardReplacingSurfaceClosed,
-                  weak_factory_.GetWeakPtr()));
-
-      cred_man_delegate->SetRequestCompletionCallback(
-          std::move(cred_man_request_completion_cb));
-      cred_man_delegate->TriggerFullRequest();
-      return;
-    }
-  }
-  client_->ShowTouchToFill(this, submission_readiness);
+  client_->ShowKeyboardReplacingSurface(this, submission_readiness,
+                                        is_webauthn_form);
 }
 #endif
 

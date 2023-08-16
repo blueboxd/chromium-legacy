@@ -44,7 +44,7 @@ import './utils.js';
 import './wallpaper/index.js';
 
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
-import {startColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
+import {ColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
 
 import {isPersonalizationJellyEnabled} from './load_time_booleans.js';
 import {emptyState} from './personalization_state.js';
@@ -110,6 +110,7 @@ export {GooglePhotosPhotosByAlbumId} from './wallpaper/google_photos_photos_by_a
 export {GooglePhotosPhotos, GooglePhotosPhotosRow, GooglePhotosPhotosSection} from './wallpaper/google_photos_photos_element.js';
 export {GooglePhotosSharedAlbumDialog, AcceptEvent} from './wallpaper/google_photos_shared_album_dialog_element.js';
 export {GooglePhotosZeroState} from './wallpaper/google_photos_zero_state_element.js';
+export {DEFAULT_COLOR_SCHEME} from './theme/utils.js';
 export {LocalImages} from './wallpaper/local_images_element.js';
 export {TimeOfDayAcceptEvent, TimeOfDayWallpaperDialog} from './wallpaper/time_of_day_wallpaper_dialog_element.js';
 export {isDefaultImage, isFilePath, isGooglePhotosPhoto, isWallpaperImage} from './wallpaper/utils.js';
@@ -146,5 +147,5 @@ if (isPersonalizationJellyEnabled()) {
   fontLink.href = 'chrome://theme/typography.css';
   document.head.appendChild(fontLink);
   document.body.classList.add('jelly-enabled');
-  startColorChangeUpdater();
+  ColorChangeUpdater.forDocument().start();
 }

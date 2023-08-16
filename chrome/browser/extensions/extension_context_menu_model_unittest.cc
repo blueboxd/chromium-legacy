@@ -90,6 +90,9 @@ const MenuEntries kPermissionsPage =
     ExtensionContextMenuModel::PAGE_ACCESS_PERMISSIONS_PAGE;
 const MenuEntries kLearnMore =
     ExtensionContextMenuModel::PAGE_ACCESS_LEARN_MORE;
+const MenuEntries kUninstall = ExtensionContextMenuModel::UNINSTALL;
+const MenuEntries kPolicyInstalled =
+    ExtensionContextMenuModel::POLICY_INSTALLED;
 
 namespace {
 
@@ -149,7 +152,7 @@ class MenuBuilder {
 
   std::unique_ptr<ExtensionContextMenuModel> BuildMenu() {
     return std::make_unique<ExtensionContextMenuModel>(
-        extension_.get(), browser_, ExtensionContextMenuModel::PINNED, nullptr,
+        extension_.get(), browser_, /*is_pinned=*/true, nullptr,
         /* can_show_icon_in_toolbar=*/true, ContextMenuSource::kToolbarAction);
   }
 
@@ -400,7 +403,8 @@ ExtensionContextMenuModelTest::GetPageAccessCommandState(
     int command) const {
   // Check this method is called only for submenu page access commands.
   DCHECK(command == kOnClick || command == kOnSite || command == kOnAllSites ||
-         command == kLearnMore || command == kPermissionsPage);
+         command == kLearnMore || command == kPermissionsPage ||
+         command == kPolicyInstalled);
 
   // Every page access command is absent if there is no page access submenu.
   if (!HasPageAccessSubmenu(menu))
@@ -467,31 +471,35 @@ TEST_F(ExtensionContextMenuModelTest, RequiredInstallationsDisablesItems) {
       AddExtension("extension", manifest_keys::kPageAction,
                    ManifestLocation::kExternalPolicy);
 
-  ExtensionContextMenuModel menu(extension, GetBrowser(),
-                                 ExtensionContextMenuModel::PINNED, nullptr,
-                                 true, ContextMenuSource::kToolbarAction);
-
   ExtensionSystem* system = ExtensionSystem::Get(profile());
   system->management_policy()->UnregisterAllProviders();
 
-  // Uninstallation should be, by default, enabled.
-  EXPECT_EQ(GetCommandState(menu, ExtensionContextMenuModel::UNINSTALL),
-            CommandState::kEnabled);
+  {
+    ExtensionContextMenuModel menu(extension, GetBrowser(),
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
+
+    // Uninstallation should be enabled when all policy provider were
+    // unregistered.
+    EXPECT_EQ(GetCommandState(menu, kUninstall), CommandState::kEnabled);
+    EXPECT_EQ(GetCommandState(menu, kPolicyInstalled), CommandState::kAbsent);
+  }
 
   TestManagementPolicyProvider policy_provider(
       TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS);
   system->management_policy()->RegisterProvider(&policy_provider);
 
-  // If there's a policy provider that requires the extension stay enabled, then
-  // uninstallation should be disabled.
-  EXPECT_EQ(GetCommandState(menu, ExtensionContextMenuModel::UNINSTALL),
-            CommandState::kDisabled);
-  size_t uninstall_index =
-      menu.GetIndexOfCommandId(ExtensionContextMenuModel::UNINSTALL).value();
-  // There should also be an icon to visually indicate why uninstallation is
-  // forbidden.
-  ui::ImageModel icon = menu.GetIconAt(uninstall_index);
-  EXPECT_FALSE(icon.IsEmpty());
+  {
+    ExtensionContextMenuModel menu(extension, GetBrowser(),
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
+
+    // If there's a policy provider that requires the extension stay enabled,
+    // the uninstall item should be hidden and instead should display the
+    // policy install disabled item.
+    EXPECT_EQ(GetCommandState(menu, kUninstall), CommandState::kAbsent);
+    EXPECT_EQ(GetCommandState(menu, kPolicyInstalled), CommandState::kDisabled);
+  }
 
   // Don't leave |policy_provider| dangling.
   system->management_policy()->UnregisterProvider(&policy_provider);
@@ -518,8 +526,8 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
     service()->AddExtension(extension.get());
 
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
 
     // A component extension's context menu should not include options for
     // managing extensions or removing it, and should only include an option for
@@ -554,8 +562,8 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
             .SetLocation(ManifestLocation::kComponent)
             .Build();
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     service()->AddExtension(extension.get());
     EXPECT_TRUE(extensions::OptionsPageInfo::HasOptionsPage(extension.get()));
     EXPECT_EQ(GetCommandState(menu, ExtensionContextMenuModel::OPTIONS),
@@ -578,8 +586,7 @@ TEST_F(ExtensionContextMenuModelTest,
 
   for (auto source : sources) {
     ExtensionContextMenuModel menu(extension, GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, source);
+                                   /*is_pinned=*/true, nullptr, true, source);
     EXPECT_NE(GetCommandState(menu, ExtensionContextMenuModel::HOME_PAGE),
               CommandState::kAbsent);
     EXPECT_NE(GetCommandState(menu, ExtensionContextMenuModel::UNINSTALL),
@@ -604,7 +611,7 @@ TEST_F(ExtensionContextMenuModelTest,
     // Verify the "toggle visibility" entry is absent if the context menu
     // source is a menu item.
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
+                                   /*is_pinned=*/true, nullptr,
                                    /* can_show_icon_in_toolbar=*/true,
                                    ContextMenuSource::kMenuItem);
     EXPECT_FALSE(
@@ -619,7 +626,7 @@ TEST_F(ExtensionContextMenuModelTest,
     // Verify the "toggle visibility" entry is absent if the context menu
     // source is a toolbar action and the icon cannot be shown in the toolbar.
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
+                                   /*is_pinned=*/true, nullptr,
                                    /* can_show_icon_in_toolbar=*/false,
                                    ContextMenuSource::kToolbarAction);
 
@@ -633,7 +640,7 @@ TEST_F(ExtensionContextMenuModelTest,
     // context menu source is a toolbar action and the icon can be shown in the
     // toolbar.
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
+                                   /*is_pinned=*/true, nullptr,
                                    /* can_show_icon_in_toolbar=*/true,
                                    ContextMenuSource::kToolbarAction);
     EXPECT_EQ(
@@ -657,8 +664,8 @@ TEST_F(ExtensionContextMenuModelTest,
     // Verify the "options" entry is absent if the extension doesn't have
     // an options page.
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     EXPECT_EQ(GetCommandState(menu, ExtensionContextMenuModel::OPTIONS),
               CommandState::kAbsent);
   }
@@ -675,8 +682,8 @@ TEST_F(ExtensionContextMenuModelTest,
     // Verify the "options" entry is enabled if and only if the
     // extension has an options page.
     ExtensionContextMenuModel menu(extension_with_options.get(), GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     EXPECT_EQ(GetCommandState(menu, ExtensionContextMenuModel::OPTIONS),
               CommandState::kEnabled);
   }
@@ -694,8 +701,8 @@ TEST_F(ExtensionContextMenuModelTest,
         "page_action", manifest_keys::kPageAction, ManifestLocation::kInternal);
     ASSERT_TRUE(page_action);
     ExtensionContextMenuModel menu(page_action, GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     EXPECT_EQ(GetCommandState(menu, ExtensionContextMenuModel::INSPECT_POPUP),
               CommandState::kAbsent);
   }
@@ -705,8 +712,8 @@ TEST_F(ExtensionContextMenuModelTest,
         AddExtension("browser_action", manifest_keys::kBrowserAction,
                      ManifestLocation::kInternal);
     ExtensionContextMenuModel menu(browser_action, GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     EXPECT_EQ(GetCommandState(menu, ExtensionContextMenuModel::INSPECT_POPUP),
               CommandState::kAbsent);
   }
@@ -717,8 +724,8 @@ TEST_F(ExtensionContextMenuModelTest,
     const Extension* no_action =
         AddExtension("no_action", nullptr, ManifestLocation::kInternal);
     ExtensionContextMenuModel menu(no_action, GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     EXPECT_EQ(GetCommandState(menu, ExtensionContextMenuModel::INSPECT_POPUP),
               CommandState::kAbsent);
   }
@@ -748,8 +755,8 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   {
     // Even page actions should have a visibility option.
     ExtensionContextMenuModel menu(page_action, browser,
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     absl::optional<size_t> index = menu.GetIndexOfCommandId(visibility_command);
     ASSERT_TRUE(index.has_value());
     EXPECT_EQ(unpin_string, menu.GetLabelAt(index.value()));
@@ -757,8 +764,8 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
 
   {
     ExtensionContextMenuModel menu(browser_action, browser,
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     absl::optional<size_t> index = menu.GetIndexOfCommandId(visibility_command);
     ASSERT_TRUE(index.has_value());
     EXPECT_EQ(unpin_string, menu.GetLabelAt(index.value()));
@@ -772,20 +779,8 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   {
     // If the action is unpinned, it should have the "Pin" string.
     ExtensionContextMenuModel menu(browser_action, browser,
-                                   ExtensionContextMenuModel::UNPINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
-    absl::optional<size_t> index = menu.GetIndexOfCommandId(visibility_command);
-    ASSERT_TRUE(index.has_value());
-    EXPECT_EQ(pin_string, menu.GetLabelAt(index.value()));
-  }
-
-  {
-    // If the action is transitively visible, as happens when it is showing a
-    // popup, we should use the same "Pin" string.
-    ExtensionContextMenuModel menu(
-        browser_action, browser,
-        ExtensionContextMenuModel::TRANSITIVELY_VISIBLE, nullptr, true,
-        ContextMenuSource::kToolbarAction);
+                                   /*is_pinned,=*/false, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     absl::optional<size_t> index = menu.GetIndexOfCommandId(visibility_command);
     ASSERT_TRUE(index.has_value());
     EXPECT_EQ(pin_string, menu.GetLabelAt(index.value()));
@@ -829,8 +824,8 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuForcePinned) {
   {
     // Not force-pinned.
     ExtensionContextMenuModel menu(extension, browser,
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     absl::optional<size_t> index = menu.GetIndexOfCommandId(visibility_command);
     ASSERT_TRUE(index.has_value());
     EXPECT_TRUE(menu.IsEnabledAt(index.value()));
@@ -840,8 +835,8 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuForcePinned) {
   {
     // Force-pinned.
     ExtensionContextMenuModel menu(force_pinned_extension, browser,
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     absl::optional<size_t> index = menu.GetIndexOfCommandId(visibility_command);
     ASSERT_TRUE(index.has_value());
     EXPECT_FALSE(menu.IsEnabledAt(index.value()));
@@ -864,8 +859,8 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextUninstall) {
     // reflects what normally happens (Chrome closes the menu when the uninstall
     // dialog shows up).
     ExtensionContextMenuModel menu(extension, GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     menu.ExecuteCommand(ExtensionContextMenuModel::UNINSTALL, 0);
   }
   uninstalled_observer.WaitForExtensionUninstalled();
@@ -909,8 +904,8 @@ TEST_F(ExtensionContextMenuModelTest, PageAccess_CustomizeByExtension_Submenu) {
       std::move(increment_run_count_1));
 
   ExtensionContextMenuModel menu(extension, GetBrowser(),
-                                 ExtensionContextMenuModel::PINNED, nullptr,
-                                 true, ContextMenuSource::kToolbarAction);
+                                 /*is_pinned=*/true, nullptr, true,
+                                 ContextMenuSource::kToolbarAction);
 
   // Since we want to test the page access submenu, verify the site permission
   // is set to "customize by extension"  by default and the page access submenu
@@ -1049,8 +1044,8 @@ TEST_F(ExtensionContextMenuModelTest, PageAccess_CustomizeByExtension_Submenu) {
       "single_host_extension", manifest_keys::kBrowserAction,
       ManifestLocation::kInternal, "http://www.example.com/*");
   ExtensionContextMenuModel single_host_menu(
-      single_host_extension, GetBrowser(), ExtensionContextMenuModel::PINNED,
-      nullptr, true, ContextMenuSource::kToolbarAction);
+      single_host_extension, GetBrowser(), /*is_pinned=*/true, nullptr, true,
+      ContextMenuSource::kToolbarAction);
   EXPECT_TRUE(
       single_host_menu
           .GetIndexOfCommandId(ExtensionContextMenuModel::PAGE_ACCESS_SUBMENU)
@@ -1247,8 +1242,8 @@ TEST_F(ExtensionContextMenuModelTest,
               PermissionsManager::UserSiteSetting::kCustomizeByExtension);
 
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
 
     EXPECT_EQ(test_case.selected_entry.has_value(),
               !test_case.expected_entries.empty())
@@ -1344,8 +1339,8 @@ TEST_F(ExtensionContextMenuModelTest,
   // Verify the extension can run on all sites for the active url, and has
   // access to both urls.
   ExtensionContextMenuModel menu(extension, GetBrowser(),
-                                 ExtensionContextMenuModel::PINNED, nullptr,
-                                 true, ContextMenuSource::kToolbarAction);
+                                 /*is_pinned=*/true, nullptr, true,
+                                 ContextMenuSource::kToolbarAction);
   EXPECT_TRUE(HasPageAccessSubmenu(menu));
   EXPECT_FALSE(menu.IsCommandIdChecked(kOnClick));
   EXPECT_FALSE(menu.IsCommandIdChecked(kOnSite));
@@ -1416,8 +1411,8 @@ TEST_F(ExtensionContextMenuModelTest,
   // Verify the extension can run on all sites even though it
   // can't access the active url.
   ExtensionContextMenuModel menu(extension, GetBrowser(),
-                                 ExtensionContextMenuModel::PINNED, nullptr,
-                                 true, ContextMenuSource::kToolbarAction);
+                                 /*is_pinned=*/true, nullptr, true,
+                                 ContextMenuSource::kToolbarAction);
   EXPECT_TRUE(HasPageAccessSubmenu(menu));
   EXPECT_FALSE(menu.IsCommandIdChecked(kOnClick));
   EXPECT_FALSE(menu.IsCommandIdChecked(kOnSite));
@@ -1468,8 +1463,8 @@ TEST_F(ExtensionContextMenuModelTest,
             PermissionsManager::UserSiteSetting::kCustomizeByExtension);
 
   ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                 ExtensionContextMenuModel::PINNED, nullptr,
-                                 true, ContextMenuSource::kToolbarAction);
+                                 /*is_pinned=*/true, nullptr, true,
+                                 ContextMenuSource::kToolbarAction);
   EXPECT_TRUE(HasPageAccessSubmenu(menu));
   EXPECT_EQ(CommandState::kEnabled, GetPageAccessCommandState(menu, kOnClick));
   EXPECT_EQ(CommandState::kDisabled, GetPageAccessCommandState(menu, kOnSite));
@@ -1494,8 +1489,8 @@ TEST_F(ExtensionContextMenuModelTest,
 
   content::WebContents* web_contents = AddTab(kOriginalUrl);
   ExtensionContextMenuModel menu(extension, GetBrowser(),
-                                 ExtensionContextMenuModel::PINNED, nullptr,
-                                 true, ContextMenuSource::kToolbarAction);
+                                 /*is_pinned=*/true, nullptr, true,
+                                 ContextMenuSource::kToolbarAction);
 
   // By default, extension is granted access to all sites.
   PermissionsManager* permissions_manager = PermissionsManager::Get(profile());
@@ -1544,8 +1539,8 @@ TEST_F(ExtensionContextMenuModelTest,
 
   {
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
 
     // Without withholding host permissions, the menu should be visible on
     // a.com...
@@ -1573,8 +1568,8 @@ TEST_F(ExtensionContextMenuModelTest,
   {
     // ... but not on b.com, where it doesn't want to run.
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     EXPECT_FALSE(HasPageAccessSubmenu(menu));
     EXPECT_TRUE(HasCantAccessPageEntry(menu));
   }
@@ -1589,8 +1584,8 @@ TEST_F(ExtensionContextMenuModelTest,
 
   {
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     EXPECT_TRUE(HasPageAccessSubmenu(menu));
     EXPECT_FALSE(HasCantAccessPageEntry(menu));
     EXPECT_EQ(CommandState::kEnabled,
@@ -1622,8 +1617,8 @@ TEST_F(ExtensionContextMenuModelTest,
   }
 
   ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                 ExtensionContextMenuModel::PINNED, nullptr,
-                                 true, ContextMenuSource::kToolbarAction);
+                                 /*is_pinned=*/true, nullptr, true,
+                                 ContextMenuSource::kToolbarAction);
   // Somewhat strangely, this also removes the access controls, because we don't
   // show it for sites the extension doesn't want to run on.
   EXPECT_FALSE(HasPageAccessSubmenu(menu));
@@ -1648,8 +1643,8 @@ TEST_F(ExtensionContextMenuModelTest,
   content::WebContents* web_contents = AddTab(a_com);
 
   ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                 ExtensionContextMenuModel::PINNED, nullptr,
-                                 true, ContextMenuSource::kToolbarAction);
+                                 /*is_pinned=*/true, nullptr, true,
+                                 ContextMenuSource::kToolbarAction);
 
   EXPECT_EQ(CommandState::kEnabled, GetPageAccessCommandState(menu, kOnClick));
   EXPECT_EQ(CommandState::kEnabled, GetPageAccessCommandState(menu, kOnSite));
@@ -1699,8 +1694,8 @@ TEST_F(ExtensionContextMenuModelTest, TestClickingPageAccessLearnMore) {
 
   Browser* browser = GetBrowser();
   ExtensionContextMenuModel menu(extension.get(), browser,
-                                 ExtensionContextMenuModel::PINNED, nullptr,
-                                 true, ContextMenuSource::kToolbarAction);
+                                 /*is_pinned=*/true, nullptr, true,
+                                 ContextMenuSource::kToolbarAction);
   EXPECT_EQ(0, user_action_tester.GetActionCount(kLearnMoreAction));
 
   EXPECT_EQ(CommandState::kEnabled,
@@ -1731,8 +1726,8 @@ TEST_F(ExtensionContextMenuModelTest, HistogramTest_Basic) {
     {
       // The menu is constructed, but never shown.
       ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                     ExtensionContextMenuModel::PINNED, nullptr,
-                                     true, ContextMenuSource::kToolbarAction);
+                                     /*is_pinned=*/true, nullptr, true,
+                                     ContextMenuSource::kToolbarAction);
     }
     tester.ExpectTotalCount(kHistogramName, 0);
   }
@@ -1742,8 +1737,8 @@ TEST_F(ExtensionContextMenuModelTest, HistogramTest_Basic) {
     {
       // The menu is constructed and shown, but no action is taken.
       ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                     ExtensionContextMenuModel::PINNED, nullptr,
-                                     true, ContextMenuSource::kToolbarAction);
+                                     /*is_pinned=*/true, nullptr, true,
+                                     ContextMenuSource::kToolbarAction);
       menu.OnMenuWillShow(&menu);
       menu.MenuClosed(&menu);
     }
@@ -1757,8 +1752,8 @@ TEST_F(ExtensionContextMenuModelTest, HistogramTest_Basic) {
     {
       // The menu is constructed, shown, and an action taken.
       ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
-                                     ExtensionContextMenuModel::PINNED, nullptr,
-                                     true, ContextMenuSource::kToolbarAction);
+                                     /*is_pinned=*/true, nullptr, true,
+                                     ContextMenuSource::kToolbarAction);
       menu.OnMenuWillShow(&menu);
       menu.ExecuteCommand(ExtensionContextMenuModel::MANAGE_EXTENSIONS, 0);
       menu.MenuClosed(&menu);
@@ -1971,6 +1966,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 TEST_P(ExtensionContextMenuModelWithUserHostControlsTest,
        PageAccessItemsVisibilityBasedOnSiteSettings) {
+  bool is_feature_enabled = GetParam();
   InitializeEmptyExtensionService();
 
   const Extension* extension =
@@ -1983,27 +1979,27 @@ TEST_P(ExtensionContextMenuModelWithUserHostControlsTest,
 
   {
     // By default, the site permission is set to "customize by extension".
-    // Verify page access submenu is visible and enabled, and the "learn more"
-    // item is in in the submenu.
+    // Verify "page access" submenu item and "permissions page" item are visible
+    // and enabled.
     ExtensionContextMenuModel menu(extension, GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     EXPECT_EQ(GetCommandState(menu, kGrantAllExtensions),
               CommandState::kAbsent);
     EXPECT_EQ(GetCommandState(menu, kBlockAllExtensions),
               CommandState::kAbsent);
     EXPECT_EQ(GetCommandState(menu, kPageAccessSubmenu),
               CommandState::kEnabled);
-    EXPECT_EQ(GetCommandState(menu, kLearnMore), CommandState::kAbsent);
-    EXPECT_EQ(GetPageAccessCommandState(menu, kLearnMore),
-              CommandState::kEnabled);
-    // The "permissions page" item is in the submenu only if the feature is
-    // enabled.
-    EXPECT_EQ(GetCommandState(menu, kPermissionsPage), CommandState::kAbsent);
-    CommandState permission_page_state =
-        GetParam() ? CommandState::kEnabled : CommandState::kAbsent;
-    EXPECT_EQ(GetPageAccessCommandState(menu, kPermissionsPage),
-              permission_page_state);
+    if (is_feature_enabled) {
+      EXPECT_EQ(GetCommandState(menu, kPermissionsPage),
+                CommandState::kEnabled);
+      EXPECT_EQ(GetPageAccessCommandState(menu, kLearnMore),
+                CommandState::kAbsent);
+    } else {
+      EXPECT_EQ(GetCommandState(menu, kPermissionsPage), CommandState::kAbsent);
+      EXPECT_EQ(GetPageAccessCommandState(menu, kLearnMore),
+                CommandState::kEnabled);
+    }
   }
 
   // User site settings are only taken into account for site access computations
@@ -2019,24 +2015,22 @@ TEST_P(ExtensionContextMenuModelWithUserHostControlsTest,
     manager_waiter.WaitForUserPermissionsSettingsChange();
 
     ExtensionContextMenuModel menu(extension, GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
 
-    if (GetParam()) {
-      // Verify "block all extensions" item is
-      // visible and disabled, and the "learn more" and "permissions page" item
-      // are in the context menu.
+    if (is_feature_enabled) {
+      // Verify "block all extensions" item is visible and disabled, and
+      // "permissions page" is enabled in the context menu. "learn more" is
+      // never visible.
       EXPECT_EQ(GetCommandState(menu, kGrantAllExtensions),
                 CommandState::kAbsent);
       EXPECT_EQ(GetCommandState(menu, kBlockAllExtensions),
                 CommandState::kDisabled);
       EXPECT_EQ(GetCommandState(menu, kPageAccessSubmenu),
                 CommandState::kAbsent);
-      EXPECT_EQ(GetCommandState(menu, kLearnMore), CommandState::kEnabled);
-      EXPECT_EQ(GetPageAccessCommandState(menu, kLearnMore),
-                CommandState::kAbsent);
       EXPECT_EQ(GetCommandState(menu, kPermissionsPage),
                 CommandState::kEnabled);
+      EXPECT_EQ(GetCommandState(menu, kLearnMore), CommandState::kAbsent);
       EXPECT_EQ(GetPageAccessCommandState(menu, kLearnMore),
                 CommandState::kAbsent);
     } else {
@@ -2060,6 +2054,58 @@ TEST_P(ExtensionContextMenuModelWithUserHostControlsTest,
   }
 }
 
+TEST_P(ExtensionContextMenuModelWithUserHostControlsTest,
+       PageAccessItemsVisibility_PolicyInstalled) {
+  bool is_feature_enabled = GetParam();
+  InitializeEmptyExtensionService();
+
+  const Extension* enterprise_extension = AddExtensionWithHostPermission(
+      "extension", manifest_keys::kBrowserAction,
+      ManifestLocation::kExternalPolicy, "<all_urls>");
+
+  // Add a tab to the browser.
+  const GURL url("http://www.example.com/");
+  AddTab(url);
+
+  ExtensionContextMenuModel menu(enterprise_extension, GetBrowser(),
+                                 /*is_pinned=*/true, nullptr, true,
+                                 ContextMenuSource::kToolbarAction);
+
+  // By default, user can customize site access by extension and the 'grant all
+  // extensions' and 'block all extensions' are not visible.
+  EXPECT_EQ(GetCommandState(menu, kGrantAllExtensions), CommandState::kAbsent);
+  EXPECT_EQ(GetCommandState(menu, kBlockAllExtensions), CommandState::kAbsent);
+
+  if (is_feature_enabled) {
+    // Page access submenu is enabled and has all its items disabled, since
+    // the policy installed extension has site access but user cannot change it.
+    EXPECT_EQ(GetCommandState(menu, kPageAccessSubmenu),
+              CommandState::kEnabled);
+    EXPECT_EQ(GetPageAccessCommandState(menu, kOnClick),
+              CommandState::kDisabled);
+    EXPECT_EQ(GetPageAccessCommandState(menu, kOnSite),
+              CommandState::kDisabled);
+    EXPECT_EQ(GetPageAccessCommandState(menu, kOnAllSites),
+              CommandState::kDisabled);
+    EXPECT_FALSE(menu.IsCommandIdChecked(kOnClick));
+    EXPECT_FALSE(menu.IsCommandIdChecked(kOnSite));
+    EXPECT_TRUE(menu.IsCommandIdChecked(kOnAllSites));
+    // Policy item is in the page access submenu.
+    EXPECT_EQ(GetPageAccessCommandState(menu, kPolicyInstalled),
+              CommandState::kDisabled);
+  } else {
+    // Page access submenu is hidden since user cannot change the site access of
+    // the policy installed extension.
+    EXPECT_EQ(GetCommandState(menu, kPageAccessSubmenu), CommandState::kAbsent);
+    EXPECT_EQ(GetPageAccessCommandState(menu, kOnClick), CommandState::kAbsent);
+    EXPECT_EQ(GetPageAccessCommandState(menu, kOnSite), CommandState::kAbsent);
+    EXPECT_EQ(GetPageAccessCommandState(menu, kOnAllSites),
+              CommandState::kAbsent);
+    // Policy item is in the context menu.
+    EXPECT_EQ(GetCommandState(menu, kPolicyInstalled), CommandState::kDisabled);
+  }
+}
+
 // Test clicking on the "permissions page" item opens the correct link.
 TEST_P(ExtensionContextMenuModelWithUserHostControlsTest,
        TestClickingPageAccessPermissionsPage) {
@@ -2080,8 +2126,8 @@ TEST_P(ExtensionContextMenuModelWithUserHostControlsTest,
 
   Browser* browser = GetBrowser();
   ExtensionContextMenuModel menu(extension.get(), browser,
-                                 ExtensionContextMenuModel::PINNED, nullptr,
-                                 true, ContextMenuSource::kToolbarAction);
+                                 /*is_pinned=*/true, nullptr, true,
+                                 ContextMenuSource::kToolbarAction);
   EXPECT_EQ(user_action_tester.GetActionCount(kPermissionsPageAction), 0);
 
   // "permissions page" button is not visible when the enhanced host controls
@@ -2093,8 +2139,7 @@ TEST_P(ExtensionContextMenuModelWithUserHostControlsTest,
     return;
   }
 
-  EXPECT_EQ(GetPageAccessCommandState(menu, kPermissionsPage),
-            CommandState::kEnabled);
+  EXPECT_EQ(GetCommandState(menu, kPermissionsPage), CommandState::kEnabled);
   menu.ExecuteCommand(kPermissionsPage, 0);
 
   EXPECT_EQ(browser->tab_strip_model()->count(), 2);
@@ -2131,6 +2176,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(ExtensionContextMenuModelWithUserHostControlsAndPermittedSitesTest,
        PageAccessItemsVisibilityBasedOnSiteSettings) {
+  bool is_feature_enabled = GetParam();
   InitializeEmptyExtensionService();
 
   const Extension* extension =
@@ -2143,27 +2189,26 @@ TEST_P(ExtensionContextMenuModelWithUserHostControlsAndPermittedSitesTest,
 
   {
     // By default, the site permission is set to "customize by extension".
-    // Verify page access submenu is visible and enabled, and the "learn more"
-    // item is in in the submenu.
+    // Verify "page access" submenu item is visible and enabled.
     ExtensionContextMenuModel menu(extension, GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
     EXPECT_EQ(GetCommandState(menu, kGrantAllExtensions),
               CommandState::kAbsent);
     EXPECT_EQ(GetCommandState(menu, kBlockAllExtensions),
               CommandState::kAbsent);
     EXPECT_EQ(GetCommandState(menu, kPageAccessSubmenu),
               CommandState::kEnabled);
-    EXPECT_EQ(GetCommandState(menu, kLearnMore), CommandState::kAbsent);
-    EXPECT_EQ(GetPageAccessCommandState(menu, kLearnMore),
-              CommandState::kEnabled);
-    // The "permissions page" item is in the submenu only if the feature is
-    // enabled.
-    EXPECT_EQ(GetCommandState(menu, kPermissionsPage), CommandState::kAbsent);
-    CommandState permission_page_state =
-        GetParam() ? CommandState::kEnabled : CommandState::kAbsent;
-    EXPECT_EQ(GetPageAccessCommandState(menu, kPermissionsPage),
-              permission_page_state);
+    if (is_feature_enabled) {
+      EXPECT_EQ(GetCommandState(menu, kPermissionsPage),
+                CommandState::kEnabled);
+      EXPECT_EQ(GetPageAccessCommandState(menu, kLearnMore),
+                CommandState::kAbsent);
+    } else {
+      EXPECT_EQ(GetCommandState(menu, kPermissionsPage), CommandState::kAbsent);
+      EXPECT_EQ(GetPageAccessCommandState(menu, kLearnMore),
+                CommandState::kEnabled);
+    }
   }
 
   // User site settings are only taken into account for site access computations
@@ -2179,23 +2224,22 @@ TEST_P(ExtensionContextMenuModelWithUserHostControlsAndPermittedSitesTest,
     manager_waiter.WaitForUserPermissionsSettingsChange();
 
     ExtensionContextMenuModel menu(extension, GetBrowser(),
-                                   ExtensionContextMenuModel::PINNED, nullptr,
-                                   true, ContextMenuSource::kToolbarAction);
+                                   /*is_pinned=*/true, nullptr, true,
+                                   ContextMenuSource::kToolbarAction);
 
-    if (GetParam()) {
-      // Verify "grant all extensions" item is visible and disabled, and the
-      // "learn more" and "permissions page" item are in the context menu.
+    if (is_feature_enabled) {
+      // Verify "grant all extensions" item is visible and disabled, and
+      // "permissions page" is enabled in the context menu. "learn more" is
+      // never visible.
       EXPECT_EQ(GetCommandState(menu, kGrantAllExtensions),
                 CommandState::kDisabled);
       EXPECT_EQ(GetCommandState(menu, kBlockAllExtensions),
                 CommandState::kAbsent);
       EXPECT_EQ(GetCommandState(menu, kPageAccessSubmenu),
                 CommandState::kAbsent);
-      EXPECT_EQ(GetCommandState(menu, kLearnMore), CommandState::kEnabled);
-      EXPECT_EQ(GetPageAccessCommandState(menu, kLearnMore),
-                CommandState::kAbsent);
       EXPECT_EQ(GetCommandState(menu, kPermissionsPage),
                 CommandState::kEnabled);
+      EXPECT_EQ(GetCommandState(menu, kLearnMore), CommandState::kAbsent);
       EXPECT_EQ(GetPageAccessCommandState(menu, kLearnMore),
                 CommandState::kAbsent);
     } else {

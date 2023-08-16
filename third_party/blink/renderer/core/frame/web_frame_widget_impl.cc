@@ -579,7 +579,7 @@ void WebFrameWidgetImpl::OnStartStylusWriting(
     OnStartStylusWritingCallback callback) {
   // Focus the stylus writable element for current touch sequence as we have
   // detected writing has started.
-  LocalFrame* frame = GetPage()->GetFocusController().FocusedFrame();
+  LocalFrame* frame = LocalRootImpl()->GetFrame();
   if (!frame) {
     std::move(callback).Run(absl::nullopt, absl::nullopt);
     return;
@@ -2472,7 +2472,7 @@ std::unique_ptr<cc::WebVitalMetrics> WebFrameWidgetImpl::GetWebVitalMetrics() {
 
   base::TimeTicks start = perf.NavigationStartAsMonotonicTime();
   base::TimeTicks largest_contentful_paint =
-      perf.LargestContentfulPaintAsMonotonicTimeForMetrics();
+      perf.LargestContentfulDetailsForMetrics().paint_time;
   if (largest_contentful_paint >= start) {
     metrics->largest_contentful_paint = largest_contentful_paint - start;
     metrics->has_lcp = true;

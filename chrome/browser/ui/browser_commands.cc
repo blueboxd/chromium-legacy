@@ -43,11 +43,13 @@
 #include "chrome/browser/reading_list/reading_list_model_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_base.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_lookup.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/browser/ui/autofill/payments/iban_bubble_controller_impl.h"
@@ -131,6 +133,7 @@
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "components/translate/core/browser/language_state.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "components/user_education/common/feature_promo_controller.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/page_zoom.h"
@@ -755,7 +758,7 @@ base::WeakPtr<content::NavigationHandle> OpenCurrentURL(Browser* browser) {
     return nullptr;
   }
 
-  GURL url(location_bar->GetDestinationURL());
+  GURL url(location_bar->navigation_params().destination_url);
   TRACE_EVENT1("navigation", "chrome::OpenCurrentURL", "url", url);
 
   if (ShouldInterceptChromeURLNavigationInIncognito(browser, url)) {
@@ -763,19 +766,21 @@ base::WeakPtr<content::NavigationHandle> OpenCurrentURL(Browser* browser) {
     return nullptr;
   }
 
-  NavigateParams params(browser, url, location_bar->GetPageTransition());
-  params.disposition = location_bar->GetWindowOpenDisposition();
+  NavigateParams params(browser, url,
+                        location_bar->navigation_params().transition);
+  params.disposition = location_bar->navigation_params().disposition;
   // Use ADD_INHERIT_OPENER so that all pages opened by the omnibox at least
   // inherit the opener. In some cases the tabstrip will determine the group
   // should be inherited, in which case the group is inherited instead of the
   // opener.
   params.tabstrip_add_types =
       AddTabTypes::ADD_FORCE_INDEX | AddTabTypes::ADD_INHERIT_OPENER;
-  params.input_start = location_bar->GetMatchSelectionTimestamp();
+  params.input_start =
+      location_bar->navigation_params().match_selection_timestamp;
   params.is_using_https_as_default_scheme =
-      location_bar->IsInputTypedUrlWithoutScheme();
+      location_bar->navigation_params().url_typed_without_scheme;
   params.url_typed_with_http_scheme =
-      location_bar->IsInputTypedUrlWithHttpScheme();
+      location_bar->navigation_params().url_typed_with_http_scheme;
   auto result = Navigate(&params);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1408,14 +1413,23 @@ void ShowVirtualCardEnrollBubble(Browser* browser) {
     controller->ReshowBubble();
 }
 
-void Translate(Browser* browser) {
-  if (!browser->window()->IsActive())
+void ShowTranslateBubble(Browser* browser) {
+  if (!browser->window()->IsActive()) {
     return;
+  }
 
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   ChromeTranslateClient* chrome_translate_client =
       ChromeTranslateClient::FromWebContents(web_contents);
+
+  if (!chrome_translate_client) {
+    return;
+  }
+
+  // The Translate bubble will not show if a text field is focused, so we clear
+  // focus here as the user has intentionally opened the bubble.
+  web_contents->ClearFocusedElement();
 
   std::string source_language;
   std::string target_language;
@@ -1423,13 +1437,15 @@ void Translate(Browser* browser) {
                                                  &target_language);
 
   translate::TranslateStep step = translate::TRANSLATE_STEP_BEFORE_TRANSLATE;
-  if (chrome_translate_client) {
-    if (chrome_translate_client->GetLanguageState().translation_pending())
-      step = translate::TRANSLATE_STEP_TRANSLATING;
-    else if (chrome_translate_client->GetLanguageState().translation_error())
-      step = translate::TRANSLATE_STEP_TRANSLATE_ERROR;
-    else if (chrome_translate_client->GetLanguageState().IsPageTranslated())
-      step = translate::TRANSLATE_STEP_AFTER_TRANSLATE;
+  auto* language_state =
+      chrome_translate_client->GetTranslateManager()->GetLanguageState();
+
+  if (language_state->translation_pending()) {
+    step = translate::TRANSLATE_STEP_TRANSLATING;
+  } else if (language_state->translation_error()) {
+    step = translate::TRANSLATE_STEP_TRANSLATE_ERROR;
+  } else if (language_state->IsPageTranslated()) {
+    step = translate::TRANSLATE_STEP_AFTER_TRANSLATE;
   }
   browser->window()->ShowTranslateBubble(
       web_contents, step, source_language, target_language,
@@ -1441,6 +1457,8 @@ void ManagePasswordsForPage(Browser* browser) {
       feature_engagement::kIPHPasswordsManagementBubbleAfterSaveFeature);
   browser->window()->CloseFeaturePromo(
       feature_engagement::kIPHPasswordsManagementBubbleDuringSigninFeature);
+  browser->window()->CloseFeaturePromo(
+      feature_engagement::kIPHPasswordManagerShortcutFeature);
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   ManagePasswordsUIController* controller =
@@ -1449,10 +1467,25 @@ void ManagePasswordsForPage(Browser* browser) {
       ->ShowManagePasswordsBubble(!controller->IsAutomaticallyOpeningBubble());
 }
 
+bool CanSendTabToSelf(const Browser* browser) {
+  return send_tab_to_self::ShouldDisplayEntryPoint(
+      browser->tab_strip_model()->GetActiveWebContents());
+}
+
 void SendTabToSelfFromPageAction(Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   send_tab_to_self::ShowBubble(web_contents);
+}
+
+bool CanGenerateQrCode(const Browser* browser) {
+  return !sharing_hub::SharingIsDisabledByPolicy(browser->profile()) &&
+         qrcode_generator::QRCodeGeneratorBubbleController::
+             IsGeneratorAvailable(browser->tab_strip_model()
+                                      ->GetActiveWebContents()
+                                      ->GetController()
+                                      .GetLastCommittedEntry()
+                                      ->GetURL());
 }
 
 void GenerateQRCodeFromPageAction(Browser* browser) {

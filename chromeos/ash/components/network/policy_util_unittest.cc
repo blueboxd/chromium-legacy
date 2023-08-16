@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "components/onc/onc_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash::policy_util {
 namespace {
@@ -51,8 +52,8 @@ TEST_F(PolicyUtilTest, GetActivationCodesFromONC) {
 
   activation_code = GetSmdxActivationCodeFromONC(onc_config);
   EXPECT_TRUE(activation_code.has_value());
-  EXPECT_EQ(activation_code->type, SmdxActivationCode::Type::SMDP);
-  EXPECT_EQ(activation_code->value, kSmdpActivationCode);
+  EXPECT_EQ(activation_code->type(), SmdxActivationCode::Type::SMDP);
+  EXPECT_EQ(activation_code->value(), kSmdpActivationCode);
 
   cellular_dict.Set(::onc::cellular::kSMDSAddress,
                     base::Value(kSmdsActivationCode));
@@ -66,8 +67,8 @@ TEST_F(PolicyUtilTest, GetActivationCodesFromONC) {
 
   activation_code = GetSmdxActivationCodeFromONC(onc_config);
   EXPECT_TRUE(activation_code.has_value());
-  EXPECT_EQ(activation_code->type, SmdxActivationCode::Type::SMDS);
-  EXPECT_EQ(activation_code->value, kSmdsActivationCode);
+  EXPECT_EQ(activation_code->type(), SmdxActivationCode::Type::SMDS);
+  EXPECT_EQ(activation_code->value(), kSmdsActivationCode);
 }
 
 }  // namespace ash::policy_util

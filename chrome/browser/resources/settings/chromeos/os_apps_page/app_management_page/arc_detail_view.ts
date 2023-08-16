@@ -37,7 +37,7 @@ interface PermissionDefinition {
   labelId: string;
 }
 
-class AppManagementArcDetailViewElement extends
+export class AppManagementArcDetailViewElement extends
     AppManagementArcDetailViewElementBase {
   static get is() {
     return 'app-management-arc-detail-view';
@@ -123,12 +123,6 @@ class AppManagementArcDetailViewElement extends
       }
     }
     return true;
-  }
-
-  private getMorePermissionsLabel_(): string {
-    return this.hasReadOnlyPermissions_ ?
-        this.i18n('appManagementArcManagePermissionsLabel') :
-        this.i18n('appManagementMorePermissionsLabel');
   }
 }
 

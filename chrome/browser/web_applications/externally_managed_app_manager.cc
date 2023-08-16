@@ -31,8 +31,10 @@
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
+#include "chrome/browser/web_applications/web_contents/web_contents_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "components/webapps/browser/install_result_code.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 
@@ -95,7 +97,7 @@ struct ExternallyManagedAppManager::TaskAndCallback {
 };
 
 ExternallyManagedAppManager::ExternallyManagedAppManager(Profile* profile)
-    : profile_(profile), url_loader_(std::make_unique<WebAppUrlLoader>()) {}
+    : profile_(profile) {}
 
 ExternallyManagedAppManager::~ExternallyManagedAppManager() {
   DCHECK(!registration_callback_);
@@ -109,10 +111,27 @@ ExternallyManagedAppManager::~ExternallyManagedAppManager() {
 void ExternallyManagedAppManager::SetSubsystems(
     WebAppUiManager* ui_manager,
     WebAppInstallFinalizer* finalizer,
-    WebAppCommandScheduler* command_scheduler) {
+    WebAppCommandScheduler* command_scheduler,
+    WebContentsManager* web_contents_manager) {
   ui_manager_ = ui_manager;
   finalizer_ = finalizer;
   command_scheduler_ = command_scheduler;
+  if (!web_contents_manager) {
+    CHECK_IS_TEST();
+  } else {
+    // TODO(http://b/283521737): Remove this and use WebContentsManager.
+    url_loader_ = web_contents_manager->CreateUrlLoader();
+    // TODO(http://b/283521737): Remove this and use WebContentsManager.
+    data_retriever_factory_ = base::BindRepeating(
+        [](base::WeakPtr<WebContentsManager> web_contents_manager)
+            -> std::unique_ptr<WebAppDataRetriever> {
+          if (!web_contents_manager) {
+            return nullptr;
+          }
+          return web_contents_manager->CreateDataRetriever();
+        },
+        web_contents_manager->GetWeakPtr());
+  }
 }
 
 void ExternallyManagedAppManager::InstallNow(
@@ -155,8 +174,7 @@ void ExternallyManagedAppManager::UninstallApps(
         base::BindOnce(
             [](const UninstallCallback& callback, const GURL& app_url,
                webapps::UninstallResultCode code) {
-              callback.Run(app_url,
-                           code == webapps::UninstallResultCode::kSuccess);
+              callback.Run(app_url, UninstallSucceeded(code));
             },
             callback, url));
   }
@@ -167,14 +185,14 @@ void ExternallyManagedAppManager::SynchronizeInstalledApps(
     ExternalInstallSource install_source,
     SynchronizeCallback callback) {
   CHECK(callback);
-  DCHECK(base::ranges::all_of(
+  CHECK(base::ranges::all_of(
       desired_apps_install_options,
       [&install_source](const ExternalInstallOptions& install_options) {
         return install_options.install_source == install_source;
       }));
   // Only one concurrent SynchronizeInstalledApps() expected per
   // ExternalInstallSource.
-  DCHECK(!base::Contains(synchronize_requests_, install_source));
+  CHECK(!base::Contains(synchronize_requests_, install_source));
   command_scheduler_->ScheduleCallbackWithLock<AllAppsLock>(
       "ExternallyManagedAppManager::SynchronizeInstalledApps",
       std::make_unique<AllAppsLockDescription>(),
@@ -219,7 +237,7 @@ void ExternallyManagedAppManager::SetUrlLoaderForTesting(
 void ExternallyManagedAppManager::SetDataRetrieverFactoryForTesting(
     base::RepeatingCallback<std::unique_ptr<WebAppDataRetriever>()> factory) {
   CHECK_IS_TEST();
-  data_retriever_factory_for_testing_ = std::move(factory);
+  data_retriever_factory_ = std::move(factory);
 }
 
 void ExternallyManagedAppManager::ReleaseWebContents() {
@@ -237,12 +255,8 @@ ExternallyManagedAppManager::CreateInstallationTask(
   std::unique_ptr<ExternallyManagedAppInstallTask> install_task =
       std::make_unique<ExternallyManagedAppInstallTask>(
           profile_, url_loader_.get(), ui_manager(), finalizer(),
-          command_scheduler(), std::move(install_options));
-  if (data_retriever_factory_for_testing_) {
-    CHECK_IS_TEST();
-    install_task->SetDataRetrieverFactoryForTesting(  // IN-TEST
-        data_retriever_factory_for_testing_);
-  }
+          command_scheduler(), data_retriever_factory_,
+          std::move(install_options));
   return install_task;
 }
 
@@ -507,19 +521,10 @@ base::Value ExternallyManagedAppManager::SynchronizeInstalledAppsOnLockAcquired(
     desired_installs->Append(option.install_url.spec());
   }
   std::vector<GURL> installed_urls;
-  for (const auto& apps_it :
+  for (const auto& [app_id, install_urls] :
        lock.registrar().GetExternallyInstalledApps(install_source)) {
-    // TODO(crbug.com/1339965): Remove this check once we cleanup
-    // ExternallyInstalledWebAppPrefs on external app uninstall.
-    bool has_same_external_source =
-        lock.registrar()
-            .GetAppById(apps_it.first)
-            ->GetSources()
-            .test(ConvertExternalInstallSourceToSource(install_source));
-    if (has_same_external_source) {
-      for (const GURL& url : apps_it.second) {
-        installed_urls.push_back(url);
-      }
+    for (const GURL& url : install_urls) {
+      installed_urls.push_back(url);
     }
   }
 
@@ -663,6 +668,7 @@ void ExternallyManagedAppManager::ContinueOrCompleteSynchronization(
   if (request.remaining_install_requests > 0)
     return;
 
+  CHECK(request.callback);
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(request.callback),
                                 std::move(request.install_results),

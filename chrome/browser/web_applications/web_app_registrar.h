@@ -49,7 +49,7 @@ enum class WebappInstallSource;
 
 namespace web_app {
 
-class AppRegistrarObserver;
+class WebAppRegistrarObserver;
 class WebApp;
 class WebAppPolicyManager;
 class WebAppTranslationManager;
@@ -281,6 +281,11 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // Gets the IDs for all sub-apps of parent app with id |parent_app_id|.
   std::vector<AppId> GetAllSubAppIds(const AppId& parent_app_id) const;
 
+  // Maps all app IDs to their parent apps' IDs. Maps that do not have a parent
+  // are omitted. This query should only be called with an AllAppsLock since all
+  // apps are queried for their parent.
+  base::flat_map<AppId, AppId> GetSubAppToParentMap() const;
+
   // Returns the "scope" field from the app manifest, or infers a scope from the
   // "start_url" field if unavailable. Returns an invalid GURL iff the |app_id|
   // does not refer to an installed web app.
@@ -314,6 +319,10 @@ class WebAppRegistrar : public ProfileManagerObserver {
   absl::optional<AppId> FindInstalledAppWithUrlInScope(
       const GURL& url,
       bool window_only = false) const;
+
+  // Returns true if there is an app that is not locally installed that has
+  // a scope which is a prefix of |url|.
+  bool IsNonLocallyInstalledAppWithUrlInScope(const GURL& url) const;
 
   // Returns whether the app is a shortcut app (as opposed to a PWA).
   bool IsShortcutApp(const AppId& app_id) const;
@@ -376,8 +385,8 @@ class WebAppRegistrar : public ProfileManagerObserver {
                                                   bool show);
 #endif
 
-  void AddObserver(AppRegistrarObserver* observer);
-  void RemoveObserver(AppRegistrarObserver* observer);
+  void AddObserver(WebAppRegistrarObserver* observer);
+  void RemoveObserver(WebAppRegistrarObserver* observer);
 
   void NotifyWebAppProtocolSettingsChanged();
   void NotifyWebAppFileHandlerApprovalStateChanged(const AppId& app_id);
@@ -514,7 +523,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
 
   base::ScopedObservation<ProfileManager, ProfileManagerObserver>
       profile_manager_observation_{this};
-  base::ObserverList<AppRegistrarObserver, /*check_empty=*/true> observers_;
+  base::ObserverList<WebAppRegistrarObserver, /*check_empty=*/true> observers_;
 
   Registry registry_;
 #if DCHECK_IS_ON()

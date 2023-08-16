@@ -9,7 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/base_jni_headers/BuildInfo_jni.h"
+#include "base/base_jni/BuildInfo_jni.h"
 #include "base/check_op.h"
 #include "base/memory/singleton.h"
 #include "base/notreached.h"
@@ -85,7 +85,8 @@ BuildInfo::BuildInfo(const std::vector<std::string>& params)
       is_automotive_(GetIntParam(params, 27)),
       is_at_least_u_(GetIntParam(params, 28)),
       targets_at_least_u_(GetIntParam(params, 29)),
-      codename_(StrDupParam(params, 30)) {}
+      codename_(StrDupParam(params, 30)),
+      vulkan_deqp_level_(GetIntParam(params, 31)) {}
 
 // static
 BuildInfo* BuildInfo::GetInstance() {

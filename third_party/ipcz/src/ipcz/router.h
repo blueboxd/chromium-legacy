@@ -12,12 +12,14 @@
 #include "ipcz/ipcz.h"
 #include "ipcz/operation_context.h"
 #include "ipcz/parcel_queue.h"
+#include "ipcz/pending_transaction_set.h"
 #include "ipcz/route_edge.h"
 #include "ipcz/router_descriptor.h"
 #include "ipcz/router_link.h"
 #include "ipcz/sequence_number.h"
 #include "ipcz/sublink_id.h"
 #include "ipcz/trap_set.h"
+#include "third_party/abseil-cpp/absl/base/thread_annotations.h"
 #include "third_party/abseil-cpp/absl/synchronization/mutex.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "util/ref_counted.h"
@@ -109,16 +111,6 @@ class Router : public RefCounted {
   void SetOutwardLink(const OperationContext& context,
                       const Ref<RouterLink> link);
 
-  // Returns a best-effort estimation of the maximum parcel size (in bytes) that
-  // can be sent outward from this router without the receiving portal exceeding
-  // any of the specified `limits`.
-  size_t GetOutboundCapacityInBytes(const IpczPutLimits& limits);
-
-  // Returns the maximum inbound parcel size (in bytes) that can be accepted by
-  // this router's inbound parcel queue without that queue exceeding any of the
-  // specified `limits`.
-  size_t GetInboundCapacityInBytes(const IpczPutLimits& limits);
-
   // Accepts an inbound parcel from the outward edge of this router, either to
   // queue it for retrieval or forward it further inward. `source` indicates
   // whether the parcel is arriving as a direct result of some local ipcz API
@@ -156,17 +148,20 @@ class Router : public RefCounted {
                                   size_t* num_handles,
                                   IpczHandle* parcel);
 
-  // Begins a two-phase retrieval of the next available inbound parcel.
-  IpczResult BeginGetNextIncomingParcel(const void** data,
-                                        size_t* num_data_bytes,
-                                        size_t* num_handles);
+  // Begins a two-phase retrieval of the next available inbound parcel. See
+  // ipcz BeginGet() for details.
+  IpczResult BeginGetNextInboundParcel(IpczBeginGetFlags flags,
+                                       const volatile void** data,
+                                       size_t* num_bytes,
+                                       IpczHandle* handles,
+                                       size_t* num_handles,
+                                       IpczTransaction* transaction);
 
-  // Terminates a two-phase retrieval of the next available inbound parcel,
-  // consuming some (possibly all) bytes and handles from that parcel. Once a
-  // parcel is fully consumed, it's removed from the inbound queue.
-  IpczResult CommitGetNextIncomingParcel(size_t num_data_bytes_consumed,
-                                         absl::Span<IpczHandle> handles,
-                                         TrapEventDispatcher& dispatcher);
+  // Terminates a two-phase parcel retrieval previously started by
+  // BeginGetNextInboundParcel(). See ipcz EndGet() for details.
+  IpczResult EndGetNextInboundParcel(IpczTransaction transaction,
+                                     IpczEndGetFlags flags,
+                                     IpczHandle* parcel_handle);
 
   // Attempts to install a new trap on this Router, to invoke `handler` as soon
   // as one or more conditions in `conditions` is met. This method effectively
@@ -414,6 +409,10 @@ class Router : public RefCounted {
                                            RouterDescriptor& descriptor,
                                            bool initiate_proxy_bypass);
 
+  void DiscardNextInboundParcel(const OperationContext& context,
+                                TrapEventDispatcher& dispatcher)
+      ABSL_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+
   absl::Mutex mutex_;
 
   // Indicates whether the opposite end of the route has been closed. This is
@@ -459,6 +458,14 @@ class Router : public RefCounted {
   // Tracks whether this router has been unexpectedly disconnected from its
   // links. This may be used to prevent additional links from being established.
   bool is_disconnected_ ABSL_GUARDED_BY(mutex_) = false;
+
+  // The set of pending get transactions in progress on the owning portal.
+  PendingTransactionSet pending_gets_ ABSL_GUARDED_BY(mutex_);
+
+  // If `pending_gets_` has only one transaction, this indicates whether it's
+  // exclusive. An exclusive transaction must return its Parcel to the head
+  // element of `inbound_parcels_` if aborted.
+  bool is_pending_get_exclusive_ ABSL_GUARDED_BY(mutex_) = false;
 };
 
 }  // namespace ipcz

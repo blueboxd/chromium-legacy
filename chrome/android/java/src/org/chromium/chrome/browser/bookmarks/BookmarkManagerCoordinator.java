@@ -172,7 +172,8 @@ public class BookmarkManagerCoordinator
                 mSelectableListLayout, mSelectionDelegate, mRecyclerView,
                 dragReorderableRecyclerViewAdapter, largeIconBridge, isDialogUi, isIncognito,
                 mBackPressStateSupplier, mProfile, bookmarkUndoController, modelList,
-                mBookmarkUiPrefs, this::hideKeyboard, bookmarkImageFetcher);
+                mBookmarkUiPrefs, this::hideKeyboard, bookmarkImageFetcher,
+                ShoppingServiceFactory.getForProfile(mProfile), mSnackbarManager);
         mPromoHeaderManager = mMediator.getPromoHeaderManager();
 
         bookmarkDelegateSupplier.set(/*bookmarkDelegate=*/mMediator);
@@ -214,7 +215,7 @@ public class BookmarkManagerCoordinator
         dragReorderableRecyclerViewAdapter.registerType(ViewType.IMPROVED_BOOKMARK_COMPACT,
                 this::buildAndInitCompactImprovedBookmarkRow, ImprovedBookmarkRowViewBinder::bind);
         dragReorderableRecyclerViewAdapter.registerType(
-                ViewType.SEARCH_BOX, this::buildSearchBoxRow, ImprovedBookmarkRowViewBinder::bind);
+                ViewType.SEARCH_BOX, this::buildSearchBoxRow, BookmarkSearchBoxRowViewBinder::bind);
 
         RecordUserAction.record("MobileBookmarkManagerOpen");
         if (!isDialogUi) {
@@ -427,6 +428,10 @@ public class BookmarkManagerCoordinator
 
     public static void preventLoadingForTesting(boolean preventLoading) {
         BookmarkManagerMediator.preventLoadingForTesting(preventLoading);
+    }
+
+    public void finishLoadingForTesting() {
+        mMediator.finishLoadingForTesting(); // IN-TEST
     }
 
     public BookmarkOpener getBookmarkOpenerForTesting() {

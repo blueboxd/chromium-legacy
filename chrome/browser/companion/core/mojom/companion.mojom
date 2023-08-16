@@ -8,7 +8,7 @@ import "url/mojom/url.mojom";
 
 // Methods called on the browser from the companion UI.
 // Keep this file in sync with
-// google3/java/com/google/lens/web/interfaces/standalone/commonweb/companionparent/companion_parent_communication_service.ts.
+// google3/java/com/google/lens/web/interfaces/standalone/companionweb/service/companion_parent_communication_service.ts.
 enum MethodType {
   // Methods used in renderer -> browser communication.
   // Method corresponding to `CompanionPageHandler.OnPromoAction`.
@@ -49,8 +49,8 @@ enum MethodType {
   // Method corresponding to `CompanionPage.OnCqFindTextResultsAvailable`.
   kOnCqFindTextResultsAvailable = 32,
 
-  // Method corresponding to `CompanionPage.NotifyLinkOpen`.
-  kNotifyLinkOpen = 34,
+  // Method corresponding to `CompanionPage.OnDeviceVisualClassificationResult`.
+  kOnDeviceVisualClassificationResult = 33,
 };
 
 // Types of promos shown in the companion UI.
@@ -118,33 +118,11 @@ struct ImageQuery {
   uint32 downscaled_width;
 };
 
-// Metadata for NotifyLinkOpen
-// Keep this file in sync with
-// google3/java/com/google/lens/web/interfaces/standalone/companionweb/service/companion_parent_communication_service.ts.
-struct LinkOpenMetadata {
-  enum LinkOpenAction {
-    // Link was opened in a new tab.
-    kNewTab = 1,
-
-    // Link opened in the existing main active tab
-    kClobbered = 2,
-
-    // Link click was ignored and did not open
-    kIgnored = 3,
-  };
-  // How the link click was handled by the browser
-  LinkOpenAction open_action;
-
-  // Bool to help with HATS survey metadata
-  bool is_search_companion_pinned_by_default;
-};
-
 // Various UI surfaces on the companion page.
 // Keep this file in sync with
 // google3/java/com/google/lens/web/interfaces/standalone/companionweb/service/companion_parent_communication_service.ts.
 enum UiSurface {
   kUnknown = 0,
-  // Used for when the PH initial surface is shown that allows PH to be requested by the user.
   kPH = 1,
   kCQ = 2,
   kRegionSearch = 3,
@@ -154,8 +132,11 @@ enum UiSurface {
   kRelQs = 7,
   kPageEntities = 8,
   kATX = 9,
-  // Used for when requested PH is shown to report the resulting elements and interactions.
-  kPHResult = 10
+};
+
+struct VisualSearchResult {
+  // Encoded image bytes
+  string data_uri;
 };
 
 // Factory method for creating a new WebUI page handler.
@@ -243,7 +224,6 @@ interface CompanionPage {
   OnCqFindTextResultsAvailable(array<string> text_directives,
     array<bool> results);
 
-  // Notify the frontend that the user clicked a link that is meant to open
-  // outside of side panel. `opened_url` is the link the user clicked on.
-  NotifyLinkOpen(url.mojom.Url opened_url, LinkOpenMetadata metadata );
+  // Pass back results from visual classifier for rendering.
+  OnDeviceVisualClassificationResult(array<VisualSearchResult> results);
 };

@@ -12,6 +12,10 @@
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace content {
 
 typedef RenderViewHostTestHarness WebDragSourceMacTest;
@@ -21,10 +25,9 @@ TEST_F(WebDragSourceMacTest, DragInvalidlyEscapedBookmarklet) {
   base::scoped_nsobject<NSView> view(
       [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 10, 10)]);
 
-  base::scoped_nsobject<WebDragSource> source([[WebDragSource alloc]
-      initWithHost:nullptr
-          dropData:drop_data
-      isPrivileged:NO]);
+  WebDragSource* source = [[WebDragSource alloc] initWithHost:nullptr
+                                                     dropData:drop_data
+                                                 isPrivileged:NO];
 
   scoped_refptr<ui::UniquePasteboard> pasteboard1 = new ui::UniquePasteboard;
   base::scoped_nsobject<WebDragSource> source([[WebDragSource alloc]

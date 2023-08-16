@@ -18,6 +18,8 @@
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
+#include "chrome/browser/ash/extensions/file_manager/event_router.h"
+#include "chrome/browser/ash/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
@@ -246,8 +248,12 @@ extensions::api::file_manager_private::BulkPinStage DrivefsPinStageToJs(
   switch (stage) {
     case drivefs::pinning::Stage::kStopped:
       return extensions::api::file_manager_private::BULK_PIN_STAGE_STOPPED;
-    case drivefs::pinning::Stage::kPaused:
-      return extensions::api::file_manager_private::BULK_PIN_STAGE_PAUSED;
+    case drivefs::pinning::Stage::kPausedOffline:
+      return extensions::api::file_manager_private::
+          BULK_PIN_STAGE_PAUSED_OFFLINE;
+    case drivefs::pinning::Stage::kPausedBatterySaver:
+      return extensions::api::file_manager_private::
+          BULK_PIN_STAGE_PAUSED_BATTERY_SAVER;
     case drivefs::pinning::Stage::kGettingFreeSpace:
       return extensions::api::file_manager_private::
           BULK_PIN_STAGE_GETTING_FREE_SPACE;
@@ -293,12 +299,10 @@ bool IsPinManagerAvailableAndSyncingForProfile(Profile* profile) {
   return true;
 }
 
-bool IsDirectoryUnderMyDrive(drivefs::mojom::FileMetadataPtr& metadata,
-                             const base::FilePath& relative_path) {
-  return metadata->type == drivefs::mojom::FileMetadata::Type::kDirectory &&
-         base::FilePath("/")
-             .Append(drive::util::kDriveMyDriveRootDirName)
-             .IsParent(relative_path);
+bool IsPathUnderMyDrive(const base::FilePath& relative_path) {
+  return base::FilePath("/")
+      .Append(drive::util::kDriveMyDriveRootDirName)
+      .IsParent(relative_path);
 }
 
 }  // namespace
@@ -360,9 +364,13 @@ void SingleEntryPropertiesGetterForDriveFs::StartProcess() {
     return;
   }
 
-  if (base::FeatureList::IsEnabled(ash::features::kFilesInlineSyncStatus)) {
+  file_manager::EventRouter* event_router =
+      file_manager::EventRouterFactory::GetForProfile(running_profile_);
+  if (ash::features::IsInlineSyncStatusEnabled() && event_router) {
     drivefs::SyncState sync_state =
-        integration_service->GetSyncStateForPath(file_system_url_.path());
+        ash::features::IsInlineSyncStatusProgressEventsEnabled()
+            ? event_router->GetDriveSyncStateForPath(file_system_url_.path())
+            : integration_service->GetSyncStateForPath(file_system_url_.path());
     properties_->progress = sync_state.progress;
     switch (sync_state.status) {
       case drivefs::SyncStatus::kQueued:
@@ -425,19 +433,35 @@ void SingleEntryPropertiesGetterForDriveFs::OnGetFileInfo(
       metadata->available_offline || *properties_->hosted;
   properties_->pinned = metadata->pinned;
 
-  // When the bulk pinning feature is enabled, folders can't be pinned
-  // automatically to provide a way to intercept items being added to these
-  // folders. However items in the folders will be pinned, so to ensure the UI
-  // shows these folders as available offline, return these items as pinned and
-  // available offline. This should not include shortcuts and only cover
-  // directories that are parented at "My drive" (e.g. no Shared drives).
-  if (drive::util::IsDriveFsBulkPinningEnabled() &&
-      IsPinManagerAvailableAndSyncingForProfile(running_profile_) &&
-      IsDirectoryUnderMyDrive(metadata, relative_path_) &&
-      !metadata->shortcut_details) {
-    properties_->pinned = true;
-    properties_->available_offline = true;
-    properties_->available_when_metered = true;
+  if (drive::util::IsDriveFsBulkPinningEnabled(running_profile_)) {
+    properties_->available_offline =
+        (drivefs::IsHosted(metadata->type) &&
+         !drive::util::IsPinnableGDocMimeType(metadata->content_mime_type))
+            ? false
+            : metadata->available_offline;
+    properties_->available_when_metered = properties_->available_offline;
+    properties_->pinned = metadata->pinned;
+
+    if (IsPinManagerAvailableAndSyncingForProfile(running_profile_) &&
+        IsPathUnderMyDrive(relative_path_)) {
+      if (metadata->type == drivefs::mojom::FileMetadata::Type::kDirectory &&
+          !metadata->shortcut_details) {
+        // Folders can't be pinned automatically to provide a way to intercept
+        // items being added to these folders. However items in the folders will
+        // be pinned, so to ensure the UI shows these folders as available
+        // offline, return these items as pinned and available offline. This
+        // should not include shortcuts and only cover directories that are
+        // parented at "My drive" (e.g. no Shared drives).
+        properties_->available_when_metered = true;
+        properties_->available_offline = true;
+        properties_->pinned = true;
+      } else if (drive::util::IsPinnableGDocMimeType(
+                     metadata->content_mime_type)) {
+        // When bulk pinning is enabled, hosted files should reflect the pinned
+        // state as their available offline state.
+        properties_->pinned = properties_->available_offline;
+      }
+    }
   }
 
   properties_->shared = metadata->shared;

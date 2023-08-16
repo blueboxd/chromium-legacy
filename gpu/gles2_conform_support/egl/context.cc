@@ -277,17 +277,21 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
 
   gl_context->MakeCurrent(gl_surface);
 
-  gpu::ContextCreationAttribs helper;
-  config_->GetAttrib(EGL_ALPHA_SIZE, &helper.alpha_size);
-  config_->GetAttrib(EGL_DEPTH_SIZE, &helper.depth_size);
-  config_->GetAttrib(EGL_STENCIL_SIZE, &helper.stencil_size);
+  EGLint alpha_size, depth_size, stencil_size;
+  config_->GetAttrib(EGL_ALPHA_SIZE, &alpha_size);
+  config_->GetAttrib(EGL_DEPTH_SIZE, &depth_size);
+  config_->GetAttrib(EGL_STENCIL_SIZE, &stencil_size);
 
-  helper.buffer_preserved = false;
+  CHECK_EQ(alpha_size, 0);
+  CHECK_EQ(depth_size, 0);
+  CHECK_EQ(stencil_size, 0);
+
+  gpu::ContextCreationAttribs helper;
   helper.bind_generates_resource = kBindGeneratesResources;
   helper.fail_if_major_perf_caveat = false;
   helper.lose_context_when_out_of_memory = kLoseContextWhenOutOfMemory;
   helper.context_type = gpu::CONTEXT_TYPE_OPENGLES2;
-  helper.offscreen_framebuffer_size = gl_surface->GetSize();
+  helper.offscreen_framebuffer_size_for_testing = gl_surface->GetSize();
 
   auto result = decoder->Initialize(gl_surface, gl_context.get(),
                                     gl_surface->IsOffscreen(),

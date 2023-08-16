@@ -9,6 +9,7 @@ import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -96,13 +97,14 @@ public class BookmarkImageFetcherTest {
     private ArgumentCaptor<Drawable> mDrawableCaptor;
     @Captor
     private ArgumentCaptor<Pair<Drawable, Drawable>> mFolderDrawablesCaptor;
+    @Captor
+    private ArgumentCaptor<Callback<GURL>> mGURLCallbackCaptor;
 
     private final BookmarkId mFolderId = new BookmarkId(/*id=*/1, BookmarkType.NORMAL);
     private final BookmarkId mBookmarkId1 = new BookmarkId(/*id=*/2, BookmarkType.NORMAL);
     private final BookmarkId mBookmarkId2 = new BookmarkId(/*id=*/3, BookmarkType.NORMAL);
     private final BookmarkId mReadingListFolderId =
             new BookmarkId(/*id=*/5, BookmarkType.READING_LIST);
-    private final BookmarkId mReadingListId = new BookmarkId(/*id=*/6, BookmarkType.READING_LIST);
 
     private final BookmarkItem mFolderItem =
             new BookmarkItem(mFolderId, "Folder", null, true, null, true, false, 0, false);
@@ -208,7 +210,6 @@ public class BookmarkImageFetcherTest {
         mBookmarkImageFetcher.fetchImageForBookmarkWithFaviconFallback(
                 mBookmarkItem1, mDrawableCallback);
         verify(mDrawableCallback).onResult(mDrawableCaptor.capture());
-        // There shouldn't be any interaction with large icon bridge since an image was found.
         verify(mLargeIconBridge).getLargeIconForUrl(any(), anyInt(), any());
 
         assertNotNull(mDrawableCaptor.getValue());
@@ -222,5 +223,33 @@ public class BookmarkImageFetcherTest {
         verify(mLargeIconBridge).getLargeIconForUrl(any(), anyInt(), any());
 
         assertNotNull(mDrawableCaptor.getValue());
+    }
+
+    @Test
+    public void testFetchImageUrlWithFallbacks() {
+        mBookmarkImageFetcher.fetchImageUrlWithFallbacks(
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), mBookmarkItem1,
+                mDrawableCallback);
+        verify(mDrawableCallback).onResult(mDrawableCaptor.capture());
+        verify(mImageFetcher, times(1)).fetchImage(any(), any());
+        // There shouldn't be any interaction with large icon bridge since an image was found.
+        verify(mLargeIconBridge, times(0)).getLargeIconForUrl(any(), anyInt(), any());
+
+        assertNotNull(mDrawableCaptor.getValue());
+    }
+
+    @Test
+    public void testMediatorDestroyedBeforeCallback() {
+        doNothing().when(mBookmarkModel).getImageUrlForBookmark(any(), any());
+        mBookmarkImageFetcher.fetchImageForBookmarkWithFaviconFallback(
+                mBookmarkItem1, mDrawableCallback);
+
+        verify(mBookmarkModel).getImageUrlForBookmark(any(), mGURLCallbackCaptor.capture());
+        mBookmarkImageFetcher.destroy();
+
+        // Now that mBookmarkImageFetcher is destroyed, all the callbacks should have been
+        // cancelled.
+        mGURLCallbackCaptor.getValue().onResult(JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL));
+        verify(mImageFetcher, times(0)).fetchImage(any(), any());
     }
 }

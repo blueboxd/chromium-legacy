@@ -77,13 +77,11 @@ void TestBrowserAutofillManager::OnAskForValuesToFill(
     const FormData& form,
     const FormFieldData& field,
     const gfx::RectF& bounding_box,
-    AutoselectFirstSuggestion autoselect_first_suggestion,
-    FormElementWasClicked form_element_was_clicked) {
+    AutofillSuggestionTriggerSource trigger_source) {
   TestAutofillManagerWaiter waiter(*this,
                                    {AutofillManagerEvent::kAskForValuesToFill});
   AutofillManager::OnAskForValuesToFill(form, field, bounding_box,
-                                        autoselect_first_suggestion,
-                                        form_element_was_clicked);
+                                        trigger_source);
   ASSERT_TRUE(waiter.Wait());
 }
 
@@ -189,15 +187,6 @@ bool TestBrowserAutofillManager::MaybeStartVoteUploadProcess(
   return false;
 }
 
-Suggestion::FrontendId TestBrowserAutofillManager::GetPackedCreditCardID(
-    int credit_card_id) {
-  std::string credit_card_guid =
-      base::StringPrintf("00000000-0000-0000-0000-%012d", credit_card_id);
-
-  return suggestion_generator_for_test()->MakeFrontendIdFromBackendId(
-      Suggestion::BackendId(credit_card_guid));
-}
-
 void TestBrowserAutofillManager::AddSeenForm(
     const FormData& form,
     const std::vector<ServerFieldType>& heuristic_types,
@@ -244,13 +233,11 @@ void TestBrowserAutofillManager::OnAskForValuesToFillTest(
     const FormData& form,
     const FormFieldData& field,
     const gfx::RectF& bounding_box,
-    AutoselectFirstSuggestion autoselect_first_suggestion,
-    FormElementWasClicked form_element_was_clicked) {
+    AutofillSuggestionTriggerSource trigger_source) {
   TestAutofillManagerWaiter waiter(*this,
                                    {AutofillManagerEvent::kAskForValuesToFill});
   BrowserAutofillManager::OnAskForValuesToFill(form, field, bounding_box,
-                                               autoselect_first_suggestion,
-                                               form_element_was_clicked);
+                                               trigger_source);
   ASSERT_TRUE(waiter.Wait());
 }
 
@@ -281,14 +268,6 @@ void TestBrowserAutofillManager::SetExpectedSubmittedFieldTypes(
 
 void TestBrowserAutofillManager::SetExpectedObservedSubmission(bool expected) {
   expected_observed_submission_ = expected;
-}
-
-Suggestion::FrontendId TestBrowserAutofillManager::MakeFrontendId(
-    const MakeFrontendIdParams& params) {
-  return suggestion_generator_for_test()->MakeFrontendIdFromBackendId(
-      Suggestion::BackendId(params.credit_card_id.empty()
-                                ? params.profile_id
-                                : params.credit_card_id));
 }
 
 }  // namespace autofill

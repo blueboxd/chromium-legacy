@@ -40,6 +40,7 @@ class TestCSSParserObserver : public CSSParserObserver {
                        bool is_important,
                        bool is_parsed) override {}
   void ObserveComment(unsigned start_offset, unsigned end_offset) override {}
+  void ObserveErroneousAtRule(unsigned start_offset, CSSAtRuleID id) override {}
 
   StyleRule::RuleType rule_type_ = StyleRule::RuleType::kStyle;
   unsigned rule_header_start_ = 0;
@@ -888,6 +889,36 @@ TEST(CSSParserImplTest, FontFeatureValuesOffsets) {
   EXPECT_EQ(test_css_parser_observer.rule_header_end_, 27u);
   EXPECT_EQ(test_css_parser_observer.rule_body_start_, 28u);
   EXPECT_EQ(test_css_parser_observer.rule_body_end_, 53u);
+}
+
+TEST(CSSParserImplTest, PositionFallbackRuleMaxLength) {
+  ScopedCSSAnchorPositioningForTest enabled(true);
+
+  String sheet_text = R"CSS(
+    @position-fallback --pf {
+      @try {}
+      @try {}
+      @try {}
+      @try {}
+      @try {}
+      @try {}
+    }
+  )CSS";
+  auto* context = MakeGarbageCollected<CSSParserContext>(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
+  TestCSSParserObserver test_css_parser_observer;
+  CSSParserImpl::ParseStyleSheetForInspector(sheet_text, context, style_sheet,
+                                             test_css_parser_observer);
+  EXPECT_EQ(style_sheet->ChildRules().size(), 1u);
+
+  const StyleRulePositionFallback* rule =
+      DynamicTo<StyleRulePositionFallback>(style_sheet->ChildRules()[0].Get());
+  EXPECT_TRUE(rule);
+
+  // We allow only 5 @try rules at maximum. See kPositionFallbackRuleMaxLength
+  // in css_parser_impl.cc.
+  EXPECT_EQ(5u, rule->TryRules().size());
 }
 
 }  // namespace blink

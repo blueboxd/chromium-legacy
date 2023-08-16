@@ -24,18 +24,12 @@ const std::vector<std::string> kCrossTabCommunicationTypes{
 
 constexpr char kRequestStorageAccess[] =
     "document.requestStorageAccess()"
-    "  .then(() => document.hasStorageAccess())"
-    "  .catch(() => false);";
+    "  .then(() => document.hasStorageAccess())";
 
 constexpr char kRequestStorageAccessFor[] =
-    "document.requestStorageAccessFor($1).then("
-    "  () => true,"
-    "  () => false,"
-    ");";
+    "document.requestStorageAccessFor($1)";
 
-constexpr char kHasStorageAccess[] =
-    "document.hasStorageAccess()"
-    "  .catch(() => false);";
+constexpr char kHasStorageAccess[] = "document.hasStorageAccess()";
 
 std::vector<std::string> GetStorageTypesForFrame(bool include_cookies) {
   std::vector<std::string> types(kStorageTypesForFrame);
@@ -139,9 +133,8 @@ bool RequestAndCheckStorageAccessForFrame(content::RenderFrameHost* frame) {
 
 bool RequestStorageAccessForOrigin(content::RenderFrameHost* frame,
                                    const std::string& origin) {
-  return content::EvalJs(frame,
-                         content::JsReplace(kRequestStorageAccessFor, origin))
-      .ExtractBool();
+  return content::ExecJs(frame,
+                         content::JsReplace(kRequestStorageAccessFor, origin));
 }
 
 bool HasStorageAccessForFrame(content::RenderFrameHost* frame) {

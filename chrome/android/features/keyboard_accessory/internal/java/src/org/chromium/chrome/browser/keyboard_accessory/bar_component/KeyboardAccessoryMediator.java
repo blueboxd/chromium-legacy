@@ -145,12 +145,11 @@ class KeyboardAccessoryMediator
      * @return True iff the suggestion should be displayed.
      */
     private boolean shouldShowSuggestion(AutofillSuggestion suggestion) {
-        switch (suggestion.getSuggestionId()) {
+        switch (suggestion.getPopupItemId()) {
             case PopupItemId.INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
                 // The insecure context warning has a replacement in the fallback sheet.
             case PopupItemId.SEPARATOR:
             case PopupItemId.CLEAR_FORM:
-            case PopupItemId.CREDIT_CARD_SIGNIN_PROMO:
             case PopupItemId.ALL_SAVED_PASSWORDS_ENTRY:
             case PopupItemId.GENERATE_PASSWORD_ENTRY:
             case PopupItemId.SHOW_ACCOUNT_CARDS:
@@ -226,6 +225,7 @@ class KeyboardAccessoryMediator
             case AccessoryAction.CREDMAN_CONDITIONAL_UI_REENTRY:
                 return BarItem.Type.ACTION_BUTTON;
             case AccessoryAction.MANAGE_PASSWORDS: // Intentional fallthrough - no view defined.
+            case AccessoryAction.CROSS_DEVICE_PASSKEY:
             case AccessoryAction.COUNT:
                 throw new IllegalArgumentException("No view defined for :" + accessoryAction);
         }
@@ -352,15 +352,15 @@ class KeyboardAccessoryMediator
     }
 
     private static boolean containsPasswordInfo(AutofillSuggestion suggestion) {
-        return suggestion.getSuggestionId() == PopupItemId.USERNAME_ENTRY
-                || suggestion.getSuggestionId() == PopupItemId.PASSWORD_ENTRY;
+        return suggestion.getPopupItemId() == PopupItemId.USERNAME_ENTRY
+                || suggestion.getPopupItemId() == PopupItemId.PASSWORD_ENTRY;
     }
 
     private static boolean containsCreditCardInfo(AutofillSuggestion suggestion) {
-        return suggestion.getSuggestionId() > 0 && (suggestion.getSuggestionId() & 0xFFFF0000) != 0;
+        return suggestion.getPopupItemId() == PopupItemId.CREDIT_CARD_ENTRY;
     }
 
     private static boolean containsAddressInfo(AutofillSuggestion suggestion) {
-        return suggestion.getSuggestionId() > 0 && (suggestion.getSuggestionId() & 0x0000FFFF) != 0;
+        return suggestion.getPopupItemId() == PopupItemId.ADDRESS_ENTRY;
     }
 }

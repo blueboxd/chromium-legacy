@@ -18,7 +18,8 @@ constexpr char kCaptureModeMetricCommonPrefix[] = "Ash.CaptureModeController.";
 
 constexpr char kEndRecordingReasonHistogramRootWord[] = "EndRecordingReason";
 constexpr char kBarButtonHistogramRootWord[] = "BarButtons";
-constexpr char kCaptureAudioOnHistogramRootWord[] = "CaptureAudioOnMetric";
+constexpr char kCaptureAudioRecordingModeHistogramRootWord[] =
+    "AudioRecordingMode";
 constexpr char kCaptureConfigurationHistogramRootWord[] =
     "CaptureConfiguration";
 constexpr char kCaptureRegionAdjustmentHistogramRootWord[] =
@@ -83,7 +84,7 @@ void RecordCaptureModeBarButtonType(CaptureModeBarButtonType button_type) {
 void RecordCaptureModeConfiguration(CaptureModeType type,
                                     CaptureModeSource source,
                                     RecordingType recording_type,
-                                    bool audio_on,
+                                    AudioRecordingMode audio_mode,
                                     const CaptureModeBehavior* behavior) {
   std::string configuration_histogram_name =
       BuildHistogramName(kCaptureConfigurationHistogramRootWord, behavior,
@@ -92,11 +93,11 @@ void RecordCaptureModeConfiguration(CaptureModeType type,
                                 GetConfiguration(type, source, recording_type));
   if (type == CaptureModeType::kVideo &&
       recording_type != RecordingType::kGif) {
-    base::UmaHistogramBoolean(
-        BuildHistogramName(kCaptureAudioOnHistogramRootWord,
-                           /*behavior=*/nullptr,
+    base::UmaHistogramEnumeration(
+        BuildHistogramName(kCaptureAudioRecordingModeHistogramRootWord,
+                           behavior,
                            /*append_ui_mode_suffix=*/true),
-        audio_on);
+        audio_mode);
   }
 }
 
@@ -126,7 +127,9 @@ void RecordCaptureModeRecordingDuration(base::TimeDelta recording_duration,
       recording_duration);
 }
 
-void RecordVideoFileSizeKB(bool is_gif, int size_in_kb) {
+void RecordVideoFileSizeKB(bool is_gif,
+                           const CaptureModeBehavior* behavior,
+                           int size_in_kb) {
   if (!Shell::HasInstance()) {
     // This function can be called asynchronously after the `Shell` instance had
     // already been destroyed.
@@ -141,7 +144,7 @@ void RecordVideoFileSizeKB(bool is_gif, int size_in_kb) {
   base::UmaHistogramMemoryKB(
       BuildHistogramName(is_gif ? kGifRecordingFileSizeRootWord
                                 : kScreenRecordingFileSizeRootWord,
-                         /*behavior=*/nullptr, /*append_ui_mode_suffix=*/true),
+                         behavior, /*append_ui_mode_suffix=*/true),
       size_in_kb);
 }
 
@@ -193,9 +196,15 @@ void RecordScreenshotNotificationQuickAction(CaptureQuickAction action) {
       action);
 }
 
-void RecordSaveToLocation(CaptureModeSaveToLocation save_location) {
+void RecordSaveToLocation(CaptureModeSaveToLocation save_location,
+                          const CaptureModeBehavior* behavior) {
+  // Save-to location metrics should not be recorded for the
+  // projector-inititated capture mode session.
+  const CaptureModeBehavior* modified_behavior =
+      behavior->behavior_type() == BehaviorType::kProjector ? nullptr
+                                                            : behavior;
   base::UmaHistogramEnumeration(
-      BuildHistogramName(kSaveToLocationHistogramRootWord, /*behavior=*/nullptr,
+      BuildHistogramName(kSaveToLocationHistogramRootWord, modified_behavior,
                          /*append_ui_mode_suffix=*/true),
       save_location);
 }

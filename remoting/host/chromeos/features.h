@@ -17,8 +17,8 @@ BASE_DECLARE_FEATURE(kEnableCrdAdminRemoteAccess);
 // to GA.
 BASE_DECLARE_FEATURE(kEnableCrdAdminRemoteAccessV2);
 
-// Enable to allow FrameSinkDesktopCapturer to be used for CRD video streaming.
-BASE_DECLARE_FEATURE(kEnableFrameSinkDesktopCapturerInCrd);
+// Enable to allow file transfer in CRD video streaming to Kiosk devices.
+BASE_DECLARE_FEATURE(kEnableCrdFileTransferForKiosk);
 
 }  // namespace remoting::features
 

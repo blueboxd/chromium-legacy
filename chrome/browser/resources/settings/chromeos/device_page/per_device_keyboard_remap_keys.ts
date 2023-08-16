@@ -17,12 +17,12 @@ import './keyboard_remap_modifier_key_row.js';
 
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin, RouteObserverMixinInterface} from '../route_observer_mixin.js';
-import {Route, Router} from '../router.js';
+import {Route, Router, routes} from '../router.js';
 
 import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_provider.js';
 import {InputDeviceSettingsProviderInterface, Keyboard, MetaKey, ModifierKey} from './input_device_settings_types.js';
@@ -166,6 +166,15 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
         type: Number,
         value: -1,
       },
+
+      isAltClickAndSixPackCustomizationEnabled: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean(
+              'enableAltClickAndSixPackCustomization');
+        },
+        readOnly: true,
+      },
     };
   }
 
@@ -187,6 +196,7 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
   }
 
   keyboard: Keyboard;
+  isAltClickAndSixPackCustomizationEnabled: boolean;
   private keyboards: Keyboard[];
   protected keyboardId: number;
   protected defaultRemappings: {[key: number]: ModifierKey} = {
@@ -320,13 +330,8 @@ export class SettingsPerDeviceKeyboardRemapKeysElement extends
   }
 
   restoreDefaults(): void {
-    // When defaults are restored, set isInitialized to false while the
-    // prefs are being updated. Then, once prefs are all done being updated
-    // back to defaults, make sure onSettingsUpdated is called.
-    this.isInitialized = false;
-    this.defaultInitializePrefs();
-    this.isInitialized = true;
-    this.onSettingsChanged();
+    this.inputDeviceSettingsProvider.restoreDefaultKeyboardRemappings(
+        this.keyboardId);
   }
 
   private setRemappedKey(originalKey: ModifierKey): void {

@@ -5,6 +5,7 @@
 import 'chrome://shortcut-customization/js/accelerator_view.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
+import {IronIconElement} from '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict_query.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -15,7 +16,6 @@ import {FakeShortcutProvider} from 'chrome://shortcut-customization/js/fake_shor
 import {InputKeyElement, KeyInputState} from 'chrome://shortcut-customization/js/input_key.js';
 import {setShortcutProviderForTesting} from 'chrome://shortcut-customization/js/mojo_interface_provider.js';
 import {AcceleratorConfigResult, AcceleratorSource, LayoutStyle, Modifier} from 'chrome://shortcut-customization/js/shortcut_types.js';
-import {isCategoryLocked} from 'chrome://shortcut-customization/js/shortcut_utils.js';
 import {AcceleratorResultData} from 'chrome://shortcut-customization/mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
@@ -69,7 +69,7 @@ suite('acceleratorViewTest', function() {
 
   function getEditIcon(): HTMLDivElement {
     return strictQuery(
-        '#editIconContainer', viewElement!.shadowRoot, HTMLDivElement);
+        '.edit-icon-container', viewElement!.shadowRoot, HTMLDivElement);
   }
 
   test('LoadsBasicAccelerator', async () => {
@@ -157,42 +157,6 @@ suite('acceleratorViewTest', function() {
     assertEquals('e', pendingKey.key);
   });
 
-  test('ElementFocusableWhenCustomizationEnabled', async () => {
-    loadTimeData.overrideValues({isCustomizationEnabled: true});
-    viewElement = initAcceleratorViewElement();
-    await flushTasks();
-
-    const acceleratorInfo = createStandardAcceleratorInfo(
-        Modifier.CONTROL | Modifier.SHIFT,
-        /*key=*/ 71,
-        /*keyDisplay=*/ 'g');
-
-    viewElement.acceleratorInfo = acceleratorInfo;
-
-    await flushTasks();
-    const containerElement =
-        viewElement.shadowRoot!.querySelector('#container') as HTMLDivElement;
-    assertEquals(0, containerElement.tabIndex);
-  });
-
-  test('ElementNotFocusableWhenCustomizationDisabled', async () => {
-    loadTimeData.overrideValues({isCustomizationEnabled: false});
-    viewElement = initAcceleratorViewElement();
-    await flushTasks();
-
-    const acceleratorInfo = createStandardAcceleratorInfo(
-        Modifier.CONTROL | Modifier.SHIFT,
-        /*key=*/ 71,
-        /*keyDisplay=*/ 'g');
-
-    viewElement.acceleratorInfo = acceleratorInfo;
-
-    await flushTasks();
-    const containerElement =
-        viewElement.shadowRoot!.querySelector('#container') as HTMLDivElement;
-    assertEquals(-1, containerElement.tabIndex);
-  });
-
   test('EditWithFunctionKeyAsOnlyKey', async () => {
     viewElement = initAcceleratorViewElement();
     await flushTasks();
@@ -276,13 +240,14 @@ suite('acceleratorViewTest', function() {
         // replicate getCategory() logic.
         const category = manager!.getAcceleratorCategory(
             layoutInfo.source, layoutInfo.action);
+        const categoryIsLocked = manager!.isCategoryLocked(category);
         // replicate shouldShowLockIcon() logic.
         const expectLockIconVisible = scenario.customizationEnabled &&
-            !isCategoryLocked(category) &&
-            (scenario.locked || scenario.sourceIsLocked);
+            !categoryIsLocked && (scenario.locked || scenario.sourceIsLocked);
         testCases.push({
           ...scenario,
           layoutInfo: layoutInfo,
+          categoryIsLocked: categoryIsLocked,
           expectLockIconVisible: expectLockIconVisible,
         });
       }
@@ -294,6 +259,7 @@ suite('acceleratorViewTest', function() {
       viewElement = initAcceleratorViewElement();
       viewElement.source = testCase.layoutInfo.source;
       viewElement.action = testCase.layoutInfo.action;
+      viewElement.categoryIsLocked = testCase.categoryIsLocked;
       const acceleratorInfo = createStandardAcceleratorInfo(
           Modifier.CONTROL | Modifier.SHIFT,
           /*key=*/ 71,
@@ -315,30 +281,35 @@ suite('acceleratorViewTest', function() {
         locked: false,
         sourceIsLocked: false,
         isAcceleratorRow: false,
+        isFirstAccelerator: true,
       },
       {
         customizationEnabled: true,
         locked: false,
         sourceIsLocked: false,
         isAcceleratorRow: true,
+        isFirstAccelerator: true,
       },
       {
         customizationEnabled: true,
         locked: true,
         sourceIsLocked: false,
         isAcceleratorRow: false,
+        isFirstAccelerator: true,
       },
       {
         customizationEnabled: true,
         locked: false,
         sourceIsLocked: true,
         isAcceleratorRow: true,
+        isFirstAccelerator: false,
       },
       {
         customizationEnabled: false,
         locked: false,
         sourceIsLocked: false,
         isAcceleratorRow: false,
+        isFirstAccelerator: true,
       },
     ];
 
@@ -353,13 +324,16 @@ suite('acceleratorViewTest', function() {
         // replicate getCategory() logic.
         const category = manager!.getAcceleratorCategory(
             layoutInfo.source, layoutInfo.action);
+        const categoryIsLocked = manager!.isCategoryLocked(category);
         // replicate shouldShowLockIcon() logic.
         const expectEditIconVisible = scenario.customizationEnabled &&
-            scenario.isAcceleratorRow && !isCategoryLocked(category) &&
-            !scenario.locked && !scenario.sourceIsLocked;
+            scenario.isAcceleratorRow && !categoryIsLocked &&
+            !scenario.locked && !scenario.sourceIsLocked &&
+            scenario.isFirstAccelerator;
         testCases.push({
           ...scenario,
           layoutInfo: layoutInfo,
+          categoryIsLocked: categoryIsLocked,
           expectEditIconVisible: expectEditIconVisible,
         });
       }
@@ -370,7 +344,9 @@ suite('acceleratorViewTest', function() {
       viewElement = initAcceleratorViewElement();
       viewElement.source = testCase.layoutInfo.source;
       viewElement.action = testCase.layoutInfo.action;
+      viewElement.categoryIsLocked = testCase.categoryIsLocked;
       viewElement.showEditIcon = testCase.isAcceleratorRow;
+      viewElement.isFirstAccelerator = testCase.isFirstAccelerator;
       const acceleratorInfo = createStandardAcceleratorInfo(
           Modifier.CONTROL | Modifier.SHIFT,
           /*key=*/ 71,
@@ -384,5 +360,70 @@ suite('acceleratorViewTest', function() {
           testCase.expectEditIconVisible,
           !getEditIcon().hasAttribute('hidden'));
     }
+  });
+
+  test('KeyDisplayAndIconDuringEdit', async () => {
+    viewElement = initAcceleratorViewElement();
+    await flushTasks();
+    const acceleratorInfo = createStandardAcceleratorInfo(
+        Modifier.ALT,
+        /*key=*/ 221,
+        /*keyDisplay=*/ ']');
+    viewElement.acceleratorInfo = acceleratorInfo;
+    viewElement.source = AcceleratorSource.kAsh;
+    viewElement.action = 1;
+    await flush();
+
+    // Enable the edit view.
+    viewElement.viewState = ViewState.EDIT;
+    await flush();
+
+    const pendingKey = getInputKey('#pendingKey');
+
+    const fakeResult: AcceleratorResultData = {
+      result: AcceleratorConfigResult.kConflict,
+      shortcutName: {data: [1]},
+    };
+    provider.setFakeReplaceAcceleratorResult(fakeResult);
+
+    // Simulate SHIFT + SPACE, expect the key display to be 'space'.
+    viewElement.dispatchEvent(new KeyboardEvent('keydown', {
+      key: ' ',
+      code: 'Space',
+      shiftKey: true,
+    }));
+
+    await flush();
+    assertEquals('space', pendingKey.key);
+
+    // Simulate SHIFT + OVERVIEW, expect the key display to be
+    // 'LaunchApplication1' and the icon to be 'overview'.
+    viewElement.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'F4',
+      code: 'ShowAllWindows',
+      shiftKey: true,
+    }));
+    await flush();
+
+    assertEquals('LaunchApplication1', pendingKey.key);
+    const keyIconElement =
+        pendingKey.shadowRoot!.querySelector('#key-icon') as IronIconElement;
+    assertEquals('shortcut-customization-keys:overview', keyIconElement.icon);
+
+    // Simulate SHIFT + BRIGHTNESS_UP, expect the key display to be
+    // 'BrightnessUp' and the icon to be 'display-brightness-up'.
+    viewElement.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'BrightnessUp',
+      code: 'BrightnessUp',
+      shiftKey: true,
+    }));
+    await flush();
+
+    assertEquals('BrightnessUp', pendingKey.key);
+    const keyIconElement2 =
+        pendingKey.shadowRoot!.querySelector('#key-icon') as IronIconElement;
+    assertEquals(
+        'shortcut-customization-keys:display-brightness-up',
+        keyIconElement2.icon);
   });
 });

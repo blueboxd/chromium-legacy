@@ -5,21 +5,20 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTERNALLY_MANAGED_APP_INSTALL_TASK_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTERNALLY_MANAGED_APP_INSTALL_TASK_H_
 
+#include <memory>
+
 #include "base/functional/callback.h"
-#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/external_install_options.h"
-#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
-#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
-#include "chrome/browser/web_applications/web_app_install_info.h"
-#include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
+class GURL;
 
 namespace content {
 class WebContents;
@@ -32,7 +31,6 @@ enum class UninstallResultCode;
 
 namespace web_app {
 
-class WebAppUrlLoader;
 class WebAppInstallFinalizer;
 class WebAppCommandScheduler;
 class WebAppUiManager;
@@ -44,6 +42,8 @@ class ExternallyManagedAppInstallTask {
  public:
   using ResultCallback = base::OnceCallback<void(
       ExternallyManagedAppManager::InstallResult result)>;
+  using DataRetrieverFactory =
+      base::RepeatingCallback<std::unique_ptr<WebAppDataRetriever>()>;
 
   // Constructs a task that will install a Web App for |profile|.
   // |install_options| will be used to decide some of the properties of the
@@ -54,6 +54,7 @@ class ExternallyManagedAppInstallTask {
       WebAppUiManager* ui_manager,
       WebAppInstallFinalizer* install_finalizer,
       WebAppCommandScheduler* command_scheduler,
+      DataRetrieverFactory data_retriever_factory,
       ExternalInstallOptions install_options);
 
   ExternallyManagedAppInstallTask(const ExternallyManagedAppInstallTask&) =
@@ -71,8 +72,7 @@ class ExternallyManagedAppInstallTask {
 
   const ExternalInstallOptions& install_options() { return install_options_; }
 
-  using DataRetrieverFactory =
-      base::RepeatingCallback<std::unique_ptr<WebAppDataRetriever>()>;
+  // TODO(http://b/283521737): Remove this and use WebContentsManager.
   void SetDataRetrieverFactoryForTesting(
       DataRetrieverFactory data_retriever_factory);
 
@@ -124,10 +124,8 @@ class ExternallyManagedAppInstallTask {
   const raw_ptr<WebAppInstallFinalizer> install_finalizer_;
   const raw_ptr<WebAppCommandScheduler> command_scheduler_;
 
-  ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
-
-  const ExternalInstallOptions install_options_;
   DataRetrieverFactory data_retriever_factory_;
+  const ExternalInstallOptions install_options_;
 
   base::WeakPtrFactory<ExternallyManagedAppInstallTask> weak_ptr_factory_{this};
 };

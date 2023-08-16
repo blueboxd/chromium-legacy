@@ -56,7 +56,9 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
   void SetRestoreInfoWithWindowIdSource(int32_t, const std::string&) override;
   void SetSystemModal(bool modal) override;
   bool SupportsScreenCoordinates() const override;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   void EnableScreenCoordinates() override;
+#endif
   void SetFloat() override;
   void UnSetFloat() override;
   void SetZOrder(ZOrderLevel z_order) override;
@@ -70,6 +72,7 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
                        bool allow_haptic_feedback) override;
   void SetPersistable(bool persistable) const override;
   void SetShape(std::unique_ptr<ShapeRects> shape_rects) override;
+  void AckRotateFocus(uint32_t serial, uint32_t handled) override;
 
   XDGToplevelWrapperImpl* AsXDGToplevelWrapper() override;
 
@@ -114,6 +117,11 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
   static void ConfigureRasterScale(void* data,
                                    struct zaura_toplevel* zaura_toplevel,
                                    uint32_t scale_as_uint);
+  static void OnRotateFocus(void* data,
+                            struct zaura_toplevel* zaura_toplevel,
+                            uint32_t serial,
+                            uint32_t direction,
+                            uint32_t restart);
 
   // Send request to wayland compositor to enable a requested decoration mode.
   void SetTopLevelDecorationMode(DecorationMode requested_mode);

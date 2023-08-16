@@ -157,7 +157,7 @@ class TestBookmarkClientWithUndo : public TestBookmarkClient {
 
  private:
   raw_ptr<BookmarkModel> model_ = nullptr;
-  raw_ptr<const BookmarkNode> parent_ = nullptr;
+  raw_ptr<const BookmarkNode, DanglingUntriaged> parent_ = nullptr;
   size_t index_ = 0;
   std::unique_ptr<BookmarkNode> last_removed_node_;
 };
@@ -1043,12 +1043,12 @@ TEST_F(BookmarkModelTest, ClearLastUsedTimeInRange) {
   GURL url("http://foo.com");
   const BookmarkNode* url_node =
       model_->AddURL(bookmark_bar_node, 0, title, url);
-  model_->UpdateLastUsedTime(url_node, time);
+  model_->UpdateLastUsedTime(url_node, time, /*just_opened=*/true);
 
   // Add a folder with child URL.
   const BookmarkNode* folder = model_->AddFolder(bookmark_bar_node, 0, title);
   const BookmarkNode* folder_url_node = model_->AddURL(folder, 0, title, url);
-  model_->UpdateLastUsedTime(folder_url_node, time);
+  model_->UpdateLastUsedTime(folder_url_node, time, /*just_opened=*/true);
   EXPECT_EQ(time, url_node->date_last_used());
   EXPECT_EQ(time, folder_url_node->date_last_used());
 
@@ -1070,12 +1070,12 @@ TEST_F(BookmarkModelTest, ClearLastUsedTimeInRangeForAllTime) {
   GURL url("http://foo.com");
   const BookmarkNode* url_node =
       model_->AddURL(bookmark_bar_node, 0, title, url);
-  model_->UpdateLastUsedTime(url_node, time);
+  model_->UpdateLastUsedTime(url_node, time, /*just_opened=*/true);
 
   // Add a folder with child URL.
   const BookmarkNode* folder = model_->AddFolder(bookmark_bar_node, 0, title);
   const BookmarkNode* folder_url_node = model_->AddURL(folder, 0, title, url);
-  model_->UpdateLastUsedTime(folder_url_node, time);
+  model_->UpdateLastUsedTime(folder_url_node, time, /*just_opened=*/true);
   EXPECT_EQ(time, url_node->date_last_used());
   EXPECT_EQ(time, folder_url_node->date_last_used());
 

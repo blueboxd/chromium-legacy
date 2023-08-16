@@ -54,7 +54,6 @@ class WebappsIconUtils {
   // |is_generated| will be set to |true|.
   // Must be called on a background worker thread.
   static SkBitmap FinalizeLauncherIconInBackground(const SkBitmap& icon,
-                                                   bool is_icon_maskable,
                                                    const GURL& url,
                                                    bool* is_generated);
 
@@ -64,6 +63,7 @@ class WebappsIconUtils {
   static int GetIdealIconCornerRadiusPxForPromptUI();
 
   static void SetIdealShortcutSizeForTesting(int size);
+  static void SetIconSizesForTesting(std::vector<int> sizes);
 };
 
 }  // namespace webapps

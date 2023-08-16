@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/extensions/extensions_dialogs_utils.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_handler.h"
@@ -22,11 +23,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/vector_icons/vector_icons.h"
-#include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/animation/ink_drop.h"
@@ -53,8 +54,6 @@
 #endif
 
 namespace {
-
-using PermissionsManager = extensions::PermissionsManager;
 
 // Updates the `toggle_button` text based on its state.
 std::u16string GetSiteSettingToggleText(bool is_on) {
@@ -93,9 +92,11 @@ ExtensionMenuItemView* GetMenuItem(
 // depending on its state.
 class MessageSection : public views::BoxLayoutView {
  public:
-  explicit MessageSection(
-      base::RepeatingCallback<void(const extensions::ExtensionId&)>
-          allow_callback);
+  MessageSection(base::RepeatingCallback<void()> reload_callback,
+                 base::RepeatingCallback<void(const extensions::ExtensionId&)>
+                     allow_callback,
+                 base::RepeatingCallback<void(const extensions::ExtensionId&)>
+                     dismiss_callback);
   MessageSection(const MessageSection&) = delete;
   const MessageSection& operator=(const MessageSection&) = delete;
   ~MessageSection() override = default;
@@ -120,6 +121,7 @@ class MessageSection : public views::BoxLayoutView {
 
   // Accessors used by tests:
   views::Label* GetTextContainerForTesting() { return text_container_; }
+  views::View* GetReloadContainerForTesting() { return reload_container_; }
   views::View* GetRequestsAccessContainerForTesting() {
     return requests_access_container_;
   }
@@ -128,6 +130,7 @@ class MessageSection : public views::BoxLayoutView {
       const extensions::ExtensionId& extension_id);
 
  private:
+  static constexpr int kReloadContainerMainTextIndex = 0;
   static constexpr int kExtensionItemsContainerIndex = 1;
   static constexpr int kExtensionItemIconIndex = 0;
   static constexpr int kExtensionItemLabelIndex = 1;
@@ -135,19 +138,30 @@ class MessageSection : public views::BoxLayoutView {
   // Removes all extension entries.
   void ClearExtensions();
 
+  // Updates the visibility of the view based on `state_` and
+  // `extension_entries_`.
+  void UpdateVisibility();
+
   // The current state of the section.
   ExtensionsMenuMainPageView::MessageSectionState state_;
 
   // Text container.
   raw_ptr<views::Label> text_container_;
 
+  // Reload container.
+  raw_ptr<views::View> reload_container_;
+  // Callback for the reload button in `reload_container_`.
+  base::RepeatingCallback<void()> reload_callback_;
+
   // Request access container
   raw_ptr<views::View> requests_access_container_;
   // A collection of all the extension entries in the request access container.
   std::map<extensions::ExtensionId, views::View*> extension_entries_;
 
-  // Callback for the allow button for the extension entries.
+  // Callback for the buttons in the extension entries.
   base::RepeatingCallback<void(const extensions::ExtensionId&)> allow_callback_;
+  base::RepeatingCallback<void(const extensions::ExtensionId&)>
+      dismiss_callback_;
 };
 
 BEGIN_VIEW_BUILDER(/* No Export */, MessageSection, views::BoxLayoutView)
@@ -156,15 +170,30 @@ END_VIEW_BUILDER
 DEFINE_VIEW_BUILDER(/* No Export */, MessageSection)
 
 MessageSection::MessageSection(
+    base::RepeatingCallback<void()> reload_callback,
     base::RepeatingCallback<void(const extensions::ExtensionId&)>
-        allow_callback)
-    : allow_callback_(std::move(allow_callback)) {
+        allow_callback,
+    base::RepeatingCallback<void(const extensions::ExtensionId&)>
+        dismiss_callback)
+    : reload_callback_(std::move(reload_callback)),
+      allow_callback_(std::move(allow_callback)),
+      dismiss_callback_(std::move(dismiss_callback)) {
+  auto* layout_provider = ChromeLayoutProvider::Get();
+  const int section_vertical_margin = layout_provider->GetDistanceMetric(
+      DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE);
+  const int section_horizontal_margin = layout_provider->GetDistanceMetric(
+      DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE);
+  const int control_vertical_margin = layout_provider->GetDistanceMetric(
+      DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
+
   views::Builder<MessageSection>(this)
       .SetOrientation(views::BoxLayout::Orientation::kVertical)
       // TODO(crbug.com/1390952): After adding margins, compute radius from a
       // variable or create a const variable.
       .SetBackground(views::CreateThemedRoundedRectBackground(
           kColorExtensionsMenuHighlightedBackground, 4))
+      .SetInsideBorderInsets(
+          gfx::Insets::VH(section_vertical_margin, section_horizontal_margin))
       .AddChildren(
           // Text container.
           views::Builder<views::Label>()
@@ -172,6 +201,37 @@ MessageSection::MessageSection(
               .SetVisible(false)
               .SetTextContext(ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL)
               .SetHorizontalAlignment(gfx::ALIGN_CENTER),
+          // Reload container.
+          views::Builder<views::BoxLayoutView>()
+              .CopyAddressTo(&reload_container_)
+              .SetVisible(false)
+              .SetOrientation(views::BoxLayout::Orientation::kVertical)
+              .SetCrossAxisAlignment(
+                  views::BoxLayout::CrossAxisAlignment::kCenter)
+              .AddChildren(
+                  // Main text.
+                  views::Builder<views::Label>()
+                      // Text will be set based on the `state_`.
+                      .SetTextContext(
+                          ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL)
+                      .SetTextStyle(views::style::STYLE_EMPHASIZED),
+                  // Description text.
+                  views::Builder<views::Label>()
+                      .SetText(l10n_util::GetStringUTF16(
+                          IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RELOAD_CONTAINER_DESCRIPTION_TEXT))
+                      .SetTextContext(
+                          ChromeTextContext::CONTEXT_DIALOG_BODY_TEXT_SMALL)
+                      .SetMultiLine(true),
+                  // Reload button.
+                  views::Builder<views::MdTextButton>()
+                      .SetCallback(base::BindRepeating(reload_callback_))
+                      .SetProperty(
+                          views::kMarginsKey,
+                          gfx::Insets::TLBR(control_vertical_margin, 0, 0, 0))
+                      .SetText(l10n_util::GetStringUTF16(
+                          IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RELOAD_CONTAINER_BUTTON_TEXT))
+                      .SetTooltipText(l10n_util::GetStringUTF16(
+                          IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RELOAD_CONTAINER_BUTTON_TOOLTIP))),
           // Requests access container.
           views::Builder<views::BoxLayoutView>()
               .CopyAddressTo(&requests_access_container_)
@@ -200,20 +260,45 @@ void MessageSection::Update(
       text_container_->SetText(l10n_util::GetStringUTF16(
           IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RESTRICTED_ACCESS_TEXT));
       text_container_->SetVisible(true);
+      reload_container_->SetVisible(false);
       requests_access_container_->SetVisible(false);
       ClearExtensions();
       break;
     case ExtensionsMenuMainPageView::MessageSectionState::kUserCustomizedAccess:
       text_container_->SetVisible(false);
+      reload_container_->SetVisible(false);
       requests_access_container_->SetVisible(!extension_entries_.empty());
       break;
-    case ExtensionsMenuMainPageView::MessageSectionState::kUserBlockedAcces:
+    case ExtensionsMenuMainPageView::MessageSectionState::
+        kUserCustomizedAccessReload:
+      text_container_->SetVisible(false);
+      reload_container_->SetVisible(true);
+      requests_access_container_->SetVisible(false);
+      views::AsViewClass<views::Label>(
+          reload_container_->children()[kReloadContainerMainTextIndex])
+          ->SetText(l10n_util::GetStringUTF16(
+              IDS_EXTENSIONS_MENU_MESSAGE_SECTION_USER_CUSTOMIZED_ACCESS_TEXT));
+      break;
+    case ExtensionsMenuMainPageView::MessageSectionState::kUserBlockedAccess:
       text_container_->SetText(l10n_util::GetStringUTF16(
           IDS_EXTENSIONS_MENU_MESSAGE_SECTION_USER_BLOCKED_ACCESS_TEXT));
       text_container_->SetVisible(true);
+      reload_container_->SetVisible(false);
       requests_access_container_->SetVisible(false);
       ClearExtensions();
+      break;
+    case ExtensionsMenuMainPageView::MessageSectionState::
+        kUserBlockedAccessReload:
+      text_container_->SetVisible(false);
+      reload_container_->SetVisible(true);
+      requests_access_container_->SetVisible(false);
+      views::AsViewClass<views::Label>(
+          reload_container_->children()[kReloadContainerMainTextIndex])
+          ->SetText(l10n_util::GetStringUTF16(
+              IDS_EXTENSIONS_MENU_MESSAGE_SECTION_USER_BLOCKED_ACCESS_TEXT));
+      break;
   }
+  UpdateVisibility();
 }
 
 void MessageSection::AddOrUpdateExtension(const extensions::ExtensionId& id,
@@ -227,22 +312,49 @@ void MessageSection::AddOrUpdateExtension(const extensions::ExtensionId& id,
 
   if (extension_iter == extension_entries_.end()) {
     // Add new extension entry.
+    auto* layout_provider = ChromeLayoutProvider::Get();
+    const int control_vertical_margin = layout_provider->GetDistanceMetric(
+        DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
+    const int related_control_horizontal_margin =
+        layout_provider->GetDistanceMetric(
+            DISTANCE_RELATED_LABEL_HORIZONTAL_LIST);
+
     auto item =
         views::Builder<views::FlexLayoutView>()
             .SetOrientation(views::LayoutOrientation::kHorizontal)
+            .SetProperty(views::kMarginsKey,
+                         gfx::Insets::TLBR(control_vertical_margin, 0, 0, 0))
             .AddChildren(
                 views::Builder<views::ImageView>().SetImage(icon),
-                views::Builder<views::Label>().SetText(name),
+                views::Builder<views::Label>()
+                    .SetText(name)
+                    .SetHorizontalAlignment(gfx::ALIGN_LEFT)
+                    .SetProperty(views::kFlexBehaviorKey,
+                                 views::FlexSpecification(
+                                     views::MinimumFlexSizeRule::kScaleToZero,
+                                     views::MaximumFlexSizeRule::kUnbounded)),
+                views::Builder<views::MdTextButton>()
+                    .SetCallback(base::BindRepeating(dismiss_callback_, id))
+                    .SetText(l10n_util::GetStringUTF16(
+                        IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_DISMISS_BUTTON_TEXT))
+                    .SetTooltipText(l10n_util::GetStringUTF16(
+                        IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_DISMISS_BUTTON_TOOLTIP)),
                 views::Builder<views::MdTextButton>()
                     .SetCallback(base::BindRepeating(allow_callback_, id))
                     .SetText(l10n_util::GetStringUTF16(
-                        IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_ALLOW_BUTTON_TEXT)))
+                        IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_ALLOW_BUTTON_TEXT))
+                    .SetTooltipText(l10n_util::GetStringUTF16(
+                        IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_ALLOW_BUTTON_TOOLTIP))
+                    .SetProperty(
+                        views::kMarginsKey,
+                        gfx::Insets::TLBR(0, related_control_horizontal_margin,
+                                          0, 0)))
             .Build();
     extension_entries_.insert({id, item.get()});
     requests_access_container_->children()[1]->AddChildViewAt(std::move(item),
                                                               index);
-
     requests_access_container_->SetVisible(!extension_entries_.empty());
+    UpdateVisibility();
   } else {
     // Update extension entry.
     std::vector<View*> extension_items = extension_iter->second->children();
@@ -270,12 +382,23 @@ void MessageSection::RemoveExtension(const extensions::ExtensionId& id) {
   extension_entries_.erase(extension_iter);
 
   requests_access_container_->SetVisible(!extension_entries_.empty());
+  UpdateVisibility();
 }
 
 void MessageSection::ClearExtensions() {
   requests_access_container_->children()[kExtensionItemsContainerIndex]
       ->RemoveAllChildViews();
   extension_entries_.clear();
+}
+
+void MessageSection::UpdateVisibility() {
+  // Section is always visible unless state is "user customized access" and no
+  // extension is requesting site access.
+  bool is_visible = state_ == ExtensionsMenuMainPageView::MessageSectionState::
+                                  kUserCustomizedAccess
+                        ? !extension_entries_.empty()
+                        : true;
+  SetVisible(is_visible);
 }
 
 std::vector<extensions::ExtensionId> MessageSection::GetExtensionsForTesting() {
@@ -307,6 +430,28 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
                                /*adjust_height_for_width =*/true)
           .WithWeight(1);
 
+  ChromeLayoutProvider* const chrome_layout_provider =
+      ChromeLayoutProvider::Get();
+  const int vertical_spacing = chrome_layout_provider->GetDistanceMetric(
+      DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE);
+  const int horizontal_spacing = chrome_layout_provider->GetDistanceMetric(
+      DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL);
+  // This value must be the same as the `HoverButton` vertical margin.
+  const int hover_button_vertical_spacing =
+      chrome_layout_provider->GetDistanceMetric(
+          DISTANCE_CONTROL_LIST_VERTICAL) /
+      2;
+  const int icon_size = chrome_layout_provider->GetDistanceMetric(
+      DISTANCE_EXTENSIONS_MENU_BUTTON_ICON_SIZE);
+
+  views::LayoutProvider* layout_provider = views::LayoutProvider::Get();
+  const gfx::Insets dialog_insets =
+      layout_provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG);
+
+  // Views that need configuration after construction (e.g access size after a
+  // separate view is constructed).
+  views::Label* subheader_title;
+
   views::Builder<ExtensionsMenuMainPageView>(this)
       .SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical))
@@ -316,6 +461,13 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
           // Subheader section.
           views::Builder<views::FlexLayoutView>()
               .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
+              // Add top dialog margins, since its the first element, and
+              // horizontal dialog margins. Bottom margin will be added by the
+              // next view (in general, vertical margins should be added by the
+              // bottom view).
+              .SetInteriorMargin(gfx::Insets::TLBR(dialog_insets.top(),
+                                                   dialog_insets.left(), 0,
+                                                   dialog_insets.right()))
               .SetProperty(views::kFlexBehaviorKey, stretch_specification)
               .SetVisible(true)
               .AddChildren(
@@ -326,6 +478,7 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
                                    stretch_specification)
                       .AddChildren(
                           views::Builder<views::Label>()
+                              .CopyAddressTo(&subheader_title)
                               .SetText(l10n_util::GetStringUTF16(
                                   IDS_EXTENSIONS_MENU_TITLE))
                               .SetHorizontalAlignment(gfx::ALIGN_LEFT)
@@ -341,17 +494,13 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
                               .SetMultiLine(true)
                               .SetProperty(views::kFlexBehaviorKey,
                                            stretch_specification)),
-// TODO(crbug.com/1390952): Move webstore, setting, and toggle
-// button under close button. This will be done as part of
-// adding margins to the menu.
-// Webstore button.
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
                   views::Builder<views::ImageButton>(
                       views::CreateVectorImageButtonWithNativeTheme(
                           base::BindRepeating(
                               &chrome::ShowWebStore, browser_,
                               extension_urls::kExtensionsMenuUtmSource),
-                          vector_icons::kGoogleChromeWebstoreIcon))
+                          vector_icons::kGoogleChromeWebstoreIcon, icon_size))
                       .SetAccessibleName(l10n_util::GetStringUTF16(
                           IDS_EXTENSIONS_MENU_MAIN_PAGE_OPEN_CHROME_WEBSTORE_ACCESSIBLE_NAME))
                       .CustomConfigure(
@@ -368,8 +517,11 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
                                 chrome::ShowExtensions(browser);
                               },
                               browser_),
-                          vector_icons::kSettingsIcon))
-                      .SetAccessibleName(
+                          vector_icons::kSettingsIcon, icon_size))
+                      .SetProperty(
+                          views::kMarginsKey,
+                          gfx::Insets::TLBR(0, horizontal_spacing, 0, 0))
+                      .SetTooltipText(
                           l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS))
                       .CustomConfigure(
                           base::BindOnce([](views::ImageButton* view) {
@@ -379,17 +531,24 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
                   // Toggle site settings button.
                   views::Builder<views::ToggleButton>()
                       .CopyAddressTo(&site_settings_toggle_)
+                      .SetProperty(
+                          views::kMarginsKey,
+                          gfx::Insets::TLBR(0, horizontal_spacing, 0, 0))
+                      .SetAccessibleName(l10n_util::GetStringUTF16(
+                          IDS_EXTENSIONS_MENU_SITE_SETTINGS_TOGGLE_ACCESSIBLE_NAME))
                       .SetCallback(base::BindRepeating(
-                          &ExtensionsMenuMainPageView::OnToggleButtonPressed,
-                          base::Unretained(this))),
-                  // Close button.
-                  views::Builder<views::Button>(
-                      views::BubbleFrameView::CreateCloseButton(
+                          [](views::ToggleButton* toggle_button,
+                             base::RepeatingCallback<void(bool)> callback) {
+                            callback.Run(toggle_button->GetIsOn());
+                          },
+                          site_settings_toggle_,
                           base::BindRepeating(
-                              &ExtensionsMenuHandler::CloseBubble,
-                              base::Unretained(menu_handler_))))),
+                              &ExtensionsMenuHandler::
+                                  OnSiteSettingsToggleButtonPressed,
+                              base::Unretained(menu_handler))))),
           // Contents.
-          views::Builder<views::Separator>(),
+          views::Builder<views::Separator>().SetProperty(
+              views::kMarginsKey, gfx::Insets::VH(vertical_spacing, 0)),
           views::Builder<views::ScrollView>()
               .ClipHeightTo(0, kMaxExtensionButtonsHeightDp)
               .SetDrawOverflowIndicator(false)
@@ -398,22 +557,50 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
               .SetContents(
                   views::Builder<views::BoxLayoutView>()
                       .SetOrientation(views::BoxLayout::Orientation::kVertical)
+                      // Horizontal dialog margins are added inside the scroll
+                      // view contents to have the scroll bar by the dialog
+                      // border.
+                      .SetInsideBorderInsets(
+                          gfx::Insets::VH(0, dialog_insets.left()))
                       .AddChildren(
                           // Message section.
                           views::Builder<MessageSection>(
                               std::make_unique<MessageSection>(
                                   base::BindRepeating(
                                       &ExtensionsMenuHandler::
+                                          OnReloadPageButtonClicked,
+                                      base::Unretained(menu_handler_)),
+                                  base::BindRepeating(
+                                      &ExtensionsMenuHandler::
                                           OnAllowExtensionClicked,
+                                      base::Unretained(menu_handler_)),
+                                  base::BindRepeating(
+                                      &ExtensionsMenuHandler::
+                                          OnDismissExtensionClicked,
                                       base::Unretained(menu_handler_))))
                               .CopyAddressTo(&message_section_),
                           // Menu items section.
                           views::Builder<views::BoxLayoutView>()
                               .CopyAddressTo(&menu_items_)
+                              // Add bottom dialog margins since it's the last
+                              // element.
+                              .SetProperty(
+                                  views::kMarginsKey,
+                                  gfx::Insets::TLBR(
+                                      0, 0,
+                                      dialog_insets.bottom() -
+                                          hover_button_vertical_spacing,
+                                      0))
                               .SetOrientation(
                                   views::BoxLayout::Orientation::kVertical))))
 
       .BuildChildren();
+
+  // Align the site setting toggle vertically with the subheader title by
+  // getting the label height after construction.
+  site_settings_toggle_->SetPreferredSize(
+      gfx::Size(site_settings_toggle_->GetPreferredSize().width(),
+                subheader_title->GetLineHeight()));
 }
 
 void ExtensionsMenuMainPageView::CreateAndInsertMenuItem(
@@ -445,21 +632,6 @@ void ExtensionsMenuMainPageView::RemoveMenuItem(
   menu_items_->RemoveChildViewT(item);
 }
 
-void ExtensionsMenuMainPageView::OnToggleButtonPressed() {
-  const url::Origin& origin =
-      GetActiveWebContents()->GetPrimaryMainFrame()->GetLastCommittedOrigin();
-  PermissionsManager::UserSiteSetting site_setting =
-      site_settings_toggle_->GetIsOn()
-          ? PermissionsManager::UserSiteSetting::kCustomizeByExtension
-          : PermissionsManager::UserSiteSetting::kBlockAllExtensions;
-
-  PermissionsManager::Get(browser_->profile())
-      ->UpdateUserSiteSetting(origin, site_setting);
-
-  // TODO(crbug.com/1390952): Show reload message in menu if any extension needs
-  // a page refresh for the update to take effect.
-}
-
 void ExtensionsMenuMainPageView::UpdateSubheader(
     const std::u16string& current_site,
     bool is_site_settings_toggle_visible,
@@ -469,8 +641,6 @@ void ExtensionsMenuMainPageView::UpdateSubheader(
   site_settings_toggle_->SetVisible(is_site_settings_toggle_visible);
   site_settings_toggle_->SetIsOn(is_site_settings_toggle_on);
   site_settings_toggle_->SetTooltipText(
-      GetSiteSettingToggleText(is_site_settings_toggle_on));
-  site_settings_toggle_->SetAccessibleName(
       GetSiteSettingToggleText(is_site_settings_toggle_on));
 }
 
@@ -490,6 +660,7 @@ void ExtensionsMenuMainPageView::AddOrUpdateExtensionRequestingAccess(
 void ExtensionsMenuMainPageView::RemoveExtensionRequestingAccess(
     const extensions::ExtensionId& id) {
   message_section_->RemoveExtension(id);
+  SizeToPreferredSize();
 }
 
 std::vector<ExtensionMenuItemView*> ExtensionsMenuMainPageView::GetMenuItems()
@@ -502,11 +673,16 @@ std::vector<ExtensionMenuItemView*> ExtensionsMenuMainPageView::GetMenuItems()
 }
 
 views::Label* ExtensionsMenuMainPageView::GetTextContainerForTesting() {
-  return message_section_->GetTextContainerForTesting();
+  return message_section_->GetTextContainerForTesting();  // IN-TEST
 }
+
+views::View* ExtensionsMenuMainPageView::GetReloadContainerForTesting() {
+  return message_section_->GetReloadContainerForTesting();  // IN-TEST
+}
+
 views::View*
 ExtensionsMenuMainPageView::GetRequestsAccessContainerForTesting() {
-  return message_section_->GetRequestsAccessContainerForTesting();
+  return message_section_->GetRequestsAccessContainerForTesting();  // IN-TEST
 }
 
 std::vector<extensions::ExtensionId>

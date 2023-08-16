@@ -64,6 +64,7 @@
 #include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
 #include "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
+#include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/ui/payments/bubble_show_options.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
@@ -102,7 +103,7 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
+#include "chrome/browser/android/preferences/autofill/settings_launcher_helper.h"
 #include "chrome/browser/android/signin/signin_bridge.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
@@ -387,7 +388,7 @@ ChromeAutofillClient::CreateCreditCardInternalAuthenticator(
   auto* cad = static_cast<ContentAutofillDriver*>(driver);
   content::RenderFrameHost* rfh = cad->render_frame_host();
 #if BUILDFLAG(IS_ANDROID)
-  return std::make_unique<InternalAuthenticatorAndroid>(rfh);
+  return std::make_unique<webauthn::InternalAuthenticatorAndroid>(rfh);
 #else
   return std::make_unique<content::InternalAuthenticatorImpl>(rfh);
 #endif
@@ -528,6 +529,16 @@ void ChromeAutofillClient::ShowVirtualCardEnrollDialog(
                          std::move(decline_virtual_card_callback));
 }
 
+payments::MandatoryReauthManager*
+ChromeAutofillClient::GetOrCreatePaymentsMandatoryReauthManager() {
+  if (!payments_mandatory_reauth_manager_) {
+    payments_mandatory_reauth_manager_ =
+        std::make_unique<payments::MandatoryReauthManager>(this);
+  }
+
+  return payments_mandatory_reauth_manager_.get();
+}
+
 void ChromeAutofillClient::ShowMandatoryReauthOptInPrompt(
     base::OnceClosure accept_mandatory_reauth_callback,
     base::OnceClosure cancel_mandatory_reauth_callback,
@@ -537,6 +548,14 @@ void ChromeAutofillClient::ShowMandatoryReauthOptInPrompt(
       ->ShowBubble(std::move(accept_mandatory_reauth_callback),
                    std::move(cancel_mandatory_reauth_callback),
                    std::move(close_mandatory_reauth_callback));
+}
+
+void ChromeAutofillClient::ShowMandatoryReauthOptInConfirmation() {
+  MandatoryReauthBubbleControllerImpl::CreateForWebContents(web_contents());
+  // TODO(crbug.com/4555994): Pass in the bubble type as a parameter so we
+  // enforce that the confirmation bubble is shown.
+  MandatoryReauthBubbleControllerImpl::FromWebContents(web_contents())
+      ->ReshowBubble();
 }
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
@@ -1077,18 +1096,6 @@ bool ChromeAutofillClient::IsContextSecure() const {
   // common, just use IsSslCertificateValid().
   return entry && entry->GetURL().SchemeIsCryptographic() &&
          security_level != security_state::DANGEROUS;
-}
-
-void ChromeAutofillClient::ExecuteCommand(Suggestion::FrontendId id) {
-#if BUILDFLAG(IS_ANDROID)
-  if (id.as_popup_item_id() == PopupItemId::kCreditCardSigninPromo) {
-    auto* window = web_contents()->GetNativeView()->GetWindowAndroid();
-    if (window) {
-      SigninBridge::LaunchSigninActivity(
-          window, signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
-    }
-  }
-#endif
 }
 
 void ChromeAutofillClient::OpenPromoCodeOfferDetailsURL(const GURL& url) {

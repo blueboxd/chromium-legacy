@@ -23,6 +23,7 @@
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
+#include "components/content_settings/core/common/content_settings_metadata.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -68,6 +69,10 @@ const char kObsoletePpapiBrokerExceptionsPref[] =
     "profile.content_settings.exceptions.ppapi_broker";
 #endif  // !BUILDFLAG(IS_ANDROID)
 #endif  // !BUILDFLAG(IS_IOS)
+const char
+    kObsoleteGetDisplayMediaSetAutoSelectAllScreensAllowedForUrlsExceptionsPref
+        [] = "profile.content_settings.exceptions.get_display_media_set_select_"
+             "all_screens";
 
 }  // namespace
 
@@ -113,6 +118,8 @@ void PrefProvider::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(kObsoletePpapiBrokerExceptionsPref);
 #endif  // !BUILDFLAG(IS_ANDROID)
 #endif  // !BUILDFLAG(IS_IOS)
+  registry->RegisterListPref(
+      kObsoleteGetDisplayMediaSetAutoSelectAllScreensAllowedForUrlsExceptionsPref);
 }
 
 PrefProvider::PrefProvider(PrefService* prefs,
@@ -208,33 +215,33 @@ bool PrefProvider::SetWebsiteSetting(
 
   // Last visit timestamps should only be tracked for ContentSettings that are
   // "ASK" by default.
-  DCHECK(!constraints.track_last_visit_for_autoexpiration ||
+  DCHECK(!constraints.track_last_visit_for_autoexpiration() ||
          content_settings::CanTrackLastVisit(content_type));
   // Last visit timestamps can only be tracked for host-specific pattern.
-  DCHECK(!constraints.track_last_visit_for_autoexpiration ||
+  DCHECK(!constraints.track_last_visit_for_autoexpiration() ||
          !primary_pattern.GetHost().empty());
 
-  base::Time last_visited = constraints.track_last_visit_for_autoexpiration
+  base::Time last_visited = constraints.track_last_visit_for_autoexpiration()
                                 ? GetCoarseVisitedTime(clock_->Now())
                                 : base::Time();
 
   // If SessionModel is OneTime, we know for sure that a one time permission
   // has been set by the One Time Provider, therefore we reset a potentially
   // existing Allow Always setting.
-  if (constraints.session_model == SessionModel::OneTime) {
+  if (constraints.session_model() == SessionModel::OneTime) {
     DCHECK(content_type == ContentSettingsType::GEOLOCATION ||
            content_type == ContentSettingsType::MEDIASTREAM_MIC ||
            content_type == ContentSettingsType::MEDIASTREAM_CAMERA);
     in_value = base::Value();
   }
 
+  RuleMetaData metadata;
+  metadata.set_last_modified(modified_time);
+  metadata.set_last_visited(last_visited);
+  metadata.SetFromConstraints(constraints);
   GetPref(content_type)
       ->SetWebsiteSetting(primary_pattern, secondary_pattern,
-                          std::move(in_value),
-                          {.last_modified = modified_time,
-                           .last_visited = last_visited,
-                           .expiration = constraints.expiration,
-                           .session_model = constraints.session_model});
+                          std::move(in_value), metadata);
   return true;
 }
 
@@ -257,13 +264,13 @@ bool PrefProvider::SetLastVisitTime(
     if (rule->primary_pattern == primary_pattern &&
         rule->secondary_pattern == secondary_pattern) {
       // This should only be updated for settings that are already tracked.
-      DCHECK(rule->metadata.last_visited != base::Time());
+      DCHECK_NE(rule->metadata.last_visited(), base::Time());
 
       ContentSettingsPattern primary = std::move(rule->primary_pattern);
       ContentSettingsPattern secondary = std::move(rule->secondary_pattern);
       base::Value value = rule->TakeValue();
       RuleMetaData metadata = std::move(rule->metadata);
-      metadata.last_visited = time;
+      metadata.set_last_visited(time);
 
       // Reset iterator and Rule to release lock before updating setting.
       it.reset();
@@ -353,6 +360,8 @@ void PrefProvider::DiscardOrMigrateObsoletePreferences() {
   prefs_->ClearPref(kObsoletePpapiBrokerExceptionsPref);
 #endif  // !BUILDFLAG(IS_ANDROID)
 #endif  // !BUILDFLAG(IS_IOS)
+  prefs_->ClearPref(
+      kObsoleteGetDisplayMediaSetAutoSelectAllScreensAllowedForUrlsExceptionsPref);
 }
 
 void PrefProvider::SetClockForTesting(base::Clock* clock) {

@@ -41,11 +41,11 @@ BASE_FEATURE(kEnableNTPViewHierarchyRepair,
 
 BASE_FEATURE(kEnableCheckVisibilityOnAttentionLogStart,
              "EnableCheckVisibilityOnAttentionLogStart",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableRefineDataSourceReloadReporting,
              "EnableRefineDataSourceReloadReporting",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFeedHeaderSettings,
              "FeedHeaderSettings",
@@ -54,10 +54,6 @@ BASE_FEATURE(kFeedHeaderSettings,
 BASE_FEATURE(kOverrideFeedSettings,
              "OverrideFeedSettings",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kEnableFeedImageCaching,
-             "EnableFeedImageCaching",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableFeedSyntheticCapabilities,
              "EnableFeedSyntheticCapabilities",
@@ -174,7 +170,7 @@ bool IsRefineDataSourceReloadReportingEnabled() {
 
 bool IsStickyHeaderDisabledForFollowingFeed() {
   return base::GetFieldTrialParamByFeatureAsBool(
-      kFeedHeaderSettings, kDisableStickyHeaderForFollowingFeed, false);
+      kFeedHeaderSettings, kDisableStickyHeaderForFollowingFeed, true);
 }
 
 bool IsDotEnabledForNewFollowedContent() {
@@ -182,16 +178,12 @@ bool IsDotEnabledForNewFollowedContent() {
       kFeedHeaderSettings, kEnableDotForNewFollowedContent, false);
 }
 
-bool IsFeedImageCachingEnabled() {
-  return base::FeatureList::IsEnabled(kEnableFeedImageCaching);
-}
-
 bool IsFeedSyntheticCapabilitiesEnabled() {
   return base::FeatureList::IsEnabled(kEnableFeedSyntheticCapabilities);
 }
 
 int FollowingFeedHeaderHeight() {
-  int defaultWebChannelsHeaderHeight = 52;
+  int defaultWebChannelsHeaderHeight = 30;
   return base::GetFieldTrialParamByFeatureAsInt(kFeedHeaderSettings,
                                                 kOverrideFeedHeaderHeight,
                                                 defaultWebChannelsHeaderHeight);

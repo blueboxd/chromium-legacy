@@ -9,7 +9,7 @@
 + (NSButton*)buttonWithTitle:(NSString*)title
                       action:(SEL)action
                       target:(id)target {
-  NSButton* button = [[[NSButton alloc] initWithFrame:NSZeroRect] autorelease];
+  NSButton* button = [[NSButton alloc] initWithFrame:NSZeroRect];
   [button setAction:action];
   [button setButtonType:NSMomentaryLightButton];
   [button setFocusRingType:NSFocusRingTypeExterior];
@@ -21,7 +21,7 @@
 }
 
 + (NSButton*)checkboxWithTitle:(NSString*)title {
-  NSButton* button = [[[NSButton alloc] initWithFrame:NSZeroRect] autorelease];
+  NSButton* button = [[NSButton alloc] initWithFrame:NSZeroRect];
   [button setButtonType:NSSwitchButton];
   [button setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
   [button setBezelStyle:NSRegularSquareBezelStyle];

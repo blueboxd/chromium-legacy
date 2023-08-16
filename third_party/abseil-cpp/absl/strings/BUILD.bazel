@@ -774,10 +774,10 @@ cc_test(
         "//absl/base:config",
         "//absl/base:core_headers",
         "//absl/base:endian",
-        "//absl/base:raw_logging_internal",
         "//absl/container:fixed_array",
         "//absl/hash",
         "//absl/log",
+        "//absl/log:check",
         "//absl/random",
         "@com_google_googletest//:gtest_main",
     ],
@@ -1019,7 +1019,7 @@ cc_test(
         ":pow10_helper",
         ":strings",
         "//absl/base:config",
-        "//absl/base:raw_logging_internal",
+        "//absl/log",
         "//absl/random",
         "//absl/random:distributions",
         "@com_google_googletest//:gtest_main",
@@ -1096,7 +1096,7 @@ cc_test(
     deps = [
         ":strings",
         "//absl/base:config",
-        "//absl/base:raw_logging_internal",
+        "//absl/log:check",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -1169,6 +1169,7 @@ cc_library(
         ":strings",
         "//absl/base:config",
         "//absl/base:core_headers",
+        "//absl/container:inlined_vector",
         "//absl/functional:function_ref",
         "//absl/meta:type_traits",
         "//absl/numeric:bits",
@@ -1253,6 +1254,7 @@ cc_test(
         ":strings",
         "//absl/base:core_headers",
         "//absl/base:raw_logging_internal",
+        "//absl/log",
         "//absl/types:optional",
         "@com_google_googletest//:gtest_main",
     ],
@@ -1316,5 +1318,17 @@ cc_binary(
         ":strings",
         "//absl/base",
         "//absl/types:optional",
+    ],
+)
+
+cc_test(
+    name = "char_formatting_test",
+    srcs = [
+        "char_formatting_test.cc",
+    ],
+    deps = [
+        ":str_format",
+        ":strings",
+        "@com_google_googletest//:gtest_main",
     ],
 )

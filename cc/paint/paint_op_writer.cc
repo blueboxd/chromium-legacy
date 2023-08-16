@@ -6,9 +6,11 @@
 
 #include <memory>
 #include <type_traits>
+#include <vector>
 
 #include "base/bits.h"
 #include "base/notreached.h"
+#include "cc/paint/color_filter.h"
 #include "cc/paint/draw_image.h"
 #include "cc/paint/image_provider.h"
 #include "cc/paint/image_transfer_cache_entry.h"
@@ -36,10 +38,12 @@
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/core/SkSize.h"
-#include "third_party/skia/include/private/chromium/GrSlug.h"
+#include "third_party/skia/include/effects/SkHighContrastFilter.h"
 #include "third_party/skia/include/private/chromium/SkChromeRemoteGlyphCache.h"
+#include "third_party/skia/include/private/chromium/Slug.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
+#include "ui/gfx/mojom/hdr_metadata.mojom.h"
 
 namespace cc {
 namespace {
@@ -88,11 +92,33 @@ size_t PaintOpWriter::SerializedSize(const SkColorSpace* color_space) {
 }
 
 // static
+size_t PaintOpWriter::SerializedSize(const gfx::HDRMetadata& hdr_metadata) {
+  return SerializedSizeOfBytes(
+      gfx::mojom::HDRMetadata::Serialize(&hdr_metadata).size());
+}
+
+// static
 size_t PaintOpWriter::SerializedSize(const PaintRecord& record) {
   // TODO(khushalsagar): Querying the size of a PaintRecord is not supported.
   // This works only for security constrained serialization which ignores
   // records and writes only a size_t(0).
   return SerializedSize<size_t>();
+}
+
+// static
+size_t PaintOpWriter::SerializedSize(const SkHighContrastConfig& config) {
+  return SerializedSize(config.fGrayscale) +
+         SerializedSize(config.fInvertStyle) + SerializedSize(config.fContrast);
+}
+
+// static
+size_t PaintOpWriter::SerializedSize(const ColorFilter* filter) {
+  if (!filter) {
+    return SerializedSize(ColorFilter::Type::kNull);
+  }
+  base::CheckedNumeric<size_t> size = SerializedSize(filter->type_);
+  size += filter->SerializedDataSize();
+  return size.ValueOrDie();
 }
 
 // static
@@ -298,7 +324,7 @@ void PaintOpWriter::Write(const PaintFlags& flags, const SkM44& current_ctm) {
 
   WriteFlattenable(flags.path_effect_.get());
   WriteFlattenable(flags.mask_filter_.get());
-  WriteFlattenable(flags.color_filter_.get());
+  Write(flags.color_filter_.get());
 
   if (enable_security_constraints_)
     WriteSize(static_cast<size_t>(0u));
@@ -424,6 +450,12 @@ void PaintOpWriter::WriteImage(const gpu::Mailbox& mailbox) {
   DidWrite(sizeof(mailbox.name));
 }
 
+void PaintOpWriter::Write(const SkHighContrastConfig& config) {
+  WriteSimple(config.fGrayscale);
+  WriteEnum(config.fInvertStyle);
+  WriteSimple(config.fContrast);
+}
+
 void PaintOpWriter::Write(const sk_sp<SkData>& data) {
   if (data.get() && data->size()) {
     WriteSize(data->size());
@@ -464,6 +496,13 @@ void PaintOpWriter::Write(const SkColorSpace* color_space) {
   DidWrite(written);
 }
 
+void PaintOpWriter::Write(const gfx::HDRMetadata& hdr_metadata) {
+  std::vector<uint8_t> bytes =
+      gfx::mojom::HDRMetadata::Serialize(&hdr_metadata);
+  WriteSize(bytes.size());
+  WriteData(bytes.size(), bytes.data());
+}
+
 void PaintOpWriter::Write(const SkGainmapInfo& gainmap_info) {
   Write(gainmap_info.fGainmapRatioMin);
   Write(gainmap_info.fGainmapRatioMax);
@@ -485,7 +524,7 @@ void PaintOpWriter::Write(const SkGainmapInfo& gainmap_info) {
   Write(base_image_type);
 }
 
-void PaintOpWriter::Write(const sk_sp<GrSlug>& slug) {
+void PaintOpWriter::Write(const sk_sp<sktext::gpu::Slug>& slug) {
   if (!valid_)
     return;
 
@@ -687,6 +726,15 @@ void PaintOpWriter::AlignMemory(size_t alignment) {
   remaining_bytes_ -= padding;
 }
 
+void PaintOpWriter::Write(const ColorFilter* filter) {
+  if (!filter) {
+    WriteEnum(ColorFilter::Type::kNull);
+    return;
+  }
+  WriteEnum(filter->type_);
+  filter->SerializeData(*this);
+}
+
 void PaintOpWriter::Write(const PaintFilter* filter, const SkM44& current_ctm) {
   if (!filter) {
     WriteEnum(PaintFilter::Type::kNullFilter);
@@ -782,7 +830,7 @@ void PaintOpWriter::Write(const PaintFilter* filter, const SkM44& current_ctm) {
 
 void PaintOpWriter::Write(const ColorFilterPaintFilter& filter,
                           const SkM44& current_ctm) {
-  WriteFlattenable(filter.color_filter().get());
+  Write(filter.color_filter().get());
   Write(filter.input().get(), current_ctm);
 }
 
@@ -808,7 +856,8 @@ void PaintOpWriter::Write(const DropShadowPaintFilter& filter,
 
 void PaintOpWriter::Write(const MagnifierPaintFilter& filter,
                           const SkM44& current_ctm) {
-  WriteSimple(filter.src_rect());
+  WriteSimple(filter.lens_bounds());
+  WriteSimple(filter.zoom_amount());
   WriteSimple(filter.inset());
   Write(filter.input().get(), current_ctm);
 }
@@ -822,8 +871,6 @@ void PaintOpWriter::Write(const ComposePaintFilter& filter,
 void PaintOpWriter::Write(const AlphaThresholdPaintFilter& filter,
                           const SkM44& current_ctm) {
   Write(filter.region());
-  WriteSimple(filter.inner_min());
-  WriteSimple(filter.outer_max());
   Write(filter.input().get(), current_ctm);
 }
 

@@ -47,6 +47,12 @@ const char kESimProfiles[] = "cros_esim.esim_profiles";
 const char kManagedCellularIccidSmdpPair[] =
     "cros_esim.managed_iccid_smdp_pair";
 
+// A boolean pref for whether playing charging sounds is enabled.
+const char kChargingSoundsEnabled[] = "ash.charging_sounds.enabled";
+
+// A boolean pref for whether playing a low battery sound is enabled.
+const char kLowBatterySoundEnabled[] = "ash.low_battery_sound.enabled";
+
 // A dictionary pref to hold the mute setting for all the currently known
 // audio devices.
 const char kAudioDevicesMute[] = "settings.audio.devices.mute";
@@ -425,18 +431,10 @@ const char kAccessibilityAutoclickMenuPosition[] =
 // Whether to enable color filtering settings.
 const char kAccessibilityColorFiltering[] =
     "settings.a11y.color_filtering.enabled";
-// How much to greyscale the display.
-const char kAccessibilityGreyscaleAmount[] =
-    "settings.a11y.color_filtering.greyscale_amount";
-// How much to saturate the display.
-const char kAccessibilitySaturationAmount[] =
-    "settings.a11y.color_filtering.saturation_amount";
-// How much sepia the display.
-const char kAccessibilitySepiaAmount[] =
-    "settings.a11y.color_filtering.sepia_amount";
-// How much to rotate the hue on the display.
-const char kAccessibilityHueRotationAmount[] =
-    "settings.a11y.color_filtering.hue_rotation_amount";
+// Whether color filtering has been set up yet. It should be set up on first
+// use.
+const char kAccessibilityColorFilteringHasBeenSetup[] =
+    "settings.a11y.color_filtering.setup";
 // The amount of a color vision correction filter to apply.
 const char kAccessibilityColorVisionCorrectionAmount[] =
     "settings.a11y.color_filtering.color_vision_correction_amount";
@@ -839,6 +837,9 @@ const char kPowerAdaptiveChargingEnabled[] = "power.adaptive_charging_enabled";
 const char kPowerAdaptiveChargingNudgeShown[] =
     "power.adaptive_charging_nudge_shown";
 
+// Boolean pref for if ChromeOS battery saver is active.
+const char kPowerBatterySaver[] = "power.cros_battery_saver_active";
+
 // Screen brightness percent values to be used when running on battery power.
 // Specified by the policy.
 const char kPowerBatteryScreenBrightnessPercent[] =
@@ -957,6 +958,15 @@ const char kShelfLauncherNudge[] = "ash.shelf.launcher_nudge";
 // kShelfAutoHideBehavior.
 const char kShelfPreferences[] = "shelf_preferences";
 
+// String pref indicating that the user has manually chosen to show or hide the
+// desk button.
+const char kShowDeskButtonInShelf[] = "show_desk_button_in_shelf";
+
+// Boolean pref indicating that a virtual desk (other than the default desk)
+// has been used on this device at any point in time after the addition of this
+// pref.
+const char kDeviceUsesDesks[] = "device_uses_desks";
+
 // Boolean pref indicating whether to show a logout button in the system tray.
 const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 
@@ -1014,6 +1024,14 @@ const char kUserMicrophoneAllowed[] = "ash.user.microphone_allowed";
 // detection.
 const char kUserSpeakOnMuteDetectionEnabled[] =
     "ash.user.speak_on_mute_detection_enabled";
+// A boolean pref indicating whether a speak-on-mute detection opt-in nudge
+// should be displayed to the user.
+const char kShouldShowSpeakOnMuteOptInNudge[] =
+    "ash.user.should_show_speak_on_mute_opt_in_nudge";
+// An integer pref counting the number of times speak-on-mute detection opt-in
+// nudge has been displayed to the user.
+const char kSpeakOnMuteOptInNudgeShownCount[] =
+    "ash.user.speak_on_mute_opt_in_nudge_shown_count";
 
 // A boolean pref indicating whether the geolocation is allowed for the user.
 const char kUserGeolocationAllowed[] = "ash.user.geolocation_allowed";
@@ -1300,6 +1318,11 @@ const char kProjectorAllowByPolicy[] = "ash.projector.allow_by_policy";
 const char kProjectorDogfoodForFamilyLinkEnabled[] =
     "ash.projector.dogfood_for_family_link_enabled";
 
+// A boolean pref to keep track that the shelf-pin preferences have been
+// migrated to the new app id based on chrome-untrusted://projector.
+const char kProjectorSWAUIPrefsMigrated[] =
+    "ash.projector.swa_ui_prefs_migrated_to_chrome_untrusted";
+
 // A boolean pref that indicates whether the migration of Chromad devices to
 // cloud management can be started.
 const char kChromadToCloudMigrationEnabled[] =
@@ -1529,6 +1552,18 @@ const char kKeyEventRemappedToSixPackPageUp[] =
 //  Pref contains a negative value: Search+Down
 const char kKeyEventRemappedToSixPackPageDown[] =
     "ash.settings.key_event_remapped_to_six_pack_page_down";
+
+// This pref saves the absolute session start time for UMA.
+const char kAshLoginSessionStartedTime[] = "ash.Login.SessionStarted.Time";
+
+// This pref saves the "first user session after user was added to the device"
+// flag for UMA.
+const char kAshLoginSessionStartedIsFirstSession[] =
+    "ash.Login.SessionStarted.IsFirstSession";
+
+// A boolean pref that controls whether input force respect ui gains is enabled.
+const char kInputForceRespectUiGainsEnabled[] =
+    "ash.input_force_respect_ui_gains_enabled";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

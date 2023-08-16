@@ -438,12 +438,17 @@ void ServiceWorkerVersion::RegisterStatusChangeCallback(
 
 ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  absl::optional<std::string> router_rules;
+  if (base::FeatureList::IsEnabled(features::kServiceWorkerStaticRouter) &&
+      router_evaluator_) {
+    router_rules = router_evaluator_->ToString();
+  }
   ServiceWorkerVersionInfo info(
       running_status(), status(), fetch_handler_type_, script_url(), scope(),
       key(), registration_id(), version_id(), embedded_worker()->process_id(),
       embedded_worker()->thread_id(),
       embedded_worker()->worker_devtools_agent_route_id(), ukm_source_id(),
-      ancestor_frame_type_);
+      ancestor_frame_type_, router_rules);
   for (const auto& controllee : controllee_map_) {
     ServiceWorkerContainerHost* container_host = controllee.second.get();
     info.clients.emplace(container_host->client_uuid(),
@@ -747,7 +752,7 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
 }
 
 ServiceWorkerExternalRequestResult ServiceWorkerVersion::StartExternalRequest(
-    const std::string& request_uuid,
+    const base::Uuid& request_uuid,
     ServiceWorkerExternalRequestTimeoutType timeout_type) {
   if (running_status() == EmbeddedWorkerStatus::STARTING) {
     return pending_external_requests_.insert({request_uuid, timeout_type})
@@ -813,7 +818,7 @@ bool ServiceWorkerVersion::FinishRequestWithFetchCount(int request_id,
 }
 
 ServiceWorkerExternalRequestResult ServiceWorkerVersion::FinishExternalRequest(
-    const std::string& request_uuid) {
+    const base::Uuid& request_uuid) {
   if (running_status() == EmbeddedWorkerStatus::STARTING) {
     auto iter = pending_external_requests_.find(request_uuid);
     if (iter == pending_external_requests_.end())
@@ -1397,7 +1402,7 @@ void ServiceWorkerVersion::OnStarted(
     observer.OnRunningStateChanged(this);
 
   if (!pending_external_requests_.empty()) {
-    std::map<std::string, ServiceWorkerExternalRequestTimeoutType>
+    std::map<base::Uuid, ServiceWorkerExternalRequestTimeoutType>
         pending_external_requests;
     std::swap(pending_external_requests_, pending_external_requests);
     for (const auto& [uuid, timeout_type] : pending_external_requests)
@@ -1813,6 +1818,25 @@ void ServiceWorkerVersion::SkipWaiting(SkipWaitingCallback callback) {
     registration->ActivateWaitingVersionWhenReady();
 }
 
+void ServiceWorkerVersion::RegisterRouter(
+    const blink::ServiceWorkerRouterRules& rules,
+    RegisterRouterCallback callback) {
+  if (router_evaluator()) {
+    // The renderer should have denied calling this twice.
+    receiver_.ReportBadMessage("The ServiceWorker router rules are set twice.");
+    return;
+  }
+  if (!SetupRouterEvaluator(rules)) {
+    // The renderer should have denied calling this method while the setup
+    // fails.
+    // TODO(crbug.com/1371756): revisit this to confirm no case for this error.
+    receiver_.ReportBadMessage(
+        "Failed to configure a router. Possibly a syntax error");
+    return;
+  }
+  std::move(callback).Run();
+}
+
 void ServiceWorkerVersion::OnSetCachedMetadataFinished(int64_t callback_id,
                                                        size_t size,
                                                        int result) {
@@ -2184,16 +2208,8 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       outside_fetch_client_settings_object_.Clone();
 
   ContentBrowserClient* browser_client = GetContentClient()->browser();
-  if (origin_trial_tokens_ &&
-      origin_trial_tokens_->contains("SendFullUserAgentAfterReduction")) {
-    params->user_agent = browser_client->GetFullUserAgent();
-  } else if (origin_trial_tokens_ &&
-             origin_trial_tokens_->contains("UserAgentReduction")) {
-    params->user_agent = browser_client->GetReducedUserAgent();
-  } else {
-    params->user_agent = browser_client->GetUserAgentBasedOnPolicy(
-        context_->wrapper()->browser_context());
-  }
+  params->user_agent = browser_client->GetUserAgentBasedOnPolicy(
+      context_->wrapper()->browser_context());
   params->ua_metadata = browser_client->GetUserAgentMetadata();
   params->is_installed = IsInstalled(status_);
   params->script_url_to_skip_throttling = updated_script_url_;
@@ -2667,7 +2683,7 @@ void ServiceWorkerVersion::FinishStartWorker(
 }
 
 void ServiceWorkerVersion::CleanUpExternalRequest(
-    const std::string& request_uuid,
+    const base::Uuid& request_uuid,
     blink::ServiceWorkerStatusCode status) {
   if (status == blink::ServiceWorkerStatusCode::kOk)
     return;
@@ -2866,6 +2882,17 @@ void ServiceWorkerVersion::SetResources(
   script_cache_map_.SetResources(resources);
   sha256_script_checksum_ =
       MergeResourceRecordSHA256ScriptChecksum(script_url_, script_cache_map_);
+}
+
+bool ServiceWorkerVersion::SetupRouterEvaluator(
+    const blink::ServiceWorkerRouterRules& rules) {
+  CHECK(!router_evaluator_);
+  router_evaluator_ = std::make_unique<ServiceWorkerRouterEvaluator>(rules);
+  if (!router_evaluator_->IsValid()) {
+    router_evaluator_.reset();
+    return false;
+  }
+  return true;
 }
 
 base::WeakPtr<ServiceWorkerVersion> ServiceWorkerVersion::GetWeakPtr() {

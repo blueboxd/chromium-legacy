@@ -59,7 +59,6 @@
 <translation id="1499943022354839699">Английски (САЩ) с клавиатура „Дворак“</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – Хост</translation>
 <translation id="1521655867290435174">Google Таблици</translation>
-<translation id="1538729222189715449">Файловете за Linux се отварят...</translation>
 <translation id="1547964879613821194">Канадска (английски) клавиатура</translation>
 <translation id="1556189134700913550">Прилагане за всички</translation>
 <translation id="1561842594491319104">Устройствата с Chrome</translation>
@@ -333,7 +332,6 @@
 <translation id="3727148787322499904">Промяната на тази настройка ще засегне всички споделени мрежи</translation>
 <translation id="3737576078404241332">Премахване от страничната лента</translation>
 <translation id="3749289110408117711">Име на файла</translation>
-<translation id="3780536599611287598">Нямате разрешение за преместване на файлове в(ъв) „<ph name="FOLDER_NAME" />“.</translation>
 <translation id="3786301125658655746">Офлайн сте</translation>
 <translation id="3789841737615482174">Инсталиране</translation>
 <translation id="3793469551756281394">Оставащото време е около <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
@@ -472,7 +470,6 @@
 <translation id="4804827417948292437">Авокадо</translation>
 <translation id="4805966553127040832"><ph name="COUNT" /> елемента се възстановяват</translation>
 <translation id="4816695657735045067">{COUNT,plural, =1{За да използвате режим „инкогнито“, организацията ви изисква разширение}other{За да използвате режим „инкогнито“, организацията ви изисква някои разширения}}</translation>
-<translation id="4823651846660089135">Устройството е само за четене</translation>
 <translation id="4826849268470072925">Тамилски (ITRANS)</translation>
 <translation id="482932175346970750">Въведете <ph name="BEGIN_BOLD" />chrome://extensions<ph name="END_BOLD" /> в браузъра си.</translation>
 <translation id="4843566743023903107">Устройствата Chromebase</translation>
@@ -682,7 +679,6 @@
 <translation id="6327785803543103246">Автоматично откриване на уеб прокси сървъра</translation>
 <translation id="6337014272874260727">Освобождаване от пространството за бърз достъп до файловете</translation>
 <translation id="6339145975392024142">Американска международна (PC)</translation>
-<translation id="6346310558342052870">Достъпът е ограничен</translation>
 <translation id="6356685157277930264">Прозорец с информация за файловете</translation>
 <translation id="6358884629796491903">Дракон</translation>
 <translation id="636254897931573416">Невалидна стойност в списъка със съответствия на суфикса на домейна</translation>
@@ -1016,6 +1012,7 @@
 <translation id="8919081441417203123">датски</translation>
 <translation id="8949925099261528566">Установена е връзка – няма достъп до интернет</translation>
 <translation id="8965697826696209160">Няма достатъчно място.</translation>
+<translation id="8971742885766657349">Синхронизиране – <ph name="PERCENT" />%</translation>
 <translation id="8997962250644902079">Китайски (традиционен, пинин)</translation>
 <translation id="8998871447376656508">Няма достатъчно свободно място в Google Диск за завършване на качването.</translation>
 <translation id="9003940392834790328">Мрежа <ph name="NETWORK_INDEX" /> от <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, сила на сигнала <ph name="SIGNAL_STRENGTH" />%, управлява се от администратора ви, подробности</translation>

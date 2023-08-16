@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
@@ -78,7 +79,8 @@ base::FilePath GetSetupExecutablePath() {
 
 void EnterTestMode(const GURL& update_url,
                    const GURL& crash_upload_url,
-                   const GURL& device_management_url) {
+                   const GURL& device_management_url,
+                   const base::TimeDelta& idle_timeout) {
   ASSERT_TRUE(ExternalConstantsBuilder()
                   .SetUpdateURL(std::vector<std::string>{update_url.spec()})
                   .SetCrashUploadURL(crash_upload_url.spec())
@@ -88,6 +90,7 @@ void EnterTestMode(const GURL& update_url,
                   .SetServerKeepAliveTime(base::Seconds(1))
                   .SetCrxVerifierFormat(crx_file::VerifierFormat::CRX3)
                   .SetOverinstallTimeout(base::Seconds(5))
+                  .SetIdleCheckPeriod(idle_timeout)
                   .Modify());
 }
 
@@ -228,7 +231,7 @@ void ExpectNotActive(UpdaterScope scope, const std::string& app_id) {
 
 bool WaitForUpdaterExit(UpdaterScope /*scope*/) {
   return WaitFor(
-      base::BindRepeating([]() {
+      base::BindRepeating([] {
         std::string ps_stdout;
         EXPECT_TRUE(
             base::GetAppOutput({"ps", "ax", "-o", "command"}, &ps_stdout));
@@ -239,7 +242,7 @@ bool WaitForUpdaterExit(UpdaterScope /*scope*/) {
         return false;
       }),
       base::BindLambdaForTesting(
-          []() { VLOG(0) << "Still waiting for updater to exit..."; }));
+          [] { VLOG(0) << "Still waiting for updater to exit..."; }));
 }
 
 void SetupRealUpdaterLowerVersion(UpdaterScope scope) {
@@ -324,8 +327,6 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
   EXPECT_EQ(persisted_data->GetDateLastActive(kPopularApp).value(), 5921);
   EXPECT_EQ(persisted_data->GetDateLastRollcall(kPopularApp).value(), 5922);
 
-  // TODO(crbug.com/1442695): Enable this after updating the `ticketstore` under
-  // chrome/test/data/updater/Keystone.legacy.ticketstore.
   EXPECT_EQ(persisted_data->GetCohort(kPopularApp), "TestCohort");
   EXPECT_EQ(persisted_data->GetCohortName(kPopularApp), "TestCohortName");
   EXPECT_EQ(persisted_data->GetCohortHint(kPopularApp), "TestCohortHint");
@@ -348,12 +349,6 @@ void InstallApp(UpdaterScope scope, const std::string& app_id) {
 void UninstallApp(UpdaterScope scope, const std::string& app_id) {
   SetExistenceCheckerPath(scope, app_id,
                           base::FilePath(FILE_PATH_LITERAL("NONE")));
-}
-
-void RunOfflineInstall(UpdaterScope scope,
-                       bool is_legacy_install,
-                       bool is_silent_install) {
-  // TODO(crbug.com/1286574).
 }
 
 base::CommandLine MakeElevated(base::CommandLine command_line) {

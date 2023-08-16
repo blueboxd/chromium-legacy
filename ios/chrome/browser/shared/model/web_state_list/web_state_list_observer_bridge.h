@@ -15,26 +15,10 @@
 
 @optional
 
-// Invoked after a new WebState has been added to the WebStateList at the
-// specified index. `activating` will be YES if the WebState will become
-// the new active WebState after the insertion.
-- (void)webStateList:(WebStateList*)webStateList
-    didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index
-           activating:(BOOL)activating;
-
-// Invoked after the WebState at the specified index is moved to another index.
-- (void)webStateList:(WebStateList*)webStateList
-     didMoveWebState:(web::WebState*)webState
-           fromIndex:(int)fromIndex
-             toIndex:(int)toIndex;
-
-// Invoked after the WebState at the specified index is replaced by another
-// WebState.
-- (void)webStateList:(WebStateList*)webStateList
-    didReplaceWebState:(web::WebState*)oldWebState
-          withWebState:(web::WebState*)newWebState
-               atIndex:(int)atIndex;
+// Invoked after the WebStateList is updated.
+- (void)didChangeWebStateList:(WebStateList*)webStateList
+                       change:(const WebStateListChange&)change
+                    selection:(const WebStateSelection&)selection;
 
 // Invoked before the specified WebState is detached from the WebStateList.
 // The WebState is still valid and still in the WebStateList.
@@ -103,18 +87,9 @@ class WebStateListObserverBridge final : public WebStateListObserver {
 
  private:
   // WebStateListObserver implementation.
-  void WebStateInsertedAt(WebStateList* web_state_list,
-                          web::WebState* web_state,
-                          int index,
-                          bool activating) final;
-  void WebStateMoved(WebStateList* web_state_list,
-                     web::WebState* web_state,
-                     int from_index,
-                     int to_index) final;
-  void WebStateReplacedAt(WebStateList* web_state_list,
-                          web::WebState* old_web_state,
-                          web::WebState* new_web_state,
-                          int index) final;
+  void WebStateListChanged(WebStateList* web_state_list,
+                           const WebStateListChange& change,
+                           const WebStateSelection& selection) override;
   void WillDetachWebStateAt(WebStateList* web_state_list,
                             web::WebState* web_state,
                             int index) final;

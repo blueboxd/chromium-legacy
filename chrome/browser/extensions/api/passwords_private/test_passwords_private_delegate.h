@@ -9,12 +9,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/passwords_private.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace extensions {
 // A test PasswordsPrivateDelegate implementation which uses mock data.
 // TestDelegate starts out with kNumMocks mocks of each type (saved password
-// and password exception) and removes one mock each time RemoveSavedPassword()
+// and password exception) and removes one mock each time RemoveCredential()
 // or RemovePasswordException() is called.
 class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
  public:
@@ -44,7 +45,9 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   absl::optional<int> ChangeSavedPassword(
       const int id,
       const api::passwords_private::ChangeSavedPasswordParams& params) override;
-  void RemoveSavedPassword(
+  bool ChangeCredential(
+      const api::passwords_private::PasswordUiEntry& credential) override;
+  void RemoveCredential(
       int id,
       api::passwords_private::PasswordStoreSet from_store) override;
   void RemovePasswordException(int id) override;

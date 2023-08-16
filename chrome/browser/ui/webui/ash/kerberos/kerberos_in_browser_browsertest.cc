@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/test/base/chrome_test_utils.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/features.h"
@@ -110,11 +109,12 @@ IN_PROC_BROWSER_TEST_F(KerberosInBrowserDialogButtonTest, SettingsButton) {
 
   EnsureWebUIAvailable();
   PressButton(kOpenSettingsButtonPath);
-  // After pressing the button OS Settings should be opened.
-  ui_test_utils::WaitForBrowserToOpen();
-  EXPECT_TRUE(IsSettingsWindowOpened());
-
   WaitUntilDialogIsClosed();
+
+  // Waiting for a new OS settings window to be opened.
+  std::make_unique<test::TestPredicateWaiter>(base::BindRepeating([]() {
+    return IsSettingsWindowOpened();
+  }))->Wait();
 }
 
 class KerberosInBrowserDialogFeatureDisabledTest

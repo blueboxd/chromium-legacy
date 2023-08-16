@@ -997,8 +997,6 @@ webapps::WebappInstallSource ConvertExternalInstallSourceToInstallSource(
       return webapps::WebappInstallSource::EXTERNAL_POLICY;
     case ExternalInstallSource::kSystemInstalled:
       return webapps::WebappInstallSource::SYSTEM_DEFAULT;
-    case ExternalInstallSource::kArc:
-      return webapps::WebappInstallSource::ARC;
     case ExternalInstallSource::kKiosk:
       return webapps::WebappInstallSource::KIOSK;
     case ExternalInstallSource::kExternalLockScreen:
@@ -1019,15 +1017,13 @@ webapps::WebappUninstallSource ConvertExternalInstallSourceToUninstallSource(
       return webapps::WebappUninstallSource::kExternalPolicy;
     case ExternalInstallSource::kSystemInstalled:
       return webapps::WebappUninstallSource::kSystemPreinstalled;
-    case ExternalInstallSource::kArc:
-      return webapps::WebappUninstallSource::kArc;
     case ExternalInstallSource::kKiosk:
       NOTREACHED() << "Kiosk apps should not be uninstalled";
       return webapps::WebappUninstallSource::kUnknown;
     case ExternalInstallSource::kExternalLockScreen:
       return webapps::WebappUninstallSource::kExternalLockScreen;
     case ExternalInstallSource::kInternalMicrosoft365Setup:
-      NOTREACHED() << "Microsoft 365 apps should not be unistalled externally";
+      NOTREACHED() << "Microsoft 365 apps should not be uninstalled externally";
       return webapps::WebappUninstallSource::kUnknown;
   }
 }
@@ -1046,6 +1042,7 @@ WebAppManagement::Type ConvertInstallSurfaceToWebAppSource(
     case webapps::WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB:
     case webapps::WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB:
     case webapps::WebappInstallSource::RICH_INSTALL_UI_WEBLAYER:
+    case webapps::WebappInstallSource::ML_PROMOTION:
     case webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON:
     case webapps::WebappInstallSource::SYNC:
     case webapps::WebappInstallSource::MENU_CREATE_SHORTCUT:
@@ -1206,11 +1203,10 @@ void SetWebAppManifestFields(const WebAppInstallInfo& web_app_info,
         IconPurpose::MONOCHROME,
         GetSquareSizePxs(web_app_info.icon_bitmaps.monochrome));
     web_app.SetIsGeneratedIcon(web_app_info.is_generated_icon);
-    web_app.SetShortcutsMenuItemInfos(web_app_info.shortcuts_menu_item_infos);
-    web_app.SetDownloadedShortcutsMenuIconsSizes(
-        GetDownloadedShortcutsMenuIconsSizes(
-            web_app_info.shortcuts_menu_item_infos,
-            web_app_info.shortcuts_menu_icon_bitmaps));
+    web_app.SetShortcutsMenuInfo(web_app_info.shortcuts_menu_item_infos,
+                                 GetDownloadedShortcutsMenuIconsSizes(
+                                     web_app_info.shortcuts_menu_item_infos,
+                                     web_app_info.shortcuts_menu_icon_bitmaps));
   }
 
   web_app.SetPermissionsPolicy(web_app_info.permissions_policy);

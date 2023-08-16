@@ -21,7 +21,6 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
-#import "ios/chrome/browser/shared/ui/util/named_guide.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
@@ -145,11 +144,10 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
 
   self.fakeOmniboxWidthConstraint.constant = self.headerView.bounds.size.width;
   [self.headerView layoutIfNeeded];
-  NamedGuide* omniboxGuide = [NamedGuide guideWithName:kOmniboxGuide
-                                                  view:self.headerView];
-  CGRect omniboxFrameInFakebox =
-      [[omniboxGuide owningView] convertRect:[omniboxGuide layoutFrame]
-                                      toView:self.fakeOmnibox];
+  UIView* omnibox =
+      [self.layoutGuideCenter referencedViewUnderName:kOmniboxGuide];
+  CGRect omniboxFrameInFakebox = [omnibox convertRect:omnibox.bounds
+                                               toView:self.fakeOmnibox];
   self.headerView.fakeLocationBarLeadingConstraint.constant =
       omniboxFrameInFakebox.origin.x;
   self.headerView.fakeLocationBarTrailingConstraint.constant =
@@ -296,11 +294,9 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
   [super viewDidAppear:animated];
   // Check if the identity disc button was properly set before the view appears.
   DCHECK(self.identityDiscButton);
-  if (base::FeatureList::IsEnabled(switches::kIdentityStatusConsistency)) {
-    DCHECK(self.identityDiscImage);
-    DCHECK(self.identityDiscButton.accessibilityLabel);
-    DCHECK([self.identityDiscButton imageForState:UIControlStateNormal]);
-  }
+  DCHECK(self.identityDiscImage);
+  DCHECK(self.identityDiscButton.accessibilityLabel);
+  DCHECK([self.identityDiscButton imageForState:UIControlStateNormal]);
 }
 
 - (CGFloat)offsetToBeginFakeOmniboxExpansionForSplitMode {
@@ -410,13 +406,9 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
     return [UIPointerStyle styleWithEffect:proposedEffect shape:shape];
   };
 
-  if (base::FeatureList::IsEnabled(switches::kIdentityStatusConsistency)) {
-    // `self.identityDiscButton` should not be updated if
-    // `self.identityDiscImage` is not available yet.
-    if (self.identityDiscImage) {
-      [self updateIdentityDiscState];
-    }
-  } else {
+  // `self.identityDiscButton` should not be updated if `self.identityDiscImage`
+  // is not available yet.
+  if (self.identityDiscImage) {
     [self updateIdentityDiscState];
   }
   [self.headerView setIdentityDiscView:self.identityDiscButton];
@@ -425,12 +417,8 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
 // Configures `identityDiscButton` with the current state of
 // `identityDiscImage`.
 - (void)updateIdentityDiscState {
-  if (base::FeatureList::IsEnabled(switches::kIdentityStatusConsistency)) {
-    DCHECK(self.identityDiscImage);
-    DCHECK(self.identityDiscAccessibilityLabel);
-  } else {
-    self.identityDiscButton.hidden = !self.identityDiscImage;
-  }
+  DCHECK(self.identityDiscImage);
+  DCHECK(self.identityDiscAccessibilityLabel);
   self.identityDiscButton.accessibilityLabel =
       self.identityDiscAccessibilityLabel;
   [self.identityDiscButton setImage:self.identityDiscImage
@@ -677,15 +665,11 @@ NSString* const kScribbleFakeboxElementId = @"fakebox";
 #pragma mark - UserAccountImageUpdateDelegate
 
 - (void)setSignedOutAccountImage {
-  if (base::FeatureList::IsEnabled(switches::kIdentityStatusConsistency)) {
-    self.identityDiscImage = DefaultSymbolTemplateWithPointSize(
-        kPersonCropCircleSymbol, ntp_home::kSignedOutIdentityIconDimension);
+  self.identityDiscImage = DefaultSymbolTemplateWithPointSize(
+      kPersonCropCircleSymbol, ntp_home::kSignedOutIdentityIconDimension);
 
-    self.identityDiscAccessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_IDENTITY_DISC_SIGNED_OUT);
-  } else {
-    self.identityDiscImage = nil;
-  }
+  self.identityDiscAccessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_IDENTITY_DISC_SIGNED_OUT);
   // `self.identityDiscButton` should not be updated if the view has not been
   // created yet.
   if (self.identityDiscButton) {

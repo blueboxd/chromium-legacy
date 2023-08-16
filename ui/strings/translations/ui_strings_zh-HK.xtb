@@ -115,6 +115,7 @@
 <translation id="4746179598275229723">已取消固定擴充程式</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{尚餘 1 個月}other{尚餘 # 個月}}</translation>
 <translation id="4888938634149558681">撥打電話</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />，<ph name="TYPE_3" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="4971687151119236543">上一首媒體曲目</translation>
 <translation id="5046499563572181734">輕按此處</translation>
@@ -147,6 +148,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY" /> 位元組/秒</translation>
 <translation id="6237461503717005873">揀咗<ph name="ROW_NAME" />。</translation>
 <translation id="6264365405983206840">全部選取(&amp;A)</translation>
+<translation id="6346952829206698721">從剪貼簿貼上</translation>
 <translation id="6364916375976753737">向左捲動</translation>
 <translation id="6394627529324717982">逗號</translation>
 <translation id="6397363302884558537">停止說話</translation>

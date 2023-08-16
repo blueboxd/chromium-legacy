@@ -52,9 +52,19 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
+#if BUILDFLAG(IS_ANDROID)
+#include "components/sync/android/sync_service_android_bridge.h"
+#endif  // BUILDFLAG(IS_ANDROID)
+
 namespace syncer {
 
 namespace {
+
+// The time after browser startup to report sync configuration metrics.
+constexpr base::TimeDelta kRecordDownloadStatusTimeout = base::Seconds(30);
+
+constexpr char kModelTypeReachedUpToDateHistogramPrefix[] =
+    "Sync.ModelTypeUpToDateTime";
 
 // The initial state of sync, for the Sync.InitialState2 histogram. Even if
 // this value is CAN_START, sync startup might fail for reasons that we may
@@ -73,10 +83,22 @@ enum SyncInitialState {
   kMaxValue = OBSOLETE_NOT_ALLOWED_BY_PLATFORM
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class DownloadStatusWaitingForUpdatesReason {
+  kRefreshTokensNotLoaded = 0,
+  kSyncEngineNotInitialized = 1,
+  kDataTypeNotActive = 2,
+  kInvalidationsNotInitialized = 3,
+  kIncomingInvalidation = 4,
+  kPollRequestScheduled = 5,
+
+  kMaxValue = kPollRequestScheduled
+};
+
 void RecordSyncInitialState(SyncService::DisableReasonSet disable_reasons,
                             bool is_sync_feature_requested,
-                            bool initial_sync_feature_setup_complete,
-                            bool is_regular_profile_for_uma) {
+                            bool initial_sync_feature_setup_complete) {
   SyncInitialState sync_state = CAN_START;
   if (disable_reasons.Has(SyncService::DISABLE_REASON_NOT_SIGNED_IN)) {
     sync_state = NOT_SIGNED_IN;
@@ -92,9 +114,7 @@ void RecordSyncInitialState(SyncService::DisableReasonSet disable_reasons,
   } else if (!initial_sync_feature_setup_complete) {
     sync_state = NEEDS_CONFIRMATION;
   }
-  if (is_regular_profile_for_uma) {
-    base::UmaHistogramEnumeration("Sync.InitialState2", sync_state);
-  }
+  base::UmaHistogramEnumeration("Sync.InitialState2", sync_state);
 }
 
 EngineComponentsFactory::Switches EngineSwitchesFromCommandLine() {
@@ -149,6 +169,18 @@ base::TimeDelta GetDeferredInitDelay() {
     }
   }
   return base::Seconds(10);
+}
+
+void LogWaitingForUpdatesReasonIfNeeded(
+    DownloadStatusWaitingForUpdatesReason reason,
+    ModelType type,
+    bool record_waiting_for_updates_metrics) {
+  if (record_waiting_for_updates_metrics) {
+    base::UmaHistogramEnumeration(
+        std::string("Sync.ModelTypeWaitingForUpdatesTimeoutReason.") +
+            ModelTypeToHistogramSuffix(type),
+        reason);
+  }
 }
 
 }  // namespace
@@ -252,6 +284,17 @@ void SyncServiceImpl::Initialize() {
     }
   }
 
+  if (!IsLocalSyncEnabled()) {
+    const bool account_info_fully_loaded =
+        auth_manager_->IsActiveAccountInfoFullyLoaded();
+    base::UmaHistogramBoolean("Sync.Startup.AccountInfoFullyLoaded",
+                              account_info_fully_loaded);
+    if (!account_info_fully_loaded) {
+      base::UmaHistogramBoolean("Sync.Startup.SignedInWithoutAccountInfo",
+                                IsSignedIn());
+    }
+  }
+
   // If sync is disabled permanently, clean up old data that may be around (e.g.
   // crash during signout).
   if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY) ||
@@ -260,21 +303,32 @@ void SyncServiceImpl::Initialize() {
     StopAndClear();
   }
 
-  // Note: We need to record the initial state *after* calling
-  // RegisterForAuthNotifications(), because before that the authenticated
-  // account isn't initialized.
-  RecordSyncInitialState(
-      GetDisableReasons(),
-      /*is_sync_feature_requested=*/
-      IsLocalSyncEnabled() || IsSyncFeatureConsideredRequested(),
-      user_settings_->IsInitialSyncFeatureSetupComplete(),
-      is_regular_profile_for_uma_);
+  if (is_regular_profile_for_uma_) {
+    // Note: We need to record the initial state *after* calling
+    // RegisterForAuthNotifications(), because before that the authenticated
+    // account isn't initialized.
+    RecordSyncInitialState(
+        GetDisableReasons(),
+        /*is_sync_feature_requested=*/
+        IsLocalSyncEnabled() || IsSyncFeatureConsideredRequested(),
+        user_settings_->IsInitialSyncFeatureSetupComplete());
+
+    ModelTypeSet data_types_to_track =
+        Intersection(GetRegisteredDataTypes(), ProtocolTypes());
+    if (!data_types_to_track.Empty()) {
+      download_status_recorder_ = std::make_unique<DownloadStatusRecorder>(
+          this,
+          base::BindOnce(&SyncServiceImpl::OnDownloadStatusRecorderFinished,
+                         weak_factory_.GetWeakPtr()),
+          data_types_to_track);
+    }
+  }
 
   if (base::FeatureList::IsEnabled(
           kSyncAllowClearingMetadataWhenDataTypeIsStopped) &&
-      // Selected types may soon start depending on the signin state. This check
-      // should help avoid accidentally clearing stuff.
-      // For localsync, it can be assumed that all info is fully loaded.
+      // The selected types depend on the signin state. Checking that the
+      // account info is fully loaded avoids accidentally clearing stuff.
+      // For local sync, no account info is needed.
       (IsLocalSyncEnabled() ||
        auth_manager_->IsActiveAccountInfoFullyLoaded())) {
     // Call Stop() on controllers for non-preferred types to clear metadata.
@@ -555,6 +609,11 @@ void SyncServiceImpl::Shutdown() {
   auth_manager_.reset();
 }
 
+void SyncServiceImpl::RecordReasonIfWaitingForUpdates(ModelType type) {
+  // Ignore the actual returned status.
+  GetDownloadStatusForImpl(type, /*record_waiting_for_updates_metrics=*/true);
+}
+
 void SyncServiceImpl::ResetEngine(ShutdownReason shutdown_reason,
                                   ResetEngineReason reset_reason) {
   if (!engine_) {
@@ -654,6 +713,15 @@ void SyncServiceImpl::ResetEngine(ShutdownReason shutdown_reason,
       break;
   }
 }
+
+#if BUILDFLAG(IS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject> SyncServiceImpl::GetJavaObject() {
+  if (!sync_service_android_) {
+    sync_service_android_ = std::make_unique<SyncServiceAndroidBridge>(this);
+  }
+  return sync_service_android_->GetJavaObject();
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 void SyncServiceImpl::SetSyncFeatureRequested() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1196,6 +1264,7 @@ bool SyncServiceImpl::RequiresClientUpgrade() const {
   return last_actionable_error_.action == UPGRADE_CLIENT;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 bool SyncServiceImpl::IsSyncFeatureDisabledViaDashboard() const {
   // This can return true only on ChromeOS Ash, upon DISABLE_SYNC_ON_CLIENT.
   // TODO(crbug.com/1443446): A simpler and more robust implementation for this
@@ -1203,6 +1272,7 @@ bool SyncServiceImpl::IsSyncFeatureDisabledViaDashboard() const {
   return user_settings_->IsInitialSyncFeatureSetupComplete() &&
          !IsLocalSyncEnabled() && !IsSyncFeatureConsideredRequested();
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 bool SyncServiceImpl::CanConfigureDataTypes(
     bool bypass_setup_in_progress_check) const {
@@ -1847,11 +1917,30 @@ void SyncServiceImpl::GetAllNodesForDebugging(
 SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusFor(
     ModelType type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return GetDownloadStatusForImpl(type,
+                                  /*record_waiting_for_updates_metrics=*/false);
+}
 
-  if (!auth_manager_->IsActiveAccountInfoFullyLoaded()) {
-    DVLOG(1) << "Waiting for refresh tokens to be loaded from the disk";
-    // GetDisableReasons() won't be empty until then.
-    return ModelTypeDownloadStatus::kWaitingForUpdates;
+SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusForImpl(
+    ModelType type,
+    bool record_waiting_for_updates_metrics) const {
+  // Download status doesn't make sense for non-real data types.
+  CHECK(IsRealDataType(type));
+
+  if (!IsLocalSyncEnabled()) {
+    if (!auth_manager_->IsActiveAccountInfoFullyLoaded()) {
+      DVLOG(1) << "Waiting for refresh tokens to be loaded from the disk";
+      // GetDisableReasons() won't be empty until then.
+      LogWaitingForUpdatesReasonIfNeeded(
+          DownloadStatusWaitingForUpdatesReason::kRefreshTokensNotLoaded, type,
+          record_waiting_for_updates_metrics);
+      return ModelTypeDownloadStatus::kWaitingForUpdates;
+    }
+
+    if (auth_manager_->IsSyncPaused()) {
+      DVLOG(1) << "Error download status because sync is paused";
+      return ModelTypeDownloadStatus::kError;
+    }
   }
 
   // TODO(crbug.com/1425026): check whether this works when local sync is
@@ -1865,6 +1954,9 @@ SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusFor(
 
   if (!data_type_manager_) {
     DVLOG(1) << "Waiting for the sync engine to be fully initialized";
+    LogWaitingForUpdatesReasonIfNeeded(
+        DownloadStatusWaitingForUpdatesReason::kSyncEngineNotInitialized, type,
+        record_waiting_for_updates_metrics);
     return ModelTypeDownloadStatus::kWaitingForUpdates;
   }
   CHECK(engine_);
@@ -1874,18 +1966,38 @@ SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusFor(
     return ModelTypeDownloadStatus::kError;
   }
 
-  if (!GetActiveDataTypes().Has(type) ||
-      !engine_->GetDetailedStatus().notifications_enabled) {
+  if (!GetActiveDataTypes().Has(type)) {
+    DVLOG(1) << "Data type is not active yet";
+    LogWaitingForUpdatesReasonIfNeeded(
+        DownloadStatusWaitingForUpdatesReason::kDataTypeNotActive, type,
+        record_waiting_for_updates_metrics);
+    return ModelTypeDownloadStatus::kWaitingForUpdates;
+  }
+
+  if (!engine_->GetDetailedStatus().notifications_enabled) {
     DVLOG(1) << "Waiting for invalidations to be initialized";
+    LogWaitingForUpdatesReasonIfNeeded(
+        DownloadStatusWaitingForUpdatesReason::kInvalidationsNotInitialized,
+        type, record_waiting_for_updates_metrics);
     return ModelTypeDownloadStatus::kWaitingForUpdates;
   }
 
   // If there are any incoming invalidations or poll time elapsed, there can be
   // new updates to download from the server.
-  if (engine_->GetDetailedStatus().invalidated_data_types.Has(type) ||
-      engine_->IsNextPollTimeInThePast()) {
-    DVLOG(1)
-        << "Waiting for updates due to incoming invalidations or poll request";
+  if (engine_->GetDetailedStatus().invalidated_data_types.Has(type)) {
+    DVLOG(1) << "There are incoming invalidations for: "
+             << ModelTypeToDebugString(type);
+    LogWaitingForUpdatesReasonIfNeeded(
+        DownloadStatusWaitingForUpdatesReason::kIncomingInvalidation, type,
+        record_waiting_for_updates_metrics);
+    return ModelTypeDownloadStatus::kWaitingForUpdates;
+  }
+
+  if (engine_->IsNextPollTimeInThePast()) {
+    DVLOG(1) << "Waiting for updates due an upcoming poll request";
+    LogWaitingForUpdatesReasonIfNeeded(
+        DownloadStatusWaitingForUpdatesReason::kPollRequestScheduled, type,
+        record_waiting_for_updates_metrics);
     return ModelTypeDownloadStatus::kWaitingForUpdates;
   }
 
@@ -2082,11 +2194,7 @@ void SyncServiceImpl::RecordMemoryUsageAndCountsHistograms() {
   ModelTypeSet active_types = GetActiveDataTypes();
   for (ModelType type : active_types) {
     auto dtc_it = data_type_controllers_.find(type);
-    if (dtc_it != data_type_controllers_.end() &&
-        dtc_it->second->state() != DataTypeController::NOT_RUNNING) {
-      // It's possible that a data type is considered active, but its
-      // DataTypeController is still NOT_RUNNING, in the case where we're
-      // waiting for a custom passphrase.
+    if (dtc_it != data_type_controllers_.end()) {
       dtc_it->second->RecordMemoryUsageAndCountsHistograms();
     }
   }
@@ -2131,6 +2239,99 @@ bool SyncServiceImpl::ShouldAutoStartSyncFeature() const {
 #else
   return IsLocalSyncEnabled();
 #endif
+}
+
+void SyncServiceImpl::OnDownloadStatusRecorderFinished() {
+  download_status_recorder_.reset();
+}
+
+SyncServiceImpl::DownloadStatusRecorder::DownloadStatusRecorder(
+    SyncServiceImpl* sync_service,
+    base::OnceClosure on_finished_callback,
+    ModelTypeSet data_types_to_track)
+    : sync_service_(sync_service),
+      on_finished_callback_(std::move(on_finished_callback)),
+      data_types_to_track_(data_types_to_track) {
+  CHECK(sync_service_);
+  CHECK(on_finished_callback_);
+  CHECK(!data_types_to_track_.Empty());
+  sync_service_->AddObserver(this);
+  startup_metrics_timer_.Start(
+      FROM_HERE, kRecordDownloadStatusTimeout, this,
+      &SyncServiceImpl::DownloadStatusRecorder::OnTimeout);
+}
+
+SyncServiceImpl::DownloadStatusRecorder::~DownloadStatusRecorder() {
+  sync_service_->RemoveObserver(this);
+}
+
+void SyncServiceImpl::DownloadStatusRecorder::OnStateChanged(
+    SyncService* service) {
+  // Report download status metrics only during browser startup.
+  if (!startup_metrics_timer_.IsRunning()) {
+    return;
+  }
+
+  // |data_types_to_track_| must not be empty if |on_finished_callback_| deletes
+  // the current object.
+  CHECK(!data_types_to_track_.Empty());
+
+  // Types which reached kUpToDate or kError download status. These types will
+  // be removed from tracked data types.
+  ModelTypeSet types_to_remove_from_tracking;
+
+  base::TimeTicks timer_start_time = startup_metrics_timer_.desired_run_time() -
+                                     startup_metrics_timer_.GetCurrentDelay();
+  base::TimeDelta time_since_startup =
+      base::TimeTicks::Now() - timer_start_time;
+  for (ModelType type : data_types_to_track_) {
+    ModelTypeDownloadStatus status = sync_service_->GetDownloadStatusFor(type);
+    if (status == ModelTypeDownloadStatus::kWaitingForUpdates) {
+      continue;
+    }
+
+    // Remove |type| from tracking if it has reached kUpToDate or kError state.
+    // Histograms are reported for only kUpToDate status.
+    types_to_remove_from_tracking.Put(type);
+    if (status == ModelTypeDownloadStatus::kUpToDate) {
+      std::string histogram_prefix =
+          kModelTypeReachedUpToDateHistogramPrefix + std::string(".");
+      base::UmaHistogramMediumTimes(
+          histogram_prefix + ModelTypeToHistogramSuffix(type),
+          time_since_startup);
+    }
+  }
+  data_types_to_track_.RemoveAll(types_to_remove_from_tracking);
+
+  if (data_types_to_track_.Empty()) {
+    if (!sync_service_->GetActiveDataTypes().Empty()) {
+      // This histogram will be reported at most once per browser session only
+      // if there is at least one active data type (to exclude cases when sync
+      // is disabled).
+      base::UmaHistogramMediumTimes(kModelTypeReachedUpToDateHistogramPrefix,
+                                    time_since_startup);
+    }
+    std::move(on_finished_callback_).Run();
+  }
+}
+
+void SyncServiceImpl::DownloadStatusRecorder::OnSyncShutdown(
+    SyncService* service) {
+  startup_metrics_timer_.Reset();
+  std::move(on_finished_callback_).Run();
+}
+
+void SyncServiceImpl::DownloadStatusRecorder::OnTimeout() {
+  // Log if some data types are still waiting for updates.
+  for (ModelType type : data_types_to_track_) {
+    // Ignore kError state for the purpose of the histogram. This is required to
+    // filter out cases when data types are not running, e.g. due to transport
+    // mode or because there is no signed-in user.
+    sync_service_->RecordReasonIfWaitingForUpdates(type);
+  }
+
+  // Delete current object after all the histograms are recorded.
+  std::move(on_finished_callback_).Run();
 }
 
 }  // namespace syncer

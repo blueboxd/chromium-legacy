@@ -7,6 +7,7 @@
 #include "ash/glanceables/tasks/glanceables_tasks_client.h"
 #include "ash/glanceables/tasks/glanceables_tasks_types.h"
 #include "base/functional/callback.h"
+#include "base/strings/string_util.h"
 
 namespace ash {
 
@@ -32,7 +33,8 @@ void FakeGlanceablesTasksClient::MarkAsCompleted(
     const std::string& task_list_id,
     const std::string& task_id,
     MarkAsCompletedCallback callback) {
-  // TODO(b:277268122): Add once UI is further along and ready to test.
+  completed_tasks_.push_back(base::JoinString({task_list_id, task_id}, ":"));
+  std::move(callback).Run(/*success=*/true);
 }
 
 void FakeGlanceablesTasksClient::PopulateTasks() {
@@ -63,6 +65,10 @@ void FakeGlanceablesTasksClient::PopulateTaskLists() {
       /*has_subtasks=*/false, /*has_email_link=*/false));
   task_list_2->Add(std::make_unique<GlanceablesTask>(
       "TaskListItem4", "Task List 2 Item 2 Title", /*completed=*/false,
+      /*due=*/base::Time::Now(),
+      /*has_subtasks=*/false, /*has_email_link=*/false));
+  task_list_2->Add(std::make_unique<GlanceablesTask>(
+      "TaskListItem5", "Task List 2 Item 3 Title", /*completed=*/false,
       /*due=*/base::Time::Now(),
       /*has_subtasks=*/false, /*has_email_link=*/false));
   tasks_in_task_lists_.emplace("TaskListID1", std::move(task_list_1));

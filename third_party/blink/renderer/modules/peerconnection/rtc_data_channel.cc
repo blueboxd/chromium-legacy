@@ -207,12 +207,11 @@ RTCDataChannel::Observer::Observer(
     rtc::scoped_refptr<webrtc::DataChannelInterface> channel)
     : main_thread_(main_thread),
       blink_channel_(blink_channel),
-      webrtc_channel_(std::move(channel)) {
-  CHECK(webrtc_channel_.get());
-}
+      webrtc_channel_(channel) {}
 
 RTCDataChannel::Observer::~Observer() {
   DCHECK(!blink_channel_) << "Reference to blink channel hasn't been released.";
+  DCHECK(!webrtc_channel_.get()) << "Unregister hasn't been called.";
 }
 
 const rtc::scoped_refptr<webrtc::DataChannelInterface>&
@@ -222,8 +221,13 @@ RTCDataChannel::Observer::channel() const {
 
 void RTCDataChannel::Observer::Unregister() {
   DCHECK(main_thread_->BelongsToCurrentThread());
-  webrtc_channel_->UnregisterObserver();
   blink_channel_ = nullptr;
+  if (webrtc_channel_.get()) {
+    webrtc_channel_->UnregisterObserver();
+    // Now that we're guaranteed to not get further OnStateChange callbacks,
+    // it's safe to release our reference to the channel.
+    webrtc_channel_ = nullptr;
+  }
 }
 
 void RTCDataChannel::Observer::OnStateChange() {
@@ -275,7 +279,7 @@ void RTCDataChannel::Observer::OnMessageImpl(webrtc::DataBuffer buffer) {
 
 RTCDataChannel::RTCDataChannel(
     ExecutionContext* context,
-    rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel,
+    rtc::scoped_refptr<webrtc::DataChannelInterface> channel,
     RTCPeerConnectionHandler* peer_connection_handler)
     : ActiveScriptWrappable<RTCDataChannel>({}),
       ExecutionContextLifecycleObserver(context),
@@ -285,7 +289,7 @@ RTCDataChannel::RTCDataChannel(
       observer_(base::MakeRefCounted<Observer>(
           context->GetTaskRunner(TaskType::kNetworking),
           this,
-          std::move(data_channel))),
+          channel)),
       signaling_thread_(peer_connection_handler->signaling_thread()) {
   DCHECK(peer_connection_handler);
 
@@ -294,13 +298,13 @@ RTCDataChannel::RTCDataChannel(
   // on the signaling thread and RTCDataChannel construction posted on the main
   // thread. Done in a single synchronous call to the signaling thread to ensure
   // channel state consistency.
-  // TODO(tommi): Check if this^ is still possible.
-  channel()->RegisterObserver(observer_.get());
-  if (channel()->state() != state_) {
+  // TODO(tommi): Check it this^ is still possible.
+  channel->RegisterObserver(observer_.get());
+  if (channel->state() != state_) {
     observer_->OnStateChange();
   }
 
-  IncrementCounters(*channel().get());
+  IncrementCounters(*channel.get());
 }
 
 RTCDataChannel::~RTCDataChannel() = default;
@@ -659,8 +663,9 @@ void RTCDataChannel::Dispose() {
   if (stopped_)
     return;
 
-  // Clear the weak persistent reference to this on-heap object.
+  // Clears the weak persistent reference to this on-heap object.
   observer_->Unregister();
+  observer_ = nullptr;
 }
 
 void RTCDataChannel::ScheduleDispatchEvent(Event* event) {
@@ -731,8 +736,7 @@ void RTCDataChannel::CreateFeatureHandleForScheduler() {
   feature_handle_for_scheduler_ =
       window->GetFrame()->GetFrameScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebRTC,
-          {SchedulingPolicy::DisableAggressiveThrottling(),
-           SchedulingPolicy::DisableAlignWakeUps()});
+          {SchedulingPolicy::DisableAggressiveThrottling()});
 }
 
 }  // namespace blink

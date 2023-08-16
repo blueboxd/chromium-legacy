@@ -65,9 +65,10 @@ IN_PROC_BROWSER_TEST_F(UnusedSitePermissionsServiceBrowserTest,
   clock.SetNow(past);
   map->SetClockForTesting(&clock);
   service->SetClockForTesting(&clock);
-  map->SetContentSettingDefaultScope(
-      url, url, ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ALLOW,
-      {.track_last_visit_for_autoexpiration = true});
+  content_settings::ContentSettingConstraints constraints;
+  constraints.set_track_last_visit_for_autoexpiration(true);
+  map->SetContentSettingDefaultScope(url, url, ContentSettingsType::GEOLOCATION,
+                                     CONTENT_SETTING_ALLOW, constraints);
   clock.SetNow(now);
   service->UpdateUnusedPermissionsForTesting();
   ASSERT_EQ(service->GetTrackedUnusedPermissionsForTesting().size(), 1u);
@@ -75,19 +76,19 @@ IN_PROC_BROWSER_TEST_F(UnusedSitePermissionsServiceBrowserTest,
   // Check that the timestamp is initially in the past.
   content_settings::SettingInfo info;
   map->GetWebsiteSetting(url, url, ContentSettingsType::GEOLOCATION, &info);
-  ASSERT_FALSE(info.metadata.last_visited.is_null());
-  EXPECT_GE(info.metadata.last_visited,
+  ASSERT_FALSE(info.metadata.last_visited().is_null());
+  EXPECT_GE(info.metadata.last_visited(),
             past - content_settings::GetCoarseVisitedTimePrecision());
-  EXPECT_LE(info.metadata.last_visited, past);
+  EXPECT_LE(info.metadata.last_visited(), past);
 
   // Navigate to |url|.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Check that the timestamp is updated after a navigation.
   map->GetWebsiteSetting(url, url, ContentSettingsType::GEOLOCATION, &info);
-  EXPECT_GE(info.metadata.last_visited,
+  EXPECT_GE(info.metadata.last_visited(),
             now - content_settings::GetCoarseVisitedTimePrecision());
-  EXPECT_LE(info.metadata.last_visited, now);
+  EXPECT_LE(info.metadata.last_visited(), now);
 
   map->SetClockForTesting(base::DefaultClock::GetInstance());
 }
@@ -117,9 +118,10 @@ IN_PROC_BROWSER_TEST_F(UnusedSitePermissionsServiceBrowserTest,
   clock.SetNow(past);
   map->SetClockForTesting(&clock);
   service->SetClockForTesting(&clock);
-  map->SetContentSettingDefaultScope(
-      url, url, ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ALLOW,
-      {.track_last_visit_for_autoexpiration = true});
+  content_settings::ContentSettingConstraints constraints;
+  constraints.set_track_last_visit_for_autoexpiration(true);
+  map->SetContentSettingDefaultScope(url, url, ContentSettingsType::GEOLOCATION,
+                                     CONTENT_SETTING_ALLOW, constraints);
   clock.SetNow(now);
 
   // Check if the content setting is still ALLOW, before auto-revocation.

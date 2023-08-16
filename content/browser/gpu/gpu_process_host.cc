@@ -47,6 +47,7 @@
 #include "content/browser/worker_host/dedicated_worker_host.h"
 #include "content/browser/worker_host/dedicated_worker_service_impl.h"
 #include "content/common/child_process.mojom.h"
+#include "content/common/features.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -262,6 +263,7 @@ static const char* const kSwitchNames[] = {
     switches::kProfilingFlush,
     switches::kRunAllCompositorStagesBeforeDraw,
     switches::kSkiaFontCacheLimitMb,
+    switches::kSkiaGraphiteBackend,
     switches::kSkiaResourceCacheLimitMb,
     switches::kTestGLLib,
     switches::kTraceToConsole,
@@ -325,12 +327,14 @@ enum GPUProcessLifetimeEvent {
 };
 
 // Indexed by GpuProcessKind. There is one of each kind maximum. This array may
-// only be accessed from the IO thread.
+// only be accessed from the UI thread.
 GpuProcessHost* g_gpu_process_hosts[GPU_PROCESS_KIND_COUNT];
 
-void RunCallbackOnIO(GpuProcessKind kind,
-                     bool force_create,
-                     base::OnceCallback<void(GpuProcessHost*)> callback) {
+static void RunCallbackOnUI(
+    GpuProcessKind kind,
+    bool force_create,
+    base::OnceCallback<void(GpuProcessHost*)> callback) {
+  // |GpuProcessHost::Get| asserts that we are on the UI thread.
   GpuProcessHost* host = GpuProcessHost::Get(kind, force_create);
   std::move(callback).Run(host);
 }
@@ -613,7 +617,7 @@ void GpuProcessHost::GetHasGpuProcess(base::OnceCallback<void(bool)> callback) {
 }
 
 // static
-void GpuProcessHost::CallOnIO(
+void GpuProcessHost::CallOnUI(
     const base::Location& location,
     GpuProcessKind kind,
     bool force_create,
@@ -622,7 +626,7 @@ void GpuProcessHost::CallOnIO(
   DCHECK_NE(kind, GPU_PROCESS_KIND_INFO_COLLECTION);
 #endif
   GetUIThreadTaskRunner({})->PostTask(
-      location, base::BindOnce(&RunCallbackOnIO, kind, force_create,
+      location, base::BindOnce(&RunCallbackOnUI, kind, force_create,
                                std::move(callback)));
 }
 
@@ -1181,7 +1185,12 @@ bool GpuProcessHost::LaunchGpuProcess() {
   BrowserChildProcessHostImpl::CopyTraceStartupFlags(cmd_line.get());
 
 #if BUILDFLAG(IS_WIN)
-  cmd_line->AppendArg(switches::kPrefetchArgumentGpu);
+  if (kind_ == GPU_PROCESS_KIND_INFO_COLLECTION &&
+      base::FeatureList::IsEnabled(kGpuInfoCollectionSeparatePrefetch)) {
+    cmd_line->AppendArg(switches::kPrefetchArgumentOther);
+  } else {
+    cmd_line->AppendArg(switches::kPrefetchArgumentGpu);
+  }
 #endif  // BUILDFLAG(IS_WIN)
 
   if (kind_ == GPU_PROCESS_KIND_INFO_COLLECTION) {

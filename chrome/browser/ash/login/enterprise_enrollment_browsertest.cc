@@ -11,9 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen.h"
-#include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
-#include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper_impl.h"
-#include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper_mock.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/test/enrollment_helper_mixin.h"
@@ -111,8 +108,16 @@ class EnterpriseEnrollmentTest : public EnterpriseEnrollmentTestBase {
 // attribute prompt screen. Verifies the attribute prompt screen is displayed.
 // Verifies that the data the user enters into the attribute prompt screen is
 // received by the enrollment helper.
+// TODO(crbug.com/1454755): Flaky on ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_TestAttributePromptPageGetsLoaded \
+  DISABLED_TestAttributePromptPageGetsLoaded
+#else
+#define MAYBE_TestAttributePromptPageGetsLoaded \
+  TestAttributePromptPageGetsLoaded
+#endif
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       TestAttributePromptPageGetsLoaded) {
+                       MAYBE_TestAttributePromptPageGetsLoaded) {
   ShowEnrollmentScreen();
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_MANUAL);

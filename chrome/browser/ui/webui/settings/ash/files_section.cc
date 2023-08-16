@@ -29,6 +29,7 @@ using ::chromeos::settings::mojom::kFilesSectionPath;
 using ::chromeos::settings::mojom::kGoogleDriveSubpagePath;
 using ::chromeos::settings::mojom::kNetworkFileSharesSubpagePath;
 using ::chromeos::settings::mojom::kOfficeFilesSubpagePath;
+using ::chromeos::settings::mojom::kOneDriveSubpagePath;
 using ::chromeos::settings::mojom::Section;
 using ::chromeos::settings::mojom::Setting;
 using ::chromeos::settings::mojom::Subpage;
@@ -94,7 +95,7 @@ FilesSection::FilesSection(Profile* profile,
   if (cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
     updater.AddSearchTags(GetFilesOfficeSearchConcepts());
   }
-  if (drive::util::IsDriveFsBulkPinningEnabled()) {
+  if (drive::util::IsDriveFsBulkPinningEnabled(profile)) {
     updater.AddSearchTags(GetFilesGoogleDriveSearchConcepts());
   }
 }
@@ -105,7 +106,6 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"disconnectGoogleDriveAccount", IDS_SETTINGS_DISCONNECT_GOOGLE_DRIVE},
       {"googleDriveLabel", IDS_SETTINGS_GOOGLE_DRIVE},
-      {"googleDriveEnabledLabel", IDS_SETTINGS_GOOGLE_DRIVE_ENABLED},
       {"googleDriveDisabledLabel", IDS_SETTINGS_GOOGLE_DRIVE_DISABLED},
       {"googleDriveDisconnectLabel", IDS_SETTINGS_GOOGLE_DRIVE_DISCONNECT},
       {"googleDriveConnectLabel", IDS_SETTINGS_GOOGLE_DRIVE_CONNECT},
@@ -126,6 +126,8 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_DIALOG_TITLE},
       {"googleDriveOfflineClearDialogBody",
        IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_DIALOG_BODY},
+      {"googleDriveClearStorageDisabledTooltip",
+       IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_DISABLED_TOOLTIP},
       {"googleDriveTurnOffLabel",
        IDS_SETTINGS_GOOGLE_DRIVE_TURN_OFF_BUTTON_LABEL},
       {"googleDriveTurnOffTitle",
@@ -162,6 +164,12 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_URL_MESSAGE},
       {"smbShareAddedInvalidSSOURLMessage",
        IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_SSO_URL_MESSAGE},
+      {"oneDriveLabel", IDS_SETTINGS_ONE_DRIVE_LABEL},
+      {"oneDriveSignedInAs", IDS_SETTINGS_ONE_DRIVE_SIGNED_IN_AS},
+      {"oneDriveDisconnected", IDS_SETTINGS_ONE_DRIVE_DISCONNECTED},
+      {"oneDriveConnect", IDS_SETTINGS_ONE_DRIVE_CONNECT},
+      {"oneDriveDisconnect", IDS_SETTINGS_ONE_DRIVE_DISCONNECT},
+      {"openOneDriveFolder", IDS_SETTINGS_OPEN_ONE_DRIVE_FOLDER},
       {"officeLabel", IDS_SETTINGS_OFFICE_LABEL},
       {"officeSublabel", IDS_SETTINGS_OFFICE_SUBLABEL},
       {"officeSubpageTitle", IDS_SETTINGS_OFFICE_SUBPAGE_TITLE},
@@ -200,7 +208,7 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   }
 
   html_source->AddBoolean("enableDriveFsBulkPinning",
-                          drive::util::IsDriveFsBulkPinningEnabled());
+                          drive::util::IsDriveFsBulkPinningEnabled(profile()));
 }
 
 void FilesSection::AddHandlers(content::WebUI* web_ui) {
@@ -239,9 +247,8 @@ void FilesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::kNetworkFileSharesSubpagePath);
 
   // Office.
-  // TODO(b:264314789): Correct string (not smb).
   generator->RegisterTopLevelSubpage(
-      IDS_SETTINGS_DOWNLOADS_SMB_SHARES, mojom::Subpage::kOfficeFiles,
+      IDS_SETTINGS_OFFICE_LABEL, mojom::Subpage::kOfficeFiles,
       mojom::SearchResultIcon::kFolder, mojom::SearchResultDefaultRank::kMedium,
       mojom::kNetworkFileSharesSubpagePath);
 
@@ -249,6 +256,11 @@ void FilesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       IDS_SETTINGS_GOOGLE_DRIVE, mojom::Subpage::kGoogleDrive,
       mojom::SearchResultIcon::kFolder, mojom::SearchResultDefaultRank::kMedium,
       mojom::kGoogleDriveSubpagePath);
+
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_ONE_DRIVE_LABEL, mojom::Subpage::kOneDrive,
+      mojom::SearchResultIcon::kFolder, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kOneDriveSubpagePath);
 }
 
 }  // namespace ash::settings

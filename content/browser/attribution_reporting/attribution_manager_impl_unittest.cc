@@ -31,7 +31,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/aggregation_service/aggregation_service.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/aggregation_service/aggregatable_report.h"
 #include "content/browser/aggregation_service/aggregation_service.h"
@@ -158,11 +157,10 @@ AggregatableReport CreateExampleAggregatableReport() {
       /*api_version=*/"",
       /*api_identifier=*/"attribution-reporting");
 
-  return AggregatableReport(
-      std::move(payloads), shared_info.SerializeAsJson(),
-      /*debug_key=*/absl::nullopt,
-      /*additional_fields=*/{},
-      ::aggregation_service::mojom::AggregationCoordinator::kDefault);
+  return AggregatableReport(std::move(payloads), shared_info.SerializeAsJson(),
+                            /*debug_key=*/absl::nullopt,
+                            /*additional_fields=*/{},
+                            /*aggregation_coordinator_origin=*/absl::nullopt);
 }
 
 // Time after impression that a conversion can first be sent. See
@@ -227,9 +225,9 @@ class MockAttributionOsLevelManager : public AttributionOsLevelManager {
 
   MOCK_METHOD(void,
               Register,
-              (const OsRegistration&,
+              (OsRegistration,
                bool is_debug_key_allowed,
-               base::OnceCallback<void(bool success)> callback),
+               RegisterCallback callback),
               (override));
 
   MOCK_METHOD(void,
@@ -1051,6 +1049,31 @@ TEST_F(AttributionManagerImplTest, ClearAllDataFromBrowserAndOs) {
   EXPECT_THAT(StoredReports(), IsEmpty());
 }
 
+TEST_F(AttributionManagerImplTest, RemoveDataKeyFromBrowserAndOs) {
+  const auto origin = *SuitableOrigin::Deserialize("https://example.test");
+
+  attribution_manager_->HandleSource(
+      SourceBuilder().SetReportingOrigin(origin).Build(), kFrameId);
+  attribution_manager_->HandleTrigger(
+      TriggerBuilder().SetReportingOrigin(origin).Build(), kFrameId);
+  EXPECT_THAT(StoredReports(), SizeIs(1));
+
+  AttributionManager::DataKey data_key(*origin);
+  EXPECT_CALL(*os_level_manager_,
+              ClearData(/*delete_begin=*/base::Time::Min(),
+                        /*delete_end=*/base::Time::Max(),
+                        /*origins=*/std::set<url::Origin>({*origin}),
+                        /*domain*/ std::set<std::string>(),
+                        /*mode=*/BrowsingDataFilterBuilder::Mode::kDelete,
+                        /*delete_rate_limit_data=*/true, _));
+
+  base::RunLoop run_loop;
+  attribution_manager_->RemoveAttributionDataByDataKey(data_key,
+                                                       run_loop.QuitClosure());
+  run_loop.Run();
+  EXPECT_THAT(StoredReports(), IsEmpty());
+}
+
 TEST_F(AttributionManagerImplTest, HandleOsSource) {
   AttributionOsLevelManager::ScopedApiStateForTesting scoped_api_state(
       AttributionOsLevelManager::ApiState::kEnabled);
@@ -1073,17 +1096,17 @@ TEST_F(AttributionManagerImplTest, HandleOsSource) {
   {
     InSequence seq;
 
-    EXPECT_CALL(*os_level_manager_,
-                Register(OsRegistration(kRegistrationUrl1, kTopLevelOrigin1,
-                                        AttributionInputEvent()),
-                         /*is_debug_key_allowed=*/true, _))
-        .WillOnce(base::test::RunOnceCallback<2>(true));
+    const OsRegistration registration1(kRegistrationUrl1, kTopLevelOrigin1,
+                                       AttributionInputEvent());
+    EXPECT_CALL(*os_level_manager_, Register(registration1,
+                                             /*is_debug_key_allowed=*/true, _))
+        .WillOnce(base::test::RunOnceCallback<2>(registration1, true));
 
-    EXPECT_CALL(*os_level_manager_,
-                Register(OsRegistration(kRegistrationUrl2, kTopLevelOrigin2,
-                                        AttributionInputEvent()),
-                         /*is_debug_key_allowed=*/false, _))
-        .WillOnce(base::test::RunOnceCallback<2>(false));
+    const OsRegistration registration2(kRegistrationUrl2, kTopLevelOrigin2,
+                                       AttributionInputEvent());
+    EXPECT_CALL(*os_level_manager_, Register(registration2,
+                                             /*is_debug_key_allowed=*/false, _))
+        .WillOnce(base::test::RunOnceCallback<2>(registration2, false));
   }
 
   // Dropped due to the URL being opaque.
@@ -1156,17 +1179,17 @@ TEST_F(AttributionManagerImplTest, HandleOsTrigger) {
   {
     InSequence seq;
 
-    EXPECT_CALL(*os_level_manager_,
-                Register(OsRegistration(kRegistrationUrl1, kTopLevelOrigin1,
-                                        /*input_event=*/absl::nullopt),
-                         /*is_debug_key_allowed=*/true, _))
-        .WillOnce(base::test::RunOnceCallback<2>(true));
+    const OsRegistration registration1(kRegistrationUrl1, kTopLevelOrigin1,
+                                       /*input_event=*/absl::nullopt);
+    EXPECT_CALL(*os_level_manager_, Register(registration1,
+                                             /*is_debug_key_allowed=*/true, _))
+        .WillOnce(base::test::RunOnceCallback<2>(registration1, true));
 
-    EXPECT_CALL(*os_level_manager_,
-                Register(OsRegistration(kRegistrationUrl2, kTopLevelOrigin2,
-                                        /*input_event=*/absl::nullopt),
-                         /*is_debug_key_allowed=*/false, _))
-        .WillOnce(base::test::RunOnceCallback<2>(false));
+    const OsRegistration registration2(kRegistrationUrl2, kTopLevelOrigin2,
+                                       /*input_event=*/absl::nullopt);
+    EXPECT_CALL(*os_level_manager_, Register(registration2,
+                                             /*is_debug_key_allowed=*/false, _))
+        .WillOnce(base::test::RunOnceCallback<2>(registration2, false));
   }
 
   // Dropped due to the URL being opaque.
@@ -2499,13 +2522,15 @@ TEST_F(AttributionManagerImplTest, OnReportSent_RecordReportDelay) {
 }
 
 TEST_F(AttributionManagerImplTest,
-       AggregateReportAssemblyFailed_ReportNotSent) {
+       AggregateReportAssemblyFailed_RetriedAndReportNotSent) {
   base::HistogramTester histograms;
 
   attribution_manager_->HandleSource(
       TestAggregatableSourceProvider().GetBuilder().Build(), kFrameId);
   attribution_manager_->HandleTrigger(
-      DefaultAggregatableTriggerBuilder().Build(), kFrameId);
+      DefaultAggregatableTriggerBuilder().Build(
+          /*generate_event_trigger_data=*/false),
+      kFrameId);
 
   MockAttributionObserver observer;
   base::ScopedObservation<AttributionManager, AttributionObserver> observation(
@@ -2517,13 +2542,30 @@ TEST_F(AttributionManagerImplTest,
       OnReportSent(
           ReportTypeIs(AttributionReport::Type::kAggregatableAttribution),
           /*is_debug_report=*/false,
-          Field(&SendResult::status, SendResult::Status::kFailedToAssemble)));
+          Field(&SendResult::status,
+                SendResult::Status::kTransientAssemblyFailure)));
 
   Checkpoint checkpoint;
   {
     InSequence seq;
     EXPECT_CALL(*aggregation_service_, AssembleReport).Times(0);
     EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*aggregation_service_, AssembleReport)
+        .WillOnce([](AggregatableReportRequest request,
+                     AggregationService::AssemblyCallback callback) {
+          std::move(callback).Run(
+              std::move(request), absl::nullopt,
+              AggregationService::AssemblyStatus::kAssemblyFailed);
+        });
+    EXPECT_CALL(checkpoint, Call(2));
+    EXPECT_CALL(*aggregation_service_, AssembleReport)
+        .WillOnce([](AggregatableReportRequest request,
+                     AggregationService::AssemblyCallback callback) {
+          std::move(callback).Run(
+              std::move(request), absl::nullopt,
+              AggregationService::AssemblyStatus::kAssemblyFailed);
+        });
+    EXPECT_CALL(checkpoint, Call(3));
     EXPECT_CALL(*aggregation_service_, AssembleReport)
         .WillOnce([](AggregatableReportRequest request,
                      AggregationService::AssemblyCallback callback) {
@@ -2539,17 +2581,24 @@ TEST_F(AttributionManagerImplTest,
 
   checkpoint.Call(1);
 
-  // Event-level report was sent.
-  EXPECT_CALL(*report_sender_, SendReport(_, /*is_debug_report=*/false, _));
-
   task_environment_.FastForwardBy(base::Microseconds(1));
+
+  checkpoint.Call(2);
+
+  // First report delay.
+  task_environment_.FastForwardBy(base::Minutes(5));
+
+  checkpoint.Call(3);
+
+  // Second report delay.
+  task_environment_.FastForwardBy(base::Minutes(15));
 
   histograms.ExpectUniqueSample(
       "Conversions.AggregatableReport.AssembleReportStatus",
-      AssembleAggregatableReportStatus::kAssembleReportFailed, 1);
+      AssembleAggregatableReportStatus::kAssembleReportFailed, 3);
   histograms.ExpectUniqueTimeSample(
       "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly2",
-      kFirstReportingWindow, 1);
+      kFirstReportingWindow, 3);
   histograms.ExpectTotalCount(
       "Conversions.AggregatableReport.TimeFromTriggerToReportSentSuccessfully",
       0);

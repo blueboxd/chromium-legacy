@@ -6,6 +6,7 @@
 #define ASH_USER_EDUCATION_WELCOME_TOUR_WELCOME_TOUR_CONTROLLER_H_
 
 #include <map>
+#include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/session/session_observer.h"
@@ -19,8 +20,9 @@ namespace ash {
 
 class SessionController;
 class WelcomeTourControllerObserver;
+class WelcomeTourScrim;
 
-// Controller responsible for Welcome Tour feature tutorials. Note that the
+// Controller responsible for the Welcome Tour feature tutorial. Note that the
 // `WelcomeTourController` is owned by the `UserEducationController` and exists
 // if and only if the Welcome Tour feature is enabled.
 class ASH_EXPORT WelcomeTourController : public UserEducationFeatureController,
@@ -52,24 +54,33 @@ class ASH_EXPORT WelcomeTourController : public UserEducationFeatureController,
   void OnChromeTerminating() override;
   void OnSessionStateChanged(session_manager::SessionState) override;
 
-  // Starts the Welcome Tour tutorial iff the primary user session is active.
-  void MaybeStartTutorial();
+  // Shows the Welcome Tour dialog iff the primary user session is active.
+  void MaybeShowDialog();
+
+  // Starts the Welcome Tour tutorial. The tutorial should start when the accept
+  // button of the Welcome Tour dialog is clicked.
+  void StartTutorial();
 
   // Invoked when the Welcome Tour is started/ended. The latter is called
   // regardless of whether the tour was completed or aborted.
   void OnWelcomeTourStarted();
   void OnWelcomeTourEnded();
 
+  // Used to apply a scrim to the help bubble container on all root windows
+  // while the Welcome Tour is in progress. Exists only while the Welcome Tour
+  // is in progress.
+  std::unique_ptr<WelcomeTourScrim> scrim_;
+
   // The collection of observers to be notified of events.
   base::ObserverList<WelcomeTourControllerObserver> observer_list_;
 
   // Sessions are observed only until the primary user session is activated for
-  // the first time at which point the Welcome Tour tutorial is started.
+  // the first time at which point the Welcome Tour dialog is shown.
   base::ScopedObservation<SessionController, SessionObserver>
       session_observation_{this};
 
-  // It is theoretically possible for the Welcome Tour tutorial to outlive
-  // `this` controller during the destruction sequence.
+  // It is theoretically possible for the Welcome Tour dialog/tutorial to
+  // outlive `this` controller during the destruction sequence.
   base::WeakPtrFactory<WelcomeTourController> weak_ptr_factory_{this};
 };
 

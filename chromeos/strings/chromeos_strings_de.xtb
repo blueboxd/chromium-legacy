@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">DNS kann nicht aufgelöst werden</translation>
 <translation id="1018656279737460067">Abgebrochen</translation>
 <translation id="1020274983236703756">Exklusive <ph name="PRODUCT_NAME" />-Assets jetzt verfügbar</translation>
-<translation id="1022433422498218992">Allgemeine Einstellungen</translation>
 <translation id="1022628058306505708">Earth Flow</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> Threads, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Neue Funktion verfügbar. Verwende den Aufwärtspfeil, um mehr zu erfahren.</translation>
@@ -59,6 +58,7 @@
 <translation id="1423591390236870726">Die Taste „<ph name="KEY_NAME" />“ ist nicht gedrückt</translation>
 <translation id="1435763214710588005">Setzt die Datennutzung jeden Monat automatisch am ausgewählten Tag zurück</translation>
 <translation id="1442433966118452622">Bildquelle</translation>
+<translation id="1449035143498573192">In der Google Suche öffnen</translation>
 <translation id="1451536289672181509">Das Gerät ist eine Tastatur.</translation>
 <translation id="1459693405370120464">Wetter</translation>
 <translation id="1468664791493211953">Angebote</translation>
@@ -114,7 +114,6 @@
 <translation id="1768959921651994223">Authentifizierungstyp</translation>
 <translation id="1776228893584526149">Farbton für Hintergrund</translation>
 <translation id="1782199038061388045">Übersetzung</translation>
-<translation id="1790209694022261219">Fenster und Desktops</translation>
 <translation id="1792647875738159689">Scannen wird abgebrochen</translation>
 <translation id="1801418420130173017">Dunkles Design deaktivieren</translation>
 <translation id="1807246157184219062">Hell</translation>
@@ -245,7 +244,6 @@
 <translation id="3008341117444806826">AKTUALISIEREN</translation>
 <translation id="3009958530611748826">Ordner als Speicherort auswählen</translation>
 <translation id="3017079585324758401">Hintergrund</translation>
-<translation id="3020183492814296499">Verknüpfungen</translation>
 <translation id="3027578600144895987">Kamera schließen</translation>
 <translation id="3031560714565892478">Das Gerät ist eine Videokamera.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -615,6 +613,7 @@
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Standardhintergrund</translation>
 <translation id="6017514345406065928">Grün</translation>
+<translation id="6019566113895157499">Tastenkombinationen</translation>
 <translation id="6034694447310538551">Automatisches Zurücksetzen jeden Monat aktivieren</translation>
 <translation id="6037291330010597344">Der Dokumenteneinzug des Scanners ist leer. Lege Dokumente ein und versuche es noch einmal.</translation>
 <translation id="6040143037577758943">Schließen</translation>
@@ -821,7 +820,7 @@
 <translation id="763165478673169849">Zuletzt zurückgesetzt</translation>
 <translation id="7633068090678117093">Hintergrundbild</translation>
 <translation id="7648838807254605802">Hohe HTTPS-Latenz</translation>
-<translation id="765159867434478292">Unterteilt</translation>
+<translation id="765159867434478292">Unterteilen</translation>
 <translation id="7656388927906093505">Das Gerät ist eine Maus.</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7665800271478495366">Avatar ändern</translation>
@@ -861,6 +860,7 @@
 <translation id="7953669802889559161">Eingaben</translation>
 <translation id="7955587717700691983">Bluetooth-Tastatur</translation>
 <translation id="7960831585769876809">Temperatur</translation>
+<translation id="7971535376154084247">Allgemeine Einstellungen</translation>
 <translation id="7977800524392185497">Gehe zu den Einstellungen, um eine Verbindung zu einem Netzwerk (<ph name="NETWORK_NAME" />) herzustellen</translation>
 <translation id="7978412674231730200">Privater Schlüssel</translation>
 <translation id="7994702968232966508">EAP-Methode</translation>
@@ -924,6 +924,7 @@
 <translation id="8461329675984532579">Name des Homepageanbieters</translation>
 <translation id="8475690821716466388">Das WLAN ist mit dem schwachen Protokoll WEP PSK gesichert</translation>
 <translation id="8476242415522716722">Leuchten auf Tastatur-Unterseite</translation>
+<translation id="8476942730579767658">Fenster und Desktops</translation>
 <translation id="8477551185774834963">Die DNS-Latenz liegt etwas über dem zulässigen Grenzwert</translation>
 <translation id="8483248364096924578">IP-Adresse</translation>
 <translation id="8491311378305535241">Eine Verbindung zu HTTP-Websites durch eine Firewall ist von Android-Apps aus nicht möglich</translation>
@@ -966,6 +967,7 @@
 <translation id="8820817407110198400">Lesezeichen</translation>
 <translation id="8834539327799336565">Derzeit verbunden</translation>
 <translation id="8845001906332463065">Hilfe aufrufen</translation>
+<translation id="8851859208664803097">Angehalten – Drucker nicht erreichbar</translation>
 <translation id="8855781559874488009">Eine Verbindung zu HTTP-Websites durch eine Firewall ist nicht möglich</translation>
 <translation id="885701979325669005">Speicher</translation>
 <translation id="885704831271383379">Tastatur dunkler</translation>

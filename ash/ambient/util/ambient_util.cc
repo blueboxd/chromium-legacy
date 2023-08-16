@@ -98,10 +98,9 @@ bool ParseDynamicLottieAssetId(base::StringPiece asset_id,
   static const base::NoDestructor<std::string> kAssetIdPatternStr(
       base::StrCat({kLottieCustomizableIdPrefix,
                     R"(_Photo_Position([[:alnum:]]+)_([[:digit:]]+).*)"}));
-  static const base::NoDestructor<RE2> kAssetIdPattern(
-      kAssetIdPatternStr->data());
-  return RE2::FullMatch(asset_id.data(), *kAssetIdPattern,
-                        &parsed_output.position_id, &parsed_output.idx);
+  static const base::NoDestructor<RE2> kAssetIdPattern(*kAssetIdPatternStr);
+  return RE2::FullMatch(asset_id, *kAssetIdPattern, &parsed_output.position_id,
+                        &parsed_output.idx);
 }
 
 }  // namespace util

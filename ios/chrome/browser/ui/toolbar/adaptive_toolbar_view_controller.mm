@@ -10,18 +10,23 @@
 #import "base/notreached.h"
 #import "base/time/time.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/animation_util.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_menus_provider.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/common/material_timing.h"
+#import "ios/chrome/common/ui/util/ui_util.h"
 #import "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -37,6 +42,9 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 NSString* const kContextMenuActionIdentifier = @"kContextMenuActionIdentifier";
 // The duration of the slide in animation.
 const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
+// Progress of fullscreen when the toolbars are fully visible.
+const CGFloat kFullscreenProgressFullyExpanded = 1.0;
+
 }  // namespace
 
 @interface AdaptiveToolbarViewController ()
@@ -46,7 +54,9 @@ const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
 // Whether a page is loading.
 @property(nonatomic, assign, getter=isLoading) BOOL loading;
 @property(nonatomic, assign) BOOL isNTP;
-
+// The last progress of fullscreen registered. The progress range is between 0
+// and 1.
+@property(nonatomic, assign) CGFloat previousFullscreenProgress;
 @end
 
 @implementation AdaptiveToolbarViewController
@@ -57,6 +67,10 @@ const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
 @synthesize isNTP = _isNTP;
 
 #pragma mark - Public
+
+- (ToolbarButton*)toolsMenuButton {
+  return self.view.toolsMenuButton;
+}
 
 - (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP {
   self.view.progressBar.hidden = YES;
@@ -102,6 +116,10 @@ const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  // The first time, the toolbar is fully displayed.
+  self.previousFullscreenProgress = kFullscreenProgressFullyExpanded;
+
   [self addStandardActionsForAllButtons];
 
   // Add the layout guide names to the buttons.
@@ -123,12 +141,41 @@ const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
   [self configureMenuProviderForButton:self.view.tabGridButton
                             buttonType:AdaptiveToolbarButtonTypeTabGrid];
 
-  [self updateLayoutBasedOnTraitCollection];
+  // LocationBarContainer initial fullscreen progress.
+  [self updateLocationBarHeightForFullscreenProgress:
+            kFullscreenProgressFullyExpanded];
+
+  // CollapsedToolbarButton exit fullscreen.
+  [self.view.collapsedToolbarButton addTarget:self
+                                       action:@selector(exitFullscreen)
+                             forControlEvents:UIControlEventTouchUpInside];
+  UIHoverGestureRecognizer* hoverGestureRecognizer =
+      [[UIHoverGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(exitFullscreen)];
+  [self.view.collapsedToolbarButton
+      addGestureRecognizer:hoverGestureRecognizer];
+
+  [self traitCollectionDidChange:nil];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  [self updateLayoutBasedOnTraitCollection];
+
+  // Progress bar and buttons visibility.
+  [self updateAllButtonsVisibility];
+  if (IsRegularXRegularSizeClass(self)) {
+    [self.view.progressBar setHidden:YES animated:NO completion:nil];
+  } else if (self.loading) {
+    [self.view.progressBar setHidden:NO animated:NO completion:nil];
+  }
+
+  // Restore locationBarContainer height with previous fullscreen progress.
+  if (previousTraitCollection.preferredContentSizeCategory !=
+      self.traitCollection.preferredContentSizeCategory) {
+    [self updateLocationBarHeightForFullscreenProgress:
+              self.previousFullscreenProgress];
+  }
 }
 
 - (void)viewDidLayoutSubviews {
@@ -143,17 +190,28 @@ const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
   [self updateAllButtonsVisibility];
 }
 
-#pragma mark - Public
-
-- (ToolbarButton*)toolsMenuButton {
-  return self.view.toolsMenuButton;
-}
+#pragma mark - Public Properties
 
 - (void)setLayoutGuideCenter:(LayoutGuideCenter*)layoutGuideCenter {
   _layoutGuideCenter = layoutGuideCenter;
 
   if (self.isViewLoaded) {
     [self addLayoutGuideCenterToButtons];
+  }
+}
+
+- (void)setLocationBarViewController:
+    (UIViewController*)locationBarViewController {
+  _locationBarViewController = locationBarViewController;
+  if (locationBarViewController) {
+    [self addChildViewController:locationBarViewController];
+    [locationBarViewController didMoveToParentViewController:self];
+    [self.view setLocationBarView:locationBarViewController.view];
+    self.view.locationBarContainer.hidden = NO;
+  } else {
+    CHECK(IsBottomOmniboxSteadyStateEnabled());
+    [self.view setLocationBarView:nil];
+    self.view.locationBarContainer.hidden = YES;
   }
 }
 
@@ -251,11 +309,43 @@ const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
   // No-op, should be handled by the primary toolbar.
 }
 
+#pragma mark - FullscreenUIElement
+
+- (void)updateForFullscreenProgress:(CGFloat)progress {
+  self.previousFullscreenProgress = progress;
+
+  const CGFloat alphaValue = fmax(progress * 2 - 1, 0);
+
+  [self updateLocationBarHeightForFullscreenProgress:progress];
+  self.view.locationBarContainer.backgroundColor =
+      [self.buttonFactory.toolbarConfiguration
+          locationBarBackgroundColorWithVisibility:alphaValue];
+
+  self.view.collapsedToolbarButton.hidden = progress > 0.05;
+}
+
+- (void)updateForFullscreenEnabled:(BOOL)enabled {
+  if (!enabled) {
+    [self updateForFullscreenProgress:kFullscreenProgressFullyExpanded];
+  }
+}
+
+- (void)animateFullscreenWithAnimator:(FullscreenAnimator*)animator {
+  CGFloat finalProgress = animator.finalProgress;
+  // Using the animator doesn't work as the animation doesn't trigger a relayout
+  // of the constraints (see crbug.com/978462, crbug.com/950994).
+  [UIView animateWithDuration:animator.duration
+                   animations:^{
+                     [self updateForFullscreenProgress:finalProgress];
+                     [self.view layoutIfNeeded];
+                   }];
+}
+
 #pragma mark - Protected
 
 - (void)stopProgressBar {
   __weak AdaptiveToolbarViewController* weakSelf = self;
-  [self.view.progressBar setProgress:1
+  [self.view.progressBar setProgress:kFullscreenProgressFullyExpanded
                             animated:YES
                           completion:^(BOOL finished) {
                             [weakSelf updateProgressBarVisibility];
@@ -277,6 +367,22 @@ const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
 }
 
 #pragma mark - Private
+
+// Updates `locationBarContainer` height and adjusts its corner radius for the
+// fullscreen `progress`
+- (void)updateLocationBarHeightForFullscreenProgress:(CGFloat)progress {
+  const CGFloat expandedHeight =
+      LocationBarHeight(self.traitCollection.preferredContentSizeCategory);
+  const CGFloat collapsedHeight =
+      ToolbarCollapsedHeight(self.traitCollection.preferredContentSizeCategory);
+  const CGFloat expandedCollapsedDelta = expandedHeight - collapsedHeight;
+
+  const CGFloat height =
+      AlignValueToPixel(collapsedHeight + expandedCollapsedDelta * progress);
+
+  self.view.locationBarContainerHeight.constant = height;
+  self.view.locationBarContainer.layer.cornerRadius = height / 2;
+}
 
 // Makes sure that the visibility of the progress bar is matching the one which
 // is expected.
@@ -347,15 +453,6 @@ const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
   }
 }
 
-- (void)updateLayoutBasedOnTraitCollection {
-  [self updateAllButtonsVisibility];
-  if (IsRegularXRegularSizeClass(self)) {
-    [self.view.progressBar setHidden:YES animated:NO completion:nil];
-  } else if (self.loading) {
-    [self.view.progressBar setHidden:NO animated:NO completion:nil];
-  }
-}
-
 // Configures `button` with the menu provider, making sure that the items are
 // updated when the menu is presented. The `buttonType` is passed to the menu
 // provider.
@@ -390,6 +487,11 @@ const base::TimeDelta kToobarSlideInAnimationDuration = base::Milliseconds(500);
   self.view.openNewTabButton.layoutGuideCenter = self.layoutGuideCenter;
   self.view.forwardButton.layoutGuideCenter = self.layoutGuideCenter;
   self.view.backButton.layoutGuideCenter = self.layoutGuideCenter;
+}
+
+// Exits fullscreen.
+- (void)exitFullscreen {
+  [self.adaptiveDelegate exitFullscreen];
 }
 
 @end

@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "chrome/android/chrome_jni_headers/AutofillPopupBridge_jni.h"
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/autofill/autofill_popup_controller_utils.h"
@@ -132,10 +133,9 @@ void AutofillPopupViewAndroid::OnSuggestionsChanged() {
     bool is_deletable =
         controller_->GetRemovalConfirmationText(i, nullptr, nullptr);
     bool is_label_multiline =
-        suggestion.frontend_id ==
+        suggestion.popup_item_id ==
             PopupItemId::kInsecureContextPaymentDisabledMessage ||
-        suggestion.frontend_id == PopupItemId::kCreditCardSigninPromo ||
-        suggestion.frontend_id == PopupItemId::kMixedFormMessage;
+        suggestion.popup_item_id == PopupItemId::kMixedFormMessage;
 
     Java_AutofillPopupBridge_addToAutofillSuggestionArray(
         env, java_object_, data_array, i,
@@ -144,8 +144,9 @@ void AutofillPopupViewAndroid::OnSuggestionsChanged() {
         base::android::ConvertUTF16ToJavaString(env, sublabel),
         base::android::ConvertUTF16ToJavaString(env, secondary_sublabel),
         base::android::ConvertUTF16ToJavaString(env, item_tag), android_icon_id,
-        suggestion.is_icon_at_start, suggestion.frontend_id.as_int(),
-        is_deletable, is_label_multiline, /*isLabelBold*/ false,
+        suggestion.is_icon_at_start,
+        base::to_underlying(suggestion.popup_item_id), is_deletable,
+        is_label_multiline, /*isLabelBold*/ false,
         url::GURLAndroid::FromNativeGURL(env, suggestion.custom_icon_url));
   }
 

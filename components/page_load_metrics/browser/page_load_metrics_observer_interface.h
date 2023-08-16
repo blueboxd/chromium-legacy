@@ -22,6 +22,10 @@
 
 #include "url/gurl.h"
 
+namespace blink {
+struct JavaScriptFrameworkDetectionResult;
+}  // namespace blink
+
 namespace content {
 class NavigationHandle;
 class RenderFrameHost;
@@ -333,7 +337,7 @@ class PageLoadMetricsObserverInterface {
 
   // The callback is invoked when a soft navigation is detected.
   // See https://bit.ly/soft-navigation for more details.
-  virtual void OnSoftNavigationCountUpdated() = 0;
+  virtual void OnSoftNavigationUpdated(mojom::SoftNavigationMetricsPtr) = 0;
 
   // OnInputTimingUpdate is triggered when an updated InputTiming is available
   // at the subframe level. This method may be called multiple times over the
@@ -415,6 +419,10 @@ class PageLoadMetricsObserverInterface {
   // frame.
   virtual void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
                                          int behavior_flags) = 0;
+
+  virtual void OnJavaScriptFrameworksObserved(
+      content::RenderFrameHost* rfh,
+      const blink::JavaScriptFrameworkDetectionResult&) = 0;
 
   // Invoked when new use counter features are observed across all frames.
   virtual void OnFeaturesUsageObserved(

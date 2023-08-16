@@ -93,7 +93,8 @@ class MockOptGuideDecider
       const uint64_t product_cluster_id,
       const std::string& country_code,
       const int64_t amount_micros = 0,
-      const std::string& currency_code = "USD");
+      const std::string& currency_code = "USD",
+      const std::string& gpc_title = "example_gpc_title");
 
   void AddPriceUpdateToPriceTrackingResponse(OptimizationMetadata* out_meta,
                                              const std::string& currency_code,
@@ -106,6 +107,18 @@ class MockOptGuideDecider
       const std::string& details_page_url,
       const bool has_return_policy,
       const bool contains_sensitive_content);
+
+  OptimizationMetadata BuildPriceInsightsResponse(
+      const uint64_t product_cluster_id,
+      const std::string& price_range_currency_code,
+      const int64_t low_typical_price_micros,
+      const int64_t high_typical_price_micros,
+      const std::string& price_history_currency_code,
+      const std::string& attributes,
+      const std::vector<std::tuple<std::string, int64_t>>& history_prices,
+      const std::string& jackpot_url,
+      const PriceBucket& price_bucket,
+      const bool has_multiple_catalogs);
 
  private:
   absl::optional<GURL> response_url_;
@@ -123,8 +136,16 @@ class MockOptGuideDecider
 class MockWebWrapper : public WebWrapper {
  public:
   MockWebWrapper(const GURL& last_committed_url, bool is_off_the_record);
+
+  // `result` specified the result of the subsequent javascript execution. This
+  // object does not take ownership of the provided pointer.
+  MockWebWrapper(const GURL& last_committed_url,
+                 bool is_off_the_record,
+                 base::Value* result);
+
   MockWebWrapper(const MockWebWrapper&) = delete;
   MockWebWrapper operator=(const MockWebWrapper&) = delete;
+
   ~MockWebWrapper() override;
 
   const GURL& GetLastCommittedURL() override;
@@ -138,16 +159,11 @@ class MockWebWrapper : public WebWrapper {
       const std::u16string& script,
       base::OnceCallback<void(const base::Value)> callback) override;
 
-  // Set the result of some javascript execution. This object does not take
-  // ownership of the provided pointer.
-  void SetMockJavaScriptResult(base::Value* result);
-
  private:
-  GURL last_committed_url_;
-  bool is_off_the_record_;
+  const GURL last_committed_url_;
+  const bool is_off_the_record_;
   bool is_first_load_finished_{true};
-
-  raw_ptr<base::Value> mock_js_result_{nullptr};
+  const raw_ptr<base::Value> mock_js_result_;
 };
 
 class ShoppingServiceTestBase : public testing::Test {
@@ -156,6 +172,8 @@ class ShoppingServiceTestBase : public testing::Test {
   ShoppingServiceTestBase(const ShoppingServiceTestBase&) = delete;
   ShoppingServiceTestBase operator=(const ShoppingServiceTestBase&) = delete;
   ~ShoppingServiceTestBase() override;
+
+  void SetUp() override;
 
   void TestBody() override;
 

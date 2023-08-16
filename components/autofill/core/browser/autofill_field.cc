@@ -158,11 +158,11 @@ DenseSet<HtmlFieldType> BelievedHtmlTypes(ServerFieldType heuristic_prediction,
         features::kAutofillServerPrecedenceScopeOverAutocomplete.Get());
   }
   // If the field is credit-card related or the feature
-  // `kAutofillFillAndImportFromMoreFields` is enabled, we always override
-  // unrecognized autocomplete attributes.
+  // `kAutofillPredictionsForAutocompleteUnrecognized` is enabled, we always
+  // override unrecognized autocomplete attributes.
   if (is_credit_card_prediction ||
       base::FeatureList::IsEnabled(
-          features::kAutofillFillAndImportFromMoreFields)) {
+          features::kAutofillPredictionsForAutocompleteUnrecognized)) {
     believed_html_types.erase(HtmlFieldType::kUnrecognized);
   }
   return believed_html_types;
@@ -320,9 +320,16 @@ AutofillType AutofillField::ComputedType() const {
     return AutofillType(server_type());
   }
 
-  // If the explicit type is cc-exp and either the server or heuristics agree
-  // on a 2 vs 4 digit specialization of cc-exp, use that specialization.
-  if (html_type_ == HtmlFieldType::kCreditCardExp) {
+  // TODO(crbug/1441057) Delete this if-statement when
+  // features::kAutofillEnableExpirationDateImprovements has launched. This
+  // should be covered by
+  // FormStructureRationalizer::RationalizeAutocompleteAttributes.
+  //
+  // If the explicit type is cc-exp and either the server or heuristics agree on
+  // a 2 vs 4 digit specialization of cc-exp, use that specialization.
+  if (html_type_ == HtmlFieldType::kCreditCardExp &&
+      !base::FeatureList::IsEnabled(
+          features::kAutofillEnableExpirationDateImprovements)) {
     if (server_type() == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
         server_type() == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) {
       return AutofillType(server_type());
@@ -436,12 +443,9 @@ bool AutofillField::HasExpirationDateType() const {
   return base::Contains(kExpirationDateTypes, Type().GetStorableType());
 }
 
-bool AutofillField::HasPredictionDespiteUnrecognizedAutocompleteAttribute()
-    const {
+bool AutofillField::ShouldSuppressSuggestionsAndFillingByDefault() const {
   return html_type_ == HtmlFieldType::kUnrecognized &&
-         !IsCreditCardPrediction() &&
-         base::FeatureList::IsEnabled(
-             features::kAutofillFillAndImportFromMoreFields);
+         !server_type_prediction_is_override() && !IsCreditCardPrediction();
 }
 
 void AutofillField::SetPasswordRequirements(PasswordRequirementsSpec spec) {
@@ -499,6 +503,8 @@ FormControlType AutofillField::FormControlType() const {
     return FormControlType::kRadio;
   } else if (form_control_type == "select-one") {
     return FormControlType::kSelectOne;
+  } else if (form_control_type == "selectmenu") {
+    return FormControlType::kSelectmenu;
   } else if (form_control_type == "") {
     return FormControlType::kEmpty;
   } else {

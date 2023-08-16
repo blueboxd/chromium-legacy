@@ -97,13 +97,11 @@ export type EnterOptions =
     DialogEnterOptions|OptionPanelOptions|PTZPanelOptions|WarningEnterOptions;
 
 export type LeaveCondition = {
-  kind: 'BACKGROUND_CLICKED',
+  kind: 'BACKGROUND_CLICKED'|'ESC_KEY_PRESSED'|'STOP_STREAMING',
 }|{
   kind: 'CLOSED',
   val?: unknown,
-}|{
-  kind: 'ESC_KEY_PRESSED',
-};
+}
 
 interface ViewOptions {
   /**
@@ -121,6 +119,11 @@ interface ViewOptions {
    * tabindex is not -1 when argument is not presented.
    */
   defaultFocusSelector?: string;
+
+  /**
+   * Close the view when the it's opened and the camera stops streaming.
+   */
+  dismissOnStopStreaming?: boolean;
 }
 
 /**
@@ -147,6 +150,7 @@ export class View {
     dismissByEsc = false,
     dismissByBackgroundClick = false,
     defaultFocusSelector = '[tabindex]:not([tabindex="-1"])',
+    dismissOnStopStreaming = false,
   }: ViewOptions = {}) {
     this.root = dom.get(`#${name}`, HTMLElement);
     this.dismissByEsc = dismissByEsc;
@@ -156,6 +160,14 @@ export class View {
       this.root.addEventListener('click', (event) => {
         if (event.target === this.root) {
           this.leave({kind: 'BACKGROUND_CLICKED'});
+        }
+      });
+    }
+
+    if (dismissOnStopStreaming) {
+      state.addObserver(state.State.STREAMING, (streaming) => {
+        if (!streaming && state.get(this.name)) {
+          this.leave({kind: 'STOP_STREAMING'});
         }
       });
     }
@@ -313,8 +325,7 @@ export class View {
   /**
    * Hook of the subclass for leaving the view.
    *
-   * @param _condition Optional condition for leaving the view.
-   * @return Whether able to leaving the view or not.
+   * @return Whether able to leave the view or not.
    */
   protected leaving(_condition: LeaveCondition): boolean {
     return true;

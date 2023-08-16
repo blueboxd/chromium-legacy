@@ -50,13 +50,13 @@ class WebStateListTestObserver : public WebStateListObserver {
     web_state_list_destroyed_called_ = false;
   }
 
-  // Returns whether WebStateInsertedAt was invoked.
+  // Returns whether the insertion operation was invoked.
   bool web_state_inserted_called() const { return web_state_inserted_called_; }
 
-  // Returns whether WebStateMoved was invoked.
+  // Returns whether the move operation was invoked.
   bool web_state_moved_called() const { return web_state_moved_called_; }
 
-  // Returns whether WebStateReplacedAt was invoked.
+  // Returns whether the replacement operation was invoked.
   bool web_state_replaced_called() const { return web_state_replaced_called_; }
 
   // Returns whether WebStateDetachedAt was invoked.
@@ -78,27 +78,32 @@ class WebStateListTestObserver : public WebStateListObserver {
   }
 
   // WebStateListObserver implementation.
-  void WebStateInsertedAt(WebStateList* web_state_list,
-                          web::WebState* web_state,
-                          int index,
-                          bool activating) override {
-    EXPECT_TRUE(web_state_list->IsMutating());
-    web_state_inserted_called_ = true;
-  }
-
-  void WebStateMoved(WebStateList* web_state_list,
-                     web::WebState* web_state,
-                     int from_index,
-                     int to_index) override {
-    EXPECT_TRUE(web_state_list->IsMutating());
-    web_state_moved_called_ = true;
-  }
-
-  void WebStateReplacedAt(WebStateList* web_state_list,
-                          web::WebState* old_web_state,
-                          web::WebState* new_web_state,
-                          int index) override {
-    web_state_replaced_called_ = true;
+  void WebStateListChanged(WebStateList* web_state_list,
+                           const WebStateListChange& change,
+                           const WebStateSelection& selection) override {
+    switch (change.type()) {
+      case WebStateListChange::Type::kSelectionOnly:
+        // TODO(crbug.com/1442546): Move the implementation from
+        // WebStateActivatedAt() to here. Note that here is reachable only when
+        // `reason` == ActiveWebStateChangeReason::Activated.
+        break;
+      case WebStateListChange::Type::kDetach:
+        // TODO(crbug.com/1442546): Move the implementation from
+        // WebStateDetachedAt() to here.
+        break;
+      case WebStateListChange::Type::kMove:
+        EXPECT_TRUE(web_state_list->IsMutating());
+        web_state_moved_called_ = true;
+        break;
+      case WebStateListChange::Type::kReplace:
+        EXPECT_TRUE(web_state_list->IsMutating());
+        web_state_replaced_called_ = true;
+        break;
+      case WebStateListChange::Type::kInsert:
+        EXPECT_TRUE(web_state_list->IsMutating());
+        web_state_inserted_called_ = true;
+        break;
+    }
   }
 
   void WebStateDetachedAt(WebStateList* web_state_list,

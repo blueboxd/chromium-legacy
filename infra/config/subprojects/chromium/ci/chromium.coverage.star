@@ -319,7 +319,7 @@ coverage_builder(
 # Experimental builder. Does not export_coverage_to_zoss.
 coverage_builder(
     name = "linux-fuzz-coverage",
-    executable = "recipe:chromium_fuzz_coverage",
+    executable = "recipe:chromium/fuzz",
     builderless = True,
     os = os.LINUX_DEFAULT,
     console_view_entry = [
@@ -403,7 +403,7 @@ coverage_builder(
         build_gs_bucket = "chromium-fyi-archive",
     ),
     builderless = True,
-    cores = 24,
+    cores = 12,
     os = os.MAC_ANY,
     console_view_entry = [
         consoles.console_view_entry(

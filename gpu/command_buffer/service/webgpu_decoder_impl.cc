@@ -15,6 +15,7 @@
 #include "base/auto_reset.h"
 #include "base/bits.h"
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -43,14 +44,15 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/webgpu_decoder.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/webgpu_blocklist.h"
 #include "gpu/webgpu/callback.h"
 #include "third_party/abseil-cpp/absl/base/attributes.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
-#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
+#include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 
 #if BUILDFLAG(IS_WIN)
 #include <dawn/native/D3D11Backend.h>
@@ -254,20 +256,6 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                           int num_entries,
                           int* entries_processed) override;
   base::StringPiece GetLogPrefix() override { return "WebGPUDecoderImpl"; }
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-  void AttachImageToTextureWithDecoderBinding(uint32_t client_texture_id,
-                                              uint32_t texture_target,
-                                              gl::GLImage* image) override {
-    NOTREACHED();
-  }
-#elif !BUILDFLAG(IS_ANDROID)
-  void AttachImageToTextureWithClientBinding(uint32_t client_texture_id,
-                                             uint32_t texture_target,
-                                             gl::GLImage* image) override {
-    NOTREACHED();
-  }
-#endif
-
   gles2::ContextGroup* GetContextGroup() override { return nullptr; }
   gles2::ErrorState* GetErrorState() override {
     NOTREACHED();
@@ -381,7 +369,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   // only if not returning an error.
   error::Error current_decoder_error_ = error::kNoError;
 
-  void DiscoverAdapters();
+  void DiscoverPhysicalDevices();
 
   WGPUAdapter CreatePreferredAdapter(WGPUPowerPreference power_preference,
                                      bool force_fallback,
@@ -616,7 +604,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       DCHECK(buffer_size);
 
       base::CheckedNumeric<uint32_t> checked_bytes_per_row(
-          BitsPerPixel(format) / 8);
+          format.BitsPerPixel() / 8);
       checked_bytes_per_row *= size.width();
 
       uint32_t packed_bytes_per_row;
@@ -857,7 +845,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
       // It's ok to pass in empty GrFlushInfo here since SignalSemaphores()
       // will populate it with semaphores and call GrDirectContext::flush.
-      surface->flush();
+      skgpu::ganesh::Flush(surface);
       // Transition the image back to the desired end state. This is used for
       // transitioning the image to the external queue for Vulkan/GL interop.
       scoped_write_access->ApplyBackendSurfaceEndState();
@@ -1057,15 +1045,18 @@ WebGPUDecoder* CreateWebGPUDecoderImpl(
     const DawnCacheOptions& dawn_cache_options,
     IsolationKeyProvider* isolation_key_provider) {
   // Construct a Dawn caching interface if the Dawn configurations enables it.
-  // If a handle was set, pass the relevant handle and DecoderClient so that
+  // If a handle was set, pass the relevant handle and CacheBlob callback so that
   // writing to disk is enabled. Otherwise pass an incognito in-memory version.
   std::unique_ptr<webgpu::DawnCachingInterface> dawn_caching_interface =
       nullptr;
   if (auto* caching_interface_factory =
           dawn_cache_options.caching_interface_factory.get()) {
     if (dawn_cache_options.handle) {
+      // The DecoderClient outlives the DawnCachingInterface, so it is safe
       dawn_caching_interface = caching_interface_factory->CreateInstance(
-          *dawn_cache_options.handle, client);
+          *dawn_cache_options.handle,
+          base::BindRepeating(&DecoderClient::CacheBlob,
+                              base::Unretained(client)));
     } else {
       dawn_caching_interface = caching_interface_factory->CreateInstance();
     }
@@ -1094,9 +1085,10 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
           std::make_unique<SharedImageRepresentationFactory>(
               shared_image_manager,
               memory_tracker)),
-      dawn_platform_(new DawnPlatform(gpu_preferences.enable_unsafe_webgpu
-                                          ? std::move(dawn_caching_interface)
-                                          : nullptr)),
+      dawn_platform_(new DawnPlatform(
+          base::FeatureList::IsEnabled(features::kWebGPUBlobCache)
+              ? std::move(dawn_caching_interface)
+              : nullptr)),
       dawn_instance_(
           DawnInstance::Create(dawn_platform_.get(), gpu_preferences)),
       memory_transfer_service_(new DawnServiceMemoryTransferService(this)),
@@ -1111,10 +1103,8 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
 
   // Only allow unsafe APIs if the allow_unsafe_apis toggle is explicitly
   // enabled.
-  // TODO(dawn:1685) Remove disallow case once it is fully deprecated.
   allow_unsafe_apis_ =
-      base::Contains(require_enabled_toggles_, "allow_unsafe_apis") ||
-      base::Contains(require_disabled_toggles_, "disallow_unsafe_apis");
+      base::Contains(require_enabled_toggles_, "allow_unsafe_apis");
 
   // Force adapters to report their limits in predetermined tiers unless the
   // adapter_limit_tiers toggle is explicitly disabled.
@@ -1182,7 +1172,7 @@ ContextResult WebGPUDecoderImpl::Initialize(
     use_webgpu_adapter_ = WebGPUAdapterName::kSwiftShader;
   }
 
-  DiscoverAdapters();
+  DiscoverPhysicalDevices();
   return ContextResult::kSuccess;
 }
 
@@ -1516,7 +1506,7 @@ bool WebGPUDecoderImpl::use_blocklist() const {
            base::Contains(require_disabled_toggles_, "adapter_blocklist"));
 }
 
-void WebGPUDecoderImpl::DiscoverAdapters() {
+void WebGPUDecoderImpl::DiscoverPhysicalDevices() {
   dawn_instance_->EnableAdapterBlocklist(use_blocklist());
 
 #if BUILDFLAG(IS_WIN)
@@ -1532,32 +1522,33 @@ void WebGPUDecoderImpl::DiscoverAdapters() {
   Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
   dxgi_device->GetAdapter(&dxgi_adapter);
 
-  dawn::native::d3d12::AdapterDiscoveryOptions d3d12Options(dxgi_adapter);
-  dawn_instance_->DiscoverAdapters(&d3d12Options);
+  dawn::native::d3d12::PhysicalDeviceDiscoveryOptions d3d12Options(
+      dxgi_adapter);
+  dawn_instance_->DiscoverPhysicalDevices(&d3d12Options);
 
   if (use_webgpu_adapter_ == WebGPUAdapterName::kD3D11) {
-    dawn::native::d3d11::AdapterDiscoveryOptions d3d11Options(
+    dawn::native::d3d11::PhysicalDeviceDiscoveryOptions d3d11Options(
         std::move(dxgi_adapter));
-    dawn_instance_->DiscoverAdapters(&d3d11Options);
+    dawn_instance_->DiscoverPhysicalDevices(&d3d11Options);
   }
 
 #if BUILDFLAG(ENABLE_VULKAN)
-  // Also discover the SwiftShader adapter. It will be discovered by default
-  // for other OSes in DiscoverDefaultAdapters.
-  dawn::native::vulkan::AdapterDiscoveryOptions swiftShaderOptions;
+  // Also discover the SwiftShader physical device. It will be discovered by
+  // default for other OSes in DiscoverDefaultPhysicalDevices.
+  dawn::native::vulkan::PhysicalDeviceDiscoveryOptions swiftShaderOptions;
   swiftShaderOptions.forceSwiftShader = true;
-  dawn_instance_->DiscoverAdapters(&swiftShaderOptions);
+  dawn_instance_->DiscoverPhysicalDevices(&swiftShaderOptions);
 #endif  // BUILDFLAG(ENABLE_VULKAN)
   if (use_webgpu_adapter_ == WebGPUAdapterName::kOpenGLES) {
-    // Discover default adapters to also discover the OpenGLES adapter.
+    // Discover default physical devices to also discover the OpenGLES one.
     // TODO(senorblanco): This may incorrectly discover a compat adapter that
     // does not match the one ANGLE is using.
-    dawn_instance_->DiscoverDefaultAdapters();
+    dawn_instance_->DiscoverDefaultPhysicalDevices();
   }
 #else   // BUILDFLAG(IS_WIN)
-  // Only discover default adapters on non-Windows. Windows requires
+  // Only discover default physical devices on non-Windows. Windows requires
   // compatibility with ANGLE. Other adapters will not be compatible.
-  dawn_instance_->DiscoverDefaultAdapters();
+  dawn_instance_->DiscoverDefaultPhysicalDevices();
 #endif  // BUILDFLAG(IS_WIN)
 }
 

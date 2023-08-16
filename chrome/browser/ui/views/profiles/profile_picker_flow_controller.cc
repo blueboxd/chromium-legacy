@@ -63,8 +63,10 @@ GURL GetInitialURL(ProfilePicker::EntryPoint entry_point) {
     case ProfilePicker::EntryPoint::kBackgroundModeManager:
     case ProfilePicker::EntryPoint::kProfileIdle:
     case ProfilePicker::EntryPoint::kNewSessionOnExistingProcessNoProfile:
+    case ProfilePicker::EntryPoint::kAppMenuProfileSubMenuManageProfiles:
       return base_url;
     case ProfilePicker::EntryPoint::kProfileMenuAddNewProfile:
+    case ProfilePicker::EntryPoint::kAppMenuProfileSubMenuAddNewProfile:
       return base_url.Resolve("new-profile");
     case ProfilePicker::EntryPoint::kLacrosSelectAvailableAccount:
       return base_url.Resolve("account-selection-lacros");
@@ -273,7 +275,7 @@ void ProfilePickerFlowController::SwitchToDiceSignIn(
     StepSwitchFinishedCallback switch_finished_callback) {
   DCHECK_EQ(Step::kProfilePicker, current_step());
 
-  profile_color_ = profile_color;
+  suggested_profile_color_ = profile_color;
   SwitchToIdentityStepsFromAccountSelection(
       std::move(switch_finished_callback));
 }
@@ -285,7 +287,7 @@ void ProfilePickerFlowController::SwitchToPostSignIn(
     absl::optional<SkColor> profile_color,
     std::unique_ptr<content::WebContents> contents) {
   DCHECK_EQ(Step::kProfilePicker, current_step());
-  profile_color_ = profile_color;
+  suggested_profile_color_ = profile_color;
   SwitchToIdentityStepsFromPostSignIn(
       signed_in_profile,
       content::WebContents::Create(
@@ -307,6 +309,7 @@ void ProfilePickerFlowController::CancelPostSignInFlow() {
   DCHECK_EQ(Step::kPostSignInFlow, current_step());
 
   switch (entry_point_) {
+    case ProfilePicker::EntryPoint::kAppMenuProfileSubMenuManageProfiles:
     case ProfilePicker::EntryPoint::kOnStartup:
     case ProfilePicker::EntryPoint::kOnStartupNoProfile:
     case ProfilePicker::EntryPoint::kProfileMenuManageProfiles:
@@ -324,6 +327,7 @@ void ProfilePickerFlowController::CancelPostSignInFlow() {
 #endif
       return;
     }
+    case ProfilePicker::EntryPoint::kAppMenuProfileSubMenuAddNewProfile:
     case ProfilePicker::EntryPoint::kProfileMenuAddNewProfile: {
       // This results in destroying `this`.
       ExitFlow();
@@ -352,10 +356,6 @@ ProfilePickerFlowController::CreateDiceSignInProvider() {
   return std::make_unique<ProfilePickerDiceSignInProvider>(host(),
                                                            kAccessPoint);
 }
-
-absl::optional<SkColor> ProfilePickerFlowController::GetProfileColor() {
-  return profile_color_;
-}
 #endif
 
 std::unique_ptr<ProfilePickerSignedInFlowController>
@@ -365,7 +365,7 @@ ProfilePickerFlowController::CreateSignedInFlowController(
     FinishFlowCallback finish_flow_callback) {
   DCHECK(!weak_signed_in_flow_controller_);
   auto signed_in_flow = std::make_unique<ProfileCreationSignedInFlowController>(
-      host(), signed_in_profile, std::move(contents), profile_color_,
+      host(), signed_in_profile, std::move(contents), suggested_profile_color_,
       std::move(finish_flow_callback));
   weak_signed_in_flow_controller_ = signed_in_flow->GetWeakPtr();
   return signed_in_flow;

@@ -8,16 +8,19 @@
  * Separated into a separate file to mitigate test timeouts.
  */
 
-import {CrSettingsPrefs, OsSettingsMainElement, OsSettingsPageElement, OsSettingsSectionElement, OsSettingsUiElement} from 'chrome://os-settings/os_settings.js';
+import {CrSettingsPrefs, MainPageContainerElement, OsSettingsMainElement, OsSettingsUiElement, PageDisplayerElement, routesMojom} from 'chrome://os-settings/os_settings.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {assertEquals, assertGT, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertGT, assertNull, assertTrue} from 'chrome://webui-test/chai_assert.js';
+
+const {Section} = routesMojom;
+type PageName = keyof typeof Section;
 
 suite('<os-settings-ui> page availability', () => {
   let ui: OsSettingsUiElement;
   let settingsMain: OsSettingsMainElement;
-  let settingsPage: OsSettingsPageElement;
+  let mainPageContainer: MainPageContainerElement;
 
   async function createUi() {
     ui = document.createElement('os-settings-ui');
@@ -30,12 +33,12 @@ suite('<os-settings-ui> page availability', () => {
     settingsMain = mainElement;
 
     const pageElement =
-        settingsMain.shadowRoot!.querySelector('os-settings-page');
+        settingsMain.shadowRoot!.querySelector('main-page-container');
     assert(pageElement);
-    settingsPage = pageElement;
+    mainPageContainer = pageElement;
 
     const idleRender =
-        settingsPage.shadowRoot!.querySelector('settings-idle-load');
+        mainPageContainer.shadowRoot!.querySelector('settings-idle-load');
     assert(idleRender);
     await idleRender.get();
     flush();
@@ -45,10 +48,10 @@ suite('<os-settings-ui> page availability', () => {
    * Verifies the section has a visible #main element and that any possible
    * sub-pages are hidden.
    */
-  function verifySubpagesHidden(section: OsSettingsSectionElement): void {
+  function verifySubpagesHidden(page: PageDisplayerElement): void {
     // Check if there are any sub-pages to verify, being careful to filter out
     // any dom-if and template noise when we search.
-    const pages = section.firstElementChild!.shadowRoot!.querySelector(
+    const pages = page.firstElementChild!.shadowRoot!.querySelector(
         'settings-animated-pages');
     if (!pages) {
       return;
@@ -67,8 +70,7 @@ suite('<os-settings-ui> page availability', () => {
       return element.getAttribute('route-path') === 'default';
     });
     assertEquals(
-        1, main.length,
-        'default card not found for section ' + section.section);
+        1, main.length, 'default card not found for section ' + page.section);
     assertGT(main[0]!.offsetHeight, 0);
 
     // Any other stamped subpages should not be visible.
@@ -78,7 +80,7 @@ suite('<os-settings-ui> page availability', () => {
     for (const subpage of subpages) {
       assertEquals(
           0, subpage.offsetHeight,
-          'Expected subpage #' + subpage.id + ' in ' + section.section +
+          'Expected subpage #' + subpage.id + ' in ' + page.section +
               ' not to be visible.');
     }
   }
@@ -97,32 +99,32 @@ suite('<os-settings-ui> page availability', () => {
       ui.remove();
     });
 
-    const availablePages = [
-      'apps',
-      'bluetooth',
-      'crostini',
-      'dateTime',
-      'device',
-      'files',
-      'internet',
-      'kerberos',
-      'multidevice',
-      'osAccessibility',
-      'osLanguages',
-      'osPeople',
-      'osPrinting',
-      'osPrivacy',
-      'osReset',
-      'osSearch',
-      'personalization',
+    const availablePages: PageName[] = [
+      'kAccessibility',
+      'kApps',
+      'kBluetooth',
+      'kCrostini',
+      'kDateAndTime',
+      'kDevice',
+      'kFiles',
+      'kKerberos',
+      'kMultiDevice',
+      'kLanguagesAndInput',
+      'kNetwork',
+      'kPeople',
+      'kPersonalization',
+      'kPrinting',
+      'kPrivacyAndSecurity',
+      'kReset',
+      'kSearchAndAssistant',
     ];
-    for (const name of availablePages) {
-      test(`${name} page should be stamped and subpages hidden`, () => {
-        const section =
-            settingsPage.shadowRoot!.querySelector<OsSettingsSectionElement>(
-                `os-settings-section[section=${name}]`);
-        assertTrue(!!section, `Expected to find ${name} page stamped`);
-        verifySubpagesHidden(section);
+    for (const pageName of availablePages) {
+      test(`${pageName} page should be stamped and subpages hidden`, () => {
+        const page =
+            mainPageContainer.shadowRoot!.querySelector<PageDisplayerElement>(
+                `page-displayer[section="${Section[pageName]}"]`);
+        assertTrue(!!page, `Expected to find ${pageName} page stamped.`);
+        verifySubpagesHidden(page);
       });
     }
   });
@@ -141,41 +143,41 @@ suite('<os-settings-ui> page availability', () => {
       ui.remove();
     });
 
-    const unavailablePages = [
-      'files',
-      'multidevice',
-      'osPeople',
-      'personalization',
+    const unavailablePages: PageName[] = [
+      'kFiles',
+      'kMultiDevice',
+      'kPeople',
+      'kPersonalization',
     ];
-    for (const name of unavailablePages) {
-      test(`${name} page should not be stamped`, () => {
+    for (const pageName of unavailablePages) {
+      test(`${pageName} page should not be stamped`, () => {
         const section =
-            settingsPage.shadowRoot!.querySelector<OsSettingsSectionElement>(
-                `os-settings-section[section=${name}]`);
-        assertEquals(null, section, `Found unexpected page ${name}`);
+            mainPageContainer.shadowRoot!.querySelector<PageDisplayerElement>(
+                `page-displayer[section="${Section[pageName]}"]`);
+        assertNull(section, `Found unexpected page ${pageName}.`);
       });
     }
 
-    const availablePages = [
-      'apps',
-      'bluetooth',
-      'dateTime',
-      'device',
-      'internet',
-      'kerberos',
-      'osAccessibility',
-      'osLanguages',
-      'osPrivacy',
-      'osReset',
-      'osSearch',
+    const availablePages: PageName[] = [
+      'kAccessibility',
+      'kApps',
+      'kBluetooth',
+      'kDateAndTime',
+      'kDevice',
+      'kKerberos',
+      'kLanguagesAndInput',
+      'kNetwork',
+      'kPrivacyAndSecurity',
+      'kReset',
+      'kSearchAndAssistant',
     ];
-    for (const name of availablePages) {
-      test(`${name} page should be stamped and subpages hidden`, () => {
-        const section =
-            settingsPage.shadowRoot!.querySelector<OsSettingsSectionElement>(
-                `os-settings-section[section=${name}]`);
-        assertTrue(!!section, `Expected to find ${name} page stamped`);
-        verifySubpagesHidden(section);
+    for (const pageName of availablePages) {
+      test(`${pageName} page should be stamped and subpages hidden`, () => {
+        const page =
+            mainPageContainer.shadowRoot!.querySelector<PageDisplayerElement>(
+                `page-displayer[section="${Section[pageName]}"]`);
+        assertTrue(!!page, `Expected to find ${pageName} page stamped.`);
+        verifySubpagesHidden(page);
       });
     }
   });

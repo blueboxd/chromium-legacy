@@ -54,6 +54,7 @@ class RealtimeReportingClient : public KeyedService,
                                 public policy::CloudPolicyClient::Observer {
  public:
   static const char kKeyProfileIdentifier[];
+  static const char kKeyProfileUserName[];
 
   explicit RealtimeReportingClient(content::BrowserContext* context);
 
@@ -76,6 +77,8 @@ class RealtimeReportingClient : public KeyedService,
   void OnClientError(policy::CloudPolicyClient* client) override;
   void OnPolicyFetched(policy::CloudPolicyClient* client) override {}
   void OnRegistrationStateChanged(policy::CloudPolicyClient* client) override {}
+
+  base::WeakPtr<RealtimeReportingClient> GetWeakPtr();
 
   // Determines if the real-time reporting feature is enabled.
   // Obtain settings to apply to a reporting event from ConnectorsService.
@@ -112,7 +115,8 @@ class RealtimeReportingClient : public KeyedService,
   void ReportEventWithTimestamp(const std::string& name,
                                 const ReportingSettings& settings,
                                 base::Value::Dict event,
-                                const base::Time& time);
+                                const base::Time& time,
+                                bool include_profile_user_name);
 
   // Returns the profile identifier which is the path to the current profile on
   // managed browsers or the globally unique profile identifier otherwise.
@@ -161,7 +165,8 @@ class RealtimeReportingClient : public KeyedService,
   void RemoveDmTokenFromRejectedSet(const std::string& dm_token);
 
   raw_ptr<content::BrowserContext> context_;
-  raw_ptr<signin::IdentityManager> identity_manager_ = nullptr;
+  raw_ptr<signin::IdentityManager, DanglingUntriaged> identity_manager_ =
+      nullptr;
   raw_ptr<extensions::EventRouter> event_router_ = nullptr;
 
   // The cloud policy clients used to upload browser events and profile events

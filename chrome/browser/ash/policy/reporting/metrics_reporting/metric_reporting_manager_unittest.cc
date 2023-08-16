@@ -366,7 +366,7 @@ class MetricReportingManagerInfoTest : public MetricReportingManagerTest {};
 TEST_P(MetricReportingManagerInfoTest, Default) {
   const MetricReportingManagerTestCase& test_case = GetParam();
   const base::TimeDelta init_delay = test_case.has_init_delay
-                                         ? metrics::InitDelayParam::Get()
+                                         ? metrics::kInitialCollectionDelay
                                          : base::TimeDelta();
 
   base::test::ScopedFeatureList scoped_feature_list;
@@ -449,7 +449,7 @@ class MetricReportingManagerEventTest : public MetricReportingManagerTest {};
 TEST_P(MetricReportingManagerEventTest, Default) {
   const MetricReportingManagerTestCase& test_case = GetParam();
   const base::TimeDelta init_delay = test_case.has_init_delay
-                                         ? metrics::InitDelayParam::Get()
+                                         ? metrics::kInitialCollectionDelay
                                          : base::TimeDelta();
 
   base::test::ScopedFeatureList scoped_feature_list;
@@ -502,6 +502,9 @@ TEST_P(MetricReportingManagerEventTest, Default) {
 
 TEST_F(MetricReportingManagerEventTest,
        ShouldNotCreateAppEventObserverWhenAppServiceUnavailable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kEnableAppEventsObserver);
+
   // Setup appropriate mocks and stubs.
   auto fake_reporting_settings =
       std::make_unique<test::FakeReportingSettings>();
@@ -594,7 +597,21 @@ INSTANTIATE_TEST_SUITE_P(
           /*is_affiliated=*/true, app_event_settings,
           /*has_init_delay=*/false,
           /*expected_count_before_login=*/0,
-          /*expected_count_after_login=*/1}}),
+          /*expected_count_after_login=*/0},
+         {"AppEvents_FeatureFlagEnabled",
+          /*enabled_features=*/{kEnableAppEventsObserver},
+          /*disabled_features=*/{},
+          /*is_affiliated=*/true, app_event_settings,
+          /*has_init_delay=*/false,
+          /*expected_count_before_login=*/0,
+          /*expected_count_after_login=*/1},
+         {"AppEvents_FeatureFlagDisabled",
+          /*enabled_features=*/{},
+          /*disabled_features=*/{kEnableAppEventsObserver},
+          /*is_affiliated=*/true, app_event_settings,
+          /*has_init_delay=*/false,
+          /*expected_count_before_login=*/0,
+          /*expected_count_after_login=*/0}}),
     [](const testing::TestParamInfo<MetricReportingManagerInfoTest::ParamType>&
            info) { return info.param.test_name; });
 
@@ -606,7 +623,7 @@ class MetricReportingManagerPeripheralTest : public MetricReportingManagerTest {
 TEST_P(MetricReportingManagerPeripheralTest, Default) {
   const MetricReportingManagerTestCase& test_case = GetParam();
   const base::TimeDelta init_delay = test_case.has_init_delay
-                                         ? metrics::InitDelayParam::Get()
+                                         ? metrics::kInitialCollectionDelay
                                          : base::TimeDelta();
 
   auto fake_reporting_settings =
@@ -677,7 +694,7 @@ TEST_F(MetricReportingManagerTelemetryTest, OneShotCollectorBootPerformance) {
   ON_CALL(*mock_delegate_ptr,
           CreateOneShotCollector(_, telemetry_queue_ptr_.get(), _,
                                  ::ash::kReportDeviceBootMode, true,
-                                 metrics::InitDelayParam::Get()))
+                                 metrics::kInitialCollectionDelay))
       .WillByDefault(
           [&]() { return std::make_unique<FakeCollector>(&collector_count); });
 
@@ -687,7 +704,7 @@ TEST_F(MetricReportingManagerTelemetryTest, OneShotCollectorBootPerformance) {
   EXPECT_EQ(collector_count, 1);
 
   task_environment_.FastForwardBy(upload_delay +
-                                  metrics::InitDelayParam::Get());
+                                  metrics::kInitialCollectionDelay);
 
   EXPECT_EQ(telemetry_queue_ptr_->GetNumFlush(), 1);
 
@@ -700,7 +717,7 @@ TEST_F(MetricReportingManagerTelemetryTest, OneShotCollectorBootPerformance) {
 TEST_P(MetricReportingManagerTelemetryTest, Default) {
   const MetricReportingManagerTestCase& test_case = GetParam();
   const base::TimeDelta init_delay = test_case.has_init_delay
-                                         ? metrics::InitDelayParam::Get()
+                                         ? metrics::kInitialCollectionDelay
                                          : base::TimeDelta();
 
   base::test::ScopedFeatureList scoped_feature_list;
@@ -740,7 +757,7 @@ TEST_P(MetricReportingManagerTelemetryTest, Default) {
   EXPECT_EQ(collector_count, test_case.expected_count_before_login);
 
   task_environment_.FastForwardBy(upload_delay +
-                                  metrics::InitDelayParam::Get());
+                                  metrics::kInitialCollectionDelay);
 
   EXPECT_EQ(telemetry_queue_ptr_->GetNumFlush(), 1);
 
@@ -750,7 +767,7 @@ TEST_P(MetricReportingManagerTelemetryTest, Default) {
 
   const int expected_login_flush_count = test_case.is_affiliated ? 1 : 0;
   task_environment_.FastForwardBy(upload_delay +
-                                  metrics::InitDelayParam::Get());
+                                  metrics::kInitialCollectionDelay);
 
   EXPECT_EQ(telemetry_queue_ptr_->GetNumFlush(),
             1 + expected_login_flush_count);

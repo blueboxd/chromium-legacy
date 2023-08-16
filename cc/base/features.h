@@ -32,9 +32,6 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kScrollUnification);
 // unified scroll with main-thread repaint reasons.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kMainRepaintScrollPrefersNewContent);
 
-// Flush pending GPU raster work before running the LTHI::DrawLayers stage.
-CC_BASE_EXPORT BASE_DECLARE_FEATURE(kFlushGpuAtDraw);
-
 // When enabled, wheel scrolls trigger smoothness mode. When disabled,
 // smoothness mode is limited to non-animated (precision) scrolls, such as
 // touch scrolling.
@@ -43,9 +40,6 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kSchedulerSmoothnessForAnimatedScrolls);
 // When enabled, cc will show blink's Web-Vital metrics inside its heads up
 // display.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kHudDisplayForPerformanceMetrics);
-
-// When enabled, some jank is injected to the animation/scrolling pipeline.
-CC_BASE_EXPORT BASE_DECLARE_FEATURE(kJankInjectionAblationFeature);
 
 // When enabled, scheduler tree priority will change to
 // NEW_CONTENT_TAKES_PRIORITY if during a scrollbar scroll, CC has to
@@ -64,6 +58,12 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(
 // that main thread cc data structures are not modified on the main thread while
 // commit is running concurrently on the impl thread.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kNonBlockingCommit);
+
+// When enabled, LayerTreeImpl will not preserve the last mutation. This map
+// of the last mutated value should not be necessary as animations are always
+// ticked after the commit which should restore their animated values. Removing
+// this should improve performance and reduce technical complexity.
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kNoPreserveLastMutation);
 
 // When enabled, DroppedFrameCounter will use an adjusted sliding window
 // interval specified by field trial params.
@@ -95,6 +95,10 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kUIEnableSharedImageCacheForGpu);
 // When LayerTreeHostImpl::ReclaimResources() is called in background, trigger a
 // flush to actually reclaim resources.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kReclaimResourcesFlushInBackground);
+
+// When LayerTreeHostImpl::ReclaimResources() is called in background, trigger a
+// additional delayed flush to reclaim resources.
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kReclaimResourcesDelayedFlushInBackground);
 
 // Try to play a longer list of ops before giving up in solid color analysis for
 // tiles.

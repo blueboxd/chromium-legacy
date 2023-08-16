@@ -78,14 +78,6 @@ class VIEWS_EXPORT MenuItemView : public View {
  public:
   METADATA_HEADER(MenuItemView);
 
-  friend class MenuController;
-
-  // ID used to identify menu items.
-  static const int kMenuItemViewID;
-
-  // ID used to identify empty menu items.
-  static const int kEmptyMenuItemViewID;
-
   // Different types of menu items.
   enum class Type {
     kNormal,             // Performs an action when selected.
@@ -120,6 +112,24 @@ class VIEWS_EXPORT MenuItemView : public View {
     int minor_text_width = 0;
     // The height of the menu item.
     int height = 0;
+  };
+
+  // The data structure which is used to paint a background on the menu item.
+  struct MenuItemBackground {
+    MenuItemBackground(int vertical_margin,
+                       int horizontal_margin,
+                       ui::ColorId background_color_id,
+                       int corner_radius)
+        : vertical_margin(vertical_margin),
+          horizontal_margin(horizontal_margin),
+          background_color_id(background_color_id),
+          corner_radius(corner_radius) {}
+    // Vertical margin between background and edge of MenuItemView.
+    int vertical_margin = 0;
+    // Horizontal margin between background and edge of MenuItemView.
+    int horizontal_margin = 0;
+    ui::ColorId background_color_id;
+    int corner_radius = 0;
   };
 
   // Constructor for use with the top level menu item. This menu is never
@@ -171,6 +181,29 @@ class VIEWS_EXPORT MenuItemView : public View {
       absl::optional<ui::ColorId> foreground_color = absl::nullopt,
       absl::optional<ui::ColorId> selected_color_id = absl::nullopt);
 
+  void SetMenuItemBackground(
+      absl::optional<MenuItemBackground> menu_item_background) {
+    menu_item_background_ = menu_item_background;
+  }
+
+  absl::optional<MenuItemBackground> GetMenuItemBackground() {
+    return menu_item_background_;
+  }
+
+  void SetSelectedColorId(absl::optional<ui::ColorId> selected_color_id) {
+    selected_color_id_ = selected_color_id;
+  }
+
+  absl::optional<ui::ColorId> GetSelectedColorId() {
+    return selected_color_id_;
+  }
+
+  void SetHighlightWhenSelectedWithChildViews(
+      bool highlight_when_selected_with_child_views) {
+    highlight_when_selected_with_child_views_ =
+        highlight_when_selected_with_child_views;
+  }
+
   // Remove the specified item from the menu. |item| will be deleted when
   // ChildrenChanged() is invoked.
   void RemoveMenuItem(View* item);
@@ -190,6 +223,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   MenuItemView* AppendMenuItem(int item_id,
                                const std::u16string& label = std::u16string(),
                                const ui::ImageModel& icon = ui::ImageModel());
+
+  MenuItemView* AppendTitle(const std::u16string& label);
 
   // Append a submenu to this menu.
   // The returned pointer is owned by this menu.
@@ -350,9 +385,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // negative margin is specified then MenuConfig values are used.
   void SetMargins(int top_margin, int bottom_margin);
 
-  // Suppress the right margin if this is set to false.
-  void set_use_right_margin(bool use_right_margin) {
-    use_right_margin_ = use_right_margin;
+  void set_children_use_full_width(bool children_use_full_width) {
+    children_use_full_width_ = children_use_full_width;
   }
 
   // Controls whether this menu has a forced visual selection state. This is
@@ -405,6 +439,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   int GetBottomMargin() const;
 
  private:
+  friend class MenuController;
   friend class internal::MenuRunnerImpl;        // For access to ~MenuItemView.
   friend class test::TestMenuItemViewShown;     // for access to |submenu_|;
   friend class test::TestMenuItemViewNotShown;  // for access to |submenu_|;
@@ -501,6 +536,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   //    ApplyMinimumDimensions(x).height >= x.height
   void ApplyMinimumDimensions(MenuItemDimensions* dims) const;
 
+  // Returns the earliest horizontal position where content may appear.
+  int GetContentStart() const;
+
   // Get the horizontal position at which to draw the menu item's label.
   int GetLabelStartForThisItem() const;
 
@@ -557,10 +595,6 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   void SetForegroundColorId(absl::optional<ui::ColorId> foreground_color_id) {
     foreground_color_id_ = foreground_color_id;
-  }
-
-  void SetSelectedColorId(absl::optional<ui::ColorId> selected_color_id) {
-    selected_color_id_ = selected_color_id;
   }
 
   // The delegate. This is only valid for the root menu item. You shouldn't
@@ -629,8 +663,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // X-coordinate of where the label starts.
   static int label_start_;
 
-  // Margins between the right of the item and the label.
-  static int item_right_margin_;
+  // The width of the padding after the minor text. If there is a dedicated
+  // submenu arrow column, it fits inside this.
+  static int trailing_padding_;
 
   // Preferred height of menu items. Reset every time a menu is run.
   static int pref_menu_height_;
@@ -655,9 +690,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   MenuPosition requested_menu_position_ = MenuPosition::kBestFit;
   MenuPosition actual_menu_position_ = MenuPosition::kBestFit;
 
-  // If set to false, the right margin will be removed for menu lines
-  // containing other elements.
-  bool use_right_margin_ = true;
+  // If set to true, children beyond the normal icon/labels/arrow will be laid
+  // out taking the full width of the menu, instead of stopping at any arrow
+  // column.
+  bool children_use_full_width_ = false;
 
   // Contains an image for the checkbox or radio icon.
   raw_ptr<ImageView, DanglingUntriaged> radio_check_image_view_ = nullptr;
@@ -674,6 +710,12 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Whether this menu item is rendered differently to draw attention to it.
   bool is_alerted_ = false;
+
+  // Legacy implementation for menu items is that if a MenuItemView has a child
+  // view then the item will not be highlighted when selected. This new boolean
+  // will control whether or not the MenuItemView is highlighted when there are
+  // child views.
+  bool highlight_when_selected_with_child_views_ = false;
 
   // If true, ViewHierarchyChanged() will call
   // UpdateSelectionBasedStateIfChanged().
@@ -693,7 +735,22 @@ class VIEWS_EXPORT MenuItemView : public View {
                                       : IDS_NEW_BADGE);
 
   absl::optional<ui::ColorId> foreground_color_id_;
+  absl::optional<MenuItemBackground> menu_item_background_;
   absl::optional<ui::ColorId> selected_color_id_;
+};
+
+// EmptyMenuMenuItem ----------------------------------------------------------
+
+// EmptyMenuMenuItem is used when a menu has no menu items.
+
+class VIEWS_EXPORT EmptyMenuMenuItem : public MenuItemView {
+ public:
+  METADATA_HEADER(EmptyMenuMenuItem);
+
+  explicit EmptyMenuMenuItem(MenuItemView* parent);
+  EmptyMenuMenuItem(const EmptyMenuMenuItem&) = delete;
+  EmptyMenuMenuItem& operator=(const EmptyMenuMenuItem&) = delete;
+  ~EmptyMenuMenuItem() override = default;
 };
 
 }  // namespace views

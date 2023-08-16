@@ -82,6 +82,7 @@ class TestPersonalDataManager : public PersonalDataManager {
       const override;
   const AutofillProfileUpdateStrikeDatabase* GetProfileUpdateStrikeDatabase()
       const override;
+  bool IsPaymentMethodsMandatoryReauthEnabled() override;
 
   // Unique to TestPersonalDataManager:
 
@@ -126,7 +127,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     return num_times_save_imported_profile_called_;
   }
 
-  AutofillProfile* last_save_imported_profile() {
+  const AutofillProfile* last_save_imported_profile() const {
     return last_save_imported_profile_.get();
   }
 
@@ -171,6 +172,10 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void ClearCreditCardArtImages() { credit_card_art_images_.clear(); }
 
+  void SetPaymentMethodsMandatoryReauthEnabled(bool val) {
+    payment_methods_mandatory_reauth_enabled_ = val;
+  }
+
  private:
   std::string timezone_country_code_;
   std::string default_country_code_;
@@ -182,6 +187,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   absl::optional<bool> autofill_credit_card_enabled_;
   absl::optional<bool> autofill_wallet_import_enabled_;
   absl::optional<bool> eligible_for_account_storage_;
+  absl::optional<bool> payment_methods_mandatory_reauth_enabled_;
   bool sync_feature_enabled_ = false;
   AutofillSyncSigninState sync_and_signin_state_ =
       AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled;

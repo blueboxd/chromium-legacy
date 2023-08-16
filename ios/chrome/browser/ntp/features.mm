@@ -9,7 +9,7 @@
 #import "base/metrics/field_trial_params.h"
 #import "components/version_info/channel.h"
 #import "ios/chrome/app/background_mode_buildflags.h"
-#import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/common/channel_info.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -64,7 +64,7 @@ BASE_FEATURE(kCreateDiscoverFeedServiceEarly,
 
 BASE_FEATURE(kEnableFeedBottomSignInPromo,
              "EnableFeedBottomSignInPromo",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableFeedCardMenuSignInPromo,
              "EnableFeedCardMenuSignInPromo",
@@ -83,6 +83,10 @@ BASE_FEATURE(kIOSSetUpList, "IOSSetUpList", base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kFeedDisableHotStartRefresh,
              "FeedDisableHotStartRefresh",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableFollowUIUpdate,
+             "EnableFollowUIUpdate",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Key for NSUserDefaults containing a bool indicating whether the next run
 // should enable feed background refresh capability. This is used because
@@ -352,4 +356,8 @@ bool IsIOSSetUpListEnabled() {
 
 bool IsFeedHotStartRefreshDisabled() {
   return base::FeatureList::IsEnabled(kFeedDisableHotStartRefresh);
+}
+
+bool IsFollowUIUpdateEnabled() {
+  return base::FeatureList::IsEnabled(kEnableFollowUIUpdate);
 }

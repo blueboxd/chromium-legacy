@@ -56,6 +56,7 @@ class ClientBounceDetectionState {
   base::TimeTicks page_load_time;
   absl::optional<base::Time> last_activation_time;
   absl::optional<base::Time> last_storage_time;
+  absl::optional<base::Time> last_successful_web_authn_assertion_time;
   SiteDataAccessType site_data_access_type = SiteDataAccessType::kUnknown;
 };
 
@@ -195,6 +196,11 @@ class DIPSNavigationHandle {
   // content::NavigationHandle::HasUserGesture(): it returns true if the
   // navigation was not renderer-initiated.
   virtual bool HasUserGesture() const = 0;
+  //  This method doesn't have a direct equivalent in content::NavigationHandle,
+  //  as it relies on GetInitiatorOrigin(), but returns what is effectively a
+  //  base URL. Also, this returns `about:blank` if the initiator origin is
+  //  unspecified or opaque.
+  virtual const GURL GetInitiator() const = 0;
 
   // Get a SourceId of type REDIRECT_ID for the index'th URL in the redirect
   // chain.
@@ -235,6 +241,9 @@ class DIPSBounceDetector {
   // Only records a new user activation event once per
   // |kTimestampUpdateInterval| for a given page.
   void OnUserActivation();
+  // Only records a new Web authn assertion event once per
+  // |kTimestampUpdateInterval| for a given page.
+  void WebAuthnAssertionRequestSucceeded();
   // Makes a call to process the current chain before its state is destroyed by
   // the tab closure.
   void BeforeDestruction();
@@ -311,7 +320,7 @@ class DIPSWebContentsObserver
                    const base::Time& time) override;
   void IncrementPageSpecificBounceCount(const GURL& final_url) override;
 
-  // WebContentsObserver overrides:
+  // Start WebContentsObserver overrides:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnCookiesAccessed(content::RenderFrameHost* render_frame_host,
@@ -322,7 +331,10 @@ class DIPSWebContentsObserver
       content::NavigationHandle* navigation_handle) override;
   void FrameReceivedUserActivation(
       content::RenderFrameHost* render_frame_host) override;
+  void WebAuthnAssertionRequestSucceeded(
+      content::RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
+  // End WebContentsObserver overrides:
 
   // Start SiteDataObserver overrides:
   void OnSiteDataAccessed(
@@ -336,6 +348,8 @@ class DIPSWebContentsObserver
   raw_ptr<DIPSService> dips_service_;
   DIPSBounceDetector detector_;
   DIPSIssueReportingCallback issue_reporting_callback_;
+
+  absl::optional<std::string> last_committed_site_;
 
   base::WeakPtrFactory<DIPSWebContentsObserver> weak_factory_{this};
 

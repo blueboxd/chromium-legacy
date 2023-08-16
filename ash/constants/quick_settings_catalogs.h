@@ -56,10 +56,11 @@ enum class QsFeatureCatalogName {
   kIME = 12,
   kLocale = 13,
   kDarkMode = 14,
-  kShelfParty = 15,
+  kShelfParty_DEPRECATED = 15,
   kAutozoom = 16,
   kHotspot = 17,
-  kMaxValue = kHotspot
+  kFocusMode = 18,
+  kMaxValue = kFocusMode
 };
 
 // A catalog that registers all the sliders on the Quick Settings page (also

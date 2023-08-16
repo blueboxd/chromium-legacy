@@ -5,8 +5,10 @@
 #ifndef CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH_AUTH_EVENTS_RECORDER_H_
 #define CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH_AUTH_EVENTS_RECORDER_H_
 
+#include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/cryptohome/auth_factor.h"
@@ -26,12 +28,12 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) AuthEventsRecorder
  public:
   // Enum used for UMA. Do NOT reorder or remove entry. Don't forget to
   // update LoginFlowUserLoginType enum in enums.xml when adding new entries.
-  enum UserLoginType {
+  enum class UserLoginType {
     kOnlineNew = 0,
     kOnlineExisting = 1,
     kOffline = 2,
     kEphemeral = 3,
-    kMaxValue
+    kMaxValue = kEphemeral
   };
 
   enum class AuthenticationSurface { kLogin, kLock };
@@ -66,6 +68,13 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) AuthEventsRecorder
     // Failed to mount Cryptohome.
     kMountCryptohomeError = 8,
     kMaxValue = kMountCryptohomeError,
+  };
+
+  // Type of user vault (a.k.a. cryptohome).
+  enum class UserVaultType {
+    kPersistent,
+    kEphemeral,
+    kGuest,
   };
 
   AuthEventsRecorder(const AuthEventsRecorder&) = delete;
@@ -116,8 +125,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) AuthEventsRecorder
   // `OnAuthenticationSurfaceChange` must be called before this method.
   // Nothing will be recorded if the `exit_type` is `kFailure` and
   // `num_login_attempts` is 0.
-  void OnExistingUserLoginExit(AuthenticationOutcome exit_type,
-                               int num_login_attempts) const;
+  void OnExistingUserLoginScreenExit(AuthenticationOutcome exit_type,
+                                     int num_login_attempts);
 
   // Report which auth factors the user has configured.
   void RecordUserAuthFactors(
@@ -126,6 +135,25 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) AuthEventsRecorder
   // Report the result of the recovery and time taken to UMA.
   void OnRecoveryDone(CryptohomeRecoveryResult result,
                       const base::TimeDelta& time);
+
+  // Report that the user submitted an auth method.
+  void OnAuthSubmit();
+
+  // Report that the user submitted the pin input field.
+  void OnPinSubmit();
+
+  // Report that `LockContentsView` layout was updated.
+  void OnLockContentsViewUpdate();
+
+  // Report that the user was directed to password change flow.
+  void OnPasswordChange();
+
+  // Report that the user was directed to online Gaia flow.
+  void OnGaiaScreen();
+
+  // Report the result of the user vault preparation (a.k.a. cryptohome
+  // mounting).
+  void OnUserVaultPrepared(UserVaultType user_vault_type, bool success);
 
   int knowledge_factor_auth_failure_count() {
     return knowledge_factor_auth_failure_count_;
@@ -145,16 +173,28 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) AuthEventsRecorder
 
   // Determine the user login type from the provided information.
   // Call `MaybeReportFlowMetrics`.
-  void MaybeUpdateUserLoginType(bool is_new_user,
-                                bool is_login_offline,
-                                bool is_ephemeral);
+  void UpdateUserLoginType(bool is_new_user,
+                           bool is_login_offline,
+                           bool is_ephemeral);
 
   // Report the user login type in association with policy and total user count
   // if 3 information are available: user_count_, show_users_on_signin_,
   // user_login_type_.
   void MaybeReportFlowMetrics();
 
+  // Append a new auth event to the list and call `UpdateAuthEventsCrashKey`.
+  void AddAuthEvent(const std::string& event_name);
+
+  // Update the `kAuthEventsCrashKey`.
+  // Note: The maximum total length of the crash key value that is saved is
+  // `kMaxAuthEventsCrashKeyLength`. The newest events will be kept when the
+  // string is too long.
+  void UpdateAuthEventsCrashKey();
+
   void Reset();
+
+  // List of auth event, newer events are at the end.
+  base::circular_deque<std::string> events_;
 
   base::ScopedObservation<session_manager::SessionManager,
                           session_manager::SessionManagerObserver>

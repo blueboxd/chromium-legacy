@@ -39,6 +39,11 @@ export class ColorElement extends PolymerElement {
         value: 0,
         observer: 'onColorChange_',
       },
+      baseColor: {
+        type: Object,
+        value: 0,
+        observer: 'onColorChange_',
+      },
       checked: {
         type: Boolean,
         reflectToAttribute: true,
@@ -52,6 +57,7 @@ export class ColorElement extends PolymerElement {
 
   public backgroundColor: SkColor;
   public foregroundColor: SkColor;
+  public baseColor: SkColor;
   public checked: boolean;
   public backgroundColorHidden: boolean;
 
@@ -63,9 +69,10 @@ export class ColorElement extends PolymerElement {
   private onColorChange_() {
     this.updateStyles({
       '--customize-chrome-color-foreground-color':
-          skColorToRgba(this.foregroundColor),
+          skColorToRgba(this.foregroundColor ?? 0),
       '--customize-chrome-color-background-color':
-          skColorToRgba(this.backgroundColor),
+          skColorToRgba(this.backgroundColor ?? 0),
+      '--customize-chrome-color-base-color': skColorToRgba(this.baseColor ?? 0),
     });
   }
 }

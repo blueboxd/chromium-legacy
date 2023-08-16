@@ -32,10 +32,9 @@ class OTRWebStateObserver::WebStateObserver : public WebStateListObserver {
   }
 
   // WebStateListObserver
-  void WebStateInsertedAt(WebStateList* web_state_list,
-                          web::WebState* web_state,
-                          int index,
-                          bool activating) override;
+  void WebStateListChanged(WebStateList* web_state_list,
+                           const WebStateListChange& change,
+                           const WebStateSelection& selection) override;
   void WebStateDetachedAt(WebStateList* web_state_list,
                           web::WebState* web_state,
                           int index) override;
@@ -52,12 +51,30 @@ class OTRWebStateObserver::WebStateObserver : public WebStateListObserver {
   const raw_ptr<BrowserList> browser_list_;
 };
 
-void OTRWebStateObserver::WebStateObserver::WebStateInsertedAt(
+#pragma mark - WebStateListObserver
+
+void OTRWebStateObserver::WebStateObserver::WebStateListChanged(
     WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index,
-    bool activating) {
-  UpdateOtrWebStateCount();
+    const WebStateListChange& change,
+    const WebStateSelection& selection) {
+  switch (change.type()) {
+    case WebStateListChange::Type::kSelectionOnly:
+      // Do nothing when a WebState is selected and its status is updated.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // WebStateDetachedAt() to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace:
+      // Do nothing when a WebState is replaced.
+      break;
+    case WebStateListChange::Type::kInsert:
+      UpdateOtrWebStateCount();
+      break;
+  }
 }
 
 void OTRWebStateObserver::WebStateObserver::WebStateDetachedAt(

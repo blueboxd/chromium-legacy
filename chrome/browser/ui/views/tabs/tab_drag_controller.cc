@@ -19,6 +19,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_auto_reset.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
@@ -48,12 +49,16 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_scroll_session.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/browser/ui/views/tabs/window_finder.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_tabbed_utils.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/presentation_time_recorder.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/gestures/gesture_recognizer.h"
@@ -124,6 +129,15 @@ bool PlatformProvidesAbsoluteWindowPositions() {
   return true;
 #endif
 }
+
+constexpr char kTabDraggingPresentationTimeHistogram[] =
+    "Browser.TabDragging.PresentationTime";
+constexpr char kTabDraggingPresentationTimeMaxHistogram[] =
+    "Browser.TabDragging.PresentationTimeMax";
+constexpr char kDragAmongTabsPresentationTimeHistogram[] =
+    "Browser.TabDragging.DragAmongTabsPresentationTime";
+constexpr char kDragToNewBrowserPresentationTimeHistogram[] =
+    "Browser.TabDragging.DragToNewBrowserPresentationTime";
 
 #if BUILDFLAG(IS_CHROMEOS)
 
@@ -329,8 +343,10 @@ TabDragController::~TabDragController() {
 
   widget_observation_.Reset();
 
-  if (current_state_ == DragState::kDraggingWindow)
+  if (current_state_ == DragState::kDraggingWindow) {
+    VLOG(1) << "EndMoveLoop in TabDragController dtor";
     GetAttachedBrowserWidget()->EndMoveLoop();
+  }
 
   if (event_source_ == ui::mojom::DragEventSource::kTouch) {
     TabDragContext* capture_context =
@@ -356,6 +372,10 @@ void TabDragController::Init(TabDragContext* source_context,
   source_context_ = source_context;
   was_source_maximized_ = source_context->GetWidget()->IsMaximized();
   was_source_fullscreen_ = source_context->GetWidget()->IsFullscreen();
+  presentation_time_recorder_ = ui::CreatePresentationTimeHistogramRecorder(
+      source_context->GetWidget()->GetCompositor(),
+      kTabDraggingPresentationTimeHistogram,
+      kTabDraggingPresentationTimeMaxHistogram);
   // Do not release capture when transferring capture between widgets on:
   // - Desktop Linux
   //     Mouse capture is not synchronous on desktop Linux. Chrome makes
@@ -379,6 +399,22 @@ void TabDragController::Init(TabDragContext* source_context,
       remote_cocoa::IsWindowRemote(
           source_context_->GetWidget()->GetNativeWindow())) {
     detach_behavior_ = NOT_DETACHABLE;
+  }
+#else
+  // If the dragged tabstrip exists in a PWA, and any of the dragged views
+  // are the Pinned Home tab, then the tabs should not be detachable from
+  // the window.
+  Browser* source_browser = BrowserView::GetBrowserViewForNativeWindow(
+                                source_context->GetWidget()->GetNativeWindow())
+                                ->browser();
+  if (source_browser->app_controller() &&
+      source_browser->app_controller()->has_tab_strip() &&
+      web_app::HasPinnedHomeTab(source_browser->tab_strip_model())) {
+    for (auto* dragging_view : dragging_views) {
+      if (source_context->GetIndexOf(dragging_view) == 0) {
+        detach_behavior_ = NOT_DETACHABLE;
+      }
+    }
   }
 #endif
 
@@ -630,6 +666,7 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
 
 void TabDragController::EndDrag(EndDragReason reason) {
   TRACE_EVENT0("views", "TabDragController::EndDrag");
+  presentation_time_recorder_.reset();
 
   if (tab_strip_scroll_session_)
     tab_strip_scroll_session_->Stop();
@@ -659,8 +696,10 @@ void TabDragController::EndDrag(EndDragReason reason) {
 
   // End the move loop if we're in one. Note that the drag will end (just below)
   // before the move loop actually exits.
-  if (current_state_ == DragState::kDraggingWindow && in_move_loop_)
+  if (current_state_ == DragState::kDraggingWindow && in_move_loop_) {
+    VLOG(1) << "EndMoveLoop in EndDrag";
     GetAttachedBrowserWidget()->EndMoveLoop();
+  }
 
   EndDragImpl(reason != END_DRAG_COMPLETE && source_context_ ? CANCELED
                                                              : NORMAL);
@@ -815,6 +854,9 @@ TabDragController::Liveness TabDragController::ContinueDragging(
     const gfx::Point& point_in_screen) {
   TRACE_EVENT1("views", "TabDragController::ContinueDragging",
                "point_in_screen", point_in_screen.ToString());
+  if (presentation_time_recorder_) {
+    presentation_time_recorder_->RequestNext();
+  }
 
   DCHECK(attached_context_);
 
@@ -961,6 +1003,7 @@ TabDragController::DragBrowserToNewTabStrip(TabDragContext* target_context,
     // Does not immediately exit the move loop - that only happens when control
     // returns to the event loop. The rest of this method will complete before
     // control returns to RunMoveLoop().
+    VLOG(1) << "EndMoveLoop in DragBrowserToNewTabStrip";
     browser_widget->EndMoveLoop();
 
     // Ideally we would always swap the tabs now, but on non-ash Windows, it
@@ -1137,6 +1180,18 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen,
           views, source_view_drag_data()->attached_view, dragged_view_point,
           initial_move_);
       did_layout = true;
+    }
+
+    // Only record the metric when the tab is moved to a different index.
+    if (!just_attached && index_of_last_item != to_index) {
+      attached_context_->GetWidget()
+          ->GetCompositor()
+          ->RequestSuccessfulPresentationTimeForNextFrame(base::BindOnce(
+              [](base::TimeTicks now, base::TimeTicks presentation_timestamp) {
+                UmaHistogramTimes(kDragAmongTabsPresentationTimeHistogram,
+                                  presentation_timestamp - now);
+              },
+              base::TimeTicks::Now()));
     }
 
     attached_model->MoveSelectedTabsTo(to_index);
@@ -1993,6 +2048,22 @@ void TabDragController::CompleteDrag() {
     }
     attached_context_->StoppedDragging(
         GetViewsMatchingDraggedContents(attached_context_));
+
+    // Tabbed PWAs with a home tab should have a home tab in every window.
+    // This means when dragging tabs out to create a new window, a home tab
+    // needs to be added.
+    if (is_dragging_new_browser_) {
+      Browser* new_browser =
+          BrowserView::GetBrowserViewForNativeWindow(
+              attached_context_->GetWidget()->GetNativeWindow())
+              ->browser();
+
+      if (new_browser->app_controller() &&
+          new_browser->app_controller()->has_tab_strip()) {
+        web_app::MaybeAddPinnedHomeTab(new_browser,
+                                       new_browser->app_controller()->app_id());
+      }
+    }
   } else {
     // Compel the model to construct a new window for the detached
     // WebContentses.
@@ -2282,6 +2353,14 @@ Browser* TabDragController::CreateBrowserForDrag(
     const gfx::Point& point_in_screen,
     gfx::Vector2d* drag_offset,
     std::vector<gfx::Rect>* drag_bounds) {
+  source->GetWidget()
+      ->GetCompositor()
+      ->RequestSuccessfulPresentationTimeForNextFrame(base::BindOnce(
+          [](base::TimeTicks now, base::TimeTicks presentation_timestamp) {
+            UmaHistogramTimes(kDragToNewBrowserPresentationTimeHistogram,
+                              presentation_timestamp - now);
+          },
+          base::TimeTicks::Now()));
   gfx::Rect new_bounds(
       CalculateDraggedBrowserBounds(source, point_in_screen, drag_bounds));
   *drag_offset = point_in_screen - new_bounds.origin();

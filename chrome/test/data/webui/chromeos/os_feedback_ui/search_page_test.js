@@ -24,7 +24,7 @@ export function searchPageTestSuite() {
   let provider = null;
 
   setup(() => {
-    document.body.innerHTML = '';
+    document.body.innerHTML = trustedTypes.emptyHTML;
     // Create provider.
     provider = new FakeHelpContentProvider();
     // Setup search response.
@@ -726,6 +726,48 @@ export function searchPageTestSuite() {
       if (domainQuestions['thunderbolt'].indexOf(question) < 0) {
         assertTrue(textAreaElement.value.indexOf(question) < 0);
       }
+    });
+  });
+
+  test('typingAudioWithInternalAccountShowsQuestionnaire', async () => {
+    let textAreaElement = null;
+    await initializePage();
+    // The questionnaire will be only shown if the account belongs to an
+    // internal user.
+    page.feedbackContext = fakeInternalUserFeedbackContext;
+
+    textAreaElement = getElement('#descriptionText');
+    textAreaElement.value = 'there were audio defects (popping and distortion)';
+    // Setting the value of the textarea in code does not trigger the
+    // input event. So we trigger it here.
+    textAreaElement.dispatchEvent(new Event('input'));
+    await flushTasks();
+
+    // Check that the questionnaire with Audio questions is shown.
+    assertTrue(textAreaElement.value.indexOf(questionnaireBegin) >= 0);
+    domainQuestions['audio'].forEach((question) => {
+      assertTrue(textAreaElement.value.indexOf(question) >= 0);
+    });
+  });
+
+    test('typingAudioWithExternalAccountWillNotShowsQuestionnaire', async () => {
+    let textAreaElement = null;
+    await initializePage();
+    // The questionnaire will be only shown if the account belongs to an
+    // internal user.
+    page.feedbackContext = fakeFeedbackContext;
+
+    textAreaElement = getElement('#descriptionText');
+    textAreaElement.value = 'there were audio defects (popping and distortion)';
+    // Setting the value of the textarea in code does not trigger the
+    // input event. So we trigger it here.
+    textAreaElement.dispatchEvent(new Event('input'));
+    await flushTasks();
+
+    // Check that the questionnaire with Audio questions is not shown.
+    assertFalse(textAreaElement.value.indexOf(questionnaireBegin) >= 0);
+    domainQuestions['audio'].forEach((question) => {
+      assertFalse(textAreaElement.value.indexOf(question) >= 0);
     });
   });
 }

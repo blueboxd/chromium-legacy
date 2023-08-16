@@ -138,6 +138,12 @@ class AttributionInteropParser {
     ParseInt(dict, "max_destinations_per_source_site_reporting_site",
              config.max_destinations_per_source_site_reporting_site, required);
 
+    ParseInt(dict, "max_destinations_per_rate_limit_window_reporting_site",
+             config.throttler_policy.max_per_reporting_site, required);
+
+    ParseInt(dict, "max_destinations_per_rate_limit_window",
+             config.throttler_policy.max_total, required);
+
     int rate_limit_time_window;
     if (ParseInt(dict, "rate_limit_time_window", rate_limit_time_window,
                  required)) {
@@ -151,6 +157,9 @@ class AttributionInteropParser {
                config.rate_limit.max_attribution_reporting_origins, required);
     ParseInt64(dict, "rate_limit_max_attributions",
                config.rate_limit.max_attributions, required);
+    ParseInt(dict, "rate_limit_max_reporting_origins_per_source_reporting_site",
+             config.rate_limit.max_reporting_origins_per_source_reporting_site,
+             required);
 
     ParseInt(dict, "max_event_level_reports_per_destination",
              config.event_level_limit.max_reports_per_destination, required);
@@ -368,7 +377,7 @@ class AttributionInteropParser {
                                 std::move(*reporting_origin),
                                 std::move(*trigger_registration),
                                 std::move(*destination_origin),
-                                /*verification=*/absl::nullopt,
+                                /*verifications=*/{},
                                 /*is_within_fenced_frame=*/false),
                             trigger_time, debug_permission);
                       });

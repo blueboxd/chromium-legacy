@@ -150,7 +150,7 @@ const int kNumFadeImages = 10;
 
 bool IsTrayIcon(IconType icon_type) {
   return icon_type == ICON_TYPE_TRAY_REGULAR ||
-         icon_type == ICON_TYPE_TRAY_OOBE;
+         icon_type == ICON_TYPE_TRAY_ACTIVE || icon_type == ICON_TYPE_TRAY_OOBE;
 }
 
 bool IconTypeHasVPNBadge(IconType icon_type) {
@@ -291,8 +291,10 @@ gfx::ImageSkia GetIcon(const ui::ColorProvider* color_provider,
                        IconType icon_type,
                        int strength_index) {
   if (network->type == NetworkType::kEthernet) {
+    // The system tray uses a smaller icon.
     return gfx::CreateVectorIcon(
-        vector_icons::kEthernetIcon,
+        IsTrayIcon(icon_type) ? kNetworkEthernetIcon
+                              : vector_icons::kEthernetIcon,
         GetDefaultColorForIconType(color_provider, icon_type));
   }
   if (network->type == NetworkType::kVPN) {
@@ -494,6 +496,12 @@ SkColor GetDefaultColorForIconType(const ui::ColorProvider* color_provider,
                  ? color_provider->GetColor(cros_tokens::kCrosSysOnSurface)
                  : ash_color_provider->GetContentLayerColor(
                        AshColorProvider::ContentLayerType::kButtonIconColor);
+    case ICON_TYPE_TRAY_ACTIVE:
+      return use_color_provider
+                 ? color_provider->GetColor(
+                       cros_tokens::kCrosSysSystemOnPrimaryContainer)
+                 : ash_color_provider->GetContentLayerColor(
+                       AshColorProvider::ContentLayerType::kButtonIconColor);
     case ICON_TYPE_FEATURE_POD_TOGGLED:
       return use_color_provider
                  ? color_provider->GetColor(
@@ -645,8 +653,9 @@ gfx::ImageSkia GetConnectedNetworkWithConnectingVpnImage(
 
 gfx::ImageSkia GetDisconnectedImageForNetworkType(
     const ui::ColorProvider* color_provider,
-    NetworkType network_type) {
-  return GetBasicImage(color_provider, ICON_TYPE_LIST, network_type,
+    NetworkType network_type,
+    IconType icon_type) {
+  return GetBasicImage(color_provider, icon_type, network_type,
                        false /* connected */);
 }
 

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/private_network_access/chrome_private_network_device_chooser.h"
@@ -30,7 +31,7 @@ class PrivateNetworkDeviceChooserController
   PrivateNetworkDeviceChooserController(
       content::RenderFrameHost* render_frame_host,
       std::unique_ptr<blink::mojom::PrivateNetworkDevice> device,
-      const ChromePrivateNetworkDeviceChooser::EventHandler& event_handler);
+      ChromePrivateNetworkDeviceChooser::EventHandler event_handler);
 
   PrivateNetworkDeviceChooserController(
       const PrivateNetworkDeviceChooserController&) = delete;
@@ -60,7 +61,7 @@ class PrivateNetworkDeviceChooserController
   url::Origin origin_;
 
   std::unique_ptr<blink::mojom::PrivateNetworkDevice> device_;
-  const ChromePrivateNetworkDeviceChooser::EventHandler& event_handler_;
+  const ChromePrivateNetworkDeviceChooser::EventHandler event_handler_;
 
   base::WeakPtrFactory<PrivateNetworkDeviceChooserController> weak_factory_{
       this};

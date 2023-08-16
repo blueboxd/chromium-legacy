@@ -187,9 +187,6 @@ DumpAccessibilityTestBase::~DumpAccessibilityTestBase() {}
 void DumpAccessibilityTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
   IsolateAllSitesForTesting(command_line);
-
-  // Each test pass may require custom command-line setup.
-  test_helper_.SetUpCommandLine(command_line);
 }
 
 void DumpAccessibilityTestBase::SetUpOnMainThread() {
@@ -199,6 +196,9 @@ void DumpAccessibilityTestBase::SetUpOnMainThread() {
 }
 
 void DumpAccessibilityTestBase::SetUp() {
+  // Each test pass may require custom feature setup.
+  test_helper_.InitializeFeatureList();
+
   std::vector<base::test::FeatureRef> enabled_features;
   std::vector<base::test::FeatureRef> disabled_features;
   ChooseFeatures(&enabled_features, &disabled_features);
@@ -211,6 +211,12 @@ void DumpAccessibilityTestBase::SetUp() {
   EnablePixelOutput();
 
   ContentBrowserTest::SetUp();
+}
+
+void DumpAccessibilityTestBase::TearDown() {
+  ContentBrowserTest::TearDown();
+  scoped_feature_list_.Reset();
+  test_helper_.ResetFeatureList();
 }
 
 void DumpAccessibilityTestBase::SignalRunTestOnMainThread(int) {
@@ -504,8 +510,8 @@ std::map<std::string, unsigned> DumpAccessibilityTestBase::CollectAllFrameUrls(
     // WebContents as the node doesn't have a url set.
 
     std::string url = node->current_url().spec();
-    if (url != url::kAboutBlankURL && !url.empty() &&
-        !SkipUrlMatch(skip_urls, url) &&
+    if (url != url::kAboutBlankURL && url != url::kAboutSrcdocURL &&
+        !url.empty() && !SkipUrlMatch(skip_urls, url) &&
         node->frame_owner_element_type() !=
             blink::FrameOwnerElementType::kPortal) {
       all_frame_urls[url] += 1;

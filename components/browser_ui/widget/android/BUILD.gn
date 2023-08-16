@@ -46,7 +46,6 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/widget/WrappingLayout.java",
     "java/src/org/chromium/components/browser_ui/widget/animation/CancelAwareAnimatorListener.java",
     "java/src/org/chromium/components/browser_ui/widget/animation/FocusAnimator.java",
-    "java/src/org/chromium/components/browser_ui/widget/animation/Interpolators.java",
     "java/src/org/chromium/components/browser_ui/widget/async_image/AsyncImageView.java",
     "java/src/org/chromium/components/browser_ui/widget/async_image/AutoAnimatorDrawable.java",
     "java/src/org/chromium/components/browser_ui/widget/async_image/ForegroundDrawableCompat.java",
@@ -137,7 +136,6 @@ android_library("java") {
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
     "//third_party/androidx:androidx_coordinatorlayout_coordinatorlayout_java",
     "//third_party/androidx:androidx_core_core_java",
-    "//third_party/androidx:androidx_interpolator_interpolator_java",
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
     "//third_party/androidx:androidx_vectordrawable_vectordrawable_animated_java",
     "//third_party/androidx:androidx_vectordrawable_vectordrawable_java",
@@ -278,6 +276,7 @@ android_resources("java_resources") {
     "java/res/values/values.xml",
   ]
   deps = [
+    "shared_with_webview:java_resources",
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
     "//third_party/android_deps:material_design_java",
@@ -300,6 +299,8 @@ android_library("test_support_java") {
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
     "//third_party/hamcrest:hamcrest_core_java",
     "//third_party/hamcrest:hamcrest_library_java",
+    "//ui/android:ui_no_recycler_view_java",
+    "//ui/android:ui_recycler_view_java",
   ]
 }
 

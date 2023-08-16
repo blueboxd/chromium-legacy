@@ -21,13 +21,9 @@ class AccessibilityDetailedViewPixelTest
       public testing::WithParamInterface<bool> {
  public:
   AccessibilityDetailedViewPixelTest() {
-    if (IsQsRevampEnabled()) {
-      feature_list_.InitWithFeatures(
-          {features::kQsRevamp, chromeos::features::kJelly}, {});
-    } else {
-      feature_list_.InitWithFeatures(
-          {}, {features::kQsRevamp, chromeos::features::kJelly});
-    }
+    feature_list_.InitWithFeatureStates(
+        {{features::kQsRevamp, IsQsRevampEnabled()},
+         {chromeos::features::kJelly, IsQsRevampEnabled()}});
   }
 
   bool IsQsRevampEnabled() { return GetParam(); }
@@ -65,7 +61,7 @@ TEST_P(AccessibilityDetailedViewPixelTest, Basics) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "check_view",
-      /*revision_number=*/0, detailed_view_container));
+      /*revision_number=*/1, detailed_view_container));
 }
 
 }  // namespace ash

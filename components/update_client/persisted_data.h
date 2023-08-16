@@ -147,8 +147,8 @@ class PersistedData {
                              const std::set<std::string>& active_ids);
 
   SEQUENCE_CHECKER(sequence_checker_);
-  raw_ptr<PrefService, DanglingUntriaged> pref_service_;
-  raw_ptr<ActivityDataService> activity_data_service_;
+  raw_ptr<PrefService, LeakedDanglingUntriaged> pref_service_;
+  raw_ptr<ActivityDataService, DanglingUntriaged> activity_data_service_;
 };
 
 }  // namespace update_client

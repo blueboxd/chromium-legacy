@@ -46,9 +46,9 @@
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
-#include "chrome/browser/sync/sync_encryption_keys_tab_helper.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync/sync_startup_tracker.h"
+#include "chrome/browser/sync/trusted_vault_encryption_keys_tab_helper.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -830,8 +830,9 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   // It would be nicer to verify that HasEncryptionKeysApiForTesting()
   // returns true but this isn't possible because the sigin page returns an
   // error, without setting up a fake HTTP server.
-  EXPECT_NE(SyncEncryptionKeysTabHelper::FromWebContents(web_contents()),
-            nullptr);
+  EXPECT_NE(
+      TrustedVaultEncryptionKeysTabHelper::FromWebContents(web_contents()),
+      nullptr);
 }
 
 // Regression test for crbug.com/1196290. Makes no sense for lacros because you
@@ -1452,11 +1453,17 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   EXPECT_EQ(new_browser->profile()->GetPath(), other_path);
   WaitForPickerClosed();
 
+// TODO(crbug.com/1447955): This check fails in version skew test. Instead of
+// filtering out tests on version skew bots, just disable the part of test for
+// now. Re-enable this check for Lacros once crrev.com/c/4542121 is in Ash
+// stable.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
   histogram_tester.ExpectTotalCount(
       "ProfilePicker.FirstProfileTime.FirstWebContentsNonEmptyPaint", 1);
   histogram_tester.ExpectUniqueSample(
       "ProfilePicker.FirstProfileTime.FirstWebContentsFinishReason",
       metrics::StartupProfilingFinishReason::kDone, 1);
+#endif
 }
 
 // TODO(crbug.com/1289326) Test is flaky on Linux CFI, Linux dbg, Mac ASan

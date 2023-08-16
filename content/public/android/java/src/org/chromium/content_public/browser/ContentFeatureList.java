@@ -4,64 +4,14 @@
 
 package org.chromium.content_public.browser;
 
-import org.chromium.base.FeatureList;
-import org.chromium.content.browser.ContentFeatureListImpl;
-
 /**
- * Static public methods for ContentFeatureList.
+ * Convenience static methods to access {@link ContentFeatureMap}.
  */
 public class ContentFeatureList {
     private ContentFeatureList() {}
 
-    /**
-     * Returns whether the specified feature is enabled or not.
-     *
-     * @param featureName The name of the feature to query.
-     * @return Whether the feature is enabled or not.
-     */
-    public static boolean isEnabled(String featureName) {
-        Boolean testValue = FeatureList.getTestValueForFeature(featureName);
-        if (testValue != null) return testValue;
-        return ContentFeatureListImpl.isEnabled(featureName);
-    }
-
-    /**
-     * Returns a field trial param as an int for the specified feature.
-     *
-     * @param featureName The name of the feature to retrieve a param for.
-     * @param paramName The name of the param for which to get as an integer.
-     * @param defaultValue The integer value to use if the param is not available.
-     * @return The parameter value as an int. Default value if the feature does not exist or the
-     *         specified parameter does not exist or its string value does not represent an int.
-     */
-    public static int getFieldTrialParamByFeatureAsInt(
-            String featureName, String paramName, int defaultValue) {
-        String testValue = FeatureList.getTestValueForFieldTrialParam(featureName, paramName);
-        if (testValue != null) return Integer.valueOf(testValue);
-        if (FeatureList.hasTestFeatures()) return defaultValue;
-        assert FeatureList.isInitialized();
-        return ContentFeatureListImpl.getFieldTrialParamByFeatureAsInt(
-                featureName, paramName, defaultValue);
-    }
-
-    /**
-     * Returns a field trial param as a boolean for the specified feature.
-     *
-     * @param featureName The name of the feature to retrieve a param for.
-     * @param paramName The name of the param for which to get as a boolean.
-     * @param defaultValue The boolean value to use if the param is not available.
-     * @return The parameter value as a boolean. Default value if the feature does not exist or the
-     *         specified parameter does not exist or its string value is neither "true" nor "false".
-     */
-    public static boolean getFieldTrialParamByFeatureAsBoolean(
-            String featureName, String paramName, boolean defaultValue) {
-        String testValue = FeatureList.getTestValueForFieldTrialParam(featureName, paramName);
-        if (testValue != null) return Boolean.valueOf(testValue);
-        if (FeatureList.hasTestFeatures()) return defaultValue;
-        assert FeatureList.isInitialized();
-        return ContentFeatureListImpl.getFieldTrialParamByFeatureAsBoolean(
-                featureName, paramName, defaultValue);
-    }
+    // TODO(crbug.com/1447098): Use generated constants in ContentFeatures and other generated
+    // Features files, then remove the constants below.
 
     // Alphabetical:
     public static final String ACCESSIBILITY_PAGE_ZOOM = "AccessibilityPageZoom";

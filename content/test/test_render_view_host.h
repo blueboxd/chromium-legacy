@@ -26,8 +26,8 @@
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ime/dummy_text_input_client.h"
-#include "ui/base/layout.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/base/resource/resource_scale_factor.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 #if defined(USE_AURA)
@@ -190,7 +190,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
 
   absl::optional<DisplayFeature> display_feature_;
 
-  raw_ptr<ui::Compositor> compositor_ = nullptr;
+  raw_ptr<ui::Compositor, DanglingUntriaged> compositor_ = nullptr;
 
   CursorManager cursor_manager_;
 };

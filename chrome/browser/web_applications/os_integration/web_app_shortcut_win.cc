@@ -242,6 +242,7 @@ void DeleteShortcuts(std::vector<base::FilePath> all_shortcuts,
   for (const auto& shortcut : all_shortcuts) {
     if (!base::DeleteFile(shortcut))
       result = false;
+    SHChangeNotify(SHCNE_DELETE, SHCNF_PATH, shortcut.value().c_str(), nullptr);
   }
   std::move(result_callback).Run(result);
 }
@@ -819,17 +820,15 @@ std::vector<base::FilePath> GetShortcutPaths(
        testing_shortcuts ? testing_shortcuts->startup() : base::FilePath()}};
 
   // Populate shortcut_paths.
+  base::FilePath path;
   for (auto location : locations) {
     if (location.use_this_location) {
-      base::FilePath path;
       if (!location.test_path.empty()) {
-        path = location.test_path;
-      } else if (!ShellUtil::GetShortcutPath(location.location_id,
-                                             ShellUtil::CURRENT_USER, &path)) {
-        NOTREACHED();
-        continue;
+        shortcut_paths.push_back(location.test_path);
+      } else if (ShellUtil::GetShortcutPath(location.location_id,
+                                            ShellUtil::CURRENT_USER, &path)) {
+        shortcut_paths.push_back(path);
       }
-      shortcut_paths.push_back(path);
     }
   }
   return shortcut_paths;

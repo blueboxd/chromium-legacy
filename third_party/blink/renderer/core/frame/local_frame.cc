@@ -64,6 +64,7 @@
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/reporting_observer.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/lcp_critical_path_predictor/lcp_critical_path_predictor.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -158,6 +159,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
+#include "third_party/blink/renderer/core/lcp_critical_path_predictor/lcp_critical_path_predictor.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
@@ -308,6 +310,32 @@ mojom::blink::BlockingDetailsPtr CreateBlockingDetailsMojom(
   return feature_location_to_report;
 }
 
+bool IsNavigationBlockedByCoopRestrictProperties(
+    const LocalFrame& accessing_frame,
+    const Frame& target_frame) {
+  // If the two windows are not in the same CoopRelatedGroup, we should not
+  // block one window from navigating the other. This prevents restricting
+  // things that were not meant to. These are the cross browsing context group
+  // accesses that already existed before COOP: restrict-properties.
+  // TODO(https://crbug.com/1221127): Is there actually any scenario where cross
+  // browsing context group was allowed before COOP: restrict-properties? Verify
+  // that we need to have this check.
+  if (accessing_frame.GetPage()->CoopRelatedGroupToken() !=
+      target_frame.GetPage()->CoopRelatedGroupToken()) {
+    return false;
+  }
+
+  // If we're dealing with an actual COOP: restrict-properties case, then
+  // compare the browsing context group tokens. If they are different, the
+  // navigation should not be permitted.
+  if (accessing_frame.GetPage()->BrowsingContextGroupToken() !=
+      target_frame.GetPage()->BrowsingContextGroupToken()) {
+    return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
@@ -434,6 +462,7 @@ void LocalFrame::Trace(Visitor* visitor) const {
   visitor->Trace(box_shadow_paint_image_generator_);
   visitor->Trace(clip_path_paint_image_generator_);
   visitor->Trace(resource_cache_);
+  visitor->Trace(lcpp_);
 #if !BUILDFLAG(IS_ANDROID)
   visitor->Trace(window_controls_overlay_changed_delegate_);
 #endif
@@ -753,6 +782,22 @@ ClipPathPaintImageGenerator* LocalFrame::GetClipPathPaintImageGenerator() {
         ClipPathPaintImageGenerator::Create(local_root);
   }
   return local_root.clip_path_paint_image_generator_.Get();
+}
+
+LCPCriticalPathPredictor* LocalFrame::GetLCPP() {
+  if (!base::FeatureList::IsEnabled(features::kLCPCriticalPathPredictor)) {
+    return nullptr;
+  }
+
+  // For now, we only attach LCPP to the main frames.
+  if (!IsMainFrame()) {
+    return nullptr;
+  }
+
+  if (!lcpp_) {
+    lcpp_ = MakeGarbageCollected<LCPCriticalPathPredictor>(*this);
+  }
+  return lcpp_.Get();
 }
 
 const SecurityContext* LocalFrame::GetSecurityContext() const {
@@ -1753,6 +1798,12 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
                       WebFeature::kOpenerNavigationWithoutGesture);
   }
 
+  // Frames from different browsing context groups in the same CoopRelatedGroup
+  // should not be able navigate one another.
+  if (IsNavigationBlockedByCoopRestrictProperties(*this, target_frame)) {
+    return false;
+  }
+
   if (destination_url.ProtocolIsJavaScript() &&
       (!GetSecurityContext()->GetSecurityOrigin()->CanAccess(
           target_frame.GetSecurityContext()->GetSecurityOrigin()))) {
@@ -2117,28 +2168,19 @@ void LocalFrame::WasShown() {
   }
 }
 
-bool LocalFrame::ClipsContent(ScrollbarDisableReason* out_reason) const {
+bool LocalFrame::ClipsContent() const {
   // A paint preview shouldn't clip to the viewport. Each frame paints to a
   // separate canvas in full to allow scrolling.
   if (GetDocument()->GetPaintPreviewState() != Document::kNotPaintingPreview) {
-    if (out_reason) {
-      *out_reason = ScrollbarDisableReason::kPaintPreview;
-    }
     return false;
   }
 
   if (ShouldUsePrintingLayout()) {
-    if (out_reason) {
-      *out_reason = ScrollbarDisableReason::kPrinting;
-    }
     return false;
   }
 
-  if (IsOutermostMainFrame() && !GetSettings()->GetMainFrameClipsContent()) {
-    if (out_reason) {
-      *out_reason = ScrollbarDisableReason::kMainFrameClipsContentFalse;
-    }
-    return false;
+  if (IsOutermostMainFrame()) {
+    return GetSettings()->GetMainFrameClipsContent();
   }
   // By default clip to viewport.
   return true;
@@ -3158,6 +3200,16 @@ void LocalFrame::MediaPlayerActionAtViewportPoint(
     case mojom::blink::MediaPlayerActionType::kControls:
       media_element->SetUserWantsControlsVisible(enable);
       break;
+    case mojom::blink::MediaPlayerActionType::kCopyVideoFrame:
+      DCHECK(IsA<HTMLVideoElement>(media_element));
+      {
+        auto* video_element = To<HTMLVideoElement>(media_element);
+        auto image = video_element->CreateStaticBitmapImage();
+        if (image) {
+          GetEditor().CopyImage(result, image);
+        }
+      }
+      break;
     case mojom::blink::MediaPlayerActionType::kPictureInPicture:
       DCHECK(IsA<HTMLVideoElement>(media_element));
       if (enable) {
@@ -3273,8 +3325,8 @@ void LocalFrame::PostMessageEvent(
   }
 
   message_event->initMessageEvent(
-      "message", false, false, std::move(message.message), source_origin,
-      "" /*lastEventId*/, window, ports, user_activation,
+      event_type_names::kMessage, false, false, std::move(message.message),
+      source_origin, "" /*lastEventId*/, window, ports, user_activation,
       message.delegated_capability);
 
   // If the agent cluster id had a value it means this was locked when it
@@ -3470,6 +3522,11 @@ LocalFrame::GetNotRestoredReasons() {
   // web exposed API returns non-null values only for the outermost main frames.
   DCHECK(IsOutermostMainFrame());
   return not_restored_reasons_;
+}
+
+void LocalFrame::SetLCPPHint(
+    mojom::blink::LCPCriticalPathPredictorNavigationTimeHintPtr hint) {
+  // TODO(crbug.com/1419756): Pass the hint to `lcpp_`
 }
 
 void LocalFrame::AddScrollSnapshotClient(ScrollSnapshotClient& client) {

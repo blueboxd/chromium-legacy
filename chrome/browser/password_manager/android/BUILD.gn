@@ -59,7 +59,6 @@ source_set("backend") {
     "password_settings_updater_android_receiver_bridge_impl.h",
     "password_store_android_backend.cc",
     "password_store_android_backend.h",
-    "password_store_android_backend_api_error_codes.h",
     "password_store_android_backend_bridge_helper.h",
     "password_store_android_backend_bridge_helper_impl.cc",
     "password_store_android_backend_bridge_helper_impl.h",
@@ -138,6 +137,7 @@ android_library("java") {
     ":password_manager_resource_provider_java",
   ]
 
+  srcjar_deps = [ ":jni_headers" ]
   sources = [
     "java/src/org/chromium/chrome/browser/password_manager/ConfirmationDialogHelper.java",
     "java/src/org/chromium/chrome/browser/password_manager/OutdatedGmsCoreDialog.java",
@@ -160,15 +160,12 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/password_manager/settings/ReauthenticationManager.java",
   ]
 
-  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-
   resources_package = "org.chromium.chrome.browser.password_manager"
 }
 
 generate_jni("jni_headers") {
   visibility = [
-    ":backend",
-    ":test_support",
+    ":*",
     "//chrome/browser",
   ]
   sources = [
@@ -342,6 +339,7 @@ static_library("test_support") {
 
 android_library("test_support_java") {
   testonly = true
+  srcjar_deps = [ ":test_support_jni_headers" ]
   sources = [
     "test_support/java/src/org/chromium/chrome/browser/password_manager/FakeCredentialManagerLauncher.java",
     "test_support/java/src/org/chromium/chrome/browser/password_manager/FakeCredentialManagerLauncherFactoryImpl.java",
@@ -369,8 +367,6 @@ android_library("test_support_java") {
     "//content/public/android:content_main_dex_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
   ]
-
-  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 android_library("password_manager_resource_provider_java") {
@@ -424,10 +420,13 @@ source_set("unit_tests") {
     "all_passwords_bottom_sheet_controller_unittest.cc",
     "all_passwords_bottom_sheet_helper_unittest.cc",
     "auto_signin_first_run_dialog_android_unittest.cc",
+    "cred_man_controller_unittest.cc",
     "credential_leak_controller_android_unittest.cc",
     "fake_password_manager_lifecycle_helper.cc",
     "fake_password_manager_lifecycle_helper.h",
     "generated_password_saved_message_delegate_unittest.cc",
+    "mock_password_checkup_launcher_helper.cc",
+    "mock_password_checkup_launcher_helper.h",
     "mock_password_manager_error_message_helper_bridge.cc",
     "mock_password_manager_error_message_helper_bridge.h",
     "mock_password_sync_controller_delegate_bridge.cc",
@@ -451,7 +450,6 @@ source_set("unit_tests") {
     "//chrome/app:generated_resources",
     "//chrome/browser",
     "//chrome/browser/autofill",
-    "//chrome/browser/password_manager/android/pwd_migration:utils",
     "//chrome/browser/touch_to_fill/password_generation/android:public",
     "//chrome/browser/touch_to_fill/password_generation/android:test_support",
     "//chrome/test:test_support",
@@ -473,6 +471,7 @@ source_set("unit_tests") {
     "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/android:android",
     "//ui/base:base",
   ]
 }

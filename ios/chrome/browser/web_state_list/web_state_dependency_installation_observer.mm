@@ -31,21 +31,37 @@ WebStateDependencyInstallationObserver::
   }
 }
 
-void WebStateDependencyInstallationObserver::WebStateInsertedAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index,
-    bool activating) {
-  OnWebStateAdded(web_state);
-}
+#pragma mark - WebStateListObserver
 
-void WebStateDependencyInstallationObserver::WebStateReplacedAt(
+void WebStateDependencyInstallationObserver::WebStateListChanged(
     WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int index) {
-  OnWebStateRemoved(old_web_state);
-  OnWebStateAdded(new_web_state);
+    const WebStateListChange& change,
+    const WebStateSelection& selection) {
+  switch (change.type()) {
+    case WebStateListChange::Type::kSelectionOnly:
+      // Do nothing when a WebState is selected and its status is updated.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // webStateList:didDetachWebState:atIndex: to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace: {
+      const WebStateListChangeReplace& replace_change =
+          change.As<WebStateListChangeReplace>();
+      OnWebStateRemoved(replace_change.replaced_web_state());
+      OnWebStateAdded(replace_change.inserted_web_state());
+      break;
+    }
+    case WebStateListChange::Type::kInsert: {
+      const WebStateListChangeInsert& insert_change =
+          change.As<WebStateListChangeInsert>();
+      OnWebStateAdded(insert_change.inserted_web_state());
+      break;
+    }
+  }
 }
 
 void WebStateDependencyInstallationObserver::WebStateDetachedAt(

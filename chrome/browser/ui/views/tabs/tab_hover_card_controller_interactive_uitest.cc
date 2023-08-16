@@ -7,35 +7,45 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
+#include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_enums.h"
+#include "chrome/browser/ui/views/tabs/fade_footer_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_test_util.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/interaction/interactive_browser_test.h"
 #include "components/lookalikes/core/safety_tip_test_utils.h"
+#include "components/performance_manager/public/features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "net/base/url_util.h"
 #include "net/dns/mock_host_resolver.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/base/text/bytes_formatting.h"
 #include "ui/display/display.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/test/widget_test.h"
 #include "url/gurl.h"
 
@@ -48,6 +58,7 @@ TabRendererData MakeTabRendererData() {
   TabRendererData new_tab_data = TabRendererData();
   new_tab_data.title = kTabTitle;
   new_tab_data.last_committed_url = GURL(kTabUrl);
+  new_tab_data.alert_state = {TabAlertState::AUDIO_PLAYING};
   return new_tab_data;
 }
 }  // namespace
@@ -59,6 +70,10 @@ class TabHoverCardInteractiveUiTest : public InteractiveBrowserTest,
 
   void SetUp() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+    scoped_feature_list_.InitWithFeatures(
+        {performance_manager::features::kDiscardedTabTreatment,
+         performance_manager::features::kMemoryUsageInHovercards},
+        {});
     InteractiveBrowserTest::SetUp();
   }
 
@@ -122,6 +137,9 @@ class TabHoverCardInteractiveUiTest : public InteractiveBrowserTest,
   StepBuilder CheckHovercardIsClosed() {
     return WaitForHide(TabHoverCardBubbleView::kHoverCardBubbleElementId);
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 #if defined(USE_AURA)
@@ -265,6 +283,100 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardInteractiveUiTest,
   EXPECT_EQ(kTabTitle, hover_card->GetTitleTextForTesting());
   EXPECT_EQ(kTabDomain, hover_card->GetDomainTextForTesting());
   EXPECT_EQ(tab_strip->tab_at(1), hover_card->GetAnchorView());
+}
+
+IN_PROC_BROWSER_TEST_F(TabHoverCardInteractiveUiTest, HoverCardFooterUpdates) {
+  TabStrip* const tab_strip = GetTabStrip(browser());
+  ASSERT_TRUE(
+      AddTabAtIndex(1, GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_TYPED));
+  tab_strip->SetTabData(1, MakeTabRendererData());
+
+  auto* const hover_card = SimulateHoverTab(browser(), 1);
+  FadeAlertFooterRow* alert_row =
+      hover_card->footer_view_->GetAlertRow()->primary_view_;
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_ALERT_STATE_AUDIO_PLAYING),
+      alert_row->footer_label_->GetText());
+  EXPECT_FALSE(alert_row->icon_->GetImageModel().IsEmpty());
+
+  // Hover card footer should update when we hover over another tab that is
+  // not playing audio
+  SimulateHoverTab(browser(), 0);
+  EXPECT_TRUE(alert_row->footer_label_->GetText().empty());
+  EXPECT_TRUE(alert_row->icon_->GetImageModel().IsEmpty());
+}
+
+IN_PROC_BROWSER_TEST_F(TabHoverCardInteractiveUiTest,
+                       HoverCardFooterShowsDiscardStatus) {
+  TabStrip* const tab_strip = GetTabStrip(browser());
+  ASSERT_TRUE(
+      AddTabAtIndex(1, GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_TYPED));
+  TabRendererData tab_renderer_data = MakeTabRendererData();
+  tab_renderer_data.should_show_discard_status = true;
+  tab_strip->SetTabData(1, tab_renderer_data);
+
+  auto* const hover_card = SimulateHoverTab(browser(), 1);
+  FadePerformanceFooterRow* performance_row =
+      hover_card->footer_view_->GetPerformanceRow()->primary_view_;
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_HOVERCARD_INACTIVE_TAB),
+            performance_row->footer_label_->GetText());
+  EXPECT_FALSE(performance_row->icon_->GetImageModel().IsEmpty());
+
+  // Hover card footer should update when we hover over another tab that is
+  // not discarded
+  SimulateHoverTab(browser(), 0);
+  EXPECT_TRUE(performance_row->footer_label_->GetText().empty());
+  EXPECT_TRUE(performance_row->icon_->GetImageModel().IsEmpty());
+
+  // Show discard status with memory savings
+  tab_renderer_data.discarded_memory_savings_in_bytes = 1000;
+  tab_strip->SetTabData(1, tab_renderer_data);
+  SimulateHoverTab(browser(), 1);
+  EXPECT_EQ(
+      l10n_util::FormatString(
+          l10n_util::GetStringUTF16(IDS_HOVERCARD_INACTIVE_TAB_MEMORY_SAVINGS),
+          {ui::FormatBytes(
+              tab_renderer_data.discarded_memory_savings_in_bytes)},
+          nullptr),
+      performance_row->footer_label_->GetText());
+}
+
+IN_PROC_BROWSER_TEST_F(TabHoverCardInteractiveUiTest,
+                       HoverCardFooterShowsMemoryUsage) {
+  ASSERT_TRUE(
+      AddTabAtIndex(1, GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_TYPED));
+
+  uint64_t bytes_used = 1000;
+  content::WebContents* const web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  auto* const resource_usage_tab_helper =
+      performance_manager::user_tuning::UserPerformanceTuningManager::
+          ResourceUsageTabHelper::FromWebContents(web_contents);
+  resource_usage_tab_helper->SetMemoryUsageInBytes(bytes_used);
+
+  // Show memory usage without savings
+  auto* const hover_card = SimulateHoverTab(browser(), 1);
+  FadePerformanceFooterRow* performance_row =
+      hover_card->footer_view_->GetPerformanceRow()->primary_view_;
+  EXPECT_EQ(l10n_util::FormatString(
+                l10n_util::GetStringUTF16(IDS_HOVERCARD_TAB_MEMORY_USAGE),
+                {ui::FormatBytes(bytes_used)}, nullptr),
+            performance_row->footer_label_->GetText());
+  EXPECT_FALSE(performance_row->icon_->GetImageModel().IsEmpty());
+
+  // Hover card updates and shows high memory usage when card is still open
+  bytes_used =
+      performance_manager::features::kMemoryUsageInHovercardsHighThresholdBytes
+          .Get() +
+      100;
+  resource_usage_tab_helper->SetMemoryUsageInBytes(bytes_used);
+  GetTabStrip(browser())
+      ->hover_card_controller_for_testing()
+      ->OnMemoryMetricsRefreshed();
+  EXPECT_EQ(l10n_util::FormatString(
+                l10n_util::GetStringUTF16(IDS_HOVERCARD_TAB_HIGH_MEMORY_USAGE),
+                {ui::FormatBytes(bytes_used)}, nullptr),
+            performance_row->footer_label_->GetText());
 }
 
 using TabHoverCardBubbleViewMetricsTest = TabHoverCardInteractiveUiTest;

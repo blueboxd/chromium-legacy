@@ -12,6 +12,8 @@
 #include "chrome/browser/companion/core/promo_handler.h"
 #include "chrome/browser/companion/text_finder/text_finder_manager.h"
 #include "chrome/browser/companion/text_finder/text_highlighter_manager.h"
+#include "chrome/browser/companion/visual_search/features.h"
+#include "chrome/browser/companion/visual_search/visual_search_suggestions_service_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -63,6 +65,13 @@ CompanionPageHandler::CompanionPageHandler(
   identity_manager_observation_.Observe(
       IdentityManagerFactory::GetForProfile(GetProfile()));
   consent_helper_observation_.Observe(consent_helper_.get());
+  if (base::FeatureList::IsEnabled(
+          visual_search::features::kVisualSearchSuggestions)) {
+    visual_search_host_ =
+        std::make_unique<visual_search::VisualSearchClassifierHost>(
+            visual_search::VisualSearchSuggestionsServiceFactory::GetForProfile(
+                GetProfile()));
+  }
 }
 
 CompanionPageHandler::~CompanionPageHandler() {
@@ -136,6 +145,38 @@ void CompanionPageHandler::DidFinishNavigation(
   NotifyURLChanged(/*is_full_reload=*/false);
 }
 
+void CompanionPageHandler::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  // We only want to classify images in the main frame.
+  if (!render_frame_host->IsInPrimaryMainFrame()) {
+    return;
+  }
+
+  // TODO(b/284640445) - Add browser test to verify side effect of feature
+  // on/off, use histogram check to determine whether or not classification was
+  // called.
+  if (visual_search_host_) {
+    visual_search::VisualSearchClassifierHost::ResultCallback callback =
+        base::BindOnce(&CompanionPageHandler::HandleVisualSearchResult,
+                       weak_ptr_factory_.GetWeakPtr());
+    visual_search_host_->StartClassification(render_frame_host, validated_url,
+                                             std::move(callback));
+  }
+}
+
+void CompanionPageHandler::HandleVisualSearchResult(
+    std::vector<std::string> results) {
+  std::vector<side_panel::mojom::VisualSearchResultPtr> final_results;
+  for (const auto& result : results) {
+    final_results.emplace_back(
+        side_panel::mojom::VisualSearchResult::New(result));
+  }
+  if (!final_results.empty()) {
+    page_->OnDeviceVisualClassificationResult(std::move(final_results));
+  }
+}
+
 void CompanionPageHandler::ShowUI() {
   if (auto embedder = companion_untrusted_ui_->embedder()) {
     embedder->ShowUI();
@@ -164,9 +205,9 @@ void CompanionPageHandler::ShowUI() {
     // Register a modal dialog manager to show permissions dialog like those
     // requested from the feedback UI.
     RegisterModalDialogManager(browser);
-
-    // If searching the text query succeeds, then early return.
-    if (OnSearchTextQuery()) {
+    std::string initial_text_query = helper->GetTextQuery();
+    if (!initial_text_query.empty()) {
+      OnSearchTextQuery(initial_text_query);
       return;
     }
 
@@ -181,15 +222,7 @@ void CompanionPageHandler::ShowUI() {
   }
 }
 
-bool CompanionPageHandler::OnSearchTextQuery() {
-  CHECK(web_contents());
-  auto* helper = companion::CompanionTabHelper::FromWebContents(web_contents());
-  CHECK(helper);
-  const std::string query = helper->GetTextQuery();
-  if (query.empty()) {
-    return false;
-  }
-
+void CompanionPageHandler::OnSearchTextQuery(const std::string& query) {
   // Only notify the companion UI the page changed if we can share
   // information about the page by user consent.
   GURL page_url;
@@ -199,27 +232,18 @@ bool CompanionPageHandler::OnSearchTextQuery() {
 
   GURL companion_url = url_builder_->BuildCompanionURL(page_url, query);
   page_->LoadCompanionPage(companion_url);
-  return true;
 }
 
 void CompanionPageHandler::NotifyURLChanged(bool is_full_reload) {
   if (is_full_reload) {
     GURL companion_url =
         url_builder_->BuildCompanionURL(web_contents()->GetVisibleURL());
-    full_load_start_time_ = base::TimeTicks::Now();
     page_->LoadCompanionPage(companion_url);
   } else {
     auto companion_update_proto = url_builder_->BuildCompanionUrlParamProto(
         web_contents()->GetVisibleURL());
-    reload_start_time_ = base::TimeTicks::Now();
     page_->UpdateCompanionPage(companion_update_proto);
   }
-}
-
-void CompanionPageHandler::NotifyLinkOpened(
-    GURL opened_url,
-    side_panel::mojom::LinkOpenMetadataPtr metadata) {
-  page_->NotifyLinkOpen(opened_url, std::move(metadata));
 }
 
 void CompanionPageHandler::OnImageQuery(
@@ -252,6 +276,8 @@ void CompanionPageHandler::OnRegionSearchClicked() {
   auto* helper = companion::CompanionTabHelper::FromWebContents(web_contents());
   CHECK(helper);
   helper->StartRegionSearch(web_contents(), /*use_fullscreen_capture=*/false);
+  metrics_logger_->RecordUiSurfaceClicked(
+      side_panel::mojom::UiSurface::kRegionSearch, kInvalidPosition);
   feature_engagement::TrackerFactory::GetForBrowserContext(GetProfile())
       ->NotifyEvent("companion_side_panel_region_search_button_clicked");
 }
@@ -278,16 +304,6 @@ void CompanionPageHandler::RecordUiSurfaceShown(
     uint32_t ui_surface_position,
     uint32_t child_element_available_count,
     uint32_t child_element_shown_count) {
-  if (full_load_start_time_) {
-    base::UmaHistogramTimes("Companion.FullLoad.Latency",
-                            base::TimeTicks::Now() - *full_load_start_time_);
-    full_load_start_time_.reset();
-  }
-  if (reload_start_time_) {
-    base::UmaHistogramTimes("Companion.NavigationLoad.Latency",
-                            base::TimeTicks::Now() - *reload_start_time_);
-    reload_start_time_.reset();
-  }
   metrics_logger_->RecordUiSurfaceShown(ui_surface, ui_surface_position,
                                         child_element_available_count,
                                         child_element_shown_count);

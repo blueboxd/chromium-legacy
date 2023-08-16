@@ -21,6 +21,7 @@
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager_observer.h"
+#include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "components/webapps/browser/banners/app_banner_metrics.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
@@ -149,6 +150,64 @@ bool AppBannerManagerDesktop::IsWebAppConsideredInstalled() const {
       .has_value();
 }
 
+bool AppBannerManagerDesktop::IsAppFullyInstalledForSiteUrl(
+    const GURL& site_url) const {
+  return web_app::FindInstalledAppWithUrlInScope(
+             Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
+             site_url)
+      .has_value();
+}
+
+bool AppBannerManagerDesktop::IsAppPartiallyInstalledForSiteUrl(
+    const GURL& site_url) const {
+  return web_app::IsNonLocallyInstalledAppWithUrlInScope(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
+      site_url);
+}
+
+void AppBannerManagerDesktop::SaveInstallationDismissedForMl(
+    const GURL& manifest_id) {
+  CHECK(web_contents());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  CHECK(profile);
+  web_app::RecordMlInstallDismissed(
+      profile->GetPrefs(), web_app::GenerateAppIdFromManifestId(manifest_id),
+      base::Time::Now());
+}
+
+void AppBannerManagerDesktop::SaveInstallationIgnoredForMl(
+    const GURL& manifest_id) {
+  CHECK(web_contents());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  CHECK(profile);
+  web_app::RecordMlInstallIgnored(
+      profile->GetPrefs(), web_app::GenerateAppIdFromManifestId(manifest_id),
+      base::Time::Now());
+}
+
+void AppBannerManagerDesktop::SaveInstallationAcceptedForMl(
+    const GURL& manifest_id) {
+  CHECK(web_contents());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  CHECK(profile);
+  web_app::RecordMlInstallAccepted(
+      profile->GetPrefs(), web_app::GenerateAppIdFromManifestId(manifest_id),
+      base::Time::Now());
+}
+
+bool AppBannerManagerDesktop::IsMlPromotionBlockedByHistoryGuardrail(
+    const GURL& manifest_id) {
+  CHECK(web_contents());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  CHECK(profile);
+  return web_app::IsMlPromotionBlockedByHistoryGuardrail(
+      profile->GetPrefs(), web_app::GenerateAppIdFromManifestId(manifest_id));
+}
+
 web_app::WebAppRegistrar& AppBannerManagerDesktop::registrar() {
   auto* provider = web_app::WebAppProvider::GetForWebApps(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
@@ -203,8 +262,9 @@ void AppBannerManagerDesktop::OnWebAppWillBeUninstalled(
 void AppBannerManagerDesktop::OnWebAppUninstalled(
     const web_app::AppId& app_id,
     webapps::WebappUninstallSource uninstall_source) {
-  if (uninstalling_app_id_ == app_id)
-    RecheckInstallabilityForLoadedPage(validated_url(), true);
+  if (uninstalling_app_id_ == app_id) {
+    RecheckInstallabilityForLoadedPage();
+  }
 }
 
 void AppBannerManagerDesktop::OnWebAppInstallManagerDestroyed() {
@@ -216,7 +276,7 @@ void AppBannerManagerDesktop::CreateWebApp(WebappInstallSource install_source) {
   DCHECK(contents);
 
   web_app::CreateWebAppFromManifest(
-      contents, /*bypass_service_worker_check=*/false, install_source,
+      contents, /*bypass_service_worker_check=*/true, install_source,
       base::BindOnce(&AppBannerManagerDesktop::DidFinishCreatingWebApp,
                      weak_factory_.GetWeakPtr()));
 }

@@ -96,6 +96,8 @@ public class ChromeProvidedSharingOptionsProvider extends ChromeProvidedSharingO
         mImageEditorModuleProvider = imageEditorModuleProvider;
         mLinkGenerationStatusForMetrics = linkGenerationStatusForMetrics;
         mLinkToggleMetricsDetails = linkToggleMetricsDetails;
+
+        initializeFirstPartyOptionsInOrder();
     }
 
     /**
@@ -171,7 +173,8 @@ public class ChromeProvidedSharingOptionsProvider extends ChromeProvidedSharingO
                     mFeatureEngagementTracker.notifyEvent(EventConstants.SHARE_SCREENSHOT_SELECTED);
                     ScreenshotCoordinator coordinator = new ScreenshotCoordinator(mActivity,
                             mShareParams.getWindow(), mUrl, mChromeOptionShareCallback,
-                            mBottomSheetController, mImageEditorModuleProvider);
+                            mBottomSheetController,
+                            usePolishedActionOrderedList() ? null : mImageEditorModuleProvider);
                     mBottomSheetController.addObserver(coordinator);
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
                 })
@@ -190,7 +193,8 @@ public class ChromeProvidedSharingOptionsProvider extends ChromeProvidedSharingO
                     mFeatureEngagementTracker.notifyEvent(EventConstants.SHARE_SCREENSHOT_SELECTED);
                     LongScreenshotsCoordinator coordinator = LongScreenshotsCoordinator.create(
                             mActivity, mTabProvider.get(), mUrl, mChromeOptionShareCallback,
-                            mBottomSheetController, mImageEditorModuleProvider);
+                            mBottomSheetController,
+                            usePolishedActionOrderedList() ? null : mImageEditorModuleProvider);
                     mBottomSheetController.addObserver(coordinator);
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
                 })

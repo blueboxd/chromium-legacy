@@ -4,11 +4,11 @@
 
 #import "ios/chrome/browser/sync/sync_error_browser_agent.h"
 
+#import "ios/chrome/browser/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
-#import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -49,7 +49,8 @@ void SyncErrorBrowserAgent::ClearUIProviders() {
   sync_presenter_provider_ = nil;
 }
 
-// Browser Observer methods:
+#pragma mark - BrowserObserver
+
 void SyncErrorBrowserAgent::BrowserDestroyed(Browser* browser) {
   DCHECK_EQ(browser, browser_);
   browser->GetWebStateList()->RemoveObserver(this);
@@ -57,22 +58,40 @@ void SyncErrorBrowserAgent::BrowserDestroyed(Browser* browser) {
   browser_ = nullptr;
 }
 
-// WesStateList Observer methods:
-void SyncErrorBrowserAgent::WebStateInsertedAt(WebStateList* web_state_list,
-                                               web::WebState* web_state,
-                                               int index,
-                                               bool activating) {
-  CreateReSignInInfoBarDelegate(web_state);
-}
+#pragma mark - WebStateListObserver
 
-void SyncErrorBrowserAgent::WebStateReplacedAt(WebStateList* web_state_list,
-                                               web::WebState* old_web_state,
-                                               web::WebState* new_web_state,
-                                               int index) {
-  if (!old_web_state->IsRealized()) {
-    web_state_observations_.RemoveObservation(old_web_state);
+void SyncErrorBrowserAgent::WebStateListChanged(
+    WebStateList* web_state_list,
+    const WebStateListChange& change,
+    const WebStateSelection& selection) {
+  switch (change.type()) {
+    case WebStateListChange::Type::kSelectionOnly:
+      // Do nothing when a WebState is selected and its status is updated.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // WebStateDetachedAt() to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace: {
+      const WebStateListChangeReplace& replace_change =
+          change.As<WebStateListChangeReplace>();
+      web::WebState* replaced_web_state = replace_change.replaced_web_state();
+      if (!replaced_web_state->IsRealized()) {
+        web_state_observations_.RemoveObservation(replaced_web_state);
+      }
+      CreateReSignInInfoBarDelegate(replace_change.inserted_web_state());
+      break;
+    }
+    case WebStateListChange::Type::kInsert: {
+      const WebStateListChangeInsert& insert_change =
+          change.As<WebStateListChangeInsert>();
+      CreateReSignInInfoBarDelegate(insert_change.inserted_web_state());
+      break;
+    }
   }
-  CreateReSignInInfoBarDelegate(new_web_state);
 }
 
 void SyncErrorBrowserAgent::WebStateDetachedAt(WebStateList* web_state_list,

@@ -35,13 +35,6 @@ class HighEfficiencyChipTabHelper
   // Indicates that the chip has been animated for the current discard.
   void SetWasAnimated();
 
-  // Indicates that the tab associated with this helper has been navigated
-  // away from.
-  // Note: "Hidden" means that the user has navigated away from the tab
-  // associated with this helper and thus this tab helper's state shouldn't
-  // be shown to user while another tab is active.
-  void SetChipHasBeenHidden();
-
   // Returns whether the tab associated with this helper has been navigated
   // away from and to another tab.
   bool HasChipBeenHidden();
@@ -49,15 +42,10 @@ class HighEfficiencyChipTabHelper
   // Returns the memory savings (in bytes) of the previously discarded tab.
   uint64_t GetMemorySavingsInBytes() const;
 
-  // Indicates that the site the tab this helper is currently on has been
-  // added to the exclusion list through the dialog bubble.
-  void SetSiteWasAddedToExclusionList();
-
-  bool GetWasSiteAddedToExclusionList() const;
-
   // content::WebContentsObserver
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
 
  private:
   friend class content::WebContentsUserData<HighEfficiencyChipTabHelper>;
@@ -69,7 +57,6 @@ class HighEfficiencyChipTabHelper
   bool was_animated_ = false;
   bool was_chip_hidden_ = false;
   bool is_site_supported_ = false;
-  bool was_site_added_to_exclusion_list_ = false;
   absl::optional<mojom::LifecycleUnitDiscardReason> discard_reason_;
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

@@ -310,11 +310,35 @@ TEST_F(ContentSuggestionsMediatorTest, TestOpenWhatsNew) {
 // Tests that the reload logic (e.g. setting the consumer) triggers the correct
 // consumer calls when the Magic Stack feature is enabled.
 TEST_F(ContentSuggestionsMediatorTest, TestMagicStackConsumerCall) {
+  consumer_ = OCMStrictProtocolMock(@protocol(ContentSuggestionsConsumer));
   scoped_feature_list_.Reset();
-  scoped_feature_list_.InitWithFeatures({kMagicStack}, {});
+  scoped_feature_list_.InitWithFeatures({kMagicStack, kIOSSetUpList}, {});
   OCMExpect([consumer_ setMagicStackOrder:[OCMArg any]]);
+  OCMExpect([consumer_ showSetUpListWithItems:[OCMArg any]]);
   OCMExpect([consumer_ setShortcutTilesWithConfigs:[OCMArg any]]);
   mediator_.consumer = consumer_;
+  EXPECT_OCMOCK_VERIFY(consumer_);
+}
+
+TEST_F(ContentSuggestionsMediatorTest, TestSetUpListConsumerCall) {
+  consumer_ = OCMStrictProtocolMock(@protocol(ContentSuggestionsConsumer));
+  OCMExpect([consumer_ showSetUpListWithItems:[OCMArg any]]);
+  mediator_.consumer = consumer_;
+  EXPECT_OCMOCK_VERIFY(consumer_);
+
+  OCMExpect([consumer_ markSetUpListItemComplete:SetUpListItemType::kSignInSync
+                                      completion:[OCMArg any]]);
+  set_up_list_prefs::MarkItemComplete(local_state_.Get(),
+                                      SetUpListItemType::kSignInSync);
+  OCMExpect([consumer_
+      markSetUpListItemComplete:SetUpListItemType::kDefaultBrowser
+                     completion:[OCMArg any]]);
+  set_up_list_prefs::MarkItemComplete(local_state_.Get(),
+                                      SetUpListItemType::kDefaultBrowser);
+  OCMExpect([consumer_ markSetUpListItemComplete:SetUpListItemType::kAutofill
+                                      completion:[OCMArg any]]);
+  set_up_list_prefs::MarkItemComplete(local_state_.Get(),
+                                      SetUpListItemType::kAutofill);
   EXPECT_OCMOCK_VERIFY(consumer_);
 }
 

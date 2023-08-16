@@ -158,9 +158,6 @@ class WebAppInstallFinalizer {
       WebAppCommandManager* command_manager,
       WebAppOriginAssociationManager* origin_association_manager);
 
-  virtual void SetRemoveManagementTypeCallbackForTesting(
-      base::RepeatingCallback<void(const AppId&)>);
-
   Profile* profile() { return profile_; }
 
   const WebAppRegistrar& GetWebAppRegistrar() const;
@@ -171,7 +168,7 @@ class WebAppInstallFinalizer {
       WebAppManagement::Type source,
       bool is_placeholder,
       GURL install_url,
-      const std::vector<std::string>& additional_policy_ids);
+      std::vector<std::string> additional_policy_ids);
 
   // Used to schedule a WebAppUninstallCommand. The |external_install_source|
   // field is only required for external app uninstalls to verify OS
@@ -262,9 +259,6 @@ class WebAppInstallFinalizer {
 
   const raw_ptr<Profile> profile_;
   bool started_ = false;
-
-  base::RepeatingCallback<void(const AppId& app_id)>
-      management_type_removed_callback_for_testing_;
 
   base::WeakPtrFactory<WebAppInstallFinalizer> weak_ptr_factory_{this};
 };

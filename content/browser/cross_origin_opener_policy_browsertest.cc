@@ -45,63 +45,77 @@ namespace content {
 
 namespace {
 
-network::CrossOriginOpenerPolicy CoopSameOrigin() {
+network::CrossOriginOpenerPolicy CoopSameOrigin(
+    const absl::optional<url::Origin>& origin = absl::nullopt) {
   network::CrossOriginOpenerPolicy coop;
   coop.value = network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin;
   coop.soap_by_default_value =
       network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin;
+  coop.origin = origin;
   return coop;
 }
 
-network::CrossOriginOpenerPolicy CoopSameOriginPlusCoep() {
+network::CrossOriginOpenerPolicy CoopSameOriginPlusCoep(
+    const absl::optional<url::Origin>& origin = absl::nullopt) {
   network::CrossOriginOpenerPolicy coop;
   coop.value =
       network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep;
   coop.soap_by_default_value =
       network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep;
+  coop.origin = origin;
   return coop;
 }
 
-network::CrossOriginOpenerPolicy CoopSameOriginAllowPopups() {
+network::CrossOriginOpenerPolicy CoopSameOriginAllowPopups(
+    const absl::optional<url::Origin>& origin = absl::nullopt) {
   network::CrossOriginOpenerPolicy coop;
   coop.value =
       network::mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups;
   coop.soap_by_default_value =
       network::mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups;
+  coop.origin = origin;
   return coop;
 }
 
-network::CrossOriginOpenerPolicy CoopRestrictProperties() {
+network::CrossOriginOpenerPolicy CoopRestrictProperties(
+    const absl::optional<url::Origin>& origin = absl::nullopt) {
   network::CrossOriginOpenerPolicy coop;
   coop.value =
       network::mojom::CrossOriginOpenerPolicyValue::kRestrictProperties;
   coop.soap_by_default_value =
       network::mojom::CrossOriginOpenerPolicyValue::kRestrictProperties;
+  coop.origin = origin;
   return coop;
 }
 
-network::CrossOriginOpenerPolicy CoopRestrictPropertiesPlusCoep() {
+network::CrossOriginOpenerPolicy CoopRestrictPropertiesPlusCoep(
+    const absl::optional<url::Origin>& origin = absl::nullopt) {
   network::CrossOriginOpenerPolicy coop;
   coop.value =
       network::mojom::CrossOriginOpenerPolicyValue::kRestrictPropertiesPlusCoep;
   coop.soap_by_default_value =
       network::mojom::CrossOriginOpenerPolicyValue::kRestrictPropertiesPlusCoep;
+  coop.origin = origin;
   return coop;
 }
 
 // This is the value of COOP when navigating to a page without COOP set:
 //  - value is kUnsafeNone
 //  - soap_by_default_value is kSameOriginAllowPopups
-network::CrossOriginOpenerPolicy CoopUnsafeNoneWithSoapByDefault() {
+network::CrossOriginOpenerPolicy CoopUnsafeNoneWithSoapByDefault(
+    const absl::optional<url::Origin>& origin = absl::nullopt) {
   network::CrossOriginOpenerPolicy coop;
   coop.soap_by_default_value =
       network::mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups;
+  coop.origin = origin;
   return coop;
 }
 
-network::CrossOriginOpenerPolicy CoopUnsafeNone() {
+network::CrossOriginOpenerPolicy CoopUnsafeNone(
+    const absl::optional<url::Origin>& origin = absl::nullopt) {
   network::CrossOriginOpenerPolicy coop;
   // Using the default value.
+  coop.origin = origin;
   return coop;
 }
 
@@ -397,6 +411,15 @@ class CoopRestrictPropertiesWithNewBrowsingContextStateModeBrowserTest
   base::test::ScopedFeatureList feature_list_;
 };
 
+using CoopRestrictPropertiesAccessBrowserTest =
+    CoopRestrictPropertiesBrowserTest;
+
+static constexpr char kCoopRpErrorMessageRegex[] =
+    ".*Cross-Origin-Opener-Policy: 'restrict-properties' blocked the access.";
+
+using CoopRestrictPropertiesReportingBrowserTest =
+    CoopRestrictPropertiesBrowserTest;
+
 // Certain features are only active when SiteIsolation is off or restricted.
 // This is the case for example for Default SiteInstances that are used on
 // Android to limit the number of processes. Testing these particularities of
@@ -492,8 +515,10 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
       static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents())
           ->GetPrimaryMainFrame();
 
-  EXPECT_EQ(main_rfh->cross_origin_opener_policy(), CoopSameOrigin());
-  EXPECT_EQ(popup_rfh->cross_origin_opener_policy(), CoopSameOrigin());
+  EXPECT_EQ(main_rfh->cross_origin_opener_policy(),
+            CoopSameOrigin(url::Origin::Create(starting_page)));
+  EXPECT_EQ(popup_rfh->cross_origin_opener_policy(),
+            CoopSameOrigin(url::Origin::Create(starting_page)));
 }
 
 IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
@@ -522,9 +547,9 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
           ->GetPrimaryMainFrame();
 
   EXPECT_EQ(main_rfh->cross_origin_opener_policy(),
-            CoopSameOriginAllowPopups());
+            CoopSameOriginAllowPopups(url::Origin::Create(starting_page)));
   EXPECT_EQ(popup_rfh->cross_origin_opener_policy(),
-            CoopSameOriginAllowPopups());
+            CoopSameOriginAllowPopups(url::Origin::Create(starting_page)));
 }
 
 IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
@@ -554,7 +579,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
       static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents())
           ->GetPrimaryMainFrame();
 
-  EXPECT_EQ(main_rfh->cross_origin_opener_policy(), CoopSameOrigin());
+  EXPECT_EQ(main_rfh->cross_origin_opener_policy(),
+            CoopSameOrigin(url::Origin::Create(starting_page)));
   EXPECT_EQ(popup_rfh->cross_origin_opener_policy(), CoopUnsafeNone());
 }
 
@@ -632,7 +658,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
           ->GetPrimaryMainFrame();
 
   // COOP and COEP inherited from Blob creator
-  EXPECT_EQ(popup_rfh->cross_origin_opener_policy(), CoopSameOrigin());
+  EXPECT_EQ(popup_rfh->cross_origin_opener_policy(),
+            CoopSameOrigin(url::Origin::Create(starting_page)));
   EXPECT_EQ(popup_rfh->cross_origin_embedder_policy().value,
             network::mojom::CrossOriginEmbedderPolicyValue::kNone);
   EXPECT_FALSE(popup_rfh->GetSiteInstance()->IsCrossOriginIsolated());
@@ -660,7 +687,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
           ->GetPrimaryMainFrame();
 
   // COOP and COEP inherited from Blob creator
-  EXPECT_EQ(popup_rfh->cross_origin_opener_policy(), CoopSameOriginPlusCoep());
+  EXPECT_EQ(popup_rfh->cross_origin_opener_policy(),
+            CoopSameOriginPlusCoep(url::Origin::Create(starting_page)));
   EXPECT_EQ(popup_rfh->cross_origin_embedder_policy().value,
             network::mojom::CrossOriginEmbedderPolicyValue::kCredentialless);
   EXPECT_TRUE(popup_rfh->GetSiteInstance()->IsCrossOriginIsolated());
@@ -688,7 +716,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
           ->GetPrimaryMainFrame();
 
   // COOP and COEP inherited from Blob creator
-  EXPECT_EQ(popup_rfh->cross_origin_opener_policy(), CoopSameOriginPlusCoep());
+  EXPECT_EQ(popup_rfh->cross_origin_opener_policy(),
+            CoopSameOriginPlusCoep(url::Origin::Create(starting_page)));
   EXPECT_EQ(popup_rfh->cross_origin_embedder_policy().value,
             network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp);
   EXPECT_TRUE(popup_rfh->GetSiteInstance()->IsCrossOriginIsolated());
@@ -717,7 +746,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 
   // COOP and COEP inherited from Blob creator
   EXPECT_EQ(popup_rfh->cross_origin_opener_policy(),
-            CoopSameOriginAllowPopups());
+            CoopSameOriginAllowPopups(url::Origin::Create(starting_page)));
   EXPECT_EQ(popup_rfh->cross_origin_embedder_policy().value,
             network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp);
   EXPECT_FALSE(popup_rfh->GetSiteInstance()->IsCrossOriginIsolated());
@@ -758,7 +787,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 
   // COOP is inherited from creator's top level document, COEP is inherited from
   // creator.
-  EXPECT_EQ(popup_rfh->cross_origin_opener_policy(), CoopSameOrigin());
+  EXPECT_EQ(popup_rfh->cross_origin_opener_policy(),
+            CoopSameOrigin(url::Origin::Create(starting_page)));
   EXPECT_EQ(popup_rfh->cross_origin_embedder_policy().value,
             network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp);
   EXPECT_FALSE(popup_rfh->GetSiteInstance()->IsCrossOriginIsolated());
@@ -802,8 +832,9 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   // initiator (first popup)
   // TODO(https://crbug.com/1059300) COOP should be inherited from creator and
   // be same-origin-allow-popups, instead of inheriting from initiator.
-  EXPECT_EQ(second_popup_rfh->cross_origin_opener_policy(),
-            CoopUnsafeNoneWithSoapByDefault());
+  EXPECT_EQ(
+      second_popup_rfh->cross_origin_opener_policy(),
+      CoopUnsafeNoneWithSoapByDefault(url::Origin::Create(starting_page)));
   EXPECT_EQ(second_popup_rfh->cross_origin_embedder_policy().value,
             network::mojom::CrossOriginEmbedderPolicyValue::kNone);
   EXPECT_FALSE(second_popup_rfh->GetSiteInstance()->IsCrossOriginIsolated());
@@ -877,8 +908,14 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
       PAGE_TYPE_NORMAL);
   ASSERT_EQ(current_frame_host()->active_sandbox_flags(),
             network::mojom::WebSandboxFlags::kAll);
-  EXPECT_EQ(web_contents()->GetPrimaryMainFrame()->cross_origin_opener_policy(),
-            CoopSameOrigin());
+  EXPECT_TRUE(web_contents()
+                  ->GetPrimaryMainFrame()
+                  ->cross_origin_opener_policy()
+                  .IsEqualExcludingOrigin(CoopSameOrigin()));
+  EXPECT_TRUE(web_contents()
+                  ->GetPrimaryMainFrame()
+                  ->cross_origin_opener_policy()
+                  .origin->opaque());
 }
 
 // Verify that navigating from a document sandboxed via CSP to a COOP document,
@@ -1066,8 +1103,12 @@ class CrossOriginPolicyHeadersObserver : public WebContentsObserver {
     CHECK(navigation_request->response()
               ->parsed_headers->cross_origin_embedder_policy.value ==
           expected_coep_);
-    CHECK(navigation_request->response()
-              ->parsed_headers->cross_origin_opener_policy == expected_coop_);
+    CHECK(
+        navigation_request->response()
+            ->parsed_headers->cross_origin_opener_policy.IsEqualExcludingOrigin(
+                expected_coop_));
+    CHECK(!navigation_request->response()
+               ->parsed_headers->cross_origin_opener_policy.origin.has_value());
   }
 
  private:
@@ -1085,7 +1126,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   CrossOriginPolicyHeadersObserver obs(
       web_contents(),
       network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp,
-      CoopSameOriginPlusCoep());
+      CoopSameOriginPlusCoep(url::Origin::Create(redirect_final_page)));
 
   EXPECT_TRUE(
       NavigateToURL(shell(), redirect_initial_page, redirect_final_page));
@@ -1114,7 +1155,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     EXPECT_EQ(current_frame_host()->GetSiteInstance(), initial_site_instance);
   }
   EXPECT_EQ(current_frame_host()->cross_origin_opener_policy(),
-            CoopUnsafeNone());
+            CoopUnsafeNone(url::Origin::Create(non_coop_page)));
 
   ASSERT_TRUE(console_observer.Wait());
 }
@@ -1330,7 +1371,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     EXPECT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
         initial_site_instance.get()));
     EXPECT_EQ(current_frame_host()->cross_origin_opener_policy(),
-              CoopSameOrigin());
+              CoopSameOrigin(url::Origin::Create(coop_page)));
 
     // The COOP page should no longer have any RenderFrameHostProxies.
     EXPECT_EQ(web_contents()
@@ -1392,7 +1433,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     EXPECT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
         initial_site_instance.get()));
     EXPECT_EQ(current_frame_host()->cross_origin_opener_policy(),
-              CoopSameOrigin());
+              CoopSameOrigin(url::Origin::Create(non_coop_page)));
 
     // The COOP page should no longer have any RenderFrameHostProxies.
     EXPECT_EQ(web_contents()
@@ -1443,7 +1484,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     EXPECT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
         initial_site_instance.get()));
     EXPECT_EQ(current_frame_host()->cross_origin_opener_policy(),
-              CoopUnsafeNone());
+              CoopUnsafeNone(url::Origin::Create(non_coop_page)));
 
     // The non COOP page should no longer have any RenderFrameHostProxies.
     EXPECT_EQ(web_contents()
@@ -1503,7 +1544,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     EXPECT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
         initial_site_instance.get()));
     EXPECT_EQ(current_frame_host()->cross_origin_opener_policy(),
-              CoopUnsafeNone());
+              CoopUnsafeNone(url::Origin::Create(non_coop_page)));
 
     // The non COOP page should no longer have any RenderFrameHostProxies.
     EXPECT_EQ(web_contents()
@@ -1529,8 +1570,9 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     EXPECT_TRUE(NavigateToURL(shell(), coop_allow_popups_page));
     scoped_refptr<SiteInstance> initial_site_instance(
         current_frame_host()->GetSiteInstance());
-    EXPECT_EQ(current_frame_host()->cross_origin_opener_policy(),
-              CoopSameOriginAllowPopups());
+    EXPECT_EQ(
+        current_frame_host()->cross_origin_opener_policy(),
+        CoopSameOriginAllowPopups(url::Origin::Create(coop_allow_popups_page)));
 
     // Ensure it has a RenderFrameProxyHost for another cross-site page.
     OpenPopup(current_frame_host(), cross_origin_non_coop_page, "");
@@ -1555,8 +1597,9 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     EXPECT_TRUE(NavigateToURL(shell(), coop_allow_popups_page));
     EXPECT_TRUE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
         initial_site_instance.get()));
-    EXPECT_EQ(current_frame_host()->cross_origin_opener_policy(),
-              CoopSameOriginAllowPopups());
+    EXPECT_EQ(
+        current_frame_host()->cross_origin_opener_policy(),
+        CoopSameOriginAllowPopups(url::Origin::Create(coop_allow_popups_page)));
 
     EXPECT_EQ(web_contents()
                   ->GetPrimaryMainFrame()
@@ -1615,8 +1658,9 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 
     EXPECT_TRUE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
         initial_site_instance.get()));
-    EXPECT_EQ(current_frame_host()->cross_origin_opener_policy(),
-              CoopSameOriginAllowPopups());
+    EXPECT_EQ(
+        current_frame_host()->cross_origin_opener_policy(),
+        CoopSameOriginAllowPopups(url::Origin::Create(coop_allow_popups_page)));
 
     EXPECT_EQ(web_contents()
                   ->GetPrimaryMainFrame()
@@ -3376,9 +3420,12 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_FALSE(popup_web_contents->GetPrimaryMainFrame()
                    ->GetSiteInstance()
                    ->IsCrossOriginIsolated());
-  EXPECT_EQ(
-      CoopUnsafeNone(),
-      popup_web_contents->GetPrimaryMainFrame()->cross_origin_opener_policy());
+  EXPECT_TRUE(CoopUnsafeNone().IsEqualExcludingOrigin(
+      popup_web_contents->GetPrimaryMainFrame()->cross_origin_opener_policy()));
+
+  EXPECT_TRUE(popup_web_contents->GetPrimaryMainFrame()
+                  ->cross_origin_opener_policy()
+                  .origin->opaque());
 
   url::Origin error_origin =
       popup_web_contents->GetPrimaryMainFrame()->GetLastCommittedOrigin();
@@ -3409,9 +3456,12 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_FALSE(popup_web_contents->GetPrimaryMainFrame()
                    ->GetSiteInstance()
                    ->IsCrossOriginIsolated());
-  EXPECT_EQ(
-      CoopUnsafeNone(),
-      popup_web_contents->GetPrimaryMainFrame()->cross_origin_opener_policy());
+  EXPECT_TRUE(CoopUnsafeNone().IsEqualExcludingOrigin(
+      popup_web_contents->GetPrimaryMainFrame()->cross_origin_opener_policy()));
+
+  EXPECT_TRUE(popup_web_contents->GetPrimaryMainFrame()
+                  ->cross_origin_opener_policy()
+                  .origin->opaque());
 }
 
 // Regression test for https://crbug.com/1239540.
@@ -3454,7 +3504,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   // Initial coop isolated page.
   EXPECT_TRUE(NavigateToURL(shell(), isolated_page));
   RenderFrameHostImpl* main_rfh = current_frame_host();
-  EXPECT_EQ(main_rfh->cross_origin_opener_policy(), CoopSameOrigin());
+  EXPECT_EQ(main_rfh->cross_origin_opener_policy(),
+            CoopSameOrigin(url::Origin::Create(isolated_page)));
 
   // Simulate being offline by failing all network requests.
   auto url_loader_interceptor =
@@ -4242,7 +4293,15 @@ INSTANTIATE_TEST_SUITE_P(
     kTestParams,
     CrossOriginOpenerPolicyBrowserTest::DescribeParams);
 INSTANTIATE_TEST_SUITE_P(All,
+                         CoopRestrictPropertiesAccessBrowserTest,
+                         kTestParams,
+                         CrossOriginOpenerPolicyBrowserTest::DescribeParams);
+INSTANTIATE_TEST_SUITE_P(All,
                          NoSiteIsolationCrossOriginIsolationBrowserTest,
+                         kTestParams,
+                         CrossOriginOpenerPolicyBrowserTest::DescribeParams);
+INSTANTIATE_TEST_SUITE_P(All,
+                         CoopRestrictPropertiesReportingBrowserTest,
                          kTestParams,
                          CrossOriginOpenerPolicyBrowserTest::DescribeParams);
 
@@ -4401,33 +4460,8 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(1234, EvalJs(main_document, "g_sab_size"));
 }
 
-// Ensure the UnrestrictedSharedArrayBuffer reverse origin trial is correctly
-// implemented.
-class UnrestrictedSharedArrayBufferOriginTrialBrowserTest
-    : public ContentBrowserTest {
+class OriginTrialBrowserTest : public ContentBrowserTest {
  public:
-  UnrestrictedSharedArrayBufferOriginTrialBrowserTest() {
-    feature_list_.InitWithFeatures(
-        {
-            // Enabled
-        },
-        {
-            // Disabled
-            features::kSharedArrayBuffer,
-        });
-  }
-
-  // Origin Trials key generated with:
-  //
-  // tools/origin_trials/generate_token.py --expire-days 5000 --version 3
-  // https://coop.security:9999 UnrestrictedSharedArrayBuffer
-  static std::string OriginTrialToken() {
-    return "A8TH8Ylk6lUuL84RdQ2+FTyupad3leg5sMk+MYEoVlwkURyBtVq1IFncJAc2k"
-           "Knhh5w3SvIR4XuEtyMzeI2u4wAAAABqeyJvcmlnaW4iOiAiaHR0cHM6Ly9jb2"
-           "9wLnNlY3VyaXR5Ojk5OTkiLCAiZmVhdHVyZSI6ICJVbnJlc3RyaWN0ZWRTaGF"
-           "yZWRBcnJheUJ1ZmZlciIsICJleHBpcnkiOiAyMDQ1Njk0NDMyfQ==";
-  }
-
   // The OriginTrial token is bound to a given origin. Since the
   // EmbeddedTestServer's port changes after every test run, it can't be used.
   // As a result, response must be served using a URLLoaderInterceptor.
@@ -4471,8 +4505,38 @@ class UnrestrictedSharedArrayBufferOriginTrialBrowserTest
   }
 
   content::ContentMockCertVerifier mock_cert_verifier_;
-  base::test::ScopedFeatureList feature_list_;
   net::EmbeddedTestServer https_server_;
+};
+
+// Ensure the UnrestrictedSharedArrayBuffer reverse origin trial is correctly
+// implemented.
+class UnrestrictedSharedArrayBufferOriginTrialBrowserTest
+    : public OriginTrialBrowserTest {
+ public:
+  UnrestrictedSharedArrayBufferOriginTrialBrowserTest() {
+    feature_list_.InitWithFeatures(
+        {
+            // Enabled
+        },
+        {
+            // Disabled
+            features::kSharedArrayBuffer,
+        });
+  }
+
+  // Origin Trials key generated with:
+  //
+  // tools/origin_trials/generate_token.py --expire-days 5000 --version 3
+  // https://coop.security:9999 UnrestrictedSharedArrayBuffer
+  static std::string OriginTrialToken() {
+    return "A8TH8Ylk6lUuL84RdQ2+FTyupad3leg5sMk+MYEoVlwkURyBtVq1IFncJAc2k"
+           "Knhh5w3SvIR4XuEtyMzeI2u4wAAAABqeyJvcmlnaW4iOiAiaHR0cHM6Ly9jb2"
+           "9wLnNlY3VyaXR5Ojk5OTkiLCAiZmVhdHVyZSI6ICJVbnJlc3RyaWN0ZWRTaGF"
+           "yZWRBcnJheUJ1ZmZlciIsICJleHBpcnkiOiAyMDQ1Njk0NDMyfQ==";
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(UnrestrictedSharedArrayBufferOriginTrialBrowserTest,
@@ -5124,7 +5188,7 @@ IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesBrowserTest,
 
   // Verify that COOP: restrict-properties was parsed.
   EXPECT_EQ(current_frame_host()->cross_origin_opener_policy(),
-            CoopRestrictProperties());
+            CoopRestrictProperties(url::Origin::Create(starting_page)));
   EXPECT_FALSE(
       current_frame_host()->GetSiteInstance()->IsCrossOriginIsolated());
 }
@@ -5141,8 +5205,225 @@ IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesBrowserTest,
   // Verify that COOP: restrict-properties was parsed along COEP, and that it
   // correctly enabled cross origin isolation.
   EXPECT_EQ(current_frame_host()->cross_origin_opener_policy(),
-            CoopRestrictPropertiesPlusCoep());
+            CoopRestrictPropertiesPlusCoep(url::Origin::Create(starting_page)));
   EXPECT_TRUE(current_frame_host()->GetSiteInstance()->IsCrossOriginIsolated());
+}
+
+class CoopRestrictPropertiesOriginTrialBrowserTest
+    : public OriginTrialBrowserTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  CoopRestrictPropertiesOriginTrialBrowserTest()
+      : is_origin_trial_enabled(GetParam()) {
+    if (is_origin_trial_enabled) {
+      feature_list_.InitWithFeatures(
+          {
+              network::features::kCoopRestrictPropertiesOriginTrial,
+          },  // Enabled
+          {}  // Disabled
+      );
+    } else {
+      feature_list_.InitWithFeatures(
+          {},  // Enabled
+          {
+              network::features::kCoopRestrictPropertiesOriginTrial,
+          }  // Disabled
+      );
+    }
+  }
+
+  // Origin Trials key generated with:
+  //
+  // tools/origin_trials/generate_token.py --expire-days 5000 --version 3
+  // https://coop.security:9999 CoopRestrictProperties
+  static std::string OriginTrialToken() {
+    return "A8Yj3ElroyqJKJPrXAbAcR7e4oZZo978guRoJqwghGM0nnOI8PM8Ay1y1TRlAajef7o"
+           "CHH+lahsRWglSKSy+"
+           "Wg8AAABjeyJvcmlnaW4iOiAiaHR0cHM6Ly9jb29wLnNlY3VyaXR5Ojk5OTkiLCAiZmV"
+           "hdHVyZSI6ICJDb29wUmVzdHJpY3RQcm9wZXJ0aWVzIiwgImV4cGlyeSI6IDIxMTY1MT"
+           "cwMTd9";
+  }
+  GURL OtherURL() { return GURL("https://a.test"); }
+  bool is_origin_trial_enabled;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         CoopRestrictPropertiesOriginTrialBrowserTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesOriginTrialBrowserTest,
+                       CoopRestrictPropertiesValidToken) {
+  URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        DCHECK_EQ(params->url_request.url, OriginTrialURL());
+        URLLoaderInterceptor::WriteResponse(
+            "HTTP/1.1 200 OK\n"
+            "Content-type: text/html\n"
+            "Cross-Origin-Opener-Policy: restrict-properties\n"
+            "Origin-Trial: " +
+                OriginTrialToken() + "\n\n",
+            "", params->client.get());
+        return true;
+      }));
+  EXPECT_TRUE(NavigateToURL(shell(), OriginTrialURL()));
+  EXPECT_EQ(
+      current_frame_host()->cross_origin_opener_policy().value,
+      is_origin_trial_enabled
+          ? network::mojom::CrossOriginOpenerPolicyValue::kRestrictProperties
+          : network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
+}
+
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesOriginTrialBrowserTest,
+                       CoopRestrictPropertiesTokenOriginMismatched) {
+  URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        DCHECK_EQ(params->url_request.url, OtherURL());
+        URLLoaderInterceptor::WriteResponse(
+            "HTTP/1.1 200 OK\n"
+            "Content-type: text/html\n"
+            "Cross-Origin-Opener-Policy: restrict-properties\n"
+            "Origin-Trial: " +
+                OriginTrialToken() + "\n\n",
+            "", params->client.get());
+        return true;
+      }));
+  EXPECT_TRUE(NavigateToURL(shell(), OtherURL()));
+  EXPECT_EQ(current_frame_host()->cross_origin_opener_policy().value,
+            network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
+}
+
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesOriginTrialBrowserTest,
+                       CoopRestrictPropertiesPlusCoepValidToken) {
+  URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        DCHECK_EQ(params->url_request.url, OriginTrialURL());
+        URLLoaderInterceptor::WriteResponse(
+            "HTTP/1.1 200 OK\n"
+            "Content-type: text/html\n"
+            "Cross-Origin-Opener-Policy: restrict-properties\n"
+            "Cross-Origin-Embedder-Policy: require-corp\n"
+            "Origin-Trial: " +
+                OriginTrialToken() + "\n\n",
+            "", params->client.get());
+        return true;
+      }));
+  EXPECT_TRUE(NavigateToURL(shell(), OriginTrialURL()));
+  EXPECT_EQ(current_frame_host()->cross_origin_opener_policy().value,
+            is_origin_trial_enabled
+                ? network::mojom::CrossOriginOpenerPolicyValue::
+                      kRestrictPropertiesPlusCoep
+                : network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
+}
+
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesOriginTrialBrowserTest,
+                       CoopRestrictPropertiesPlusCoepTokenOriginMismatched) {
+  URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        DCHECK_EQ(params->url_request.url, OtherURL());
+        URLLoaderInterceptor::WriteResponse(
+            "HTTP/1.1 200 OK\n"
+            "Content-type: text/html\n"
+            "Cross-Origin-Opener-Policy: restrict-properties\n"
+            "Cross-Origin-Embedder-Policy: require-corp\n"
+            "Origin-Trial: " +
+                OriginTrialToken() + "\n\n",
+            "", params->client.get());
+        return true;
+      }));
+  EXPECT_TRUE(NavigateToURL(shell(), OtherURL()));
+  EXPECT_EQ(current_frame_host()->cross_origin_opener_policy().value,
+            network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
+}
+
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesOriginTrialBrowserTest,
+                       CoopReportOnlyRestrictPropertiesValidToken) {
+  URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        DCHECK_EQ(params->url_request.url, OriginTrialURL());
+        URLLoaderInterceptor::WriteResponse(
+            "HTTP/1.1 200 OK\n"
+            "Content-type: text/html\n"
+            "Cross-Origin-Opener-Policy-Report-Only: restrict-properties\n"
+            "Origin-Trial: " +
+                OriginTrialToken() + "\n\n",
+            "", params->client.get());
+        return true;
+      }));
+  EXPECT_TRUE(NavigateToURL(shell(), OriginTrialURL()));
+  EXPECT_EQ(
+      current_frame_host()->cross_origin_opener_policy().report_only_value,
+      is_origin_trial_enabled
+          ? network::mojom::CrossOriginOpenerPolicyValue::kRestrictProperties
+          : network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
+}
+
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesOriginTrialBrowserTest,
+                       CoopReportOnlyRestrictPropertiesTokenOriginMismatched) {
+  URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        DCHECK_EQ(params->url_request.url, OtherURL());
+        URLLoaderInterceptor::WriteResponse(
+            "HTTP/1.1 200 OK\n"
+            "Content-type: text/html\n"
+            "Cross-Origin-Opener-Policy-Report-Only: restrict-properties\n"
+            "Origin-Trial: " +
+                OriginTrialToken() + "\n\n",
+            "", params->client.get());
+        return true;
+      }));
+  EXPECT_TRUE(NavigateToURL(shell(), OtherURL()));
+  EXPECT_EQ(
+      current_frame_host()->cross_origin_opener_policy().report_only_value,
+      network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
+}
+
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesOriginTrialBrowserTest,
+                       CoopReportOnlyRestrictPropertiesPlusCoepValidToken) {
+  URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        DCHECK_EQ(params->url_request.url, OriginTrialURL());
+        URLLoaderInterceptor::WriteResponse(
+            "HTTP/1.1 200 OK\n"
+            "Content-type: text/html\n"
+            "Cross-Origin-Opener-Policy-Report-Only: restrict-properties\n"
+            "Cross-Origin-Embedder-Policy: require-corp\n"
+            "Origin-Trial: " +
+                OriginTrialToken() + "\n\n",
+            "", params->client.get());
+        return true;
+      }));
+  EXPECT_TRUE(NavigateToURL(shell(), OriginTrialURL()));
+  EXPECT_EQ(
+      current_frame_host()->cross_origin_opener_policy().report_only_value,
+      is_origin_trial_enabled
+          ? network::mojom::CrossOriginOpenerPolicyValue::
+                kRestrictPropertiesPlusCoep
+          : network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
+}
+
+IN_PROC_BROWSER_TEST_P(
+    CoopRestrictPropertiesOriginTrialBrowserTest,
+    CoopReportOnlyRestrictPropertiesPlusCoepTokenOriginMismatched) {
+  URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        DCHECK_EQ(params->url_request.url, OtherURL());
+        URLLoaderInterceptor::WriteResponse(
+            "HTTP/1.1 200 OK\n"
+            "Content-type: text/html\n"
+            "Cross-Origin-Opener-Policy-Report-Only: restrict-properties\n"
+            "Cross-Origin-Embedder-Policy: require-corp\n"
+            "Origin-Trial: " +
+                OriginTrialToken() + "\n\n",
+            "", params->client.get());
+        return true;
+      }));
+  EXPECT_TRUE(NavigateToURL(shell(), OtherURL()));
+  EXPECT_EQ(
+      current_frame_host()->cross_origin_opener_policy().report_only_value,
+      network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
 }
 
 // Verify that a simple navigation from a regular page to a COOP:
@@ -5605,7 +5886,7 @@ IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesBrowserTest,
 
   ASSERT_TRUE(NavigateToURL(shell(), coop_rp_page));
   ASSERT_EQ(current_frame_host()->cross_origin_opener_policy(),
-            CoopRestrictProperties());
+            CoopRestrictProperties(url::Origin::Create(coop_rp_page)));
 
   // Create a cross origin child frame.
   ASSERT_TRUE(ExecJs(current_frame_host(), JsReplace(R"(
@@ -5638,7 +5919,7 @@ IN_PROC_BROWSER_TEST_P(
 
   ASSERT_TRUE(NavigateToURL(shell(), coop_rp_page));
   ASSERT_EQ(current_frame_host()->cross_origin_opener_policy(),
-            CoopRestrictProperties());
+            CoopRestrictProperties(url::Origin::Create(coop_rp_page)));
 
   // Create cross origin child frame.
   ASSERT_TRUE(ExecJs(current_frame_host(), JsReplace(R"(
@@ -6245,10 +6526,13 @@ IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesProxiesBrowserTest,
       "      C = https://b.test/",
       DepictFrameTree(second_popup_rfh->frame_tree_node()));
 
-  // TODO(https://crbug.com/1221127): Verify what reaching into a non existing
-  // proxy looks like. This will not be possible once the property restriction
-  // is in place, because window.opener is not an allowed property.
-  EXPECT_EQ(true, EvalJs(second_popup_rfh, "window.opener.opener == null"));
+  // Verify that it is not possible for the second popup to reach the main page,
+  // as means of accessing it should be restricted.
+  std::string result =
+      EvalJs(second_popup_rfh,
+             "try { window.opener.opener } catch (e) { e.toString(); }")
+          .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
 }
 
 // This test verifies that a new popup opened from a popup in the same
@@ -7287,16 +7571,11 @@ IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesProxiesBrowserTest,
 
 // This test verifies that named targeting does not resolve across
 // BrowsingInstances.
-// TODO(https://crbug.com/1370350): The only way to test that named targeting
-// has not resolved is to wait for the creation of a popup. This will hang until
-// named targeting is properly restricted. Re-Enable this test when that is the
-// case.
 // TODO(https://crbug.com/1370357): Named targeting will evolve in the future,
 // when we're able to have per-BrowsingInstance names. For now, we're simply
 // blocking all named targeting.
-IN_PROC_BROWSER_TEST_P(
-    CoopRestrictPropertiesBrowserTest,
-    DISABLED_NamedTargetingIsBlockedAcrossBrowsingInstances) {
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesBrowserTest,
+                       NamedTargetingIsBlockedAcrossBrowsingInstances) {
   GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
   GURL coop_rp_page(https_server()->GetURL(
       "a.test",
@@ -7330,9 +7609,13 @@ IN_PROC_BROWSER_TEST_P(
   // update to happen before the script execution below.
   frame_name_changed.Wait();
 
-  ShellAddedObserver shell_observer;
+  ShellAddedObserver main_page_targeting_observer;
   ASSERT_TRUE(ExecJs(current_frame_host(), "window.open('', 'name2')"));
-  shell_observer.GetShell();
+  main_page_targeting_observer.GetShell();
+
+  // We should have 3 different windows: the main page, the first popup and the
+  // second popup that was just opened because named targeting did not resolve.
+  EXPECT_EQ(3u, Shell::windows().size());
 
   // 3. Verify that a named subframe is similarly not targetable by the opening
   // context.
@@ -7345,9 +7628,15 @@ IN_PROC_BROWSER_TEST_P(
                                           regular_page_2)));
   ASSERT_TRUE(WaitForLoadStop(popup_window));
 
-  ShellAddedObserver shell_observer_2;
+  // The iframe should not even have a proxy in the main page's process, and no
+  // matching frame should be returned. A new popup is created instead.
+  ShellAddedObserver iframe_targeting_observer;
   ASSERT_TRUE(ExecJs(current_frame_host(), "window.open('', 'name3')"));
-  shell_observer_2.GetShell();
+  iframe_targeting_observer.GetShell();
+
+  // We should have all 3 preceding windows, and another one that was opened
+  // because the subframe targeting did not resolve.
+  EXPECT_EQ(4u, Shell::windows().size());
 }
 
 // Smoke test with kNewBrowsingContextStateOnBrowsingContextGroupSwap enabled.
@@ -7505,6 +7794,1510 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
       "call.");
   EXPECT_TRUE(ExecJs(current_frame_host(), "window.popup['divID']"));
   ASSERT_TRUE(console_observer.Wait());
+}
+
+// Navigate in between two documents. Check the virtual browsing context group
+// is properly updated.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesReportingBrowserTest,
+                       NavigationVirtualBrowsingContextGroup) {
+  const struct {
+    GURL url_a;
+    GURL url_b;
+    bool expect_different_virtual_browsing_context_group;
+  } kTestCases[] = {
+      // non-coop <-> non-coop
+      {
+          // same-origin => keep.
+          https_server()->GetURL("a.test", "/title1.html"),
+          https_server()->GetURL("a.test", "/title2.html"),
+          false,
+      },
+      {
+          // different-origin => keep.
+          https_server()->GetURL("a.a.test", "/title1.html"),
+          https_server()->GetURL("b.a.test", "/title2.html"),
+          false,
+      },
+      {
+          // different-site => keep.
+          https_server()->GetURL("a.test", "/title1.html"),
+          https_server()->GetURL("b.test", "/title2.html"),
+          false,
+      },
+
+      // non-coop <-> coop.
+      {
+          // same-origin => change.
+          https_server()->GetURL("a.test", "/title1.html"),
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+      {
+          // different-origin => change.
+          https_server()->GetURL("a.a.test", "/title1.html"),
+          https_server()->GetURL(
+              "b.a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+      {
+          // different-site => change.
+          https_server()->GetURL("a.test", "/title1.html"),
+          https_server()->GetURL(
+              "b.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+
+      // coop <-> coop.
+      {
+          // same-origin => keep.
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          false,
+      },
+      {
+          // different-origin => change.
+          https_server()->GetURL(
+              "a.a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "b.a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+      {
+          // different-site => change.
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "b.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+
+      // non-coop <-> coop-ro.
+      {
+          // same-origin => change.
+          https_server()->GetURL("a.test", "/title1.html"),
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+      {
+          // different-origin => change.
+          https_server()->GetURL("a.a.test", "/title1.html"),
+          https_server()->GetURL(
+              "b.a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+      {
+          // different-site => change.
+          https_server()->GetURL("a.test", "/title1.html"),
+          https_server()->GetURL(
+              "b.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+
+      // coop-ro <-> coop-ro.
+      {
+          // same-origin => keep.
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          false,
+      },
+      {
+          // different-origin => change.
+          https_server()->GetURL(
+              "a.a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "b.a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+      {
+          // different-site => keep.
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "b.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+
+      // coop <-> coop-ro.
+      {
+          // same-origin => change.
+          https_server()->GetURL("a.test",
+                                 "/set-header?"
+                                 "Cross-Origin-Opener-Policy: same-origin&"
+                                 "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+      {
+          // different-origin => change.
+          https_server()->GetURL(
+              "a.a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "b.a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+      {
+          // different-site => change
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "b.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+      // TODO(https://crbug.com/1424417): Test with COEP-RO.
+      // TODO(https://crbug.com/1424417): Test interactions with COOP: SO.
+      // TODO(https://crbug.com/1424417): Test interactions with COOP: SOAP.
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(testing::Message()
+                 << std::endl
+                 << "url_a = " << test_case.url_a << std::endl
+                 << "url_b = " << test_case.url_b << std::endl);
+    ASSERT_TRUE(NavigateToURL(shell(), test_case.url_a));
+    int group_1 = VirtualBrowsingContextGroup(web_contents());
+
+    ASSERT_TRUE(NavigateToURL(shell(), test_case.url_b));
+    int group_2 = VirtualBrowsingContextGroup(web_contents());
+
+    ASSERT_TRUE(NavigateToURL(shell(), test_case.url_a));
+    int group_3 = VirtualBrowsingContextGroup(web_contents());
+
+    // Note: Navigating from A to B and navigating from B to A must lead to the
+    // same decision. We check both to avoid adding all the symmetric test
+    // cases.
+    if (test_case.expect_different_virtual_browsing_context_group) {
+      EXPECT_NE(group_1, group_2);  // url_a -> url_b.
+      EXPECT_NE(group_2, group_3);  // url_a <- url_b.
+    } else {
+      EXPECT_EQ(group_1, group_2);  // url_a -> url_b.
+      EXPECT_EQ(group_2, group_3);  // url_b <- url_b.
+    }
+  }
+}
+
+// Use window.open(url). Check the virtual browsing context group of the two
+// window.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesReportingBrowserTest,
+                       WindowOpenVirtualBrowsingContextGroup) {
+  const struct {
+    GURL url_opener;
+    GURL url_openee;
+    bool expect_different_virtual_browsing_context_group;
+  } kTestCases[] = {
+      // Open with no URL => Always keep.
+      {
+          // From non-coop.
+          https_server()->GetURL("a.test", "/title1.html"),
+          GURL(),
+          false,
+      },
+      {
+          // From coop-ro.
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          GURL(),
+          false,
+      },
+      {
+          // From coop.
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          GURL(),
+          false,
+      },
+
+      // From here, we open a new window with an URL. This is equivalent to:
+      // 1. opening a new window
+      // 2. navigating the new window.
+      //
+      // (1) is tested by the 3 test cases above.
+      // (2) is tested by the test VirtualBrowsingContextGroup.
+      //
+      // Here we are only providing a few test cases to test the sequence 1 & 2.
+
+      // non-coop opens non-coop.
+      {
+          https_server()->GetURL("a.test", "/title1.html"),
+          https_server()->GetURL("a.test", "/title1.html"),
+          false,
+      },
+
+      // non-coop opens coop-ro.
+      {
+          https_server()->GetURL("a.test", "/title1.html"),
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+
+      // non-coop opens coop.
+      {
+          https_server()->GetURL("a.test", "/title1.html"),
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+
+      // coop opens non-coop.
+      {
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL("a.test", "/title1.html"),
+          true,
+      },
+
+      // coop-ro opens coop-ro (same-origin).
+      {
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          false,
+      },
+
+      // coop-ro opens coop-ro (different-origin).
+      {
+          https_server()->GetURL(
+              "a.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          https_server()->GetURL(
+              "b.test",
+              "/set-header?"
+              "Cross-Origin-Opener-Policy-Report-Only: restrict-properties&"
+              "Cross-Origin-Embedder-Policy: require-corp"),
+          true,
+      },
+
+      // TODO(https://crbug.com/1101339). Test with COEP-RO.
+      // TODO(https://crbug.com/1101339). Test with COOP-RO+COOP
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(testing::Message()
+                 << std::endl
+                 << "url_opener = " << test_case.url_opener << std::endl
+                 << "url_openee = " << test_case.url_openee << std::endl);
+
+    ASSERT_TRUE(NavigateToURL(shell(), test_case.url_opener));
+    int group_opener = VirtualBrowsingContextGroup(web_contents());
+
+    ShellAddedObserver shell_observer;
+    EXPECT_TRUE(ExecJs(current_frame_host(),
+                       JsReplace("window.open($1)", test_case.url_openee)));
+    WebContents* popup = shell_observer.GetShell()->web_contents();
+    // The virtual browser context group will change, only after the popup has
+    // navigated.
+    WaitForLoadStop(popup);
+    int group_openee = VirtualBrowsingContextGroup(popup);
+
+    if (test_case.expect_different_virtual_browsing_context_group) {
+      EXPECT_NE(group_opener, group_openee);
+    } else {
+      EXPECT_EQ(group_opener, group_openee);
+    }
+
+    popup->Close();
+  }
+}
+
+// Verify that two documents in different browsing context groups in the same
+// CoopRelatedGroup only have access to window.closed and window.postMessage().
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       PropertiesAreBlockedAcrossBrowsingContextGroup) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+  GURL coop_rp_page(https_server()->GetURL(
+      "b.test",
+      "/set-header"
+      "?cross-origin-opener-policy: restrict-properties"));
+  GURL same_origin_iframe(https_server()->GetURL("a.test", "/title1.html"));
+
+  // Start from a regular page and open a cross-origin popup. Open it manually
+  // to store the returned popup handle.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ShellAddedObserver shell_observer;
+  EXPECT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = window.open($1)", coop_rp_page)));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+  ASSERT_TRUE(
+      current_frame_host()->GetSiteInstance()->IsCoopRelatedSiteInstance(
+          popup_rfh->GetSiteInstance()));
+
+  // Try to access always-authorized properties. They should return as usual.
+  EXPECT_EQ(false, EvalJs(current_frame_host(), "window.w.closed"));
+  EXPECT_EQ(nullptr,
+            EvalJs(current_frame_host(), "window.w.postMessage('', '*')"));
+
+  // Then poke at restricted properties and verify that we return a COOP:
+  // restrict-properties SecurityError.
+
+  // window.window
+  std::string result =
+      EvalJs(current_frame_host(),
+             "try { window.w.window } catch (e) { e.toString(); }")
+          .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // window.self
+  result = EvalJs(current_frame_host(),
+                  "try { window.w.self } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // window.location
+  result = EvalJs(current_frame_host(),
+                  "try { window.w.location } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // window.focus()
+  result = EvalJs(current_frame_host(),
+                  "try { window.w.focus() } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // window.blur()
+  result = EvalJs(current_frame_host(),
+                  "try { window.w.blur() } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // window.frames
+  result = EvalJs(current_frame_host(),
+                  "try { window.w.frames } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // window.length
+  result = EvalJs(current_frame_host(),
+                  "try { window.w.length } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // window.top
+  result = EvalJs(current_frame_host(),
+                  "try { window.w.top } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // window.opener
+  result = EvalJs(current_frame_host(),
+                  "try { window.w.opener } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // window.parent
+  result = EvalJs(current_frame_host(),
+                  "try { window.w.parent } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // window indexed getter
+  result = EvalJs(current_frame_host(),
+                  "try { window.w[0] } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // window named getter
+  result = EvalJs(current_frame_host(),
+                  "try { window.w['iframe_name'] } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // Verify that getting window["then"] uses the special cross-origin fallback.
+  // See https://html.spec.whatwg.org/#crossoriginpropertyfallback-(-p-)
+  // This makes sure windowProxy is thenable, see the original discussion here:
+  // https://github.com/whatwg/dom/issues/536.
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window.w['then']"));
+
+  // window.close()
+  result = EvalJs(current_frame_host(),
+                  "try { window.w.close() } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+}
+
+// Verifies that the BrowsingContextGroupInfo is properly propagated when
+// opening a popup in the same SiteInstance.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       SimpleLocalPopup) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+
+  // Start from a regular page and open a popup in the same SiteInstance.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ShellAddedObserver shell_observer;
+  ASSERT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = open($1);", regular_page)));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_EQ(current_frame_host()->GetSiteInstance(),
+            popup_rfh->GetSiteInstance());
+
+  // Because they are in the same SiteInstance, their browsing context group
+  // should match and access should be possible.
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window.w.blur()"));
+  EXPECT_TRUE(ExecJs(popup_rfh, "opener.blur()"));
+}
+
+// Verifies that the BrowsingContextGroupInfo is properly propagated when
+// opening a popup in the same browsing context group in another SiteInstance.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       SimpleRemotePopup) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+  GURL regular_page_2(https_server()->GetURL("b.test", "/title1.html"));
+
+  // Start from a regular page and open a popup in the same browsing context
+  // group.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ShellAddedObserver shell_observer;
+  ASSERT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = open($1);", regular_page_2)));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_TRUE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+
+  // Because they are in the same browsing context group access should be
+  // possible.
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window.w.blur()"));
+  EXPECT_TRUE(ExecJs(popup_rfh, "opener.blur()"));
+}
+
+// Verifies that the BrowsingContextGroupInfo is properly propagated when
+// opening a popup in another browsing context group in the same
+// CoopRelatedGroup.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       SimpleCoopPopup) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+  GURL coop_rp_page(https_server()->GetURL(
+      "b.test",
+      "/set-header"
+      "?cross-origin-opener-policy: restrict-properties"));
+  GURL regular_page_same_document(
+      https_server()->GetURL("a.test", "/title1.html#fragment"));
+
+  // Start from a regular page and open a popup in another browsing context
+  // group in the same CoopRelatedGroup.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ShellAddedObserver shell_observer;
+  ASSERT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = open($1);", coop_rp_page)));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_NE(current_frame_host()->GetSiteInstance(),
+            popup_rfh->GetSiteInstance());
+  ASSERT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+  ASSERT_TRUE(
+      current_frame_host()->GetSiteInstance()->IsCoopRelatedSiteInstance(
+          popup_rfh->GetSiteInstance()));
+
+  // Because they are in different browsing context groups in the same
+  // CoopRelatedGroup, access to cross-origin properties should be restricted.
+  std::string result =
+      EvalJs(current_frame_host(),
+             "try { window.w.blur() } catch (e) { e.toString(); }")
+          .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  result =
+      EvalJs(popup_rfh, "try { opener.blur() } catch (e) { e.toString(); }")
+          .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // Always-allowed properties should still be accessible, and trying to access
+  // them should not throw an exception.
+  EXPECT_EQ(true, EvalJs(popup_rfh, "opener.closed == false"));
+  EXPECT_EQ(true, EvalJs(current_frame_host(), "window.w.closed == false"));
+
+  // Finally, close the popup and verify that window.closed reflects the update.
+  // To make sure the update is propagated, run a quick same-document navigation
+  // which should rely on the same underlying interface pipe.
+  popup_window->Close();
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page_same_document));
+  EXPECT_EQ(true, EvalJs(current_frame_host(), "window.w.closed == true"));
+}
+
+// Verifies in more details how the BrowsingContextGroupInfo is propagated when
+// opening a popup in another browsing context group in the same
+// CoopRelatedGroup.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       SimpleCoopPopupDetailed) {
+  // This test verifies details about RenderViewHosts, so make sure we're using
+  // different processes for different pages.
+  if (!AreAllSitesIsolatedForTesting()) {
+    return;
+  }
+
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+  GURL coop_rp_page(https_server()->GetURL(
+      "a.test",
+      "/set-header"
+      "?cross-origin-opener-policy: restrict-properties"));
+
+  // Start from a regular page and open a popup in another browsing context
+  // group in the same CoopRelatedGroup.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  SiteInstanceImpl* main_page_si = current_frame_host()->GetSiteInstance();
+  base::UnguessableToken main_page_bi_token =
+      main_page_si->browsing_instance_token();
+  base::UnguessableToken main_page_coop_token =
+      main_page_si->coop_related_group_token();
+
+  // Then open a popup in the same SiteInstance. The popup starts with the same
+  // tokens as the main page since it belong to the same SiteInstance.
+  ShellAddedObserver shell_observer;
+  ASSERT_TRUE(ExecJs(current_frame_host(), "window.w = open('');"));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  RenderFrameHostManager* popup_rfhm =
+      popup_rfh->frame_tree_node()->render_manager();
+  ASSERT_EQ(current_frame_host()->GetSiteInstance(),
+            popup_rfh->GetSiteInstance());
+
+  // At this stage, two RenderViewHosts exist, in the same process, one for each
+  // page. In both, the frames are local.
+  RenderViewHostImpl* rvh1 = static_cast<RenderViewHostImpl*>(
+      current_frame_host()->GetRenderViewHost());
+  RenderViewHostImpl* rvh2 =
+      static_cast<RenderViewHostImpl*>(popup_rfh->GetRenderViewHost());
+  ASSERT_NE(rvh1, rvh2);
+  ASSERT_NE(rvh1->frame_tree(), rvh2->frame_tree());
+  ASSERT_EQ(rvh1->site_instance_group(),
+            rvh1->frame_tree()->GetMainFrame()->GetSiteInstance()->group());
+  ASSERT_EQ(rvh2->site_instance_group(),
+            rvh2->frame_tree()->GetMainFrame()->GetSiteInstance()->group());
+
+  // Now, start a navigation to a COOP: restrict-properties page, in another
+  // browsing context group in the same CoopRelatedGroup.
+  TestNavigationManager navigation_manager(popup_window, coop_rp_page);
+  NavigationController::LoadURLParams params(coop_rp_page);
+  popup_window->GetController().LoadURLWithParams(params);
+
+  // Stop when we've started the request. At this stage, we should have no
+  // speculative frame, because we still think we can reuse the same
+  // RenderFrameHost.
+  ASSERT_TRUE(navigation_manager.WaitForRequestStart());
+  ASSERT_FALSE(popup_rfhm->speculative_frame_host());
+
+  // After receiving the response, we realize that COOP headers do not match. We
+  // should have created a new RenderFrameHost in another browsing context
+  // group.
+  ASSERT_TRUE(navigation_manager.WaitForResponse());
+  RenderFrameHostImpl* new_rfh = popup_rfhm->speculative_frame_host();
+  ASSERT_TRUE(new_rfh);
+  ASSERT_FALSE(new_rfh->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+  ASSERT_TRUE(new_rfh->GetSiteInstance()->IsCoopRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+
+  base::UnguessableToken popup_bi_token =
+      new_rfh->GetSiteInstance()->browsing_instance_token();
+  base::UnguessableToken popup_coop_token =
+      new_rfh->GetSiteInstance()->coop_related_group_token();
+  EXPECT_NE(main_page_bi_token, popup_bi_token);
+  EXPECT_EQ(main_page_coop_token, popup_coop_token);
+
+  // At this point, we should have 4 RenderViewHosts, one for each page in each
+  // process. Grab the ones created for the new process.
+  RenderFrameProxyHost* proxy_for_main_page_in_popup =
+      current_frame_host()
+          ->browsing_context_state()
+          ->proxy_hosts()[new_rfh->GetSiteInstance()->group()->GetId()]
+          .get();
+  RenderViewHostImpl* rvh3 = proxy_for_main_page_in_popup->GetRenderViewHost();
+  RenderViewHostImpl* rvh4 =
+      static_cast<RenderViewHostImpl*>(new_rfh->GetRenderViewHost());
+
+  // The first RenderViewHost represents the main page, in the main page
+  // process.
+  ASSERT_EQ(rvh1->frame_tree(), &(web_contents()->GetPrimaryFrameTree()));
+  EXPECT_EQ(rvh1->site_instance_group(),
+            rvh1->frame_tree()->GetMainFrame()->GetSiteInstance()->group());
+  EXPECT_EQ(rvh1->site_instance_group()->browsing_instance_token(),
+            main_page_bi_token);
+  EXPECT_EQ(rvh1->site_instance_group()->coop_related_group_token(),
+            main_page_coop_token);
+
+  // The second RenderViewHost represents the popup, in the main page process.
+  // At this stage, the new popup frame has not yet been committed, and it
+  // should still be for the old popup frame.
+  ASSERT_EQ(rvh2->frame_tree(), &(popup_window->GetPrimaryFrameTree()));
+  EXPECT_EQ(rvh2->site_instance_group(),
+            rvh2->frame_tree()->GetMainFrame()->GetSiteInstance()->group());
+  EXPECT_EQ(rvh2->site_instance_group()->browsing_instance_token(),
+            main_page_bi_token);
+  EXPECT_EQ(rvh2->site_instance_group()->coop_related_group_token(),
+            main_page_coop_token);
+  EXPECT_EQ(rvh2->frame_tree()
+                ->GetMainFrame()
+                ->GetSiteInstance()
+                ->browsing_instance_token(),
+            main_page_bi_token);
+  EXPECT_EQ(rvh2->frame_tree()
+                ->GetMainFrame()
+                ->GetSiteInstance()
+                ->coop_related_group_token(),
+            main_page_coop_token);
+
+  // The third RenderViewHost represents the main page, in the popup process. It
+  // should have a proxy as its main frame, with the final BrowsingContextGroup
+  // information. We sent the renderer process that information at RenderView
+  // creation time.
+  ASSERT_EQ(rvh3->frame_tree(), &(web_contents()->GetPrimaryFrameTree()));
+  EXPECT_NE(rvh3->site_instance_group(),
+            rvh3->frame_tree()->GetMainFrame()->GetSiteInstance()->group());
+  EXPECT_EQ(rvh3->site_instance_group()->browsing_instance_token(),
+            popup_bi_token);
+  EXPECT_EQ(rvh3->site_instance_group()->coop_related_group_token(),
+            popup_coop_token);
+  EXPECT_EQ(rvh3->frame_tree()
+                ->GetMainFrame()
+                ->GetSiteInstance()
+                ->browsing_instance_token(),
+            main_page_bi_token);
+  EXPECT_EQ(rvh3->frame_tree()
+                ->GetMainFrame()
+                ->GetSiteInstance()
+                ->coop_related_group_token(),
+            main_page_coop_token);
+
+  // The fourth RenderViewHost represents the popup, in the popup process.
+  // Before commit, the main frame should be a proxy. We sent the renderer
+  // process the current frame's BrowsingContextGroup information at RenderView
+  // creation time.
+  ASSERT_EQ(rvh4->frame_tree(), &(popup_window->GetPrimaryFrameTree()));
+  EXPECT_NE(rvh4->site_instance_group(),
+            rvh4->frame_tree()->GetMainFrame()->GetSiteInstance()->group());
+  EXPECT_EQ(rvh4->site_instance_group()->browsing_instance_token(),
+            popup_bi_token);
+  EXPECT_EQ(rvh4->site_instance_group()->coop_related_group_token(),
+            popup_coop_token);
+  EXPECT_EQ(rvh4->frame_tree()
+                ->GetMainFrame()
+                ->GetSiteInstance()
+                ->browsing_instance_token(),
+            main_page_bi_token);
+  EXPECT_EQ(rvh4->frame_tree()
+                ->GetMainFrame()
+                ->GetSiteInstance()
+                ->coop_related_group_token(),
+            main_page_coop_token);
+
+  // Commit the navigation. The speculative RenderFrameHost is now the current
+  // RenderFrameHost.
+  ASSERT_TRUE(navigation_manager.WaitForNavigationFinished());
+  ASSERT_EQ(new_rfh, popup_window->GetPrimaryMainFrame());
+
+  // At commit time, two things happened:
+  // (1) We sent the popup's renderer (rvh4) the new RenderFrameHost tokens as
+  // part of the commit. They should be in line with the currently active frame,
+  // which is now local. Note that we cannot verify the information sent to the
+  // renderer, but at least make sure that the browser side holds the correct
+  // information.
+  EXPECT_EQ(rvh4->site_instance_group(),
+            rvh4->frame_tree()->GetMainFrame()->GetSiteInstance()->group());
+  EXPECT_EQ(rvh4->site_instance_group()->browsing_instance_token(),
+            popup_bi_token);
+  EXPECT_EQ(rvh4->site_instance_group()->coop_related_group_token(),
+            popup_coop_token);
+
+  // (2) We've broadcasted the BrowsingContextGroupInfo update to
+  // RenderViewHosts that have a proxy of the navigated frame as their main
+  // frame. In this case, rvh2, which now has a proxy of the popup frame as its
+  // main frame.
+  EXPECT_NE(rvh2->site_instance_group(),
+            rvh2->frame_tree()->GetMainFrame()->GetSiteInstance()->group());
+  EXPECT_EQ(rvh2->site_instance_group()->browsing_instance_token(),
+            main_page_bi_token);
+  EXPECT_EQ(rvh2->site_instance_group()->coop_related_group_token(),
+            main_page_coop_token);
+  EXPECT_EQ(rvh2->frame_tree()
+                ->GetMainFrame()
+                ->GetSiteInstance()
+                ->browsing_instance_token(),
+            popup_bi_token);
+  EXPECT_EQ(rvh2->frame_tree()
+                ->GetMainFrame()
+                ->GetSiteInstance()
+                ->coop_related_group_token(),
+            popup_coop_token);
+
+  // Finally, make sure the right properties are blocked, and the right
+  // properties can be accessed.
+  std::string result =
+      EvalJs(current_frame_host(),
+             "try { window.w.blur() } catch (e) { e.toString(); }")
+          .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  result = EvalJs(new_rfh, "try { opener.blur() } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // Always-allowed properties should still be accessible, and trying to access
+  // them should not throw any exception.
+  EXPECT_EQ(true, EvalJs(new_rfh, "opener.closed == false"));
+  EXPECT_EQ(true, EvalJs(current_frame_host(), "window.w.closed == false"));
+}
+
+// Verifies that BrowsingContextGroupInfo is properly propagated to an iframe
+// in the same SiteInstance.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest, LocalSubframe) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+
+  // Navigate to a regular page, with a subframe in the same SiteInstance.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ASSERT_TRUE(ExecJs(current_frame_host(), JsReplace(R"(
+    const frame = document.createElement('iframe');
+    frame.src = $1;
+    document.body.appendChild(frame);
+  )",
+                                                     regular_page)));
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+  RenderFrameHostImpl* iframe_rfh =
+      current_frame_host()->child_at(0)->current_frame_host();
+
+  // The iframe is in the same SiteInstance, and access should be possible.
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window[0].blur()"));
+  EXPECT_TRUE(ExecJs(iframe_rfh, "top.blur()"));
+}
+
+// Verifies that BrowsingContextGroupInfo is properly propagated to an iframe
+// in the same browsing context group in another SiteInstance.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       RemoteSubframe) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+  GURL regular_page_2(https_server()->GetURL("b.test", "/title1.html"));
+
+  // Navigate to a regular page, with a subframe in another SiteInstance.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ASSERT_TRUE(ExecJs(current_frame_host(), JsReplace(R"(
+    const frame = document.createElement('iframe');
+    frame.src = $1;
+    document.body.appendChild(frame);
+  )",
+                                                     regular_page)));
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+  RenderFrameHostImpl* iframe_rfh =
+      current_frame_host()->child_at(0)->current_frame_host();
+
+  // The iframe is in the same browsing context group, and access should be
+  // possible.
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window[0].blur()"));
+  EXPECT_TRUE(ExecJs(iframe_rfh, "top.blur()"));
+}
+
+// Verifies that BrowsingContextGroupInfo is properly propagated to iframes and
+// iframes in popups, all living in the same SiteInstance.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       LocalSubframesInPopup) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+
+  // Start from a regular page with a subframe and open a popup with a subframe,
+  // all in the same SiteInstance.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ASSERT_TRUE(ExecJs(current_frame_host(), JsReplace(R"(
+    const frame = document.createElement('iframe');
+    frame.src = $1;
+    document.body.appendChild(frame);
+  )",
+                                                     regular_page)));
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+  RenderFrameHostImpl* iframe_rfh =
+      current_frame_host()->child_at(0)->current_frame_host();
+
+  ShellAddedObserver shell_observer;
+  ASSERT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = open($1);", regular_page)));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_EQ(current_frame_host()->GetSiteInstance(),
+            popup_rfh->GetSiteInstance());
+
+  ASSERT_TRUE(ExecJs(popup_rfh, JsReplace(R"(
+    const frame = document.createElement('iframe');
+    frame.src = $1;
+    document.body.appendChild(frame);
+  )",
+                                          regular_page)));
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_iframe_rfh =
+      popup_rfh->child_at(0)->current_frame_host();
+
+  // All frames are in the same SiteInstance, and access should be possible.
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window[0].blur()"));
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window.w.blur()"));
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window.w[0].blur()"));
+
+  EXPECT_TRUE(ExecJs(iframe_rfh, "top.blur()"));
+  EXPECT_TRUE(ExecJs(iframe_rfh, "top.w.blur()"));
+  EXPECT_TRUE(ExecJs(iframe_rfh, "top.w[0].blur()"));
+
+  EXPECT_TRUE(ExecJs(popup_rfh, "opener.blur()"));
+  EXPECT_TRUE(ExecJs(popup_rfh, "opener[0].blur()"));
+  EXPECT_TRUE(ExecJs(popup_rfh, "window[0].blur()"));
+
+  EXPECT_TRUE(ExecJs(popup_iframe_rfh, "top.blur()"));
+  EXPECT_TRUE(ExecJs(popup_iframe_rfh, "top.opener.blur()"));
+  EXPECT_TRUE(ExecJs(popup_iframe_rfh, "top.opener[0].blur()"));
+}
+
+// Verifies that BrowsingContextGroupInfo is properly propagated to iframes and
+// iframes in popups, all living in the same browsing context group.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       RemoteSubframesInPopup) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+  GURL regular_page_2(https_server()->GetURL("b.test", "/title1.html"));
+  GURL regular_page_3(https_server()->GetURL("c.test", "/title1.html"));
+  GURL regular_page_4(https_server()->GetURL("d.test", "/title1.html"));
+
+  // Start from a regular page with a subframe and open a popup with a subframe,
+  // all in the same browsing context group, but in different SiteInstances.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ASSERT_TRUE(ExecJs(current_frame_host(), JsReplace(R"(
+    const frame = document.createElement('iframe');
+    frame.src = $1;
+    document.body.appendChild(frame);
+  )",
+                                                     regular_page_2)));
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+  RenderFrameHostImpl* iframe_rfh =
+      current_frame_host()->child_at(0)->current_frame_host();
+
+  ShellAddedObserver shell_observer;
+  ASSERT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = open($1);", regular_page_3)));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_TRUE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+
+  ASSERT_TRUE(ExecJs(popup_rfh, JsReplace(R"(
+    const frame = document.createElement('iframe');
+    frame.src = $1;
+    document.body.appendChild(frame);
+  )",
+                                          regular_page_4)));
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_iframe_rfh =
+      popup_rfh->child_at(0)->current_frame_host();
+
+  // All frames are in the same browsing context group and access should be
+  // possible.
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window[0].blur()"));
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window.w.blur()"));
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window.w[0].blur()"));
+
+  // The iframe in the main page can only access its top frame, because it has
+  // no way to grab the window.w handle as a cross-origin frame.
+  EXPECT_TRUE(ExecJs(iframe_rfh, "top.blur()"));
+
+  EXPECT_TRUE(ExecJs(popup_rfh, "opener.blur()"));
+  EXPECT_TRUE(ExecJs(popup_rfh, "opener[0].blur()"));
+  EXPECT_TRUE(ExecJs(popup_rfh, "window[0].blur()"));
+
+  EXPECT_TRUE(ExecJs(popup_iframe_rfh, "top.blur()"));
+  EXPECT_TRUE(ExecJs(popup_iframe_rfh, "top.opener.blur()"));
+  EXPECT_TRUE(ExecJs(popup_iframe_rfh, "top.opener[0].blur()"));
+}
+
+// Verifies that BrowsingContextGroupInfo is properly propagated to iframes and
+// iframes in popups living in a different browsing context group in the same
+// CoopRelatedGroup.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       SubframesInCoopPopup) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+  GURL regular_page_2(https_server()->GetURL("b.test", "/title1.html"));
+  GURL coop_rp_page(https_server()->GetURL(
+      "c.test",
+      "/set-header"
+      "?cross-origin-opener-policy: restrict-properties"));
+  GURL regular_page_3(https_server()->GetURL("d.test", "/title1.html"));
+
+  // Start from a regular page with a subframe and open a popup in another
+  // browsing context group in the same CoopRelatedGroup, itself with an iframe.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ASSERT_TRUE(ExecJs(current_frame_host(), JsReplace(R"(
+    const frame = document.createElement('iframe');
+    frame.src = $1;
+    document.body.appendChild(frame);
+  )",
+                                                     regular_page_2)));
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+  RenderFrameHostImpl* iframe_rfh =
+      current_frame_host()->child_at(0)->current_frame_host();
+
+  ShellAddedObserver shell_observer;
+  ASSERT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = open($1);", coop_rp_page)));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+  ASSERT_TRUE(
+      current_frame_host()->GetSiteInstance()->IsCoopRelatedSiteInstance(
+          popup_rfh->GetSiteInstance()));
+
+  ASSERT_TRUE(ExecJs(popup_rfh, JsReplace(R"(
+    const frame = document.createElement('iframe');
+    frame.src = $1;
+    document.body.appendChild(frame);
+  )",
+                                          regular_page_3)));
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_iframe_rfh =
+      popup_rfh->child_at(0)->current_frame_host();
+
+  // Different pages are in different browsing context groups and access should
+  // be restricted. Access within a page should not.
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window[0].blur()"));
+  std::string result =
+      EvalJs(current_frame_host(),
+             "try { window.w.blur() } catch (e) { e.toString(); }")
+          .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+  EXPECT_EQ(true, EvalJs(current_frame_host(), "window.w.closed == false"));
+
+  EXPECT_TRUE(ExecJs(iframe_rfh, "top.blur()"));
+
+  EXPECT_TRUE(ExecJs(popup_rfh, "window[0].blur()"));
+  result =
+      EvalJs(popup_rfh, "try { opener.blur() } catch (e) { e.toString(); }")
+          .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+  EXPECT_EQ(true, EvalJs(popup_rfh, "opener.closed == false"));
+
+  EXPECT_TRUE(ExecJs(popup_iframe_rfh, "top.blur()"));
+  result = EvalJs(popup_iframe_rfh,
+                  "try { top.opener.blur() } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+  EXPECT_EQ(true, EvalJs(popup_iframe_rfh, "top.opener.closed == false"));
+}
+
+// Verify that navigating to another browsing context group in the same
+// CoopRelatedGroup and ending up in an error page propagates the
+// BrowsingContextGroupInfo properly.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       NavigationToError) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+  GURL coop_rp_page(https_server()->GetURL(
+      "b.test",
+      "/set-header"
+      "?cross-origin-opener-policy: restrict-properties"));
+  GURL error_page(https_server()->GetURL("b.test", "/page_not_found"));
+
+  // Start from a regular page and a popup in different browsing context groups
+  // in the same CoopRelatedGroup.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ShellAddedObserver shell_observer;
+  ASSERT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = open($1);", coop_rp_page)));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+  ASSERT_TRUE(
+      current_frame_host()->GetSiteInstance()->IsCoopRelatedSiteInstance(
+          popup_rfh->GetSiteInstance()));
+
+  // Navigate the popup to an error page. It should reuse the original browsing
+  // context group.
+  ASSERT_FALSE(NavigateToURL(popup_window, error_page));
+  RenderFrameHostImpl* error_popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_TRUE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      error_popup_rfh->GetSiteInstance()));
+
+  // We've come back to the original browsing context group, so access should be
+  // possible.
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window.w.blur()"));
+  EXPECT_TRUE(ExecJs(error_popup_rfh, "opener.blur()"));
+}
+
+// Verify that navigating to another browsing context group in the same
+// CoopRelatedGroup and going back propagates the BrowsingContextGroupInfo
+// properly.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       HistoryNavigation) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+  GURL regular_page_2(https_server()->GetURL("b.test", "/title1.html"));
+  GURL coop_rp_page(https_server()->GetURL(
+      "c.test",
+      "/set-header"
+      "?cross-origin-opener-policy: restrict-properties"));
+
+  // Start from a regular page and a popup in the same browsing context group.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ShellAddedObserver shell_observer;
+  ASSERT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = open($1);", regular_page_2)));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_TRUE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+
+  // Navigate the popup to another browsing context group in the same
+  // CoopRelatedGroup.
+  ASSERT_TRUE(NavigateToURL(popup_window, coop_rp_page));
+  RenderFrameHostImpl* second_popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      second_popup_rfh->GetSiteInstance()));
+  ASSERT_TRUE(
+      current_frame_host()->GetSiteInstance()->IsCoopRelatedSiteInstance(
+          second_popup_rfh->GetSiteInstance()));
+
+  // Navigate back. The browsing context group information should properly be
+  // updated.
+  popup_window->GetController().GoBack();
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* back_popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_TRUE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      back_popup_rfh->GetSiteInstance()));
+
+  // We've come back to the original browsing context group, access should be
+  // possible.
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window.w.blur()"));
+  EXPECT_TRUE(ExecJs(back_popup_rfh, "opener.blur()"));
+}
+
+// Verify that activating a BackForwardCache entry in another browsing context
+// group in the same CoopRelatedGroup propagates the BrowsingContextGroupInfo
+// properly. This can only be approximated, because BFCache will not usually
+// kick in on pages with popups.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       BackForwardCacheNavigation) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+  GURL coop_rp_page(https_server()->GetURL(
+      "b.test",
+      "/set-header"
+      "?cross-origin-opener-policy: restrict-properties"));
+  GURL regular_page_2(https_server()->GetURL("c.test", "/title1.html"));
+
+  // Start on a first page, then navigate to a page in another browsing context
+  // group in the same CoopRelatedGroup, and finally back. The back navigation
+  // uses the BFCache if enabled.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  SiteInstanceImpl* initial_si = current_frame_host()->GetSiteInstance();
+  base::UnguessableToken initial_bi_token =
+      initial_si->browsing_instance_token();
+  base::UnguessableToken initial_coop_token =
+      initial_si->coop_related_group_token();
+
+  ASSERT_TRUE(NavigateToURL(shell(), coop_rp_page));
+  web_contents()->GetController().GoBack();
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+
+  // The back navigation should still have the original tokens.
+  SiteInstanceImpl* bfcache_si = current_frame_host()->GetSiteInstance();
+  EXPECT_EQ(bfcache_si->browsing_instance_token(), initial_bi_token);
+  EXPECT_EQ(bfcache_si->coop_related_group_token(), initial_coop_token);
+
+  // Now open a popup in the same browsing context group.
+  ShellAddedObserver shell_observer;
+  ASSERT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = open($1);", regular_page_2)));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_TRUE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+
+  // If the BrowsingContextGroupInfo was properly propagated to the renderer
+  // upon the BFCache navigation, access to the popup should be unrestricted.
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window.w.blur()"));
+  EXPECT_TRUE(ExecJs(popup_rfh, "opener.blur()"));
+}
+
+// Verify that navigating to another browsing context group in the same
+// CoopRelatedGroup from a crashed frame propagates the BrowsingContextGroupInfo
+// properly.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       PostCrashNavigation) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+  GURL regular_page_2(https_server()->GetURL("b.test", "/title1.html"));
+  GURL coop_rp_page(https_server()->GetURL(
+      "c.test",
+      "/set-header"
+      "?cross-origin-opener-policy: restrict-properties"));
+
+  // To be able to properly test that access is preserved after a crashed
+  // process navigates again, we don't want both the openee and the opener to
+  // live in the same process and to both crash.
+  if (!AreAllSitesIsolatedForTesting()) {
+    return;
+  }
+
+  // Start from a regular page and a popup in the same browsing context group.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ShellAddedObserver shell_observer;
+  ASSERT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = open($1);", regular_page_2)));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_TRUE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+
+  // Simulate the renderer process used for the popup crashing.
+  RenderProcessHost* process = popup_rfh->GetSiteInstance()->GetProcess();
+  ASSERT_TRUE(process);
+  RenderProcessHostWatcher crash_observer(
+      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  process->Shutdown(0);
+  crash_observer.Wait();
+
+  // Navigate the popup to another browsing context group in the same
+  // CoopRelatedGroup.
+  ASSERT_TRUE(NavigateToURL(popup_window, coop_rp_page));
+  RenderFrameHostImpl* second_popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      second_popup_rfh->GetSiteInstance()));
+  ASSERT_TRUE(
+      current_frame_host()->GetSiteInstance()->IsCoopRelatedSiteInstance(
+          second_popup_rfh->GetSiteInstance()));
+
+  // Because they are in different browsing context groups in the same
+  // CoopRelatedGroup, access should be restricted.
+  std::string result =
+      EvalJs(current_frame_host(),
+             "try { window.w.blur() } catch (e) { e.toString(); }")
+          .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  result = EvalJs(second_popup_rfh,
+                  "try { opener.blur() } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // Access to window.closed should not throw any exception.
+  EXPECT_EQ(true, EvalJs(second_popup_rfh, "opener.closed == false"));
+  EXPECT_EQ(true, EvalJs(current_frame_host(), "window.w.closed == false"));
+}
+
+// Verify that navigating to another browsing context group in another
+// CoopRelatedGroup, in one of the rare cases that preserve openers (here to a
+// WebUI), propagates the correct BrowsingContextGroupInfo.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       NavigationToOtherCoopRelatedGroup) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+  GURL regular_page_2(https_server()->GetURL("b.test", "/title1.html"));
+  GURL webui_page("chrome://ukm");
+
+  // Start from a regular page and a popup in the same browsing context group.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ShellAddedObserver shell_observer;
+  ASSERT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = open($1);", regular_page_2)));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_TRUE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+
+  // Navigate to a WebUI page. It should use another browsing context group in
+  // another CoopRelatedGroup. This WebUI page will not have an opener, but will
+  // NOT clear proxies, keeping the handle in the main page valid.
+  // TODO(https://crbug.com/1366827): This is an unspec'd behavior and might
+  // change in the future.
+  ASSERT_TRUE(NavigateToURL(popup_window, webui_page));
+  RenderFrameHostImpl* webui_popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_FALSE(
+      current_frame_host()->GetSiteInstance()->IsCoopRelatedSiteInstance(
+          webui_popup_rfh->GetSiteInstance()));
+  ASSERT_EQ(true, EvalJs(webui_popup_rfh, "window.opener == null"));
+  ASSERT_EQ(false, EvalJs(current_frame_host(), "window.w == null"));
+
+  // Because they are in different browsing context groups in different
+  // CoopRelatedGroups, access to cross-origin properties should conservatively
+  // NOT be restricted.
+  // TODO(https://crbug.com/1370351): This might change in the future, if we
+  // decide to impose restrictions on all accesses from different browsing
+  // context groups.
+  EXPECT_TRUE(ExecJs(current_frame_host(), "window.w.blur()"));
+
+  // Some actions should be blocked nonetheless, regardless of COOP:
+  // restrict-properties. This is the case for sending postMessages. Set up a
+  // listener in the WebUI page, and send a message from the main page. If we
+  // have not received anything within a second, consider this passed. Receiving
+  // the message would throw an exception.
+  ASSERT_TRUE(ExecJs(webui_popup_rfh, R"(
+      window.future_message = new Promise(
+        (resolve, reject) => {
+          onmessage = (event) => {
+            if (event.data == 'test') {
+              reject('Received message');
+            }
+          };
+          setTimeout(resolve, 1000);
+        }); 0;)"));  // This avoids waiting on the promise right now.
+  EXPECT_TRUE(
+      ExecJs(current_frame_host(), "window.w.postMessage('test', '*')"));
+
+  // If we've received the message, this promise would be rejected and an
+  // exception would be thrown.
+  EXPECT_TRUE(ExecJs(webui_popup_rfh, "window.future_message;"));
+
+  // Navigating frames in other CoopRelatedGroup should also not be permitted.
+  // Try to start a navigation and verify that nothing happened.
+  EXPECT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w.location = $1", regular_page)));
+  EXPECT_TRUE(WaitForLoadStop(popup_window));
+  EXPECT_EQ(popup_window->GetLastCommittedURL(), webui_page);
+}
+
+// This test verifies that two pages in different browsing context groups with
+// the same origin trying to access each other does not cause a crash.
+IN_PROC_BROWSER_TEST_P(CoopRestrictPropertiesAccessBrowserTest,
+                       SameOriginInDifferentBrowsingContextGroupAccess) {
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+  GURL coop_rp_page(https_server()->GetURL(
+      "a.test",
+      "/set-header"
+      "?cross-origin-opener-policy: restrict-properties"));
+
+  // Start from a regular page and open a same-origin popup in another browsing
+  // context group in the same CoopRelatedGroup. Although the two pages are
+  // same-origin, they should only be able to reach out to each other using
+  // postMessage() and closed.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ShellAddedObserver shell_observer;
+  EXPECT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = window.open($1)", coop_rp_page)));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+  ASSERT_TRUE(
+      current_frame_host()->GetSiteInstance()->IsCoopRelatedSiteInstance(
+          popup_rfh->GetSiteInstance()));
+
+  // Because they are in different browsing context groups in the same
+  // CoopRelatedGroup, access to cross-origin properties should be restricted.
+  std::string result =
+      EvalJs(current_frame_host(),
+             "try { window.w.blur() } catch (e) { e.toString(); }")
+          .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  result =
+      EvalJs(popup_rfh, "try { opener.blur() } catch (e) { e.toString(); }")
+          .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // Similarly, same-origin properties access should be blocked.
+  result = EvalJs(current_frame_host(),
+                  "try { window.w.name} catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  result = EvalJs(popup_rfh, "try { opener.name} catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // Always-allowed properties should still be accessible.
+  EXPECT_EQ(true, EvalJs(current_frame_host(), "window.w.closed == false"));
+  EXPECT_EQ(true, EvalJs(popup_rfh, "opener.closed == false"));
+}
+
+// Similar to above test, but forces process reuse to have both the popup and
+// the main page live in the same process.
+IN_PROC_BROWSER_TEST_P(
+    CoopRestrictPropertiesAccessBrowserTest,
+    SameOriginInDifferentBrowsingContextGroupAccessSameProcess) {
+  // Some platform force COOP pages to be isolated, making this test irrelevant.
+  if (SiteIsolationPolicy::IsSiteIsolationForCOOPEnabled()) {
+    return;
+  }
+
+  // Set a process limit of 1 for testing. This will force same-origin pages
+  // with different COOP status to share a process.
+  RenderProcessHostImpl::SetMaxRendererProcessCount(1);
+
+  GURL regular_page(https_server()->GetURL("a.test", "/title1.html"));
+  GURL coop_rp_page(https_server()->GetURL(
+      "a.test",
+      "/set-header"
+      "?cross-origin-opener-policy: restrict-properties"));
+
+  // Start from a regular page and open a same-origin popup in another browsing
+  // context group in the same CoopRelatedGroup. Although the two pages are
+  // same-origin, they should only be able to reach out to each other using
+  // postMessage() and closed.
+  ASSERT_TRUE(NavigateToURL(shell(), regular_page));
+  ShellAddedObserver shell_observer;
+  EXPECT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("window.w = window.open($1)", coop_rp_page)));
+  WebContentsImpl* popup_window =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+
+  ASSERT_TRUE(WaitForLoadStop(popup_window));
+  RenderFrameHostImpl* popup_rfh = popup_window->GetPrimaryMainFrame();
+  ASSERT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_rfh->GetSiteInstance()));
+  ASSERT_TRUE(
+      current_frame_host()->GetSiteInstance()->IsCoopRelatedSiteInstance(
+          popup_rfh->GetSiteInstance()));
+  ASSERT_EQ(current_frame_host()->GetProcess(), popup_rfh->GetProcess());
+
+  // Because they are in different browsing context groups in the same
+  // CoopRelatedGroup, access to cross-origin properties should be restricted.
+  std::string result =
+      EvalJs(current_frame_host(),
+             "try { window.w.blur() } catch (e) { e.toString(); }")
+          .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  result =
+      EvalJs(popup_rfh, "try { opener.blur() } catch (e) { e.toString(); }")
+          .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // Similarly, same-origin properties access should also be blocked.
+  result = EvalJs(current_frame_host(),
+                  "try { window.w.name } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  result = EvalJs(popup_rfh, "try { opener.name } catch (e) { e.toString(); }")
+               .ExtractString();
+  EXPECT_THAT(result, ::testing::MatchesRegex(kCoopRpErrorMessageRegex));
+
+  // Always-allowed properties should still be accessible.
+  EXPECT_EQ(true, EvalJs(current_frame_host(), "window.w.closed == false"));
+  EXPECT_EQ(true, EvalJs(popup_rfh, "opener.closed == false"));
 }
 
 }  // namespace content

@@ -1468,11 +1468,18 @@ gfx::PointF GetOffsetFromContainingBlock(const LayoutBox* box) {
 }
 
 // https://drafts.fxtf.org/motion/#offset-position-property
-gfx::PointF GetStartingPointOfThePath(const LayoutBox* box,
-                                      const LengthPoint& offset_position,
-                                      const gfx::SizeF& reference_box_size) {
+gfx::PointF GetStartingPointOfThePath(
+    const gfx::PointF& offset_from_containing_block,
+    const LengthPoint& offset_position,
+    const gfx::SizeF& reference_box_size) {
   if (offset_position.X().IsAuto()) {
-    return GetOffsetFromContainingBlock(box);
+    return offset_from_containing_block;
+  }
+  if (offset_position.X().IsNone()) {
+    // Currently all the use cases will behave as "at center".
+    return PointForLengthPoint(
+        LengthPoint(Length::Percent(50), Length::Percent(50)),
+        reference_box_size);
   }
   return PointForLengthPoint(offset_position, reference_box_size);
 }
@@ -1481,16 +1488,16 @@ gfx::PointF GetStartingPointOfThePath(const LayoutBox* box,
 
 PointAndTangent ComputedStyle::CalculatePointAndTangentOnBasicShape(
     const BasicShape& shape,
-    const LayoutBox* box,
-    const gfx::PointF starting_point,
-    const gfx::SizeF reference_box_size) const {
+    const gfx::PointF& starting_point,
+    const gfx::SizeF& reference_box_size) const {
   Path path;
   if (const auto* circle_or_ellipse =
           DynamicTo<BasicShapeWithCenterAndRadii>(shape);
       circle_or_ellipse && !circle_or_ellipse->HasExplicitCenter()) {
-    // If circle() or ellipse() is used, and an explicit center position is not
-    // given, they default to using the offset starting position, rather than
-    // their standard default.
+    // For all <basic-shape>s, if they accept an at <position> argument
+    // but that argument is omitted, and the element defines
+    // an offset starting position via offset-position,
+    // it uses the specified offset starting position for that argument.
     circle_or_ellipse->GetPathFromCenter(
         path, starting_point, gfx::RectF(reference_box_size), EffectiveZoom());
   } else {
@@ -1511,8 +1518,8 @@ PointAndTangent ComputedStyle::CalculatePointAndTangentOnBasicShape(
 PointAndTangent ComputedStyle::CalculatePointAndTangentOnRay(
     const StyleRay& ray,
     const LayoutBox* box,
-    const gfx::PointF starting_point,
-    const gfx::SizeF reference_box_size) const {
+    const gfx::PointF& starting_point,
+    const gfx::SizeF& reference_box_size) const {
   float ray_length =
       ray.CalculateRayPathLength(starting_point, reference_box_size);
   if (ray.Contain() && box) {
@@ -1528,7 +1535,7 @@ PointAndTangent ComputedStyle::CalculatePointAndTangentOnRay(
     ray_length = std::max(ray_length, 0.f);
   }
   const float path_length = FloatValueForLength(OffsetDistance(), ray_length);
-  return ray.PointAndNormalAtLength(path_length);
+  return ray.PointAndNormalAtLength(starting_point, path_length);
 }
 
 PointAndTangent ComputedStyle::CalculatePointAndTangentOnPath(
@@ -1557,37 +1564,19 @@ void ComputedStyle::ApplyMotionPathTransform(float origin_x,
                                              const LayoutBox* box,
                                              const gfx::RectF& bounding_box,
                                              gfx::Transform& transform) const {
-  // TODO(ericwilligers): crbug.com/638055 Apply offset-position.
   const OffsetPathOperation* offset_path = OffsetPath();
   if (!offset_path) {
     return;
   }
 
-  const LengthPoint& anchor = OffsetAnchor();
+  const LengthPoint& position = OffsetPosition();
   const StyleOffsetRotation& rotate = OffsetRotate();
   CoordBox coord_box = offset_path->GetCoordBox();
-
-  float origin_shift_x = 0;
-  float origin_shift_y = 0;
-  // If the offset-position and offset-anchor properties are not yet enabled,
-  // they will have the default value, auto.
-  gfx::PointF anchor_point(origin_x, origin_y);
-  if (!anchor.X().IsAuto()) {
-    anchor_point = PointForLengthPoint(anchor, bounding_box.size());
-    anchor_point += bounding_box.OffsetFromOrigin();
-
-    // Shift the origin from transform-origin to offset-anchor.
-    origin_shift_x = anchor_point.x() - origin_x;
-    origin_shift_y = anchor_point.y() - origin_y;
-  }
 
   PointAndTangent path_position;
   if (const auto* shape_operation =
           DynamicTo<ShapeOffsetPathOperation>(offset_path)) {
     const BasicShape& basic_shape = shape_operation->GetBasicShape();
-    const gfx::SizeF reference_box_size = GetReferenceBoxSize(box, coord_box);
-    const gfx::PointF starting_point =
-        GetStartingPointOfThePath(box, OffsetPosition(), reference_box_size);
     switch (basic_shape.GetType()) {
       case BasicShape::kStylePathType: {
         const StylePath& path = To<StylePath>(basic_shape);
@@ -1595,9 +1584,32 @@ void ComputedStyle::ApplyMotionPathTransform(float origin_x,
         break;
       }
       case BasicShape::kStyleRayType: {
+        const gfx::PointF offset_from_containing_block =
+            GetOffsetFromContainingBlock(box);
+        const gfx::SizeF reference_box_size =
+            GetReferenceBoxSize(box, coord_box);
         const StyleRay& ray = To<StyleRay>(basic_shape);
+        // Specifies the origin of the ray, where the ray’s line begins (the 0%
+        // position). It’s resolved by using the <position> to position a 0x0
+        // object area within the box’s containing block. If omitted, it uses
+        // the offset starting position of the element, given by
+        // offset-position. If the element doesn’t have an offset starting
+        // position either, it behaves as at center.
+        // NOTE: In current parsing implementation:
+        // if `at position` is omitted, it will be computed as 50% 50%.
+        gfx::PointF starting_point;
+        if (ray.HasExplicitCenter() || position.X().IsNone()) {
+          starting_point = PointForCenterCoordinate(
+              ray.CenterX(), ray.CenterY(), reference_box_size);
+        } else {
+          starting_point = GetStartingPointOfThePath(
+              offset_from_containing_block, position, reference_box_size);
+        }
         path_position = CalculatePointAndTangentOnRay(ray, box, starting_point,
                                                       reference_box_size);
+        // `path_position.point` is now relative to the containing block.
+        // Make it relative to the box.
+        path_position.point -= offset_from_containing_block.OffsetFromOrigin();
         break;
       }
       case BasicShape::kBasicShapeCircleType:
@@ -1606,17 +1618,23 @@ void ComputedStyle::ApplyMotionPathTransform(float origin_x,
       case BasicShape::kBasicShapeXYWHType:
       case BasicShape::kBasicShapeRectType:
       case BasicShape::kBasicShapePolygonType: {
+        const gfx::PointF offset_from_containing_block =
+            GetOffsetFromContainingBlock(box);
+        const gfx::SizeF reference_box_size =
+            GetReferenceBoxSize(box, coord_box);
+        const gfx::PointF starting_point = GetStartingPointOfThePath(
+            offset_from_containing_block, position, reference_box_size);
         path_position = CalculatePointAndTangentOnBasicShape(
-            basic_shape, box, starting_point, reference_box_size);
+            basic_shape, starting_point, reference_box_size);
+        // `path_position.point` is now relative to the containing block.
+        // Make it relative to the box.
+        path_position.point -= offset_from_containing_block.OffsetFromOrigin();
         break;
       }
     }
   } else if (const auto* coord_box_operation =
                  DynamicTo<CoordBoxOffsetPathOperation>(offset_path)) {
     if (box && box->ContainingBlock()) {
-      const gfx::SizeF reference_box_size = GetReferenceBoxSize(box, coord_box);
-      const gfx::PointF starting_point =
-          GetStartingPointOfThePath(box, OffsetPosition(), reference_box_size);
       scoped_refptr<BasicShapeInset> inset = BasicShapeInset::Create();
       inset->SetTop(Length::Fixed(0));
       inset->SetBottom(Length::Fixed(0));
@@ -1627,8 +1645,16 @@ void ComputedStyle::ApplyMotionPathTransform(float origin_x,
       inset->SetTopRightRadius(style.BorderTopRightRadius());
       inset->SetBottomRightRadius(style.BorderBottomRightRadius());
       inset->SetBottomLeftRadius(style.BorderBottomLeftRadius());
+      const gfx::PointF offset_from_containing_block =
+          GetOffsetFromContainingBlock(box);
+      const gfx::SizeF reference_box_size = GetReferenceBoxSize(box, coord_box);
+      const gfx::PointF starting_point = GetStartingPointOfThePath(
+          offset_from_containing_block, position, reference_box_size);
       path_position = CalculatePointAndTangentOnBasicShape(
-          *inset, box, starting_point, reference_box_size);
+          *inset, starting_point, reference_box_size);
+      // `path_position.point` is now relative to the containing block.
+      // Make it relative to the box.
+      path_position.point -= offset_from_containing_block.OffsetFromOrigin();
     }
   } else {
     const auto* url_operation =
@@ -1652,14 +1678,19 @@ void ComputedStyle::ApplyMotionPathTransform(float origin_x,
     path_position.tangent_in_degrees = 0;
   }
 
-  transform.Translate(
-      path_position.point.x() - anchor_point.x() + origin_shift_x,
-      path_position.point.y() - anchor_point.y() + origin_shift_y);
+  transform.Translate(path_position.point.x() - origin_x,
+                      path_position.point.y() - origin_y);
   transform.Rotate(path_position.tangent_in_degrees + rotate.angle);
 
+  const LengthPoint& anchor = OffsetAnchor();
   if (!anchor.X().IsAuto()) {
-    // Shift the origin back to transform-origin.
-    transform.Translate(-origin_shift_x, -origin_shift_y);
+    gfx::PointF anchor_point = PointForLengthPoint(anchor, bounding_box.size());
+    anchor_point += bounding_box.OffsetFromOrigin();
+
+    // Shift the origin back to transform-origin and then move it based on the
+    // anchor.
+    transform.Translate(origin_x - anchor_point.x(),
+                        origin_y - anchor_point.y());
   }
 }
 
@@ -2624,8 +2655,9 @@ bool ComputedStyle::CalculateIsStackingContextWithoutContainment() const {
   return false;
 }
 
-bool ComputedStyle::IsInTopLayer(const Element& element) const {
-  return element.IsInTopLayer() && Overlay() == EOverlay::kAuto;
+bool ComputedStyle::IsRenderedInTopLayer(const Element& element) const {
+  return (element.IsInTopLayer() && Overlay() == EOverlay::kAuto) ||
+         StyleType() == kPseudoIdBackdrop;
 }
 
 ComputedStyleBuilder::ComputedStyleBuilder(const ComputedStyle& style) {

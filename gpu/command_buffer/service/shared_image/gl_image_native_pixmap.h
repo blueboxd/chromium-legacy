@@ -14,7 +14,6 @@
 
 namespace media {
 class V4L2SliceVideoDecodeAccelerator;
-class VaapiPictureNativePixmapOzone;
 }  // namespace media
 
 namespace ui {
@@ -52,13 +51,17 @@ class GPU_GLES2_EXPORT GLImageNativePixmap : public gl::GLImage {
     return Create(size, format, pixmap, target, texture_id);
   }
 
+  // Allows for creation of an uninitialized instance in testing contexts that
+  // simply need a GLImageNativePixmap pointer but don't need to do anything on
+  // it.
+  static scoped_refptr<GLImageNativePixmap> CreateForTesting(
+      const gfx::Size& size) {
+    return base::WrapRefCounted(new GLImageNativePixmap(size));
+  }
+
  private:
   friend class gles2::GLES2DecoderImpl;
   friend class media::V4L2SliceVideoDecodeAccelerator;
-  friend class media::VaapiPictureNativePixmapOzone;
-
-  // Overridden from GLImage:
-  gfx::Size GetSize() override;
 
   explicit GLImageNativePixmap(const gfx::Size& size);
   ~GLImageNativePixmap() override;

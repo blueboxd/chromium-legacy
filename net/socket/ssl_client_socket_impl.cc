@@ -624,22 +624,11 @@ void SSLClientSocketImpl::GetSSLCertRequestInfo(
         CRYPTO_BUFFER_len(ca_name));
   }
 
-  cert_request_info->cert_key_types.clear();
-  const uint8_t* client_cert_types;
-  size_t num_client_cert_types =
-      SSL_get0_certificate_types(ssl_.get(), &client_cert_types);
-  for (size_t i = 0; i < num_client_cert_types; i++) {
-    switch (client_cert_types[i]) {
-      case static_cast<uint8_t>(SSLClientCertType::kRsaSign):
-      case static_cast<uint8_t>(SSLClientCertType::kEcdsaSign):
-        cert_request_info->cert_key_types.push_back(
-            static_cast<SSLClientCertType>(client_cert_types[i]));
-        break;
-      default:
-        // Unknown client certificate types are ignored.
-        break;
-    }
-  }
+  const uint16_t* algorithms;
+  size_t num_algorithms =
+      SSL_get0_peer_verify_algorithms(ssl_.get(), &algorithms);
+  cert_request_info->signature_algorithms.assign(algorithms,
+                                                 algorithms + num_algorithms);
 }
 
 void SSLClientSocketImpl::ApplySocketTag(const SocketTag& tag) {
@@ -756,8 +745,7 @@ int SSLClientSocketImpl::Init() {
     return ERR_UNEXPECTED;
   }
 
-  if (context_->config().post_quantum_enabled &&
-      base::FeatureList::IsEnabled(features::kPostQuantumKyber)) {
+  if (context_->config().PostQuantumKeyAgreementEnabled()) {
     static const int kCurves[] = {NID_X25519Kyber768Draft00, NID_X25519,
                                   NID_X9_62_prime256v1, NID_secp384r1};
     if (!SSL_set1_curves(ssl_.get(), kCurves, std::size(kCurves))) {
@@ -1249,10 +1237,15 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
   }
 
   // Enforce keyUsage extension for RSA leaf certificates chaining up to known
-  // roots.
-  // TODO(crbug.com/795089): Enforce this unconditionally.
+  // roots unconditionally. Enforcement for local anchors is, for now,
+  // conditional on feature flags and external configuration. See
+  // https://crbug.com/795089.
+  bool rsa_key_usage_for_local_anchors =
+      context_->config().rsa_key_usage_for_local_anchors_override.value_or(
+          base::FeatureList::IsEnabled(features::kRSAKeyUsageForLocalAnchors));
   SSL_set_enforce_rsa_key_usage(
-      ssl_.get(), server_cert_verify_result_.is_issued_by_known_root);
+      ssl_.get(), rsa_key_usage_for_local_anchors ||
+                      server_cert_verify_result_.is_issued_by_known_root);
 
   // If the connection was good, check HPKP and CT status simultaneously,
   // but prefer to treat the HPKP error as more serious, if there was one.

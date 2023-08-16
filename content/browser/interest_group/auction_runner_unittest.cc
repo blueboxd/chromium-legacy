@@ -704,7 +704,7 @@ std::string MakeDecisionScript(
       // Currency-adjust the bidKey in metadata if needed.
       if (auctionConfig.sellerCurrency && bid !== 0.0)
         adMetadata.bidKey += "0";
-      return {desirability: computeScore(convertedBid ? convertedBid : bid),
+      return {desirability: computeScore(bid),
               incomingBidInSellerCurrency: convertedBid,
               bid: convertedBid,
               // Only allow a component auction when the passed in ad is from
@@ -808,11 +808,6 @@ std::string MakeDecisionScript(
       privateAggregation.contributeToHistogramOnEvent(
           'click', {bucket: 70n, value: 80});
 
-      // Convert the bid back into bidder currency if we're covering that.
-      if (auctionConfig.sellerCurrency) {
-        browserSignals.bid /= 10.0;
-      }
-
       return browserSignals;
     }
 
@@ -873,10 +868,6 @@ const char kBasicReportResult[] = R"(
     registerAdBeacon({
       "click": "https://reporting.example.com/" + 2*browserSignals.bid,
     });
-    // Convert the bid back into bidder currency if we're covering that.
-    if (auctionConfig.sellerCurrency) {
-      browserSignals.bid /= 10.0;
-    }
     return browserSignals;
   }
 )";
@@ -2758,12 +2749,13 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
   // Set by UseMockWorkletService(). Non-owning reference to the
   // AuctionProcessManager that will be / has been passed to the
   // InterestGroupManager.
-  raw_ptr<MockAuctionProcessManager> mock_auction_process_manager_ = nullptr;
+  raw_ptr<MockAuctionProcessManager, DanglingUntriaged>
+      mock_auction_process_manager_ = nullptr;
 
   // If StartAuction() created a SameProcessAuctionProcessManager for
   // `auction_process_manager_`, this alises it.
   // Reset by other things that set `auction_process_manager_`.
-  raw_ptr<SameProcessAuctionProcessManager>
+  raw_ptr<SameProcessAuctionProcessManager, DanglingUntriaged>
       same_process_auction_process_manager_ = nullptr;
 
   // The TestInterestGroupManager is recreated and repopulated for each auction.
@@ -3000,7 +2992,7 @@ TEST_F(AuctionRunnerTest, OneInterestGroup) {
           GURL("https://reporting.example.com/"
                "?highestScoringOtherBid=0&"
                "highestScoringOtherBidCurrency=???&"
-               "bidCurrency=???&bid=1"),
+               "bidCurrency=USD&bid=1"),
           ReportWinUrl(/*bid=*/1,
                        /*bid_currency=*/blink::AdCurrency::From("USD"),
                        /*highest_scoring_other_bid=*/0,
@@ -3008,7 +3000,7 @@ TEST_F(AuctionRunnerTest, OneInterestGroup) {
                        /*made_highest_scoring_other_bid=*/false)));
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key));
-  EXPECT_EQ(R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
+  EXPECT_EQ(R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
             result_.winning_group_ad_metadata);
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
                    .SetNumInterestGroups(1)
@@ -3157,7 +3149,7 @@ TEST_F(AuctionRunnerTest, Basic) {
           GURL("https://reporting.example.com/"
                "?highestScoringOtherBid=1&"
                "highestScoringOtherBidCurrency=???&"
-               "bidCurrency=???&bid=2"),
+               "bidCurrency=USD&bid=2"),
           ReportWinUrl(/*bid=*/2,
                        /*bid_currency=*/blink::AdCurrency::From("USD"),
                        /*highest_scoring_other_bid=*/1,
@@ -3224,7 +3216,7 @@ TEST_F(AuctionRunnerTest, Basic) {
 
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
-  EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
+  EXPECT_EQ(R"({"renderURL":"https://ad2.com/"})",
             result_.winning_group_ad_metadata);
   EXPECT_TRUE(result_.errors.empty());
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
@@ -3748,11 +3740,11 @@ TEST_F(AuctionRunnerTest, ComponentAuction) {
           GURL("https://reporting.example.com/"
                "?highestScoringOtherBid=0&"
                "highestScoringOtherBidCurrency=???&"
-               "bidCurrency=???&bid=2"),
+               "bidCurrency=USD&bid=2"),
           GURL("https://component2-report.test/"
                "?highestScoringOtherBid=0&"
                "highestScoringOtherBidCurrency=???&"
-               "bidCurrency=???&bid=2"),
+               "bidCurrency=USD&bid=2"),
           ReportWinUrl(/*bid=*/2,
                        /*bid_currency=*/blink::AdCurrency::From("USD"),
                        /*highest_scoring_other_bid=*/0,
@@ -3804,7 +3796,7 @@ TEST_F(AuctionRunnerTest, ComponentAuction) {
 
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
-  EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
+  EXPECT_EQ(R"({"renderURL":"https://ad2.com/"})",
             result_.winning_group_ad_metadata);
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
                    .SetNumInterestGroups(2)
@@ -3924,12 +3916,14 @@ TEST_F(AuctionRunnerTest, ComponentAuctionMixedCurrency) {
   EXPECT_THAT(
       result_.report_urls,
       testing::UnorderedElementsAre(
+          // Top-level gets a bid of 18USD from the component.
           GURL("https://seller-reporting-50.example.com/"
                "?highestScoringOtherBid=0&highestScoringOtherBidCurrency=???&"
-               "bidCurrency=CAD&bid=180"),
+               "bidCurrency=USD&bid=18"),
+          // Bid in component is 2USD.
           GURL("https://seller-reporting-20.example.com/"
                "?highestScoringOtherBid=10&highestScoringOtherBidCurrency=USD&"
-               "bidCurrency=USD&bid=20"),
+               "bidCurrency=USD&bid=2"),
           GURL("https://buyer-reporting.example.com/"
                "?highestScoringOtherBid=10&highestScoringOtherBidCurrency=USD&"
                "bidCurrency=USD&bid=2")));
@@ -3968,13 +3962,13 @@ TEST_F(AuctionRunnerTest, ComponentAuctionMixedCurrency) {
                   BuildPrivateAggregationRequest(/*bucket=*/20, /*value=*/2021),
                   // scoreAd(), highest-scoring-other-bid, incoming bid 2
                   BuildPrivateAggregationRequest(/*bucket=*/10, /*value=*/2022),
-                  // reportResult(), winning-bid, browserSignals.bid is 20
+                  // reportResult(), winning-bid, browserSignals.bid is 2
                   BuildPrivateAggregationRequest(/*bucket=*/20,
-                                                 /*value=*/20031),
+                                                 /*value=*/2031),
                   // reportResult(), highest-scoring-other-bid,
-                  // browserSignals.bid is 20
+                  // browserSignals.bid is 2
                   BuildPrivateAggregationRequest(/*bucket=*/10,
-                                                 /*value=*/20032))),
+                                                 /*value=*/2032))),
           testing::Pair(
               kSeller,
               ElementsAreRequests(
@@ -3983,12 +3977,12 @@ TEST_F(AuctionRunnerTest, ComponentAuctionMixedCurrency) {
                                                  /*value=*/18051),
                   // scoreAd(), highest-scoring-other-bid is 0.
                   BuildPrivateAggregationRequest(/*bucket=*/0, /*value=*/18052),
-                  // reportResult(), winning-bid, browserSignals.bid is 180.
+                  // reportResult(), winning-bid, browserSignals.bid is 18.
                   BuildPrivateAggregationRequest(/*bucket=*/180,
-                                                 /*value=*/180061),
+                                                 /*value=*/18061),
                   // reportResult() highest-scoring-other-bid is 0.
                   BuildPrivateAggregationRequest(/*bucket=*/0,
-                                                 /*value=*/180062)))));
+                                                 /*value=*/18062)))));
 }
 
 // Test of a component auction where top-level seller and intermediate one use
@@ -4106,12 +4100,15 @@ TEST_F(AuctionRunnerTest, ComponentAuctionMixedCurrency2) {
   EXPECT_THAT(
       result_.report_urls,
       testing::UnorderedElementsAre(
+          // Component's bid in top-level is 18MXN.
           GURL("https://seller-reporting-60.example.com/"
                "?highestScoringOtherBid=0&highestScoringOtherBidCurrency=???&"
-               "bidCurrency=CAD&bid=180"),
+               "bidCurrency=MXN&bid=18"),
+          // Buyer's bid in component is 2USD.
           GURL("https://seller-reporting-40.example.com/"
                "?highestScoringOtherBid=0&highestScoringOtherBidCurrency=MXN&"
-               "bidCurrency=MXN&bid=20"),
+               "bidCurrency=USD&bid=2"),
+          // Winning buyer's bid is 2USD.
           GURL("https://buyer-reporting.example.com/"
                "?highestScoringOtherBid=0&highestScoringOtherBidCurrency=MXN&"
                "bidCurrency=USD&bid=2")));
@@ -4154,13 +4151,13 @@ TEST_F(AuctionRunnerTest, ComponentAuctionMixedCurrency2) {
                   BuildPrivateAggregationRequest(/*bucket=*/20, /*value=*/2041),
                   // scoreAd(), highest-scoring-other-bid, incoming bid 2
                   BuildPrivateAggregationRequest(/*bucket=*/0, /*value=*/2042),
-                  // reportResult(), winning-bid, browserSignals.bid is 20
+                  // reportResult(), winning-bid, browserSignals.bid is 2
                   BuildPrivateAggregationRequest(/*bucket=*/20,
-                                                 /*value=*/20051),
+                                                 /*value=*/2051),
                   // reportResult(), highest-scoring-other-bid,
-                  // browserSignals.bid is 20
+                  // browserSignals.bid is 2
                   BuildPrivateAggregationRequest(/*bucket=*/0,
-                                                 /*value=*/20052))),
+                                                 /*value=*/2052))),
           testing::Pair(
               kSeller,
               ElementsAreRequests(
@@ -4177,13 +4174,13 @@ TEST_F(AuctionRunnerTest, ComponentAuctionMixedCurrency2) {
                   // on top-level.
                   BuildPrivateAggregationRequest(/*bucket=*/0,
                                                  /*value=*/18062),
-                  // reportResult(), winning-bid, browserSignals.bid is 180.
+                  // reportResult(), winning-bid, browserSignals.bid is 18.
                   BuildPrivateAggregationRequest(/*bucket=*/180,
-                                                 /*value=*/180071),
+                                                 /*value=*/18071),
                   // reportResult() highest-scoring-other-bid is 0, since not
                   // set on top-level.
                   BuildPrivateAggregationRequest(/*bucket=*/0,
-                                                 /*value=*/180072)))));
+                                                 /*value=*/18072)))));
 }
 
 // Test of currency handling in a component auction where bid is passed
@@ -4514,7 +4511,7 @@ TEST_F(AuctionRunnerTest, ComponentAuctionSharedBuyer) {
   // Bid count should only be incremented by 1.
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key));
-  EXPECT_EQ(R"({"render_url":"https://component2-bid.test/"})",
+  EXPECT_EQ(R"({"renderURL":"https://component2-bid.test/"})",
             result_.winning_group_ad_metadata);
   // Currently an interest group participating twice in an auction is counted
   // twice.
@@ -4612,11 +4609,11 @@ TEST_F(AuctionRunnerTest, ComponentAuctionOneComponentTwoBidders) {
           GURL("https://reporting.example.com/"
                "?highestScoringOtherBid=0&"
                "highestScoringOtherBidCurrency=???&"
-               "bidCurrency=???&bid=1"),
+               "bidCurrency=USD&bid=1"),
           GURL("https://component1-report.test/"
                "?highestScoringOtherBid=2&"
                "highestScoringOtherBidCurrency=???&"
-               "bidCurrency=???&bid=1"),
+               "bidCurrency=USD&bid=1"),
           ReportWinUrl(/*bid=*/1,
                        /*bid_currency=*/blink::AdCurrency::From("USD"),
                        /*highest_scoring_other_bid=*/2,
@@ -4665,7 +4662,7 @@ TEST_F(AuctionRunnerTest, ComponentAuctionOneComponentTwoBidders) {
 
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
-  EXPECT_EQ(R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
+  EXPECT_EQ(R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
             result_.winning_group_ad_metadata);
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
                    .SetNumInterestGroups(2)
@@ -4889,7 +4886,7 @@ TEST_F(AuctionRunnerTest, ComponentAuctionModifiesBid) {
       EXPECT_THAT(result_.report_urls,
                   testing::UnorderedElementsAre(
                       GURL("https://buyer-reporting.example.com/2"),
-                      GURL("https://component.seller1.test/20_3"),
+                      GURL("https://component.seller1.test/2_3"),
                       GURL("https://adstuff.publisher1.com/3")));
       EXPECT_THAT(
           result_.ad_beacon_map,
@@ -4901,7 +4898,7 @@ TEST_F(AuctionRunnerTest, ComponentAuctionModifiesBid) {
               testing::Pair(
                   ReportingDestination::kComponentSeller,
                   testing::ElementsAre(testing::Pair(
-                      "click", GURL("https://component.seller1.test/40_3")))),
+                      "click", GURL("https://component.seller1.test/4_3")))),
               testing::Pair(
                   ReportingDestination::kBuyer,
                   testing::ElementsAre(testing::Pair(
@@ -5052,7 +5049,7 @@ TEST_F(AuctionRunnerTest, DisallowedComponentAuctionOneSeller) {
               BuildPrivateAggregationRequest(/*bucket=*/30, /*value=*/41)))));
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key));
-  EXPECT_EQ(R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
+  EXPECT_EQ(R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
             result_.winning_group_ad_metadata);
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
                    .SetNumInterestGroups(1)
@@ -5152,7 +5149,7 @@ TEST_F(AuctionRunnerTest, DisallowedSingleBuyer) {
 
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key));
-  EXPECT_EQ(R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
+  EXPECT_EQ(R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
             result_.winning_group_ad_metadata);
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
                    .SetNumInterestGroups(1)
@@ -5257,7 +5254,7 @@ TEST_F(AuctionRunnerTest, DisallowedComponentAuctionSingleBuyer) {
               BuildPrivateAggregationRequest(/*bucket=*/30, /*value=*/41)))));
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key));
-  EXPECT_EQ(R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
+  EXPECT_EQ(R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
             result_.winning_group_ad_metadata);
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
                    .SetNumInterestGroups(1)
@@ -5377,7 +5374,7 @@ TEST_F(AuctionRunnerTest, OneBidOne404) {
 
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key));
-  EXPECT_EQ(R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
+  EXPECT_EQ(R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
             result_.winning_group_ad_metadata);
   EXPECT_THAT(
       result_.errors,
@@ -5545,7 +5542,7 @@ TEST_F(AuctionRunnerTest, OneBidOneNotMade) {
 
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key));
-  EXPECT_EQ(R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
+  EXPECT_EQ(R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
             result_.winning_group_ad_metadata);
   EXPECT_THAT(result_.errors,
               testing::ElementsAre("https://anotheradthing.com/bids.js "
@@ -5782,7 +5779,7 @@ TEST_F(AuctionRunnerTest, SellerRejectsOne) {
 
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
-  EXPECT_EQ(R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
+  EXPECT_EQ(R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
             result_.winning_group_ad_metadata);
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
@@ -5889,7 +5886,7 @@ TEST_F(AuctionRunnerTest, NoTrustedBiddingSignals) {
 
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
-  EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
+  EXPECT_EQ(R"({"renderURL":"https://ad2.com/"})",
             result_.winning_group_ad_metadata);
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
@@ -5970,7 +5967,7 @@ TEST_F(AuctionRunnerTest, TrustedBiddingSignals404) {
 
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
-  EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
+  EXPECT_EQ(R"({"renderURL":"https://ad2.com/"})",
             result_.winning_group_ad_metadata);
   EXPECT_THAT(result_.errors, testing::UnorderedElementsAre(
                                   "Failed to load "
@@ -6062,7 +6059,7 @@ TEST_F(AuctionRunnerTest, NoReportResultUrl) {
 
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
-  EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
+  EXPECT_EQ(R"({"renderURL":"https://ad2.com/"})",
             result_.winning_group_ad_metadata);
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
@@ -6142,7 +6139,7 @@ TEST_F(AuctionRunnerTest, NoReportWinUrl) {
 
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
-  EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
+  EXPECT_EQ(R"({"renderURL":"https://ad2.com/"})",
             result_.winning_group_ad_metadata);
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
@@ -6213,7 +6210,7 @@ TEST_F(AuctionRunnerTest, NeitherReportUrl) {
 
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
-  EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
+  EXPECT_EQ(R"({"renderURL":"https://ad2.com/"})",
             result_.winning_group_ad_metadata);
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
@@ -6291,7 +6288,7 @@ function scoreAd(adMetadata, bid, auctionConfig, trustedScoringSignals,
 
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
-  EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
+  EXPECT_EQ(R"({"renderURL":"https://ad2.com/"})",
             result_.winning_group_ad_metadata);
   EXPECT_THAT(result_.errors, testing::ElementsAre(base::StringPrintf(
                                   "%s `reportResult` is not a function.",
@@ -6444,7 +6441,7 @@ function reportResult(auctionConfig, browserSignals) {
 
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
-  EXPECT_EQ(R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
+  EXPECT_EQ(R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
             result_.winning_group_ad_metadata);
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
                    .SetNumInterestGroups(2)
@@ -8001,7 +7998,7 @@ TEST_F(AuctionRunnerTest, ProcessManagerBlocksWorkletCreation) {
 
       EXPECT_THAT(result_.interest_groups_that_bid,
                   testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
-      EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
+      EXPECT_EQ(R"({"renderURL":"https://ad2.com/"})",
                 result_.winning_group_ad_metadata);
       // In the case where no SellerWorklet is available at the start of the
       // auction, the auction is blocked on scoring the ad until the
@@ -8805,7 +8802,7 @@ TEST_F(AuctionRunnerTest, BidderCrashBeforeBidding) {
     EXPECT_TRUE(result_.private_aggregation_event_map.empty());
     EXPECT_THAT(result_.interest_groups_that_bid,
                 testing::UnorderedElementsAre(kBidder2Key));
-    EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
+    EXPECT_EQ(R"({"renderURL":"https://ad2.com/"})",
               result_.winning_group_ad_metadata);
     CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
                      .SetNumInterestGroups(2)
@@ -9401,8 +9398,9 @@ TEST_F(AuctionRunnerTest, NullAdComponents) {
       EXPECT_TRUE(result_.private_aggregation_event_map.empty());
       EXPECT_THAT(result_.interest_groups_that_bid,
                   testing::UnorderedElementsAre(kBidder1Key));
-      EXPECT_EQ(R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
-                result_.winning_group_ad_metadata);
+      EXPECT_EQ(
+          R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
+          result_.winning_group_ad_metadata);
       CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
                        .SetNumInterestGroups(1)
                        .SetNumOwnersAndDistinctOwners(1)
@@ -9515,8 +9513,9 @@ TEST_F(AuctionRunnerTest, AdComponentsLimit) {
       EXPECT_TRUE(result_.private_aggregation_event_map.empty());
       EXPECT_THAT(result_.interest_groups_that_bid,
                   testing::UnorderedElementsAre(kBidder1Key));
-      EXPECT_EQ(R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
-                result_.winning_group_ad_metadata);
+      EXPECT_EQ(
+          R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
+          result_.winning_group_ad_metadata);
       CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
                        .SetNumInterestGroups(1)
                        .SetNumOwnersAndDistinctOwners(1)
@@ -9922,7 +9921,7 @@ TEST_F(AuctionRunnerTest, DestroyBidderWorkletWithoutBid) {
   EXPECT_TRUE(result_.private_aggregation_event_map.empty());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder2Key));
-  EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
+  EXPECT_EQ(R"({"renderURL":"https://ad2.com/"})",
             result_.winning_group_ad_metadata);
   CheckMetrics(MetricsExpectations(AuctionResult::kSuccess)
                    .SetNumInterestGroups(2)
@@ -10021,8 +10020,9 @@ TEST_F(AuctionRunnerTest, Tie) {
       EXPECT_EQ(kBidder1Key, result_.winning_group_id);
       EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
       EXPECT_TRUE(result_.ad_component_descriptors.empty());
-      EXPECT_EQ(R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
-                result_.winning_group_ad_metadata);
+      EXPECT_EQ(
+          R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
+          result_.winning_group_ad_metadata);
     } else {
       seen_bidder2_win = true;
 
@@ -10035,7 +10035,7 @@ TEST_F(AuctionRunnerTest, Tie) {
       EXPECT_EQ(kBidder2Key, result_.winning_group_id);
       EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
       EXPECT_TRUE(result_.ad_component_descriptors.empty());
-      EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
+      EXPECT_EQ(R"({"renderURL":"https://ad2.com/"})",
                 result_.winning_group_ad_metadata);
     }
 
@@ -10178,12 +10178,12 @@ TEST_F(AuctionRunnerTest, WorkletOrder) {
         EXPECT_EQ(kBidder1Key, result_.winning_group_id);
         EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
         EXPECT_EQ(
-            R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
+            R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
             result_.winning_group_ad_metadata);
       } else {
         EXPECT_EQ(kBidder2Key, result_.winning_group_id);
         EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_descriptor->url);
-        EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
+        EXPECT_EQ(R"({"renderURL":"https://ad2.com/"})",
                   result_.winning_group_ad_metadata);
       }
     }
@@ -12174,10 +12174,6 @@ TEST_F(AuctionRunnerTest,
     //   kInvalidBid (1).
     // If sellerCurrency is on:
     //   winning-bid is 10, everything else is the same.
-    //
-    // Some things use 100 * browserSignals.bid in their
-    // reportResultcalculation, that's in seller currency, so also needs to be
-    // adjusted.
     int winning_bid = use_seller_currency ? 10 : 1;
 
     EXPECT_THAT(
@@ -12225,10 +12221,10 @@ TEST_F(AuctionRunnerTest,
                     // a supported base value in reportResult().
                     BuildPrivateAggregationRequest(
                         /*bucket=*/winning_bid,
-                        /*value=*/100 * winning_bid + 31),
+                        /*value=*/131),
                     BuildPrivateAggregationRequest(
                         /*bucket=*/0,
-                        /*value=*/100 * winning_bid + 32)))));
+                        /*value=*/132)))));
     EXPECT_TRUE(result_.private_aggregation_event_map.empty());
   }
 }
@@ -12392,10 +12388,10 @@ TEST_F(AuctionRunnerTest,
                     // a supported base value in reportResult().
                     BuildPrivateAggregationRequest(
                         /*bucket=*/winning_bid,
-                        /*value=*/winning_bid * 100 + 31),
+                        /*value=*/231),
                     BuildPrivateAggregationRequest(
                         /*bucket=*/highest_scoring_other_bid,
-                        /*value=*/winning_bid * 100 + 32)))));
+                        /*value=*/232)))));
   }
 }
 
@@ -12730,7 +12726,7 @@ TEST_F(AuctionRunnerTest,
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key));
-  EXPECT_EQ(R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
+  EXPECT_EQ(R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
             result_.winning_group_ad_metadata);
 
   EXPECT_THAT(
@@ -14963,11 +14959,11 @@ TEST_P(AuctionRunnerBiddingAndScoringDebugReportingAPIEnabledTest,
               SellerCurrencyOn() ? GURL("https://reporting.example.com/"
                                         "?highestScoringOtherBid=40&"
                                         "highestScoringOtherBidCurrency=EUR&"
-                                        "bidCurrency=EUR&bid=30")
+                                        "bidCurrency=USD&bid=3")
                                  : GURL("https://reporting.example.com/"
                                         "?highestScoringOtherBid=4&"
                                         "highestScoringOtherBidCurrency=???&"
-                                        "bidCurrency=???&bid=3"),
+                                        "bidCurrency=USD&bid=3"),
               ReportWinUrl(
                   /*bid=*/3, /*bid_currency=*/blink::AdCurrency::From("USD"),
                   /*highest_scoring_other_bid=*/ModeBid(4), ModeCurrency(),
@@ -15049,11 +15045,11 @@ TEST_P(AuctionRunnerBiddingAndScoringDebugReportingAPIEnabledTest,
               SellerCurrencyOn() ? GURL("https://reporting.example.com/"
                                         "?highestScoringOtherBid=30&"
                                         "highestScoringOtherBidCurrency=EUR&"
-                                        "bidCurrency=EUR&bid=40")
+                                        "bidCurrency=USD&bid=4")
                                  : GURL("https://reporting.example.com/"
                                         "?highestScoringOtherBid=3&"
                                         "highestScoringOtherBidCurrency=???&"
-                                        "bidCurrency=???&bid=4"),
+                                        "bidCurrency=USD&bid=4"),
               ReportWinUrl(
                   /*bid=*/4, /*bid_currency=*/blink::AdCurrency::From("USD"),
                   /*highest_scoring_other_bid=*/ModeBid(3), ModeCurrency(),
@@ -15112,26 +15108,26 @@ TEST_P(AuctionRunnerBiddingAndScoringDebugReportingAPIEnabledTest,
                        "https://reporting.example.com/"
                        "?highestScoringOtherBid=1&"
                        "highestScoringOtherBidCurrency=???&"
-                       "bidCurrency=???&bid=3",
+                       "bidCurrency=USD&bid=3",
                        &GURL::spec) ||
         base::Contains(result_.report_urls,
                        "https://reporting.example.com/"
                        "?highestScoringOtherBid=10&"
                        "highestScoringOtherBidCurrency=EUR&"
-                       "bidCurrency=EUR&bid=30",
+                       "bidCurrency=USD&bid=3",
                        &GURL::spec)) {
       highest_scoring_other_bid = 1;
     } else if (base::Contains(result_.report_urls,
                               "https://reporting.example.com/"
                               "?highestScoringOtherBid=2&"
                               "highestScoringOtherBidCurrency=???&"
-                              "bidCurrency=???&bid=3",
+                              "bidCurrency=USD&bid=3",
                               &GURL::spec) ||
                base::Contains(result_.report_urls,
                               "https://reporting.example.com/"
                               "?highestScoringOtherBid=20&"
                               "highestScoringOtherBidCurrency=EUR&"
-                              "bidCurrency=EUR&bid=30",
+                              "bidCurrency=USD&bid=3",
                               &GURL::spec)) {
       highest_scoring_other_bid = 2;
     }
@@ -15217,11 +15213,11 @@ TEST_P(AuctionRunnerBiddingAndScoringDebugReportingAPIEnabledTest,
               SellerCurrencyOn() ? GURL("https://reporting.example.com/"
                                         "?highestScoringOtherBid=10&"
                                         "highestScoringOtherBidCurrency=EUR&"
-                                        "bidCurrency=EUR&bid=30")
+                                        "bidCurrency=USD&bid=3")
                                  : GURL("https://reporting.example.com/"
                                         "?highestScoringOtherBid=1&"
                                         "highestScoringOtherBidCurrency=???&"
-                                        "bidCurrency=???&bid=3"),
+                                        "bidCurrency=USD&bid=3"),
               ReportWinUrl(
                   /*bid=*/3, /*bid_currency=*/blink::AdCurrency::From("USD"),
                   /*highest_scoring_other_bid=*/ModeBid(1), ModeCurrency(),
@@ -15302,11 +15298,11 @@ TEST_P(AuctionRunnerBiddingAndScoringDebugReportingAPIEnabledTest,
               SellerCurrencyOn() ? GURL("https://reporting.example.com/"
                                         "?highestScoringOtherBid=20&"
                                         "highestScoringOtherBidCurrency=EUR&"
-                                        "bidCurrency=EUR&bid=30")
+                                        "bidCurrency=USD&bid=3")
                                  : GURL("https://reporting.example.com/"
                                         "?highestScoringOtherBid=2&"
                                         "highestScoringOtherBidCurrency=???&"
-                                        "bidCurrency=???&bid=3"),
+                                        "bidCurrency=USD&bid=3"),
               ReportWinUrl(
                   /*bid=*/3, /*bid_currency=*/blink::AdCurrency::From("USD"),
                   /*highest_scoring_other_bid=*/ModeBid(2), ModeCurrency(),
@@ -15360,26 +15356,26 @@ TEST_P(AuctionRunnerBiddingAndScoringDebugReportingAPIEnabledTest,
                        "https://reporting.example.com/"
                        "?highestScoringOtherBid=1&"
                        "highestScoringOtherBidCurrency=???&"
-                       "bidCurrency=???&bid=3",
+                       "bidCurrency=USD&bid=3",
                        &GURL::spec) ||
         base::Contains(result_.report_urls,
                        "https://reporting.example.com/"
                        "?highestScoringOtherBid=10&"
                        "highestScoringOtherBidCurrency=EUR&"
-                       "bidCurrency=EUR&bid=30",
+                       "bidCurrency=USD&bid=3",
                        &GURL::spec)) {
       highest_scoring_other_bid = 1;
     } else if (base::Contains(result_.report_urls,
                               "https://reporting.example.com/"
                               "?highestScoringOtherBid=2&"
                               "highestScoringOtherBidCurrency=???&"
-                              "bidCurrency=???&bid=3",
+                              "bidCurrency=USD&bid=3",
                               &GURL::spec) ||
                base::Contains(result_.report_urls,
                               "https://reporting.example.com/"
                               "?highestScoringOtherBid=20&"
                               "highestScoringOtherBidCurrency=EUR&"
-                              "bidCurrency=EUR&bid=30",
+                              "bidCurrency=USD&bid=3",
                               &GURL::spec)) {
       highest_scoring_other_bid = 2;
     }
@@ -15460,11 +15456,11 @@ TEST_P(AuctionRunnerBiddingAndScoringDebugReportingAPIEnabledTest,
               SellerCurrencyOn() ? GURL("https://reporting.example.com/"
                                         "?highestScoringOtherBid=10&"
                                         "highestScoringOtherBidCurrency=EUR&"
-                                        "bidCurrency=EUR&bid=30")
+                                        "bidCurrency=USD&bid=3")
                                  : GURL("https://reporting.example.com/"
                                         "?highestScoringOtherBid=1&"
                                         "highestScoringOtherBidCurrency=???&"
-                                        "bidCurrency=???&bid=3"),
+                                        "bidCurrency=USD&bid=3"),
               ReportWinUrl(
                   /*bid=*/3, /*bid_currency=*/blink::AdCurrency::From("USD"),
                   /*highest_scoring_other_bid=*/ModeBid(1), ModeCurrency(),
@@ -15545,11 +15541,11 @@ TEST_P(AuctionRunnerBiddingAndScoringDebugReportingAPIEnabledTest,
               SellerCurrencyOn() ? GURL("https://reporting.example.com/"
                                         "?highestScoringOtherBid=20&"
                                         "highestScoringOtherBidCurrency=EUR&"
-                                        "bidCurrency=EUR&bid=30")
+                                        "bidCurrency=USD&bid=3")
                                  : GURL("https://reporting.example.com/"
                                         "?highestScoringOtherBid=2&"
                                         "highestScoringOtherBidCurrency=???&"
-                                        "bidCurrency=???&bid=3"),
+                                        "bidCurrency=USD&bid=3"),
               ReportWinUrl(
                   /*bid=*/3, /*bid_currency=*/blink::AdCurrency::From("USD"),
                   /*highest_scoring_other_bid=*/ModeBid(2), ModeCurrency(),
@@ -16283,7 +16279,7 @@ TEST_P(AuctionRunnerBiddingAndScoringDebugReportingAPIEnabledTest,
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_descriptor->url);
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key));
-  EXPECT_EQ(R"({"render_url":"https://ad1.com/","metadata":{"ads": true}})",
+  EXPECT_EQ(R"({"metadata":"{\"ads\": true}","renderURL":"https://ad1.com/"})",
             result_.winning_group_ad_metadata);
 
   // Bidder2 lost, but debug_loss_report_urls is empty because bidder2's

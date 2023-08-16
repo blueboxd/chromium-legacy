@@ -7,8 +7,10 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/saved_desk_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
@@ -27,6 +29,7 @@
 #include "ash/wm/overview/overview_metrics.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/check.h"
 #include "base/notreached.h"
 #include "base/uuid.h"
@@ -36,6 +39,8 @@
 #include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/events/event_observer.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/views/background.h"
 #include "ui/views/event_monitor.h"
@@ -48,11 +53,13 @@ namespace {
 
 OverviewHighlightController* GetHighlightController() {
   auto* overview_controller = Shell::Get()->overview_controller();
-  CHECK(overview_controller->InOverviewSession());
+  if (!overview_controller || !overview_controller->InOverviewSession()) {
+    return nullptr;
+  }
   return overview_controller->overview_session()->highlight_controller();
 }
 
-// Checks whether there are any external keyboards.
+// Check whether there are any external keyboards.
 bool HasExternalKeyboard() {
   for (const ui::InputDevice& device :
        ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
@@ -457,13 +464,25 @@ DeskBarViewBase::DeskBarViewBase(aura::Window* root, Type type)
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
+  const bool is_jellyroll_enabled = chromeos::features::IsJellyrollEnabled();
+
+  if (is_jellyroll_enabled) {
+    layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
+  }
+
+  const float corner_radius = type_ == Type::kOverview
+                                  ? kDeskBarCornerRadiusOverview
+                                  : kDeskBarCornerRadiusOverviewDeskButton;
+
   SetBorder(std::make_unique<views::HighlightBorder>(
-      /*corner_radius=*/0,
+      corner_radius,
       chromeos::features::IsJellyrollEnabled()
           ? views::HighlightBorder::Type::kHighlightBorderNoShadow
           : views::HighlightBorder::Type::kHighlightBorder2));
 
+  layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(corner_radius));
   SetBackground(views::CreateThemedSolidBackground(kColorAshShieldAndBase80));
+
   // Use layer scrolling so that the contents will paint on top of the parent,
   // which uses SetPaintToLayer()
   scroll_view_ = AddChildView(std::make_unique<views::ScrollView>(
@@ -490,7 +509,7 @@ DeskBarViewBase::DeskBarViewBase(aura::Window* root, Type type)
       scroll_view_->SetContents(std::make_unique<views::View>());
   scroll_view_contents_->SetPaintToLayer();
 
-  if (chromeos::features::IsJellyrollEnabled()) {
+  if (is_jellyroll_enabled) {
     default_desk_button_ = scroll_view_contents_->AddChildView(
         std::make_unique<CrOSNextDefaultDeskButton>(this));
     new_desk_button_ = scroll_view_contents_->AddChildView(
@@ -533,7 +552,7 @@ DeskBarViewBase::DeskBarViewBase(aura::Window* root, Type type)
       button_text_id = IDS_ASH_DESKS_TEMPLATES_DESKS_BAR_BUTTON_SAVED_FOR_LATER;
     }
 
-    if (chromeos::features::IsJellyrollEnabled()) {
+    if (is_jellyroll_enabled) {
       library_button_ = scroll_view_contents_->AddChildView(
           std::make_unique<CrOSNextDeskIconButton>(
               this, &kDesksTemplatesIcon,
@@ -697,25 +716,47 @@ void DeskBarViewBase::Layout() {
     return;
   }
 
-  // Scroll buttons are kept `kDeskBarScrollViewMinimumHorizontalPadding` away
-  // from the edge of the scroll view. So the horizontal padding of the scroll
-  // view is set to guarantee enough space for the scroll buttons.
+  // Refresh bounds as preferred. This is needed for dynamic width for the bar.
+  gfx::Size preferred_size = CalculatePreferredSize();
+  gfx::Rect new_bounds = GetAvailableBounds();
+  switch (Shelf::ForWindow(root_)->alignment()) {
+    case ShelfAlignment::kBottom:
+      new_bounds.ClampToCenteredSize(preferred_size);
+      break;
+    case ShelfAlignment::kLeft:
+      new_bounds.set_size(preferred_size);
+      break;
+    case ShelfAlignment::kRight:
+      new_bounds.set_origin({new_bounds.right() - preferred_size.width(),
+                             new_bounds.bottom() - preferred_size.height()});
+      new_bounds.set_size(preferred_size);
+      break;
+    default:
+      NOTREACHED();
+  }
+  SetBoundsRect(new_bounds);
+
+  // Scroll buttons are kept `scroll_view_padding` away from the edge of the
+  // scroll view. So the horizontal padding of the scroll view is set to
+  // guarantee enough space for the scroll buttons.
   const gfx::Insets insets = (type_ == Type::kOverview)
                                  ? overview_grid_->GetGridInsets()
-                                 : gfx::Insets::TLBR(0, 0, 0, 0);
+                                 : gfx::Insets();
   CHECK(insets.left() == insets.right());
-  const int horizontal_padding =
-      std::max(kDeskBarScrollViewMinimumHorizontalPadding, insets.left());
-  left_scroll_button_->SetBounds(
-      horizontal_padding - kDeskBarScrollViewMinimumHorizontalPadding,
-      bounds().y(), kDeskBarScrollButtonWidth, bounds().height());
+  const int scroll_view_padding =
+      (type_ == Type::kOverview
+           ? kDeskBarScrollViewMinimumHorizontalPaddingOverview
+           : kDeskBarScrollViewMinimumHorizontalPaddingDeskButton);
+  const int horizontal_padding = std::max(scroll_view_padding, insets.left());
+  left_scroll_button_->SetBounds(horizontal_padding - scroll_view_padding,
+                                 bounds().y(), kDeskBarScrollButtonWidth,
+                                 bounds().height());
   right_scroll_button_->SetBounds(
       bounds().right() - horizontal_padding -
-          (kDeskBarScrollButtonWidth -
-           kDeskBarScrollViewMinimumHorizontalPadding),
+          (kDeskBarScrollButtonWidth - scroll_view_padding),
       bounds().y(), kDeskBarScrollButtonWidth, bounds().height());
 
-  gfx::Rect scroll_bounds = bounds();
+  gfx::Rect scroll_bounds(size());
   // Align with the overview grid in horizontal, so only horizontal insets are
   // needed here.
   scroll_bounds.Inset(gfx::Insets::VH(0, horizontal_padding));
@@ -929,16 +970,19 @@ void DeskBarViewBase::UpdateLibraryButtonVisibility() {
                                              !is_zero_state);
 
   if (type_ == Type::kOverview) {
-    // Removes the button from the tabbing order if it becomes invisible.
-    auto* highlight_controller = GetHighlightController();
-    if (!zero_state_library_button_->GetVisible()) {
-      highlight_controller->OnViewDestroyingOrDisabling(
-          zero_state_library_button_);
+    if (auto* highlight_controller = GetHighlightController()) {
+      // Remove the button from the tabbing order if it becomes invisible.
+      if (!zero_state_library_button_->GetVisible()) {
+        highlight_controller->OnViewDestroyingOrDisabling(
+            zero_state_library_button_);
+      }
+      if (!expanded_state_library_button_->GetVisible()) {
+        highlight_controller->OnViewDestroyingOrDisabling(
+            expanded_state_library_button_->GetInnerButton());
+      }
     }
-    if (!expanded_state_library_button_->GetVisible()) {
-      highlight_controller->OnViewDestroyingOrDisabling(
-          expanded_state_library_button_->GetInnerButton());
-    }
+  } else {
+    // TODO(b/277988182): Add support for desk button desk bar.
   }
 
   const int begin_x = GetFirstMiniViewXOffset();
@@ -1310,17 +1354,21 @@ void DeskBarViewBase::OnDeskRemoved(const Desk* desk) {
   }
 
   if (type_ == Type::kOverview) {
-    // Let the highlight controller know the view is destroying before it is
-    // removed from the collection because it needs to know the index of the
-    // mini view, or the desk name view (if either is currently highlighted)
-    // relative to other traversable views.
-    auto* highlight_controller = GetHighlightController();
-    // The order here matters, we call it first on the desk_name_view since it
-    // comes later in the highlight order (See documentation of
-    // `OnViewDestroyingOrDisabling()`).
-    highlight_controller->OnViewDestroyingOrDisabling(
-        (*iter)->desk_name_view());
-    highlight_controller->OnViewDestroyingOrDisabling((*iter)->desk_preview());
+    if (auto* highlight_controller = GetHighlightController()) {
+      // Let the highlight controller know the view is destroying before it is
+      // removed from the collection because it needs to know the index of the
+      // mini view, or the desk name view (if either is currently highlighted)
+      // relative to other traversable views.
+      // The order here matters, we call it first on the desk_name_view since it
+      // comes later in the highlight order (See documentation of
+      // `OnViewDestroyingOrDisabling()`).
+      highlight_controller->OnViewDestroyingOrDisabling(
+          (*iter)->desk_name_view());
+      highlight_controller->OnViewDestroyingOrDisabling(
+          (*iter)->desk_preview());
+    }
+  } else {
+    // TODO(b/277988182): Add support for desk button desk bar.
   }
 
   if (chromeos::features::IsJellyrollEnabled()) {
@@ -1353,12 +1401,19 @@ void DeskBarViewBase::OnDeskRemoved(const Desk* desk) {
     EndDragDesk(removed_mini_view, /*end_by_user=*/false);
   }
 
-  Layout();
-  PerformRemoveDeskMiniViewAnimation(
-      this, removed_mini_view,
-      std::vector<DeskMiniView*>(mini_views_.begin(), partition_iter),
-      std::vector<DeskMiniView*>(partition_iter, mini_views_.end()),
-      begin_x - GetFirstMiniViewXOffset());
+  // There is desk removal animation for overview bar but not for desk button
+  // desk bar.
+  if (type_ == Type::kOverview) {
+    Layout();
+    PerformRemoveDeskMiniViewAnimation(
+        this, removed_mini_view,
+        std::vector<DeskMiniView*>(mini_views_.begin(), partition_iter),
+        std::vector<DeskMiniView*>(partition_iter, mini_views_.end()),
+        begin_x - GetFirstMiniViewXOffset());
+  } else {
+    removed_mini_view->parent()->RemoveChildViewT(removed_mini_view);
+    Layout();
+  }
 
   MaybeUpdateCombineDesksTooltips();
 }
@@ -1484,11 +1539,12 @@ void DeskBarViewBase::SwitchToZeroState() {
   std::vector<DeskMiniView*> removed_mini_views = mini_views_;
   mini_views_.clear();
 
-  auto* highlight_controller = GetHighlightController();
-  OverviewHighlightableView* view = highlight_controller->highlighted_view();
-  // Reset the highlight if it is highlighted on a descendant of `this`.
-  if (view && Contains(view->GetView())) {
-    highlight_controller->ResetHighlightedView();
+  if (auto* highlight_controller = GetHighlightController()) {
+    OverviewHighlightableView* view = highlight_controller->highlighted_view();
+    // Reset the highlight if it is highlighted on a descendant of `this`.
+    if (view && Contains(view->GetView())) {
+      highlight_controller->ResetHighlightedView();
+    }
   }
 
   // Keep current layout until the animation is completed since the animation
@@ -1540,9 +1596,11 @@ int DeskBarViewBase::DetermineMoveIndex(int location_screen_x) const {
 
 void DeskBarViewBase::UpdateScrollButtonsVisibility() {
   const gfx::Rect visible_bounds = scroll_view_->GetVisibleRect();
-  left_scroll_button_->SetVisible(visible_bounds.x() > 0);
-  right_scroll_button_->SetVisible(visible_bounds.right() <
-                                   scroll_view_contents_->bounds().width());
+  left_scroll_button_->SetVisible(width() == GetAvailableBounds().width() &&
+                                  visible_bounds.x() > 0);
+  right_scroll_button_->SetVisible(width() == GetAvailableBounds().width() &&
+                                   visible_bounds.right() <
+                                       scroll_view_contents_->bounds().width());
 }
 
 void DeskBarViewBase::UpdateGradientMask() {
@@ -1671,14 +1729,16 @@ void DeskBarViewBase::OnLibraryButtonPressed() {
   if (overview_grid_) {
     overview_session = overview_grid_->overview_session();
   } else {
+    OverviewController* overview_controller =
+        Shell::Get()->overview_controller();
     bool is_overview_started =
-        Shell::Get()->overview_controller()->StartOverview(
-            OverviewStartAction::kDeskButton);
+        overview_controller &&
+        overview_controller->StartOverview(OverviewStartAction::kDeskButton);
     // If overview refuses to start, do nothing.
     if (!is_overview_started) {
       return;
     }
-    overview_session = Shell::Get()->overview_controller()->overview_session();
+    overview_session = overview_controller->overview_session();
   }
   overview_session->ShowSavedDeskLibrary(base::Uuid(), /*saved_desk_name=*/u"",
                                          root);
@@ -1732,6 +1792,10 @@ bool DeskBarViewBase::MaybeScrollByDraggedDesk() {
   }
 
   return false;
+}
+
+gfx::Rect DeskBarViewBase::GetAvailableBounds() const {
+  return GetWidget()->GetRootView()->bounds();
 }
 
 }  // namespace ash

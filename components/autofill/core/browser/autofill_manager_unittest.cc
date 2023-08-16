@@ -71,7 +71,7 @@ class MockAutofillDriver : public TestAutofillDriver {
   MOCK_METHOD(void, SetShouldSuppressKeyboard, (bool), ());
   MOCK_METHOD(bool, CanShowAutofillUi, (), (const));
   MOCK_METHOD(void,
-              TriggerReparseInAllFrames,
+              TriggerFormExtractionInAllFrames,
               (base::OnceCallback<void(bool)>),
               ());
 };
@@ -154,8 +154,7 @@ class MockAutofillManager : public AutofillManager {
               (const FormData& form,
                const FormFieldData& field,
                const gfx::RectF& bounding_box,
-               AutoselectFirstSuggestion autoselect_first_suggestion,
-               FormElementWasClicked form_element_was_clicked),
+               AutofillSuggestionTriggerSource trigger_source),
               (override));
   MOCK_METHOD(void,
               OnFocusOnFormFieldImpl,
@@ -424,9 +423,9 @@ TEST_F(AutofillManagerTest, CanShowAutofillUi) {
   EXPECT_TRUE(manager_->CanShowAutofillUi());
 }
 
-TEST_F(AutofillManagerTest, TriggerReparseInAllFrames) {
-  EXPECT_CALL(*driver_, TriggerReparseInAllFrames);
-  manager_->TriggerReparseInAllFrames(base::DoNothing());
+TEST_F(AutofillManagerTest, TriggerFormExtractionInAllFrames) {
+  EXPECT_CALL(*driver_, TriggerFormExtractionInAllFrames);
+  manager_->TriggerFormExtractionInAllFrames(base::DoNothing());
 }
 
 TEST_F(

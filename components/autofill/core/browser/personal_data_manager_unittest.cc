@@ -943,6 +943,84 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
   ExpectSameElements(profiles, personal_data_->GetProfiles());
 }
 
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+// Test that setting the `kAutofillEnablePaymentsMandatoryReauth` pref works
+// correctly.
+TEST_F(PersonalDataManagerTest, AutofillPaymentMethodsMandatoryReauthEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kAutofillEnablePaymentsMandatoryReauth);
+  EXPECT_FALSE(personal_data_->IsPaymentMethodsMandatoryReauthEnabled());
+
+  personal_data_->SetPaymentMethodsMandatoryReauthEnabled(true);
+
+  EXPECT_TRUE(personal_data_->IsPaymentMethodsMandatoryReauthEnabled());
+
+  personal_data_->SetPaymentMethodsMandatoryReauthEnabled(false);
+
+  EXPECT_FALSE(personal_data_->IsPaymentMethodsMandatoryReauthEnabled());
+}
+
+// Test that setting the `kAutofillEnablePaymentsMandatoryReauth` does not
+// enable the feature when the flag is off.
+TEST_F(PersonalDataManagerTest,
+       AutofillPaymentMethodsMandatoryReauthEnabled_FlagOff) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kAutofillEnablePaymentsMandatoryReauth);
+  EXPECT_FALSE(personal_data_->IsPaymentMethodsMandatoryReauthEnabled());
+
+  personal_data_->SetPaymentMethodsMandatoryReauthEnabled(true);
+
+  EXPECT_FALSE(personal_data_->IsPaymentMethodsMandatoryReauthEnabled());
+}
+
+// Test that
+// `PersonalDataManager::ShouldShowPaymentMethodsMandatoryReauthPromo()`
+// only returns that we should show the promo when we are below the max counter
+// limit for showing the promo.
+TEST_F(
+    PersonalDataManagerTest,
+    ShouldShowPaymentMethodsMandatoryReauthPromo_MaxValueForPromoShownCounterReached) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kAutofillEnablePaymentsMandatoryReauth);
+  for (int i = 0; i < prefs::kMaxValueForMandatoryReauthPromoShownCounter;
+       i++) {
+    EXPECT_TRUE(personal_data_->ShouldShowPaymentMethodsMandatoryReauthPromo());
+    personal_data_->IncrementPaymentMethodsMandatoryReauthPromoShownCounter();
+  }
+
+  EXPECT_FALSE(personal_data_->ShouldShowPaymentMethodsMandatoryReauthPromo());
+}
+
+// Test that
+// `PersonalDataManager::ShouldShowPaymentMethodsMandatoryReauthPromo()`
+// returns that we should not show the promo if the user has already made a
+// decision.
+TEST_F(
+    PersonalDataManagerTest,
+    ShouldShowPaymentMethodsMandatoryReauthPromo_UserHasMadeADecisionAlready) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kAutofillEnablePaymentsMandatoryReauth);
+  personal_data_->SetPaymentMethodsMandatoryReauthEnabled(true);
+
+  EXPECT_FALSE(personal_data_->ShouldShowPaymentMethodsMandatoryReauthPromo());
+}
+
+// Test that
+// `PersonalDataManager::ShouldShowPaymentMethodsMandatoryReauthPromo()`
+// returns that we should not show the promo if the flag is off.
+TEST_F(PersonalDataManagerTest,
+       ShouldShowPaymentMethodsMandatoryReauthPromo_FlagOff) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kAutofillEnablePaymentsMandatoryReauth);
+  EXPECT_FALSE(personal_data_->ShouldShowPaymentMethodsMandatoryReauthPromo());
+}
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+
 TEST_F(PersonalDataManagerTest, NoIBANsAddedIfDisabled) {
   prefs::SetAutofillIBANEnabled(prefs_.get(), false);
   personal_data_->AddIBAN(autofill::test::GetIBAN());
@@ -3184,6 +3262,9 @@ TEST_F(PersonalDataManagerTest,
 
 // Tests the suggestions of duplicate local and server credit cards.
 TEST_F(PersonalDataManagerTest, GetCreditCardsToSuggest_ServerDuplicates) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillSuggestServerCardInsteadOfLocalCard);
   SetUpReferenceLocalCreditCards();
 
   // Add some server cards. If there are local dupes, the locals should be
@@ -3294,37 +3375,45 @@ TEST_F(PersonalDataManagerTest,
   PersonalDataManager::DedupeCreditCardToSuggest(&credit_cards);
   ASSERT_EQ(1U, credit_cards.size());
 
-  const CreditCard* deduped_card(credit_cards.front());
+  const CreditCard* deduped_card = credit_cards.front();
   EXPECT_TRUE(*deduped_card == full_server_card);
 }
 
 // Tests that only the local card is kept when deduping with a masked server
-// duplicate of it.
-TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_LocalShadowsMasked) {
-  std::list<CreditCard*> credit_cards;
+// duplicate of it or vice-versa. This is checked based on the value assigned
+// during the for loop.
+TEST_F(PersonalDataManagerTest,
+       DedupeCreditCardToSuggest_BothLocalAndServerShadowsMaskedInTurns) {
+  for (bool is_dedupe_experiment_active : {true, false}) {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatureState(
+        features::kAutofillSuggestServerCardInsteadOfLocalCard,
+        is_dedupe_experiment_active);
+    std::list<CreditCard*> credit_cards;
 
-  CreditCard local_card("1141084B-72D7-4B73-90CF-3D6AC154673B",
-                        test::kEmptyOrigin);
-  local_card.set_use_count(300);
-  local_card.set_use_date(AutofillClock::Now() - base::Days(10));
-  test::SetCreditCardInfo(&local_card, "Homer Simpson",
-                          "4234567890123456" /* Visa */, "01", "2999", "1");
-  credit_cards.push_back(&local_card);
+    CreditCard local_card("1141084B-72D7-4B73-90CF-3D6AC154673B",
+                          test::kEmptyOrigin);
+    test::SetCreditCardInfo(&local_card, "Homer Simpson",
+                            "4234567890123456" /* Visa */, "01", "2999", "1");
+    credit_cards.push_back(&local_card);
 
-  // Create a masked server card that is a duplicate of a local card.
-  CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
-  test::SetCreditCardInfo(&masked_card, "Homer Simpson", "3456" /* Visa */,
-                          "01", "2999", "1");
-  masked_card.set_use_count(2);
-  masked_card.set_use_date(AutofillClock::Now() - base::Days(15));
-  masked_card.SetNetworkForMaskedCard(kVisaCard);
-  credit_cards.push_back(&masked_card);
+    // Create a masked server card that is a duplicate of a local card.
+    CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
+    test::SetCreditCardInfo(&masked_card, "Homer Simpson", "3456" /* Visa */,
+                            "01", "2999", "1");
+    masked_card.SetNetworkForMaskedCard(kVisaCard);
+    credit_cards.push_back(&masked_card);
 
-  PersonalDataManager::DedupeCreditCardToSuggest(&credit_cards);
-  ASSERT_EQ(1U, credit_cards.size());
+    PersonalDataManager::DedupeCreditCardToSuggest(&credit_cards);
+    ASSERT_EQ(1U, credit_cards.size());
 
-  const CreditCard* deduped_card(credit_cards.front());
-  EXPECT_TRUE(*deduped_card == local_card);
+    const CreditCard* deduped_card = credit_cards.front();
+    if (is_dedupe_experiment_active) {
+      EXPECT_EQ(*deduped_card, masked_card);
+    } else {
+      EXPECT_EQ(*deduped_card, local_card);
+    }
+  }
 }
 
 // Tests that identical full server and masked credit cards are not deduped.
@@ -3578,7 +3667,7 @@ TEST_P(SaveImportedProfileTest, SaveImportedProfile) {
   // Get the set of profiles persisted in the db.
   std::vector<std::unique_ptr<AutofillProfile>> db_profiles;
   profile_autofill_table_->GetAutofillProfiles(
-      &db_profiles, AutofillProfile::Source::kLocalOrSyncable);
+      AutofillProfile::Source::kLocalOrSyncable, &db_profiles);
 
   // Expect the profiles held in-memory by PersonalDataManager and the db
   // profiles to be the same.
@@ -4964,7 +5053,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
   // Expect that a profile is stored in the profile autofill table.
   profile_autofill_table_->GetAutofillProfiles(
-      &profiles, AutofillProfile::Source::kLocalOrSyncable);
+      AutofillProfile::Source::kLocalOrSyncable, &profiles);
   EXPECT_EQ(1U, profiles.size());
   EXPECT_EQ(profile, *profiles[0]);
 }

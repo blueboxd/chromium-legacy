@@ -31,7 +31,7 @@ BASE_FEATURE(kWebFilterInterstitialRefresh,
 // The feature includes one experiment parameter: "preferred_button", which
 // determines which button is displayed as the preferred option in the
 // interstitial UI (i.e. dark blue button).
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
 BASE_FEATURE(kLocalWebApprovals,
              "LocalWebApprovals",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -46,13 +46,6 @@ const char kLocalWebApprovalsPreferredButtonRemote[] = "remote";
 constexpr base::FeatureParam<std::string> kLocalWebApprovalsPreferredButton{
     &kLocalWebApprovals, "preferred_button",
     kLocalWebApprovalsPreferredButtonLocal};
-
-// Enables child accounts (i.e. Unicorn accounts) to clear their browsing
-// history data from Settings.
-// TODO(b/251192695): Clean up feature flag.
-BASE_FEATURE(kAllowHistoryDeletionForChildAccounts,
-             "AllowHistoryDeletionForChildAccounts",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the proto api for ClassifyURL calls.
 BASE_FEATURE(kEnableProtoApiForClassifyUrl,
@@ -140,6 +133,13 @@ BASE_FEATURE(kFilterWebsitesForSupervisedUsersOnDesktopAndIOS,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kEnableExtensionsPermissionsForSupervisedUsersOnDesktop,
              "EnableExtensionsPermissionsForSupervisedUsersOnDesktop",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kSupervisedPrefsControlledBySupervisedStore,
+             "SupervisedPrefsControlledBySupervisedStore",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableCreatePermissionRequestFetcher,
+             "EnableCreatePermissionRequestFetcher",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Whether to display a "Managed by your parent" or similar text for supervised

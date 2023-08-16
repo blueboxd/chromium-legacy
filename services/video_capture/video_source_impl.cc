@@ -63,10 +63,11 @@ void VideoSourceImpl::CreatePushSubscription(
       // OnCreateDeviceResponse() gets called.
       return;
     case DeviceStatus::kStarted:
+      CHECK(device_);
       if (!force_reopen_with_new_settings ||
           requested_settings == device_start_settings_) {
         subscription_ptr->OnDeviceStartSucceededWithSettings(
-            device_start_settings_);
+            device_start_settings_, device_);
         return;
       }
       restart_device_once_when_stop_complete_ = true;
@@ -82,18 +83,23 @@ void VideoSourceImpl::CreatePushSubscription(
 
 void VideoSourceImpl::OnClientDisconnected() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!receivers_.empty()) {
+    return;
+  }
 
-  if (device_status_ != DeviceStatus::kStoppingAsynchronously) {
+  if (device_status_ != DeviceStatus::kStoppingAsynchronously &&
+      device_status_ != DeviceStatus::kNotStarted) {
     // We need to stop devices when VideoSource remote discarded with active
     // subscription.
+    // DeviceStatus::kNotStarted means no device has been created yet or
+    // no device has been successfully created. Therefore, StopDevice() does
+    // not need to be called in these two cases.
     device_factory_->StopDevice(device_id_);
   }
 
-  if (receivers_.empty()) {
-    // Note: Invoking this callback may synchronously trigger the destruction of
-    // |this|, so no more member access should be done after it.
-    on_last_binding_closed_cb_.Run();
-  }
+  // Note: Invoking this callback may synchronously trigger the destruction of
+  // |this|, so no more member access should be done after it.
+  on_last_binding_closed_cb_.Run();
 }
 
 void VideoSourceImpl::StartDeviceWithSettings(
@@ -117,8 +123,11 @@ void VideoSourceImpl::OnCreateDeviceResponse(
     std::unique_ptr<ScopedCaptureTrace> scoped_trace,
     DeviceInfo info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(!device_);
 
   if (info.result_code == media::VideoCaptureError::kNone) {
+    device_ = info.device;
+
     if (scoped_trace)
       scoped_trace->AddStep("StartDevice");
 
@@ -132,8 +141,8 @@ void VideoSourceImpl::OnCreateDeviceResponse(
     }
     for (auto& entry : push_subscriptions_) {
       auto& subscription = entry.second;
-      subscription->SetDevice(info.device);
-      subscription->OnDeviceStartSucceededWithSettings(device_start_settings_);
+      subscription->OnDeviceStartSucceededWithSettings(device_start_settings_,
+                                                       device_);
     }
     return;
   }
@@ -199,6 +208,7 @@ void VideoSourceImpl::StopDeviceAsynchronously() {
 void VideoSourceImpl::OnStopDeviceComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   device_status_ = DeviceStatus::kNotStarted;
+  device_ = nullptr;
   if (!restart_device_once_when_stop_complete_)
     return;
   restart_device_once_when_stop_complete_ = false;

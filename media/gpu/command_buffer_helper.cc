@@ -197,16 +197,7 @@ class CommandBufferHelperImpl
     textures_[service_id]->SetCleared();
   }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-  bool BindDecoderManagedImage(GLuint service_id, gl::GLImage* image) override {
-    DVLOG(2) << __func__ << "(" << service_id << ")";
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-    DCHECK(textures_.count(service_id));
-    textures_[service_id]->SetUnboundImage(image);
-    return true;
-  }
-#else
+#if BUILDFLAG(IS_OZONE)
   bool BindClientManagedImage(GLuint service_id, gl::GLImage* image) override {
     DVLOG(2) << __func__ << "(" << service_id << ")";
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

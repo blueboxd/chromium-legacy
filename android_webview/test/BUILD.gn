@@ -82,11 +82,11 @@ script_test("system_webview_wpt") {
   args = [
     "--product",
     "android_webview",
+    "--zero-tests-executed-ok",
     "--webview-provider",
     "@WrappedPath(apks/SystemWebView.apk)",
     "--browser-apk",
     "@WrappedPath(apks/SystemWebViewShell.apk)",
-    "-v",
   ]
   data_deps = [
     "//android_webview:system_webview_apk",
@@ -269,7 +269,6 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "//components/component_updater/android:embedded_component_loader_java",
     "//components/content_capture/android:java",
     "//components/content_capture/android/test_support:java",
-    "//components/content_relationship_verification/android:java",
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/embedder_support/android/metrics:java",
@@ -314,6 +313,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "//third_party/junit",
     "//third_party/metrics_proto:metrics_proto_java",
     "//third_party/mockito:mockito_java",
+    "//ui/accessibility:ax_base_java",
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
     "//url:gurl_java",
@@ -365,11 +365,11 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/AwPersistentOriginTrialTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwProxyControllerTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwQuotaManagerBridgeTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwRestrictSensitiveContentTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwSecondBrowserProcessTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwServiceWorkerClientTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwServiceWorkerSettingsTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwSettingsTest.java",
+    "../javatests/src/org/chromium/android_webview/test/AwStrictModeTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwUncaughtExceptionTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwVariationsSeedFetcherTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwWebContentsObserverTest.java",
@@ -473,10 +473,6 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/util/VideoTestWebServer.java",
   ]
 
-  if (!use_jacoco_coverage) {
-    # Jacoco requires strict mode to be turned off since it writes coverage data to files.
-    sources += [ "../javatests/src/org/chromium/android_webview/test/AwStrictModeTest.java" ]
-  }
   data = [ "data/" ]
   data_deps =
       [ "//testing/buildbot/filters:webview_instrumentation_test_apk_filters" ]
@@ -627,6 +623,7 @@ test("android_webview_unittests") {
     "../browser/aw_content_browser_client_unittest.cc",
     "../browser/aw_contents_client_bridge_unittest.cc",
     "../browser/aw_feature_entries_unittest.cc",
+    "../browser/aw_field_trials_unittest.cc",
     "../browser/aw_form_database_service_unittest.cc",
     "../browser/aw_media_url_interceptor_unittest.cc",
     "../browser/aw_pac_processor_unittest.cc",
@@ -700,7 +697,6 @@ robolectric_binary("android_webview_junit_tests") {
     "../junit/src/org/chromium/android_webview/robolectric/AwDisplayModeControllerTest.java",
     "../junit/src/org/chromium/android_webview/robolectric/AwHttpAuthHandlerTest.java",
     "../junit/src/org/chromium/android_webview/robolectric/AwLayoutSizerTest.java",
-    "../junit/src/org/chromium/android_webview/robolectric/AwOriginVerifierTest.java",
     "../junit/src/org/chromium/android_webview/robolectric/AwScrollOffsetManagerTest.java",
     "../junit/src/org/chromium/android_webview/robolectric/AwWebContentsMetricsRecorderTest.java",
     "../junit/src/org/chromium/android_webview/robolectric/FindAddressTest.java",
@@ -727,9 +723,6 @@ robolectric_binary("android_webview_junit_tests") {
     "//base:base_java_test_support_uncommon",
     "//base:base_junit_test_support",
     "//components/component_updater/android:embedded_component_loader_java",
-    "//components/content_relationship_verification:java",
-    "//components/content_relationship_verification/android:java",
-    "//components/content_relationship_verification/android:junit_test_support",
     "//components/embedder_support/android:util_java",
     "//content/public/android:content_full_java",
     "//content/public/test/android:content_java_test_support",

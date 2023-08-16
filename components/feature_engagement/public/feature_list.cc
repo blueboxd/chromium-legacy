@@ -108,6 +108,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHSharedHighlightingBuilder,
     &kIPHSharedHighlightingReceiverFeature,
     &kIPHSharingHubWebnotesStylizeFeature,
+    &kIPHRestoreTabsOnFREFeature,
 #endif  // BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(IS_IOS)
     &kIPHBottomToolbarTipFeature,
@@ -156,6 +157,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHPasswordsManagementBubbleAfterSaveFeature,
     &kIPHPasswordsManagementBubbleDuringSigninFeature,
     &kIPHPasswordsWebAppProfileSwitchFeature,
+    &kIPHPasswordManagerShortcutFeature,
     &kIPHPerformanceNewBadgeFeature,
     &kIPHPowerBookmarksSidePanelFeature,
     &kIPHPriceTrackingChipFeature,

@@ -47,6 +47,7 @@ class MockDownloadBubbleNavigationHandler
   void OpenSecurityDialog(DownloadBubbleRowView*) override {}
   void CloseDialog(views::Widget::ClosedReason) override {}
   void ResizeDialog() override {}
+  void OnDialogInteracted() override {}
   base::WeakPtr<DownloadBubbleNavigationHandler> GetWeakPtr() override {
     return weak_factory_.GetWeakPtr();
   }
@@ -92,8 +93,7 @@ class DownloadBubbleSecurityViewTest : public ChromeViewsTestBase {
             bubble_controller_->GetWeakPtr(), bubble_navigator_->GetWeakPtr(),
             bubble_delegate_));
 
-    row_list_view_ = std::make_unique<DownloadBubbleRowListView>(
-        /*is_partial_view=*/true, browser_->AsWeakPtr());
+    row_list_view_ = std::make_unique<DownloadBubbleRowListView>();
     const int bubble_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
         views::DISTANCE_BUBBLE_PREFERRED_WIDTH);
     row_view_ = std::make_unique<DownloadBubbleRowView>(
@@ -113,10 +113,12 @@ class DownloadBubbleSecurityViewTest : public ChromeViewsTestBase {
   DownloadBubbleSecurityViewTest& operator=(
       const DownloadBubbleSecurityViewTest&) = delete;
 
-  raw_ptr<views::BubbleDialogDelegate> bubble_delegate_;
+  raw_ptr<views::BubbleDialogDelegate, DanglingUntriaged> bubble_delegate_ =
+      nullptr;
   std::unique_ptr<MockDownloadBubbleUIController> bubble_controller_;
   std::unique_ptr<MockDownloadBubbleNavigationHandler> bubble_navigator_;
-  raw_ptr<DownloadBubbleSecurityView> security_view_;
+  raw_ptr<DownloadBubbleSecurityView, DanglingUntriaged> security_view_ =
+      nullptr;
   std::unique_ptr<views::Widget> anchor_widget_;
 
   testing::NiceMock<download::MockDownloadItem> download_item_;
@@ -125,7 +127,7 @@ class DownloadBubbleSecurityViewTest : public ChromeViewsTestBase {
 
   std::unique_ptr<testing::NiceMock<content::MockDownloadManager>> manager_;
   TestingProfileManager testing_profile_manager_;
-  raw_ptr<Profile> profile_;
+  raw_ptr<Profile> profile_ = nullptr;
   std::unique_ptr<TestBrowserWindow> window_;
   std::unique_ptr<Browser> browser_;
 };

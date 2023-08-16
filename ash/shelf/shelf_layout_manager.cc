@@ -1018,8 +1018,7 @@ void ShelfLayoutManager::ProcessScrollOffset(int offset,
     return;
   }
 
-  if (app_list_features::IsQuickActionShowBubbleLauncherEnabled() &&
-      !IsLocationInBubbleLauncherShowBounds(event.root_location())) {
+  if (!IsLocationInBubbleLauncherShowBounds(event.root_location())) {
     return;
   }
 
@@ -1044,9 +1043,6 @@ void ShelfLayoutManager::ProcessScrollEventFromShelf(ui::ScrollEvent* event) {
 }
 
 bool ShelfLayoutManager::IsBubbleLauncherShowOnGestureScrollAvailable() {
-  if (!app_list_features::IsQuickActionShowBubbleLauncherEnabled())
-    return false;
-
   if (!state_.IsShelfVisible())
     return false;
 
@@ -1463,8 +1459,11 @@ void ShelfLayoutManager::OnDeskSwitchAnimationLaunching() {
 void ShelfLayoutManager::OnDeskSwitchAnimationFinished() {
   --suspend_visibility_update_;
   DCHECK_GE(suspend_visibility_update_, 0);
-  if (!suspend_visibility_update_)
-    UpdateVisibilityState(/*force_layout=*/false);
+  if (!suspend_visibility_update_) {
+    // Force layout so the desk button will show after a desk switch from
+    // overview.
+    UpdateVisibilityState(/*force_layout=*/true);
+  }
 }
 
 float ShelfLayoutManager::GetOpacity() const {
@@ -3123,6 +3122,14 @@ void ShelfLayoutManager::UpdateVisibilityStateForTrayBubbleChange(
 void ShelfLayoutManager::HandleShelfAlignmentChange() {
   base::AutoReset<bool> immediate_transition(&state_change_animation_disabled_,
                                              true);
+
+  // The desk button widget needs to know that the alignment is changing early
+  // so that it can calculate the correct preferred length.
+  if (features::IsDeskButtonEnabled()) {
+    shelf_->desk_button_widget()->PrepareForAlignmentChange(
+        shelf_->alignment());
+  }
+
   UpdateVisibilityState(/*force_layout=*/true);
 }
 

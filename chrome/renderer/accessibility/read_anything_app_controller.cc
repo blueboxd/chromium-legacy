@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -364,7 +365,7 @@ ReadAnythingAppController* ReadAnythingAppController::Install(
 
   v8::Local<v8::Object> chrome =
       content::GetOrCreateChromeObject(isolate, context);
-  chrome->Set(context, gin::StringToV8(isolate, "readAnything"), handle.ToV8())
+  chrome->Set(context, gin::StringToV8(isolate, "readingMode"), handle.ToV8())
       .Check();
   return controller;
 }
@@ -422,7 +423,7 @@ void ReadAnythingAppController::OnActiveAXTreeIDChanged(
 
   // TODO(b/1266555): Use v8::Function rather than javascript. If possible,
   // replace this function call with firing an event.
-  std::string script = "chrome.readAnything.showLoading();";
+  std::string script = "chrome.readingMode.showLoading();";
   render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
 
   // When the UI first constructs, this function may be called before tree_id
@@ -491,9 +492,16 @@ void ReadAnythingAppController::OnAXTreeDistilled(
   // the content if the selection is not in the distilled content.
   PostProcessSelection();
 
-  // TODO(crbug.com/1266555): If no content nodes were identified, the
-  // controller should handle drawing the empty state (like how it handles the
-  // loading state) instead of the JS.
+  if (model_.is_empty()) {
+    // TODO(b/1266555): Use v8::Function rather than javascript. If possible,
+    // replace this function call with firing an event.
+    std::string script = "chrome.readingMode.showEmpty();";
+    render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
+    if (isSelectable()) {
+      base::UmaHistogramEnumeration(string_constants::kEmptyStateHistogramName,
+                                    ReadAnythingEmptyState::kEmptyStateShown);
+    }
+  }
 
   // Once drawing is complete, unserialize all of the pending updates on the
   // active tree which may require more distillations (as tracked by the model's
@@ -508,7 +516,12 @@ void ReadAnythingAppController::PostProcessSelection() {
   if (model_.PostProcessSelection()) {
     Draw();
   }
-  DrawSelection();
+  // Skip drawing the selection in the side panel if the selection originally
+  // came from there.
+  if (!model_.selection_from_action()) {
+    DrawSelection();
+  }
+  model_.set_selection_from_action(false);
 }
 
 void ReadAnythingAppController::Draw() {
@@ -516,7 +529,7 @@ void ReadAnythingAppController::Draw() {
   // -- that is, it is awaiting distillation or never requested distillation.
   // TODO(abigailbklein): Use v8::Function rather than javascript. If possible,
   // replace this function call with firing an event.
-  std::string script = "chrome.readAnything.updateContent();";
+  std::string script = "chrome.readingMode.updateContent();";
   render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
 }
 
@@ -525,7 +538,7 @@ void ReadAnythingAppController::DrawSelection() {
   // -- that is, it is awaiting distillation or never requested distillation.
   // TODO(abigailbklein): Use v8::Function rather than javascript. If possible,
   // replace this function call with firing an event.
-  std::string script = "chrome.readAnything.updateSelection();";
+  std::string script = "chrome.readingMode.updateSelection();";
   render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
 }
 
@@ -534,7 +547,7 @@ void ReadAnythingAppController::OnThemeChanged(ReadAnythingThemePtr new_theme) {
 
   // TODO(abigailbklein): Use v8::Function rather than javascript. If possible,
   // replace this function call with firing an event.
-  std::string script = "chrome.readAnything.updateTheme();";
+  std::string script = "chrome.readingMode.updateTheme();";
   render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
 }
 

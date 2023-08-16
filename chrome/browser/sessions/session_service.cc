@@ -201,7 +201,7 @@ bool SessionService::ShouldRestore(Browser* browser) {
   }
   if (primary_user_profile &&
       BrowserLauncher::GetForProfile(primary_user_profile)
-          ->is_launching_for_last_opened_profiles()) {
+          ->is_launching_for_full_restore()) {
     return true;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -259,6 +259,7 @@ void SessionService::MoveCurrentSessionToLastSession() {
 
 void SessionService::DeleteLastSession() {
   command_storage_manager()->DeleteLastSession();
+  ++count_delete_last_session_for_testing_;
 }
 
 void SessionService::SetTabGroup(SessionID window_id,

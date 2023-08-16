@@ -539,13 +539,13 @@ void EventTarget::AddedEventListener(
     }
   }
 
-  if (RuntimeEnabledFeatures::MutationEventsEnabled() &&
-      (!document || ContextFeatures::MutationEventsEnabled(document))) {
-    WebFeature mutation_event_feature;
-    Document::ListenerType listener_type;
-    if (event_util::IsDOMMutationEventType(event_type, mutation_event_feature,
-                                           listener_type)) {
-      if (ExecutionContext* context = GetExecutionContext()) {
+  WebFeature mutation_event_feature;
+  Document::ListenerType listener_type;
+  if (event_util::IsDOMMutationEventType(event_type, mutation_event_feature,
+                                         listener_type)) {
+    if (ExecutionContext* context = GetExecutionContext()) {
+      if (RuntimeEnabledFeatures::MutationEventsEnabled() &&
+          (!document || ContextFeatures::MutationEventsEnabled(document))) {
         String message_text = String::Format(
             "Listener added for a synchronous '%s' DOM Mutation Event. "
             "This event type is deprecated "
@@ -562,6 +562,16 @@ void EventTarget::AddedEventListener(
             mojom::blink::ConsoleMessageSource::kDeprecation,
             mojom::blink::ConsoleMessageLevel::kWarning, message_text));
         Deprecation::CountDeprecation(context, mutation_event_feature);
+      } else {
+        String message_text = String::Format(
+            "Listener added for a '%s' DOM Mutation Event. This event type has "
+            "been deprecated and removed, and will no longer be fired. See "
+            "https://chromestatus.com/feature/5083947249172480 for more "
+            "detail.",
+            event_type.GetString().Utf8().c_str());
+        context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kDeprecation,
+            mojom::blink::ConsoleMessageLevel::kWarning, message_text));
       }
     }
   }
@@ -741,6 +751,17 @@ DispatchEventResult EventTarget::DispatchEventInternal(Event& event) {
   DispatchEventResult dispatch_result = FireEventListeners(event);
   event.SetEventPhase(Event::PhaseType::kNone);
   return dispatch_result;
+}
+
+EventTargetData* EventTarget::GetEventTargetData() {
+  return data_.Get();
+}
+
+EventTargetData& EventTarget::EnsureEventTargetData() {
+  if (!data_) {
+    data_ = MakeGarbageCollected<EventTargetData>();
+  }
+  return *data_;
 }
 
 static const AtomicString& LegacyType(const Event& event) {
@@ -1004,9 +1025,9 @@ void EventTarget::DispatchEnqueuedEvent(Event* event,
   DispatchEvent(*event);
 }
 
-void EventTargetWithInlineData::Trace(Visitor* visitor) const {
+void EventTarget::Trace(Visitor* visitor) const {
+  ScriptWrappable::Trace(visitor);
   visitor->Trace(data_);
-  EventTarget::Trace(visitor);
 }
 
 STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kFalse,

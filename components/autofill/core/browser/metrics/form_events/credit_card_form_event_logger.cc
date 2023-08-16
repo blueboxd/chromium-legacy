@@ -111,6 +111,11 @@ void CreditCardFormEventLogger::OnDidSelectCardSuggestion(
       if (!has_logged_masked_server_card_suggestion_selected_) {
         has_logged_masked_server_card_suggestion_selected_ = true;
         Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SELECTED_ONCE, form);
+        if (personal_data_manager_->IsCardPresentAsBothLocalAndServerCards(
+                credit_card)) {
+          Log(FORM_EVENT_SERVER_CARD_SUGGESTION_SELECTED_FOR_AN_EXISTING_LOCAL_CARD_ONCE,
+              form);
+        }
       }
       break;
     case CreditCard::VIRTUAL_CARD:
@@ -199,7 +204,7 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
   // was filled.
   LogCardWithMetadataFormEventMetric(
       autofill_metrics::CardMetadataLoggingEvent::kFilled,
-      metadata_logging_context_, HasBeenLogged());
+      metadata_logging_context_, HasBeenLogged(has_logged_suggestion_filled_));
 
   if (!has_logged_suggestion_filled_) {
     has_logged_suggestion_filled_ = true;
@@ -215,7 +220,8 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
       case CreditCard::LOCAL_CARD:
         // Check if the local card is a duplicate of an existing server card
         // and log an additional metric if so.
-        if (IsLocalDuplicateOfServerCard(credit_card)) {
+        if (personal_data_manager_->IsCardPresentAsBothLocalAndServerCards(
+                credit_card)) {
           Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED_FOR_AN_EXISTING_SERVER_CARD_ONCE,
               form);
         }
@@ -223,6 +229,12 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
         break;
       case CreditCard::MASKED_SERVER_CARD:
         Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED_ONCE, form);
+        if (personal_data_manager_->IsCardPresentAsBothLocalAndServerCards(
+                credit_card)) {
+          Log(FORM_EVENT_SERVER_CARD_FILLED_FOR_AN_EXISTING_LOCAL_CARD_ONCE,
+              form);
+          server_card_with_local_duplicate_filled_ = true;
+        }
         break;
       case CreditCard::FULL_SERVER_CARD:
         Log(FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE, form);
@@ -231,6 +243,11 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
         Log(FORM_EVENT_VIRTUAL_CARD_SUGGESTION_FILLED_ONCE, form);
         break;
     }
+    // Log if filled suggestions had metadata, logged once per page load
+    Log(metadata_logging_context_.card_metadata_available
+            ? FORM_EVENT_CARD_SUGGESTION_WITH_METADATA_FILLED_ONCE
+            : FORM_EVENT_CARD_SUGGESTION_WITHOUT_METADATA_FILLED_ONCE,
+        form);
   }
 
   base::RecordAction(
@@ -285,12 +302,18 @@ void CreditCardFormEventLogger::LogWillSubmitForm(const FormStructure& form) {
     Log(FORM_EVENT_LOCAL_SUGGESTION_WILL_SUBMIT_ONCE, form);
   }
 
-  // Log issuer-specific metrics on whether a card suggestion with metadata
-  // was filled before submission.
   if (has_logged_suggestion_filled_) {
+    // Log issuer-specific metrics on whether a card suggestion with metadata
+    // was filled before submission.
     LogCardWithMetadataFormEventMetric(
         autofill_metrics::CardMetadataLoggingEvent::kWillSubmit,
         metadata_logging_context_, HasBeenLogged(false));
+    // If a card suggestion was filled before submission, log it for metadata.
+    // This event can only be triggered once per page load
+    Log(metadata_logging_context_.card_metadata_available
+            ? FORM_EVENT_CARD_SUGGESTION_WITH_METADATA_WILL_SUBMIT_ONCE
+            : FORM_EVENT_CARD_SUGGESTION_WITHOUT_METADATA_WILL_SUBMIT_ONCE,
+        form);
   }
 }
 
@@ -299,6 +322,10 @@ void CreditCardFormEventLogger::LogFormSubmitted(const FormStructure& form) {
     Log(FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE, form);
   } else if (logged_suggestion_filled_was_masked_server_card_) {
     Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SUBMITTED_ONCE, form);
+    if (server_card_with_local_duplicate_filled_) {
+      Log(FORM_EVENT_SERVER_CARD_SUBMITTED_FOR_AN_EXISTING_LOCAL_CARD_ONCE,
+          form);
+    }
 
     // Log BetterAuth.FlowEvents.
     RecordCardUnmaskFlowEvent(current_authentication_flow_,
@@ -373,17 +400,6 @@ void CreditCardFormEventLogger::OnLog(const std::string& name,
   }
 }
 
-bool CreditCardFormEventLogger::IsLocalDuplicateOfServerCard(
-    const CreditCard& credit_card) {
-  // Get the list of all the server credit cards for the user and see if any
-  // card in the list matches/isDuplicateOf the local card.
-  return base::ranges::any_of(
-      personal_data_manager_->GetServerCreditCards(),
-      [&credit_card](CreditCard* card_from_list) {
-        return credit_card.IsLocalDuplicateOfServerCard(*card_from_list);
-      });
-}
-
 FormEvent CreditCardFormEventLogger::GetCardNumberStatusFormEvent(
     const CreditCard& credit_card) {
   const std::u16string number = credit_card.number();
@@ -455,7 +471,7 @@ bool CreditCardFormEventLogger::DoesCardHaveOffer(
 
 bool CreditCardFormEventLogger::DoSuggestionsIncludeVirtualCard() {
   auto is_virtual_card = [](const Suggestion& suggestion) {
-    return suggestion.frontend_id == PopupItemId::kVirtualCreditCardEntry;
+    return suggestion.popup_item_id == PopupItemId::kVirtualCreditCardEntry;
   };
   return base::ranges::any_of(suggestions_, is_virtual_card);
 }

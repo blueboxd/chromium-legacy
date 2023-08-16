@@ -232,7 +232,7 @@ void FillFlattenedArraysForBookmarks(
   }
 }
 
-base::scoped_nsobject<NSPasteboardItem> WriteSimplifiedBookmarkTypes(
+NSPasteboardItem* WriteSimplifiedBookmarkTypes(
     const std::vector<BookmarkNodeData::Element>& elements) {
   NSMutableArray* url_titles = [NSMutableArray array];
   NSMutableArray* urls = [NSMutableArray array];
@@ -240,7 +240,7 @@ base::scoped_nsobject<NSPasteboardItem> WriteSimplifiedBookmarkTypes(
   FillFlattenedArraysForBookmarks(
       elements, url_titles, urls, toplevel_string_data);
 
-  base::scoped_nsobject<NSPasteboardItem> item;
+  NSPasteboardItem* item;
   if ([urls count] > 0) {
     if ([urls count] == 1) {
       item = ui::ClipboardUtil::PasteboardItemFromUrl([urls firstObject],
@@ -251,7 +251,7 @@ base::scoped_nsobject<NSPasteboardItem> WriteSimplifiedBookmarkTypes(
   }
 
   if (!item) {
-    item.reset([[NSPasteboardItem alloc] init]);
+    item = [[NSPasteboardItem alloc] init];
   }
 
   [item setString:[toplevel_string_data componentsJoinedByString:@"\n"]
@@ -262,14 +262,14 @@ base::scoped_nsobject<NSPasteboardItem> WriteSimplifiedBookmarkTypes(
 NSPasteboardItem* PasteboardItemFromBookmarks(
     const std::vector<BookmarkNodeData::Element>& elements,
     const base::FilePath& profile_path) {
-  base::scoped_nsobject<NSPasteboardItem> item =
+  NSPasteboardItem* item =
       WriteSimplifiedBookmarkTypes(elements);
 
   WriteBookmarkDictionaryListType(item, elements);
 
   [item setString:base::SysUTF8ToNSString(profile_path.value())
           forType:kUTTypeChromiumProfilePath];
-  return item.autorelease();
+  return item;
 
 }
 

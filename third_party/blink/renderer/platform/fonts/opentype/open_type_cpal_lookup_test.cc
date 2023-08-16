@@ -81,4 +81,26 @@ TEST_F(OpenTypeCpalLookupTest, DarkLightPalettes) {
   }
 }
 
+TEST_F(OpenTypeCpalLookupTest, RetrieveColorRecordsFromExistingPalette) {
+  Vector<Color> expected_color_records = {
+      Color::FromRGBA(255, 255, 0, 255),   Color::FromRGBA(0, 0, 255, 255),
+      Color::FromRGBA(255, 0, 255, 255),   Color::FromRGBA(0, 255, 255, 255),
+      Color::FromRGBA(255, 255, 255, 255), Color::FromRGBA(0, 0, 0, 255),
+      Color::FromRGBA(255, 0, 0, 255),     Color::FromRGBA(0, 255, 0, 255),
+  };
+
+  Vector<Color> actual_color_records =
+      OpenTypeCpalLookup::RetrieveColorRecords(colr_palette_typeface_, 3);
+
+  EXPECT_EQ(expected_color_records, actual_color_records);
+}
+
+TEST_F(OpenTypeCpalLookupTest, RetrieveColorRecordsFromNonExistingPalette) {
+  // Palette at index 16 does not exist in the font should return empty Vector
+  Vector<Color> actual_color_records =
+      OpenTypeCpalLookup::RetrieveColorRecords(colr_palette_typeface_, 16);
+
+  EXPECT_EQ(actual_color_records.size(), 0u);
+}
+
 }  // namespace blink

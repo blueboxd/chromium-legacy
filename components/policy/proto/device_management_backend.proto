@@ -93,6 +93,8 @@ message CheckUserAccountRequest {
   // Email address of a user.
   // The user may not exist in GAIA.
   optional string user_email = 1;
+  // If enrollment nudge policy is required.
+  optional bool enrollment_nudge_request = 2 [default = false];
 }
 
 // Request from device to server to register a device, user or browser.
@@ -309,6 +311,19 @@ message CheckUserAccountResponse {
 
   // The account type mapping from the specific user email.
   optional UserAccountType user_account_type = 2;
+
+  // Enum listing the possible enrollment nudge types.
+  enum EnrollmentNudgeType {
+    UNKNOWN_ENROLLMENT_NUDGE_TYPE = 0;
+    // Enrollment is not required.
+    NONE = 1;
+    // Requires the user to complete the enrollment process before they can
+    // login.
+    ENROLLMENT_REQUIRED = 2;
+  }
+
+  // Whether to nudge managed users to enroll unowned devices.
+  optional EnrollmentNudgeType enrollment_nudge_type = 3;
 }
 
 // Response from server to device register request.
@@ -2135,14 +2150,9 @@ message OSReport {
   optional VersionType version_type = 4;
 }
 
-// An enum shows which information a partial CBCM report contains.
-enum PartialReportType {
-  UNSPECIFIED = 0;
-  EXTENSION_REQUEST = 1;
-}
-
 // Report the status of a Chrome installation on non-Chrome OS platform.
 message ChromeDesktopReportRequest {
+  reserved 10;
   // The name of the machine within its local network. The string is a JSON
   // encoded structure with a single computername field.
   // This field is replaced by computer_name and only used by old Chrome
@@ -2176,10 +2186,6 @@ message ChromeDesktopReportRequest {
   // TODO(crbug.com/1105938): This will also replace the computer_name and
   // serial_number fields.
   optional BrowserDeviceIdentifier browser_device_identifier = 9;
-  // A list of flags indicating that the report only contains particular
-  // information. When the list is empty or unset, the report should contain all
-  // information.
-  repeated PartialReportType partial_report_types = 10;
   // Public key that can be used for attesting the machine.
   optional string machine_attestation_key = 11;
   // A string that represents the device model.
@@ -2191,14 +2197,11 @@ message ChromeDesktopReportRequest {
 // Report user level status on Chrome OS platform. Chrome OS equivalent of
 // ChromeDesktopReportRequest.
 message ChromeOsUserReportRequest {
+  reserved 3;
   // Browser related info.
   optional BrowserReport browser_report = 1;
   // Android applications installed in primary profile.
   repeated AndroidAppInfo android_app_infos = 2;
-  // A list of flags indicates that the report only contains particular
-  // information. When list is empty or unset, the report should contains all
-  // information.
-  repeated PartialReportType partial_report_types = 3;
 }
 
 // Report user level status on all platforms. It includes the information of the
@@ -3708,16 +3711,32 @@ message RsuLookupKeyUploadResponse {
 // Information about an eSIM profile installed on an EUICC (Embedded Universal
 // Integrated Circuit Card).
 message ESimProfileInfo {
-  // ICCID of the eSIM profile. Upto 22 decimal digits encoded
-  // as ASCII string.
+  // ICCID of the eSIM profile. Up to 22 decimal digits encoded as ASCII string.
   // Example: 3554020401587593554020.
   optional string iccid = 1;
 
-  // SMDP (Subscription Management - Data Preparation) server address
-  // that was used to install this eSIM profile. Upto 255 characters
+  // SM-DP+ (Subscription Manager - Data Preparation) activation code that was
+  // used to install this eSIM profile. The "address" terminology is historical
+  // since the string is not strictly just an address. This field should be
+  // considered mutually exclusive with |smds_address|. Up to 255 characters
+  // encoded as UTF8 string.
+  // Example: LPA:1$esim.example.com$matchingId
+  optional string smdp_address = 2;
+
+  // SM-DS (Subscription Manager - Discovery Service) activation code that was
+  // used to install this eSIM profile. The "address" terminology is historical
+  // since the string is not strictly just an address. This field should be
+  // considered mutually exclusive with |smdp_address|. Up to 255 characters
   // encoded as UTF8 string.
   // Example: LPA:1$esim.example.com$
-  optional string smdp_address = 2;
+  optional string smds_address = 3;
+
+  // The name of the policy-defined network that resulted in the installation of
+  // this eSIM profile. This metadata is required to guarantee that multiple
+  // policy-defined networks that are configured with the same activation code
+  // are handled correctly, and will result in the appropriate number of eSIM
+  // profiles being installed.
+  optional string name = 4;
 }
 
 // Request from device to server to update information about EUICCs

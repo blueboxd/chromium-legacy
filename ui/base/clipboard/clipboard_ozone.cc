@@ -19,14 +19,11 @@
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
-#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
-#include "base/types/variant_util.h"
 #include "build/build_config.h"
 #include "clipboard_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -640,23 +637,16 @@ void ClipboardOzone::WritePortableTextRepresentation(ClipboardBuffer buffer,
                                                      const ObjectMap& objects) {
   // Just like Non-Backed/X11 implementation does, copy text data from the
   // copy/paste selection to the primary selection.
-  if (buffer != ClipboardBuffer::kCopyPaste || !IsSelectionBufferAvailable()) {
-    return;
+  if (buffer == ClipboardBuffer::kCopyPaste && IsSelectionBufferAvailable()) {
+    auto text_iter = objects.find(PortableFormat::kText);
+    if (text_iter != objects.end() && !text_iter->second.data.empty()) {
+      const auto& char_vector = text_iter->second.data[0];
+      async_clipboard_ozone_->PrepareForWriting();
+      if (!char_vector.empty())
+        WriteText(&char_vector.front(), char_vector.size());
+      async_clipboard_ozone_->OfferData(ClipboardBuffer::kSelection);
+    }
   }
-
-  auto text_iter = objects.find(base::VariantIndexOfType<Data, TextData>());
-  if (text_iter == objects.end()) {
-    return;
-  }
-
-  const auto& text_data = absl::get<TextData>(text_iter->second.data);
-  if (text_data.data.empty()) {
-    return;
-  }
-
-  async_clipboard_ozone_->PrepareForWriting();
-  WriteText(text_data.data);
-  async_clipboard_ozone_->OfferData(ClipboardBuffer::kSelection);
 }
 
 void ClipboardOzone::WritePortableAndPlatformRepresentations(
@@ -675,38 +665,42 @@ void ClipboardOzone::WritePortableAndPlatformRepresentations(
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   for (const auto& object : objects)
-    DispatchPortableRepresentation(object.second);
+    DispatchPortableRepresentation(object.first, object.second);
   async_clipboard_ozone_->OfferData(buffer);
 
   WritePortableTextRepresentation(buffer, objects);
 }
 
-void ClipboardOzone::WriteText(base::StringPiece text) {
-  std::vector<uint8_t> data(text.begin(), text.end());
+void ClipboardOzone::WriteText(const char* text_data, size_t text_len) {
+  std::vector<uint8_t> data(text_data, text_data + text_len);
   async_clipboard_ozone_->InsertData(
       std::move(data), {kMimeTypeText, kMimeTypeLinuxText, kMimeTypeLinuxString,
                         kMimeTypeTextUtf8, kMimeTypeLinuxUtf8String});
 }
 
-void ClipboardOzone::WriteHTML(base::StringPiece markup,
-                               absl::optional<base::StringPiece> source_url) {
-  std::vector<uint8_t> data(markup.begin(), markup.end());
+void ClipboardOzone::WriteHTML(const char* markup_data,
+                               size_t markup_len,
+                               const char* url_data,
+                               size_t url_len) {
+  // `url_data` and `url_len` are not used in this platform.
+  std::vector<uint8_t> data(markup_data, markup_data + markup_len);
   async_clipboard_ozone_->InsertData(std::move(data), {kMimeTypeHTML});
 }
 
-void ClipboardOzone::WriteUnsanitizedHTML(
-    base::StringPiece markup,
-    absl::optional<base::StringPiece> source_url) {
-  WriteHTML(markup, source_url);
+void ClipboardOzone::WriteUnsanitizedHTML(const char* markup_data,
+                                          size_t markup_len,
+                                          const char* url_data,
+                                          size_t url_len) {
+  WriteHTML(markup_data, markup_len, url_data, url_len);
 }
 
-void ClipboardOzone::WriteSvg(base::StringPiece markup) {
-  std::vector<uint8_t> data(markup.begin(), markup.end());
+void ClipboardOzone::WriteSvg(const char* markup_data, size_t markup_len) {
+  std::vector<uint8_t> data(markup_data, markup_data + markup_len);
   async_clipboard_ozone_->InsertData(std::move(data), {kMimeTypeSvg});
 }
 
-void ClipboardOzone::WriteRTF(base::StringPiece rtf) {
-  std::vector<uint8_t> data(rtf.begin(), rtf.end());
+void ClipboardOzone::WriteRTF(const char* rtf_data, size_t data_len) {
+  std::vector<uint8_t> data(rtf_data, rtf_data + data_len);
   async_clipboard_ozone_->InsertData(std::move(data), {kMimeTypeRTF});
 }
 
@@ -716,11 +710,14 @@ void ClipboardOzone::WriteFilenames(std::vector<ui::FileInfo> filenames) {
   async_clipboard_ozone_->InsertData(std::move(data), {kMimeTypeURIList});
 }
 
-void ClipboardOzone::WriteBookmark(base::StringPiece title,
-                                   base::StringPiece url) {
+void ClipboardOzone::WriteBookmark(const char* title_data,
+                                   size_t title_len,
+                                   const char* url_data,
+                                   size_t url_len) {
   // Writes a Mozilla url (UTF16: URL, newline, title)
   std::u16string bookmark =
-      base::StrCat({base::UTF8ToUTF16(url) + u"\n" + base::UTF8ToUTF16(title)});
+      base::UTF8ToUTF16(base::StringPiece(url_data, url_len)) + u"\n" +
+      base::UTF8ToUTF16(base::StringPiece(title_data, title_len));
 
   std::vector<uint8_t> data(
       reinterpret_cast<const uint8_t*>(bookmark.data()),
@@ -748,9 +745,10 @@ void ClipboardOzone::WriteBitmap(const SkBitmap& bitmap) {
 }
 
 void ClipboardOzone::WriteData(const ClipboardFormatType& format,
-                               base::span<const uint8_t> data) {
-  std::vector<uint8_t> owned_data(data.begin(), data.end());
-  async_clipboard_ozone_->InsertData(std::move(owned_data), {format.GetName()});
+                               const char* data_data,
+                               size_t data_len) {
+  std::vector<uint8_t> data(data_data, data_data + data_len);
+  async_clipboard_ozone_->InsertData(std::move(data), {format.GetName()});
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

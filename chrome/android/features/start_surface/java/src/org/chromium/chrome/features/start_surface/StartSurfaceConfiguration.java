@@ -85,6 +85,18 @@ public class StartSurfaceConfiguration {
             new BooleanCachedFieldTrialParameter(ChromeFeatureList.START_SURFACE_RETURN_TIME,
                     START_SURFACE_RETURN_TIME_USE_MODEL_PARAM, false);
 
+    public static final BooleanCachedFieldTrialParameter SURFACE_POLISH_OMNIBOX_SIZE =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.SURFACE_POLISH, "polish_omnibox_size", false);
+
+    public static final BooleanCachedFieldTrialParameter SURFACE_POLISH_OMNIBOX_COLOR =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.SURFACE_POLISH, "polish_omnibox_color", false);
+
+    public static final BooleanCachedFieldTrialParameter SURFACE_POLISH_USE_MAGIC_SPACE =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.SURFACE_POLISH, "use_magic_space", false);
+
     private static final String STARTUP_UMA_PREFIX = "Startup.Android.";
     private static final String INSTANT_START_SUBFIX = ".Instant";
     private static final String REGULAR_START_SUBFIX = ".NoInstant";
@@ -103,6 +115,15 @@ public class StartSurfaceConfiguration {
      */
     public static boolean isNtpAsHomeSurfaceEnabled(boolean isTablet) {
         return isTablet && ChromeFeatureList.sStartSurfaceOnTablet.isEnabled();
+    }
+
+    /**
+     * Returns whether a magic space is enabled on Start surface.
+     */
+    public static boolean useMagicSpace() {
+        return ChromeFeatureList.sSurfacePolish.isEnabled()
+                && SURFACE_POLISH_USE_MAGIC_SPACE.getValue()
+                && ChromeFeatureList.sStartSurfaceRefactor.isEnabled();
     }
 
     /**

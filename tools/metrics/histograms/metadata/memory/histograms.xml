@@ -69,6 +69,10 @@ chromium-metrics-reviews@google.com.
   </variant>
 </variants>
 
+<variants name="VmmSwapVmName">
+  <variant name="ArcVm" summary="ARCVM"/>
+</variants>
+
 <histogram name="HeapProfiling.AndroidStackUnwinder"
     enum="AndroidStackUnwinder" expires_after="2023-11-12">
   <owner>joenotcharles@google.com</owner>
@@ -107,7 +111,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="HeapProfiling.InProcess.Enabled{Process}"
-    enum="BooleanEnabled" expires_after="2023-06-05">
+    enum="BooleanEnabled" expires_after="2024-06-05">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-memory@google.com</owner>
   <summary>
@@ -118,7 +122,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="HeapProfiling.InProcess.SamplesPerSnapshot{Process}"
-    units="samples" expires_after="2023-06-05">
+    units="samples" expires_after="2024-06-05">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-memory@google.com</owner>
   <summary>
@@ -130,7 +134,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="HeapProfiling.InProcess.SnapshotInterval.{Platform}.{RecordingTime}{Process}"
-    units="ms" expires_after="2023-06-05">
+    units="ms" expires_after="2024-06-05">
   <owner>joenotcharles@google.com</owner>
   <owner>chrome-memory@google.com</owner>
   <summary>
@@ -167,28 +171,6 @@ chromium-metrics-reviews@google.com.
     heap profiler is enabled.
   </summary>
   <token key="Process" variants="ProfiledProcess"/>
-</histogram>
-
-<histogram name="HeapProfiling.ProfiledProcess.Type"
-    enum="HeapProfilingProcessType" expires_after="2021-12-12">
-  <owner>erikchen@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    One metric is emitted every 24-hours after Chrome is launched for every
-    process that is being profiled by the out-of-process heap profiler. The
-    timer is reset if Chrome exits.
-  </summary>
-</histogram>
-
-<histogram name="HeapProfiling.ProfilingMode" enum="HeapProfilingMode"
-    expires_after="2021-02-25">
-  <owner>erikchen@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    One metric is emitted every 24-hours after Chrome is launched for every
-    Chrome instance that is using out of process heap profiling. The timer is
-    reset if Chrome exits.
-  </summary>
 </histogram>
 
 <histogram name="HeapProfiling.SamplingIntervalKB" units="KB"
@@ -443,6 +425,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Memory.Discardable.FreeListReleaseTime" units="microseconds"
     expires_after="2022-11-13">
+  <obsolete>
+    No longer needed since the experiment was not launched.
+  </obsolete>
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -537,7 +522,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Experimental.AvailableMemoryPercent" units="%"
-    expires_after="2023-09-22">
+    expires_after="2023-12-04">
   <owner>anthonyvd@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -768,7 +753,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Experimental.MacAvailableMemoryPercentFreePageCache2"
-    units="%" expires_after="2023-09-22">
+    units="%" expires_after="2023-12-04">
   <owner>anthonyvd@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -784,7 +769,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Experimental.MacFileBackedMemoryMB2" units="MB"
-    expires_after="2023-09-22">
+    expires_after="2023-12-04">
   <owner>anthonyvd@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1072,7 +1057,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Memory.Experimental.UserLevelMemoryPressureSignal.TotalPrivateMemoryFootprintAfter"
-    units="MB" expires_after="2023-10-01">
+    units="MB" expires_after="2023-12-04">
   <owner>tasak@google.com</owner>
   <owner>chrome-memory-tok@google.com</owner>
   <summary>
@@ -1083,7 +1068,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Memory.Experimental.UserLevelMemoryPressureSignal.TotalPrivateMemoryFootprintBefore"
-    units="MB" expires_after="2023-10-01">
+    units="MB" expires_after="2023-12-04">
   <owner>tasak@google.com</owner>
   <owner>chrome-memory-tok@google.com</owner>
   <summary>
@@ -1101,7 +1086,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Memory.Experimental.UserLevelMemoryPressureSignal.TotalPrivateMemoryFootprintVisibleOrHigherPriorityRenderersAfter"
-    units="MB" expires_after="2023-10-01">
+    units="MB" expires_after="2023-12-04">
   <owner>tasak@google.com</owner>
   <owner>chrome-memory-tok@google.com</owner>
   <summary>
@@ -1113,7 +1098,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Memory.Experimental.UserLevelMemoryPressureSignal.TotalPrivateMemoryFootprintVisibleOrHigherPriorityRenderersBefore"
-    units="MB" expires_after="2023-10-01">
+    units="MB" expires_after="2023-12-04">
   <owner>tasak@google.com</owner>
   <owner>chrome-memory-tok@google.com</owner>
   <summary>
@@ -1419,7 +1404,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.NativeLibrary.MappedAndResidentMemoryFootprint3"
-    units="KB" expires_after="2023-10-01">
+    units="KB" expires_after="2023-12-04">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -1435,7 +1420,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Memory.NativeLibrary.MappedAndResidentMemoryFootprintCollectionStatus"
-    enum="MappedAndResidentPagesDumpState" expires_after="2023-10-01">
+    enum="MappedAndResidentPagesDumpState" expires_after="2023-12-04">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -1451,7 +1436,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.NativeLibrary.NotResidentOrderedCodeMemoryFootprint"
-    units="KB" expires_after="2023-10-01">
+    units="KB" expires_after="2023-12-04">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -1466,7 +1451,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.NativeLibrary.ResidentNotOrderedCodeMemoryFootprint"
-    units="KB" expires_after="2023-10-01">
+    units="KB" expires_after="2023-12-04">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -1573,29 +1558,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Memory.OOMKill.Contents.MemAvailableMB" units="MB"
-    expires_after="2022-04-24">
-  <owner>oshima@chromium.org</owner>
-  <owner>alemate@chromium.org</owner>
-  <summary>
-    System-wide file-backed memory plus free memory right after a renderer was
-    killed by oom-killer, which should be smaller than or close to what the
-    kernel uses to trigger low-memory notifications for tab discards. If this is
-    higher than the kernel's threshold for tab discards, renderers may be killed
-    due to reasons other than out-of-memory.
-  </summary>
-</histogram>
-
-<histogram name="Memory.OOMKill.Contents.MemGraphicsMB" units="MB"
-    expires_after="2022-05-01">
-  <owner>oshima@chromium.org</owner>
-  <owner>alemate@chromium.org</owner>
-  <summary>
-    Graphics driver (GEM object) memory right after a renderer was killed by
-    oom-killer.
-  </summary>
-</histogram>
-
 <histogram name="Memory.OOMKill.Contents.MemShmemMB" units="MB"
     expires_after="2021-02-25">
   <owner>oshima@chromium.org</owner>
@@ -1660,7 +1622,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.OOMKills.Daily" units="kills"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>vovoy@google.com</owner>
   <owner>src/chromeos/ash/components/memory/OWNERS</owner>
   <summary>
@@ -1852,7 +1814,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.Compression.SizeKb" units="KB"
-    expires_after="2023-08-06">
+    expires_after="2023-12-10">
   <owner>lizeb@chromium.org</owner>
   <owner>thiabaud@google.com</owner>
   <summary>
@@ -1925,7 +1887,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.DiskReadTime.5min" units="ms"
-    expires_after="2023-08-06">
+    expires_after="2023-12-10">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2371,7 +2333,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.RenderProcessHost.Count.OriginAgentClusterOverhead"
-    units="processes" expires_after="2023-09-24">
+    units="processes" expires_after="2023-12-04">
   <owner>wjmaclean@chromium.org</owner>
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
@@ -2501,7 +2463,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.HibernatedCanvas.OriginalSize" units="MB"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>lizeb@chromium.org</owner>
   <owner>chrome-memory@chromium.org</owner>
   <summary>
@@ -2514,7 +2476,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.HibernatedCanvas.Size" units="MB"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>lizeb@chromium.org</owner>
   <owner>chrome-memory@chromium.org</owner>
   <summary>
@@ -2573,7 +2535,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.PrivateMemoryFootprintExcludingWaivedRenderers"
-    units="MB" expires_after="2023-10-08">
+    units="MB" expires_after="2023-12-10">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2587,7 +2549,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Memory.Total.PrivateMemoryFootprintVisibleOrHigherPriorityRenderers"
-    units="MB" expires_after="2023-10-08">
+    units="MB" expires_after="2023-12-10">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2631,7 +2593,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.RendererPrivateMemoryFootprintExcludingWaived"
-    units="MB" expires_after="2023-10-08">
+    units="MB" expires_after="2023-12-10">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2645,7 +2607,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Memory.Total.RendererPrivateMemoryFootprintVisibleOrHigherPriority"
-    units="MB" expires_after="2023-10-08">
+    units="MB" expires_after="2023-12-10">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2727,6 +2689,58 @@ chromium-metrics-reviews@google.com.
   <summary>
     The arm that the user has opted into for UX Study 1. Logged once on startup.
   </summary>
+</histogram>
+
+<histogram name="Memory.VmmSwap.{VmName}.ActiveAfterEnableDuration"
+    units="Hours" expires_after="2024-01-31">
+  <owner>kawasin@google.com</owner>
+  <owner>sstan@google.com</owner>
+  <summary>
+    The duration how long it was spent with vmm-swap enabled. This is sent with
+    &quot;.InactiveBeforeEnableDuration&quot; metrics when vmm-swap is disabled.
+    Shorter &quot;.InactiveBeforeEnableDuration&quot; and longer
+    &quot;.ActiveAfterEnableDuration&quot; indicates the vmm-swap policies are
+    doing a good job at deciding when to enable vmm-swap.
+  </summary>
+  <token key="VmName" variants="VmmSwapVmName"/>
+</histogram>
+
+<histogram name="Memory.VmmSwap.{VmName}.InactiveBeforeEnableDuration"
+    units="Hours" expires_after="2024-01-31">
+  <owner>kawasin@google.com</owner>
+  <owner>sstan@google.com</owner>
+  <summary>
+    The duration how long it was spent waiting to enable vmm-swap since it
+    becomes swappable-idle. This is sent with
+    &quot;.ActiveAfterEnableDuration&quot; metrics when vmm-swap is disabled.
+  </summary>
+  <token key="VmName" variants="VmmSwapVmName"/>
+</histogram>
+
+<histogram name="Memory.VmmSwap.{VmName}.InactiveNoEnableDuration"
+    units="Hours" expires_after="2024-01-31">
+  <owner>kawasin@google.com</owner>
+  <owner>sstan@google.com</owner>
+  <summary>
+    The duration how long it was spend without vmm-swap enabled and it exits
+    swappable-idle. This is sent when vmm-swap is disabled. If reported values
+    are mostly long, it indicates that the policies are missing chances to
+    enable vmm-swap.
+  </summary>
+  <token key="VmName" variants="VmmSwapVmName"/>
+</histogram>
+
+<histogram name="Memory.VmmSwap.{VmName}.State" enum="VmmSwapState"
+    expires_after="2024-01-31">
+  <owner>kawasin@google.com</owner>
+  <owner>sstan@google.com</owner>
+  <summary>
+    Sends the vmm-swap state (enabled or disabled) every 10 minutes while the vm
+    is swappable-idle. Vmm-swap may not be enabled by policies to protect disk.
+    This metrics indicates what percentage of time in the swappable-idle state
+    is spent with vmm-swap enabled and how well the policies works.
+  </summary>
+  <token key="VmName" variants="VmmSwapVmName"/>
 </histogram>
 
 <histogram name="Memory.Worker" units="KB" expires_after="M85">
@@ -2825,7 +2839,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.{UtilityProcessType}.PrivateSwapFootprint" units="MB"
-    expires_after="2023-07-16">
+    expires_after="2024-07-16">
   <owner>erikchen@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -2866,7 +2880,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.{UtilityProcessType}.SharedMemoryFootprint" units="MB"
-    expires_after="2023-07-16">
+    expires_after="2024-07-16">
   <owner>erikchen@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>

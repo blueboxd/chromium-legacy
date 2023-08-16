@@ -19,6 +19,9 @@ enum class DefaultBrowserPromoSource;
 namespace syncer {
 enum class TrustedVaultUserActionTriggerForUMA;
 }  // namespace syncer
+namespace autofill {
+class CreditCard;
+}  // namespace autofill
 namespace password_manager {
 struct CredentialUIEntry;
 }  // namespace password_manager
@@ -76,6 +79,9 @@ struct CredentialUIEntry;
 // Shows the list of credit cards in the settings.
 - (void)showCreditCardSettings;
 
+// Shows the credit card details view.
+- (void)showCreditCardDetails:(const autofill::CreditCard*)creditCard;
+
 // Shows the settings page informing the user how to set Chrome as the default
 // browser.
 - (void)showDefaultBrowserSettingsFromViewController:
@@ -102,9 +108,6 @@ struct CredentialUIEntry;
 // ApplicationSettingsCommands to the settings view controller if necessary.
 
 @protocol ApplicationCommands <NSObject, ApplicationSettingsCommands>
-
-// Dismisses all modal dialogs.
-- (void)dismissModalDialogs;
 
 // Dismisses all modal dialogs with a completion block that is called when
 // modals are dismissed (animations done).

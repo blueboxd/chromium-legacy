@@ -303,7 +303,8 @@ void HTMLImageElement::ParseAttribute(
   const QualifiedName& name = params.name;
   if (name == html_names::kAltAttr || name == html_names::kTitleAttr) {
     if (UserAgentShadowRoot()) {
-      Element* text = UserAgentShadowRoot()->getElementById("alttext");
+      Element* text =
+          UserAgentShadowRoot()->getElementById(AtomicString("alttext"));
       String alt_text_content = AltText();
       if (text && text->textContent() != alt_text_content)
         text->setTextContent(alt_text_content);
@@ -346,9 +347,7 @@ void HTMLImageElement::ParseAttribute(
         (loading == LoadingAttributeValue::kAuto)) {
       GetImageLoader().LoadDeferredImage();
     }
-  } else if (name == html_names::kFetchpriorityAttr &&
-             RuntimeEnabledFeatures::PriorityHintsEnabled(
-                 GetExecutionContext())) {
+  } else if (name == html_names::kFetchpriorityAttr) {
     // We only need to keep track of usage here, as the communication of the
     // |fetchPriority| attribute to the loading pipeline takes place in
     // ImageLoader.

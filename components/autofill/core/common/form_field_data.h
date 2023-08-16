@@ -217,6 +217,8 @@ struct FormFieldData {
   bool IsPasswordInputElement() const;
 
   // Returns true for `form_control_type` select-one or selectmenu.
+  //
+  // <select> and <selectmenu>s should be treated identically by autofill.
   bool IsSelectOrSelectMenuElement() const;
 
   // Returns true if the field is focusable to the user.
@@ -316,9 +318,9 @@ struct FormFieldData {
   // label_source isn't in serialize methods.
   LabelSource label_source = LabelSource::kUnknown;
 
-  // The bounds of this field in current frame coordinates at the parse time. It
-  // is valid if not empty, will not be synced to the server side or be used for
-  // field comparison and isn't in serialize methods.
+  // The bounds of this field in current frame coordinates at the
+  // form-extraction time. It is valid if not empty, will not be synced to the
+  // server side or be used for field comparison and isn't in serialize methods.
   gfx::RectF bounds;
 
   // The datalist is associated with this field, if any. The following two

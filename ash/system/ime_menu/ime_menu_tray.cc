@@ -25,6 +25,7 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/rounded_container.h"
+#include "ash/style/typography.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/detailed_view_delegate.h"
@@ -40,6 +41,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
@@ -49,6 +51,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -71,11 +74,12 @@ const int kSettingsButtonId = 2;
 const int kVoiceButtonId = 3;
 
 // Insets for the title view (dp).
-constexpr auto kTitleViewPadding = gfx::Insets::TLBR(0, 0, 0, 16);
+constexpr auto kTitleViewPadding =
+    gfx::Insets::VH(0, kMenuEdgeEffectivePadding);
 
 // Insets for the bubble view to fix the overlapping
 // between the floating menu and the IME tray in kiosk session (dp).
-constexpr auto kKioskBubbleViewPadding = gfx::Insets::TLBR(-19, 0, -23, 0);
+constexpr auto kKioskBubbleViewPadding = gfx::Insets::TLBR(-19, 0, 27, 0);
 
 // For QsRevamp the scroll view has no margin at the top or bottom to make it
 // flush with the header and footer.
@@ -175,12 +179,18 @@ class ImeTitleView : public views::BoxLayoutView {
 
     auto* title_label = AddChildView(std::make_unique<views::Label>(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME)));
-    title_label->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets::TLBR(0, kMenuEdgeEffectivePadding, 1, 0)));
+    title_label->SetBorder(
+        views::CreateEmptyBorder(gfx::Insets::TLBR(0, 0, 1, 0)));
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     title_label->SetEnabledColorId(kColorAshTextColorPrimary);
-    TrayPopupUtils::SetLabelFontList(title_label,
-                                     TrayPopupUtils::FontStyle::kPodMenuHeader);
+    if (chromeos::features::IsJellyEnabled()) {
+      title_label->SetAutoColorReadabilityEnabled(false);
+      TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosTitle1,
+                                            *title_label);
+    } else {
+      TrayPopupUtils::SetLabelFontList(
+          title_label, TrayPopupUtils::FontStyle::kPodMenuHeader);
+    }
     SetFlexForView(title_label, 1);
 
     // Don't create Settings Button if it is Kiosk session.
@@ -379,26 +389,13 @@ ImeMenuTray::~ImeMenuTray() {
 }
 
 void ImeMenuTray::ShowImeMenuBubbleInternal() {
-  gfx::Insets bubble_anchor_insets =
-      IsKioskSession() ? kKioskBubbleViewPadding : GetBubbleAnchorInsets();
-
-  TrayBubbleView::InitParams init_params;
-  init_params.delegate = GetWeakPtr();
-  init_params.parent_window = GetBubbleWindowContainer();
-  init_params.anchor_view = nullptr;
-  init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
-  init_params.anchor_rect = GetBubbleAnchor()->GetAnchorBoundsInScreen();
-  init_params.anchor_rect.Inset(bubble_anchor_insets);
-  init_params.shelf_alignment = shelf()->alignment();
-  init_params.preferred_width = kTrayMenuWidth;
-  init_params.close_on_deactivate = true;
-  init_params.translucent = true;
-  init_params.corner_radius = kTrayItemCornerRadius;
-  init_params.reroute_event_handler = true;
+  TrayBubbleView::InitParams init_params = CreateInitParamsForTrayBubble(this);
+  if (IsKioskSession()) {
+    init_params.insets = kKioskBubbleViewPadding;
+  }
 
   std::unique_ptr<TrayBubbleView> bubble_view =
       std::make_unique<TrayBubbleView>(init_params);
-  bubble_view->set_margins(GetSecondaryBubbleInsets());
 
   // Add a title item with a separator on the top of the IME menu.
   bubble_view->AddChildView(std::make_unique<ImeTitleView>());
@@ -504,6 +501,12 @@ void ImeMenuTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
 
 void ImeMenuTray::ClickedOutsideBubble() {
   CloseBubble();
+}
+
+void ImeMenuTray::UpdateTrayItemColor(bool is_active) {
+  DCHECK(chromeos::features::IsJellyEnabled());
+  UpdateTrayImageOrLabelColor(
+      extension_ime_util::IsArcIME(ime_controller_->current_ime().id));
 }
 
 void ImeMenuTray::OnTrayActivated(const ui::Event& event) {
@@ -612,15 +615,22 @@ void ImeMenuTray::UpdateTrayLabel() {
   // IME.
   if (extension_ime_util::IsArcIME(current_ime.id)) {
     CreateImageView();
-    image_view_->SetImage(ui::ImageModel::FromVectorIcon(
-        kShelfGlobeIcon, kColorAshIconColorPrimary));
+    if (chromeos::features::IsJellyEnabled()) {
+      UpdateTrayImageOrLabelColor(/*is_image=*/true);
+    } else {
+      image_view_->SetImage(ui::ImageModel::FromVectorIcon(
+          kShelfGlobeIcon, kColorAshIconColorPrimary));
+    }
     return;
   }
 
   // Updates the tray label based on the current input method.
   CreateLabel();
-
-  label_->SetEnabledColorId(kColorAshIconColorPrimary);
+  if (chromeos::features::IsJellyEnabled()) {
+    UpdateTrayImageOrLabelColor(/*is_image=*/false);
+  } else {
+    label_->SetEnabledColorId(kColorAshIconColorPrimary);
+  }
 
   if (current_ime.third_party)
     label_->SetText(current_ime.short_name + u"*");
@@ -657,6 +667,21 @@ void ImeMenuTray::CreateImageView() {
   image_view_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
   tray_container()->AddChildView(image_view_.get());
+}
+
+void ImeMenuTray::UpdateTrayImageOrLabelColor(bool is_image) {
+  DCHECK(chromeos::features::IsJellyEnabled());
+  const ui::ColorId color_id =
+      is_active() ? cros_tokens::kCrosSysSystemOnPrimaryContainer
+                  : cros_tokens::kCrosSysOnSurface;
+
+  if (is_image) {
+    image_view_->SetImage(
+        ui::ImageModel::FromVectorIcon(kShelfGlobeIcon, color_id));
+    return;
+  }
+
+  label_->SetEnabledColorId(color_id);
 }
 
 BEGIN_METADATA(ImeMenuTray, TrayBackgroundView)

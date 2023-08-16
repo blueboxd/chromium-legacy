@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.ui.util.ColorUtils;
 
@@ -349,6 +350,17 @@ public class OmniboxResourceProvider {
     }
 
     /**
+     * Returns the background color for suggestions in a "standard" (non-incognito) TabModel with
+     * the given context.
+     */
+    public static @ColorInt int getStandardSuggestionBackgroundColor(Context context) {
+        return OmniboxFeatures.shouldShowModernizeVisualUpdate(context)
+                ? ChromeColors.getSurfaceColor(
+                        context, R.dimen.omnibox_suggestion_bg_elevation_modern)
+                : ChromeColors.getSurfaceColor(context, R.dimen.omnibox_suggestion_bg_elevation);
+    }
+
+    /**
      * Wraps the context if necessary to force dark resources for incognito.
      *
      * @param context The {@link Context} to be wrapped.
@@ -482,14 +494,6 @@ public class OmniboxResourceProvider {
                 selectMarginDimen(context, R.dimen.omnibox_suggestion_header_padding_top,
                         R.dimen.omnibox_suggestion_header_padding_top_smaller,
                         R.dimen.omnibox_suggestion_header_padding_top_smallest));
-    }
-
-    /** Returns the min height of the header view. */
-    public static int getHeaderMinHeight(Context context) {
-        return context.getResources().getDimensionPixelSize(
-                selectMarginDimen(context, R.dimen.omnibox_suggestion_header_height_modern_phase2,
-                        R.dimen.omnibox_suggestion_header_height_modern_phase2_smaller,
-                        R.dimen.omnibox_suggestion_header_height_modern_phase2_smallest));
     }
 
     /**

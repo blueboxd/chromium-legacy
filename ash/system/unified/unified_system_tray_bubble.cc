@@ -9,6 +9,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/ash_message_popup_collection.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/time/calendar_metrics.h"
@@ -42,24 +43,18 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
       tray_(tray) {
   time_opened_ = base::TimeTicks::Now();
 
-  TrayBubbleView::InitParams init_params;
-  init_params.shelf_alignment = tray_->shelf()->alignment();
-  init_params.preferred_width =
-      features::IsQsRevampEnabled() ? kRevampedTrayMenuWidth : kTrayMenuWidth;
-  init_params.delegate = tray->GetWeakPtr();
-  init_params.parent_window = tray->GetBubbleWindowContainer();
-  init_params.anchor_view = nullptr;
-  init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
-  init_params.anchor_rect = tray->shelf()->GetSystemTrayAnchorRect();
-  init_params.insets = GetTrayBubbleInsets();
+  TrayBubbleView::InitParams init_params =
+      CreateInitParamsForTrayBubble(tray, /*anchor_to_shelf_corner=*/true);
+  if (features::IsQsRevampEnabled()) {
+    init_params.preferred_width = kRevampedTrayMenuWidth;
+  }
   init_params.close_on_deactivate = false;
-  init_params.reroute_event_handler = true;
-  init_params.translucent = true;
 
   bubble_view_ = new TrayBubbleView(init_params);
 
   // Max height calculated from the maximum available height of the screen.
-  int max_height = CalculateMaxTrayBubbleHeight();
+  int max_height =
+      CalculateMaxTrayBubbleHeight(tray_->GetBubbleWindowContainer());
 
   if (features::IsQsRevampEnabled()) {
     auto quick_settings_view = controller_->CreateQuickSettingsView(max_height);
@@ -313,9 +308,12 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
     return;
   }
 
+  auto* gained_active_widget =
+      views::Widget::GetWidgetForNativeView(gained_active);
+
   // Don't close the bubble if a transient child is gaining or losing
   // activation.
-  if (bubble_widget_ == views::Widget::GetWidgetForNativeView(gained_active) ||
+  if (bubble_widget_ == gained_active_widget ||
       ::wm::HasTransientAncestor(gained_active,
                                  bubble_widget_->GetNativeWindow()) ||
       (lost_active && ::wm::HasTransientAncestor(
@@ -327,8 +325,7 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
   if (tray_->IsMessageCenterBubbleShown()) {
     views::Widget* message_center_widget =
         tray_->message_center_bubble()->GetBubbleWidget();
-    if (message_center_widget ==
-        views::Widget::GetWidgetForNativeView(gained_active)) {
+    if (message_center_widget == gained_active_widget) {
       return;
     }
 
@@ -338,6 +335,14 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
     if (!message_center_widget->IsVisible()) {
       return;
     }
+  }
+
+  // If the activated window is a popup notification, interacting with it should
+  // not close the bubble.
+  if (features::IsQsRevampEnabled() &&
+      tray_->GetMessagePopupCollection()->IsWidgetAPopupNotification(
+          gained_active_widget)) {
+    return;
   }
 
   tray_->CloseBubble();
@@ -373,7 +378,8 @@ void UnifiedSystemTrayBubble::UpdateBubbleHeight(bool is_showing_detiled_view) {
 }
 
 void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
-  int max_height = CalculateMaxTrayBubbleHeight();
+  int max_height =
+      CalculateMaxTrayBubbleHeight(tray_->GetBubbleWindowContainer());
   if (bubble_view_->ShouldUseFixedHeight()) {
     DCHECK(features::IsQsRevampEnabled());
     max_height = std::min(max_height, kDetailedViewHeight);

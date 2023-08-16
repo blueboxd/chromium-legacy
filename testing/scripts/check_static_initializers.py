@@ -16,38 +16,61 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 from scripts import common
 
-# A list of files that are allowed to have static initializers.
+# A list of filename regexes that are allowed to have static initializers.
 # If something adds a static initializer, revert it. We don't accept regressions
 # in static initializers.
-_LINUX_SI_FILE_ALLOWLIST = {
+_LINUX_SI_ALLOWLIST = {
     'chrome': [
-        'InstrProfilingRuntime.cpp',  # Only in coverage builds, not production.
-        'crtstuff.c',  # Added by libgcc due to USE_EH_FRAME_REGISTRY.
-        'iostream.cpp',  # TODO(crbug.com/973554): Remove.
+        # Only in coverage builds, not production.
+        'InstrProfilingRuntime\\.cpp : ' +
+        '_GLOBAL__sub_I_InstrProfilingRuntime\\.cpp',
+
+        # Added by libgcc due to USE_EH_FRAME_REGISTRY.
+        'crtstuff\\.c : frame_dummy',
+
+        # TODO(crbug.com/973554): Remove.
+        'iostream\\.cpp : _GLOBAL__I_000100',
+
+        # TODO(crbug.com/1445935): Rust stdlib argv handling.
+        # https://github.com/rust-lang/rust/blob/b08148f6a76010ea3d4e91d61245aa7aac59e4b4/library/std/src/sys/unix/args.rs#L107-L127
+        # https://github.com/rust-lang/rust/issues/111921
+        '.* : std::sys::unix::args::imp::ARGV_INIT_ARRAY::init_wrapper',
     ],
     'nacl_helper_bootstrap': [],
 }
-_LINUX_SI_FILE_ALLOWLIST['nacl_helper'] = _LINUX_SI_FILE_ALLOWLIST['chrome']
+_LINUX_SI_ALLOWLIST['nacl_helper'] = _LINUX_SI_ALLOWLIST['chrome']
 
 # The lists for Chrome OS are conceptually the same as the Linux ones above.
 # If something adds a static initializer, revert it. We don't accept regressions
 # in static initializers.
-_CROS_SI_FILE_ALLOWLIST = {
+#
+# TODO(lukasza): Deduplicate _CROS_SI_ALLOWLIST and _LINUX_SI_ALLOWLIST
+_CROS_SI_ALLOWLIST = {
     'chrome': [
-        'InstrProfilingRuntime.cpp',  # Only in coverage builds, not production.
-        'iostream.cpp:',  # TODO(crbug.com/973554): Remove.
-        '000100',   # libc++ uses init_priority 100 for iostreams.
+        # Only in coverage builds, not production.
+        'InstrProfilingRuntime\\.cpp : ' +
+        '_GLOBAL__sub_I_InstrProfilingRuntime\\.cpp',
+
+        # TODO(crbug.com/973554): Remove.
+        'iostream\\.cpp : _GLOBAL__I_000100',
+
+        # TODO(crbug.com/1445935): Rust stdlib argv handling.
+        # https://github.com/rust-lang/rust/blob/b08148f6a76010ea3d4e91d61245aa7aac59e4b4/library/std/src/sys/unix/args.rs#L107-L127
+        # https://github.com/rust-lang/rust/issues/111921
+        '.* : std::sys::unix::args::imp::ARGV_INIT_ARRAY::init_wrapper',
+
+        '.*000100.*',       # libc++ uses init_priority 100 for iostreams.
     ],
     'nacl_helper_bootstrap': [],
 }
-_CROS_SI_FILE_ALLOWLIST['nacl_helper'] = _LINUX_SI_FILE_ALLOWLIST['chrome']
+_CROS_SI_ALLOWLIST['nacl_helper'] = _LINUX_SI_ALLOWLIST['chrome']
 
 # Mac can use this list when a dsym is available, otherwise it will fall back
 # to checking the count.
 _MAC_SI_FILE_ALLOWLIST = [
-    'InstrProfilingRuntime.cpp', # Only in coverage builds, not in production.
-    'sysinfo.cc', # Only in coverage builds, not in production.
-    'iostream.cpp', # Used to setup std::cin/cout/cerr.
+    'InstrProfilingRuntime\\.cpp', # Only in coverage builds, not in production.
+    'sysinfo\\.cc', # Only in coverage builds, not in production.
+    'iostream\\.cpp', # Used to setup std::cin/cout/cerr.
     '000100', # Used to setup std::cin/cout/cerr
 ]
 
@@ -153,7 +176,7 @@ def main_mac(src_dir, hermetic_xcode_path, allow_coverage_initializer = False):
               [dump_static_initializers, chromium_framework_dsym])
           for line in stdout:
             if re.match('0x[0-9a-f]+', line) and not any(
-                f in line for f in _MAC_SI_FILE_ALLOWLIST):
+                re.match(f, line) for f in _MAC_SI_FILE_ALLOWLIST):
               ret = 1
               print('Found invalid static initializer: {}'.format(line))
           print(stdout)
@@ -185,8 +208,8 @@ def main_mac(src_dir, hermetic_xcode_path, allow_coverage_initializer = False):
 
 def main_linux(src_dir, is_chromeos):
   ret = 0
-  allowlist = _CROS_SI_FILE_ALLOWLIST if is_chromeos else \
-      _LINUX_SI_FILE_ALLOWLIST
+  allowlist = _CROS_SI_ALLOWLIST if is_chromeos else \
+      _LINUX_SI_ALLOWLIST
   for binary_name in allowlist:
     if not os.path.exists(binary_name):
       continue
@@ -197,9 +220,11 @@ def main_linux(src_dir, is_chromeos):
     entries = json.loads(stdout)['entries']
 
     for e in entries:
-      # Also remove line number suffix.
+      # Get the basename and remove line number suffix.
       basename = os.path.basename(e['filename']).split(':')[0]
-      if basename not in allowlist[binary_name]:
+      symbol = e['symbol_name']
+      descriptor = f"{basename} : {symbol}"
+      if not any(re.match(p, descriptor) for p in allowlist[binary_name]):
         ret = 1
         print(('Error: file "%s" is not expected to have static initializers in'
                ' binary "%s", but found "%s"') % (e['filename'], binary_name,

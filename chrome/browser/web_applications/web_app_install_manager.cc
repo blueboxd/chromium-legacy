@@ -121,6 +121,19 @@ void WebAppInstallManager::NotifyWebAppInstalled(const AppId& app_id) {
   // the webapps::WebappInstallSource in this event.
 }
 
+void WebAppInstallManager::NotifyWebAppInstalledWithOsHooks(
+    const AppId& app_id) {
+  for (WebAppInstallManagerObserver& obs : observers_) {
+    obs.OnWebAppInstalledWithOsHooks(app_id);
+  }
+}
+
+void WebAppInstallManager::NotifyWebAppSourceRemoved(const AppId& app_id) {
+  for (WebAppInstallManagerObserver& observer : observers_) {
+    observer.OnWebAppSourceRemoved(app_id);
+  }
+}
+
 void WebAppInstallManager::NotifyWebAppUninstalled(
     const AppId& app_id,
     webapps::WebappUninstallSource uninstall_source) {
@@ -147,13 +160,6 @@ void WebAppInstallManager::NotifyWebAppWillBeUninstalled(const AppId& app_id) {
 void WebAppInstallManager::NotifyWebAppInstallManagerDestroyed() {
   for (WebAppInstallManagerObserver& observer : observers_) {
     observer.OnWebAppInstallManagerDestroyed();
-  }
-}
-
-void WebAppInstallManager::NotifyWebAppInstalledWithOsHooks(
-    const AppId& app_id) {
-  for (WebAppInstallManagerObserver& obs : observers_) {
-    obs.OnWebAppInstalledWithOsHooks(app_id);
   }
 }
 

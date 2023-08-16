@@ -267,6 +267,9 @@ void It2MeHost::ConnectOnNetworkThread(
         chrome_os_enterprise_params_->terminate_upon_input);
     options.set_enable_curtaining(
         chrome_os_enterprise_params_->curtain_local_user_session);
+    // TODO(b/286835721): Inform in UI when file transfer is disabled by policy.
+    options.set_enable_file_transfer(
+        chrome_os_enterprise_params_->allow_file_transfer);
   }
 #endif
 
@@ -340,7 +343,14 @@ void It2MeHost::OnClientConnected(const std::string& signaling_id) {
 void It2MeHost::OnClientDisconnected(const std::string& signaling_id) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
-  DisconnectOnNetworkThread();
+  // Handling HostStatusObserver events should not cause the destruction of the
+  // ChromotingHost instance, however that is exactly what happens inside of
+  // DisconnectOnNetworkThread() so we post a task to disconnect asynchronously
+  // which will allow any other HostStatusObservers to handle the event as well
+  // before everything is torn down.
+  host_context_->network_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&It2MeHost::DisconnectOnNetworkThread, this,
+                                protocol::ErrorCode::OK));
 }
 
 ValidationCallback It2MeHost::GetValidationCallbackForTesting() {

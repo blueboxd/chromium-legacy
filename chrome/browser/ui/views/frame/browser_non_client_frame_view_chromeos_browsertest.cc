@@ -46,7 +46,7 @@
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
-#include "ash/wm/tablet_mode/tablet_mode_multitask_menu_event_handler.h"
+#include "ash/wm/tablet_mode/tablet_mode_multitask_menu_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "base/functional/callback_helpers.h"
 #include "base/ranges/algorithm.h"
@@ -208,6 +208,11 @@ class BrowserNonClientFrameViewChromeOSThemeChangeTest
         delegate->SetPreferManifestBackgroundColor(
             PreferManifestBackgroundColor());
         delegate->SetShouldAnimateThemeChanges(ShouldAnimateThemeChanges());
+        // When system colored SWAs were introduced for Jelly,
+        // `UseSystemThemeColor()` overrode other styling information in the
+        // manifest. This test now verifies behavior for SWAs that are opted out
+        // of the system styling (by setting it to false).
+        delegate->SetUseSystemThemeColor(false);
         break;
       }
       case ThemeChangeTestMode::kNonSWA:
@@ -1341,7 +1346,7 @@ IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
   auto* multitask_menu_event_handler =
       ash::TabletModeControllerTestApi()
           .tablet_mode_window_manager()
-          ->tablet_mode_multitask_menu_event_handler();
+          ->tablet_mode_multitask_menu_controller();
   EXPECT_TRUE(multitask_menu_event_handler->multitask_menu());
 
   if (browser_view->webui_tab_strip()) {

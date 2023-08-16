@@ -5,18 +5,23 @@
 #ifndef IOS_CHROME_BROWSER_AUTOFILL_BOTTOM_SHEET_AUTOFILL_BOTTOM_SHEET_TAB_HELPER_H_
 #define IOS_CHROME_BROWSER_AUTOFILL_BOTTOM_SHEET_AUTOFILL_BOTTOM_SHEET_TAB_HELPER_H_
 
+#import "components/autofill/core/browser/field_types.h"
 #import "components/autofill/core/common/unique_ids.h"
 #import "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
+
+namespace autofill {
+class FormStructure;
+}  // namespace autofill
 
 namespace web {
 class ScriptMessage;
 class WebFrame;
 }  // namespace web
 
+@protocol AutofillBottomSheetCommands;
 @class CommandDispatcher;
 @protocol PasswordsAccountStorageNoticeHandler;
-@protocol PasswordBottomSheetCommands;
 
 class AutofillBottomSheetTabHelper
     : public web::WebStateObserver,
@@ -35,17 +40,27 @@ class AutofillBottomSheetTabHelper
   // Handler for JavaScript messages. Dispatch to more specific handler.
   void OnFormMessageReceived(const web::ScriptMessage& message);
 
-  // Sets the Password CommandDispatcher.
-  void SetPasswordBottomSheetHandler(
-      id<PasswordBottomSheetCommands> password_bottom_sheet_commands_handler);
+  // Sets the bottom sheet CommandDispatcher.
+  void SetAutofillBottomSheetHandler(
+      id<AutofillBottomSheetCommands> commands_handler);
 
   // Prepare bottom sheet using data from the password form prediction.
   void AttachPasswordListeners(
       const std::vector<autofill::FieldRendererId>& renderer_ids,
       web::WebFrame* frame);
 
-  // Detach the listeners, which will deactivate the bottom sheet.
-  void DetachListenersAndRefocus(web::WebFrame* frame);
+  // Prepare bottom sheet using data from the credit card form prediction.
+  void AttachPaymentsListeners(
+      const std::vector<autofill::FormStructure*>& forms,
+      web::WebFrame* frame);
+
+  // Detach the password listeners, which will deactivate the password bottom
+  // sheet.
+  void DetachPasswordListeners(web::WebFrame* frame, bool refocus);
+
+  // Detach the payments listeners, which will deactivate the payments bottom
+  // sheet.
+  void DetachPaymentsListeners(web::WebFrame* frame, bool refocus);
 
   // WebStateObserver:
   void DidFinishNavigation(web::WebState* web_state,
@@ -64,9 +79,15 @@ class AutofillBottomSheetTabHelper
   // by the user.
   bool HasReachedDismissLimit();
 
+  // Prepare bottom sheet using data from the form prediction.
+  void AttachListeners(
+      const std::vector<autofill::FieldRendererId>& renderer_ids,
+      std::set<autofill::FieldRendererId>& registered_renderer_ids,
+      web::WebFrame* frame,
+      bool must_be_empty);
+
   // Handler used to request showing the password bottom sheet.
-  __weak id<PasswordBottomSheetCommands>
-      password_bottom_sheet_commands_handler_;
+  __weak id<AutofillBottomSheetCommands> commands_handler_;
 
   // Handler used for the passwords account storage notice.
   // TODO(crbug.com/1434606): Remove this when the move to account storage
@@ -79,6 +100,9 @@ class AutofillBottomSheetTabHelper
 
   // List of password bottom sheet related renderer ids.
   std::set<autofill::FieldRendererId> registered_password_renderer_ids_;
+
+  // List of payments bottom sheet related renderer ids.
+  std::set<autofill::FieldRendererId> registered_payments_renderer_ids_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
 };

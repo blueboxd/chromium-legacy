@@ -138,7 +138,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.JobDuration.JobDone" units="ms"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
   <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -349,6 +349,15 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the number of saved printers when the user launches or refreshes the
     OS Settings Printing page.
+  </summary>
+</histogram>
+
+<histogram name="Printing.CUPS.SettingsUserAction"
+    enum="PrinterSettingsUserAction" expires_after="2024-05-30">
+  <owner>gavinwill@chromium.org</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the action a user takes on the OS Printer settings page.
   </summary>
 </histogram>
 

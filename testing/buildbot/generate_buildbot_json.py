@@ -17,7 +17,6 @@ import glob
 import itertools
 import json
 import os
-import six
 import string
 import sys
 
@@ -420,6 +419,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
       return os.path.join(args.pyl_files_dir, filename)
 
     args.waterfalls_pyl_path = absolute_file_path('waterfalls.pyl')
+    args.mixins_pyl_path = absolute_file_path('mixins.pyl')
     args.test_suites_pyl_path = absolute_file_path('test_suites.pyl')
     args.test_suite_exceptions_pyl_path = absolute_file_path(
         'test_suite_exceptions.pyl')
@@ -427,12 +427,6 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     args.variants_pyl_path = absolute_file_path('variants.pyl')
     args.autoshard_exceptions_json_path = absolute_file_path(
         'autoshard_exceptions.json')
-
-    if args.pyl_files_dir == THIS_DIR:
-      args.mixins_pyl_path = os.path.join(args.infra_config_dir, 'generated',
-                                          'testing', 'mixins.pyl')
-    else:
-      args.mixins_pyl_path = absolute_file_path('mixins.pyl')
 
     return args
 
@@ -453,9 +447,8 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     try:
       return ast.literal_eval(self.read_file(pyl_file_path))
     except (SyntaxError, ValueError) as e: # pragma: no cover
-      six.raise_from(
-          BBGenErr('Failed to parse pyl file "%s": %s' %
-                   (pyl_file_path, e)), e)  # pragma: no cover
+      raise BBGenErr('Failed to parse pyl file "%s": %s' %
+                     (pyl_file_path, e)) from e
     # pylint: enable=inconsistent-return-statements
 
   # TOOD(kbr): require that os_type be specified for all bots in waterfalls.pyl.
@@ -644,11 +637,10 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
                                                     path + [str(key), str(idx)],
                                                     update=update)
               except (IndexError, TypeError) as e:
-                six.raise_from(
-                    BBGenErr('Error merging lists by key "%s" from source %s '
-                             'into target %s at index %s. Verify target list '
-                             'length is equal or greater than source' %
-                             (str(key), str(b), str(a), str(idx))), e)
+                raise BBGenErr('Error merging lists by key "%s" from source %s '
+                               'into target %s at index %s. Verify target list '
+                               'length is equal or greater than source' %
+                               (str(key), str(b), str(a), str(idx))) from e
         elif update:
           if b[key] is None:
             del a[key]
@@ -1434,22 +1426,15 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
   def apply_mixin(self, mixin, test, builder):
     """Applies a mixin to a test.
 
-    A mixin is applied by copying all fields from the mixin into the
-    test with the following exceptions:
-    * For the various *args keys, the test's existing value (an empty
-      list if not present) will be extended with the mixin's value.
-    * The sub-keys of the swarming value will be copied to the test's
-      swarming value with the following exceptions:
-      * For the dimension_sets and named_caches sub-keys, the test's
-        existing value (an empty list if not present) will be extended
-        with the mixin's value.
-      * For the dimensions sub-key, after extending the test's
-        dimension_sets as specified above, each dimension set will be
-        updated with the value of the dimensions sub-key. If there are
-        no dimension sets, then one will be added that contains the
-        specified dimensions.
-    """
+    Mixins will not override an existing key. This is to ensure exceptions can
+    override a setting a mixin applies.
 
+    Swarming dimensions are handled in a special way. Instead of specifying
+    'dimension_sets', which is how normal test suites specify their dimensions,
+    you specify a 'dimensions' key, which maps to a dictionary. This dictionary
+    is then applied to every dimension set in the test.
+
+    """
     new_test = copy.deepcopy(test)
     mixin = copy.deepcopy(mixin)
     if 'swarming' in mixin:
@@ -1473,39 +1458,12 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         for dimension_set in new_test['swarming']['dimension_sets']:
           dimension_set.update(swarming_mixin['dimensions'])
         del swarming_mixin['dimensions']
-      if 'named_caches' in swarming_mixin:
-        new_test['swarming'].setdefault('named_caches', []).extend(
-            swarming_mixin['named_caches'])
-        del swarming_mixin['named_caches']
       # python dict update doesn't do recursion at all. Just hard code the
       # nested update we need (mixin['swarming'] shouldn't clobber
       # test['swarming'], but should update it).
       new_test['swarming'].update(swarming_mixin)
       del mixin['swarming']
 
-    # Array so we can assign to it in a nested scope.
-    args_need_fixup = ['args' in mixin]
-
-    for a in (
-        'args',
-        'precommit_args',
-        'non_precommit_args',
-        'desktop_args',
-        'lacros_args',
-        'linux_args',
-        'android_args',
-        'chromeos_args',
-        'mac_args',
-        'win_args',
-        'win64_args',
-    ):
-      if (value := mixin.pop(a, None)) is None:
-        continue
-      if not isinstance(value, list):
-        raise BBGenErr(f'"{a}" must be a list')
-      new_test.setdefault(a, []).extend(value)
-
-    # TODO(gbeaty) Remove this once all mixins have removed '$mixin_append'
     if '$mixin_append' in mixin:
       # Values specified under $mixin_append should be appended to existing
       # lists, rather than replacing them.
@@ -1533,28 +1491,29 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
               'Cannot apply $mixin_append to non-list "' + key + '".')
         new_test[key].extend(mixin_append[key])
 
+      args = new_test.get('args', [])
+      # Array so we can assign to it in a nested scope.
+      args_need_fixup = [False]
       if 'args' in mixin_append:
         args_need_fixup[0] = True
 
-    args = new_test.get('args', [])
+      def add_conditional_args(key, fn):
+        val = new_test.pop(key, [])
+        if val and fn(builder):
+          args.extend(val)
+          args_need_fixup[0] = True
 
-    def add_conditional_args(key, fn):
-      val = new_test.pop(key, [])
-      if val and fn(builder):
-        args.extend(val)
-        args_need_fixup[0] = True
+      add_conditional_args('desktop_args', lambda cfg: not self.is_android(cfg))
+      add_conditional_args('lacros_args', self.is_lacros)
+      add_conditional_args('linux_args', self.is_linux)
+      add_conditional_args('android_args', self.is_android)
+      add_conditional_args('chromeos_args', self.is_chromeos)
+      add_conditional_args('mac_args', self.is_mac)
+      add_conditional_args('win_args', self.is_win)
+      add_conditional_args('win64_args', self.is_win64)
 
-    add_conditional_args('desktop_args', lambda cfg: not self.is_android(cfg))
-    add_conditional_args('lacros_args', self.is_lacros)
-    add_conditional_args('linux_args', self.is_linux)
-    add_conditional_args('android_args', self.is_android)
-    add_conditional_args('chromeos_args', self.is_chromeos)
-    add_conditional_args('mac_args', self.is_mac)
-    add_conditional_args('win_args', self.is_win)
-    add_conditional_args('win64_args', self.is_win64)
-
-    if args_need_fixup[0]:
-      new_test['args'] = self.maybe_fixup_args_array(args)
+      if args_need_fixup[0]:
+        new_test['args'] = self.maybe_fixup_args_array(args)
 
     new_test.update(mixin)
     return new_test

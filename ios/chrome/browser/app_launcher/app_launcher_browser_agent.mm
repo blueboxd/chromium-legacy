@@ -59,13 +59,21 @@ void AppLauncherOverlayCallback(base::OnceCallback<void(bool)> completion,
 }
 
 // Launches the app for `url` if `user_accepted` is true.
-void LaunchExternalApp(const GURL url, bool user_accepted = true) {
-  if (!user_accepted)
+void LaunchExternalApp(const GURL url,
+                       base::OnceClosure completion,
+                       bool user_accepted = true) {
+  if (!user_accepted) {
+    std::move(completion).Run();
     return;
+  }
+  __block base::OnceClosure block_completion = std::move(completion);
   [[UIApplication sharedApplication] openURL:net::NSURLWithGURL(url)
-                                     options:@{}
-                           completionHandler:nil];
+      options:@{}
+      completionHandler:^(BOOL _success) {
+        std::move(block_completion).Run();
+      }];
 }
+
 }  // namespace
 
 #pragma mark - AppLauncherBrowserAgent
@@ -91,17 +99,19 @@ AppLauncherBrowserAgent::TabHelperDelegate::~TabHelperDelegate() = default;
 void AppLauncherBrowserAgent::TabHelperDelegate::LaunchAppForTabHelper(
     AppLauncherTabHelper* tab_helper,
     const GURL& url,
-    bool link_transition) {
+    bool link_transition,
+    base::OnceClosure completion) {
   // Don't open application if chrome is not active.
   if ([[UIApplication sharedApplication] applicationState] !=
       UIApplicationStateActive) {
+    std::move(completion).Run();
     return;
   }
 
   // Uses a Mailto Handler to open the appropriate app.
   if (url.SchemeIs(url::kMailToScheme)) {
     MailtoHandlerServiceFactory::GetForBrowserState(browser_->GetBrowserState())
-        ->HandleMailtoURL(net::NSURLWithGURL(url));
+        ->HandleMailtoURL(net::NSURLWithGURL(url), std::move(completion));
     return;
   }
 
@@ -113,12 +123,13 @@ void AppLauncherBrowserAgent::TabHelperDelegate::LaunchAppForTabHelper(
         OverlayRequest::CreateWithConfig<AppLaunchConfirmationRequest>(
             /*is_repeated_request=*/false);
     request->GetCallbackManager()->AddCompletionCallback(base::BindOnce(
-        &AppLauncherOverlayCallback, base::BindOnce(&LaunchExternalApp, url),
+        &AppLauncherOverlayCallback,
+        base::BindOnce(&LaunchExternalApp, url, std::move(completion)),
         /*repeated_request=*/false));
     GetQueueForAppLaunchDialog(tab_helper->web_state())
         ->AddRequest(std::move(request));
   } else {
-    LaunchExternalApp(url);
+    LaunchExternalApp(url, std::move(completion));
   }
 }
 

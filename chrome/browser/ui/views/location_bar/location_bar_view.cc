@@ -75,6 +75,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -103,6 +104,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/feature_switch.h"
+#include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -168,8 +170,8 @@ LocationBarView::LocationBarView(Browser* browser,
                                  CommandUpdater* command_updater,
                                  Delegate* delegate,
                                  bool is_popup_mode)
-    : AnimationDelegateViews(this),
-      ChromeOmniboxEditModelDelegate(browser, profile, command_updater),
+    : LocationBar(command_updater),
+      AnimationDelegateViews(this),
       browser_(browser),
       profile_(profile),
       delegate_(delegate),
@@ -193,7 +195,7 @@ LocationBarView::LocationBarView(Browser* browser,
 
 #if BUILDFLAG(IS_MAC)
     geolocation_permission_observation_.Observe(
-        g_browser_process->geolocation_manager());
+        device::GeolocationManager::GetInstance());
 #endif
   }
 }
@@ -222,8 +224,10 @@ void LocationBarView::Init() {
 
   // Initialize the Omnibox view.
   auto omnibox_view = std::make_unique<OmniboxViewViews>(
-      this, std::make_unique<ChromeOmniboxClient>(this, profile_),
-      is_popup_mode_, this, font_list);
+      std::make_unique<ChromeOmniboxClient>(
+          /*location_bar=*/this, browser_, profile_),
+      is_popup_mode_,
+      /*location_bar_view=*/this, font_list);
   omnibox_view->Init();
   omnibox_view_ = AddChildView(std::move(omnibox_view));
   // LocationBarView directs mouse button events from
@@ -297,7 +301,11 @@ void LocationBarView::Init() {
     // first so that they appear on the left side of the icon container.
     // TODO(crbug.com/1318890): Improve the ordering heuristics for page action
     // icons and determine a way to handle simultaneous icon animations.
-    params.types_enabled.push_back(PageActionIconType::kPriceTracking);
+    if (base::FeatureList::IsEnabled(commerce::kPriceInsights)) {
+      params.types_enabled.push_back(PageActionIconType::kPriceInsights);
+    } else {
+      params.types_enabled.push_back(PageActionIconType::kPriceTracking);
+    }
 
     if (side_search::IsEnabledForBrowser(browser_)) {
       params.types_enabled.push_back(PageActionIconType::kSideSearch);
@@ -929,7 +937,9 @@ SkColor LocationBarView::GetIconLabelBubbleSurroundingForegroundColor() const {
   // will inherit the selected "surrounding foreground color".
   const auto color_id = ShouldShowKeywordBubble()
                             ? kColorOmniboxKeywordSeparator
-                            : kColorOmniboxText;
+                            : (OmniboxFieldTrial::IsChromeRefreshIconsEnabled()
+                                   ? kColorPageActionIcon
+                                   : kColorOmniboxText);
   return GetColorProvider()->GetColor(color_id);
 }
 
@@ -1148,30 +1158,6 @@ void LocationBarView::OnPageInfoBubbleClosed(
   }
 
   FocusLocation(false);
-}
-
-GURL LocationBarView::GetDestinationURL() const {
-  return destination_url();
-}
-
-bool LocationBarView::IsInputTypedUrlWithoutScheme() const {
-  return destination_url_entered_without_scheme();
-}
-
-bool LocationBarView::IsInputTypedUrlWithHttpScheme() const {
-  return destination_url_entered_with_http_scheme();
-}
-
-WindowOpenDisposition LocationBarView::GetWindowOpenDisposition() const {
-  return disposition();
-}
-
-ui::PageTransition LocationBarView::GetPageTransition() const {
-  return transition();
-}
-
-base::TimeTicks LocationBarView::GetMatchSelectionTimestamp() const {
-  return match_selection_timestamp();
 }
 
 void LocationBarView::FocusSearch() {

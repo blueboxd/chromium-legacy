@@ -12,7 +12,6 @@ import "gpu/ipc/common/sync_token.mojom";
 import "gpu/ipc/common/vulkan_ycbcr_info.mojom";
 import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
-import "mojo/public/mojom/base/generic_pending_associated_receiver.mojom";
 import "services/viz/public/mojom/compositing/resource_format.mojom";
 import "services/viz/public/mojom/compositing/shared_image_format.mojom";
 import "skia/public/mojom/image_info.mojom";
@@ -51,24 +50,16 @@ enum SchedulingPriority {
 
 // Maps to its namesake in gpu/command_buffer/common/context_creation_attribs.h.
 struct ContextCreationAttribs {
-  gfx.mojom.Size offscreen_framebuffer_size;
   gl.mojom.GpuPreference gpu_preference = kLowPower;
 
   // -1 if invalid or unspecified.
-  int32 alpha_size = -1;
-  int32 blue_size = -1;
-  int32 green_size = -1;
-  int32 red_size = -1;
-  int32 depth_size = -1;
-  int32 stencil_size = -1;
-  int32 samples = -1;
-  int32 sample_buffers = -1;
-  bool buffer_preserved = true;
+  [EnableIf=is_android] int32 alpha_size = -1;
+  [EnableIf=is_android] int32 blue_size = -1;
+  [EnableIf=is_android] int32 green_size = -1;
+  [EnableIf=is_android] int32 red_size = -1;
   bool bind_generates_resource = true;
   bool fail_if_major_perf_caveat = false;
   bool lose_context_when_out_of_memory = false;
-  bool should_use_native_gmb_for_backbuffer = false;
-  bool single_buffer = false;
   bool enable_gles2_interface = true;
   bool enable_grcontext = false;
   bool enable_raster_interface = false;
@@ -263,13 +254,6 @@ interface CommandBuffer {
   // then sends a corresponding SignalAck on the CommandBufferClient interface,
   // using `signal_id` to identify this request.
   SignalQuery(uint32 query, uint32 signal_id);
-
-  // Binds an associated interface which shares its message ordering with this
-  // CommandBuffer. This allows the Media stack above the core GPU layer to
-  // establish such interfaces without introducing a layering violation. See
-  // GpuChannel::set_command_buffer_media_binder().
-  [Sync] BindMediaReceiver(
-      mojo_base.mojom.GenericPendingAssociatedReceiver receiver) => ();
 };
 
 // Corresponds to gpu::SwapBuffersCompleteParams.
@@ -438,14 +422,6 @@ union DeferredCommandBufferRequestParams {
   // Destroys a transfer buffer identified by this ID.
   int32 destroy_transfer_buffer;
 
-  // Takes the front buffer into a mailbox. Allows another context to draw the
-  // output of this context.
-  // NOTE: This exists only to support PNaCl.
-  Mailbox take_front_buffer;
-
-  // See ReturnFrontBufferParams.
-  ReturnFrontBufferParams return_front_buffer;
-
   // Allows to attach SharedImage to default framebuffer of this context.
   // NOTE: Used only for PNaCL.
   SetDefaultFramebufferSharedImageParams set_default_framebuffer_shared_image;
@@ -504,17 +480,6 @@ struct AsyncFlushParams {
   int32 put_offset;
   uint32 flush_id;
   array<SyncToken> sync_token_fences;
-};
-
-// Returns a front buffer taken via TakeFrontBufferParams in a previous
-// DeferredRequest. This allows it to be reused.
-// NOTE: This exists only to support PNaCl.
-struct ReturnFrontBufferParams {
-  // The mailbox which last took the front buffer in question.
-  Mailbox mailbox;
-
-  // Indicates that the resource was lost and should be destroyed.
-  bool is_lost;
 };
 
 // Sets SharedImage mailbox and other framebuffer params to the default

@@ -74,7 +74,9 @@ class PasswordsPrivateDelegateImpl
   absl::optional<int> ChangeSavedPassword(
       int id,
       const api::passwords_private::ChangeSavedPasswordParams& params) override;
-  void RemoveSavedPassword(
+  bool ChangeCredential(
+      const api::passwords_private::PasswordUiEntry& credential) override;
+  void RemoveCredential(
       int id,
       api::passwords_private::PasswordStoreSet from_stores) override;
   void RemovePasswordException(int id) override;

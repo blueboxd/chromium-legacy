@@ -38,8 +38,9 @@ ChromeEnterpriseRealTimeUrlLookupServiceFactory::GetForProfile(
 // static
 ChromeEnterpriseRealTimeUrlLookupServiceFactory*
 ChromeEnterpriseRealTimeUrlLookupServiceFactory::GetInstance() {
-  return base::Singleton<
-      ChromeEnterpriseRealTimeUrlLookupServiceFactory>::get();
+  static base::NoDestructor<ChromeEnterpriseRealTimeUrlLookupServiceFactory>
+      instance;
+  return instance.get();
 }
 
 ChromeEnterpriseRealTimeUrlLookupServiceFactory::
@@ -55,6 +56,7 @@ ChromeEnterpriseRealTimeUrlLookupServiceFactory::
   DependsOn(VerdictCacheManagerFactory::GetInstance());
   DependsOn(enterprise_connectors::ConnectorsServiceFactory::GetInstance());
   DependsOn(SafeBrowsingNavigationObserverManagerFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 KeyedService*

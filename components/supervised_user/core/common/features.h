@@ -16,15 +16,18 @@ BASE_DECLARE_FEATURE(kLocalWebApprovals);
 extern const char kLocalWebApprovalsPreferredButtonLocal[];
 extern const char kLocalWebApprovalsPreferredButtonRemote[];
 
-BASE_DECLARE_FEATURE(kAllowHistoryDeletionForChildAccounts);
 BASE_DECLARE_FEATURE(kSynchronousSignInChecking);
 
 // Flags related to supervision features on Desktop and iOS platforms.
 BASE_DECLARE_FEATURE(kEnableSupervisionOnDesktopAndIOS);
 BASE_DECLARE_FEATURE(kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
 BASE_DECLARE_FEATURE(kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
+BASE_DECLARE_FEATURE(kSupervisedPrefsControlledBySupervisedStore);
 BASE_DECLARE_FEATURE(kEnableManagedByParentUi);
 extern const base::FeatureParam<std::string> kManagedByParentUiMoreInfoUrl;
+
+// Enables inkoking the CreatePermissionRequest service through a proto fetcher.
+BASE_DECLARE_FEATURE(kEnableCreatePermissionRequestFetcher);
 
 // Returns whether banner can be displayed to the user after website filtering
 // is enabled

@@ -24,6 +24,7 @@
 #include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
+#include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 
 class PrefService;
@@ -123,10 +124,15 @@ class AutofillBrowserTestEnvironment : public AutofillTestEnvironment {
       const Options& options = {.disable_server_communication = false});
 };
 
-// Creates non-empty LocalFrameToken. If `randomize` is false, the
-// LocalFrameToken is stable across multiple calls.
+// Creates non-empty LocalFrameToken.
+//
+// If `randomize` is true, the LocalFrameToken changes for successive calls.
+// Within each unit test, the generated values are deterministically predictable
+// (because the test's AutofillTestEnvironment restarts the generation).
+//
+// If `randomize` is false, the LocalFrameToken is stable across multiple calls.
 LocalFrameToken MakeLocalFrameToken(
-    RandomizeFrame randomize = RandomizeFrame(false));
+    RandomizeFrame randomize = RandomizeFrame(true));
 
 // Creates new, pairwise distinct FormRendererIds.
 inline FormRendererId MakeFormRendererId() {
@@ -142,14 +148,14 @@ inline FieldRendererId MakeFieldRendererId() {
 // LocalFrameToken is generated randomly, otherwise it is stable across multiple
 // calls.
 inline FormGlobalId MakeFormGlobalId(
-    RandomizeFrame randomize = RandomizeFrame(false)) {
+    RandomizeFrame randomize = RandomizeFrame(true)) {
   return {MakeLocalFrameToken(randomize), MakeFormRendererId()};
 }
 
 // Creates new, pairwise distinct FieldGlobalIds. If `randomize` is true, the
 // LocalFrameToken is generated randomly, otherwise it is stable.
 inline FieldGlobalId MakeFieldGlobalId(
-    RandomizeFrame randomize = RandomizeFrame(false)) {
+    RandomizeFrame randomize = RandomizeFrame(true)) {
   return {MakeLocalFrameToken(randomize), MakeFieldRendererId()};
 }
 
@@ -223,6 +229,15 @@ void CreateTestSelectField(const char* label,
                            const std::vector<const char*>& values,
                            const std::vector<const char*>& contents,
                            FormFieldData* field);
+
+void CreateTestSelectOrSelectMenuField(const char* label,
+                                       const char* name,
+                                       const char* value,
+                                       const char* autocomplete,
+                                       const std::vector<const char*>& values,
+                                       const std::vector<const char*>& contents,
+                                       const char* field_type,
+                                       FormFieldData* field);
 
 void CreateTestSelectField(const std::vector<const char*>& values,
                            FormFieldData* field);
@@ -510,11 +525,7 @@ void GenerateTestAutofillPopup(
     AutofillExternalDelegate* autofill_external_delegate);
 
 std::string ObfuscatedCardDigitsAsUTF8(const std::string& str,
-#if BUILDFLAG(IS_ANDROID)
-                                       int obfuscation_length = 2);
-#else
-                                       int obfuscation_length = 4);
-#endif
+                                       int obfuscation_length);
 
 // Returns 2-digit month string, like "02", "10".
 std::string NextMonth();
@@ -552,7 +563,7 @@ void AddFieldPredictionsToForm(
     ::autofill::AutofillQueryResponse_FormSuggestion* form_suggestion);
 
 Suggestion CreateAutofillSuggestion(
-    Suggestion::FrontendId frontend_id,
+    PopupItemId popup_item_id,
     const std::u16string& main_text_value = std::u16string(),
     const Suggestion::Payload& payload = Suggestion::Payload());
 

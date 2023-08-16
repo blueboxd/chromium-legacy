@@ -108,10 +108,18 @@ class BubbleWidget : public Widget {
     return anchor ? anchor->GetNativeTheme() : Widget::GetNativeTheme();
   }
 
+  using Widget::GetPrimaryWindowWidget;
+
   Widget* GetPrimaryWindowWidget() override {
     Widget* const anchor = GetAnchorWidget();
     return anchor ? anchor->GetPrimaryWindowWidget()
                   : Widget::GetPrimaryWindowWidget();
+  }
+
+  const ui::ColorProvider* GetColorProvider() const override {
+    const Widget* const primary = GetPrimaryWindowWidget();
+    return (primary && primary != this) ? primary->GetColorProvider()
+                                        : Widget::GetColorProvider();
   }
 
  private:
@@ -162,7 +170,7 @@ Widget* CreateBubbleWidget(BubbleDialogDelegate* bubble) {
   bubble_params.background_elevation =
       ui::ColorProviderManager::ElevationMode::kHigh;
 #endif
-  gfx::NativeView parent = nullptr;
+  gfx::NativeView parent = gfx::NativeView();
   if (bubble->has_parent()) {
     if (bubble->parent_window()) {
       parent = bubble->parent_window();

@@ -43,21 +43,15 @@ BASE_DECLARE_FEATURE(kWebApkInstallFailureRetry);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 BASE_DECLARE_FEATURE(kCreateShortcutIgnoresManifest);
-BASE_DECLARE_FEATURE(kSkipServiceWorkerCheckInstallOnly);
-BASE_DECLARE_FEATURE(kDesktopPWAsDetailedInstallDialog);
-BASE_DECLARE_FEATURE(kSkipServiceWorkerForInstallPrompt);
 
 BASE_DECLARE_FEATURE(kInstallPromptSegmentation);
-
-bool SkipInstallServiceWorkerCheck();
-bool SkipServiceWorkerForInstallPromotion();
 
 BASE_DECLARE_FEATURE(kAppBannerTriggering);
 extern const base::FeatureParam<double> kBannerParamsEngagementTotalKey;
 extern const base::FeatureParam<int> kBannerParamsDaysAfterBannerDismissedKey;
 extern const base::FeatureParam<int> kBannerParamsDaysAfterBannerIgnoredKey;
 
-BASE_DECLARE_FEATURE(kWebAppsMlUkmCollection);
+BASE_DECLARE_FEATURE(kWebAppsEnableMLModelForPromotion);
 
 }  // namespace features
 }  // namespace webapps

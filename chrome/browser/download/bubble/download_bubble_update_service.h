@@ -197,6 +197,10 @@ class DownloadBubbleUpdateService
     return *original_download_item_notifier_;
   }
 
+  base::WeakPtr<DownloadBubbleUpdateService> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
   // Encapsulates the caching functionality of DownloadBubbleUpdateService.
   // Holds two caches, one for DownloadItems and one for OfflineItems, and their
@@ -267,6 +271,10 @@ class DownloadBubbleUpdateService
     bool RemoveOfflineItemFromCache(
         const offline_items_collection::ContentId& id);
 
+    // Updates |all_models_info_| based on the current contents of the cache.
+    // This is kept updated as items are added or removed from the cache.
+    void UpdateAllModelsInfo();
+
     // Clears the cache.
     void DropAllDownloadItems();
     void DropAllOfflineItems();
@@ -294,10 +302,6 @@ class DownloadBubbleUpdateService
         SortedItems<Item>& cache,
         IterMap<Id, Item>& iter_map);
 
-    // Updates |all_models_info_| based on the current contents of the cache.
-    // This is kept updated as items are added or removed from the cache.
-    void UpdateAllModelsInfo();
-
     // Wraps an item into a DownloadUIModel and possibly adds it to |models|, if
     // it is new enough (newer than |cutoff_time|) and meets other criteria.
     // Returns whether model was eligible to be added, regardless of whether it
@@ -321,10 +325,10 @@ class DownloadBubbleUpdateService
 
 #if DCHECK_IS_ON()
     // Checks that the cache data structures are consistent.
-    bool ConsistencyCheckCaches() const;
+    void ConsistencyCheckCaches() const;
 
     template <typename Id, typename Item>
-    bool ConsistencyCheckImpl(const SortedItems<Item>& cache,
+    void ConsistencyCheckImpl(const SortedItems<Item>& cache,
                               const IterMap<Id, Item>& iter_map) const;
 #endif  // DCHECK_IS_ON()
 
@@ -361,6 +365,15 @@ class DownloadBubbleUpdateService
   // Checks whether |cache| is the main cache, used for CHECKs to ensure that
   // offline items only go into the main cache.
   bool IsMainCache(const CacheManager& cache) const;
+
+  // Called when a download with an ephemeral warning should disappear from the
+  // download bubble. To enact the disappearance, the item is omitted when
+  // calculating `all_models_info_` and GetAllModelsToDisplay(). The item
+  // remains in the cache until pruned in GetAllModelsToDisplay(). This function
+  // handles the other part of that, which is updating `all_models_info_` and
+  // notifying the display controller (which then hides the toolbar button if no
+  // other downloads are displayed).
+  void OnEphemeralWarningExpired(const std::string& guid);
 
  private:
   // Finds the appropriate CacheManager for a web app, creating one if it

@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -31,18 +32,38 @@ void GiveItSomeTime(base::TimeDelta delta) {
   run_loop.Run();
 }
 
+// TODO(crbug/1422469): Deprecate the version skew handling code once the stable
+// channel passes beyond 116.0.5817.0.
+bool DoesAshSupportLacrosTtsFeatureFlagForTest() {
+  // Make sure Ash is in the version that enables Lacros Tts support code
+  // only by its the associated feature.
+  // Note: Before version 116.0.5817.0, there was a test workaround that allows
+  // Ash to enable the Lacros Tts support code without the feature flag
+  // being enabled.
+  return chromeos::IsAshVersionAtLeastForTesting(base::Version({116, 0, 5817}));
+}
+
 }  // namespace
 
 class LacrosTtsApiTest : public ExtensionApiTest,
                          public content::VoicesChangedDelegate {
  public:
+  void SetUp() override {
+    // Start unique Ash instance with Lacros Tts Support feature enabled.
+    StartUniqueAshChrome({}, {"DisableLacrosTtsSupport"}, {},
+                         "crbug/1451677 Switch to shared ash when lacros tts "
+                         "support is enabled by default");
+    ExtensionApiTest::SetUp();
+  }
+
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+
+    ASSERT_TRUE(tts_crosapi_util::ShouldEnableLacrosTtsSupport());
     content::TtsController::SkipAddNetworkChangeObserverForTests(true);
     content::TtsController* tts_controller =
         content::TtsController::GetInstance();
     tts_controller->SetTtsEngineDelegate(TtsExtensionEngine::GetInstance());
-    TtsPlatformImplLacros::EnablePlatformSupportForTesting();
   }
 
  protected:
@@ -51,8 +72,9 @@ class LacrosTtsApiTest : public ExtensionApiTest,
     content::TtsController::GetInstance()->GetVoices(profile(), GURL(),
                                                      &voices);
     for (auto& voice : voices) {
-      if (voice.name == name)
+      if (voice.name == name) {
         return true;
+      }
     }
 
     return false;
@@ -95,8 +117,9 @@ class LacrosTtsApiTest : public ExtensionApiTest,
       const std::string& voice_name,
       const std::vector<crosapi::mojom::TtsVoicePtr>& mojo_voices) {
     for (const auto& voice : mojo_voices) {
-      if (voice_name == voice->voice_name)
+      if (voice_name == voice->voice_name) {
         return true;
+      }
     }
     return false;
   }
@@ -143,7 +166,7 @@ class LacrosTtsApiTest : public ExtensionApiTest,
     }
 
    private:
-    extensions::LacrosTtsApiTest* owner_;
+    raw_ptr<extensions::LacrosTtsApiTest> owner_;
     mojo::Receiver<crosapi::mojom::TtsUtteranceClient> receiver_{this};
   };
 
@@ -157,6 +180,10 @@ class LacrosTtsApiTest : public ExtensionApiTest,
 // TTS Engine tests.
 //
 IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest, LoadAndUnloadLacrosTtsEngine) {
+  if (!DoesAshSupportLacrosTtsFeatureFlagForTest()) {
+    GTEST_SKIP() << "Unsupported ash version.";
+  }
+
   // Before tts engine extension is loaded, verify the internal states are
   // clean.
   EXPECT_FALSE(VoicesChangedNotified());
@@ -208,10 +235,7 @@ IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest, LoadAndUnloadLacrosTtsEngine) {
 
 IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest,
                        SpeakLacrosUtteranceWithLacrosTtsEngine) {
-  if (chromeos::LacrosService::Get()
-          ->GetInterfaceVersion<crosapi::mojom::TestController>() <
-      static_cast<int>(crosapi::mojom::TestController::MethodMinVersions::
-                           kGetTtsUtteranceQueueSizeMinVersion)) {
+  if (!DoesAshSupportLacrosTtsFeatureFlagForTest()) {
     GTEST_SKIP() << "Unsupported ash version.";
   }
 
@@ -230,10 +254,7 @@ IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest,
 
 IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest,
                        SpeakAshUtteranceWithLacrosSpeechEngine) {
-  if (chromeos::LacrosService::Get()
-          ->GetInterfaceVersion<crosapi::mojom::TestController>() <
-      static_cast<int>(crosapi::mojom::TestController::MethodMinVersions::
-                           kGetTtsVoicesMinVersion)) {
+  if (!DoesAshSupportLacrosTtsFeatureFlagForTest()) {
     GTEST_SKIP() << "Unsupported ash version.";
   }
 
@@ -274,8 +295,9 @@ IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest,
   std::vector<crosapi::mojom::TtsVoicePtr> mojo_voices;
   while (mojo_voices.size() == 0) {
     waiter.GetTtsVoices(&mojo_voices);
-    if (mojo_voices.size() > 0)
+    if (mojo_voices.size() > 0) {
       break;
+    }
     GiveItSomeTime(base::Milliseconds(100));
   }
 
@@ -314,9 +336,7 @@ IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest,
 
 IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest,
                        StopLacrosUtteranceWithLacrosTtsEngine) {
-  if (chromeos::LacrosService::Get()
-          ->GetInterfaceVersion<crosapi::mojom::Tts>() <
-      static_cast<int>(crosapi::mojom::Tts::kStopMinVersion)) {
+  if (!DoesAshSupportLacrosTtsFeatureFlagForTest()) {
     GTEST_SKIP() << "Unsupported ash version.";
   }
 
@@ -350,9 +370,7 @@ IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest, PauseBeforeSpeakWithLacrosTtsEngine) {
 }
 
 IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest, PauseDuringSpeakWithLacrosTtsEngine) {
-  if (chromeos::LacrosService::Get()
-          ->GetInterfaceVersion<crosapi::mojom::Tts>() <
-      static_cast<int>(crosapi::mojom::Tts::kPauseMinVersion)) {
+  if (!DoesAshSupportLacrosTtsFeatureFlagForTest()) {
     GTEST_SKIP() << "Unsupported ash version.";
   }
 
@@ -366,16 +384,14 @@ IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest, PauseDuringSpeakWithLacrosTtsEngine) {
 }
 
 IN_PROC_BROWSER_TEST_F(LacrosTtsApiTest, IsSpeaking) {
-  if (chromeos::LacrosService::Get()
-          ->GetInterfaceVersion<crosapi::mojom::Tts>() <
-      static_cast<int>(crosapi::mojom::Tts::kIsSpeakingMinVersion)) {
+  if (!DoesAshSupportLacrosTtsFeatureFlagForTest()) {
     GTEST_SKIP() << "Unsupported ash version.";
   }
 
   // Load Lacros tts engine extension, register the tts engine events, and
   // call tts.isSpeaking before/during/after tts.speak.
-  ASSERT_TRUE(RunExtensionTest("tts/is_speaking/",
-                               {}, {.ignore_manifest_warnings = true}))
+  ASSERT_TRUE(RunExtensionTest("tts/is_speaking/", {},
+                               {.ignore_manifest_warnings = true}))
       << message_;
 }
 

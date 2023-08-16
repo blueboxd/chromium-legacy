@@ -43,11 +43,36 @@
 
       --oobe-button-font-family: Roboto, sans-serif;
       --oobe-button-font-size: 13px;
+      --oobe-button-font-weight: 500;
 
       --oobe-select-font-size: 13px;
       --oobe-select-line-height: 20px;
 
       --oobe-welcome-header-font-weight: 500; /* medium */
+
+      --oobe-content-dialog-font-family: var(--oobe-default-font-family);
+      --oobe-content-dialog-font-size: var(--oobe-default-font-size);
+      --oobe-content-dialog-font-weight: var(--oobe-default-font-weight);
+      --oobe-content-dialog-line-height: var(--oobe-default-line-height);
+
+      --oobe-modal-dialog-header-font-family: var(--oobe-default-font-family);
+      --oobe-modal-dialog-header-font-size:
+          var(--oobe-modal-dialog-header-font-size);
+      --oobe-modal-dialog-header-font-weight:
+          var(--oobe-modal-dialog-header-font-weight);
+
+      --oobe-modal-dialog-content-font-family: var(--oobe-default-font-family);
+      --oobe-modal-dialog-content-font-size: var(--oobe-default-font-size);
+      --oobe-modal-dialog-content-font-weight: var(--oobe-default-font-weight);
+      --oobe-modal-dialog-content-line-height: var(--oobe-default-line-height);
+
+      --oobe-sync-consent-list-item-title-font-size: 14px;
+      --oobe-sync-consent-list-item-title-font-weight: 500;
+      --oobe-sync-consent-list-item-title-line-height: 24px;
+
+      --oobe-sync-consent-card-title-font: var(--cros-headline-1-font);
+      --oobe-sync-consent-card-subtitle-font: var(--cros-body-1-font);
+      --oobe-sync-consent-tooltip-text-font: var(--cros-body-2-font);
 
       /* Select */
       --oobe-select-height: 32px;
@@ -61,6 +86,54 @@
 
       /* Network screen */
       --oobe-network-row-height: 48px;
+    }
+
+    html.jelly-enabled {
+      /* Fonts */
+      --oobe-default-font-family: var(--cros-body-2-font-family);
+      --oobe-default-font-size: var(--cros-body-2-font-size);
+      --oobe-default-font-weight: var(--cros-body-2-font-weight);
+      --oobe-default-line-height: var(--cros-body-2-line-height);
+
+      --oobe-header-font-size: var(--cros-display-3_regular-font-size);
+      --oobe-header-line-height: var(--cros-display-3_regular-line-height);
+      --oobe-header-font-weight: var(--cros-display-3_regular-font-weight);
+      --oobe-header-font-family: var(--cros-display-3_regular-font-family);
+
+      --oobe-subheader-font-family: var(--cros-body-0-font-family);
+      --oobe-subheader-font-size: var(--cros-body-0-font-size);
+      --oobe-subheader-line-height: var(--cros-body-0-line-height);
+      --oobe-subheader-font-weight: var(--cros-body-0-font-weight);
+
+      --oobe-content-dialog-font-family: var(--oobe-default-font-family);
+      --oobe-content-dialog-font-size: var(--oobe-default-font-size);
+      --oobe-content-dialog-font-weight: var(--oobe-default-font-weight);
+      --oobe-content-dialog-line-height: var(--oobe-default-line-height);
+
+      --oobe-modal-dialog-header-font-family: var(--cros-display-7-font-family);
+      --oobe-modal-dialog-header-font-size: var(--cros-display-7-font-size);
+      --oobe-modal-dialog-header-font-weight: var(--cros-display-7-font-weight);
+      --oobe-modal-dialog-header-line-height: var(--cros-display-7-line-height);
+
+      --oobe-modal-dialog-content-font-family: var(--cros-body-1-font-family);
+      --oobe-modal-dialog-content-font-size: var(--cros-body-1-font-size);
+      --oobe-modal-dialog-content-font-weight: var(--cros-body-1-font-weight);
+      --oobe-modal-dialog-content-line-height: var(--cros-body-1-line-height);
+
+      --oobe-sync-consent-list-item-title-font-size:
+          var(--oobe-default-font-size);
+      --oobe-sync-consent-list-item-title-font-weight:
+          var(--oobe-default-font-weight);
+      --oobe-sync-consent-list-item-title-line-height:
+          var(--oobe-default-line-height);
+
+      --oobe-sync-consent-card-title-font: var(--cros-button-1-font);
+      --oobe-sync-consent-card-subtitle-font: var(--cros-annotation-1-font);
+      --oobe-sync-consent-tooltip-text-font: var(--cros-body-2-font);
+
+      --oobe-button-font-family: var(--cros-button-2-font-family);
+      --oobe-button-font-size: var(--cros-button-2-font-size);
+      --oobe-button-font-weight: var(--cros-button-2-font-weight);
     }
 
     html.simon-enabled {

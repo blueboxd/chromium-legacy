@@ -71,20 +71,24 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
 
   class Observer {
    public:
-    // Called when |desk| has been created and added to
+    // Called when `desk` has been created and added to
     // `DesksController::desks_`. It's important to note that `desk` can be
     // added at any position in `DesksController::desks_`.
     virtual void OnDeskAdded(const Desk* desk) {}
 
-    // Called when |desk| has been removed from `DesksController::desks_`.
-    // However |desk| is kept alive temporarily and will be destroyed after all
+    // Called when `desk` has been removed from `DesksController::desks_`.
+    // However `desk` is kept alive temporarily and will be destroyed after all
     // observers have been notified with this.
     virtual void OnDeskRemoved(const Desk* desk) {}
+
+    // Called when `desk` has been been removed from `DesksController::desks_`
+    // and past the buffer so that it can no longer be revivied.
+    virtual void OnDeskRemovalFinalized(const base::Uuid& uuid) {}
 
     // Called when the desk at |old_index| is reordered to |new_index|.
     virtual void OnDeskReordered(int old_index, int new_index) {}
 
-    // Called when the |activated| desk gains activation from the |deactivated|
+    // Called when the `activated` desk gains activation from the `deactivated`
     // desk.
     virtual void OnDeskActivationChanged(const Desk* activated,
                                          const Desk* deactivated) {}
@@ -488,12 +492,13 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   raw_ptr<Desk, ExperimentalAsh> active_desk_ = nullptr;
 
   // Target desk if in middle of desk activation, `nullptr` otherwise.
-  Desk* desk_to_activate_ = nullptr;
+  raw_ptr<Desk> desk_to_activate_ = nullptr;
 
   // The account ID of the current active user.
   AccountId current_account_id_;
 
   // Stores the per-user last active desk index.
+  // TODO(b/284482035): Clean this up.
   base::flat_map<AccountId, int> user_to_active_desk_index_;
 
   // Stores visible on all desks windows, that is normal type windows with

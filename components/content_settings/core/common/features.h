@@ -62,6 +62,17 @@ COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
 extern const base::FeatureParam<base::TimeDelta>
     kSafetyCheckUnusedSitePermissionsRevocationCleanUpThreshold;
 
+// Feature to enable the User Bypass UI.
+COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
+BASE_DECLARE_FEATURE(kUserBypassUI);
+
+// Determines the time interval after which a user bypass exception expires.
+// Note that it affects only new exceptions, previously created exceptions won't
+// be updated to use a new expiration.
+COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
+extern const base::FeatureParam<base::TimeDelta>
+    kUserBypassUIExceptionExpiration;
+
 }  // namespace features
 }  // namespace content_settings
 

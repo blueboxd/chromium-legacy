@@ -13,6 +13,134 @@ namespace web {
 class WebState;
 }
 
+// Represents a generic change to the WebStateList. Use `type()` to determine
+// its type, then access the correct sub-class using `As()<...>` method.
+class WebStateListChange {
+ public:
+  enum class Type {
+    // Used when the status of a WebState is updated by the activation or the
+    // pinned state update. It does not update the layout of WebStateList.
+    kSelectionOnly,
+    // Used when a WebState at the specified index is detached.
+    kDetach,
+    // Used when a WebState at the specified index is moved to a new index.
+    kMove,
+    // Used when a WebState at the specified index is replaced with a new
+    // WebState.
+    kReplace,
+    // Used when a new WebState is inserted into WebStateList.
+    kInsert,
+  };
+
+  // Non-copyable, non-moveable.
+  WebStateListChange(const WebStateListChange&) = delete;
+  WebStateListChange& operator=(const WebStateListChange&) = delete;
+
+  virtual ~WebStateListChange() = default;
+
+  virtual Type type() const = 0;
+
+  template <typename T>
+  const T& As() const {
+    CHECK(type() == T::kType);
+    return static_cast<const T&>(*this);
+  }
+
+ protected:
+  WebStateListChange() = default;
+};
+
+// Represents a change that corresponds to moving one WebState to a new index in
+// WebStateList. There is no change in the number of WebStates.
+class WebStateListChangeMove final : public WebStateListChange {
+ public:
+  static constexpr Type kType = Type::kMove;
+
+  WebStateListChangeMove(raw_ptr<web::WebState> moved_web_state,
+                         int moved_from_index);
+  ~WebStateListChangeMove() final = default;
+
+  Type type() const final;
+
+  // The WebState that is moved from the position of `moved_from_index` in
+  // WebStateListChangeMove to the position of `index` in WebStateSelection.
+  raw_ptr<web::WebState> moved_web_state() const {
+    CHECK(moved_web_state_);
+    return moved_web_state_;
+  }
+
+  // The index of the previous position of a WebState.
+  int moved_from_index() const { return moved_from_index_; }
+
+ private:
+  raw_ptr<web::WebState> moved_web_state_;
+  const int moved_from_index_;
+};
+
+// Represents a change that corresponds to replacing one WebState by another
+// WebState in-place. There is no change in the number of WebStates.
+class WebStateListChangeReplace final : public WebStateListChange {
+ public:
+  static constexpr Type kType = Type::kReplace;
+
+  WebStateListChangeReplace(raw_ptr<web::WebState> replaced_web_state,
+                            raw_ptr<web::WebState> inserted_web_state);
+  ~WebStateListChangeReplace() final = default;
+
+  Type type() const final;
+
+  // The WebState that is removed from the WebStateList. It
+  // is replaced in-place by `inserted_web_state_`.
+  raw_ptr<web::WebState> replaced_web_state() const {
+    CHECK(replaced_web_state_);
+    return replaced_web_state_;
+  }
+
+  // The WebState that is inserted into the WebStateList. It
+  // takes the position of `replaced_web_state_`.
+  raw_ptr<web::WebState> inserted_web_state() const {
+    CHECK(inserted_web_state_);
+    return inserted_web_state_;
+  }
+
+ private:
+  raw_ptr<web::WebState> replaced_web_state_;
+  raw_ptr<web::WebState> inserted_web_state_;
+};
+
+// Represents a change that corresponds to inserting one WebState to
+// WebStateList.
+class WebStateListChangeInsert final : public WebStateListChange {
+ public:
+  static constexpr Type kType = Type::kInsert;
+
+  explicit WebStateListChangeInsert(raw_ptr<web::WebState> inserted_web_state);
+  ~WebStateListChangeInsert() final = default;
+
+  Type type() const final;
+
+  // The WebState that is inserted into the WebStateList. It is inserted to the
+  // position of `index` in WebStateSelection.
+  raw_ptr<web::WebState> inserted_web_state() const {
+    CHECK(inserted_web_state_);
+    return inserted_web_state_;
+  }
+
+ private:
+  raw_ptr<web::WebState> inserted_web_state_;
+};
+
+struct WebStateSelection {
+  // The index to be changed.
+  const int index;
+  // True when the WebState at `index` is being activated.
+  // TODO(crbug.com/1442546): Rename this flag to `activated` once
+  // WebStateActivatedAt() is merged into WebStateListChange() because
+  // WebStateListChange() will be able to handle an operation with the
+  // activation at the same time.
+  const bool activating;
+};
+
 // Constants used when notifying about changes to active WebState.
 enum class ActiveWebStateChangeReason {
   // Used to indicate the active WebState changed because active WebState was
@@ -41,27 +169,10 @@ class WebStateListObserver : public base::CheckedObserver {
 
   ~WebStateListObserver() override;
 
-  // Invoked after a new WebState has been added to the WebStateList at the
-  // specified index. `activating` will be true if the WebState will become
-  // the new active WebState after the insertion.
-  virtual void WebStateInsertedAt(WebStateList* web_state_list,
-                                  web::WebState* web_state,
-                                  int index,
-                                  bool activating);
-
-  // Invoked after the WebState at the specified index is moved to another
-  // index.
-  virtual void WebStateMoved(WebStateList* web_state_list,
-                             web::WebState* web_state,
-                             int from_index,
-                             int to_index);
-
-  // Invoked after the WebState at the specified index is replaced by another
-  // WebState.
-  virtual void WebStateReplacedAt(WebStateList* web_state_list,
-                                  web::WebState* old_web_state,
-                                  web::WebState* new_web_state,
-                                  int index);
+  /// Invoked when WebStateList is updated.
+  virtual void WebStateListChanged(WebStateList* web_state_list,
+                                   const WebStateListChange& change,
+                                   const WebStateSelection& selection);
 
   // Invoked before the specified WebState is detached from the WebStateList.
   // The WebState is still valid and still in the WebStateList.

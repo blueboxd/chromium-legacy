@@ -12,6 +12,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/core/browser/translate_manager.h"
+#include "components/translate/core/browser/translate_metrics_logger.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_ui_languages_manager.h"
 #include "components/translate/core/common/translate_util.h"
@@ -20,25 +21,7 @@
 
 namespace {
 
-const char kPerformTranslateAmpCacheUrl[] = "Translate.Translate.AMPCacheURL";
-const char kNeverTranslateLang[] = "Translate.NeverTranslateLang";
-const char kNeverTranslateSite[] = "Translate.NeverTranslateSite";
-const char kAlwaysTranslateLang[] = "Translate.AlwaysTranslateLang";
-const char kModifySourceLang[] = "Translate.ModifyOriginalLang";
-const char kShowErrorUI[] = "Translate.ShowErrorUI";
-
-// Returns whether |url| fits pattern of an AMP cache url.
-// Note this is a copy of logic in amp_page_load_metrics_observer.cc
-// TODO(crbug.com/1064974) Factor out into shared utility.
-bool IsLikelyAmpCacheUrl(const GURL& url) {
-  // Our heuristic to identify AMP cache URLs is to check for the presence of
-  // the amp_js_v query param.
-  for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
-    if (it.GetKey() == "amp_js_v")
-      return true;
-  }
-  return false;
-}
+const char kShowErrorUI[] = "Translate.Translation.ShowErrorUI";
 
 }  // namespace
 
@@ -94,8 +77,6 @@ void TranslateUIDelegate::UpdateAndRecordSourceLanguageIndex(
           language_index)) {
     return;
   }
-
-  UMA_HISTOGRAM_BOOLEAN(kModifySourceLang, true);
 
   if (translate_manager_) {
     translate_manager_->GetActiveTranslateMetricsLogger()->LogSourceLanguage(
@@ -192,8 +173,6 @@ void TranslateUIDelegate::Translate() {
         translate_manager_->GetActiveTranslateMetricsLogger()
             ->GetNextManualTranslationType(
                 /*is_context_menu_initiated_translation=*/false));
-    if (IsLikelyAmpCacheUrl(translate_driver_->GetLastCommittedURL()))
-      UMA_HISTOGRAM_BOOLEAN(kPerformTranslateAmpCacheUrl, true);
   }
 }
 
@@ -252,7 +231,10 @@ void TranslateUIDelegate::SetLanguageBlocked(bool value) {
         translate_ui_languages_manager_->GetSourceLanguageCode());
   }
 
-  UMA_HISTOGRAM_BOOLEAN(kNeverTranslateLang, value);
+  UIInteraction interaction =
+      value ? UIInteraction::kAddNeverTranslateLanguage
+            : UIInteraction::kRemoveNeverTranslateLanguage;
+  ReportUIInteraction(interaction);
 }
 
 bool TranslateUIDelegate::IsSiteOnNeverPromptList() const {
@@ -282,7 +264,9 @@ void TranslateUIDelegate::SetNeverPromptSite(bool value) {
     prefs_->RemoveSiteFromNeverPromptList(host);
   }
 
-  UMA_HISTOGRAM_BOOLEAN(kNeverTranslateSite, value);
+  UIInteraction interaction = value ? UIInteraction::kAddNeverTranslateSite
+                                    : UIInteraction::kRemoveNeverTranslateSite;
+  ReportUIInteraction(interaction);
 }
 
 bool TranslateUIDelegate::ShouldAlwaysTranslate() const {
@@ -314,7 +298,10 @@ void TranslateUIDelegate::SetAlwaysTranslate(bool value) {
     prefs_->RemoveLanguagePairFromAlwaysTranslateList(source_lang, target_lang);
   }
 
-  UMA_HISTOGRAM_BOOLEAN(kAlwaysTranslateLang, value);
+  UIInteraction interaction =
+      value ? UIInteraction::kAddAlwaysTranslateLanguage
+            : UIInteraction::kRemoveAlwaysTranslateLanguage;
+  ReportUIInteraction(interaction);
 }
 
 bool TranslateUIDelegate::ShouldAlwaysTranslateBeCheckedByDefault() const {

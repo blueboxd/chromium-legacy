@@ -172,6 +172,7 @@ class ASH_EXPORT CalendarView : public CalendarModel::Observer,
   enum LabelType { PREVIOUS, CURRENT, NEXT, NEXTNEXT };
 
   friend class CalendarViewTest;
+  friend class CalendarViewPixelTest;
   friend class CalendarViewAnimationTest;
 
   // Assigns month views and labels based on the current date on screen.
@@ -363,6 +364,9 @@ class ASH_EXPORT CalendarView : public CalendarModel::Observer,
   // Used for clipping the calendar scroll view height to the different states
   // that the calendar view can be in.
   void ClipScrollViewHeight(ScrollViewState state_to_change_to);
+
+  // Returns the calculated height of a single visible row.
+  int GetSingleVisibleRowHeight();
 
   // Setters for animation flags.
   void set_should_header_animate(bool should_animate) {

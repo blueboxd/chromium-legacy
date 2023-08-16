@@ -4,7 +4,6 @@
 
 #include "ash/components/arc/test/fake_arc_bridge_host.h"
 
-#include "ash/components/arc/mojom/accessibility_helper.mojom.h"
 #include "ash/components/arc/mojom/adbd.mojom.h"
 #include "ash/components/arc/mojom/app.mojom.h"
 #include "ash/components/arc/mojom/app_permissions.mojom.h"
@@ -60,6 +59,7 @@
 #include "ash/components/arc/mojom/volume_mounter.mojom.h"
 #include "ash/components/arc/mojom/wake_lock.mojom.h"
 #include "ash/components/arc/mojom/wallpaper.mojom.h"
+#include "services/accessibility/android/public/mojom/accessibility_helper.mojom.h"
 
 namespace arc {
 
@@ -68,7 +68,7 @@ FakeArcBridgeHost::FakeArcBridgeHost() = default;
 FakeArcBridgeHost::~FakeArcBridgeHost() = default;
 
 void FakeArcBridgeHost::OnAccessibilityHelperInstanceReady(
-    mojo::PendingRemote<mojom::AccessibilityHelperInstance>
+    mojo::PendingRemote<ax::android::mojom::AccessibilityHelperInstance>
         accessibility_helper_remote) {}
 
 void FakeArcBridgeHost::OnAdbdMonitorInstanceReady(
@@ -103,6 +103,10 @@ void FakeArcBridgeHost::OnBootPhaseMonitorInstanceReady(
 
 void FakeArcBridgeHost::OnCameraInstanceReady(
     mojo::PendingRemote<mojom::CameraInstance> camera_remote) {}
+
+void FakeArcBridgeHost::OnChromeFeatureFlagsInstanceReady(
+    mojo::PendingRemote<mojom::ChromeFeatureFlagsInstance>
+        chrome_feature_flags_remote) {}
 
 void FakeArcBridgeHost::OnClipboardInstanceReady(
     mojo::PendingRemote<mojom::ClipboardInstance> clipboard_remote) {}
@@ -185,7 +189,8 @@ void FakeArcBridgeHost::OnOemCryptoInstanceReady(
     mojo::PendingRemote<mojom::OemCryptoInstance> oemcrypto_remote) {}
 
 void FakeArcBridgeHost::OnPaymentAppInstanceReady(
-    mojo::PendingRemote<mojom::PaymentAppInstance> payment_app_remote) {}
+    mojo::PendingRemote<chromeos::payments::mojom::PaymentAppInstance>
+        payment_app_remote) {}
 
 void FakeArcBridgeHost::OnPipInstanceReady(
     mojo::PendingRemote<mojom::PipInstance> pip_remote) {}

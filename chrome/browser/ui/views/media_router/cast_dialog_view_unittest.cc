@@ -179,7 +179,8 @@ class CastDialogViewTest : public ChromeViewsTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
-  const std::vector<raw_ptr<CastDialogSinkView>>& sink_views() {
+  const std::vector<raw_ptr<CastDialogSinkView, DanglingUntriaged>>&
+  sink_views() {
     return dialog_->sink_views_for_test();
   }
 
@@ -204,7 +205,7 @@ class CastDialogViewTest : public ChromeViewsTestBase {
   std::unique_ptr<views::Widget> anchor_widget_;
   NiceMock<MockCastDialogController> controller_;
   CastDialogCoordinator cast_dialog_coordinator_;
-  raw_ptr<CastDialogView> dialog_ = nullptr;
+  raw_ptr<CastDialogView, DanglingUntriaged> dialog_ = nullptr;
   TestingProfile profile_;
 };
 

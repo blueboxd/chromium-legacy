@@ -88,7 +88,7 @@ class ExtensionPopup::ScopedBrowserActivationObservation
   }
 
  private:
-  ExtensionPopup* owner_;
+  raw_ptr<ExtensionPopup> owner_;
   base::ScopedObservation<views::Widget, views::WidgetObserver> observation_{
       this};
 };
@@ -376,7 +376,7 @@ void ExtensionPopup::CloseDeferredIfNecessary(
 #if BUILDFLAG(IS_MAC)
   // On Mac, defer close if we're in a nested run loop (for example, showing a
   // context menu) to avoid messaging deallocated objects.
-  if (base::MessagePumpMac::IsHandlingSendEvent()) {
+  if (base::message_pump_mac::IsHandlingSendEvent()) {
     deferred_close_weak_ptr_factory_.InvalidateWeakPtrs();
     auto weak_ptr = deferred_close_weak_ptr_factory_.GetWeakPtr();
     CFRunLoopPerformBlock(CFRunLoopGetCurrent(), kCFRunLoopDefaultMode, ^{

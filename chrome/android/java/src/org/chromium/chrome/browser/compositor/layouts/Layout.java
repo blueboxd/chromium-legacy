@@ -385,6 +385,8 @@ public abstract class Layout {
      * primary screen-filling tab.
      */
     protected void updateCacheVisibleIdsAndPrimary(List<Integer> visible, int primaryTabId) {
+        assert isActive() : "Only the active Layout should updateCacheVisibleIds{AndPrimary}.";
+
         if (mTabContentManager != null) mTabContentManager.updateVisibleIds(visible, primaryTabId);
     }
 
@@ -767,8 +769,7 @@ public abstract class Layout {
     /**
      * @return The {@link LayoutType}.
      */
-    @LayoutType
-    public abstract int getLayoutType();
+    public abstract @LayoutType int getLayoutType();
 
     /** Returns whether the layout is currently running animations. */
     public boolean isRunningAnimations() {

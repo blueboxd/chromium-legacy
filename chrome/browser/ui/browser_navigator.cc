@@ -291,7 +291,7 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
         const BrowserWindow* const browser_window = params.browser->window();
         const gfx::NativeWindow native_window =
             browser_window ? browser_window->GetNativeWindow()
-                           : gfx::kNullNativeWindow;
+                           : gfx::NativeWindow();
         const display::Screen* const screen = display::Screen::GetScreen();
         const display::Display display =
             browser_window ? screen->GetDisplayNearestWindow(native_window)
@@ -629,12 +629,14 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
   if (!AdjustNavigateParamsForURL(params))
     return nullptr;
 
-  // Trying to open a background tab when in an app browser results in
+  // Trying to open a background tab when in a non-tabbed app browser results in
   // focusing a regular browser window and opening a tab in the background
   // of that window. Change the disposition to NEW_FOREGROUND_TAB so that
   // the new tab is focused.
   if (source_browser && source_browser->is_type_app() &&
-      params->disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
+      params->disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB &&
+      !(source_browser->app_controller() &&
+        source_browser->app_controller()->has_tab_strip())) {
     params->disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   }
 
@@ -649,8 +651,8 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
 
   // If no source WebContents was specified, we use the selected one from
   // the target browser. This must happen first, before
-  // GetBrowserForDisposition() has a chance to replace |params->browser| with
-  // another one.
+  // GetBrowserAndTabForDisposition() has a chance to replace |params->browser|
+  // with another one.
   if (!params->source_contents && params->browser) {
     params->source_contents =
         params->browser->tab_strip_model()->GetActiveWebContents();

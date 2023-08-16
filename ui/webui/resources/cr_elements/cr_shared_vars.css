@@ -87,6 +87,8 @@ html {
 
   --google-yellow-50-rgb: 254, 247, 224;  /* #fef7e0 */
   --google-yellow-50: rgb(var(--google-yellow-50-rgb));
+  --google-yellow-100-rgb: 254, 239, 195; /*feefc3*/
+  --google-yellow-100: rgb(var(--google-yellow-100-rgb));
   --google-yellow-200-rgb: 253, 226, 147;  /* #fde293 */
   --google-yellow-200: rgb(var(--google-yellow-200-rgb));
   --google-yellow-300-rgb: 253, 214, 51;  /* #fdd633 */
@@ -283,6 +285,8 @@ html[chrome-refresh-2023] {
   --cr-fallback-color-state-ripple-neutral-on-subtle: rgba(
       var(--cr-fallback-color-state-on-subtle-rgb), .08);
 
+  --cr-fallback-color-base-container: rgba(105, 145, 214, .12);
+
   /* States */
   --cr-hover-background-color: var(--color-sys-state-hover,
       rgba(var(--cr-fallback-color-on-surface-rgb), .08));
@@ -329,5 +333,6 @@ html[chrome-refresh-2023] {
         var(--cr-fallback-color-state-on-subtle-rgb), .10);
     --cr-fallback-color-state-ripple-neutral-on-subtle: rgba(
         var(--cr-fallback-color-state-on-subtle-rgb), .16);
+    --cr-fallback-color-base-container: rgba(40, 40, 40, 1);
   }
 }

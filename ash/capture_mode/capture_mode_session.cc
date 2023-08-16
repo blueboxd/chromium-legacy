@@ -527,15 +527,16 @@ void CaptureModeSession::Initialize() {
 
   UpdateFloatingPanelBoundsIfNeeded();
 
-  // call `OnCaptureTypeChanged` after capture bar's initialization is done
-  // instead of in the initialization of the capture mode type view, since
-  // `OnCaptureTypeChanged` may trigger `ShowCaptureToast` which depends on the
-  // capture bar.
-  // Also please note we should call `OnCaptureTypeChanged` in
+  // `OnCaptureTypeChanged()` should be called after the initialization of the
+  // capture bar rather than in that of the capture mode type view, since
+  // `OnCaptureTypeChanged()` may trigger `ShowCaptureToast()` which has
+  // dependencies on the capture bar.
+  // Also please note we should call `OnCaptureTypeChanged()` in
   // `CaptureModeBarView` instead of `CaptureModeSession`, since this is during
   // the initialization of the capture session, the type change is not triggered
   // by the user.
   capture_mode_bar_view_->OnCaptureTypeChanged(controller_->type());
+  MaybeUpdateSelfieCamInSessionVisibility();
   MaybeCreateUserNudge();
 
   if (active_behavior_->ShouldAutoSelectFirstCamera()) {
@@ -624,7 +625,7 @@ void CaptureModeSession::SetPreSelectedWindow(
     aura::Window* pre_selected_window) {
   CHECK(capture_window_observer_);
   capture_window_observer_->SetSelectedWindow(pre_selected_window,
-                                              /*allow_window_change=*/false);
+                                              /*bar_anchored_to_window=*/true);
 }
 
 void CaptureModeSession::A11yAlertCaptureSource(bool trigger_now) {
@@ -700,6 +701,7 @@ void CaptureModeSession::OnCaptureSourceChanged(CaptureModeSource new_source) {
 
 void CaptureModeSession::OnCaptureTypeChanged(CaptureModeType new_type) {
   capture_mode_bar_view_->OnCaptureTypeChanged(new_type);
+  MaybeUpdateSelfieCamInSessionVisibility();
   UpdateCaptureLabelWidget(CaptureLabelAnimation::kNone);
   UpdateCursor(display::Screen::GetScreen()->GetCursorScreenPoint(),
                /*is_touch=*/false);
@@ -712,6 +714,14 @@ void CaptureModeSession::OnRecordingTypeChanged() {
     capture_label_view_->UpdateIconAndText();
     UpdateCaptureLabelWidgetBounds(CaptureLabelAnimation::kNone);
   }
+}
+
+void CaptureModeSession::OnAudioRecordingModeChanged() {
+  active_behavior_->OnAudioRecordingModeChanged();
+}
+
+void CaptureModeSession::OnDemoToolsSettingsChanged() {
+  active_behavior_->OnDemoToolsSettingsChanged();
 }
 
 void CaptureModeSession::OnWaitingForDlpConfirmationStarted() {
@@ -795,11 +805,9 @@ void CaptureModeSession::ReportSessionHistograms() {
   num_capture_region_adjusted_ = 0;
 
   RecordCaptureModeSwitchesFromInitialMode(capture_source_changed_);
-  RecordCaptureModeConfiguration(
-      controller_->type(), source, recording_type,
-      /*audio_on=*/controller_->GetEffectiveAudioRecordingMode() !=
-          AudioRecordingMode::kOff,
-      active_behavior_);
+  RecordCaptureModeConfiguration(controller_->type(), source, recording_type,
+                                 controller_->GetEffectiveAudioRecordingMode(),
+                                 active_behavior_);
 }
 
 void CaptureModeSession::StartCountDown(
@@ -1522,6 +1530,69 @@ void CaptureModeSession::MaybeDismissUserNudgeForever() {
   user_nudge_controller_.reset();
 }
 
+void CaptureModeSession::RefreshBarWidgetBounds() {
+  DCHECK(capture_mode_bar_widget_);
+  // We need to update the capture bar bounds first and then settings bounds.
+  // The sequence matters here since settings bounds depend on capture bar
+  // bounds.
+  capture_mode_bar_widget_->SetBounds(
+      active_behavior_->GetCaptureBarBounds(current_root_));
+  MaybeUpdateSettingsBounds();
+  if (user_nudge_controller_) {
+    user_nudge_controller_->Reposition();
+  }
+  capture_toast_controller_.MaybeRepositionCaptureToast();
+}
+
+void CaptureModeSession::MaybeChangeRoot(aura::Window* new_root) {
+  DCHECK(new_root->IsRootWindow());
+
+  if (new_root == current_root_) {
+    return;
+  }
+
+  auto* new_parent = GetParentContainer(new_root);
+  parent_container_observer_ =
+      std::make_unique<ParentContainerObserver>(new_parent, this);
+
+  new_parent->layer()->Add(layer());
+  layer()->SetBounds(new_parent->bounds());
+
+  current_root_ = new_root;
+  // TODO(conniekxu): Observe the new color provider source from the `new_root`
+  // when we support wallpaper per display.
+
+  // Update the bounds of the widgets after setting the new root. For region
+  // capture, the capture bar will move at a later time, when the mouse is
+  // released.
+  if (controller_->source() != CaptureModeSource::kRegion) {
+    RefreshBarWidgetBounds();
+  }
+
+  // Because we use custom cursors for region and full screen capture, we need
+  // to update the cursor in case the display DSF changes.
+  UpdateCursor(display::Screen::GetScreen()->GetCursorScreenPoint(),
+               /*is_touch=*/false);
+
+  // The following call to UpdateCaptureRegion will update the capture label
+  // bounds, moving it onto the correct display, but will early return if the
+  // region is already empty.
+  if (controller_->user_capture_region().IsEmpty()) {
+    UpdateCaptureLabelWidgetBounds(CaptureLabelAnimation::kNone);
+  }
+
+  // Start with a new region when we switch displays.
+  is_selecting_region_ = true;
+  UpdateCaptureRegion(gfx::Rect(), /*is_resizing=*/false, /*by_user=*/false);
+
+  UpdateRootWindowDimmers();
+  MaybeReparentCameraPreviewWidget();
+
+  // Changing the root window may require updating the stacking order on the new
+  // display.
+  RefreshStackingOrder();
+}
+
 std::vector<views::Widget*> CaptureModeSession::GetAvailableWidgets() {
   std::vector<views::Widget*> result;
   DCHECK(capture_mode_bar_widget_);
@@ -1596,17 +1667,20 @@ bool CaptureModeSession::CanShowWidget(views::Widget* widget) const {
                capture_label_widget_->GetWindowBoundsInScreen()));
 }
 
-void CaptureModeSession::RefreshBarWidgetBounds() {
-  DCHECK(capture_mode_bar_widget_);
-  // We need to update the capture bar bounds first and then settings bounds.
-  // The sequence matters here since settings bounds depend on capture bar
-  // bounds.
-  capture_mode_bar_widget_->SetBounds(
-      active_behavior_->GetCaptureBarBounds(current_root_));
-  MaybeUpdateSettingsBounds();
-  if (user_nudge_controller_)
-    user_nudge_controller_->Reposition();
-  capture_toast_controller_.MaybeRepositionCaptureToast();
+void CaptureModeSession::MaybeUpdateSelfieCamInSessionVisibility() {
+  auto* camera_controller = controller_->camera_controller();
+  CHECK(camera_controller);
+
+  // Set the value to true for `SetShouldShowPreview` when the capture type is
+  // `kVideo` with no video recording in progress.
+  // Don't trigger `SetShouldShowPreview` if there's a video recording in
+  // progress, since the capture type is restricted to `kImage` at this use case
+  // and we don't want to affect the camera preview for the in_progress video
+  // recording.
+  if (!controller_->is_recording_in_progress()) {
+    camera_controller->SetShouldShowPreview(controller_->type() ==
+                                            CaptureModeType::kVideo);
+  }
 }
 
 void CaptureModeSession::MaybeCreateUserNudge() {
@@ -1850,7 +1924,15 @@ void CaptureModeSession::OnLocatedEvent(ui::LocatedEvent* event,
   if (is_press_event && focus_cycler_->HasFocus())
     focus_cycler_->ClearFocus();
 
-  const bool can_change_root = !is_capture_region || is_press_event;
+  // Do not update the root on cursor moving if the capture bar is set to be
+  // anchored to the selected window. As in this case, all the widgets should be
+  // anchored to the window, they should only be updated if the window was moved
+  // to a different root window.
+  const bool is_bar_anchored_to_window =
+      controller_->source() == CaptureModeSource::kWindow &&
+      capture_window_observer_->bar_anchored_to_window();
+  const bool can_change_root =
+      !is_bar_anchored_to_window && (!is_capture_region || is_press_event);
 
   if (can_change_root)
     MaybeChangeRoot(capture_mode_util::GetPreferredRootWindow(screen_location));
@@ -2586,52 +2668,6 @@ bool CaptureModeSession::ShouldCaptureLabelHandleEvent(
 
   DCHECK(capture_label_view_);
   return capture_label_view_->ShouldHandleEvent();
-}
-
-void CaptureModeSession::MaybeChangeRoot(aura::Window* new_root) {
-  DCHECK(new_root->IsRootWindow());
-
-  if (new_root == current_root_)
-    return;
-
-  auto* new_parent = GetParentContainer(new_root);
-  parent_container_observer_ =
-      std::make_unique<ParentContainerObserver>(new_parent, this);
-
-  new_parent->layer()->Add(layer());
-  layer()->SetBounds(new_parent->bounds());
-
-  current_root_ = new_root;
-  // TODO(conniekxu): Observe the new color provider source from the `new_root`
-  // when we support wallpaper per display.
-
-  // Update the bounds of the widgets after setting the new root. For region
-  // capture, the capture bar will move at a later time, when the mouse is
-  // released.
-  if (controller_->source() != CaptureModeSource::kRegion)
-    RefreshBarWidgetBounds();
-
-  // Because we use custom cursors for region and full screen capture, we need
-  // to update the cursor in case the display DSF changes.
-  UpdateCursor(display::Screen::GetScreen()->GetCursorScreenPoint(),
-               /*is_touch=*/false);
-
-  // The following call to UpdateCaptureRegion will update the capture label
-  // bounds, moving it onto the correct display, but will early return if the
-  // region is already empty.
-  if (controller_->user_capture_region().IsEmpty())
-    UpdateCaptureLabelWidgetBounds(CaptureLabelAnimation::kNone);
-
-  // Start with a new region when we switch displays.
-  is_selecting_region_ = true;
-  UpdateCaptureRegion(gfx::Rect(), /*is_resizing=*/false, /*by_user=*/false);
-
-  UpdateRootWindowDimmers();
-  MaybeReparentCameraPreviewWidget();
-
-  // Changing the root window may require updating the stacking order on the new
-  // display.
-  RefreshStackingOrder();
 }
 
 void CaptureModeSession::UpdateRootWindowDimmers() {

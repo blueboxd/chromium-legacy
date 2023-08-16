@@ -97,7 +97,6 @@ class Action {
   void ResetPendingBind();
 
   void PrepareToBindPosition(const gfx::Point& new_touch_center);
-  void PrepareToBindPosition(std::unique_ptr<Position> position);
 
   // Restore the input binding back to the original binding.
   void RestoreToDefault();
@@ -150,9 +149,6 @@ class Action {
   bool support_modifier_key() const { return support_modifier_key_; }
   ActionView* action_view() const { return action_view_; }
   void set_action_view(ActionView* action_view) { action_view_ = action_view; }
-
-  bool deleted() const { return deleted_; }
-  void set_deleted(bool deleted) { deleted_ = deleted; }
 
  protected:
   // |touch_injector| must be non-NULL and own this Action.
@@ -217,6 +213,8 @@ class Action {
   raw_ptr<ActionView> action_view_ = nullptr;
 
  private:
+  friend class TouchInjectorTest;
+
   void OnTouchReleased();
   void OnTouchCancelled();
   // Create a touch event of |type| with |time_stamp| and save it
@@ -225,8 +223,7 @@ class Action {
                         const base::TimeTicks& time_stamp,
                         std::list<ui::TouchEvent>& touch_events);
 
-  // Mainly for default action to mark if it is deleted.
-  bool deleted_ = false;
+  void PrepareToBindPositionForTesting(std::unique_ptr<Position> position);
 
   // Corresponds to |kArcInputOverlayBeta| flag to turn on/off the editor
   // feature of adding or removing actions.

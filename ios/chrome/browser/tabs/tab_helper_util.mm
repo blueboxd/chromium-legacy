@@ -10,7 +10,7 @@
 
 #import "base/feature_list.h"
 #import "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
-#import "components/breadcrumbs/core/features.h"
+#import "components/breadcrumbs/core/breadcrumbs_status.h"
 #import "components/commerce/ios/browser/commerce_tab_helper.h"
 #import "components/favicon/core/favicon_service.h"
 #import "components/favicon/ios/web_favicon_driver.h"
@@ -83,6 +83,7 @@
 #import "ios/chrome/browser/sharing/share_file_download_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_tab_helper.h"
+#import "ios/chrome/browser/supervised_user/supervised_user_error_container.h"
 #import "ios/chrome/browser/supervised_user/supervised_user_url_filter_tab_helper.h"
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
@@ -164,7 +165,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     FontSizeTabHelper::CreateForWebState(web_state);
   }
 
-  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
+  if (breadcrumbs::IsEnabled()) {
     BreadcrumbManagerTabHelper::CreateForWebState(web_state);
   }
 
@@ -191,6 +192,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   if (base::FeatureList::IsEnabled(
           supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS)) {
     SupervisedUserURLFilterTabHelper::CreateForWebState(web_state);
+    SupervisedUserErrorContainer::CreateForWebState(web_state);
   }
 
   ImageFetchTabHelper::CreateForWebState(web_state);
@@ -283,7 +285,9 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   NetExportTabHelper::CreateForWebState(web_state);
 
   if (base::FeatureList::IsEnabled(
-          security_interstitials::features::kHttpsOnlyMode)) {
+          security_interstitials::features::kHttpsOnlyMode) ||
+      base::FeatureList::IsEnabled(
+          security_interstitials::features::kHttpsUpgrades)) {
     HttpsOnlyModeUpgradeTabHelper::CreateForWebState(
         web_state, browser_state->GetPrefs(),
         PrerenderServiceFactory::GetForBrowserState(browser_state),

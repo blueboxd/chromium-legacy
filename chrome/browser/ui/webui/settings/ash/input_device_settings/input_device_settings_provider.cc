@@ -69,6 +69,14 @@ void InputDeviceSettingsProvider::BindInterface(
   receiver_.Bind(std::move(receiver));
 }
 
+void InputDeviceSettingsProvider::RestoreDefaultKeyboardRemappings(
+    uint32_t device_id) {
+  DCHECK(features::IsInputDeviceSettingsSplitEnabled());
+  DCHECK(InputDeviceSettingsController::Get());
+  InputDeviceSettingsController::Get()->RestoreDefaultKeyboardRemappings(
+      device_id);
+}
+
 void InputDeviceSettingsProvider::SetKeyboardSettings(
     uint32_t device_id,
     ::ash::mojom::KeyboardSettingsPtr settings) {

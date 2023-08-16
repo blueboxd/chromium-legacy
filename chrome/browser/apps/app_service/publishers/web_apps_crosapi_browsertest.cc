@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/scoped_observation.h"
 #include "chrome/browser/apps/app_service/publishers/web_apps_crosapi.h"
 
 #include "ash/public/cpp/shelf_item_delegate.h"
@@ -19,8 +20,10 @@
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom-test-utils.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/services/app_service/public/cpp/instance_registry.h"
 #include "content/public/test/browser_test.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/views/widget/any_widget_observer.h"
 
 namespace {
 
@@ -31,9 +34,9 @@ class AppInstanceWaiter : public apps::InstanceRegistry::Observer {
                     apps::InstanceState state =
                         apps::InstanceState(apps::kVisible | apps::kActive |
                                             apps::kRunning | apps::kStarted))
-      : apps::InstanceRegistry::Observer(&instance_registry),
-        app_id_(app_id),
-        state_(state) {}
+      : app_id_(app_id), state_(state) {
+    observation_.Observe(&instance_registry);
+  }
   ~AppInstanceWaiter() override = default;
 
   void Await() { run_loop_.Run(); }
@@ -52,6 +55,9 @@ class AppInstanceWaiter : public apps::InstanceRegistry::Observer {
   const std::string app_id_;
   const apps::InstanceState state_;
   base::RunLoop run_loop_;
+  base::ScopedObservation<apps::InstanceRegistry,
+                          apps::InstanceRegistry::Observer>
+      observation_{this};
 };
 
 std::vector<std::string> GetContextMenuForApp(const std::string& app_id) {
@@ -221,16 +227,42 @@ IN_PROC_BROWSER_TEST_F(WebAppsCrosapiBrowserTest, Uninstall) {
 
   EXPECT_NE(ash::ShelfModel::Get()->ItemIndexByAppID(app_id), -1);
 
-  SelectContextMenuForApp(app_id, kUninstallIndex);
+  {
+    base::test::TestFuture<void> signal;
+    views::AnyWidgetObserver observer(views::test::AnyWidgetTestPasskey{});
+    observer.set_initialized_callback(
+        base::BindLambdaForTesting([&](views::Widget* widget) {
+          if (widget->GetName() == "AppDialogView") {
+            signal.GetCallback().Run();
+          }
+        }));
+
+    SelectContextMenuForApp(app_id, kUninstallIndex);
+    EXPECT_TRUE(signal.Wait());
+  }
+
   AppUninstallDialogView::GetActiveViewForTesting()->CancelDialog();
   EXPECT_NE(ash::ShelfModel::Get()->ItemIndexByAppID(app_id), -1);
 
   SelectContextMenuForApp(app_id, kPinIndex);
 
   {
+    base::test::TestFuture<void> signal;
+    views::AnyWidgetObserver observer(views::test::AnyWidgetTestPasskey{});
+    observer.set_initialized_callback(
+        base::BindLambdaForTesting([&](views::Widget* widget) {
+          if (widget->GetName() == "AppDialogView") {
+            signal.GetCallback().Run();
+          }
+        }));
+
+    SelectContextMenuForApp(app_id, kUninstallIndex);
+    EXPECT_TRUE(signal.Wait());
+  }
+
+  {
     AppInstanceWaiter app_instance_waiter(AppServiceProxy()->InstanceRegistry(),
                                           app_id, apps::kDestroyed);
-    SelectContextMenuForApp(app_id, kUninstallIndex);
     AppUninstallDialogView::GetActiveViewForTesting()->AcceptDialog();
     web_app::AppReadinessWaiter(profile(), app_id,
                                 apps::Readiness::kUninstalledByUser)

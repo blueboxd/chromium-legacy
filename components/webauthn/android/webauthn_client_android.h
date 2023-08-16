@@ -17,7 +17,7 @@ namespace device {
 class DiscoverableCredentialMetadata;
 }
 
-namespace components {
+namespace webauthn {
 
 class WebAuthnClientAndroid {
  public:
@@ -37,7 +37,8 @@ class WebAuthnClientAndroid {
       const std::vector<device::DiscoverableCredentialMetadata>& credentials,
       bool is_conditional_request,
       base::RepeatingCallback<void(const std::vector<uint8_t>& id)>
-          callback) = 0;
+          getAssertionCallback,
+      base::RepeatingCallback<void()> hybridCallback) = 0;
 
   // Closes an outstanding conditional UI request, so passkeys will no longer be
   // displayed through autofill.
@@ -48,7 +49,7 @@ class WebAuthnClientAndroid {
   void OnCredManConditionalRequestPending(
       content::RenderFrameHost* render_frame_host,
       bool has_results,
-      base::RepeatingClosure full_assertion_request);
+      base::RepeatingCallback<void(bool)> full_assertion_request);
 
   // Called when a CredMan sheet is closed. This can happen if the user
   // dismissed the UI, selected a credential, or if there are errors. Android U+
@@ -57,6 +58,6 @@ class WebAuthnClientAndroid {
                          bool success);
 };
 
-}  // namespace components
+}  // namespace webauthn
 
 #endif  // COMPONENTS_WEBAUTHN_ANDROID_WEBAUTHN_CLIENT_ANDROID_H_

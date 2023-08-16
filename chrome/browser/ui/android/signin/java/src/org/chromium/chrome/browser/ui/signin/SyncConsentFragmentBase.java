@@ -39,7 +39,7 @@ import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninMetricsUtils;
 import org.chromium.chrome.browser.signin.services.SigninMetricsUtils.State;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
-import org.chromium.chrome.browser.sync.SyncService;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.ui.device_lock.DeviceLockCoordinator;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerCoordinator;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerDialogCoordinator;
@@ -274,8 +274,8 @@ public abstract class SyncConsentFragmentBase extends Fragment
                 callback.run();
                 return;
             }
-            SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
-                    Profile.getLastUsedRegularProfile());
+            Profile profile = Profile.getLastUsedRegularProfile();
+            SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(profile);
             signinManager.signinAndEnableSync(
                     account, mSigninAccessPoint, new SigninManager.SignInCallback() {
                         @Override
@@ -283,7 +283,7 @@ public abstract class SyncConsentFragmentBase extends Fragment
                             if (ChromeFeatureList.isEnabled(ChromeFeatureList.TANGIBLE_SYNC)
                                     && getTangibleSyncGroup() != TangibleSyncGroup.GROUP_F) {
                                 // Groups A-E are only for enabling History and Tab Sync
-                                SyncService.get().setSelectedTypes(false,
+                                SyncServiceFactory.getForProfile(profile).setSelectedTypes(false,
                                         Set.of(UserSelectableType.HISTORY,
                                                 UserSelectableType.TABS));
                             }
@@ -291,8 +291,9 @@ public abstract class SyncConsentFragmentBase extends Fragment
                                 UnifiedConsentServiceBridge
                                         .setUrlKeyedAnonymizedDataCollectionEnabled(
                                                 Profile.getLastUsedRegularProfile(), true);
-                                SyncService.get().setInitialSyncFeatureSetupComplete(
-                                        SyncFirstSetupCompleteSource.BASIC_FLOW);
+                                SyncServiceFactory.getForProfile(profile)
+                                        .setInitialSyncFeatureSetupComplete(
+                                                SyncFirstSetupCompleteSource.BASIC_FLOW);
                             }
                             closeAndMaybeOpenSyncSettings(settingsClicked);
                             callback.run();
@@ -698,9 +699,7 @@ public abstract class SyncConsentFragmentBase extends Fragment
 
         mSigninView.getAccountImageView().setImageDrawable(profileData.getImage());
 
-        final boolean canShowEmailAddress = profileData.hasDisplayableEmailAddress()
-                || !ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.HIDE_NON_DISPLAYABLE_ACCOUNT_EMAIL);
+        final boolean canShowEmailAddress = profileData.hasDisplayableEmailAddress();
 
         // The primary TextView is always visible.
         mConsentTextTracker.setTextNonRecordable(mSigninView.getAccountTextPrimary(),
@@ -765,7 +764,7 @@ public abstract class SyncConsentFragmentBase extends Fragment
         addAccount();
     }
 
-    private void onSettingsLinkClicked(View view) {
+    protected void onSettingsLinkClicked(View view) {
         if (!areControlsEnabled()) return;
         mIsSigninInProgress = true;
         RecordUserAction.record("Signin_Signin_WithAdvancedSyncSettings");

@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_uma.h"
+#include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
 #include "chrome/browser/ash/arc/input_overlay/util.h"
@@ -22,30 +23,6 @@
 #include "ui/views/controls/button/image_button_factory.h"
 
 namespace arc::input_overlay {
-namespace {
-constexpr int kMenuEntryOffset = 4;
-
-// For the keys that are caught by display overlay, check if they are reserved
-// for special use.
-bool IsReservedDomCode(ui::DomCode code) {
-  switch (code) {
-    // Audio, brightness key events won't be caught by display overlay so no
-    // need to add them.
-    // Used for mouse lock.
-    case ui::DomCode::ESCAPE:
-    // Used for traversing the views, which is also required by Accessibility.
-    case ui::DomCode::TAB:
-    // Don't support according to UX requirement.
-    case ui::DomCode::BROWSER_BACK:
-    case ui::DomCode::BROWSER_FORWARD:
-    case ui::DomCode::BROWSER_REFRESH:
-      return true;
-    default:
-      return false;
-  }
-}
-
-}  // namespace
 
 ActionView::ActionView(Action* action,
                        DisplayOverlayController* display_overlay_controller)
@@ -55,15 +32,15 @@ ActionView::ActionView(Action* action,
       beta_(display_overlay_controller->touch_injector()->beta()) {}
 ActionView::~ActionView() = default;
 
+void ActionView::OnActionUpdated() {
+  SetViewContent(BindingOption::kCurrent);
+}
+
 void ActionView::SetDisplayMode(DisplayMode mode, ActionLabel* editing_label) {
   DCHECK(mode != DisplayMode::kEducation && mode != DisplayMode::kMenu &&
          mode != DisplayMode::kPreMenu);
   if (mode == DisplayMode::kEducation || mode == DisplayMode::kMenu ||
       mode == DisplayMode::kPreMenu) {
-    return;
-  }
-
-  if (!editable_ && mode == DisplayMode::kEdit) {
     return;
   }
 
@@ -78,8 +55,6 @@ void ActionView::SetDisplayMode(DisplayMode mode, ActionLabel* editing_label) {
 
   if (mode == DisplayMode::kView) {
     display_mode_ = DisplayMode::kView;
-    RemoveEditButton();
-    RemoveTrashButton();
     if (!IsInputBound(action_->GetCurrentDisplayedInput())) {
       SetVisible(false);
     }
@@ -91,7 +66,6 @@ void ActionView::SetDisplayMode(DisplayMode mode, ActionLabel* editing_label) {
     if (!IsInputBound(*action_->current_input())) {
       SetVisible(true);
     }
-    AddEditButton();
   }
 }
 
@@ -102,24 +76,6 @@ void ActionView::SetPositionFromCenterPosition(
   int top = std::max(0, (int)(center_position.y() - touch_point_center_->y()));
   // SetPosition function needs the top-left position.
   SetPosition(gfx::Point(left, top));
-}
-
-gfx::Point ActionView::GetEditMenuPosition(gfx::Size menu_size) {
-  DCHECK(menu_entry_);
-  if (!menu_entry_) {
-    return gfx::Point();
-  }
-  int x = action_->on_left_or_middle_side()
-              ? bounds().x()
-              : std::max(0, bounds().right() - menu_size.width());
-  int y = bounds().y() <= menu_size.height()
-              ? bounds().bottom()
-              : bounds().y() - menu_size.height();
-  return gfx::Point(x, y);
-}
-
-void ActionView::RemoveEditMenu() {
-  display_overlay_controller_->RemoveActionEditMenu();
 }
 
 void ActionView::ShowErrorMsg(const base::StringPiece& message,
@@ -207,11 +163,15 @@ void ActionView::ApplyMouseDragged(const ui::MouseEvent& event) {
 }
 
 void ActionView::ApplyMouseReleased(const ui::MouseEvent& event) {
-  reposition_controller_->OnMouseReleased(event);
+  if (!reposition_controller_->OnMouseReleased(event)) {
+    ShowButtonOptionsMenu();
+  }
 }
 
 void ActionView::ApplyGestureEvent(ui::GestureEvent* event) {
-  reposition_controller_->OnGestureEvent(event);
+  if (!reposition_controller_->OnGestureEvent(event)) {
+    ShowButtonOptionsMenu();
+  }
 }
 
 bool ActionView::ApplyKeyPressed(const ui::KeyEvent& event) {
@@ -261,37 +221,9 @@ void ActionView::SetTouchPointCenter(const gfx::Point& touch_point_center) {
   }
 }
 
-void ActionView::AddEditButton() {
-  if (!show_edit_button_ || !editable_ || menu_entry_) {
-    return;
-  }
-
-  menu_entry_ =
-      AddChildView(std::make_unique<ActionEditButton>(base::BindRepeating(
-          &ActionView::OnMenuEntryPressed, base::Unretained(this))));
-  if (action_->on_left_or_middle_side()) {
-    menu_entry_->SetPosition(gfx::Point(0, kMenuEntryOffset));
-  } else {
-    menu_entry_->SetPosition(gfx::Point(
-        std::max(0, width() - menu_entry_->width()), kMenuEntryOffset));
-  }
-}
-
-void ActionView::RemoveEditButton() {
-  if (!editable_ || !menu_entry_) {
-    return;
-  }
-  RemoveChildViewT(menu_entry_);
-  menu_entry_ = nullptr;
-}
-
-void ActionView::RemoveTrashButton() {
-  if (!editable_ || !trash_button_) {
-    return;
-  }
-
-  RemoveChildViewT(trash_button_);
-  trash_button_ = nullptr;
+void ActionView::ShowButtonOptionsMenu() {
+  DCHECK(display_overlay_controller_);
+  display_overlay_controller_->AddButtonOptionsMenu(action_);
 }
 
 void ActionView::AddTouchPoint(ActionType action_type) {

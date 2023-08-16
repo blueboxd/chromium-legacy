@@ -37,7 +37,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf_application_menu_model.h"
 #include "ash/webui/system_apps/public/system_web_app_type.h"
-#include "base/auto_reset.h"
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
@@ -121,7 +120,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
 #include "chrome/browser/web_applications/test/app_registry_cache_waiter.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
@@ -1232,15 +1230,6 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest,
     web_app_info->install_url = GURL(install_url ? *install_url : start_url);
     const web_app::AppId expected_web_app_id = web_app::GenerateAppId(
         /*manifest_id=*/absl::nullopt, web_app_info->start_url);
-    PrefService* prefs = browser()->profile()->GetPrefs();
-    web_app::ExternallyInstalledWebAppPrefs web_app_prefs(prefs);
-    web_app_prefs.Insert(GURL(web_app_info->install_url), expected_web_app_id,
-                         web_app::ExternalInstallSource::kExternalPolicy);
-    // Ensure prefs are written before the web app install process reads
-    // them.
-    base::RunLoop run_loop;
-    prefs->CommitPendingWrite(run_loop.QuitClosure());
-    run_loop.Run();
     web_app::AppId web_app_id = web_app::test::InstallWebApp(
         profile(), std::move(web_app_info),
         /*overwrite_existing_manifest_fields =*/false,
@@ -1356,7 +1345,11 @@ class ChromeShelfControllerTest : public ChromeShelfControllerTestBase {
 class ChromeShelfControllerLacrosTest : public ChromeShelfControllerTestBase {
  public:
   ChromeShelfControllerLacrosTest() {
-    feature_list_.InitAndEnableFeature(ash::features::kLacrosSupport);
+    feature_list_.InitWithFeatures(
+        {ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
+         ash::features::kLacrosOnly,
+         ash::features::kLacrosProfileMigrationForceOff},
+        {});
     crosapi::browser_util::SetProfileMigrationCompletedForTest(true);
   }
   ChromeShelfControllerLacrosTest(const ChromeShelfControllerLacrosTest&) =
@@ -1391,15 +1384,22 @@ class ChromeShelfControllerLacrosTest : public ChromeShelfControllerTestBase {
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
 };
 
-class ChromeShelfControllerLacrosPrimaryTest
+// TODO(hidehiko): Merge this base class into ChromeShelfControllerLacrosTest.
+class ChromeShelfControllerLacrosOnlyTest
     : public ChromeShelfControllerLacrosTest {
  public:
-  ChromeShelfControllerLacrosPrimaryTest() = default;
-  ChromeShelfControllerLacrosPrimaryTest(
-      const ChromeShelfControllerLacrosPrimaryTest&) = delete;
-  ChromeShelfControllerLacrosPrimaryTest& operator=(
-      const ChromeShelfControllerLacrosPrimaryTest&) = delete;
-  ~ChromeShelfControllerLacrosPrimaryTest() override = default;
+  ChromeShelfControllerLacrosOnlyTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
+         ash::features::kLacrosOnly,
+         ash::features::kLacrosProfileMigrationForceOff},
+        {});
+  }
+  ChromeShelfControllerLacrosOnlyTest(
+      const ChromeShelfControllerLacrosOnlyTest&) = delete;
+  ChromeShelfControllerLacrosOnlyTest& operator=(
+      const ChromeShelfControllerLacrosOnlyTest&) = delete;
+  ~ChromeShelfControllerLacrosOnlyTest() override = default;
 
   void SetUp() override {
     ChromeShelfControllerLacrosTest::SetUp();
@@ -1440,11 +1440,11 @@ class ChromeShelfControllerLacrosPrimaryTest
   apps::AppServiceProxy* proxy() { return proxy_; }
 
  private:
-  base::AutoReset<absl::optional<bool>> set_lacros_primary_ =
-      crosapi::browser_util::SetLacrosPrimaryBrowserForTest(true);
   raw_ptr<StandaloneBrowserExtensionAppShelfItemController, ExperimentalAsh>
       chrome_app_shelf_item_ = nullptr;
   raw_ptr<apps::AppServiceProxy, ExperimentalAsh> proxy_ = nullptr;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // A V1 windowed application.
@@ -1838,12 +1838,12 @@ TEST_F(ChromeShelfControllerTest, PreinstalledApps) {
 
 TEST_F(ChromeShelfControllerLacrosTest, LacrosPinnedByDefault) {
   InitShelfController();
-  EXPECT_EQ("Chrome, Lacros", GetPinnedAppStatus());
+  EXPECT_EQ("Chrome", GetPinnedAppStatus());
 }
 
 // Checks that AppService instance is updated appropriately for one Chrome app
 // window.
-TEST_F(ChromeShelfControllerLacrosPrimaryTest, ChromeAppWindow) {
+TEST_F(ChromeShelfControllerLacrosOnlyTest, ChromeAppWindow) {
   InitShelfController();
 
   auto window = std::make_unique<aura::Window>(nullptr);
@@ -1896,7 +1896,7 @@ TEST_F(ChromeShelfControllerLacrosPrimaryTest, ChromeAppWindow) {
 
 // Checks that AppService instance is updated appropriately for multiple Chrome
 // app windows.
-TEST_F(ChromeShelfControllerLacrosPrimaryTest, ChromeAppWindows) {
+TEST_F(ChromeShelfControllerLacrosOnlyTest, ChromeAppWindows) {
   InitShelfController();
 
   auto window1 = std::make_unique<aura::Window>(nullptr);
@@ -1964,7 +1964,7 @@ TEST_F(ChromeShelfControllerLacrosPrimaryTest, ChromeAppWindows) {
 }
 
 // Regression test for crash. crbug.com/1296949
-TEST_F(ChromeShelfControllerLacrosPrimaryTest, WithoutAppService) {
+TEST_F(ChromeShelfControllerLacrosOnlyTest, WithoutAppService) {
   Profile* const controller_profile = profile()->GetOffTheRecordProfile(
       Profile::OTRProfileID::CreateUniqueForTesting(),
       /*create_if_needed=*/true);

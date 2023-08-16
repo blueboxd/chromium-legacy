@@ -855,7 +855,13 @@ template("gcc_toolchain") {
         is_debug = false
         is_component_build = false
         is_official_build = false
+        use_clang_coverage = false
+        use_sanitizer_coverage = false
       }
+
+      # When cross-compiling we don't want to use the target platform's file
+      # extensions.
+      shlib_extension = host_shlib_extension
     }
   }
 }

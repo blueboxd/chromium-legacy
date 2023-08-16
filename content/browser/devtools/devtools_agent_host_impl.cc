@@ -19,8 +19,6 @@
 #include "content/browser/devtools/devtools_pipe_handler.h"
 #include "content/browser/devtools/devtools_stream_file.h"
 #include "content/browser/devtools/forwarding_agent_host.h"
-#include "content/browser/devtools/protocol/page.h"
-#include "content/browser/devtools/protocol/security_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
@@ -476,6 +474,30 @@ void DevToolsAgentHostImpl::NotifyDestroyed() {
   GetDevtoolsInstances().erase(id_);
 }
 
+void DevToolsAgentHostImpl::ProcessHostChanged() {
+  RenderProcessHost* host = GetProcessHost();
+  if (!host) {
+    return;
+  }
+  if (host->IsReady()) {
+    SetProcessId(host->GetProcess().Pid());
+  } else {
+    host->PostTaskWhenProcessIsReady(base::BindOnce(
+        &RenderFrameDevToolsAgentHost::ProcessHostChanged, this));
+  }
+}
+
+void DevToolsAgentHostImpl::SetProcessId(base::ProcessId process_id) {
+  CHECK_NE(process_id, base::kNullProcessId);
+  if (process_id_ == process_id) {
+    return;
+  }
+  process_id_ = process_id;
+  for (auto& observer : GetDevtoolsObservers()) {
+    observer.DevToolsAgentHostProcessChanged(this);
+  }
+}
+
 DevToolsAgentHostImpl::NetworkLoaderFactoryParamsAndInfo::
     NetworkLoaderFactoryParamsAndInfo() = default;
 DevToolsAgentHostImpl::NetworkLoaderFactoryParamsAndInfo::
@@ -508,6 +530,11 @@ DevToolsAgentHostImpl::cross_origin_embedder_policy(const std::string& id) {
 
 absl::optional<network::CrossOriginOpenerPolicy>
 DevToolsAgentHostImpl::cross_origin_opener_policy(const std::string& id) {
+  return absl::nullopt;
+}
+
+absl::optional<std::vector<network::mojom::ContentSecurityPolicyHeader>>
+DevToolsAgentHostImpl::content_security_policy(const std::string& id) {
   return absl::nullopt;
 }
 

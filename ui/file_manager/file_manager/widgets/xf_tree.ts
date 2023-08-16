@@ -22,6 +22,9 @@ import {isTreeItem} from './xf_tree_util.js';
  * The selection and focus of <xf-tree-item> is controlled in <xf-tree>,
  * this is because we need to make sure only one item is being selected or
  * focused.
+ *
+ * TODO(b/285977941): Remove the closure annotation here.
+ * @constructor
  */
 @customElement('xf-tree')
 export class XfTree extends XfBase {
@@ -78,6 +81,23 @@ export class XfTree extends XfBase {
 
   static override get styles() {
     return getCSS();
+  }
+
+  constructor() {
+    super();
+    // Delegate the tree level contextmenu event to the focused child tree item.
+    // This is triggered when right click at the blank space of the tree area.
+    this.addEventListener('contextmenu', (e: MouseEvent) => {
+      if (this.focusedItem_) {
+        const domRect = this.focusedItem_.getRectForContextMenu();
+        // Calculate the center point of the tree item, so <xf-tree-item> knows
+        // where to show the context menu pop-up.
+        const x = domRect.x + (domRect.width / 2);
+        const y = domRect.y + (domRect.height / 2);
+        this.focusedItem_.dispatchEvent(
+            new PointerEvent(e.type, {...e, clientX: x, clientY: y}));
+      }
+    });
   }
 
   override render() {

@@ -34,18 +34,16 @@ inline constexpr char kSyncInitialSyncFeatureSetupComplete[] =
 inline constexpr char kSyncKeepEverythingSynced[] =
     "sync.keep_everything_synced";
 
+#if BUILDFLAG(IS_IOS)
 // Boolean specifying whether the user has opted in account storage for
 // bookmarks and reading list or not. This pref and the following preferences
 // (kSyncBookmarks, kSyncReadingList) should be both true to enable bookmarks
 // and reading lists for signed-in, non-syncing users only.
 inline constexpr char kBookmarksAndReadingListAccountStorageOptIn[] =
     "sync.bookmarks_and_reading_list_account_storage_opt_in";
+#endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// Boolean pref that records whether OS sync preferences were migrated due to
-// SyncSettingsCategorization rollout.
-// TODO(crbug.com/1249845): Remove after 2023-06 (see also crbug.com/1255724).
-inline constexpr char kOsSyncPrefsMigrated[] = "sync.os_sync_prefs_migrated";
 
 // Boolean specifying whether to automatically sync all Chrome OS specific data
 // types (including future ones). This includes types like printers, OS-only

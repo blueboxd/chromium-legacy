@@ -63,27 +63,11 @@ class PerFrameContentTranslateDriver : public ContentTranslateDriver {
   void DocumentOnLoadCompletedInPrimaryMainFrame() override;
 
   void OnPageLanguageDetermined(const LanguageDetectionDetails& details,
-                                bool page_level_translation_critiera_met);
+                                bool page_level_translation_criteria_met);
 
  private:
   friend class PerFrameContentTranslateDriverTest;
   friend class TranslateManagerRenderViewHostTest;
-
-  struct PendingRequestStats {
-   public:
-    PendingRequestStats();
-    ~PendingRequestStats();
-
-    void Clear();
-    void Report();
-
-    int pending_request_count = 0;
-    bool outermost_main_frame_success = false;
-    int frame_request_count = 0;
-    int frame_success_count = 0;
-    TranslateErrors outermost_main_frame_error = TranslateErrors::NONE;
-    std::vector<TranslateErrors> frame_errors;
-  };
 
   void StartLanguageDetection();
 
@@ -154,7 +138,8 @@ class PerFrameContentTranslateDriver : public ContentTranslateDriver {
   // time from showing infobar to requesting translation.
   base::TimeTicks language_determined_time_;
 
-  PendingRequestStats stats_;
+  // Tracks the number of incomplete frame translation requests.
+  int pending_request_count_ = 0;
 
   base::WeakPtrFactory<PerFrameContentTranslateDriver> weak_pointer_factory_{
       this};

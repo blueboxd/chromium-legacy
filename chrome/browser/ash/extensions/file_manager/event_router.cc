@@ -51,7 +51,7 @@
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/chromeos/policy/dlp/dialogs/files_policy_dialog.h"
+#include "chrome/browser/ash/policy/dlp/dialogs/files_policy_dialog.h"
 #include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate_ash.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -363,7 +363,7 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
       Profile* profile,
       const std::map<base::FilePath, std::unique_ptr<FileWatcher>>*
           file_watchers)
-      : DriveFsEventRouter(notification_manager),
+      : DriveFsEventRouter(profile, notification_manager),
         profile_(profile),
         file_watchers_(file_watchers) {}
 
@@ -1255,6 +1255,7 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
   event_status.type = GetIOTaskType(status.type);
   event_status.state = GetIOTaskState(status.state);
   event_status.policy_error = GetPolicyErrorType(status.policy_error);
+  event_status.sources_scanned = status.sources_scanned;
   event_status.destination_volume_id = status.GetDestinationVolumeId();
   event_status.show_notification = status.show_notification;
 
@@ -1428,6 +1429,11 @@ void EventRouter::OnMountableGuestsChanged() {
       extensions::events::FILE_MANAGER_PRIVATE_ON_IO_TASK_PROGRESS_STATUS,
       file_manager_private::OnMountableGuestsChanged::kEventName,
       file_manager_private::OnMountableGuestsChanged::Create(guests));
+}
+
+drivefs::SyncState EventRouter::GetDriveSyncStateForPath(
+    const base::FilePath& drive_path) {
+  return drivefs_event_router_->GetDriveSyncStateForPath(drive_path);
 }
 
 }  // namespace file_manager

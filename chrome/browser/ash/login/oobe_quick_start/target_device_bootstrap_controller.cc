@@ -5,27 +5,41 @@
 #include "chrome/browser/ash/login/oobe_quick_start/target_device_bootstrap_controller.h"
 
 #include "base/check_op.h"
+#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/hash/hash.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/uuid.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fido_assertion_info.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker_factory.h"
-#include "chrome/browser/ash/login/oobe_quick_start/logging/logging.h"
 #include "chrome/browser/ash/login/oobe_quick_start/oobe_quick_start_pref_names.h"
 #include "chrome/browser/browser_process.h"
+#include "chromeos/ash/components/quick_start/logging.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/qr_code_generator/qr_code_generator.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace ash::quick_start {
 
 namespace {
+
+// Passing "--quick-start-test-forced-update" on the command line will simulate
+// the "Forced Update" flow after the wifi credentials transfer is complete.
+// This is for testing only and will not install an actual update. If this
+// switch is present, the Chromebook reboots and attempts to automatically
+// resume the Quick Start connection after reboot.
+// TODO(b/280308144): Delete this switch. The OOBE update screen should call
+// PrepareForUpdate() and trigger the update/reboot.
+constexpr char kQuickStartTestForcedUpdateSwitch[] =
+    "quick-start-test-forced-update";
 
 TargetDeviceBootstrapController::QRCodePixelData GenerateQRCode(
     std::vector<uint8_t> blob) {
@@ -66,8 +80,7 @@ void TargetDeviceBootstrapController::GetFeatureSupportStatusAsync(
 }
 
 std::string TargetDeviceBootstrapController::GetPhoneInstanceId() {
-  // TODO(b/234655072): Get the ID from the Gaia credentials exchange.
-  return "";
+  return authenticated_connection_->get_phone_instance_id();
 }
 
 base::WeakPtr<TargetDeviceBootstrapController>
@@ -87,25 +100,29 @@ void TargetDeviceBootstrapController::StartAdvertising() {
 
   status_.step = Step::ADVERTISING;
   connection_broker_->StartAdvertising(
-      this, /*use_pin_authentication=*/true,
+      this, /*use_pin_authentication=*/false,
       base::BindOnce(&TargetDeviceBootstrapController::OnStartAdvertisingResult,
                      weak_ptr_factory_.GetWeakPtr()));
   NotifyObservers();
 }
 
 void TargetDeviceBootstrapController::StopAdvertising() {
-  DCHECK_EQ(status_.step, Step::ADVERTISING);
-
-  // No pending requests.
-  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
-
+  // Connection broker ignores the request if not advertising.
   connection_broker_->StopAdvertising(
       base::BindOnce(&TargetDeviceBootstrapController::OnStopAdvertising,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+void TargetDeviceBootstrapController::MaybeCloseOpenConnections() {
+  // Close any existing open connection.
+  if (authenticated_connection_.MaybeValid()) {
+    authenticated_connection_->Close(
+        TargetDeviceConnectionBroker::ConnectionClosedReason::kUserAborted);
+  }
+}
+
 void TargetDeviceBootstrapController::PrepareForUpdate() {
-  if (status_.step != Step::CONNECTED || !authenticated_connection_) {
+  if (status_.step != Step::CONNECTED_TO_WIFI || !authenticated_connection_) {
     return;
   }
 
@@ -123,8 +140,8 @@ void TargetDeviceBootstrapController::OnPinVerificationRequested(
   CHECK(base::Contains(kPossibleSteps, status_.step));
 
   pin_ = pin;
-  // TODO: display pin
   status_.step = Step::PIN_VERIFICATION;
+  status_.pin = pin_;
   status_.payload.emplace<absl::monostate>();
   NotifyObservers();
 }
@@ -174,6 +191,12 @@ void TargetDeviceBootstrapController::OnConnectionClosed(
   NotifyObservers();
 }
 
+std::string TargetDeviceBootstrapController::GetDiscoverableName() {
+  std::string device_type = base::UTF16ToUTF8(ui::GetChromeOSDeviceName());
+  std::string code = connection_broker_->GetSessionIdDisplayCode();
+  return device_type + " (" + code + ")";
+}
+
 void TargetDeviceBootstrapController::NotifyObservers() {
   for (auto& obs : observers_) {
     obs.OnStatusChanged(status_);
@@ -191,8 +214,6 @@ void TargetDeviceBootstrapController::OnStartAdvertisingResult(bool success) {
 }
 
 void TargetDeviceBootstrapController::OnStopAdvertising() {
-  DCHECK_EQ(status_.step, Step::ADVERTISING);
-
   status_.step = Step::NONE;
   status_.payload.emplace<absl::monostate>();
   NotifyObservers();
@@ -202,7 +223,8 @@ void TargetDeviceBootstrapController::OnNotifySourceOfUpdateResponse(
     bool ack_successful) {
   CHECK(authenticated_connection_);
 
-  if (ack_successful) {
+  if (ack_successful || base::CommandLine::ForCurrentProcess()->HasSwitch(
+                            kQuickStartTestForcedUpdateSwitch)) {
     QS_LOG(INFO) << "Update ack sucessfully received. Preparing to resume "
                     "Quick Start after the update.";
     PrefService* prefs = g_browser_process->local_state();
@@ -214,6 +236,13 @@ void TargetDeviceBootstrapController::OnNotifySourceOfUpdateResponse(
   authenticated_connection_->Close(
       TargetDeviceConnectionBroker::ConnectionClosedReason::
           kTargetDeviceUpdate);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kQuickStartTestForcedUpdateSwitch)) {
+    chromeos::PowerManagerClient::Get()->RequestRestart(
+        power_manager::REQUEST_RESTART_FOR_UPDATE,
+        "Testing OOBE Quick Start Forced Update flow");
+  }
 }
 
 void TargetDeviceBootstrapController::WaitForUserVerification(
@@ -269,6 +298,11 @@ void TargetDeviceBootstrapController::OnWifiCredentialsReceived(
   status_.ssid = credentials->ssid;
   status_.password = credentials->password;
   NotifyObservers();
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kQuickStartTestForcedUpdateSwitch)) {
+    PrepareForUpdate();
+  }
 }
 
 void TargetDeviceBootstrapController::AttemptGoogleAccountTransfer() {
@@ -296,6 +330,7 @@ void TargetDeviceBootstrapController::OnFidoAssertionReceived(
 
   status_.step = Step::TRANSFERRED_GOOGLE_ACCOUNT_DETAILS;
   status_.payload.emplace<absl::monostate>();
+  status_.fido_email = assertion->email;
   NotifyObservers();
 }
 

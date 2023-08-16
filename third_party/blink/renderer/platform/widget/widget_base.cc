@@ -185,6 +185,8 @@ void WidgetBase::InitializeCompositing(
   main_thread_compositor_task_runner_ =
       page_scheduler.GetAgentGroupScheduler().CompositorTaskRunner();
 
+  main_thread_id_ = base::PlatformThread::CurrentId();
+
   auto* compositing_thread_scheduler =
       ThreadScheduler::CompositorThreadScheduler();
   layer_tree_view_ = std::make_unique<LayerTreeView>(this, widget_scheduler_);
@@ -603,6 +605,10 @@ void WidgetBase::RequestNewLayerTreeFrameSink(
   auto params = std::make_unique<
       cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams>();
   params->io_thread_id = Platform::Current()->GetIOThreadId();
+  if (base::FeatureList::IsEnabled(::features::kEnableADPFRendererMain)) {
+    params->main_thread_id = main_thread_id_;
+  }
+
   params->compositor_task_runner =
       Platform::Current()->CompositorThreadTaskRunner();
   if (for_web_tests && !params->compositor_task_runner) {
@@ -758,15 +764,10 @@ void WidgetBase::FinishRequestNewLayerTreeFrameSink(
   // This is for an offscreen context for the compositor. So the default
   // framebuffer doesn't need alpha, depth, stencil, antialiasing.
   gpu::ContextCreationAttribs attributes;
-  attributes.alpha_size = -1;
-  attributes.depth_size = 0;
-  attributes.stencil_size = 0;
-  attributes.samples = 0;
-  attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
   attributes.enable_gles2_interface = true;
-  attributes.enable_raster_interface = false;
+  attributes.enable_raster_interface = true;
   attributes.enable_oop_rasterization = false;
 
   constexpr bool automatic_flushes = false;

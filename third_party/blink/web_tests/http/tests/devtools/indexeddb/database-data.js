@@ -4,6 +4,7 @@
 
 import {TestRunner} from 'test_runner';
 import {ApplicationTestRunner} from 'application_test_runner';
+import {ConsoleTestRunner} from 'console_test_runner';
 
 (async function() {
   TestRunner.addResult(
@@ -19,7 +20,7 @@ import {ApplicationTestRunner} from 'application_test_runner';
   var objectStoreName1 = 'testObjectStore1';
   var objectStoreName2 = 'testObjectStore2';
   var indexName = 'testIndexName';
-  var databaseId = new Resources.IndexedDBModel.DatabaseId(storageKey, databaseName);
+  var databaseId = new Resources.IndexedDBModel.DatabaseId({storageKey}, databaseName);
 
   /**
    * @param {number} count
@@ -90,7 +91,7 @@ import {ApplicationTestRunner} from 'application_test_runner';
     }
   }
 
-  TestRunner.addSniffer(Resources.IndexedDBModel.prototype, 'updateStorageKeyDatabaseNames', fillDatabase, false);
+  fillDatabase();
 
   function fillDatabase() {
     ApplicationTestRunner.createDatabase(mainFrameId, databaseName, step2);

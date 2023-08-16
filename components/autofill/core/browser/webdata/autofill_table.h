@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/sync/base/model_type.h"
@@ -345,7 +346,8 @@ class VirtualCardUsageData;
 //                      a form.
 //   use_date           The date this IBAN was last used to fill a form,
 //                      in time_t.
-//   value              Actual value of the IBAN (the bank account number).
+//   value_encrypted    Actual value of the IBAN (the bank account number),
+//                      encrypted.
 //   nickname           A nickname for the IBAN, entered by the user.
 //
 //
@@ -513,6 +515,28 @@ class VirtualCardUsageData;
 //  last_four           The last four digits of the virtual card number. This is
 //                      tied to the usage data because the virtual card number
 //                      may vary depending on merchants.
+//
+// local_stored_cvc     This table contains credit card CVC data stored locally
+//                      in Chrome.
+//
+//  guid                A guid string to identify the corresponding locally
+//                      stored credit card in the credit_cards table.
+//  value_encrypted     Encrypted CVC value of the card. May be 3 digits or 4
+//                      digits depending on the card issuer.
+//  last_updated_timestamp
+//                      The timestamp of the most recent update to the data
+//                      entry.
+//
+// server_stored_cvc    This table contains credit card CVC data stored synced
+//                      to Chrome Sync's Kansas server.
+//
+//  instrument_id       A server generated id to identify the corresponding
+//                      credit cards stored in the masked_credit_cards table.
+//  value_encrypted     Encrypted CVC value of the card. May be 3 digits or 4
+//                      digits depending on the card issuer.
+//  last_updated_timestamp
+//                      The timestamp of the most recent update to the data
+//                      entry.
 
 class AutofillTable : public WebDatabaseTable,
                       public syncer::SyncMetadataStore {
@@ -526,6 +550,19 @@ class AutofillTable : public WebDatabaseTable,
 
   // Retrieves the AutofillTable* owned by |db|.
   static AutofillTable* FromWebDatabase(WebDatabase* db);
+
+  // All ServerFieldTypes stored for an AutofillProfile in the local_addresses
+  // or contact_info table (depending on the profile source).
+  // When introducing a new field type, it suffices to add it here. When
+  // removing a field type, removing it from the list suffices (no additional
+  // clean-up in the table necessary). This is not reusing
+  // `AutofillProfile::SupportedTypes()` for three reasons:
+  // - Due to the table design, the stored types are already ambiguous, so we
+  //   prefer the explicitness here.
+  // - Some supported types (like PHONE_HOME_CITY_CODE) are not stored.
+  // - Some non-supported types are stored (usually types that don't have
+  //   filling support yet).
+  static base::span<const ServerFieldType> GetStoredTypesForAutofillProfile();
 
   // WebDatabaseTable:
   WebDatabaseTable::TypeKey GetTypeKey() const override;
@@ -604,9 +641,7 @@ class AutofillTable : public WebDatabaseTable,
   virtual bool RemoveAutofillProfile(const std::string& guid,
                                      AutofillProfile::Source profile_source);
 
-  // Removes all profiles from the given `profile_source`. Currently this is
-  // only supported for kAccount profiles, since they are cleared when the Sync
-  // data types gets disabled.
+  // Removes all profiles from the given `profile_source`.
   bool RemoveAllAutofillProfiles(AutofillProfile::Source profile_source);
 
   // Retrieves a profile with guid `guid` from `kAutofillProfilesTable` or
@@ -620,8 +655,8 @@ class AutofillTable : public WebDatabaseTable,
   // The `profile_source` specifies if profiles from the legacy or the remote
   // backend should be retrieved.
   virtual bool GetAutofillProfiles(
-      std::vector<std::unique_ptr<AutofillProfile>>* profiles,
-      AutofillProfile::Source profile_source) const;
+      AutofillProfile::Source profile_source,
+      std::vector<std::unique_ptr<AutofillProfile>>* profiles) const;
   virtual bool GetServerProfiles(
       std::vector<std::unique_ptr<AutofillProfile>>* profiles) const;
 
@@ -772,10 +807,6 @@ class AutofillTable : public WebDatabaseTable,
   bool RemoveOriginURLsModifiedBetween(const base::Time& delete_begin,
                                        const base::Time& delete_end);
 
-  // Clear all local profiles.
-  // TODO(crbug.com/1443393): Rename function.
-  bool ClearAutofillProfiles();
-
   // Clear all credit cards.
   bool ClearCreditCards();
 
@@ -797,13 +828,6 @@ class AutofillTable : public WebDatabaseTable,
       syncer::ModelType model_type,
       const sync_pb::ModelTypeState& model_type_state) override;
   bool ClearModelTypeState(syncer::ModelType model_type) override;
-
-  // Removes the orphan rows in the autofill_profile_names,
-  // autofill_profile_emails and autofill_profile_phones table that were not
-  // removed in the previous implementation of
-  // RemoveAutofillDataModifiedBetween(see crbug.com/836737).
-  // TODO(crbug.com/1443393): Remove, since the tables are no longer used.
-  bool RemoveOrphanAutofillTableRows() { return true; }
 
   // Table migration functions. NB: These do not and should not rely on other
   // functions in this class. The implementation of a function such as
@@ -839,6 +863,9 @@ class AutofillTable : public WebDatabaseTable,
   // No MigrateToVersion112. WebDatabase changed, but AutofillTable wasn't
   // affected.
   bool MigrateToVersion113MigrateLocalAddressProfilesToNewTable();
+  bool MigrateToVersion114DropLegacyAddressTables();
+  bool MigrateToVersion115EncryptIbanValue();
+  bool MigrateToVersion116AddStoredCvcTable();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
@@ -955,6 +982,7 @@ class AutofillTable : public WebDatabaseTable,
   bool InitPaymentsCustomerDataTable();
   bool InitPaymentsUPIVPATable();
   bool InitServerCreditCardCloudTokenDataTable();
+  bool InitStoredCvcTable();
   bool InitOfferDataTable();
   bool InitOfferEligibleInstrumentTable();
   bool InitOfferMerchantDomainTable();

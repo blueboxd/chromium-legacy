@@ -25,6 +25,9 @@ GIN_EXPORT BASE_DECLARE_FEATURE(kV8ExperimentalRegexpEngine);
 GIN_EXPORT extern const base::FeatureParam<int> kV8FlushBytecodeOldAge;
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8FlushBaselineCode);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8FlushBytecode);
+GIN_EXPORT BASE_DECLARE_FEATURE(kV8FlushCodeBasedOnTabVisibility);
+GIN_EXPORT BASE_DECLARE_FEATURE(kV8FlushCodeBasedOnTime);
+GIN_EXPORT extern const base::FeatureParam<int> kV8FlushCodeOldTime;
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8FlushEmbeddedBlobICache);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8IgnitionElideRedundantTdzChecks);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8LazyFeedbackAllocation);
@@ -46,6 +49,7 @@ GIN_EXPORT BASE_DECLARE_FEATURE(kV8SlowHistogramsSparkplugAndroid);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8Sparkplug);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8SparkplugNeedsShortBuiltinCalls);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8Turbofan);
+GIN_EXPORT BASE_DECLARE_FEATURE(kV8Turboshaft);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8TurboFastApiCalls);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8UseLibmTrigFunctions);
 GIN_EXPORT extern const base::FeatureParam<base::TimeDelta>
@@ -58,6 +62,7 @@ GIN_EXPORT BASE_DECLARE_FEATURE(kJavaScriptSymbolAsWeakMapKey);
 GIN_EXPORT BASE_DECLARE_FEATURE(kJavaScriptJsonParseWithSource);
 GIN_EXPORT BASE_DECLARE_FEATURE(kJavaScriptArrayBufferTransfer);
 GIN_EXPORT BASE_DECLARE_FEATURE(kJavaScriptCompileHintsMagic);
+GIN_EXPORT BASE_DECLARE_FEATURE(kJavaScriptIteratorHelpers);
 GIN_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyTailCall);
 GIN_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyInlining);
 

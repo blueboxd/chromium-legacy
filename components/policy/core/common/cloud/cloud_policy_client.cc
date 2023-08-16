@@ -717,7 +717,7 @@ void CloudPolicyClient::UploadEncryptedReport(
   auto config = std::make_unique<EncryptedReportingJobConfiguration>(
       GetURLLoaderFactory(), DMAuth::FromDMToken(dm_token()),
       service()->configuration()->GetEncryptedReportingServerUrl(),
-      std::move(merging_payload), dm_token(), client_id(),
+      std::move(merging_payload), this,
       base::BindOnce(&CloudPolicyClient::OnEncryptedReportUploadCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   if (context.has_value()) {
@@ -1482,6 +1482,10 @@ void CloudPolicyClient::CreateDeviceRegisterRequest(
   if (params.license_type.has_value()) {
     request->mutable_license_type()->set_license_type(
         params.license_type.value());
+  }
+  if (params.demo_mode_dimensions.has_value()) {
+    *request->mutable_demo_mode_dimensions() =
+        params.demo_mode_dimensions.value();
   }
 }
 

@@ -10,7 +10,9 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.SHOW_SUBMIT_BUTTON;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FooterProperties.MANAGE_BUTTON_TEXT;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FooterProperties.ON_CLICK_HYBRID;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FooterProperties.ON_CLICK_MANAGE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FooterProperties.SHOW_HYBRID;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.IMAGE_DRAWABLE_ID;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
@@ -87,7 +89,8 @@ class TouchToFillMediator {
 
     void showCredentials(GURL url, boolean isOriginSecure,
             List<WebAuthnCredential> webAuthnCredentials, List<Credential> credentials,
-            boolean triggerSubmission, boolean managePasskeysHidesPasswords) {
+            boolean triggerSubmission, boolean managePasskeysHidesPasswords,
+            boolean showHybridPasskeyOption) {
         assert credentials != null;
 
         mManagePasskeysHidesPasswords = managePasskeysHidesPasswords;
@@ -133,6 +136,8 @@ class TouchToFillMediator {
                         .with(ON_CLICK_MANAGE, this::onManagePasswordSelected)
                         .with(MANAGE_BUTTON_TEXT,
                                 getManageButtonText(credentials, webAuthnCredentials))
+                        .with(ON_CLICK_HYBRID, this::onHybridSignInSelected)
+                        .with(SHOW_HYBRID, showHybridPasskeyOption)
                         .build()));
 
         mBottomSheetFocusHelper.registerForOneTimeUse();
@@ -254,6 +259,13 @@ class TouchToFillMediator {
         mDelegate.onManagePasswordsSelected(passkeysShown);
     }
 
+    private void onHybridSignInSelected() {
+        mModel.set(VISIBLE, false);
+        RecordHistogram.recordEnumeratedHistogram(
+                UMA_TOUCH_TO_FILL_USER_ACTION, UserAction.SELECT_HYBRID, UserAction.MAX_VALUE + 1);
+        mDelegate.onHybridSignInSelected();
+    }
+
     /**
      * @param credentials The available credentials. Show the confirmation for a lone credential.
      * @return True if a confirmation button should be shown at the end of the bottom sheet.
@@ -267,8 +279,7 @@ class TouchToFillMediator {
         return new PropertyModel.Builder(CredentialProperties.ALL_KEYS)
                 .with(CREDENTIAL, credential)
                 .with(ON_CLICK_LISTENER, this::onSelectedCredential)
-                .with(FORMATTED_ORIGIN,
-                        UrlFormatter.formatUrlForDisplayOmitScheme(credential.getOriginUrl()))
+                .with(FORMATTED_ORIGIN, credential.getDisplayName())
                 .with(SHOW_SUBMIT_BUTTON, triggerSubmission)
                 .build();
     }

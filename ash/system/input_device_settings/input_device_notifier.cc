@@ -33,7 +33,7 @@ DeviceId ExtractDeviceIdFromInputDevice(const ui::InputDevice& device) {
 template <class DeviceMojomPtr>
 bool IsDeviceASuspectedImposter(BluetoothDevicesObserver* bluetooth_observer,
                                 const ui::InputDevice& device) {
-  return device.suspected_imposter;
+  return false;
 }
 
 template <>
@@ -97,7 +97,7 @@ bool IsDeviceASuspectedImposter<mojom::MousePtr>(
     return true;
   }
 
-  return device.suspected_imposter;
+  return false;
 }
 
 template <typename T>
@@ -211,7 +211,10 @@ void InputDeviceNotifier<MojomDevicePtr, InputDeviceType>::
 template <typename MojomDevicePtr, typename InputDeviceType>
 void InputDeviceNotifier<MojomDevicePtr, InputDeviceType>::
     OnBluetoothAdapterOrDeviceChanged(device::BluetoothDevice* device) {
-  RefreshDevices();
+  // Do nothing as OnBluetoothAdapterOrDeviceChanged is very noisy and causes
+  // updates to happen many times per second. We expect
+  // OnInputDeviceConfigurationChanged to include all devices including
+  // bluetooth devices, so refreshing devices here is unnecessary.
 }
 
 // Template specialization for retrieving the updated device lists for each

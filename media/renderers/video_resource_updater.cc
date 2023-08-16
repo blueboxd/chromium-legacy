@@ -28,21 +28,24 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/client/shared_bitmap_reporter.h"
-#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "media/base/format_utils.h"
+#include "media/base/wait_and_replace_sync_token_client.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
+#include "media/renderers/resource_sync_token_client.h"
 #include "media/video/half_float_maker.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -240,57 +243,6 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
   return VideoFrameResourceType::NONE;
 }
 
-class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
- public:
-  SyncTokenClientImpl(gpu::gles2::GLES2Interface* gl,
-                      gpu::SharedImageInterface* sii,
-                      gpu::SyncToken sync_token)
-      : gl_(gl), sii_(sii), sync_token_(sync_token) {
-    // Only one interface should be used.
-    DCHECK((gl_ && !sii_) || (!gl_ && sii_));
-  }
-
-  SyncTokenClientImpl(const SyncTokenClientImpl&) = delete;
-  SyncTokenClientImpl& operator=(const SyncTokenClientImpl&) = delete;
-
-  ~SyncTokenClientImpl() override = default;
-
-  void GenerateSyncToken(gpu::SyncToken* sync_token) override {
-    if (sync_token_.HasData()) {
-      *sync_token = sync_token_;
-    } else {
-      if (gl_) {
-        gl_->GenSyncTokenCHROMIUM(sync_token->GetData());
-      } else {
-        *sync_token = sii_->GenVerifiedSyncToken();
-      }
-    }
-  }
-
-  void WaitSyncToken(const gpu::SyncToken& sync_token) override {
-    if (sync_token.HasData()) {
-      if (gl_) {
-        gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-      } else {
-        sii_->WaitSyncToken(sync_token);
-      }
-      if (sync_token_.HasData() && sync_token_ != sync_token) {
-        if (gl_) {
-          gl_->WaitSyncTokenCHROMIUM(sync_token_.GetConstData());
-        } else {
-          sii_->WaitSyncToken(sync_token);
-        }
-        sync_token_.Clear();
-      }
-    }
-  }
-
- private:
-  raw_ptr<gpu::gles2::GLES2Interface> gl_;
-  raw_ptr<gpu::SharedImageInterface> sii_;
-  gpu::SyncToken sync_token_;
-};
-
 // Sync tokens passed downstream to the compositor can be unverified.
 void GenerateCompositorSyncToken(gpu::gles2::GLES2Interface* gl,
                                  gpu::SyncToken* sync_token) {
@@ -347,6 +299,26 @@ bool HasCompatibleFormat(VideoPixelFormat input_format,
     return output_format == viz::SinglePlaneFormat::kBGRA_8888;
   return false;
 }
+
+class CopyingSyncTokenClient : public VideoFrame::SyncTokenClient {
+ public:
+  CopyingSyncTokenClient() = default;
+  CopyingSyncTokenClient(const CopyingSyncTokenClient&) = delete;
+  CopyingSyncTokenClient& operator=(const CopyingSyncTokenClient&) = delete;
+
+  ~CopyingSyncTokenClient() override = default;
+
+  void GenerateSyncToken(gpu::SyncToken* sync_token) override {
+    *sync_token = sync_token_;
+  }
+
+  void WaitSyncToken(const gpu::SyncToken& sync_token) override {
+    sync_token_ = sync_token;
+  }
+
+ private:
+  gpu::SyncToken sync_token_;
+};
 
 }  // namespace
 
@@ -508,29 +480,24 @@ class VideoResourceUpdater::HardwarePlaneResource
                         viz::SharedImageFormat format,
                         const gfx::ColorSpace& color_space,
                         bool use_gpu_memory_buffer_resources,
-                        viz::ContextProvider* context_provider,
-                        viz::RasterContextProvider* raster_context_provider)
+                        viz::RasterContextProvider* context_provider)
       : PlaneResource(plane_resource_id, size, format, /*is_software=*/false),
-        context_provider_(context_provider),
-        raster_context_provider_(raster_context_provider) {
-    DCHECK(context_provider_ || raster_context_provider_);
-    const gpu::Capabilities& caps =
-        raster_context_provider_
-            ? raster_context_provider_->ContextCapabilities()
-            : context_provider_->ContextCapabilities();
+        context_provider_(context_provider) {
+    DCHECK(context_provider_);
+    const gpu::Capabilities& caps = context_provider_->ContextCapabilities();
     DCHECK(format.is_single_plane());
     // TODO(hitawala): Add multiplanar support for software decode.
     overlay_candidate_ =
         use_gpu_memory_buffer_resources &&
         caps.supports_scanout_shared_images &&
-        IsGpuMemoryBufferFormatSupported(format.resource_format());
+        CanCreateGpuMemoryBufferForSinglePlaneSharedImageFormat(format);
     uint32_t shared_image_usage =
         gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
     if (overlay_candidate_) {
       shared_image_usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
       texture_target_ = gpu::GetBufferTextureTarget(
-          gfx::BufferUsage::SCANOUT, BufferFormat(format.resource_format()),
-          caps);
+          gfx::BufferUsage::SCANOUT,
+          SinglePlaneSharedImageFormatToBufferFormat(format), caps);
     }
     auto* sii = SharedImageInterface();
     mailbox_ = sii->CreateSharedImage(
@@ -557,22 +524,18 @@ class VideoResourceUpdater::HardwarePlaneResource
 
  private:
   gpu::SharedImageInterface* SharedImageInterface() {
-    auto* sii = raster_context_provider_
-                    ? raster_context_provider_->SharedImageInterface()
-                    : context_provider_->SharedImageInterface();
+    auto* sii = context_provider_->SharedImageInterface();
     DCHECK(sii);
     return sii;
   }
 
   gpu::gles2::GLES2Interface* ContextGL() {
-    auto* gl = raster_context_provider_ ? raster_context_provider_->ContextGL()
-                                        : context_provider_->ContextGL();
+    auto* gl = context_provider_->ContextGL();
     DCHECK(gl);
     return gl;
   }
 
-  const raw_ptr<viz::ContextProvider> context_provider_;
-  const raw_ptr<viz::RasterContextProvider> raster_context_provider_;
+  const raw_ptr<viz::RasterContextProvider> context_provider_;
   gpu::Mailbox mailbox_;
   GLenum texture_target_ = GL_TEXTURE_2D;
   bool overlay_candidate_ = false;
@@ -591,8 +554,7 @@ VideoResourceUpdater::PlaneResource::AsHardware() {
 }
 
 VideoResourceUpdater::VideoResourceUpdater(
-    viz::ContextProvider* context_provider,
-    viz::RasterContextProvider* raster_context_provider,
+    viz::RasterContextProvider* context_provider,
     viz::SharedBitmapReporter* shared_bitmap_reporter,
     viz::ClientResourceProvider* resource_provider,
     bool use_stream_video_draw_quad,
@@ -600,7 +562,6 @@ VideoResourceUpdater::VideoResourceUpdater(
     bool use_r16_texture,
     int max_resource_size)
     : context_provider_(context_provider),
-      raster_context_provider_(raster_context_provider),
       shared_bitmap_reporter_(shared_bitmap_reporter),
       resource_provider_(resource_provider),
       use_stream_video_draw_quad_(use_stream_video_draw_quad),
@@ -608,8 +569,7 @@ VideoResourceUpdater::VideoResourceUpdater(
       use_r16_texture_(use_r16_texture),
       max_resource_size_(max_resource_size),
       tracing_id_(g_next_video_resource_updater_id.GetNext()) {
-  DCHECK(context_provider_ || raster_context_provider_ ||
-         shared_bitmap_reporter_);
+  DCHECK(context_provider_ || shared_bitmap_reporter_);
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "media::VideoResourceUpdater",
@@ -803,10 +763,8 @@ VideoResourceUpdater::CreateExternalResourcesFromVideoFrame(
 
 viz::SharedImageFormat VideoResourceUpdater::YuvSharedImageFormat(
     int bits_per_channel) {
-  DCHECK(raster_context_provider_ || context_provider_);
-  const auto& caps = raster_context_provider_
-                         ? raster_context_provider_->ContextCapabilities()
-                         : context_provider_->ContextCapabilities();
+  DCHECK(context_provider_);
+  const auto& caps = context_provider_->ContextCapabilities();
   if (caps.disable_one_component_textures)
     return PaintCanvasVideoRenderer::GetRGBPixelsOutputFormat();
   if (bits_per_channel <= 8)
@@ -888,8 +846,7 @@ VideoResourceUpdater::PlaneResource* VideoResourceUpdater::AllocateResource(
   } else {
     all_resources_.push_back(std::make_unique<HardwarePlaneResource>(
         plane_resource_id, plane_size, format, color_space,
-        use_gpu_memory_buffer_resources_, context_provider_,
-        raster_context_provider_));
+        use_gpu_memory_buffer_resources_, context_provider_));
   }
   return all_resources_.back().get();
 }
@@ -938,9 +895,13 @@ void VideoResourceUpdater::CopyHardwarePlane(
   gl->EndSharedImageAccessDirectCHROMIUM(src_texture_id);
   gl->DeleteTextures(1, &src_texture_id);
 
-  // Pass an empty sync token to force generation of a new sync token.
-  SyncTokenClientImpl client(gl, nullptr /* gpu::SharedImageInterface* */,
-                             gpu::SyncToken());
+  // Wait (if the existing token isn't null) and replace it with a new one.
+  //
+  // This path is currently only used with single mailbox frames. Assert this
+  // here since this code isn't tuned for multiple planes; it should only update
+  // the release token once.
+  DCHECK_EQ(video_frame->NumTextures(), 1u);
+  WaitAndReplaceSyncTokenClient client(gl);
   gpu::SyncToken sync_token = video_frame->UpdateReleaseSyncToken(&client);
 
   auto transferable_resource = viz::TransferableResource::MakeGpu(
@@ -959,8 +920,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     scoped_refptr<VideoFrame> video_frame) {
   TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForHardwarePlanes");
   DCHECK(video_frame->HasTextures());
-  if (!context_provider_ && !raster_context_provider_)
+  if (!context_provider_) {
     return VideoFrameExternalResources();
+  }
 
   VideoFrameExternalResources external_resources;
   gfx::ColorSpace resource_color_space = video_frame->ColorSpace();
@@ -995,6 +957,11 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       SharedImageFormatType::kLegacy) {
     DCHECK_EQ(num_textures, 1u);
   }
+
+  // Make a copy of the current release SyncToken so we know if it changes.
+  CopyingSyncTokenClient client;
+  auto original_release_token = video_frame->UpdateReleaseSyncToken(&client);
+
   for (size_t i = 0; i < num_textures; ++i) {
     const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(i);
     if (mailbox_holder.mailbox.IsZero())
@@ -1054,9 +1021,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
 #endif
 
       external_resources.resources.push_back(std::move(transfer_resource));
-      external_resources.release_callbacks.push_back(
-          base::BindOnce(&VideoResourceUpdater::ReturnTexture,
-                         weak_ptr_factory_.GetWeakPtr(), video_frame));
+      external_resources.release_callbacks.push_back(base::BindOnce(
+          &VideoResourceUpdater::ReturnTexture, weak_ptr_factory_.GetWeakPtr(),
+          video_frame, original_release_token));
     }
   }
   return external_resources;
@@ -1230,8 +1197,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       } else {
         HardwarePlaneResource* hardware_resource = plane_resource->AsHardware();
         size_t bytes_per_row = viz::ResourceSizes::CheckedWidthInBytes<size_t>(
-            video_frame->coded_size().width(),
-            output_si_format.resource_format());
+            video_frame->coded_size().width(), output_si_format);
         const gfx::Size& plane_size = hardware_resource->resource_size();
 
         // Note: Strides may be negative in case of bottom-up layouts.
@@ -1351,7 +1317,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
     const size_t bytes_per_row =
         viz::ResourceSizes::CheckedWidthInBytes<size_t>(
-            resource_size_pixels.width(), plane_si_format.resource_format());
+            resource_size_pixels.width(), plane_si_format);
 
     // Use 4-byte row alignment (OpenGL default) for upload performance.
     // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
@@ -1359,8 +1325,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     const size_t upload_image_stride = cc::MathUtil::CheckedRoundUp<size_t>(
         bytes_per_row, kDefaultUnpackAlignment);
 
-    const size_t resource_bit_depth = static_cast<size_t>(
-        viz::BitsPerPixel(plane_si_format.resource_format()));
+    const size_t resource_bit_depth =
+        static_cast<size_t>(plane_si_format.BitsPerPixel());
 
     // Data downshifting is needed if the resource bit depth is not enough.
     const bool needs_bit_downshifting = bits_per_channel > resource_bit_depth;
@@ -1475,25 +1441,29 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 }
 
 gpu::gles2::GLES2Interface* VideoResourceUpdater::ContextGL() {
-  auto* gl = raster_context_provider_ ? raster_context_provider_->ContextGL()
-                                      : context_provider_->ContextGL();
+  auto* gl = context_provider_->ContextGL();
   DCHECK(gl);
   return gl;
 }
 
-void VideoResourceUpdater::ReturnTexture(scoped_refptr<VideoFrame> video_frame,
-                                         const gpu::SyncToken& sync_token,
-                                         bool lost_resource) {
-  // TODO(dshwang): Forward to the decoder as a lost resource.
-  if (lost_resource)
-    return;
+void VideoResourceUpdater::ReturnTexture(
+    scoped_refptr<VideoFrame> video_frame,
+    const gpu::SyncToken& original_release_token,
+    const gpu::SyncToken& new_release_token,
+    bool lost_resource) {
+  // Note: This method is called for each plane texture in the frame! Which
+  // means it may end up receiving the same `new_release_token` multiple times.
 
-  if (!sync_token.HasData())
+  if (lost_resource) {
     return;
+  }
 
-  // The video frame will insert a wait on the previous release sync token.
-  SyncTokenClientImpl client(
-      ContextGL(), nullptr /* gpu::SharedImageInterface* */, sync_token);
+  if (!new_release_token.HasData()) {
+    return;
+  }
+
+  ResourceSyncTokenClient client(ContextGL(), original_release_token,
+                                 new_release_token);
   video_frame->UpdateReleaseSyncToken(&client);
 }
 
@@ -1505,7 +1475,7 @@ void VideoResourceUpdater::RecycleResource(uint32_t plane_resource_id,
   if (resource_it == all_resources_.end())
     return;
 
-  if ((raster_context_provider_ || context_provider_) && sync_token.HasData()) {
+  if (context_provider_ && sync_token.HasData()) {
     ContextGL()->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
 

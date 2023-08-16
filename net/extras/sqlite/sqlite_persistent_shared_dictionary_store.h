@@ -6,6 +6,7 @@
 #define NET_EXTRAS_SQLITE_SQLITE_PERSISTENT_SHARED_DICTIONARY_STORE_H_
 
 #include <map>
+#include <set>
 #include <vector>
 
 #include "base/component_export.h"
@@ -15,6 +16,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
+#include "base/unguessable_token.h"
 #include "net/extras/shared_dictionary/shared_dictionary_info.h"
 #include "url/origin.h"
 
@@ -25,7 +27,7 @@ class SequencedTaskRunner;
 
 namespace net {
 
-class SharedDictionaryStorageIsolationKey;
+class SharedDictionaryIsolationKey;
 
 // This class is used for storing SharedDictionary information to the persistent
 // storage.
@@ -41,21 +43,52 @@ class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentSharedDictionaryStore {
     kInvalidTotalDictSize,
     kFailedToGetTotalDictSize,
     kFailedToSetTotalDictSize,
+    kTooBigDictionary,
   };
-  struct RegisterDictionaryResult {
-    absl::optional<int64_t> primary_key_in_database;
-    absl::optional<base::UnguessableToken> disk_cache_key_token_to_be_removed;
-    absl::optional<uint64_t> total_dictionary_size;
+  class COMPONENT_EXPORT(NET_EXTRAS) RegisterDictionaryResult {
+   public:
+    RegisterDictionaryResult(
+        int64_t primary_key_in_database,
+        absl::optional<base::UnguessableToken> replaced_disk_cache_key_token,
+        std::set<base::UnguessableToken> evicted_disk_cache_key_tokens,
+        uint64_t total_dictionary_size,
+        uint64_t total_dictionary_count);
+    ~RegisterDictionaryResult();
+
+    RegisterDictionaryResult(const RegisterDictionaryResult& other);
+    RegisterDictionaryResult(RegisterDictionaryResult&& other);
+    RegisterDictionaryResult& operator=(const RegisterDictionaryResult& other);
+    RegisterDictionaryResult& operator=(RegisterDictionaryResult&& other);
+
+    int64_t primary_key_in_database() const { return primary_key_in_database_; }
+    const absl::optional<base::UnguessableToken>&
+    replaced_disk_cache_key_token() const {
+      return replaced_disk_cache_key_token_;
+    }
+    const std::set<base::UnguessableToken>& evicted_disk_cache_key_tokens()
+        const {
+      return evicted_disk_cache_key_tokens_;
+    }
+    uint64_t total_dictionary_size() const { return total_dictionary_size_; }
+    uint64_t total_dictionary_count() const { return total_dictionary_count_; }
+
+   private:
+    int64_t primary_key_in_database_;
+    absl::optional<base::UnguessableToken> replaced_disk_cache_key_token_;
+    std::set<base::UnguessableToken> evicted_disk_cache_key_tokens_;
+    uint64_t total_dictionary_size_;
+    uint64_t total_dictionary_count_;
   };
 
   using RegisterDictionaryResultOrError =
       base::expected<RegisterDictionaryResult, Error>;
   using DictionaryListOrError =
       base::expected<std::vector<SharedDictionaryInfo>, Error>;
-  using DictionaryMapOrError =
-      base::expected<std::map<SharedDictionaryStorageIsolationKey,
-                              std::vector<SharedDictionaryInfo>>,
-                     Error>;
+  using DictionaryMapOrError = base::expected<
+      std::map<SharedDictionaryIsolationKey, std::vector<SharedDictionaryInfo>>,
+      Error>;
+  using UnguessableTokenSetOrError =
+      base::expected<std::set<base::UnguessableToken>, Error>;
 
   SQLitePersistentSharedDictionaryStore(
       const base::FilePath& path,
@@ -72,23 +105,43 @@ class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentSharedDictionaryStore {
   void GetTotalDictionarySize(
       base::OnceCallback<void(base::expected<uint64_t, Error>)> callback);
   void RegisterDictionary(
-      const SharedDictionaryStorageIsolationKey& isolation_key,
+      const SharedDictionaryIsolationKey& isolation_key,
       SharedDictionaryInfo dictionary_info,
+      const uint64_t max_size_per_site,
+      const uint64_t max_count_per_site,
       base::OnceCallback<void(RegisterDictionaryResultOrError)> callback);
   void GetDictionaries(
-      const SharedDictionaryStorageIsolationKey& isolation_key,
+      const SharedDictionaryIsolationKey& isolation_key,
       base::OnceCallback<void(DictionaryListOrError)> callback);
   void GetAllDictionaries(
       base::OnceCallback<void(DictionaryMapOrError)> callback);
   void ClearAllDictionaries(base::OnceCallback<void(Error)> callback);
-
-  // TODO(crbug.com/1413922): Add a method to update `last_used_time`.
-  // TODO(crbug.com/1413922): Add a method for the garbage collection logic of
-  // SharedDictionaryDiskCache by using `disk_cache_key_token`.
-  // TODO(crbug.com/1413922): Add a method for the clearing expired dictionary
-  // logic using expiration time.
-  // TODO(crbug.com/1413922): Add a method for the clearing dictionary logic
-  // which will be called from BrowsingDataRemover.
+  void ClearDictionaries(
+      const base::Time start_time,
+      const base::Time end_time,
+      base::RepeatingCallback<bool(const GURL&)> url_matcher,
+      base::OnceCallback<void(UnguessableTokenSetOrError)> callback);
+  void DeleteExpiredDictionaries(
+      const base::Time now,
+      base::OnceCallback<void(UnguessableTokenSetOrError)> callback);
+  // Deletes dictionaries in order of `last_used_time` if the total size of all
+  // dictionaries exceeds `cache_max_size` or the total dictionary count exceeds
+  // `cache_max_count` until the total size reaches `size_low_watermark` and the
+  // total count reaches `count_low_watermark`. If `cache_max_size` is zero, the
+  // size limitation is ignored.
+  void ProcessEviction(
+      const uint64_t cache_max_size,
+      const uint64_t size_low_watermark,
+      const uint64_t cache_max_count,
+      const uint64_t count_low_watermark,
+      base::OnceCallback<void(UnguessableTokenSetOrError)> callback);
+  void GetAllDiskCacheKeyTokens(
+      base::OnceCallback<void(UnguessableTokenSetOrError)> callback);
+  void DeleteDictionariesByDiskCacheKeyTokens(
+      std::set<base::UnguessableToken> disk_cache_key_tokens,
+      base::OnceCallback<void(Error)> callback);
+  void UpdateDictionaryLastUsedTime(int64_t primary_key_in_database,
+                                    base::Time last_used_time);
 
   base::WeakPtr<SQLitePersistentSharedDictionaryStore> GetWeakPtr();
 

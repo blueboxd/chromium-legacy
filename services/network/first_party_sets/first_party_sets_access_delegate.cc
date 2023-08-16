@@ -6,11 +6,9 @@
 
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/types/optional_util.h"
-#include "net/base/features.h"
 #include "net/base/schemeful_site.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/first_party_sets/first_party_sets_cache_filter.h"
@@ -33,14 +31,12 @@ FirstPartySetsAccessDelegate::FirstPartySetsAccessDelegate(
     FirstPartySetsManager* const manager)
     : manager_(manager),
       enabled_(IsEnabled(params)),
-      wait_for_init_(base::FeatureList::IsEnabled(
-          net::features::kWaitForFirstPartySetsInit)),
       ready_event_(receiver.is_valid() && manager->is_enabled()
                        ? absl::nullopt
                        : absl::make_optional(
                              network::mojom::FirstPartySetsReadyEvent::New())),
       pending_queries_(
-          ready_event_.has_value() || !wait_for_init_
+          ready_event_.has_value()
               ? nullptr
               : std::make_unique<base::circular_deque<base::OnceClosure>>()) {
   if (receiver.is_valid())
@@ -77,9 +73,6 @@ FirstPartySetsAccessDelegate::ComputeMetadata(
     return {net::FirstPartySetMetadata()};
   }
   if (!ready_event_.has_value()) {
-    if (!wait_for_init_) {
-      return {net::FirstPartySetMetadata()};
-    }
     // base::Unretained() is safe because `this` owns `pending_queries_` and
     // `pending_queries_` will not run the enqueued callbacks after `this` is
     // destroyed.
@@ -105,9 +98,6 @@ FirstPartySetsAccessDelegate::FindEntries(
     return {{}};
 
   if (!ready_event_.has_value()) {
-    if (!wait_for_init_) {
-      return {{}};
-    }
     // base::Unretained() is safe because `this` owns `pending_queries_` and
     // `pending_queries_` will not run the enqueued callbacks after `this` is
     // destroyed.
@@ -131,9 +121,6 @@ FirstPartySetsAccessDelegate::GetCacheFilterMatchInfo(
     return {net::FirstPartySetsCacheFilter::MatchInfo()};
 
   if (!ready_event_.has_value()) {
-    if (!wait_for_init_) {
-      return {net::FirstPartySetsCacheFilter::MatchInfo()};
-    }
     // base::Unretained() is safe because `this` owns `pending_queries_` and
     // `pending_queries_` will not run the enqueued callbacks after `this` is
     // destroyed.
@@ -212,6 +199,7 @@ void FirstPartySetsAccessDelegate::GetCacheFilterMatchInfoAndInvoke(
 void FirstPartySetsAccessDelegate::InvokePendingQueries() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(ready_event_.has_value());
+  CHECK(pending_queries_);
 
   UmaHistogramTimes(
       "Cookie.FirstPartySets.InitializationDuration."
@@ -226,10 +214,6 @@ void FirstPartySetsAccessDelegate::InvokePendingQueries() {
                           first_async_query_timer_.has_value()
                               ? first_async_query_timer_->Elapsed()
                               : base::TimeDelta());
-
-  if (!pending_queries_) {
-    return;
-  }
 
   std::unique_ptr<base::circular_deque<base::OnceClosure>> queries;
   queries.swap(pending_queries_);

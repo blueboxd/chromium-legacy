@@ -7,8 +7,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_anchor_query.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 
@@ -74,13 +72,8 @@ const Vector<PhysicalScrollRange>* GetNonOverflowingScrollRanges(
   if (!layout_object || !layout_object->IsOutOfFlowPositioned()) {
     return nullptr;
   }
-  DCHECK(layout_object->IsBox());
-  const auto& layout_results = To<LayoutBox>(layout_object)->GetLayoutResults();
-  if (layout_results.empty()) {
-    return nullptr;
-  }
-  // TODO(crbug.com/1309178): Make sure it works when the box is fragmented.
-  return layout_results.front()->PositionFallbackNonOverflowingRanges();
+  CHECK(layout_object->IsBox());
+  return To<LayoutBox>(layout_object)->PositionFallbackNonOverflowingRanges();
 }
 
 }  // namespace
@@ -175,7 +168,7 @@ void AnchorScrollData::UpdateSnapshot() {
       InvalidatePaint();
       return;
     case SnapshotDiff::kScrollersOrFallbackPosition:
-      InvalidateLayout();
+      InvalidateLayoutAndPaint();
       return;
   }
 }
@@ -200,7 +193,7 @@ bool AnchorScrollData::ValidateSnapshot() {
       // offset-only diff only needs paint update.
       return true;
     case SnapshotDiff::kScrollersOrFallbackPosition:
-      InvalidateLayout();
+      InvalidateLayoutAndPaint();
       return false;
   }
 }
@@ -210,20 +203,17 @@ bool AnchorScrollData::ShouldScheduleNextService() {
          TakeAndCompareSnapshot(false /*update*/) != SnapshotDiff::kNone;
 }
 
-void AnchorScrollData::InvalidateLayout() {
+void AnchorScrollData::InvalidateLayoutAndPaint() {
   DCHECK(IsActive());
   DCHECK(owner_->GetLayoutObject());
   owner_->GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
       layout_invalidation_reason::kAnchorPositioning);
+  owner_->GetLayoutObject()->SetNeedsPaintPropertyUpdate();
 }
 
 void AnchorScrollData::InvalidatePaint() {
   DCHECK(IsActive());
   DCHECK(owner_->GetLayoutObject());
-  // TODO(crbug.com/1309178): This causes a main frame commit, which is
-  // unnecessary when there's offset-only changes and compositor has already
-  // adjusted the element correctly. Try to avoid that. See also
-  // crbug.com/1378705 as sticky position has the same issue.
   owner_->GetLayoutObject()->SetNeedsPaintPropertyUpdate();
 }
 

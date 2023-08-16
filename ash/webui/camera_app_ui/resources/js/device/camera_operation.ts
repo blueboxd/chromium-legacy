@@ -31,7 +31,6 @@ import {Modes, Video} from './mode/index.js';
 import {Preview} from './preview.js';
 import {StreamConstraints} from './stream_constraints.js';
 import {StreamManager} from './stream_manager.js';
-import {StreamManagerChrome} from './stream_manager_chrome.js';
 import {
   CameraConfig,
   CameraConfigCandidate,
@@ -311,11 +310,6 @@ class Reconfigurer {
    * Stop extra stream and preview stream.
    */
   private async stopStreams() {
-    if (expert.isEnabled(
-            expert.ExpertOption.ENABLE_MULTISTREAM_RECORDING_CHROME)) {
-      StreamManagerChrome.getInstance().stopCaptureStream();
-    }
-
     await this.modes.clear();
     await this.preview.close();
   }
@@ -419,7 +413,9 @@ export class OperationScheduler {
       this.stopCapture();
       return event.wait();
     }
-    return this.startReconfigure();
+    const onReconfigured = new CancelableEvent<boolean>();
+    this.startReconfigure(onReconfigured);
+    return onReconfigured.wait();
   }
 
   takeVideoSnapshot(): void {
@@ -450,9 +446,10 @@ export class OperationScheduler {
       this.pendingUpdateInfo = null;
     }
     if (this.pendingReconfigureWaiters.length !== 0) {
-      const starting = this.startReconfigure();
+      const onReconfigured = new CancelableEvent<boolean>();
+      this.startReconfigure(onReconfigured);
       for (const waiter of this.pendingReconfigureWaiters) {
-        waiter.signalAs(starting);
+        waiter.signalAs(onReconfigured.wait());
       }
       this.pendingReconfigureWaiters = [];
     }
@@ -477,18 +474,22 @@ export class OperationScheduler {
     }
   }
 
-  private async startReconfigure(): Promise<boolean> {
+  private async startReconfigure(onReconfigured: CancelableEvent<boolean>):
+      Promise<void> {
     assert(this.ongoingOperationType === null);
     this.ongoingOperationType = OperationType.RECONFIGURE;
 
     const cameraInfo = assertInstanceof(this.cameraInfo, CameraInfo);
     try {
       const succeed = await this.reconfigurer.start(cameraInfo);
+      // Sends the result to inform the caller first and then handles the
+      // waiters to keep the order correct.
+      onReconfigured.signal(succeed);
       if (!succeed) {
         this.clearPendingReconfigureWaiters();
       }
-      return succeed;
     } catch (e) {
+      onReconfigured.signalError(assertInstanceof(e, Error));
       this.clearPendingReconfigureWaiters();
       throw e;
     } finally {

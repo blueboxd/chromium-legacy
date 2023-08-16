@@ -492,6 +492,11 @@ StyleBuilderConverter::ConvertFontVariationSettings(
 scoped_refptr<FontPalette> StyleBuilderConverter::ConvertFontPalette(
     StyleResolverState& state,
     const CSSValue& value) {
+  return StyleBuilderConverterBase::ConvertFontPalette(value);
+}
+
+scoped_refptr<FontPalette> StyleBuilderConverterBase::ConvertFontPalette(
+    const CSSValue& value) {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value &&
       identifier_value->GetValueID() == CSSValueID::kNormal) {
@@ -1270,14 +1275,14 @@ static void ConvertGridLineNamesList(
   }
 }
 
-GridTrackList StyleBuilderConverter::ConvertGridTrackSizeList(
+NGGridTrackList StyleBuilderConverter::ConvertGridTrackSizeList(
     StyleResolverState& state,
     const CSSValue& value) {
   const CSSValueList* list = DynamicTo<CSSValueList>(value);
   if (!list) {
     const auto& ident = To<CSSIdentifierValue>(value);
     DCHECK_EQ(ident.GetValueID(), CSSValueID::kAuto);
-    return GridTrackList(GridTrackSize(Length::Auto()));
+    return NGGridTrackList(GridTrackSize(Length::Auto()));
   }
 
   Vector<GridTrackSize, 1> track_sizes;
@@ -1288,7 +1293,9 @@ GridTrackList StyleBuilderConverter::ConvertGridTrackSizeList(
     track_sizes.push_back(ConvertGridTrackSize(state, *curr_value));
   }
 
-  return GridTrackList(track_sizes);
+  NGGridTrackList track_list;
+  track_list.AddRepeater(track_sizes);
+  return track_list;
 }
 
 void StyleBuilderConverter::ConvertGridTrackList(
@@ -1300,10 +1307,7 @@ void StyleBuilderConverter::ConvertGridTrackList(
     return;
   }
 
-  GridTrackList& track_sizes = computed_grid_track_list.track_sizes;
-  auto& track_list = track_sizes.NGTrackList();
-  Vector<GridTrackSize, 1>& auto_repeat_track_sizes =
-      computed_grid_track_list.auto_repeat_track_sizes;
+  NGGridTrackList& track_list = computed_grid_track_list.track_list;
 
   wtf_size_t current_named_grid_line = 0;
   auto ConvertLineNameOrTrackSize =
@@ -1325,8 +1329,6 @@ void StyleBuilderConverter::ConvertGridTrackList(
       DCHECK_EQ(computed_grid_track_list.axis_type,
                 GridAxisType::kStandaloneAxis);
       ++current_named_grid_line;
-      track_sizes.LegacyTrackList().push_back(
-          ConvertGridTrackSize(state, curr_value));
     }
     return line_name_indices_count;
   };
@@ -1380,8 +1382,6 @@ void StyleBuilderConverter::ConvertGridTrackList(
                              /* repeat_count */ 1,
                              /* repeat_number_of_lines */ auto_repeat_index,
                              line_name_indices_count);
-      DCHECK(auto_repeat_track_sizes.empty());
-      auto_repeat_track_sizes = std::move(repeated_track_sizes);
       computed_grid_track_list.auto_repeat_insertion_point =
           current_named_grid_line++;
       continue;
@@ -1439,8 +1439,7 @@ void StyleBuilderConverter::ConvertGridTrackList(
   // Unless the axis is subgridded, the parser should have rejected any
   // <track-list> without any <track-size> as this is not conformant to
   // the syntax.
-  DCHECK(!track_sizes.LegacyTrackList().empty() ||
-         !auto_repeat_track_sizes.empty() ||
+  DCHECK(track_list.RepeaterCount() ||
          computed_grid_track_list.IsSubgriddedAxis());
 }
 
@@ -1837,6 +1836,12 @@ StyleOffsetRotation StyleBuilderConverter::ConvertOffsetRotate(
     const CSSValue& value) {
   StyleOffsetRotation result(0, OffsetRotationType::kFixed);
 
+  if (auto* identifier = DynamicTo<CSSIdentifierValue>(value)) {
+    DCHECK_EQ(identifier->GetValueID(), CSSValueID::kAuto);
+    result.type = OffsetRotationType::kAuto;
+    return result;
+  }
+
   const auto& list = To<CSSValueList>(value);
   DCHECK(list.length() == 1 || list.length() == 2);
   for (const auto& item : list) {
@@ -1876,6 +1881,18 @@ LengthPoint StyleBuilderConverter::ConvertPositionOrAuto(
   }
   DCHECK(To<CSSIdentifierValue>(value).GetValueID() == CSSValueID::kAuto);
   return LengthPoint(Length::Auto(), Length::Auto());
+}
+
+LengthPoint StyleBuilderConverter::ConvertOffsetPosition(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  if (value.IsValuePair()) {
+    return ConvertPosition(state, value);
+  }
+  if (To<CSSIdentifierValue>(value).GetValueID() == CSSValueID::kAuto) {
+    return LengthPoint(Length::Auto(), Length::Auto());
+  }
+  return LengthPoint(Length::None(), Length::None());
 }
 
 static float ConvertPerspectiveLength(
@@ -1962,8 +1979,8 @@ ShadowData StyleBuilderConverter::ConvertShadow(
     StyleResolverState* state,
     const CSSValue& value) {
   const auto& shadow = To<CSSShadowValue>(value);
-  float x = shadow.x->ComputeLength<float>(conversion_data);
-  float y = shadow.y->ComputeLength<float>(conversion_data);
+  const gfx::Vector2dF offset(shadow.x->ComputeLength<float>(conversion_data),
+                              shadow.y->ComputeLength<float>(conversion_data));
   float blur =
       shadow.blur ? shadow.blur->ComputeLength<float>(conversion_data) : 0;
   float spread =
@@ -2003,8 +2020,7 @@ ShadowData StyleBuilderConverter::ConvertShadow(
       }
     }
   }
-
-  return ShadowData(gfx::PointF(x, y), blur, spread, shadow_style, color);
+  return ShadowData(offset, blur, spread, shadow_style, color);
 }
 
 scoped_refptr<ShadowList> StyleBuilderConverter::ConvertShadowList(
@@ -2728,14 +2744,6 @@ bool StyleBuilderConverter::ConvertInternalAlignContentBlock(
          identifier_value->GetValueID() == CSSValueID::kCenter;
 }
 
-bool StyleBuilderConverter::ConvertInternalAlignSelfBlock(
-    StyleResolverState&,
-    const CSSValue& value) {
-  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  return identifier_value &&
-         identifier_value->GetValueID() == CSSValueID::kCenter;
-}
-
 bool StyleBuilderConverter::ConvertInternalEmptyLineHeight(
     StyleResolverState&,
     const CSSValue& value) {
@@ -2770,6 +2778,23 @@ RubyPosition StyleBuilderConverter::ConvertRubyPosition(
   }
   NOTREACHED();
   return RubyPosition::kBefore;
+}
+
+absl::optional<StyleScrollbarColor>
+StyleBuilderConverter::ConvertScrollbarColor(StyleResolverState& state,
+                                             const CSSValue& value) {
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kAuto) {
+    return absl::nullopt;
+  }
+
+  const CSSValueList& list = To<CSSValueList>(value);
+  DCHECK_GE(list.length(), 1u);
+  DCHECK_LE(list.length(), 2u);
+  const StyleColor thumb_color = ConvertStyleColor(state, list.First());
+  const StyleColor track_color = ConvertStyleColor(state, list.Last());
+
+  return StyleScrollbarColor(thumb_color, track_color);
 }
 
 ScrollbarGutter StyleBuilderConverter::ConvertScrollbarGutter(

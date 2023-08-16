@@ -71,6 +71,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
@@ -207,10 +208,10 @@ class CreditCardAccessManagerTest : public testing::Test {
         autofill_driver_.get(), &autofill_client_);
     credit_card_access_manager_ =
         browser_autofill_manager_->GetCreditCardAccessManager();
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
     autofill_driver_->set_autofill_manager(
         std::move(browser_autofill_manager_));
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
     autofill_driver_->SetAuthenticator(new TestInternalAuthenticator());
     auto fido_authenticator = std::make_unique<TestCreditCardFidoAuthenticator>(
         autofill_driver_.get(), &autofill_client_);
@@ -560,7 +561,7 @@ class CreditCardAccessManagerTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
       variations::VariationsIdsProvider::Mode::kUseSignedInState};
-  raw_ptr<payments::TestPaymentsClient> payments_client_;
+  raw_ptr<payments::TestPaymentsClient, DanglingUntriaged> payments_client_;
   TestAutofillClient autofill_client_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   scoped_refptr<AutofillWebDataService> database_;
@@ -568,7 +569,8 @@ class CreditCardAccessManagerTest : public testing::Test {
   // feature lists.
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<BrowserAutofillManager> browser_autofill_manager_;
-  raw_ptr<CreditCardAccessManager> credit_card_access_manager_;
+  raw_ptr<CreditCardAccessManager, DanglingUntriaged>
+      credit_card_access_manager_;
   raw_ptr<TestCreditCardOtpAuthenticator> otp_authenticator_;
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
   raw_ptr<TestCreditCardFidoAuthenticator> fido_authenticator_;
@@ -782,6 +784,20 @@ TEST_F(CreditCardAccessManagerTest, FetchLocalCardSuccess) {
 
   EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kSuccess);
   EXPECT_EQ(kTestNumber16, accessor_->number());
+
+  // There was no interactive authentication in this flow, so check that this
+  // is signaled correctly.
+  absl::optional<absl::variant<FormDataImporter::CardGuid,
+                               FormDataImporter::CardLastFourDigits>>
+      card_identifier =
+          autofill_client_.GetFormDataImporter()
+              ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted();
+  ASSERT_TRUE(card_identifier.has_value());
+  ASSERT_TRUE(absl::holds_alternative<FormDataImporter::CardGuid>(
+      card_identifier.value()));
+  ASSERT_EQ(
+      absl::get<FormDataImporter::CardGuid>(card_identifier.value()).value(),
+      kTestGUID);
 }
 
 // Ensures that FetchCreditCard() reports a failure when a card does not exist.
@@ -838,6 +854,12 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCSuccess) {
       histogram_tester.ExpectBucketCount(
           "Autofill.ServerCardUnmask.ServerCard.Attempt", true, 0);
     }
+    // Expect that we did not signal that there was no interactive
+    // authentication.
+    EXPECT_FALSE(
+        autofill_client_.GetFormDataImporter()
+            ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted()
+            .has_value());
   }
 }
 
@@ -2525,6 +2547,24 @@ TEST_F(CreditCardAccessManagerTest, RiskBasedVirtualCardUnmasking_Success) {
   EXPECT_EQ(accessor_->expiry_month(), base::UTF8ToUTF16(test::NextMonth()));
   EXPECT_EQ(accessor_->expiry_year(), base::UTF8ToUTF16(test::NextYear()));
 
+  // There was no interactive authentication in this flow, so check that this
+  // is signaled correctly. The card identifier in the virtual card case should
+  // be the last four digits of the card number.
+  // There was no interactive authentication in this flow, so check that this
+  // is signaled correctly.
+  absl::optional<absl::variant<FormDataImporter::CardGuid,
+                               FormDataImporter::CardLastFourDigits>>
+      card_identifier =
+          autofill_client_.GetFormDataImporter()
+              ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted();
+  ASSERT_TRUE(card_identifier.has_value());
+  ASSERT_TRUE(absl::holds_alternative<FormDataImporter::CardLastFourDigits>(
+      card_identifier.value()));
+  ASSERT_EQ(
+      absl::get<FormDataImporter::CardLastFourDigits>(card_identifier.value())
+          .value(),
+      response.real_pan.substr(response.real_pan.size() - 4));
+
   // Expect the metrics are logged correctly.
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Attempt", true, 1);
@@ -2548,13 +2588,19 @@ TEST_F(CreditCardAccessManagerTest,
       /*fido_authenticator_is_user_opted_in=*/false,
       /*is_user_verifiable=*/false, challenge_options, /*selected_index=*/0);
 
-  CreditCardOtpAuthenticator::OtpAuthenticationResponse otp_response;
-  otp_response.result =
-      CreditCardOtpAuthenticator::OtpAuthenticationResponse::Result::kSuccess;
   CreditCard card = test::GetCreditCard();
-  otp_response.card = &card;
-  otp_response.cvc = u"123";
-  credit_card_access_manager_->OnOtpAuthenticationComplete(otp_response);
+  credit_card_access_manager_->OnOtpAuthenticationComplete(
+      CreditCardOtpAuthenticator::OtpAuthenticationResponse()
+          .with_result(CreditCardOtpAuthenticator::OtpAuthenticationResponse::
+                           Result::kSuccess)
+          .with_card(&card)
+          .with_cvc(u"123"));
+
+  // Expect that we did not signal that there was no interactive authentication.
+  EXPECT_FALSE(
+      autofill_client_.GetFormDataImporter()
+          ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted()
+          .has_value());
 
   // Expect the metrics are logged correctly.
   histogram_tester.ExpectUniqueSample(
@@ -2584,6 +2630,12 @@ TEST_F(CreditCardAccessManagerTest,
           .with_card(&card)
           .with_cvc(u"123"));
 
+  // Expect that we did not signal that there was no interactive authentication.
+  EXPECT_FALSE(
+      autofill_client_.GetFormDataImporter()
+          ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted()
+          .has_value());
+
   // Expect the metrics are logged correctly.
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Attempt", true, 1);
@@ -2609,13 +2661,13 @@ TEST_F(CreditCardAccessManagerTest,
 
     switch (challenge_options[selected_index].type) {
       case CardUnmaskChallengeOptionType::kSmsOtp: {
-        CreditCardOtpAuthenticator::OtpAuthenticationResponse otp_response;
-        otp_response.result = CreditCardOtpAuthenticator::
-            OtpAuthenticationResponse::Result::kSuccess;
         CreditCard card = test::GetCreditCard();
-        otp_response.card = &card;
-        otp_response.cvc = u"123";
-        credit_card_access_manager_->OnOtpAuthenticationComplete(otp_response);
+        credit_card_access_manager_->OnOtpAuthenticationComplete(
+            CreditCardOtpAuthenticator::OtpAuthenticationResponse()
+                .with_result(CreditCardOtpAuthenticator::
+                                 OtpAuthenticationResponse::Result::kSuccess)
+                .with_card(&card)
+                .with_cvc(u"123"));
         break;
       }
       case CardUnmaskChallengeOptionType::kCvc: {
@@ -2633,6 +2685,12 @@ TEST_F(CreditCardAccessManagerTest,
         break;
     }
   }
+
+  // Expect that we did not signal that there was no interactive authentication.
+  EXPECT_FALSE(
+      autofill_client_.GetFormDataImporter()
+          ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted()
+          .has_value());
 
   // Expect the metrics are logged correctly.
   histogram_tester.ExpectUniqueSample(
@@ -3057,6 +3115,25 @@ TEST_F(CreditCardAccessManagerTest,
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Result.UnspecifiedFlowType",
       autofill_metrics::ServerCardUnmaskResult::kFlowCancelled, 1);
+}
+
+// Test that the CreditCardAccessManager's destructor resets the identifier of
+// the card that had no interactive authentication flows completed in the
+// associated FormDataImporter.
+TEST_F(CreditCardAccessManagerTest, DestructorResetsCardIdentifier) {
+  auto* form_data_importer = autofill_client_.GetFormDataImporter();
+  form_data_importer
+      ->SetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted(
+          FormDataImporter::CardGuid("TestGuid"));
+  EXPECT_TRUE(
+      form_data_importer
+          ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted()
+          .has_value());
+  autofill_driver_.reset();
+  EXPECT_FALSE(
+      form_data_importer
+          ->GetCardIdentifierIfNonInteractiveAuthenticationFlowCompleted()
+          .has_value());
 }
 
 // Params of the CreditCardAccessManagerCardMetadataTest:

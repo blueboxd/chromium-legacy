@@ -11,11 +11,16 @@ import("//testing/test.gni")
 
 import("//third_party/inspector_protocol/inspector_protocol.gni")
 
-source_set("resource_format") {
+viz_component("resource_format") {
+  output_name = "viz_resource_format"
+
+  defines = [ "VIZ_RESOURCE_FORMAT_IMPLEMENTATION" ]
+
   sources = [
     "resources/resource_format.h",
     "resources/shared_image_format.cc",
     "resources/shared_image_format.h",
+    "viz_resource_format_export.h",
   ]
   public_deps = [
     "//base",
@@ -45,7 +50,8 @@ viz_component("resource_format_utils") {
     "resources/resource_format_utils.cc",
     "resources/resource_format_utils.h",
     "resources/resource_sizes.h",
-    "viz_resource_format_export.h",
+    "resources/shared_image_format_utils.cc",
+    "resources/shared_image_format_utils.h",
   ]
 
   configs = [ "//third_party/khronos:khronos_headers" ]
@@ -130,32 +136,6 @@ if (enable_vulkan) {
       "//gpu/vulkan:buildflags",
       "//gpu/vulkan/init:skia",
       "//ui/gfx",
-    ]
-  }
-}
-
-if (skia_use_dawn) {
-  viz_component("dawn_context_provider") {
-    output_name = "viz_dawn_context_provider"
-
-    defines = [ "VIZ_DAWN_CONTEXT_PROVIDER_IMPLEMENTATION" ]
-
-    sources = [
-      "gpu/dawn_context_provider.cc",
-      "gpu/dawn_context_provider.h",
-      "viz_dawn_context_provider_export.h",
-    ]
-
-    public_deps = [
-      "//skia",
-      "//third_party/dawn/include/dawn:headers",
-    ]
-
-    deps = [
-      "//base",
-      "//third_party/dawn/src/dawn:cpp",
-      "//third_party/dawn/src/dawn:proc",
-      "//third_party/dawn/src/dawn/native",
     ]
   }
 }
@@ -371,9 +351,6 @@ viz_component("common") {
   }
   if (skia_use_metal) {
     public_deps += [ ":metal_context_provider" ]
-  }
-  if (skia_use_dawn) {
-    public_deps += [ ":dawn_context_provider" ]
   }
 }
 

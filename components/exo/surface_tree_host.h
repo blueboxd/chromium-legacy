@@ -126,6 +126,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void Pin(bool trusted) override {}
   void Unpin() override {}
   void SetSystemModal(bool system_modal) override {}
+  void SetTopInset(int height) override {}
   SecurityDelegate* GetSecurityDelegate() override;
 
   // display::DisplayObserver:
@@ -142,6 +143,18 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void SetSecurityDelegate(SecurityDelegate* security_delegate);
 
   void SubmitCompositorFrameForTesting(viz::CompositorFrame frame);
+
+  // Set and initialize the host window for testing.
+  void SetHostWindowForTesting(std::unique_ptr<aura::Window> test_host_window,
+                               const std::string& window_name);
+
+  using LayerTreeFrameSinkHolderFactory =
+      base::RepeatingCallback<std::unique_ptr<LayerTreeFrameSinkHolder>()>;
+
+  // It should only be used at initialization time before any frames are
+  // submitted.
+  void SetLayerTreeFrameSinkHolderFactoryForTesting(
+      LayerTreeFrameSinkHolderFactory frame_sink_holder_factory);
 
  protected:
   void UpdateDisplayOnTree();
@@ -177,11 +190,15 @@ class SurfaceTreeHost : public SurfaceDelegate,
   float GetScaleFactor();
 
  private:
+  void InitHostWindow(const std::string& window_name);
+
   viz::CompositorFrame PrepareToSubmitCompositorFrame();
 
   void HandleContextLost();
 
   void CleanUpCallbacks();
+
+  std::unique_ptr<LayerTreeFrameSinkHolder> CreateLayerTreeFrameSinkHolder();
 
   raw_ptr<Surface, ExperimentalAsh> root_surface_ = nullptr;
 
@@ -191,6 +208,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   std::unique_ptr<aura::Window> host_window_;
   std::unique_ptr<LayerTreeFrameSinkHolder> layer_tree_frame_sink_holder_;
+  LayerTreeFrameSinkHolderFactory frame_sink_holder_factory_;
 
   // This queue contains lists the callbacks to notify the client when it is a
   // good time to start producing a new frame. Each list corresponds to a

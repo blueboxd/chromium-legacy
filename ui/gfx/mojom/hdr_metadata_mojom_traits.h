@@ -71,14 +71,32 @@ struct StructTraits<gfx::mojom::HdrMetadataSmpteSt2086DataView,
 };
 
 template <>
+struct StructTraits<gfx::mojom::HdrMetadataExtendedRangeDataView,
+                    gfx::HdrMetadataExtendedRange> {
+  static float current_headroom(const gfx::HdrMetadataExtendedRange& input) {
+    return input.current_headroom;
+  }
+  static float desired_headroom(const gfx::HdrMetadataExtendedRange& input) {
+    return input.desired_headroom;
+  }
+
+  static bool Read(gfx::mojom::HdrMetadataExtendedRangeDataView data,
+                   gfx::HdrMetadataExtendedRange* output);
+};
+
+template <>
 struct StructTraits<gfx::mojom::HDRMetadataDataView, gfx::HDRMetadata> {
-  static const gfx::HdrMetadataCta861_3& cta_861_3(
+  static const absl::optional<gfx::HdrMetadataCta861_3>& cta_861_3(
       const gfx::HDRMetadata& input) {
     return input.cta_861_3;
   }
-  static const gfx::HdrMetadataSmpteSt2086& smpte_st_2086(
+  static const absl::optional<gfx::HdrMetadataSmpteSt2086>& smpte_st_2086(
       const gfx::HDRMetadata& input) {
     return input.smpte_st_2086;
+  }
+  static const absl::optional<gfx::HdrMetadataExtendedRange>& extended_range(
+      const gfx::HDRMetadata& input) {
+    return input.extended_range;
   }
 
   static bool Read(gfx::mojom::HDRMetadataDataView data,

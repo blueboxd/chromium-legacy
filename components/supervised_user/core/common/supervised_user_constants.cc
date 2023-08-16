@@ -31,6 +31,7 @@ const char kForceSafeSearch[] = "ForceSafeSearch";
 const char kGeolocationDisabled[] = "GeolocationDisabled";
 const char kSafeSitesEnabled[] = "SafeSites";
 const char kSigninAllowed[] = "SigninAllowed";
+const char kSigninAllowedOnNextStartup[] = "kSigninAllowedOnNextStartup";
 
 const char kChildAccountSUID[] = "ChildAccountSUID";
 
@@ -73,5 +74,8 @@ GURL KidsManagementPermissionRequestsURL() {
 GURL KidsManagementClassifyURLRequestURL() {
   return KidsManagementBaseURL().Resolve(kClassifyURLRequestURL);
 }
+
+const char kFamilyLinkUserLogSegmentHistogramName[] =
+    "FamilyLinkUser.LogSegment";
 
 }  // namespace supervised_user

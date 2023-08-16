@@ -11,6 +11,7 @@
 #include "base/containers/stack_container.h"
 #include "base/functional/overloaded.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process.h"
 #include "base/task/single_thread_task_runner.h"
@@ -611,7 +612,7 @@ scoped_refptr<Transport> Transport::Deserialize(
   base::Process process;
   const auto& header = *reinterpret_cast<const TransportHeader*>(data.data());
 #if BUILDFLAG(IS_WIN)
-  if (handles.size() >= 2 && from_transport.remote_process().IsValid()) {
+  if (handles.size() >= 2) {
     process = base::Process(handles[1].ReleaseHandle());
   }
 #endif

@@ -27,7 +27,10 @@ import '//resources/cr_elements/cr_toolbar/cr_toolbar_selection_overlay.js';
 import '//resources/cr_elements/icons.html.js';
 import '//resources/polymer/v3_0/iron-list/iron-list.js';
 
-import {startColorChangeUpdater} from '//resources/cr_components/color_change_listener/colors_css_updater.js';
+import {ShoppingListApiProxy, ShoppingListApiProxyImpl} from '//bookmarks-side-panel.top-chrome/shared/commerce/shopping_list_api_proxy.js';
+import {BookmarkProductInfo} from '//bookmarks-side-panel.top-chrome/shared/shopping_list.mojom-webui.js';
+import {SpEmptyStateElement} from '//bookmarks-side-panel.top-chrome/shared/sp_empty_state.js';
+import {ColorChangeUpdater} from '//resources/cr_components/color_change_listener/colors_css_updater.js';
 import {getInstance as getAnnouncerInstance} from '//resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrDialogElement} from '//resources/cr_elements/cr_dialog/cr_dialog.js';
@@ -39,17 +42,15 @@ import {loadTimeData} from '//resources/js/load_time_data.js';
 import {PluralStringProxyImpl} from '//resources/js/plural_string_proxy.js';
 import {listenOnce} from '//resources/js/util_ts.js';
 import {IronListElement} from '//resources/polymer/v3_0/iron-list/iron-list.js';
-import {DomRepeatEvent, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, DomRepeatEvent, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ActionSource, SortOrder, ViewType} from './bookmarks.mojom-webui.js';
 import {BookmarksApiProxy, BookmarksApiProxyImpl} from './bookmarks_api_proxy.js';
-import {ShoppingListApiProxy, ShoppingListApiProxyImpl} from './commerce/shopping_list_api_proxy.js';
 import {PowerBookmarksContextMenuElement} from './power_bookmarks_context_menu.js';
 import {PowerBookmarksDragManager} from './power_bookmarks_drag_manager.js';
 import {PowerBookmarksEditDialogElement} from './power_bookmarks_edit_dialog.js';
 import {getTemplate} from './power_bookmarks_list.html.js';
 import {editingDisabledByPolicy, Label, PowerBookmarksService} from './power_bookmarks_service.js';
-import {BookmarkProductInfo} from './shopping_list.mojom-webui.js';
 
 const ADD_FOLDER_ACTION_UMA = 'Bookmarks.FolderAddedFromSidePanel';
 const ADD_URL_ACTION_UMA = 'Bookmarks.AddedFromSidePanel';
@@ -86,6 +87,8 @@ export interface PowerBookmarksListElement {
     sortMenu: CrActionMenuElement,
     editDialog: PowerBookmarksEditDialogElement,
     disabledFeatureDialog: CrDialogElement,
+    topLevelEmptyState: SpEmptyStateElement,
+    folderEmptyState: SpEmptyStateElement,
   };
 }
 
@@ -188,6 +191,11 @@ export class PowerBookmarksListElement extends PolymerElement {
         value: false,
         reflectToAttribute: true,
       },
+
+      hasLoadedData_: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -214,8 +222,6 @@ export class PowerBookmarksListElement extends PolymerElement {
   private compact_: boolean;
   private activeFolderPath_: chrome.bookmarks.BookmarkTreeNode[];
   private labels_: Label[];
-  private compactDescriptions_ = new Map<string, string>();
-  private expandedDescriptions_ = new Map<string, string>();
   private imageUrls_ = new Map<string, string>();
   private activeSortIndex_: number;
   private sortTypes_: SortOption[];
@@ -229,14 +235,16 @@ export class PowerBookmarksListElement extends PolymerElement {
   private shownBookmarksResizeObserver_?: ResizeObserver;
   private hasScrollbars_: boolean;
   private contextMenuBookmark_: chrome.bookmarks.BookmarkTreeNode|undefined;
+  private hasLoadedData_: boolean;
 
   constructor() {
     super();
-    startColorChangeUpdater();
+    ColorChangeUpdater.forDocument().start();
   }
 
   override connectedCallback() {
     super.connectedCallback();
+    this.setAttribute('role', 'application');
     listenOnce(this.$.powerBookmarksContainer, 'dom-change', () => {
       setTimeout(() => this.bookmarksApi_.showUi(), 0);
     });
@@ -289,22 +297,13 @@ export class PowerBookmarksListElement extends PolymerElement {
     this.currentUrl_ = url;
   }
 
-  setCompactDescription(
-      bookmark: chrome.bookmarks.BookmarkTreeNode, description: string) {
-    this.set(`compactDescriptions_.${bookmark.id}`, description);
-  }
-
-  setExpandedDescription(
-      bookmark: chrome.bookmarks.BookmarkTreeNode, description: string) {
-    this.set(`expandedDescriptions_.${bookmark.id}`, description);
-  }
-
   setImageUrl(bookmark: chrome.bookmarks.BookmarkTreeNode, url: string) {
     this.set(`imageUrls_.${bookmark.id.toString()}`, url);
   }
 
   onBookmarksLoaded() {
     this.updateShownBookmarks_();
+    this.hasLoadedData_ = true;
   }
 
   onBookmarkChanged(id: string, changedInfo: chrome.bookmarks.ChangeInfo) {
@@ -517,18 +516,29 @@ export class PowerBookmarksListElement extends PolymerElement {
   private getBookmarkDescription_(bookmark: chrome.bookmarks.BookmarkTreeNode):
       string|undefined {
     if (this.compact_) {
-      return this.get(`compactDescriptions_.${bookmark.id}`);
+      if (bookmark.url) {
+        return undefined;
+      }
+      const count = bookmark.children ? bookmark.children.length : 0;
+      return loadTimeData.getStringF('bookmarkFolderChildCount', count);
     } else {
-      const url = this.get(`expandedDescriptions_.${bookmark.id}`);
-      if (this.searchQuery_ && url && bookmark.parentId) {
+      let urlString;
+      if (bookmark.url) {
+        const url = new URL(bookmark.url);
+        // Show chrome:// if it's a chrome internal url
+        if (url.protocol === 'chrome:') {
+          urlString = 'chrome://' + url.hostname;
+        }
+        urlString = url.hostname;
+      }
+      if (urlString && this.searchQuery_ && bookmark.parentId) {
         const parentFolder =
             this.bookmarksService_.findBookmarkWithId(bookmark.parentId);
         const folderLabel = this.getFolderLabel_(parentFolder);
         return loadTimeData.getStringF(
-            'urlFolderDescription', url, folderLabel);
-      } else {
-        return url;
+            'urlFolderDescription', urlString, folderLabel);
       }
+      return urlString;
     }
   }
 
@@ -540,12 +550,25 @@ export class PowerBookmarksListElement extends PolymerElement {
     }
   }
 
-  private getBookmarkA11yLabel_(url: string, title: string): string {
+  private getBookmarkA11yLabel_(id: string, url: string, title: string):
+      string {
+    if (this.editing_) {
+      if (this.selectedBookmarks_.findIndex(b => b.id === id) > -1) {
+        if (url) {
+          return loadTimeData.getStringF('deselectBookmarkLabel', title);
+        }
+        return loadTimeData.getStringF('deselectFolderLabel', title);
+      } else {
+        if (url) {
+          return loadTimeData.getStringF('selectBookmarkLabel', title);
+        }
+        return loadTimeData.getStringF('selectFolderLabel', title);
+      }
+    }
     if (url) {
       return loadTimeData.getStringF('openBookmarkLabel', title);
-    } else {
-      return loadTimeData.getStringF('openFolderLabel', title);
     }
+    return loadTimeData.getStringF('openFolderLabel', title);
   }
 
   private getBookmarkA11yDescription_(
@@ -688,7 +711,9 @@ export class PowerBookmarksListElement extends PolymerElement {
         this.push('activeFolderPath_', event.detail.bookmark);
         // Cancel search when changing active folder.
         this.$.searchField.setValue('');
-        this.$.shownBookmarksIronList.focusItem(0);
+        afterNextRender(this, () => {
+          this.$.shownBookmarksIronList.focusItem(0);
+        });
       } else {
         this.bookmarksApi_.openBookmark(
             event.detail.bookmark.id, this.activeFolderPath_.length, {
@@ -701,6 +726,10 @@ export class PowerBookmarksListElement extends PolymerElement {
             ActionSource.kBookmark);
       }
     }
+    // Workaround for this issue, causing unexpected list scrolling when
+    // refocusing the list after changing tabs:
+    // https://github.com/PolymerElements/iron-list/issues/270
+    (event.target as HTMLElement).blur();
   }
 
   private onRowSelectedChange_(
@@ -765,12 +794,23 @@ export class PowerBookmarksListElement extends PolymerElement {
     return false;
   }
 
-  private shouldShowEmptySearchState_() {
+  private shouldShowEmptySearchState_(): boolean {
     return this.hasActiveLabels_() || !!this.searchQuery_;
   }
 
+  private shouldShowTopLevelEmptyState_(): boolean {
+    return this.guestMode_ ||
+        (this.hasLoadedData_ && this.shownBookmarks_.length === 0 &&
+         (!!this.searchQuery_ || this.activeFolderPath_.length === 0));
+  }
+
+  private shouldShowFolderEmptyState_(): boolean {
+    return this.hasLoadedData_ && this.shownBookmarks_.length === 0;
+  }
+
   private shouldHideCard_(): boolean {
-    return this.shouldHideHeader_() && this.shownBookmarks_.length === 0;
+    return this.guestMode_ ||
+        (this.shouldHideHeader_() && this.shownBookmarks_.length === 0);
   }
 
   private shouldHideHeader_(): boolean {
@@ -916,7 +956,12 @@ export class PowerBookmarksListElement extends PolymerElement {
   }
 
   private onContextMenuClosed_() {
-    this.contextMenuBookmark_ = undefined;
+    // This check is needed to avoid the case where the context menu is closed
+    // via right-click a new row, and is already re-opened by the time this
+    // executes.
+    if (!this.$.contextMenu.isOpen()) {
+      this.contextMenuBookmark_ = undefined;
+    }
   }
 
   private showDeletionToastWithCount_(deletionCount: number) {

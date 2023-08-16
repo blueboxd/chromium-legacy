@@ -24,6 +24,10 @@
 #include "third_party/blink/public/common/use_counter/use_counter_feature.h"
 #include "url/gurl.h"
 
+namespace blink {
+struct JavaScriptFrameworkDetectionResult;
+}  // namespace blink
+
 namespace page_load_metrics {
 
 // Information related to whether an associated action, such as a navigation or
@@ -144,7 +148,7 @@ class PageLoadMetricsObserver : public PageLoadMetricsObserverInterface {
       const std::string& mime_type) const override;
   void OnTimingUpdate(content::RenderFrameHost* subframe_rfh,
                       const mojom::PageLoadTiming& timing) override {}
-  void OnSoftNavigationCountUpdated() override {}
+  void OnSoftNavigationUpdated(mojom::SoftNavigationMetricsPtr) override {}
   void OnInputTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
       const mojom::InputTiming& input_timing_delta) override {}
@@ -182,6 +186,9 @@ class PageLoadMetricsObserver : public PageLoadMetricsObserverInterface {
   void OnFirstInputInPage(const mojom::PageLoadTiming& timing) override {}
   void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
                                  int behavior_flags) override {}
+  void OnJavaScriptFrameworksObserved(
+      content::RenderFrameHost* rfh,
+      const blink::JavaScriptFrameworkDetectionResult&) override {}
   void OnFeaturesUsageObserved(
       content::RenderFrameHost* rfh,
       const std::vector<blink::UseCounterFeature>& features) override {}
@@ -237,7 +244,8 @@ class PageLoadMetricsObserver : public PageLoadMetricsObserverInterface {
   void OnSharedStorageWorkletHostCreated() override {}
 
  private:
-  raw_ptr<PageLoadMetricsObserverDelegate> delegate_ = nullptr;
+  raw_ptr<PageLoadMetricsObserverDelegate, DanglingUntriaged> delegate_ =
+      nullptr;
 };
 
 }  // namespace page_load_metrics

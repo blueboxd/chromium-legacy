@@ -256,9 +256,6 @@ void Action::OverwriteFromProto(const ActionProto& proto) {
     }
     position.reset();
   }
-  if (beta_ && proto.has_deleted()) {
-    deleted_ = proto.deleted();
-  }
 }
 
 bool Action::InitFromEditor() {
@@ -291,7 +288,7 @@ void Action::PrepareToBindInput(std::unique_ptr<InputElement> input_element) {
   }
   pending_input_ = std::move(input_element);
 
-  if (!action_view_) {
+  if (beta_ || !action_view_) {
     return;
   }
   action_view_->SetViewContent(BindingOption::kPending);
@@ -351,14 +348,12 @@ void Action::PrepareToBindPosition(const gfx::Point& new_touch_center) {
   pending_position_ = std::make_unique<Position>(PositionType::kDefault);
   pending_position_->Normalize(new_touch_center,
                                touch_injector_->content_bounds());
-}
 
-void Action::PrepareToBindPosition(std::unique_ptr<Position> position) {
-  if (pending_position_) {
-    pending_position_.reset();
+  // "Restore to default" and "Cancel" functions are removed for Beta version,
+  // so the change is applied immediately after change.
+  if (beta_) {
+    BindPending();
   }
-  // Now it only supports changing the first touch position.
-  pending_position_ = std::move(position);
 }
 
 void Action::RestoreToDefault() {
@@ -371,10 +366,6 @@ void Action::RestoreToDefault() {
   if (GetCurrentDisplayedPosition() != original_positions_[0]) {
     pending_position_.reset();
     pending_position_ = std::make_unique<Position>(original_positions_[0]);
-    restored = true;
-  }
-  if (beta_ && deleted_) {
-    deleted_ = false;
     restored = true;
   }
 
@@ -517,7 +508,7 @@ bool Action::VerifyOnKeyRelease(ui::DomCode code) {
 }
 
 void Action::PostUnbindInputProcess() {
-  if (!action_view_) {
+  if (beta_ || !action_view_) {
     return;
   }
   action_view_->SetViewContent(BindingOption::kPending);
@@ -547,11 +538,6 @@ std::unique_ptr<ActionProto> Action::ConvertToProtoIfCustomized() const {
       auto pos_proto = current_positions_[0].ConvertToProto();
       *proto->add_positions() = *pos_proto;
       pos_proto.reset();
-      customized = true;
-    }
-
-    if (beta_ && deleted_) {
-      proto->set_deleted(true);
       customized = true;
     }
 
@@ -587,17 +573,21 @@ void Action::UpdateTouchDownPositions() {
     const auto root_point = point.ToString();
     float scale = touch_injector_->window()->GetHost()->device_scale_factor();
     point.Scale(scale);
-    const auto root_point_pixel = point.ToString();
-    if (touch_injector_->rotation_transform()) {
-      point = touch_injector_->rotation_transform()->MapPoint(point);
-    }
-    touch_down_positions_.emplace_back(point);
 
     VLOG(1) << "Calculate touch position for location at index " << i
             << ": local position {" << calculated_point << "}, root location {"
-            << root_point << "}, root location in pixels {" << root_point_pixel
+            << root_point << "}, root location in pixels {" << point.ToString()
             << "}";
+
+    if (touch_injector_->rotation_transform()) {
+      point = touch_injector_->rotation_transform()->MapPoint(point);
+    }
+    touch_down_positions_.emplace_back(std::move(point));
   }
+
+  on_left_or_middle_side_ =
+      touch_down_positions_[0].x() <= content_bounds.width() / 2 ? true : false;
+
   DCHECK_EQ(touch_down_positions_.size(), original_positions_.size());
 }
 
@@ -629,6 +619,15 @@ void Action::CreateTouchEvent(ui::EventType type,
       ui::PointerDetails(ui::EventPointerType::kTouch, *touch_id_));
   ui::Event::DispatcherApi(&(touch_events.back()))
       .set_target(touch_injector_->window());
+}
+
+void Action::PrepareToBindPositionForTesting(
+    std::unique_ptr<Position> position) {
+  if (pending_position_) {
+    pending_position_.reset();
+  }
+  // Now it only supports changing the first touch position.
+  pending_position_ = std::move(position);
 }
 
 }  // namespace arc::input_overlay

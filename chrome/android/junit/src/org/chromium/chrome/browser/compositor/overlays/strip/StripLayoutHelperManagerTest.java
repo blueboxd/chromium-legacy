@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 
 import android.content.Context;
 import android.view.ContextThemeWrapper;
+import android.view.View;
 
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.test.core.app.ApplicationProvider;
@@ -39,6 +40,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayerJni;
 import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementFieldTrial;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
@@ -67,6 +69,10 @@ public class StripLayoutHelperManagerTest {
     private Supplier<LayerTitleCache> mLayerTitleCacheSupplier;
     @Mock
     private ActivityLifecycleDispatcher mLifecycleDispatcher;
+    @Mock
+    private MultiInstanceManager mMultiInstanceManager;
+    @Mock
+    private View mToolbarContainerView;
 
     private StripLayoutHelperManager mStripLayoutHelperManager;
     private Context mContext;
@@ -75,8 +81,7 @@ public class StripLayoutHelperManagerTest {
     private static final float SCREEN_HEIGHT = 1600.f;
     private static final float VISIBLE_VIEWPORT_Y = 200.f;
     private static final int ORIENTATION = 2;
-    private static final float BUTTON_END_PADDING_FOLIO = 10.f;
-    private static final float BUTTON_END_PADDING_DETACHED = 9.f;
+    private static final float BUTTON_END_PADDING_TSR = 12.f;
 
     @Before
     public void beforeTest() {
@@ -98,7 +103,7 @@ public class StripLayoutHelperManagerTest {
         mTabModelStartupInfoSupplier = new ObservableSupplierImpl<>();
         mStripLayoutHelperManager = new StripLayoutHelperManager(mContext, mManagerHost,
                 mUpdateHost, mRenderHost, mLayerTitleCacheSupplier, mTabModelStartupInfoSupplier,
-                mLifecycleDispatcher);
+                mLifecycleDispatcher, mMultiInstanceManager, mToolbarContainerView);
     }
 
     private void initializeTestWithTsrArm(BooleanCachedFieldTrialParameter param) {
@@ -123,13 +128,39 @@ public class StripLayoutHelperManagerTest {
     public void testGetBackgroundColorFolio() {
         TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_FOLIO.setForTesting(true);
         mStripLayoutHelperManager.onContextChanged(mContext);
-        assertEquals(ChromeColors.getSurfaceColor(mContext, R.dimen.default_elevation_2),
+        assertEquals(ChromeColors.getSurfaceColor(mContext, R.dimen.default_elevation_3),
                 mStripLayoutHelperManager.getBackgroundColor());
     }
 
     @Test
     @Feature("Tab Strip Redesign")
-    public void testModelSelectorButtonPosition_Folio() {
+    public void testModelSelectorButtonXPosition_TSR() {
+        // Set model selector button position.
+        mStripLayoutHelperManager.onSizeChanged(
+                SCREEN_WIDTH, SCREEN_HEIGHT, VISIBLE_VIEWPORT_Y, ORIENTATION);
+
+        // Verify model selector button x-position.
+        // stripWidth(800) - buttonEndPadding(12) - MsbWidth(32) = 756
+        assertEquals("Model selector button x-position is not as expected", 756.f,
+                mStripLayoutHelperManager.getModelSelectorButton().getX(), 0.0);
+    }
+
+    @Test
+    @Feature("Tab Strip Redesign")
+    public void testModelSelectorButtonXPosition_RTL_TSR() {
+        // Set model selector button position.
+        LocalizationUtils.setRtlForTesting(true);
+        mStripLayoutHelperManager.onSizeChanged(
+                SCREEN_WIDTH, SCREEN_HEIGHT, VISIBLE_VIEWPORT_Y, ORIENTATION);
+
+        // Verify model selector button position.
+        assertEquals("Model selector button x-position is not as expected", BUTTON_END_PADDING_TSR,
+                mStripLayoutHelperManager.getModelSelectorButton().getX(), 0.0);
+    }
+
+    @Test
+    @Feature("Tab Strip Redesign")
+    public void testModelSelectorButtonYPosition_Folio() {
         // setup
         initializeTestWithTsrArm(TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_FOLIO);
 
@@ -137,31 +168,14 @@ public class StripLayoutHelperManagerTest {
         mStripLayoutHelperManager.onSizeChanged(
                 SCREEN_WIDTH, SCREEN_HEIGHT, VISIBLE_VIEWPORT_Y, ORIENTATION);
 
-        // Verify model selector button position.
-        // stripWidth(800) - buttonEndPadding(10) - MsbWidth(36) = 754
-        assertEquals("Model selector button position is not as expected", 754.f,
-                mStripLayoutHelperManager.getModelSelectorButton().getX(), 0.0);
+        // Verify model selector button y-position.
+        assertEquals("Model selector button y-position is not as expected", 3.f,
+                mStripLayoutHelperManager.getModelSelectorButton().getY(), 0.0);
     }
 
     @Test
     @Feature("Tab Strip Redesign")
-    public void testModelSelectorButtonPosition_RTL_Folio() {
-        // setup
-        initializeTestWithTsrArm(TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_FOLIO);
-
-        // Set model selector button position.
-        LocalizationUtils.setRtlForTesting(true);
-        mStripLayoutHelperManager.onSizeChanged(
-                SCREEN_WIDTH, SCREEN_HEIGHT, VISIBLE_VIEWPORT_Y, ORIENTATION);
-
-        // Verify model selector button position.
-        assertEquals("Model selector button position is not as expected", BUTTON_END_PADDING_FOLIO,
-                mStripLayoutHelperManager.getModelSelectorButton().getX(), 0.0);
-    }
-
-    @Test
-    @Feature("Tab Strip Redesign")
-    public void testModelSelectorButtonPosition_Detached() {
+    public void testModelSelectorButtonYPosition_Detached() {
         // setup
         initializeTestWithTsrArm(TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_DETACHED);
 
@@ -169,27 +183,9 @@ public class StripLayoutHelperManagerTest {
         mStripLayoutHelperManager.onSizeChanged(
                 SCREEN_WIDTH, SCREEN_HEIGHT, VISIBLE_VIEWPORT_Y, ORIENTATION);
 
-        // Verify model selector button position.
-        // stripWidth(800) - buttonEndPadding(9) - MsbWidth(38) = 753
-        assertEquals("Model selector button position is not as expected", 753.f,
-                mStripLayoutHelperManager.getModelSelectorButton().getX(), 0.0);
-    }
-
-    @Test
-    @Feature("Tab Strip Redesign")
-    public void testModelSelectorButtonPosition_RTL_Detached() {
-        // setup
-        initializeTestWithTsrArm(TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_DETACHED);
-
-        // Set model selector button position.
-        LocalizationUtils.setRtlForTesting(true);
-        mStripLayoutHelperManager.onSizeChanged(
-                SCREEN_WIDTH, SCREEN_HEIGHT, VISIBLE_VIEWPORT_Y, ORIENTATION);
-
-        // Verify model selector button position.
-        assertEquals("Model selector button position is not as expected",
-                BUTTON_END_PADDING_DETACHED,
-                mStripLayoutHelperManager.getModelSelectorButton().getX(), 0.0);
+        // Verify model selector button y-position.
+        assertEquals("Model selector button y-position is not as expected", 5.f,
+                mStripLayoutHelperManager.getModelSelectorButton().getY(), 0.0);
     }
 
     @Test
@@ -316,6 +312,7 @@ public class StripLayoutHelperManagerTest {
 
     @Test
     @Feature("TabStripPerformance")
+    @Features.EnableFeatures(ChromeFeatureList.TAB_STRIP_STARTUP_REFACTORING)
     public void testSetTabModelStartupInfo() {
         // Setup
         int expectedStandardCount = 5;

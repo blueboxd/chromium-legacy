@@ -13,6 +13,7 @@
 #include "components/permissions/features.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permissions_client.h"
+#include "ui/base/ui_base_features.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "components/resources/android/theme_resources.h"
@@ -47,6 +48,8 @@ int GetIconIdAndroid(RequestType type) {
       return IDR_ANDROID_INFOBAR_IDLE_DETECTION;
     case RequestType::kMicStream:
       return IDR_ANDROID_INFOBAR_MEDIA_STREAM_MIC;
+    case RequestType::kMidi:
+      // kMidi and kMidiSysex share the same Android icon ID.
     case RequestType::kMidiSysex:
       return IDR_ANDROID_INFOBAR_MIDI;
     case RequestType::kMultipleDownloads:
@@ -68,33 +71,47 @@ int GetIconIdAndroid(RequestType type) {
 
 #if !BUILDFLAG(IS_ANDROID)
 const gfx::VectorIcon& GetIconIdDesktop(RequestType type) {
+  const bool cr23 = ::features::IsChromeRefresh2023();
   switch (type) {
     case RequestType::kAccessibilityEvents:
       return kAccessibilityIcon;
     case RequestType::kArSession:
     case RequestType::kVrSession:
-      return vector_icons::kVrHeadsetIcon;
+      return cr23 ? vector_icons::kVrHeadsetChromeRefreshIcon
+                  : vector_icons::kVrHeadsetIcon;
     case RequestType::kCameraPanTiltZoom:
     case RequestType::kCameraStream:
-      return vector_icons::kVideocamIcon;
+      return cr23 ? vector_icons::kVideocamChromeRefreshIcon
+                  : vector_icons::kVideocamIcon;
     case RequestType::kClipboard:
-      return vector_icons::kContentPasteIcon;
+      return cr23 ? vector_icons::kContentPasteChromeRefreshIcon
+                  : vector_icons::kContentPasteIcon;
     case RequestType::kDiskQuota:
-      return vector_icons::kFolderIcon;
+      return cr23 ? vector_icons::kFolderChromeRefreshIcon
+                  : vector_icons::kFolderIcon;
     case RequestType::kGeolocation:
-      return vector_icons::kLocationOnIcon;
+      return cr23 ? vector_icons::kLocationOnChromeRefreshIcon
+                  : vector_icons::kLocationOnIcon;
     case RequestType::kIdleDetection:
-      return vector_icons::kDevicesIcon;
+      return cr23 ? vector_icons::kDevicesChromeRefreshIcon
+                  : vector_icons::kDevicesIcon;
     case RequestType::kLocalFonts:
-      return vector_icons::kFontDownloadIcon;
+      return cr23 ? vector_icons::kFontDownloadChromeRefreshIcon
+                  : vector_icons::kFontDownloadIcon;
     case RequestType::kMicStream:
-      return vector_icons::kMicIcon;
+      return cr23 ? vector_icons::kMicChromeRefreshIcon
+                  : vector_icons::kMicIcon;
+    case RequestType::kMidi:
+      // kMidi and kMidiSysex share the same desktop icon ID.
     case RequestType::kMidiSysex:
-      return vector_icons::kMidiIcon;
+      return cr23 ? vector_icons::kMidiChromeRefreshIcon
+                  : vector_icons::kMidiIcon;
     case RequestType::kMultipleDownloads:
-      return vector_icons::kFileDownloadIcon;
+      return cr23 ? vector_icons::kFileDownloadChromeRefreshIcon
+                  : vector_icons::kFileDownloadIcon;
     case RequestType::kNotifications:
-      return vector_icons::kNotificationsIcon;
+      return cr23 ? vector_icons::kNotificationsChromeRefreshIcon
+                  : vector_icons::kNotificationsIcon;
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
     case RequestType::kProtectedMediaIdentifier:
       // This icon is provided by ChromePermissionsClient::GetOverrideIconId.
@@ -109,33 +126,46 @@ const gfx::VectorIcon& GetIconIdDesktop(RequestType type) {
       return kUsbSecurityKeyIcon;
     case RequestType::kStorageAccess:
     case RequestType::kTopLevelStorageAccess:
-      return vector_icons::kCookieIcon;
+      return cr23 ? vector_icons::kCookieChromeRefreshIcon
+                  : vector_icons::kCookieIcon;
     case RequestType::kWindowManagement:
-      return vector_icons::kSelectWindowIcon;
+      return cr23 ? vector_icons::kSelectWindowChromeRefreshIcon
+                  : vector_icons::kSelectWindowIcon;
   }
   NOTREACHED();
   return gfx::kNoneIcon;
 }
 
 const gfx::VectorIcon& GetBlockedIconIdDesktop(RequestType type) {
+  const bool cr23 = ::features::IsChromeRefresh2023();
   switch (type) {
     case RequestType::kGeolocation:
-      return vector_icons::kLocationOffIcon;
+      return cr23 ? vector_icons::kLocationOffChromeRefreshIcon
+                  : vector_icons::kLocationOffIcon;
     case RequestType::kNotifications:
-      return vector_icons::kNotificationsOffIcon;
+      return cr23 ? vector_icons::kNotificationsOffChromeRefreshIcon
+                  : vector_icons::kNotificationsOffIcon;
     case RequestType::kArSession:
     case RequestType::kVrSession:
-      return vector_icons::kVrHeadsetOffIcon;
+      return cr23 ? vector_icons::kVrHeadsetOffChromeRefreshIcon
+                  : vector_icons::kVrHeadsetOffIcon;
     case RequestType::kCameraStream:
-      return vector_icons::kVideocamOffIcon;
+      return cr23 ? vector_icons::kVideocamOffChromeRefreshIcon
+                  : vector_icons::kVideocamOffIcon;
     case RequestType::kClipboard:
-      return vector_icons::kContentPasteOffIcon;
+      return cr23 ? vector_icons::kContentPasteOffChromeRefreshIcon
+                  : vector_icons::kContentPasteOffIcon;
     case RequestType::kIdleDetection:
-      return vector_icons::kDevicesOffIcon;
+      return cr23 ? vector_icons::kDevicesOffChromeRefreshIcon
+                  : vector_icons::kDevicesOffIcon;
     case RequestType::kMicStream:
-      return vector_icons::kMicOffIcon;
+      return cr23 ? vector_icons::kMicOffChromeRefreshIcon
+                  : vector_icons::kMicOffIcon;
+    case RequestType::kMidi:
+      // kMidi and kMidiSysex share the same desktop block icon ID.
     case RequestType::kMidiSysex:
-      return vector_icons::kMidiOffIcon;
+      return cr23 ? vector_icons::kMidiOffChromeRefreshIcon
+                  : vector_icons::kMidiOffIcon;
     case RequestType::kStorageAccess:
       return vector_icons::kCookieOffChromeRefreshIcon;
     default:
@@ -171,6 +201,12 @@ absl::optional<RequestType> ContentSettingsTypeToRequestTypeIfExists(
       return RequestType::kIdleDetection;
     case ContentSettingsType::MEDIASTREAM_MIC:
       return RequestType::kMicStream;
+    case ContentSettingsType::MIDI:
+      if (base::FeatureList::IsEnabled(features::kBlockMidiByDefault)) {
+        return RequestType::kMidi;
+      } else {
+        return absl::nullopt;
+      }
     case ContentSettingsType::MIDI_SYSEX:
       return RequestType::kMidiSysex;
     case ContentSettingsType::NOTIFICATIONS:
@@ -237,6 +273,12 @@ absl::optional<ContentSettingsType> RequestTypeToContentSettingsType(
       return ContentSettingsType::IDLE_DETECTION;
     case RequestType::kMicStream:
       return ContentSettingsType::MEDIASTREAM_MIC;
+    case RequestType::kMidi:
+      if (base::FeatureList::IsEnabled(features::kBlockMidiByDefault)) {
+        return ContentSettingsType::MIDI;
+      } else {
+        return absl::nullopt;
+      }
     case RequestType::kMidiSysex:
       return ContentSettingsType::MIDI_SYSEX;
 #if BUILDFLAG(IS_ANDROID)
@@ -321,6 +363,12 @@ const char* PermissionKeyForRequestType(permissions::RequestType request_type) {
       return "idle_detection";
     case permissions::RequestType::kMicStream:
       return "mic_stream";
+    case permissions::RequestType::kMidi:
+      if (base::FeatureList::IsEnabled(features::kBlockMidiByDefault)) {
+        return "midi";
+      } else {
+        return nullptr;
+      }
     case permissions::RequestType::kMidiSysex:
       return "midi_sysex";
     case permissions::RequestType::kMultipleDownloads:

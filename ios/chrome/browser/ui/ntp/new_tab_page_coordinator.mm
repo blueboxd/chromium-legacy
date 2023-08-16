@@ -701,7 +701,6 @@
 - (void)configureNTPMediator {
   NewTabPageMediator* NTPMediator = self.NTPMediator;
   DCHECK(NTPMediator);
-  NTPMediator.browser = self.browser;
   NTPMediator.feedControlDelegate = self;
   NTPMediator.headerConsumer = self.headerViewController;
   NTPMediator.consumer = self.NTPViewController;
@@ -795,7 +794,7 @@
 #pragma mark - NewTabPageHeaderCommands
 
 - (void)updateForHeaderSizeChange {
-  [self.NTPViewController updateHeightAboveFeedAndScrollToTopIfNeeded];
+  [self.NTPViewController updateHeightAboveFeed];
 }
 
 - (void)fakeboxTapped {
@@ -1016,7 +1015,7 @@
 #pragma mark - FeedDelegate
 
 - (void)contentSuggestionsWasUpdated {
-  [self.NTPViewController updateHeightAboveFeedAndScrollToTopIfNeeded];
+  [self.NTPViewController updateHeightAboveFeed];
 }
 
 #pragma mark - FeedManagementNavigationDelegate

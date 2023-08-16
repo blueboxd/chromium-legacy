@@ -25,6 +25,7 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
@@ -64,7 +65,6 @@ public abstract class AsyncInitializationActivity
         extends ChromeBaseAppCompatActivity implements ChromeActivityNativeDelegate, BrowserParts {
     @VisibleForTesting
     public static final String FIRST_DRAW_COMPLETED_TIME_MS_UMA = "FirstDrawCompletedTime";
-    private static final String TAG = "AsyncInitActivity";
     static Boolean sOverrideNativeLibraryCannotBeLoadedForTesting;
     protected final Handler mHandler;
 
@@ -657,16 +657,14 @@ public abstract class AsyncInitializationActivity
     /**
      * Creates an {@link ActivityWindowAndroid} to delegate calls to, if the Activity requires it.
      */
-    @Nullable
-    protected ActivityWindowAndroid createWindowAndroid() {
+    protected @Nullable ActivityWindowAndroid createWindowAndroid() {
         return null;
     }
 
     /**
      * @return A {@link ActivityWindowAndroid} instance.  May be null if one was not created.
      */
-    @Nullable
-    public ActivityWindowAndroid getWindowAndroid() {
+    public @Nullable ActivityWindowAndroid getWindowAndroid() {
         return mWindowAndroid;
     }
 
@@ -764,8 +762,14 @@ public abstract class AsyncInitializationActivity
                     (WindowManager) windowManagerContext.getSystemService(Context.WINDOW_SERVICE);
             assert manager != null;
             Rect bounds = ApiHelperForR.getMaximumWindowMetricsBounds(manager);
-            return DisplayUtil.pxToDp(
+            int smallestScreenWidth = DisplayUtil.pxToDp(
                     display, Math.min(bounds.right - bounds.left, bounds.bottom - bounds.top));
+
+            if (BuildInfo.getInstance().isAutomotive) {
+                smallestScreenWidth =
+                        (int) (smallestScreenWidth / DisplayUtil.UI_SCALING_FACTOR_FOR_AUTO);
+            }
+            return smallestScreenWidth;
         }
         return DisplayUtil.pxToDp(display, DisplayUtil.getSmallestWidth(display));
     }

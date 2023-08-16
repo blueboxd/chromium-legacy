@@ -373,7 +373,6 @@ external/wpt/html/canvas/element/drawing-text-to-the-canvas/direction-rtl.html
 external/wpt/html/canvas/element/fill-and-stroke-styles/2d.gradient.interpolate.zerosize.fillText.html
 external/wpt/html/canvas/element/manual/drawing-images-to-the-canvas/image-orientation/drawImage-from-blob.tentative.html
 external/wpt/html/canvas/element/manual/shadows/canvas_shadows_001.htm
-external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.commit.html
 external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.resize.html
 external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.NaN.html
 external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.NaN.worker.html
@@ -927,7 +926,6 @@ http/tests/devtools/indexeddb/live-update-indexeddb-list.js
 http/tests/devtools/service-workers/sw-navigate-useragent.js
 http/tests/devtools/tracing/frame-model-instrumentation.js
 http/tests/devtools/tracing/timeline-js/timeline-gc-event.js
-http/tests/devtools/tracing/timeline-js/timeline-microtasks.js
 http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js
 http/tests/devtools/tracing/timeline-paint/paint-profiler-update.js
 http/tests/devtools/tracing/timeline-paint/timeline-paint.js
@@ -960,7 +958,6 @@ http/tests/misc/insert-iframe-into-xml-document-before-xsl-transform.html
 http/tests/navigation/location-change-repeated-from-blank.html
 http/tests/permissions/chromium/test-request-worker.html
 http/tests/preload/meta-viewport-link-headers-imagesrcset.html
-http/tests/preload/without_doc_write_evaluator.html
 http/tests/security/cross-origin-shared-worker-allowed.html
 http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html
 http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html
@@ -1513,7 +1510,6 @@ virtual/oopr-canvas2d/fast/canvas/canvas-imageSmoothingEnabled-patterns.html
 virtual/oopr-canvas2d/fast/canvas/canvas-largedraws.html
 virtual/oopr-canvas2d/fast/canvas/canvas-pattern-no-repeat-with-transformations.html
 virtual/oopr-canvas2d/fast/canvas/canvas-text-baseline.html
-virtual/oopr-canvas2d/fast/canvas/canvas-zero-length-lineCap.html
 virtual/oopr-canvas2d/fast/canvas/image-object-in-canvas.html
 virtual/oopr-canvas2d/fast/canvas/quadraticCurveTo.xml
 virtual/overlay-scrollbar/plugin-overlay-scrollbar-mouse-capture.html

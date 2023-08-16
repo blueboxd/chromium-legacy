@@ -93,12 +93,14 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
         url::Origin origin = url::Origin::Create(GURL(usernameAndRealm.realm));
         realm = SysUTF8ToNSString(password_manager::GetShownOrigin(origin));
       }
-      [results addObject:[FormSuggestion suggestionWithValue:username
-                                          displayDescription:realm
-                                                        icon:nil
-                                                  identifier:0
-                                           backendIdentifier:nil
-                                              requiresReauth:YES]];
+      [results
+          addObject:[FormSuggestion suggestionWithValue:username
+                                     displayDescription:realm
+                                                   icon:nil
+                                            popupItemId:autofill::PopupItemId::
+                                                            kAutocompleteEntry
+                                      backendIdentifier:nil
+                                         requiresReauth:YES]];
     }
   }
 
@@ -212,7 +214,7 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
         std::make_pair(frame, std::make_unique<AccountSelectFillData>()));
     fillData = it.first->second.get();
   }
-  fillData->ResetCache();
+  fillData->Reset();
 
   if (_suggestionsAvailableCompletion) {
     _suggestionsAvailableCompletion(nullptr);

@@ -260,9 +260,7 @@ std::vector<uint8_t> BuildGetInfoResponse() {
 
   cbor::Value::ArrayValue extensions;
   extensions.emplace_back("devicePubKey");
-  if (base::FeatureList::IsEnabled(kWebAuthnPRFAsAuthenticator)) {
-    extensions.emplace_back("prf");
-  }
+  extensions.emplace_back("prf");
 
   cbor::Value::MapValue response_map;
   response_map.emplace(1, std::move(versions));
@@ -409,7 +407,8 @@ class TunnelTransport : public Transport {
   void OnTunnelReady(
       WebSocketAdapter::Result result,
       absl::optional<std::array<uint8_t, device::cablev2::kRoutingIdSize>>
-          routing_id) {
+          routing_id,
+      WebSocketAdapter::ConnectSignalSupport) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(state_ == State::kConnecting || state_ == State::kConnectingPaired);
     bool ok = (result == WebSocketAdapter::Result::OK);
@@ -618,7 +617,7 @@ class TunnelTransport : public Transport {
     }
   }
 
-  const raw_ptr<Platform> platform_;
+  const raw_ptr<Platform, DanglingUntriaged> platform_;
   State state_ = State::kNone;
   const std::array<uint8_t, kTunnelIdSize> tunnel_id_;
   const std::array<uint8_t, kEIDKeySize> eid_key_;

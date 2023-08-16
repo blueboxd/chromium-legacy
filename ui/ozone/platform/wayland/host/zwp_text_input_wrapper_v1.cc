@@ -4,11 +4,15 @@
 
 #include "ui/ozone/platform/wayland/host/zwp_text_input_wrapper_v1.h"
 
+#include <sys/mman.h>
+
 #include <string>
 #include <utility>
 
 #include "base/check.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
@@ -129,6 +133,7 @@ ZWPTextInputWrapperV1::ZWPTextInputWrapperV1(
           &OnAddGrammarFragment,   // extended_text_input_add_grammar_fragment,
           &OnSetAutocorrectRange,  // extended_text_input_set_autocorrect_range,
           &OnSetVirtualKeyboardOccludedBounds,  // extended_text_input_set_virtual_keyboard_occluded_bounds,
+          &OnConfirmPreedit,  // extended_text_input_confirm_preedit,
       };
 
   obj_ = wl::Object<zwp_text_input_v1>(
@@ -215,19 +220,38 @@ void ZWPTextInputWrapperV1::SetCursorRect(const gfx::Rect& rect) {
 void ZWPTextInputWrapperV1::SetSurroundingText(
     const std::string& text,
     const gfx::Range& selection_range) {
-  zwp_text_input_v1_set_surrounding_text(
-      obj_.get(), text.c_str(), selection_range.start(), selection_range.end());
+  // Wayland packet has a limit of size due to its serialization format,
+  // so if it exceeds 16 bits, it may be broken.
+  static constexpr size_t kSizeLimit = 60000;
+  if (HasAdvancedSurroundingTextSupport() && text.length() > kSizeLimit) {
+    base::ScopedFD memfd(memfd_create("surrounding_text", MFD_CLOEXEC));
+    if (!memfd.get()) {
+      PLOG(ERROR) << "Failed to create memfd";
+      return;
+    }
+    if (!base::WriteFileDescriptor(memfd.get(), text)) {
+      LOG(ERROR) << "Failed to write into memfd";
+      return;
+    }
+    zcr_extended_text_input_v1_set_large_surrounding_text(
+        extended_obj_.get(), memfd.get(), text.length(),
+        selection_range.start(), selection_range.end());
+  } else {
+    zwp_text_input_v1_set_surrounding_text(obj_.get(), text.c_str(),
+                                           selection_range.start(),
+                                           selection_range.end());
+  }
 }
 
-bool ZWPTextInputWrapperV1::HasOffsetSupport() const {
+bool ZWPTextInputWrapperV1::HasAdvancedSurroundingTextSupport() const {
   return extended_obj_.get() &&
          wl::get_version_of_object(extended_obj_.get()) >=
-             ZCR_EXTENDED_TEXT_INPUT_V1_SET_SURROUNDING_TEXT_OFFSET_UTF16_SINCE_VERSION;
+             ZCR_EXTENDED_TEXT_INPUT_V1_SET_LARGE_SURROUNDING_TEXT_SINCE_VERSION;
 }
 
 void ZWPTextInputWrapperV1::SetSurroundingTextOffsetUtf16(
     uint32_t offset_utf16) {
-  if (HasOffsetSupport()) {
+  if (HasAdvancedSurroundingTextSupport()) {
     zcr_extended_text_input_v1_set_surrounding_text_offset_utf16(
         extended_obj_.get(), offset_utf16);
   }
@@ -511,6 +535,25 @@ void ZWPTextInputWrapperV1::OnSetVirtualKeyboardOccludedBounds(
   auto* self = static_cast<ZWPTextInputWrapperV1*>(data);
   gfx::Rect screen_bounds(x, y, width, height);
   self->client_->OnSetVirtualKeyboardOccludedBounds(screen_bounds);
+}
+
+// static
+void ZWPTextInputWrapperV1::OnConfirmPreedit(
+    void* data,
+    struct zcr_extended_text_input_v1* extended_text_input,
+    uint32_t selection_behavior) {
+  auto* self = static_cast<ZWPTextInputWrapperV1*>(data);
+  switch (selection_behavior) {
+    case ZCR_EXTENDED_TEXT_INPUT_V1_CONFIRM_PREEDIT_SELECTION_BEHAVIOR_AFTER_PREEDIT:
+      self->client_->OnConfirmPreedit(/*keep_selection=*/false);
+      break;
+    case ZCR_EXTENDED_TEXT_INPUT_V1_CONFIRM_PREEDIT_SELECTION_BEHAVIOR_UNCHANGED:
+      self->client_->OnConfirmPreedit(/*keep_selection=*/true);
+      break;
+    default:
+      self->client_->OnConfirmPreedit(/*keep_selection=*/false);
+      break;
+  }
 }
 
 }  // namespace ui

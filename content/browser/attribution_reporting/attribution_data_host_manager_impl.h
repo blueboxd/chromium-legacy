@@ -80,17 +80,15 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
   void NotifyNavigationRegistrationStarted(
       const blink::AttributionSrcToken& attribution_src_token,
       const attribution_reporting::SuitableOrigin& source_origin,
-      blink::mojom::AttributionNavigationType nav_type,
       bool is_within_fenced_frame,
       GlobalRenderFrameHostId render_frame_id,
       int64_t navigation_id) override;
-  void NotifyNavigationRegistrationData(
+  bool NotifyNavigationRegistrationData(
       const blink::AttributionSrcToken& attribution_src_token,
       const net::HttpResponseHeaders* headers,
       attribution_reporting::SuitableOrigin reporting_origin,
       const attribution_reporting::SuitableOrigin& source_origin,
       AttributionInputEvent input_event,
-      blink::mojom::AttributionNavigationType nav_type,
       bool is_within_fenced_frame,
       GlobalRenderFrameHostId render_frame_id,
       int64_t navigation_id,
@@ -112,7 +110,7 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
       bool is_final_response) override;
 
  private:
-  class ReceiverContext;
+  class RegistrationContext;
 
   struct DeferredReceiverTimeout;
   struct DeferredReceiver;
@@ -132,12 +130,12 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
   void TriggerDataAvailable(
       attribution_reporting::SuitableOrigin reporting_origin,
       attribution_reporting::TriggerRegistration,
-      absl::optional<network::TriggerVerification> verification) override;
+      std::vector<network::TriggerVerification>) override;
   void OsSourceDataAvailable(std::vector<GURL> registration_urls) override;
   void OsTriggerDataAvailable(std::vector<GURL> registration_urls) override;
 
-  const ReceiverContext* GetReceiverContextForSource();
-  const ReceiverContext* GetReceiverContextForTrigger();
+  const RegistrationContext* GetReceiverRegistrationContextForSource();
+  const RegistrationContext* GetReceiverRegistrationContextForTrigger();
 
   void OnReceiverDisconnected();
 
@@ -167,7 +165,7 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
   // Owns `this`.
   raw_ptr<AttributionManager> attribution_manager_;
 
-  mojo::ReceiverSet<blink::mojom::AttributionDataHost, ReceiverContext>
+  mojo::ReceiverSet<blink::mojom::AttributionDataHost, RegistrationContext>
       receivers_;
 
   // Map which stores pending receivers for data hosts which are going to

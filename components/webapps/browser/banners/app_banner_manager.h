@@ -15,7 +15,6 @@
 #include "components/site_engagement/content/site_engagement_observer.h"
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_params.h"
-#include "components/webapps/browser/installable/ml_installability_promoter.h"
 #include "components/webapps/browser/pwa_install_path_tracker.h"
 #include "content/public/browser/media_player_id.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -90,9 +89,6 @@ class AppBannerManager : public content::WebContentsObserver,
     // The pipeline has finished running, but is waiting for sufficient
     // engagement to trigger the banner.
     PENDING_ENGAGEMENT,
-
-    // The pipeline is waiting for service worker install to trigger the banner.
-    PENDING_WORKER,
 
     // The beforeinstallprompt event has been sent and the pipeline is waiting
     // for the response.
@@ -225,6 +221,26 @@ class AppBannerManager : public content::WebContentsObserver,
   // Tracks that the IPH has been shown. Only used on Android.
   void TrackIphWasShown();
 
+  // Tracks whether the current site URL obtained from the web_contents is fully
+  // installed. The only difference from IsWebAppConsideredInstalled() is that
+  // the former considers the scope obtained from a manifest as check for if an
+  // app is already installed.
+  virtual bool IsAppFullyInstalledForSiteUrl(const GURL& site_url) const = 0;
+
+  // Tracks whether the current site URL obtained from the web_contents is not
+  // locally installed.
+  virtual bool IsAppPartiallyInstalledForSiteUrl(
+      const GURL& site_url) const = 0;
+
+  // The user has ignored the installation dialog and it went away due to
+  // another interaction (e.g. the tab was changed, page navigated, etc).
+  virtual void SaveInstallationIgnoredForMl(const GURL& manifest_id) = 0;
+  // The user has taken active action on the dialog to make it go away.
+  virtual void SaveInstallationDismissedForMl(const GURL& manifest_id) = 0;
+  virtual void SaveInstallationAcceptedForMl(const GURL& manifest_id) = 0;
+  virtual bool IsMlPromotionBlockedByHistoryGuardrail(
+      const GURL& manifest_id) = 0;
+
  protected:
   explicit AppBannerManager(content::WebContents* web_contents);
   ~AppBannerManager() override;
@@ -291,11 +307,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // overwritten with a new app install for the current page.
   virtual bool ShouldAllowWebAppReplacementInstall();
 
-  // Possibly retries the installable manager request given the current state
-  // and the result. Returns |true| if the request was restarted.
-  // Currently only called during requests to InstallationManager
-  bool DidRetryInstallableManagerRequest(const InstallableData& result);
-
   // Callback invoked by the InstallableManager once it has fetched the page's
   // manifest.
   virtual void OnDidGetManifest(const InstallableData& data);
@@ -303,10 +314,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns an InstallableParams object that requests all checks
   // necessary for a web app banner.
   virtual InstallableParams ParamsToPerformInstallableWebAppCheck();
-
-  // Returns an InstallableParams object that requests service worker check
-  // only.
-  virtual InstallableParams ParamsToPerformWorkerCheck();
 
   // Run at the conclusion of OnDidGetManifest. For web app banners, this calls
   // back to the InstallableManager to continue checking criteria. For native
@@ -321,15 +328,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // all other installable properties.
   virtual void OnDidPerformInstallableWebAppCheck(const InstallableData& data);
 
-  // Run at the conclusion of OnDidPerformInstallableWebAppCheck. This calls
-  // back to the InstallableManager to continue checking service worker criteria
-  // for web app banners.
-  virtual void PerformServiceWorkerCheck();
-
-  // Callback invoked by the InstallableManager once it has finished checking
-  // service worker.
-  virtual void OnDidPerformWorkerCheck(const InstallableData& data);
-
   // Records that a banner was shown.
   void RecordDidShowBanner();
 
@@ -339,7 +337,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // Voids all outstanding service pointers.
   void ResetBindings();
 
-  // Resets all fetched data for the current page.
+  // Resets all fetched data for the current page. Should only be called once
+  // per navigation, at the beginning of the navigation.
   virtual void ResetCurrentPageData();
 
   // Stops the banner pipeline early.
@@ -392,7 +391,9 @@ class AppBannerManager : public content::WebContentsObserver,
   bool IsRunning() const;
 
   void SetInstallableWebAppCheckResult(InstallableWebAppCheckResult result);
-  void RecheckInstallabilityForLoadedPage(const GURL& url, bool uninstalled);
+  // Virtual so the TestAppBannerManagerDesktop can reset its installability
+  // state when called.
+  virtual void RecheckInstallabilityForLoadedPage();
 
   // The URL for which the banner check is being conducted.
   GURL validated_url_;
@@ -417,9 +418,6 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // The screenshots to show in the install UI.
   std::vector<Screenshot> screenshots_;
-
-  // True if the service worker check has passed or no required.
-  bool passed_worker_check_ = false;
 
  private:
   friend class AppBannerManagerTest;
@@ -451,18 +449,11 @@ class AppBannerManager : public content::WebContentsObserver,
   // requesting that it be shown later.
   void DisplayAppBanner() override;
 
-  // Returns a status code indicating whether a banner should be shown.
-  InstallableStatusCode ShouldShowBannerCode();
-
   // Returns a status code based on the current state, to log when terminating.
   InstallableStatusCode TerminationCode() const;
 
   // Fetches the data required to display a banner for the current page.
   raw_ptr<InstallableManager, DanglingUntriaged> manager_;
-
-  // Measures site UKMs once the AppBannerManager triggers a pipeline and
-  // triggers a ML model to promote installability of an app.
-  raw_ptr<MLInstallabilityPromoter, DanglingUntriaged> ml_promoter_;
 
   // The manifest object. This is never null, it will instead be an empty
   // manifest so callers don't have to worry about null checks.

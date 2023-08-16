@@ -11,6 +11,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_client_hints_controller_delegate.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
@@ -23,7 +24,6 @@
 #include "android_webview/browser/aw_settings.h"
 #include "android_webview/browser/aw_speech_recognition_manager_delegate.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
-#include "android_webview/browser/content_relationship_verification/aw_origin_verification_scheduler_bridge.h"
 #include "android_webview/browser/cookie_manager.h"
 #include "android_webview/browser/network_service/aw_proxy_config_monitor.h"
 #include "android_webview/browser/network_service/aw_proxying_restricted_cookie_manager.h"
@@ -49,12 +49,13 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
-#include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "components/embedder_support/origin_trials/origin_trials_settings_storage.h"
 #include "components/embedder_support/switches.h"
@@ -67,6 +68,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/content/browser/mojo_safe_browsing_impl.h"
+#include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/url_matcher/url_matcher.h"
 #include "components/url_matcher/url_util.h"
@@ -298,8 +300,6 @@ void AwContentBrowserClient::RenderProcessWillLaunch(
       host->GetID(), url::kContentScheme);
 
   host->AddFilter(new AwContentsMessageFilter(host->GetID()));
-  // WebView always allows persisting data.
-  host->AddFilter(new cdm::CdmMessageFilterAndroid(true, false));
 }
 
 bool AwContentBrowserClient::IsExplicitNavigation(
@@ -595,19 +595,6 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
-
-  content::WebContents* web_contents = wc_getter.Run();
-  AwSettings* aw_settings = AwSettings::FromWebContents(web_contents);
-  if (request.is_outermost_main_frame &&
-      ((aw_settings && aw_settings->GetRestrictSensitiveWebContentEnabled()) ||
-       base::FeatureList::IsEnabled(
-           features::kWebViewRestrictSensitiveContent))) {
-    auto* origin_verification_bridge =
-        AwOriginVerificationSchedulerBridge::GetInstance();
-    result.push_back(
-        BrowserURLLoaderThrottle::Create(origin_verification_bridge));
-  }
-
   result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
       base::BindOnce(
           [](AwContentBrowserClient* client) {
@@ -620,7 +607,9 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
       // Since AW currently doesn't support UKM, this feature is not enabled.
       /* rt_lookup_service */ nullptr,
       /* hash_realtime_service */ nullptr,
-      /* ping_manager */ nullptr));
+      /* ping_manager */ nullptr,
+      /* hash_realtime_selection */
+      safe_browsing::hash_realtime_utils::HashRealTimeSelection::kNone));
 
   if (request.destination == network::mojom::RequestDestination::kDocument) {
     const bool is_load_url =
@@ -636,6 +625,35 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
               browser_context)));
     }
   }
+
+  return result;
+}
+
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+AwContentBrowserClient::CreateURLLoaderThrottlesForKeepAlive(
+    const network::ResourceRequest& request,
+    content::BrowserContext* browser_context,
+    const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+    int frame_tree_node_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
+
+  result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
+      base::BindOnce(
+          [](AwContentBrowserClient* client) {
+            return client->GetSafeBrowsingUrlCheckerDelegate();
+          },
+          base::Unretained(this)),
+      wc_getter, frame_tree_node_id,
+      // TODO(crbug.com/1033760): rt_lookup_service is
+      // used to perform real time URL check, which is gated by UKM opted-in.
+      // Since AW currently doesn't support UKM, this feature is not enabled.
+      /* rt_lookup_service */ nullptr,
+      /* hash_realtime_service */ nullptr,
+      /* ping_manager */ nullptr,
+      /* hash_realtime_selection */
+      safe_browsing::hash_realtime_utils::HashRealTimeSelection::kNone));
 
   return result;
 }
@@ -686,17 +704,12 @@ bool AwContentBrowserClient::ShouldOverrideUrlLoading(
   // WebView Classic lets app override only top level about:blank navigations.
   // So we filter out non-top about:blank navigations here.
   //
-  // The uuid-in-package scheme is used for subframe navigation with WebBundles
-  // (https://github.com/WICG/webpackage/blob/main/explainers/subresource-loading-opaque-origin-iframes.md),
-  // so treat it in the same way as http(s).
-  //
   // Note: about:blank navigations are not received in this path at the moment,
   // they use the old SYNC IPC path as they are not handled by network stack.
   // However, the old path should be removed in future.
   if (!is_outermost_main_frame &&
       (gurl.SchemeIs(url::kHttpScheme) || gurl.SchemeIs(url::kHttpsScheme) ||
-       gurl.SchemeIs(url::kAboutScheme) ||
-       gurl.SchemeIs(url::kUuidInPackageScheme))) {
+       gurl.SchemeIs(url::kAboutScheme))) {
     return true;
   }
 
@@ -898,7 +911,8 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
         header_client,
     bool* bypass_redirect_checks,
     bool* disable_secure_dns,
-    network::mojom::URLLoaderFactoryOverridePtr* factory_override) {
+    network::mojom::URLLoaderFactoryOverridePtr* factory_override,
+    scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   mojo::PendingReceiver<network::mojom::URLLoaderFactory> proxied_receiver;
@@ -1028,8 +1042,7 @@ std::string AwContentBrowserClient::GetUserAgent() {
 }
 
 blink::UserAgentMetadata AwContentBrowserClient::GetUserAgentMetadata() {
-  return AwClientHintsControllerDelegate::GetUserAgentMetadataOverrideBrand(
-      browser_context_->GetPrefService());
+  return AwClientHintsControllerDelegate::GetUserAgentMetadataOverrideBrand();
 }
 
 content::ContentBrowserClient::WideColorGamutHeuristic

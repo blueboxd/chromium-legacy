@@ -20,6 +20,12 @@ FakeSyncService::FakeSyncService() = default;
 
 FakeSyncService::~FakeSyncService() = default;
 
+#if BUILDFLAG(IS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject> FakeSyncService::GetJavaObject() {
+  return base::android::ScopedJavaLocalRef<jobject>();
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
 void FakeSyncService::SetSyncFeatureRequested() {}
 
 syncer::SyncUserSettings* FakeSyncService::GetUserSettings() {
@@ -104,9 +110,11 @@ bool FakeSyncService::RequiresClientUpgrade() const {
   return false;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 bool FakeSyncService::IsSyncFeatureDisabledViaDashboard() const {
   return false;
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void FakeSyncService::DataTypePreconditionChanged(ModelType type) {}
 

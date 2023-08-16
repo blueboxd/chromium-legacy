@@ -7,10 +7,11 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_registrar_observer.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/permission.h"
@@ -32,7 +33,7 @@ class Profile;
 class AppManagementPageHandler : public app_management::mojom::PageHandler,
                                  public apps::AppRegistryCache::Observer,
                                  public apps::PreferredAppsListHandle::Observer,
-                                 public web_app::AppRegistrarObserver {
+                                 public web_app::WebAppRegistrarObserver {
  public:
   //  Handles platform specific tasks.
   class Delegate {
@@ -62,6 +63,7 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
   // app_management::mojom::PageHandler:
   void GetApps(GetAppsCallback callback) override;
   void GetApp(const std::string& app_id, GetAppCallback callback) override;
+  void GetSubAppToParentMap(GetSubAppToParentMapCallback callback) override;
   void GetExtensionAppPermissionMessages(
       const std::string& app_id,
       GetExtensionAppPermissionMessagesCallback callback) override;
@@ -86,7 +88,7 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
   void ShowDefaultAppAssociationsUi() override;
   void OpenStorePage(const std::string& app_id) override;
 
-  // web_app::AppRegistrarObserver:
+  // web_app::WebAppRegistrarObserver:
   void OnWebAppFileHandlerApprovalStateChanged(
       const web_app::AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
@@ -128,7 +130,7 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
       preferred_apps_list_handle_observer_{this};
 
   base::ScopedObservation<web_app::WebAppRegistrar,
-                          web_app::AppRegistrarObserver>
+                          web_app::WebAppRegistrarObserver>
       registrar_observation_{this};
 };
 

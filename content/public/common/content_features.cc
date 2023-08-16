@@ -203,12 +203,6 @@ BASE_FEATURE(kBlockInsecurePrivateNetworkRequestsForNavigations,
              "BlockInsecurePrivateNetworkRequestsForNavigations",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When kPrivateNetworkAccessPermissionPrompt is enabled, public secure websites
-// are allowed to access private insecure subresources with user's permission.
-BASE_FEATURE(kPrivateNetworkAccessPermissionPrompt,
-             "PrivateNetworkRequestPermissionPrompt",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Broker file operations on disk cache in the Network Service.
 // This is no-op if the network service is hosted in the browser process.
 BASE_FEATURE(kBrokerFileOperationsOnDiskCacheInNetworkService,
@@ -432,7 +426,7 @@ BASE_FEATURE(kFedCmMultipleIdentityProviders,
 // Enables usage of the FedCM Relying Party Context API.
 BASE_FEATURE(kFedCmRpContext,
              "FedCmRpContext",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM API with the User Info API at the same time.
 // Note that actual exposure of the FedCM API to web content is controlled
@@ -449,7 +443,7 @@ BASE_FEATURE(kFedCmSelectiveDisclosure,
 // Enables usage of the FedCM API with the login hint parameter.
 BASE_FEATURE(kFedCmLoginHint,
              "FedCmLoginHint",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Field trial boolean parameter which indicates whether IdpSigninStatus API is
 // used in FedCM API.
@@ -735,16 +729,11 @@ BASE_FEATURE(kMojoVideoCaptureSecondary,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When NavigationNetworkResponseQueue is enabled, the browser will schedule
-// some tasks related to navigation network responses in a kHighest priority
+// some tasks related to navigation network responses in a kHigh priority
 // queue.
 BASE_FEATURE(kNavigationNetworkResponseQueue,
              "NavigationNetworkResponseQueue",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Preconnects socket at the construction of NavigationRequest.
-BASE_FEATURE(kNavigationRequestPreconnect,
-             "NavigationRequestPreconnect",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If the network service is enabled, runs it in process.
 BASE_FEATURE(kNetworkServiceInProcess,
@@ -789,14 +778,6 @@ BASE_FEATURE(kOverscrollHistoryNavigation,
 // Whether web apps can run periodic tasks upon network connectivity.
 BASE_FEATURE(kPeriodicBackgroundSync,
              "PeriodicBackgroundSync",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If Pepper 3D Image Chromium is allowed, this feature controls whether it is
-// enabled.
-// TODO(https://crbug.com/1196009): Remove this feature, remove the code that
-// uses it.
-BASE_FEATURE(kPepper3DImageChromium,
-             "Pepper3DImageChromium",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Kill-switch to introduce a compatibility breaking restriction.
@@ -867,15 +848,8 @@ BASE_FEATURE(kPreloadingHoldback,
              "PreloadingHoldback",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables exposure of the core milestone 1 (M1) APIs in the renderer without an
-// origin trial token: Attribution Reporting, FLEDGE, Topics.
-BASE_FEATURE(kPrivacySandboxAdsAPIsM1Override,
-             "PrivacySandboxAdsAPIsM1Override",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables exposure of ads APIs in the renderer: Attribution Reporting,
-// FLEDGE, Topics, along with a number of other features actively in development
-// within these APIs.
+// FLEDGE, Topics.
 BASE_FEATURE(kPrivacySandboxAdsAPIsOverride,
              "PrivacySandboxAdsAPIsOverride",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -948,6 +922,18 @@ BASE_FEATURE(kPushSubscriptionChangeEvent,
 // See https://crbug.com/838348 and https://crbug.com/1220337.
 BASE_FEATURE(kQueueNavigationsWhileWaitingForCommit,
              "QueueNavigationsWhileWaitingForCommit",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, sends SubresourceResponseStarted IPC only when the user has
+// allowed any HTTPS-related warning exceptions. From field data, (see
+// `SSL.Experimental.SubresourceResponse`), ~100% of subresource notifications
+// are not required, since allowing certificate exceptions by users is a rare
+// event. Hence, if user has never allowed any certificate or HTTP exceptions,
+// notifications are not sent to the browser. Once we start sending these
+// messages, we keep sending them until all exceptions are revoked and browser
+// restart occurs.
+BASE_FEATURE(kReduceSubresourceResponseStartedIPC,
+             "ReduceSubresourceResponseStartedIPC",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Causes hidden tabs with crashed subframes to be marked for reload, meaning
@@ -1111,6 +1097,12 @@ constexpr base::FeatureParam<int>
         0,
     };
 
+// Enables ServiceWorker static routing API.
+// https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api
+BASE_FEATURE(kServiceWorkerStaticRouter,
+             "ServiceWorkerStaticRouter",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Run video capture service in the Browser process as opposed to a dedicated
 // utility process
 BASE_FEATURE(kRunVideoCaptureServiceInBrowserProcess,
@@ -1179,20 +1171,6 @@ BASE_FEATURE(kSignedExchangeReportingForDistributors,
 BASE_FEATURE(kSignedHTTPExchange,
              "SignedHTTPExchange",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Delays RenderProcessHost shutdown by a few seconds to allow the subframe's
-// process to be potentially reused. This aims to reduce process churn in
-// navigations where the source and destination share subframes.
-// This is enabled only on platforms where the behavior leads to performance
-// gains, i.e., those where process startup is expensive.
-BASE_FEATURE(kSubframeShutdownDelay,
-             "SubframeShutdownDelay",
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-);
 
 // If enabled, GetUserMedia API will only work when the concerned tab is in
 // focus

@@ -1176,8 +1176,8 @@ std::vector<PaintFlags> test_flags = {
       flags.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
       flags.setMaskFilter(SkMaskFilter::MakeBlur(
           SkBlurStyle::kOuter_SkBlurStyle, 4.3f));
-      flags.setColorFilter(SkColorMatrixFilter::MakeLightingFilter(
-          SK_ColorYELLOW, SK_ColorGREEN));
+      flags.setColorFilter(ColorFilter::MakeBlend({0.4f, 0.3f, 0.2f, 0.1f},
+                                                  SkBlendMode::kMultiply));
 
       SkLayerDrawLooper::Builder looper_builder;
       looper_builder.addLayer();
@@ -3199,16 +3199,16 @@ TEST_P(PaintFilterSerializationTest, Basic) {
   SkScalar scalars[9] = {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f};
   std::vector<sk_sp<PaintFilter>> filters = {
       sk_sp<PaintFilter>{new ColorFilterPaintFilter(
-          SkColorFilters::LinearToSRGBGamma(), nullptr)},
+          ColorFilter::MakeLinearToSRGBGamma(), nullptr)},
       sk_sp<PaintFilter>{
           new BlurPaintFilter(0.5f, 0.3f, SkTileMode::kRepeat, nullptr)},
       sk_sp<PaintFilter>{new DropShadowPaintFilter(
           5.f, 10.f, 0.1f, 0.3f, SkColors::kBlue,
           DropShadowPaintFilter::ShadowMode::kDrawShadowOnly, nullptr)},
       sk_sp<PaintFilter>{new MagnifierPaintFilter(SkRect::MakeXYWH(5, 6, 7, 8),
-                                                  10.5f, nullptr)},
+                                                  2.f, 10.5f, nullptr)},
       sk_sp<PaintFilter>{new AlphaThresholdPaintFilter(
-          SkRegion(SkIRect::MakeXYWH(0, 0, 100, 200)), 10.f, 20.f, nullptr)},
+          SkRegion(SkIRect::MakeXYWH(0, 0, 100, 200)), nullptr)},
       sk_sp<PaintFilter>{new MatrixConvolutionPaintFilter(
           SkISize::Make(3, 3), scalars, 30.f, 123.f, SkIPoint::Make(0, 0),
           SkTileMode::kDecal, true, nullptr)},

@@ -608,6 +608,40 @@
       }
     ]
   },
+  "PolicyTestPageEnabled":{
+    "os":  [
+      "ios"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "policy_test_page_enabled": {
+            "default_value": true,
+            "location": "user_profile"
+          }
+        }
+      },
+      {
+        "policies": { "PolicyTestPageEnabled": true},
+        "prefs": {
+          "policy_test_page_enabled": {
+            "value": true,
+            "location": "user_profile"
+          }
+        }
+      },
+      {
+        "policies": { "PolicyTestPageEnabled": false},
+        "prefs": {
+          "policy_test_page_enabled": {
+            "value": false,
+            "location": "user_profile"
+          }
+        }
+      }
+    ]
+  },
   "PopupsAllowedForUrls": {
     "os": [
       "ios"
@@ -703,6 +737,41 @@
           "signin.restrict_accounts_to_patterns": {
             "location": "local_state",
             "value": [ "*@domain.com", "user@managedchrome.com" ]
+          }
+        }
+      }
+    ]
+  },
+  "SafeBrowsingProxiedRealTimeChecksAllowed": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check default value (no policies set)",
+        "policies": { },
+        "prefs": {
+          "safebrowsing.hash_prefix_real_time_checks_allowed_by_policy": {
+            "location": "user_profile",
+            "default_value": true
+          }
+        }
+      },
+      {
+        "note": "Check pref matches when policy is set to true",
+        "policies": { "SafeBrowsingProxiedRealTimeChecksAllowed": true },
+        "prefs": {
+          "safebrowsing.hash_prefix_real_time_checks_allowed_by_policy": {
+            "location": "user_profile",
+            "value": true
+          }
+        }
+      },
+      {
+        "note": "Check pref matches when policy is set to false",
+        "policies": { "SafeBrowsingProxiedRealTimeChecksAllowed": false },
+        "prefs": {
+          "safebrowsing.hash_prefix_real_time_checks_allowed_by_policy": {
+            "location": "user_profile",
+            "value": false
           }
         }
       }
@@ -896,6 +965,14 @@
     ],
     "policy_pref_mapping_tests": [
       {
+        "policies": {},
+        "prefs": {
+          "url_keyed_anonymized_data_collection.enabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
         "policies": {
           "UrlKeyedAnonymizedDataCollectionEnabled": true
         },
@@ -912,6 +989,65 @@
         "prefs": {
           "url_keyed_anonymized_data_collection.enabled": {
             "value": false
+          }
+        }
+      }
+    ]
+  },
+  "UrlKeyedMetricsAllowed": {
+    "os": [
+      "ios"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "url_keyed_anonymized_data_collection.enabled": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "UrlKeyedMetricsAllowed": false
+        },
+        "prefs": {
+          "url_keyed_anonymized_data_collection.enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "UrlKeyedMetricsAllowed": true
+        },
+        "prefs": {
+          "url_keyed_anonymized_data_collection.enabled": {
+            "default_value": false
+          }
+        }
+      },
+
+
+      {
+        "policies": {
+          "UrlKeyedAnonymizedDataCollectionEnabled": true,
+          "UrlKeyedMetricsAllowed": false
+        },
+        "prefs": {
+          "url_keyed_anonymized_data_collection.enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "UrlKeyedAnonymizedDataCollectionEnabled": false,
+          "UrlKeyedMetricsAllowed": true
+        },
+        "prefs": {
+          "url_keyed_anonymized_data_collection.enabled": {
+            "default_value": false
           }
         }
       }

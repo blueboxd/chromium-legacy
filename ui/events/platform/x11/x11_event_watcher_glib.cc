@@ -15,8 +15,8 @@ namespace {
 struct GLibX11Source : public GSource {
   // Note: The GLibX11Source is created and destroyed by GLib. So its
   // constructor/destructor may or may not get called.
-  raw_ptr<x11::Connection> connection;
-  raw_ptr<GPollFD> poll_fd;
+  raw_ptr<x11::Connection, LeakedDanglingUntriaged> connection;
+  raw_ptr<GPollFD, LeakedDanglingUntriaged> poll_fd;
 };
 
 gboolean XSourcePrepare(GSource* source, gint* timeout_ms) {
@@ -66,8 +66,14 @@ gboolean XSourceDispatch(GSource* source,
   return G_SOURCE_CONTINUE;
 }
 
+void XSourceFinalize(GSource* source) {
+  GLibX11Source* src = static_cast<GLibX11Source*>(source);
+  src->connection = nullptr;
+  src->poll_fd = nullptr;
+}
+
 GSourceFuncs XSourceFuncs = {XSourcePrepare, XSourceCheck, XSourceDispatch,
-                             nullptr};
+                             XSourceFinalize};
 
 }  // namespace
 

@@ -49,9 +49,9 @@ android_library("java") {
   ]
   srcjar_deps = [
     ":webapps_java_enums_srcjar",
+    ":webapps_jni_headers",
     "//components/webapps/browser/android/webapk:enums_srcjar",
   ]
-  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 generate_jni("webapps_jni_headers") {
@@ -100,7 +100,6 @@ android_resources("java_resources") {
     "java/res/layout/add_to_homescreen_dialog.xml",
     "java/res/layout/image_zoom_view.xml",
     "java/res/layout/pwa_install_bottom_sheet_content.xml",
-    "java/res/layout/pwa_install_bottom_sheet_toolbar.xml",
     "java/res/mipmap-hdpi/shortcut_icon_shadow.png",
     "java/res/mipmap-mdpi/shortcut_icon_shadow.png",
     "java/res/mipmap-xhdpi/shortcut_icon_shadow.png",
@@ -133,6 +132,7 @@ source_set("unit_tests") {
     "shortcut_info_unittest.cc",
     "webapk/webapk_icon_hasher_unittest.cc",
     "webapk/webapk_proto_builder_unittest.cc",
+    "webapp_icon_unittest.cc",
     "webapps_utils_unittest.cc",
   ]
   deps = [

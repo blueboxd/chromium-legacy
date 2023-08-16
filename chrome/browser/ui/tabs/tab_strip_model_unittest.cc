@@ -96,8 +96,8 @@ class MockTabStripModelObserver : public TabStripModelObserver {
           TabStripModelObserverAction action)
         : dst_contents(dst_contents), dst_index(dst_index), action(action) {}
 
-    raw_ptr<WebContents> src_contents = nullptr;
-    raw_ptr<WebContents> dst_contents;
+    raw_ptr<WebContents, DanglingUntriaged> src_contents = nullptr;
+    raw_ptr<WebContents, DanglingUntriaged> dst_contents;
     absl::optional<size_t> src_index;
     absl::optional<size_t> dst_index;
     int change_reason = CHANGE_REASON_NONE;
@@ -3166,10 +3166,10 @@ TEST_F(TabStripModelTest, TabBlockedState) {
   // DummySingleWebContentsDialogManager doesn't care about the
   // dialog window value, so any dummy value works.
   DummySingleWebContentsDialogManager* native_manager =
-      new DummySingleWebContentsDialogManager(gfx::kNullNativeWindow,
+      new DummySingleWebContentsDialogManager(gfx::NativeWindow(),
                                               modal_dialog_manager);
   modal_dialog_manager->ShowDialogWithManager(
-      gfx::kNullNativeWindow,
+      gfx::NativeWindow(),
       std::unique_ptr<web_modal::SingleWebContentsDialogManager>(
           native_manager));
   EXPECT_TRUE(strip_src.IsTabBlocked(1));

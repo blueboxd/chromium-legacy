@@ -21,30 +21,21 @@ import {getMaybeLazyDirectory} from './lazy_directory_entry.js';
 
 
 /**
- * Checks if the entry's name has the video prefix.
- *
- * @param entry File entry.
- * @return Has the video prefix or not.
+ * Checks if the given |entry|'s name has the video prefix.
  */
 export function hasVideoPrefix(entry: FileAccessEntry): boolean {
   return entry.name.startsWith(VIDEO_PREFIX);
 }
 
 /**
- * Checks if the entry's name has the image prefix.
- *
- * @param entry File entry.
- * @return Has the image prefix or not.
+ * Checks if the given |entry|'s name has the image prefix.
  */
 function hasImagePrefix(entry: FileAccessEntry): boolean {
   return entry.name.startsWith(IMAGE_PREFIX);
 }
 
 /**
- * Checks if the entry's name has the document prefix.
- *
- * @param entry File entry.
- * @return Has the document prefix or not.
+ * Checks if the given |entry|'s name has the document prefix.
  */
 function hasDocumentPrefix(entry: FileAccessEntry): boolean {
   return entry.name.startsWith(DOCUMENT_PREFIX);
@@ -126,11 +117,11 @@ export async function initialize(): Promise<void> {
 }
 
 /**
- * Saves photo blob or metadata blob into predefined default location.
+ * Saves photo blob or metadata blob into predefined default location and
+ * returns the file.
  *
  * @param blob Data of the photo to be saved.
  * @param name Filename of the photo to be saved.
- * @return Promise for the result.
  */
 export async function saveBlob(
     blob: Blob, name: string): Promise<FileAccessEntry> {
@@ -145,7 +136,6 @@ export async function saveBlob(
 const PRIVATE_TEMPFILE_NAME = 'video-tmp.mp4';
 
 /**
- * @return Newly created temporary file.
  * @throws If failed to create video temp file.
  */
 export async function createPrivateTempVideoFile(name = PRIVATE_TEMPFILE_NAME):
@@ -153,7 +143,7 @@ export async function createPrivateTempVideoFile(name = PRIVATE_TEMPFILE_NAME):
   const dir = cameraTempDir;
   assert(dir !== null);
 
-  // Delete the previous temporary file if there is any.
+  // Deletes the previous temporary file if there is any.
   await dir.removeEntry(name);
 
   const file = await dir.createFile(name);
@@ -165,8 +155,6 @@ export async function createPrivateTempVideoFile(name = PRIVATE_TEMPFILE_NAME):
 
 /**
  * Gets the picture entries.
- *
- * @return Promise for the picture entries.
  */
 export async function getEntries(): Promise<FileAccessEntry[]> {
   assert(cameraDir !== null);
@@ -182,9 +170,6 @@ export async function getEntries(): Promise<FileAccessEntry[]> {
 
 /**
  * Returns an URL for a picture given by the file |entry|.
- *
- * @param entry The file entry of the picture.
- * @return Promise for the result.
  */
 export async function pictureURL(entry: FileAccessEntry): Promise<string> {
   const file = await entry.file();

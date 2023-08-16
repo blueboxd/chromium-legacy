@@ -78,7 +78,6 @@ public class MainActivity
     private static final String SHARED_PREF_CLOSE_ICON = "CloseIcon";
     private static final String SHARED_PREF_CLOSE_POSITION = "ClosePosition";
     private static final String SHARED_PREF_SIDE_SHEET_POSITION = "SideSheetPosition";
-    private static final String SHARED_PREF_SIDE_SHEET_ANIMATION = "SideSheetAnimation";
     private static final String SHARED_PREF_COLOR = "Color";
     private static final String SHARED_PREF_DECORATION = "Decoration";
     private static final String SHARED_PREF_HEIGHT = "Height";
@@ -93,6 +92,10 @@ public class MainActivity
     private static final String SHARED_PREF_FORCE_ENGAGEMENT_SIGNALS = "ForceEngagementSignals";
     private static final String SHARED_PREF_SIDE_SHEET_MAX_BUTTON = "SideSheetMaxButton";
     private static final String SHARED_PREF_SIDE_SHEET_ROUNDED_CORNER = "RoundedCorner";
+    private static final String SHARED_PREF_CONNECT_BUTTON = "ConnectButton";
+    private static final String SHARED_PREF_DISCONNECT_BUTTON = "DisconnectButton";
+    private static final String SHARED_PREF_WARMUP_BUTTON = "WarmupButton";
+    private static final String SHARED_PREF_MAY_LAUNCH_BUTTON = "MayLaunchButton";
     private static final int CLOSE_ICON_X = 0;
     private static final int CLOSE_ICON_BACK = 1;
     private static final int CLOSE_ICON_CHECK = 2;
@@ -114,9 +117,9 @@ public class MainActivity
      */
     private static final float MINIMAL_WIDTH_RATIO = 0.33f;
     private static final int DEFAULT_BREAKPOINT = 840;
+    private static CustomTabsClient sClient;
     private AutoCompleteTextView mEditUrl;
     private CustomTabsSession mCustomTabsSession;
-    private CustomTabsClient mClient;
     private CustomTabsServiceConnection mConnection;
     private String mPackageNameToBind;
     private String mPackageTitle;
@@ -134,7 +137,6 @@ public class MainActivity
     private MaterialButtonToggleGroup mDecorationType;
     private MaterialButtonToggleGroup mThemeButton;
     private MaterialButtonToggleGroup mSideSheetPositionToggle;
-    private MaterialButtonToggleGroup mSideSheetAnimationToggle;
     private TextView mToolbarCornerRadiusLabel;
     private SeekBar mToolbarCornerRadiusSlider;
     private CheckBox mBottomToolbarCheckbox;
@@ -172,13 +174,6 @@ public class MainActivity
 
     public static final String EXTRA_ACTIVITY_SIDE_SHEEET_DECORATION_TYPE =
             "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_DECORATION_TYPE";
-
-    public static final int ACTIVITY_SIDE_SHEET_SLIDE_IN_DEFAULT = 0;
-    public static final int ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_BOTTOM = 1;
-    public static final int ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_SIDE = 2;
-
-    public static final String EXTRA_ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR =
-            "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR";
 
     public static final int ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_DEFAULT = 0;
     public static final int ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_NONE = 1;
@@ -306,7 +301,7 @@ public class MainActivity
         initializeBreakpointSlider();
         initializeCheckBoxes();
         initializeCctSpinner();
-        initializeButtons();
+        initializeButtons(savedInstanceState != null);
         mLogImportance.run();
     }
 
@@ -333,6 +328,75 @@ public class MainActivity
                 new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, urlsDropdown);
         mEditUrl.setAdapter(adapter);
         mEditUrl.setOnClickListener(v -> mEditUrl.showDropDown());
+    }
+
+    private void updateUrlsList() {
+        String url = mEditUrl.getText().toString();
+        HashSet<String> savedUrlSet;
+        SharedPreferences.Editor editor = mSharedPref.edit();
+        if (mSharedPref.getStringSet(SHARED_PREF_SITES, null) != null) {
+            savedUrlSet = (HashSet<String>) mSharedPref.getStringSet(SHARED_PREF_SITES, null);
+            boolean duplicate = false;
+            int duplicatePos = -1;
+            for (String s : savedUrlSet) {
+                if (s.substring(1).equals(url)) {
+                    duplicate = true;
+                    duplicatePos = Integer.parseInt(s.substring(0, 1));
+                }
+            }
+            if (!duplicate) {
+                String[] savedUrlArr = savedUrlSet.toArray(new String[5]);
+                if (!TextUtils.isEmpty(url)) {
+                    // Populate new entry into array - 3 steps:
+                    //  1. Found empty spot in array, just add new url and STOP
+                    //  2. Array full, replace oldest entry with newest
+                    //  3. Increment position of other entries
+                    for (int i = 0; i < savedUrlArr.length; i++) {
+                        if (savedUrlArr[i] == null) {
+                            savedUrlArr[i] = "1" + url;
+                            break;
+                        } else if (savedUrlArr[i].substring(0, 1).equals("5")) {
+                            savedUrlArr[i] = "1" + url;
+                        } else {
+                            int position = Integer.parseInt(savedUrlArr[i].substring(0, 1));
+                            savedUrlArr[i] = (position + 1) + savedUrlArr[i].substring(1);
+                        }
+                    }
+                    savedUrlSet.clear();
+                    for (String entry : savedUrlArr) {
+                        if (entry != null) savedUrlSet.add(entry);
+                    }
+                    editor.remove(SHARED_PREF_SITES);
+                    editor.apply();
+                    editor.putStringSet(SHARED_PREF_SITES, savedUrlSet);
+                    editor.apply();
+                }
+            } else if (duplicatePos > 1) {
+                String previousMainUrl = "";
+                savedUrlSet.remove(duplicatePos + url);
+                for (String s : savedUrlSet) {
+                    if (s.charAt(0) == '1') {
+                        previousMainUrl = s;
+                        break;
+                    }
+                }
+                savedUrlSet.remove(previousMainUrl);
+                savedUrlSet.add(duplicatePos + previousMainUrl.substring(1));
+                savedUrlSet.add("1" + url);
+                editor.remove(SHARED_PREF_SITES);
+                editor.apply();
+                editor.putStringSet(SHARED_PREF_SITES, savedUrlSet);
+                editor.apply();
+            }
+        } else {
+            // TODO(1369795) Refactor the way ordering is stored so it's not mixed with URLs
+            savedUrlSet = new HashSet<String>();
+            if (!TextUtils.isEmpty(url)) {
+                savedUrlSet.add("1" + url);
+                editor.putStringSet(SHARED_PREF_SITES, savedUrlSet);
+                editor.apply();
+            }
+        }
     }
 
     private void initializePackageSpinner() {
@@ -471,13 +535,6 @@ public class MainActivity
                 ? R.id.side_sheet_start_button
                 : R.id.side_sheet_end_button;
         mSideSheetPositionToggle.check(sideSheetPositionType);
-        mSideSheetAnimationToggle = findViewById(R.id.side_sheet_animation_toggle);
-        int sideSheetAnimationType = mSharedPref.getInt(SHARED_PREF_SIDE_SHEET_ANIMATION,
-                                             ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_SIDE)
-                        == ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_SIDE
-                ? R.id.side_sheet_side_button
-                : R.id.side_sheet_bottom_button;
-        mSideSheetAnimationToggle.check(sideSheetAnimationType);
 
         mDecorationType = findViewById(R.id.decoration_type_toggle);
         if (mSharedPref.getInt(SHARED_PREF_DECORATION, ACTIVITY_SIDE_SHEET_DECORATION_TYPE_SHADOW)
@@ -579,9 +636,6 @@ public class MainActivity
                     return;
                 }
                 mCctType = item;
-                if (mDisconnectButton.isEnabled()) {
-                    unbindCustomTabsService();
-                }
             }
 
             @Override
@@ -589,7 +643,7 @@ public class MainActivity
         });
     }
 
-    private void initializeButtons() {
+    private void initializeButtons(boolean configChange) {
         mConnectButton = (Button) findViewById(R.id.connect_button);
         mDisconnectButton = (Button) findViewById(R.id.disconnect_button);
         mWarmupButton = (Button) findViewById(R.id.warmup_button);
@@ -600,6 +654,14 @@ public class MainActivity
         mWarmupButton.setOnClickListener(this);
         mMayLaunchButton.setOnClickListener(this);
         mLaunchButton.setOnClickListener(this);
+        if (configChange) {
+            mConnectButton.setEnabled(mSharedPref.getBoolean(SHARED_PREF_CONNECT_BUTTON, true));
+            mDisconnectButton.setEnabled(
+                    mSharedPref.getBoolean(SHARED_PREF_DISCONNECT_BUTTON, false));
+            mWarmupButton.setEnabled(mSharedPref.getBoolean(SHARED_PREF_WARMUP_BUTTON, false));
+            mMayLaunchButton.setEnabled(
+                    mSharedPref.getBoolean(SHARED_PREF_MAY_LAUNCH_BUTTON, false));
+        }
         findViewById(R.id.test_asm_button).setOnClickListener(this);
     }
 
@@ -679,23 +741,32 @@ public class MainActivity
 
     @Override
     protected void onDestroy() {
-        mMediaPlayer.release();
-        unbindCustomTabsService();
+        if (!isChangingConfigurations()) {
+            mMediaPlayer.release();
+            unbindCustomTabsService();
+        } else {
+            SharedPreferences.Editor editor = mSharedPref.edit();
+            editor.putBoolean(SHARED_PREF_CONNECT_BUTTON, mConnectButton.isEnabled());
+            editor.putBoolean(SHARED_PREF_DISCONNECT_BUTTON, mDisconnectButton.isEnabled());
+            editor.putBoolean(SHARED_PREF_WARMUP_BUTTON, mWarmupButton.isEnabled());
+            editor.putBoolean(SHARED_PREF_MAY_LAUNCH_BUTTON, mMayLaunchButton.isEnabled());
+            editor.apply();
+        }
         super.onDestroy();
     }
 
     private CustomTabsSession getSession() {
-        if (mClient == null) {
+        if (sClient == null) {
             mCustomTabsSession = null;
         } else if (mCustomTabsSession == null) {
-            mCustomTabsSession = mClient.newSession(new NavigationCallback());
+            mCustomTabsSession = sClient.newSession(new NavigationCallback());
             SessionHelper.setCurrentSession(mCustomTabsSession);
         }
         return mCustomTabsSession;
     }
 
     private void bindCustomTabsService() {
-        if (mClient != null) return;
+        if (sClient != null) return;
 
         if (TextUtils.isEmpty(mPackageNameToBind)) {
             mPackageNameToBind = CustomTabsHelper.getPackageNameToUse(this);
@@ -714,87 +785,42 @@ public class MainActivity
     }
 
     private void unbindCustomTabsService() {
-        initializeUrlEditTextView();
-        if (mConnection == null) return;
-
-        unbindService(mConnection);
-        mClient = null;
+        sClient = null;
         mCustomTabsSession = null;
         mConnectButton.setEnabled(true);
         mDisconnectButton.setEnabled(false);
         mWarmupButton.setEnabled(false);
+
+        if (mConnection == null) return;
+        unbindService(mConnection);
     }
 
     @Override
     public void onClick(View v) {
         String url = mEditUrl.getText().toString();
-        HashSet<String> savedUrlSet;
 
         int viewId = v.getId();
         SharedPreferences.Editor editor = mSharedPref.edit();
 
         if (viewId == R.id.connect_button) {
-            if (mSharedPref.getStringSet(SHARED_PREF_SITES, null) != null) {
-                savedUrlSet = (HashSet<String>) mSharedPref.getStringSet(SHARED_PREF_SITES, null);
-                boolean duplicate = false;
-                for (String s : savedUrlSet) {
-                    if (s.substring(1).equals(url)) {
-                        duplicate = true;
-                    }
-                }
-                if (!duplicate) {
-                    String[] savedUrlArr = savedUrlSet.toArray(new String[5]);
-                    if (!TextUtils.isEmpty(url)) {
-                        // Populate new entry into array - 3 steps:
-                        //  1. Found empty spot in array, just add new url and STOP
-                        //  2. Array full, replace oldest entry with newest
-                        //  3. Increment position of other entries
-                        for (int i = 0; i < savedUrlArr.length; i++) {
-                            if (savedUrlArr[i] == null) {
-                                savedUrlArr[i] = "1" + url;
-                                break;
-                            } else if (savedUrlArr[i].substring(0, 1).equals("5")) {
-                                savedUrlArr[i] = "1" + url;
-                            } else {
-                                int position = Integer.parseInt(savedUrlArr[i].substring(0, 1));
-                                savedUrlArr[i] = (position + 1) + savedUrlArr[i].substring(1);
-                            }
-                        }
-                        savedUrlSet.clear();
-                        for (String entry : savedUrlArr) {
-                            if (entry != null) savedUrlSet.add(entry);
-                        }
-                        editor.remove(SHARED_PREF_SITES);
-                        editor.apply();
-                        editor.putStringSet(SHARED_PREF_SITES, savedUrlSet);
-                        editor.apply();
-                    }
-                }
-            } else {
-                // TODO(1369795) Refactor the way ordering is stored so it's not mixed with URLs
-                savedUrlSet = new HashSet<String>();
-                if (!TextUtils.isEmpty(url)) {
-                    savedUrlSet.add("1" + url);
-                    editor.putStringSet(SHARED_PREF_SITES, savedUrlSet);
-                    editor.apply();
-                }
-            }
+            updateUrlsList();
             bindCustomTabsService();
         } else if (viewId == R.id.disconnect_button) {
             unbindCustomTabsService();
         } else if (viewId == R.id.warmup_button) {
             boolean success = false;
-            if (mClient != null) success = mClient.warmup(0);
+            if (sClient != null) success = sClient.warmup(0);
             if (!success) mWarmupButton.setEnabled(false);
         } else if (viewId == R.id.may_launch_button) {
             CustomTabsSession session = getSession();
             boolean success = false;
-            if (mClient != null) success = session.mayLaunchUrl(Uri.parse(url), null, null);
+            if (sClient != null) success = session.mayLaunchUrl(Uri.parse(url), null, null);
             if (!success) mMayLaunchButton.setEnabled(false);
         } else if (viewId == R.id.test_asm_button) {
             launchCct(url, editor);
             new Handler().postDelayed(() -> launchCct("https://abc.xyz", editor), 5000);
         } else if (viewId == R.id.launch_button) {
+            updateUrlsList();
             launchCct(url, editor);
         }
     }
@@ -816,10 +842,6 @@ public class MainActivity
                 mSideSheetPositionToggle.getCheckedButtonId() == R.id.side_sheet_end_button
                 ? ACTIVITY_SIDE_SHEET_POSITION_END
                 : ACTIVITY_SIDE_SHEET_POSITION_START;
-        int sideSheetAnimation =
-                mSideSheetAnimationToggle.getCheckedButtonId() == R.id.side_sheet_side_button
-                ? ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_SIDE
-                : ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_BOTTOM;
         int decorationType = ACTIVITY_SIDE_SHEET_DECORATION_TYPE_SHADOW;
         if (mDecorationType.getCheckedButtonId() == R.id.decoration_type_divider_button) {
             decorationType = ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER;
@@ -873,8 +895,6 @@ public class MainActivity
             }
             customTabsIntent.intent.putExtra(EXTRA_ACTIVITY_SIDE_SHEET_POSITION, sideSheetPosition);
             customTabsIntent.intent.putExtra(
-                    EXTRA_ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR, sideSheetAnimation);
-            customTabsIntent.intent.putExtra(
                     EXTRA_ACTIVITY_SIDE_SHEEET_DECORATION_TYPE, decorationType);
         } else {
             editor.putString(
@@ -915,7 +935,6 @@ public class MainActivity
         editor.putInt(SHARED_PREF_BOTTOM_TOOLBAR, toolbarCheck);
         editor.putInt(SHARED_PREF_CLOSE_POSITION, closeButtonPosition);
         editor.putInt(SHARED_PREF_SIDE_SHEET_POSITION, sideSheetPosition);
-        editor.putInt(SHARED_PREF_SIDE_SHEET_ANIMATION, sideSheetAnimation);
         editor.putInt(SHARED_PREF_HEIGHT_RESIZABLE,
                 mPcctHeightResizableCheckbox.isChecked() ? CHECKED : UNCHECKED);
         editor.putInt(SHARED_PREF_SIDE_SHEET_MAX_BUTTON,
@@ -1037,7 +1056,7 @@ public class MainActivity
 
     @Override
     public void onServiceConnected(CustomTabsClient client) {
-        mClient = client;
+        sClient = client;
         mConnectButton.setEnabled(false);
         mWarmupButton.setEnabled(true);
         mDisconnectButton.setEnabled(true);
@@ -1058,7 +1077,7 @@ public class MainActivity
         mConnectButton.setEnabled(true);
         mWarmupButton.setEnabled(false);
         mMayLaunchButton.setEnabled(false);
-        mClient = null;
+        sClient = null;
     }
 
     private @Px int getMaximumPossibleSizePx() {

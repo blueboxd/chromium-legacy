@@ -18,8 +18,6 @@
 
 namespace blink {
 
-class NGBoxFragment;
-
 // This enum corresponds to each step used to accommodate grid items across
 // intrinsic tracks according to their min and max track sizing functions, as
 // defined in https://drafts.csswg.org/css-grid-2/#algo-spanning-items.
@@ -88,12 +86,6 @@ class CORE_EXPORT NGGridLayoutAlgorithm
 
   LayoutUnit ComputeIntrinsicBlockSizeIgnoringChildren() const;
 
-  LayoutUnit GetLogicalBaseline(const NGBoxFragment&,
-                                const bool is_last_baseline) const;
-  LayoutUnit GetSynthesizedLogicalBaseline(const LayoutUnit block_size,
-                                           const bool is_flipped_lines,
-                                           const bool is_last_baseline) const;
-
   // Returns the size that a grid item will distribute across the tracks with an
   // intrinsic sizing function it spans in the relevant track direction.
   LayoutUnit ContributionSizeForGridItem(
@@ -114,7 +106,8 @@ class CORE_EXPORT NGGridLayoutAlgorithm
 
   // Determines the major/minor alignment baselines for each row/column based on
   // each item in |grid_items|, and stores the results in |track_collection|.
-  void ComputeGridItemBaselines(const NGGridSizingSubtree& sizing_subtree,
+  void ComputeGridItemBaselines(const NGGridLayoutSubtree& layout_subtree,
+                                const NGGridSizingSubtree& sizing_subtree,
                                 GridTrackSizingDirection track_direction,
                                 SizingConstraint sizing_constraint) const;
 
@@ -161,6 +154,7 @@ class CORE_EXPORT NGGridLayoutAlgorithm
 
   // Performs the final baseline alignment pass of a grid sizing subtree.
   void ComputeBaselineAlignment(
+      const NGGridLayoutSubtree& layout_subtree,
       const NGGridSizingSubtree& sizing_subtree,
       const NGSubgriddedItemData& opt_subgrid_data,
       const absl::optional<GridTrackSizingDirection>& opt_track_direction,
@@ -238,7 +232,7 @@ class CORE_EXPORT NGGridLayoutAlgorithm
   NGConstraintSpace CreateConstraintSpaceForMeasure(
       const NGSubgriddedItemData& subgridded_item,
       GridTrackSizingDirection track_direction,
-      absl::optional<LayoutUnit> opt_fixed_block_size = absl::nullopt) const;
+      const LogicalSize& fixed_available_size = kIndefiniteLogicalSize) const;
 
   NGConstraintSpace CreateConstraintSpaceForSubgridAlgorithm(
       const NGSubgriddedItemData& subgrid_data) const;

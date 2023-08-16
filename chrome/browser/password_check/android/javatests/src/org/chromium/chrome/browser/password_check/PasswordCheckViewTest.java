@@ -563,7 +563,7 @@ public class PasswordCheckViewTest {
                         not(is(mPasswordCheckView.getActivity().getWindow().getDecorView()))))
                 .perform(click());
 
-        verify(mMockHandler).onEdit(eq(ANA), eq(mPasswordCheckView.getContext()));
+        waitForEvent(mMockHandler).onEdit(eq(ANA), eq(mPasswordCheckView.getContext()));
     }
 
     @Test
@@ -579,7 +579,7 @@ public class PasswordCheckViewTest {
                         not(is(mPasswordCheckView.getActivity().getWindow().getDecorView()))))
                 .perform(click());
 
-        verify(mMockHandler).onRemove(eq(ANA));
+        waitForEvent(mMockHandler).onRemove(eq(ANA));
     }
 
     @Test
@@ -595,7 +595,7 @@ public class PasswordCheckViewTest {
                         not(is(mPasswordCheckView.getActivity().getWindow().getDecorView()))))
                 .perform(click());
 
-        verify(mMockHandler).onView(eq(ANA));
+        waitForEvent(mMockHandler).onView(eq(ANA));
     }
 
     @Test

@@ -202,10 +202,6 @@ build_recipe(
 )
 
 build_recipe(
-    name = "recipe:chromium_libfuzzer",
-)
-
-build_recipe(
     name = "recipe:chromium_rts/create_model",
 )
 
@@ -236,6 +232,11 @@ build_recipe(
 
 build_recipe(
     name = "recipe:gofindit/chromium/single_revision",
+    bootstrappable = POLYMORPHIC,
+)
+
+build_recipe(
+    name = "recipe:gofindit/chromium/test_single_revision",
     bootstrappable = POLYMORPHIC,
 )
 

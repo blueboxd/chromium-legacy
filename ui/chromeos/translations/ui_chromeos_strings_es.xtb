@@ -59,7 +59,6 @@
 <translation id="1499943022354839699">Inglés (EE. UU.) con teclado Dvorak</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> (host)</translation>
 <translation id="1521655867290435174">Hojas de cálculo de Google</translation>
-<translation id="1538729222189715449">Abriendo archivos de Linux...</translation>
 <translation id="1547964879613821194">Inglés canadiense</translation>
 <translation id="1556189134700913550">Aplicar a todo</translation>
 <translation id="1561842594491319104">Dispositivos Chrome</translation>
@@ -108,7 +107,7 @@
 <translation id="1838709767668011582">Sitio de Google</translation>
 <translation id="1853795129690976061">Esta carpeta se comparte con Linux</translation>
 <translation id="1864756863218646478">No se ha podido encontrar el archivo.</translation>
-<translation id="1877377730633446520">Se requiere un espacio disponible de <ph name="REQUIRED_SPACE" />. Actualmente tienes <ph name="FREE_SPACE" /> de espacio disponible.</translation>
+<translation id="1877377730633446520">Se requieren unos <ph name="REQUIRED_SPACE" /> de espacio disponible. Actualmente tienes <ph name="FREE_SPACE" /> de espacio disponible.</translation>
 <translation id="1884013283844450420">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, conectar</translation>
 <translation id="1920670151694390848">Malayalam (transliteración)</translation>
 <translation id="1920798810075583923">Sandía</translation>
@@ -333,7 +332,6 @@
 <translation id="3727148787322499904">Si cambias esta opción, todas las redes compartidas se verán afectadas</translation>
 <translation id="3737576078404241332">Quitar de barra lateral</translation>
 <translation id="3749289110408117711">Nombre del archivo</translation>
-<translation id="3780536599611287598">No tienes permiso para mover los archivos a "<ph name="FOLDER_NAME" />".</translation>
 <translation id="3786301125658655746">No tienes conexión.</translation>
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="3793469551756281394">Tiempo restante aproximado: <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
@@ -472,7 +470,6 @@
 <translation id="4804827417948292437">Aguacate</translation>
 <translation id="4805966553127040832">Restaurando <ph name="COUNT" /> elementos</translation>
 <translation id="4816695657735045067">{COUNT,plural, =1{Para usar el modo Incógnito, tu organización requiere una extensión}other{Para usar el modo Incógnito, tu organización requiere algunas extensiones}}</translation>
-<translation id="4823651846660089135">El dispositivo es de solo lectura</translation>
 <translation id="4826849268470072925">Tamil (ITRANS)</translation>
 <translation id="482932175346970750">Escribe <ph name="BEGIN_BOLD" />chrome://extensions<ph name="END_BOLD" /> en el navegador</translation>
 <translation id="4843566743023903107">Chromebases</translation>
@@ -682,7 +679,6 @@
 <translation id="6327785803543103246">Detección automática de proxy web</translation>
 <translation id="6337014272874260727">Desfijar de Archivos rápidos</translation>
 <translation id="6339145975392024142">EE. UU. (PC)</translation>
-<translation id="6346310558342052870">Acceso restringido</translation>
 <translation id="6356685157277930264">Ventana de comentarios de archivos</translation>
 <translation id="6358884629796491903">Dragón</translation>
 <translation id="636254897931573416">Valor de la coincidencia de sufijo de dominio no válido</translation>
@@ -1016,6 +1012,7 @@
 <translation id="8919081441417203123">Danés</translation>
 <translation id="8949925099261528566">Conexión sin Internet</translation>
 <translation id="8965697826696209160">No hay suficiente espacio.</translation>
+<translation id="8971742885766657349">Sincronizando (<ph name="PERCENT" /> %)</translation>
 <translation id="8997962250644902079">Chino tradicional (pinyin)</translation>
 <translation id="8998871447376656508">No tienes suficiente espacio libre en Google Drive para completar la subida.</translation>
 <translation id="9003940392834790328">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" /> %, gestionada por el administrador, detalles</translation>

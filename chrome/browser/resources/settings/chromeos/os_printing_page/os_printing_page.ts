@@ -12,10 +12,10 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
+import {Section} from '../mojom-webui/routes.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
-import {Route, Router} from '../router.js';
+import {Route, Router, routes} from '../router.js';
 
 import {CupsPrintersBrowserProxy, CupsPrintersBrowserProxyImpl} from './cups_printers_browser_proxy.js';
 import {getTemplate} from './os_printing_page.html.js';
@@ -41,6 +41,12 @@ export class OsSettingsPrintingPageElement extends
       prefs: {
         type: Object,
         notify: true,
+      },
+
+      section_: {
+        type: Number,
+        value: Section.kPrinting,
+        readOnly: true,
       },
 
       /**
@@ -77,6 +83,7 @@ export class OsSettingsPrintingPageElement extends
 
   private browserProxy_: CupsPrintersBrowserProxy;
   private focusConfig_: Map<string, string>;
+  private section_: Section;
 
   constructor() {
     super();

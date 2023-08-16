@@ -98,6 +98,12 @@ class GURL;
 // Preloads voice search in the current BVC.
 - (void)preloadVoiceSearch;
 
+// Show the choice screen.
+- (void)showChoice;
+
+// Dismiss the choice screen.
+- (void)dismissChoice;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_COMMANDS_BROWSER_COORDINATOR_COMMANDS_H_

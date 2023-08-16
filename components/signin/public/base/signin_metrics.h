@@ -132,6 +132,7 @@ enum AccessPointAction {
 enum class AccessPoint : int {
   ACCESS_POINT_START_PAGE = 0,
   ACCESS_POINT_NTP_LINK = 1,
+  // Access point from the three dot app menu.
   ACCESS_POINT_MENU = 2,
   ACCESS_POINT_SETTINGS = 3,
   ACCESS_POINT_SUPERVISED_USER = 4,
@@ -144,7 +145,7 @@ enum class AccessPoint : int {
   ACCESS_POINT_USER_MANAGER = 11,
   ACCESS_POINT_DEVICES_PAGE = 12,
   ACCESS_POINT_CLOUD_PRINT = 13,
-  ACCESS_POINT_CONTENT_AREA = 14,
+  // ACCESS_POINT_CONTENT_AREA = 14, no longer used.
   ACCESS_POINT_SIGNIN_PROMO = 15,
   ACCESS_POINT_RECENT_TABS = 16,
   // This should never have been used to get signin URL.

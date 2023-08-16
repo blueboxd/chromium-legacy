@@ -80,7 +80,6 @@
   X("drm")                                                               \
   X("drmcursor")                                                         \
   X("dwrite")                                                            \
-  X("DXVA_Decoding")                                                     \
   X("evdev")                                                             \
   X("event")                                                             \
   X("exo")                                                               \
@@ -199,7 +198,6 @@
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug"))                            \
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"))               \
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"))                     \
-  X(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.scrollbars"))          \
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.trees"))               \
   X(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"))                    \
   X(TRACE_DISABLED_BY_DEFAULT("blink.image_decoding"))                   \
@@ -313,7 +311,6 @@
   X("blink,rail")                                                             \
   X("blink.animations,devtools.timeline,benchmark,rail")                      \
   X("blink.user_timing,rail")                                                 \
-  X("blink_gc,devtools.timeline")                                             \
   X("browser,content,navigation")                                             \
   X("browser,navigation")                                                     \
   X("browser,navigation,benchmark")                                           \

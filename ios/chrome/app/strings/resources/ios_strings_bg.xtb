@@ -91,7 +91,6 @@
 <translation id="152234381334907219">Незапазвани никога</translation>
 <translation id="1523341279170789507">Разрешаване на всички „бисквитки“</translation>
 <translation id="1524563461097350801">Не, благодаря</translation>
-<translation id="1531836666020185856">Представени</translation>
 <translation id="1535268707340844072">Текущата ви настройка може да доведе до проблеми в някои сайтове. За да управлявате „бисквитките“ за всички сайтове, вижте <ph name="BEGIN_LINK" />Настройки за „бисквитките“<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Адрес 1</translation>
 <translation id="1545749641540134597">Сканирайте код за бърза реакция</translation>
@@ -187,13 +186,13 @@
 <translation id="2230173723195178503">Уеб страницата се зареди</translation>
 <translation id="2239626343334228536">Данните за сърфирането се изчистват...</translation>
 <translation id="2242467532204595597">Използвайте Chrome всеки път, когато докоснете връзки в съобщения, документи и други приложения.</translation>
-<translation id="22508856139286506">Отхвърлени предупреждения (<ph name="COUNT" />)</translation>
 <translation id="2251686759395008410">„Меню → История“</translation>
 <translation id="2252674110805316998">Търсене в мрежата</translation>
 <translation id="2256933947031277845">Организацията ви разрешава да влизате само с определени профили.</translation>
 <translation id="225943865679747347">Код на грешката: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Добавяне на профил</translation>
 <translation id="2268044343513325586">Прецизиране</translation>
+<translation id="2269277877025820298">Вижте още</translation>
 <translation id="2273327106802955778">Меню „Още“</translation>
 <translation id="2286505070150039482">Откроен текст</translation>
 <translation id="2287614783861766820">{count,plural, =1{Този адрес ще бъде изтрит от това устройство.}other{Тези адреси ще бъдат изтрити от това устройство.}}</translation>
@@ -219,7 +218,6 @@
 <translation id="2423077901494354337">Вече ще се възползвате максимално от Chrome на устройството си.</translation>
 <translation id="2434405374328098816">Вече запазихте парола за <ph name="USERNAME" /> за <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Показване на паролата</translation>
-<translation id="2439425774439590">Най-посещаваните сайтове</translation>
 <translation id="2451654228769116489">Фиксиране на раздела</translation>
 <translation id="2461070143328828326">Настройки за паролите</translation>
 <translation id="2469960372084740698">Да се изключи ли „Безопасно сърфиране“?</translation>
@@ -356,6 +354,7 @@
 <translation id="3245744387817103524">Промяната ви не бе запазена.</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> от <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3264775633254836593">Автоматично попълване на пароли</translation>
+<translation id="3265534588625245297">Управление на следените от вас сайтове</translation>
 <translation id="3268451620468152448">Отворени раздели</translation>
 <translation id="3272527697863656322">Отказ</translation>
 <translation id="3277021493514034324">Адресът на сайта бе копиран</translation>
@@ -1085,7 +1084,7 @@
 
 Сайтовете могат да използват „бисквитки“, за да следят активността ви при сърфиране в различни сайтове, например за да персонализират реклами.</translation>
 <translation id="7971521879845308059">Изск. прозорци: Блокиране</translation>
-<translation id="797413074872316787">Включете синхронизирането, за да се възползвате от синхронизиране и персонализиране на всички устройства.</translation>
+<translation id="7975036700432177008">Изпробване</translation>
 <translation id="7978018860671536736">3. Докоснете „Автоматично попълване на паролите“.</translation>
 <translation id="7982789257301363584">Мрежа</translation>
 <translation id="7987685713885608670">За допълнителна сигурност шифровайте паролите на устройството си, преди да бъдат запазени в мениджъра на паролите в Google.</translation>
@@ -1147,6 +1146,7 @@
 <translation id="8323906514956095947">Докоснете и задръжте, за да видите още опции за разделите</translation>
 <translation id="8328777765163860529">Затваряне на всички</translation>
 <translation id="8343993175958086504">Създайте резервно копие на нещата си и ги използвайте на всяко устройство.</translation>
+<translation id="834783239627985533">Най-посещавани сайтове</translation>
 <translation id="8378714024927312812">Управлява се от организацията ви</translation>
 <translation id="8386068868580335421">Нулиране</translation>
 <translation id="838867811594159347">Въведете пропуск…</translation>

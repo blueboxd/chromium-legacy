@@ -97,7 +97,7 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
         }};
     return base::Contains(*supported_features, feature);
   }
-  gfx::NativeView GetHostView() const override { return nullptr; }
+  gfx::NativeView GetHostView() const override { return gfx::NativeView(); }
   bool BrowserIsSystemWebApp() const override { return false; }
   bool BrowserIsWebApp() const override { return false; }
   bool BrowserIsTypeApp() const override { return false; }
@@ -246,8 +246,9 @@ class BrowserViewLayoutTest : public ChromeViewsTestBase {
   }
 
  private:
-  raw_ptr<BrowserViewLayout> layout_;
-  raw_ptr<MockBrowserViewLayoutDelegate> delegate_;  // Owned by |layout_|.
+  raw_ptr<BrowserViewLayout, DanglingUntriaged> layout_;
+  raw_ptr<MockBrowserViewLayoutDelegate, DanglingUntriaged>
+      delegate_;  // Owned by |layout_|.
   std::unique_ptr<views::View> browser_view_;
 
   // Views owned by |browser_view_|.

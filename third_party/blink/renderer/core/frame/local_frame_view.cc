@@ -679,11 +679,7 @@ bool LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
     }
   }
 
-  if (RuntimeEnabledFeatures::LayoutNewSubtreeRootEnabled()) {
-    To<LayoutBox>(root).LayoutSubtreeRoot();
-  } else {
-    To<LayoutBox>(root).LayoutSubtreeRootOld();
-  }
+  To<LayoutBox>(root).LayoutSubtreeRoot();
   return true;
 }
 
@@ -1721,9 +1717,7 @@ void LocalFrameView::PerformPostLayoutTasks(bool visual_viewport_size_changed) {
   DCHECK(document);
   if (AXObjectCache* cache = document->ExistingAXObjectCache()) {
     const KURL& url = document->Url();
-    if (url.IsValid() && !url.IsAboutBlankURL()) {
-      // TODO(kschmi) move HandleLayoutComplete to the accessibility lifecycle
-      // stage. crbug.com/1062122
+    if (url.IsValid()) {
       cache->HandleLayoutComplete(document);
     }
   }
@@ -2016,6 +2010,21 @@ void LocalFrameView::UpdateLifecyclePhasesForPrinting() {
 bool LocalFrameView::UpdateLifecycleToLayoutClean(DocumentUpdateReason reason) {
   return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
       DocumentLifecycle::kLayoutClean, reason);
+}
+
+void LocalFrameView::ScheduleVisualUpdateForVisualOverflowIfNeeded() {
+  LocalFrame& local_frame_root = GetFrame().LocalFrameRoot();
+  // We need a full lifecycle update to recompute visual overflow if we are
+  // not already targeting kPaintClean or we have already passed
+  // CompositingInputs in the current frame.
+  if (local_frame_root.View()->target_state_ < DocumentLifecycle::kPaintClean ||
+      Lifecycle().GetState() >= DocumentLifecycle::kCompositingInputsClean) {
+    // Schedule visual update to process the paint invalidation in the next
+    // cycle.
+    local_frame_root.ScheduleVisualUpdateUnlessThrottled();
+  }
+  // Otherwise the visual overflow will be updated in the compositing inputs
+  // phase of this lifecycle.
 }
 
 void LocalFrameView::ScheduleVisualUpdateForPaintInvalidationIfNeeded() {
@@ -2540,6 +2549,19 @@ bool LocalFrameView::RunCompositingInputsLifecyclePhase(
     ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
       frame_view.Lifecycle().AdvanceTo(
           DocumentLifecycle::kInCompositingInputsUpdate);
+
+      // Validate all HighlightMarkers of all non-throttled LocalFrameViews
+      // before compositing inputs phase so the nodes affected by markers
+      // removed/added are invalidated (for both visual overflow and repaint)
+      // and then painted during this lifecycle.
+      if (LocalDOMWindow* window = frame_view.GetFrame().DomWindow()) {
+        if (HighlightRegistry* highlight_registry =
+                window->Supplementable<LocalDOMWindow>::RequireSupplement<
+                    HighlightRegistry>()) {
+          highlight_registry->ValidateHighlightMarkers();
+        }
+      }
+
       frame_view.GetLayoutView()->Layer()->UpdateDescendantDependentFlags();
       frame_view.GetLayoutView()->CommitPendingSelection();
     });
@@ -2563,17 +2585,6 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
   ForAllNonThrottledLocalFrameViews(
       [](LocalFrameView& frame_view) {
         frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPrePaint);
-
-        // Validate all HighlightMarkers of all non-throttled LocalFrameViews
-        // before paint phase so the nodes affected by markers removed/added are
-        // invalidated and then painted during this lifecycle.
-        if (LocalDOMWindow* window = frame_view.GetFrame().DomWindow()) {
-          if (HighlightRegistry* highlight_registry =
-                  window->Supplementable<LocalDOMWindow>::RequireSupplement<
-                      HighlightRegistry>()) {
-            highlight_registry->ValidateHighlightMarkers();
-          }
-        }
 
         // Propagate dirty bits in the frame into the parent frame so that
         // pre-paint reaches into this frame.
@@ -2770,6 +2781,13 @@ void LocalFrameView::PerformScrollAnchoringAdjustments() {
   for (const WeakMember<ScrollableArea>& scroller : queue_copy) {
     if (scroller) {
       DCHECK(scroller->GetScrollAnchor());
+      // The CSS scroll-start property should take precedence over scroll
+      // anchoring.
+      if (RuntimeEnabledFeatures::CSSScrollSnap2Enabled() &&
+          scroller->IsApplyingScrollStart()) {
+        scroller->GetScrollAnchor()->CancelAdjustment();
+        continue;
+      }
       scroller->GetScrollAnchor()->Adjust();
     }
   }
@@ -4186,6 +4204,14 @@ bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
             GetFrame().GetDocument()->GetIntersectionObserverController()) {
       needs_occlusion_tracking |= controller->ComputeIntersections(
           flags, GetUkmAggregator(), monotonic_time);
+      if (RuntimeEnabledFeatures::IntersectionOptimizationEnabled()) {
+        min_scroll_delta_to_update_intersection_ =
+            controller->MinScrollDeltaToUpdate();
+        if (intersection_observation_state_ > kNotNeeded) {
+          accumulated_scroll_delta_since_last_intersection_update_ =
+              gfx::Vector2dF();
+        }
+      }
     }
     intersection_observation_state_ = kNotNeeded;
   }
@@ -4328,6 +4354,21 @@ void LocalFrameView::SetIntersectionObservationState(
       if (parent_local_frame->View())
         parent_local_frame->View()->SetIntersectionObservationState(kRequired);
     }
+  }
+}
+
+void LocalFrameView::UpdateIntersectionObservationStateOnScroll(
+    gfx::Vector2dF scroll_delta) {
+  accumulated_scroll_delta_since_last_intersection_update_ +=
+      gfx::Vector2dF(std::abs(scroll_delta.x()), std::abs(scroll_delta.y()));
+  if (min_scroll_delta_to_update_intersection_.x() <=
+          accumulated_scroll_delta_since_last_intersection_update_.x() ||
+      min_scroll_delta_to_update_intersection_.y() <=
+          accumulated_scroll_delta_since_last_intersection_update_.y()) {
+    // The accumulated scroll delta from all scrollers in this frame has
+    // exceeded min_scroll_delta_to_update_intersection_ since the last
+    // intersection observer update, which may change intersection status.
+    SetIntersectionObservationState(LocalFrameView::kDesired);
   }
 }
 

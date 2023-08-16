@@ -16,7 +16,7 @@
 #include "net/base/hash_value.h"
 #include "net/base/network_isolation_key.h"
 #include "net/extras/shared_dictionary/shared_dictionary_info.h"
-#include "net/extras/shared_dictionary/shared_dictionary_storage_isolation_key.h"
+#include "net/extras/shared_dictionary/shared_dictionary_isolation_key.h"
 #include "net/extras/sqlite/sqlite_persistent_shared_dictionary_store.h"
 #include "services/network/shared_dictionary/shared_dictionary_storage.h"
 #include "services/network/shared_dictionary/shared_dictionary_writer_on_disk.h"
@@ -32,7 +32,7 @@ class SharedDictionaryStorageOnDisk : public SharedDictionaryStorage {
  public:
   SharedDictionaryStorageOnDisk(
       base::WeakPtr<SharedDictionaryManagerOnDisk> manager,
-      const net::SharedDictionaryStorageIsolationKey& isolation_key,
+      const net::SharedDictionaryIsolationKey& isolation_key,
       base::ScopedClosureRunner on_deleted_closure_runner);
 
   SharedDictionaryStorageOnDisk(const SharedDictionaryStorageOnDisk&) = delete;
@@ -46,6 +46,11 @@ class SharedDictionaryStorageOnDisk : public SharedDictionaryStorage {
       base::Time response_time,
       base::TimeDelta expiration,
       const std::string& match) override;
+
+  // Called from `SharedDictionaryManagerOnDisk` when dictionary has been
+  // deleted.
+  void OnDictionaryDeleted(
+      const std::set<base::UnguessableToken>& disk_cache_key_tokens);
 
  protected:
   ~SharedDictionaryStorageOnDisk() override;
@@ -70,7 +75,7 @@ class SharedDictionaryStorageOnDisk : public SharedDictionaryStorage {
   }
 
   base::WeakPtr<SharedDictionaryManagerOnDisk> manager_;
-  const net::SharedDictionaryStorageIsolationKey isolation_key_;
+  const net::SharedDictionaryIsolationKey isolation_key_;
   base::ScopedClosureRunner on_deleted_closure_runner_;
   std::map<url::SchemeHostPort,
            std::map<std::string, net::SharedDictionaryInfo>>

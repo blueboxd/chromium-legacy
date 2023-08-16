@@ -22,7 +22,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkYUVAInfo.h"
@@ -36,6 +35,7 @@
 #include "third_party/skia/include/gpu/graphite/Image.h"
 #include "third_party/skia/include/gpu/graphite/Recorder.h"
 #include "third_party/skia/include/gpu/graphite/YUVABackendTextures.h"
+#include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
 
 namespace gpu {
 
@@ -184,7 +184,7 @@ void FlushSurface(SkiaImageRepresentation::ScopedWriteAccess* access) {
   for (int plane_index = 0; plane_index < num_planes; plane_index++) {
     auto* surface = access->surface(plane_index);
     DCHECK(surface);
-    surface->flush();
+    skgpu::ganesh::Flush(surface);
   }
   access->ApplyBackendSurfaceEndState();
 }
@@ -522,7 +522,7 @@ base::expected<void, GLError> CopySharedImageHelper::ConvertYUVAMailboxesToRGB(
         yuva_textures[i] = source_scoped_access[i]->graphite_texture();
       }
       skgpu::graphite::YUVABackendTextures yuva_backend_textures(
-          recorder, yuva_info, yuva_textures.data());
+          recorder, yuva_info, yuva_textures);
       result_image = SkImages::TextureFromYUVATextures(
           recorder, yuva_backend_textures, src_rgb_color_space);
     }
@@ -733,7 +733,18 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImage(
                            ToSkYUVAPlaneConfig(dest_format),
                            ToSkYUVASubsampling(dest_format), yuv_color_space);
       // Perform skia::BlitRGBAToYUVA for the multiplanar YUV format image.
+      // TODO(crbug.com/1451025): This will scale the image if the source image
+      // is smaller than the destination image. What we should actually do
+      // instead is just blit the destination rect and clear out the rest.
+      // However, doing that resulted in resulted in pixeltest failures due to
+      // images having pixel bleeding at their borders when this codepath is
+      // used by RenderableGMBVideoFramePool (see the bug for details). The
+      // current behavior of scaling the image matches the legacy
+      // (non-multiplanar SI) behavior in RenderableGMBVideoFramePool, so it is
+      // not a regression. Nonetheless, this behavior should
+      // ideally be changed to that described above for correctness.
       skia::BlitRGBAToYUVA(source_image.get(), yuva_sk_surfaces, yuva_info);
+      dest_shared_image->SetCleared();
     }
 
     if (!dest_shared_image->IsCleared()) {
@@ -776,8 +787,10 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImageToGLTexture(
                                    texture_info);
 
   auto dest_color_space = SkColorSpace::MakeSRGB();
+  GrDirectContext* direct_context = shared_context_state_->gr_context();
+  CHECK(direct_context);
   sk_sp<SkSurface> dest_surface = SkSurfaces::WrapBackendTexture(
-      shared_context_state_->gr_context(), backend_texture,
+      direct_context, backend_texture,
       flip_y ? GrSurfaceOrigin::kBottomLeft_GrSurfaceOrigin
              : GrSurfaceOrigin::kTopLeft_GrSurfaceOrigin,
       /*sampleCnt=*/1, GetCompatibleSurfaceColorType(texture_info.fFormat),
@@ -806,7 +819,7 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImageToGLTexture(
     canvas->clipRect(dest_rect);
     canvas->clear(SkColors::kBlack);
 
-    dest_surface->flush();
+    direct_context->flush(dest_surface);
     SubmitIfNecessary({}, shared_context_state_, is_drdc_enabled_);
 
     // Note, that we still generate error for the client to indicate there was
@@ -837,7 +850,7 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImageToGLTexture(
   }
   if (!source_scoped_access) {
     // We still need to flush surface for begin semaphores above.
-    dest_surface->flush();
+    direct_context->flush(dest_surface);
     SubmitIfNecessary(std::move(end_semaphores), shared_context_state_,
                       is_drdc_enabled_);
 
@@ -870,7 +883,7 @@ base::expected<void, GLError> CopySharedImageHelper::CopySharedImageToGLTexture(
         SkSamplingOptions(), &paint, SkCanvas::kStrict_SrcRectConstraint);
   }
 
-  dest_surface->flush();
+  direct_context->flush(dest_surface);
   source_scoped_access->ApplyBackendSurfaceEndState();
   SubmitIfNecessary(std::move(end_semaphores), shared_context_state_,
                     is_drdc_enabled_);

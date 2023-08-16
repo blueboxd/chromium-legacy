@@ -31,6 +31,8 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
+#include "components/autofill/content/renderer/suggestion_properties.h"
+#include "components/autofill/core/common/autocomplete_parsing_util.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -187,11 +189,9 @@ class AutofillAgent::DeferringAutofillDriver : public mojom::AutofillDriver {
       const FormData& form,
       const FormFieldData& field,
       const gfx::RectF& bounding_box,
-      AutoselectFirstSuggestion autoselect_first_suggestion,
-      FormElementWasClicked form_element_was_clicked) override {
+      AutofillSuggestionTriggerSource trigger_source) override {
     DeferMsg(&mojom::AutofillDriver::AskForValuesToFill, form, field,
-             bounding_box, autoselect_first_suggestion,
-             form_element_was_clicked);
+             bounding_box, trigger_source);
   }
   void HidePopup() override { DeferMsg(&mojom::AutofillDriver::HidePopup); }
   void FocusNoLongerOnForm(bool had_interacted_form) override {
@@ -271,6 +271,9 @@ FocusedFieldType AutofillAgent::FocusStateNotifier::GetFieldType(
   if (agent_.password_autofill_agent_->IsUsernameInputField(input_element)) {
     return FocusedFieldType::kFillableUsernameField;
   }
+  if (form_util::IsWebauthnTaggedElement(node)) {
+    return FocusedFieldType::kFillableWebauthnTaggedField;
+  }
   return FocusedFieldType::kFillableNonSearchField;
 }
 
@@ -341,7 +344,7 @@ void AutofillAgent::DidCommitProvisionalLoad(ui::PageTransition transition) {
 
 void AutofillAgent::DidDispatchDOMContentLoadedEvent() {
   is_dom_content_loaded_ = true;
-  ProcessFormsUnthrottled(/*callback=*/{});
+  ExtractFormsUnthrottled(/*callback=*/{});
 }
 
 void AutofillAgent::DidChangeScrollOffset() {
@@ -538,7 +541,8 @@ void AutofillAgent::OnTextFieldDidChange(const WebInputElement& element) {
     return;
   }
 
-  ShowSuggestions(element, {.requires_caret_at_end = true});
+  ShowSuggestions(element,
+                  AutofillSuggestionTriggerSource::kTextFieldDidChange);
 
   FormData form;
   FormFieldData field;
@@ -561,18 +565,16 @@ void AutofillAgent::TextFieldDidReceiveKeyDown(const WebInputElement& element,
 
   if (event.windows_key_code == ui::VKEY_DOWN ||
       event.windows_key_code == ui::VKEY_UP) {
-    ShowSuggestions(element,
-                    {.autofill_on_empty_values = true,
-                     .requires_caret_at_end = true,
-                     .autoselect_first_suggestion = AutoselectFirstSuggestion(
-                         ShouldAutoselectFirstSuggestionOnArrowDown())});
+    ShowSuggestions(
+        element, AutofillSuggestionTriggerSource::kTextFieldDidReceiveKeyDown);
   }
 }
 
 void AutofillAgent::OpenTextDataListChooser(const WebInputElement& element) {
   DCHECK(!unsafe_render_frame() ||
          IsOwnedByFrame(element, unsafe_render_frame()));
-  ShowSuggestions(element, {.autofill_on_empty_values = true});
+  ShowSuggestions(element,
+                  AutofillSuggestionTriggerSource::kOpenTextDataListChooser);
 }
 
 // Notifies the AutofillDriver about changes in the <datalist> options in
@@ -730,8 +732,6 @@ void AutofillAgent::ClearPreviewedForm() {
 
   // |password_generation_agent_| can be null in android_webview & weblayer.
   if (password_generation_agent_ &&
-      base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordGenerationPreviewOnHover) &&
       password_generation_agent_->DidClearGenerationSuggestion(element_)) {
     return;
   }
@@ -885,10 +885,12 @@ bool AutofillAgent::CollectFormlessElements(FormData* output) const {
       field_data_manager_.get(), extract_mask, output, nullptr);
 }
 
-void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
-                                    const ShowSuggestionsOptions& options) {
-  DCHECK(!unsafe_render_frame() ||
-         IsOwnedByFrame(element, unsafe_render_frame()));
+void AutofillAgent::ShowSuggestions(
+    const WebFormControlElement& element,
+    AutofillSuggestionTriggerSource trigger_source) {
+  CHECK(!unsafe_render_frame() ||
+        IsOwnedByFrame(element, unsafe_render_frame()));
+  CHECK_NE(trigger_source, AutofillSuggestionTriggerSource::kUnspecified);
 
   if (!element.IsEnabled() || element.IsReadOnly())
     return;
@@ -912,9 +914,9 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
   // |value| is empty, do not attempt to hide it.
   WebString value = element.EditingValue();
   if (value.length() > kMaxStringLength ||
-      (!options.autofill_on_empty_values && value.IsEmpty() &&
+      (!ShouldAutofillOnEmptyValues(trigger_source) && value.IsEmpty() &&
        !IsKeyboardAccessoryEnabled()) ||
-      (options.requires_caret_at_end &&
+      (RequiresCaretAtEnd(trigger_source) &&
        (element.SelectionStart() != element.SelectionEnd() ||
         element.SelectionEnd() != static_cast<int>(value.length())))) {
     // Any popup currently showing is obsolete.
@@ -925,7 +927,9 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
   element_ = element;
   if (form_util::IsAutofillableInputElement(input_element) &&
       password_autofill_agent_->ShowSuggestions(
-          input_element, ShowAll(options.show_full_suggestion_list),
+          input_element,
+          ShowAll(ShouldShowFullSuggestionListForPasswordManager(trigger_source,
+                                                                 element)),
           GenerationShowing(is_generation_popup_possibly_visible_))) {
     is_popup_possibly_visible_ = true;
     return;
@@ -948,8 +952,7 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
     return;
   }
 
-  QueryAutofillSuggestions(element, options.autoselect_first_suggestion,
-                           options.form_element_was_clicked);
+  QueryAutofillSuggestions(element, trigger_source);
 }
 
 void AutofillAgent::SetQueryPasswordSuggestion(bool query) {
@@ -990,8 +993,7 @@ void AutofillAgent::GetPotentialLastFourCombinationsForStandaloneCvc(
 
 void AutofillAgent::QueryAutofillSuggestions(
     const WebFormControlElement& element,
-    AutoselectFirstSuggestion autoselect_first_suggestion,
-    FormElementWasClicked form_element_was_clicked) {
+    AutofillSuggestionTriggerSource trigger_source) {
   DCHECK(!element.DynamicTo<WebInputElement>().IsNull() ||
          form_util::IsTextAreaElement(element));
 
@@ -1031,8 +1033,7 @@ void AutofillAgent::QueryAutofillSuggestions(
   is_popup_possibly_visible_ = true;
   if (auto* autofill_driver = unsafe_autofill_driver()) {
     autofill_driver->AskForValuesToFill(form, field, field.bounds,
-                                        autoselect_first_suggestion,
-                                        form_element_was_clicked);
+                                        trigger_source);
   }
 }
 
@@ -1066,23 +1067,24 @@ void AutofillAgent::DoPreviewFieldWithValue(const std::u16string& value,
   previewed_elements_.push_back(node);
 }
 
-void AutofillAgent::TriggerReparse() {
-  ProcessForms(process_forms_reparse_timer_, /*callback=*/{});
+void AutofillAgent::TriggerFormExtraction() {
+  ExtractForms(process_forms_form_extraction_timer_, /*callback=*/{});
 }
 
-void AutofillAgent::TriggerReparseWithResponse(
+void AutofillAgent::TriggerFormExtractionWithResponse(
     base::OnceCallback<void(bool)> callback) {
-  ProcessForms(process_forms_reparse_with_response_timer_, std::move(callback));
+  ExtractForms(process_forms_form_extraction_with_response_timer_,
+               std::move(callback));
 }
 
 std::vector<blink::WebAutofillClient::FormIssue>
 AutofillAgent::ProccessFormsAndReturnIssues() {
   // TODO(crbug.com/1399414,crbug.com/1444566): Throttle this call if possible.
-  ProcessFormsUnthrottled(/*callback=*/{});
+  ExtractFormsUnthrottled(/*callback=*/{});
   return {};
 }
 
-void AutofillAgent::ProcessForms(base::OneShotTimer& timer,
+void AutofillAgent::ExtractForms(base::OneShotTimer& timer,
                                  base::OnceCallback<void(bool)> callback) {
   static constexpr base::TimeDelta kThrottle = base::Milliseconds(100);
   if (!is_dom_content_loaded_ || timer.IsRunning()) {
@@ -1092,11 +1094,11 @@ void AutofillAgent::ProcessForms(base::OneShotTimer& timer,
     return;
   }
   timer.Start(FROM_HERE, kThrottle,
-              base::BindOnce(&AutofillAgent::ProcessFormsUnthrottled,
+              base::BindOnce(&AutofillAgent::ExtractFormsUnthrottled,
                              base::Unretained(this), std::move(callback)));
 }
 
-void AutofillAgent::ProcessFormsUnthrottled(
+void AutofillAgent::ExtractFormsUnthrottled(
     base::OnceCallback<void(bool)> callback) {
   if (!form_cache_) {
     return;
@@ -1133,7 +1135,7 @@ void AutofillAgent::HidePopup() {
 void AutofillAgent::DidAddOrRemoveFormRelatedElementsDynamically() {
   // If the control flow is here than the document was at least loaded. The
   // whole page doesn't have to be loaded.
-  ProcessForms(
+  ExtractForms(
       process_forms_after_dynamic_change_timer_,
       base::BindOnce(
           [](PasswordAutofillAgent* password_autofill_agent, bool success) {
@@ -1261,18 +1263,14 @@ void AutofillAgent::FormControlElementClicked(
     return;
 
 #if BUILDFLAG(IS_ANDROID)
-  password_autofill_agent_->TryToShowKeyboardReplacingSurface(element);
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordSuggestionBottomSheetV2)) {
+    password_autofill_agent_->TryToShowKeyboardReplacingSurface(element);
+  }
 #endif
 
-  ShowSuggestions(
-      element, {.autofill_on_empty_values = true,
-                // Even if the user has not edited an input element, it may
-                // still contain a value: A default value filled by the website.
-                // In that case, we don't want to elide suggestions that don't
-                // have a common prefix with the default value.
-                .show_full_suggestion_list =
-                    element.IsAutofilled() || !element.UserHasEditedTheField(),
-                .form_element_was_clicked = FormElementWasClicked(true)});
+  ShowSuggestions(element,
+                  AutofillSuggestionTriggerSource::kFormControlElementClicked);
 
   SendPotentiallySubmittedFormToBrowser();
 }

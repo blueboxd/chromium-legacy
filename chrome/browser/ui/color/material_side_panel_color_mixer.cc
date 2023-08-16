@@ -13,15 +13,29 @@
 void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
                                     const ui::ColorProviderManager::Key& key) {
   ui::ColorMixer& mixer = provider->AddMixer();
-  mixer[kColorSidePanelContentBackground] = {ui::kColorSysSurface4};
+  mixer[kColorSidePanelContentBackground] = {ui::kColorSysBaseContainer};
   mixer[kColorSidePanelScrollbarThumb] = {ui::kColorSysPrimary};
-  mixer[kColorSidePanelCardBackground] = {ui::kColorSysSurface};
+  mixer[kColorSidePanelCardBackground] = {ui::kColorSysBaseContainerElevated};
   mixer[kColorSidePanelCardPrimaryForeground] = {ui::kColorSysOnSurface};
   mixer[kColorSidePanelCardSecondaryForeground] = {
       ui::kColorSysOnSurfaceSubtle};
   mixer[kColorSidePanelDivider] = {ui::kColorSysDivider};
 
-  mixer[kColorSidePanelBadgeBackground] = {ui::kColorSysSurfaceVariant};
+  /* Dialogs within the side panel. */
+  mixer[kColorSidePanelDialogBackground] = {ui::kColorSysSurface};
+  mixer[kColorSidePanelDialogDivider] = {ui::kColorSysNeutralOutline};
+  mixer[kColorSidePanelDialogPrimaryForeground] = {ui::kColorSysOnSurface};
+  mixer[kColorSidePanelDialogSecondaryForeground] = {
+      ui::kColorSysOnSurfaceSubtle};
+
+  /* Menus within the side panel. */
+  mixer[kColorSidePanelMenuBackground] = {ui::kColorSysSurface};
+  mixer[kColorSidePanelMenuDisabled] = {ui::kColorSysStateDisabled};
+  mixer[kColorSidePanelMenuDivider] = {ui::kColorSysDivider};
+  mixer[kColorSidePanelMenuForeground] = {ui::kColorSysOnSurface};
+  mixer[kColorSidePanelMenuIcon] = {ui::kColorSysOnSurfaceSubtle};
+
+  mixer[kColorSidePanelBadgeBackground] = {ui::kColorSysNeutralContainer};
   mixer[kColorSidePanelBadgeBackgroundUpdated] = {
       ui::kColorSysTertiaryContainer};
   mixer[kColorSidePanelBadgeForeground] = {ui::kColorSysOnSurfaceVariant};
@@ -44,6 +58,14 @@ void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
 
   mixer[kColorSidePanelTextfieldBorder] = {ui::kColorSysNeutralOutline};
 
+  /* Bookmarks */
+  mixer[kColorSidePanelBookmarksSelectedFolderBackground] = {
+      ui::kColorSysStateRipplePrimary};
+  mixer[kColorSidePanelBookmarksSelectedFolderForeground] = {
+      ui::kColorSysOnSurface};
+  mixer[kColorSidePanelBookmarksSelectedFolderIcon] = {
+      ui::kColorSysOnSurfaceSubtle};
+
   /* Customize Chrome */
   mixer[kColorSidePanelCustomizeChromeColorPickerCheckmarkBackground] = {
       ui::kColorSysOnSurface};
@@ -61,6 +83,8 @@ void AddMaterialSidePanelColorMixer(ui::ColorProvider* provider,
       ui::kColorSysPrimary};
   mixer[kColorSidePanelCustomizeChromeThemeCheckmarkForeground] = {
       ui::kColorSysOnPrimary};
+  mixer[kColorSidePanelCustomizeChromeThemeSnapshotBackground] = {
+      ui::kColorSysTonalContainer};
   mixer[kColorSidePanelCustomizeChromeWebStoreOptionBorder] = {
       ui::kColorSysNeutralOutline};
 }

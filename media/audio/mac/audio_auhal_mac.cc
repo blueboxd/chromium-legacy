@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/mac/core_audio_util_mac.h"
@@ -365,8 +366,11 @@ void AUHALStream::ProvideInput(int frame_delay, AudioBus* dest) {
   const base::TimeTicks now = base::TimeTicks::Now();
   const base::TimeDelta delay = playout_time - now;
 
+  UMA_HISTOGRAM_COUNTS_1000("Media.Audio.Render.SystemDelay",
+                            delay.InMilliseconds());
   // Supply the input data and render the output data.
-  source_->OnMoreData(delay, now, glitch_info_accumulator_.GetAndReset(), dest);
+  source_->OnMoreData(BoundedDelay(delay), now,
+                      glitch_info_accumulator_.GetAndReset(), dest);
   dest->Scale(volume_);
 }
 
@@ -417,8 +421,8 @@ void AUHALStream::UpdatePlayoutTimestamp(const AudioTimeStamp* timestamp) {
         AudioTimestampHelper::FramesToTime(lost_frames, params_.sample_rate());
     glitch_reporter_.UpdateStats(lost_audio_duration);
     if (!lost_audio_duration.is_zero()) {
-      glitch_info_accumulator_.Add(
-          AudioGlitchInfo{.duration = lost_audio_duration, .count = 1});
+      glitch_info_accumulator_.Add(AudioGlitchInfo::SingleBoundedGlitch(
+          lost_audio_duration, AudioGlitchInfo::Direction::kRender));
     }
   }
 

@@ -89,7 +89,6 @@
 <translation id="152234381334907219">一律不儲存</translation>
 <translation id="1523341279170789507">允許所有 Cookie</translation>
 <translation id="1524563461097350801">不用了，謝謝</translation>
-<translation id="1531836666020185856">精選內容</translation>
 <translation id="1535268707340844072">你目前的設定可能會導致某些網站無法正常運作。如要管理所有網站的 Cookie，請參閱 <ph name="BEGIN_LINK" />Cookie 設定<ph name="END_LINK" />。</translation>
 <translation id="1540800554400757039">地址 1</translation>
 <translation id="1545749641540134597">掃描 QR code</translation>
@@ -185,13 +184,13 @@
 <translation id="2230173723195178503">已載入網頁</translation>
 <translation id="2239626343334228536">正在清除瀏覽資料...</translation>
 <translation id="2242467532204595597">隨時可以使用 Chrome 開啟訊息、文件和其他應用程式中的連結。</translation>
-<translation id="22508856139286506">已忽略的警告 (<ph name="COUNT" />)</translation>
 <translation id="2251686759395008410">「選單」→「歷史記錄」</translation>
 <translation id="2252674110805316998">網頁搜尋</translation>
 <translation id="2256933947031277845">貴機構規定你只能使用特定帳戶登入。</translation>
 <translation id="225943865679747347">錯誤代碼：<ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">新增帳戶</translation>
 <translation id="2268044343513325586">修正搜尋</translation>
+<translation id="2269277877025820298">查看更多內容</translation>
 <translation id="2273327106802955778">[更多] 選單</translation>
 <translation id="2286505070150039482">醒目顯示的文字</translation>
 <translation id="2287614783861766820">{count,plural, =1{這個地址將從這部裝置中刪除。}other{這些地址將從這部裝置中刪除。}}</translation>
@@ -217,7 +216,6 @@
 <translation id="2423077901494354337">你現在可以在裝置上充分運用 Chrome 的各項功能。</translation>
 <translation id="2434405374328098816">你已儲存過「<ph name="USERNAME" />」在 <ph name="WEBSITE" /> 使用的密碼</translation>
 <translation id="2435457462613246316">顯示密碼</translation>
-<translation id="2439425774439590">最常造訪的網站</translation>
 <translation id="2451654228769116489">固定分頁</translation>
 <translation id="2461070143328828326">密碼設定</translation>
 <translation id="2469960372084740698">要停用安全瀏覽功能嗎？</translation>
@@ -354,6 +352,7 @@
 <translation id="3245744387817103524">無法儲存變更。</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" /> (第 <ph name="INDEX" /> 項建議，共 <ph name="NUM_SUGGESTIONS" /> 項)</translation>
 <translation id="3264775633254836593">自動填寫密碼</translation>
+<translation id="3265534588625245297">管理你追蹤的網站</translation>
 <translation id="3268451620468152448">開啟的分頁</translation>
 <translation id="3272527697863656322">取消</translation>
 <translation id="3277021493514034324">已複製網站網址</translation>
@@ -1081,7 +1080,7 @@
 
 網站可使用 Cookie 查看你在各網站的瀏覽活動，並提供個人化廣告等服務。</translation>
 <translation id="7971521879845308059">封鎖彈出式視窗</translation>
-<translation id="797413074872316787">如要在所有裝置上保持同步並享有個人化體驗，請開啟同步功能。</translation>
+<translation id="7975036700432177008">試用</translation>
 <translation id="7978018860671536736">3. 輕觸 [自動填入密碼]</translation>
 <translation id="7982789257301363584">網路</translation>
 <translation id="7987685713885608670">為進一步加強安全性，系統會先在裝置上將密碼加密，再儲存至 Google 密碼管理員。</translation>
@@ -1143,6 +1142,7 @@
 <translation id="8323906514956095947">輕觸並按住即可查看更多分頁選項</translation>
 <translation id="8328777765163860529">關閉全部</translation>
 <translation id="8343993175958086504">備份資料即可在任何裝置上使用。</translation>
+<translation id="834783239627985533">最常造訪的網站</translation>
 <translation id="8378714024927312812">由貴機構管理</translation>
 <translation id="8386068868580335421">重設</translation>
 <translation id="838867811594159347">輸入通關密語…</translation>

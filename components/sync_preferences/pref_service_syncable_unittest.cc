@@ -80,16 +80,16 @@ const char kOsPriorityPrefName[] = "os_priority_pref";
 // Assigning an id of 0 to all the test prefs.
 const std::unordered_map<std::string, SyncablePrefMetadata>
     kSyncablePrefsDatabase = {
-        {kStringPrefName, {0, syncer::PREFERENCES}},
-        {kListPrefName, {0, syncer::PREFERENCES}},
-        {kDictPrefName, {0, syncer::PREFERENCES}},
-        {kDefaultCharsetPrefName, {0, syncer::PREFERENCES}},
-        {kBrowserPriorityPrefName, {0, syncer::PRIORITY_PREFERENCES}},
-        {kBrowserPrefName, {0, syncer::PREFERENCES}},
-        {kBrowserPriorityPrefName, {0, syncer::PRIORITY_PREFERENCES}},
+        {kStringPrefName, {0, syncer::PREFERENCES, false}},
+        {kListPrefName, {0, syncer::PREFERENCES, false}},
+        {kDictPrefName, {0, syncer::PREFERENCES, false}},
+        {kDefaultCharsetPrefName, {0, syncer::PREFERENCES, false}},
+        {kBrowserPriorityPrefName, {0, syncer::PRIORITY_PREFERENCES, false}},
+        {kBrowserPrefName, {0, syncer::PREFERENCES, false}},
+        {kBrowserPriorityPrefName, {0, syncer::PRIORITY_PREFERENCES, false}},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-        {kOsPrefName, {0, syncer::OS_PREFERENCES}},
-        {kOsPriorityPrefName, {0, syncer::OS_PRIORITY_PREFERENCES}},
+        {kOsPrefName, {0, syncer::OS_PREFERENCES, false}},
+        {kOsPriorityPrefName, {0, syncer::OS_PRIORITY_PREFERENCES, false}},
 #endif
 };
 
@@ -512,7 +512,8 @@ class PrefServiceSyncableMergeTest : public testing::Test {
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_ =
       base::MakeRefCounted<user_prefs::PrefRegistrySyncable>();
   // Owned by prefs_;
-  const raw_ptr<PrefNotifierImpl> pref_notifier_ = new PrefNotifierImpl;
+  const raw_ptr<PrefNotifierImpl, DanglingUntriaged> pref_notifier_ =
+      new PrefNotifierImpl;
   scoped_refptr<TestingPrefStore> managed_prefs_ =
       base::MakeRefCounted<TestingPrefStore>();
   scoped_refptr<TestingPrefStore> user_prefs_ =

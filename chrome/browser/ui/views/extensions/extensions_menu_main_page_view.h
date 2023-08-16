@@ -42,8 +42,14 @@ class ExtensionsMenuMainPageView : public views::View {
     kRestrictedAccess,
     // User can customize each extension's access to the site.
     kUserCustomizedAccess,
+    // User can customize each extension's access to the site, but a page
+    // reload is required to reflect changes.
+    kUserCustomizedAccessReload,
     // User blocked all extensions access to the site.
-    kUserBlockedAcces,
+    kUserBlockedAccess,
+    // User blocked all extensions access to the site, but a page
+    // reload is required to reflect changes.
+    kUserBlockedAccessReload,
   };
 
   explicit ExtensionsMenuMainPageView(Browser* browser,
@@ -92,14 +98,13 @@ class ExtensionsMenuMainPageView : public views::View {
   // if existent.
   void RemoveExtensionRequestingAccess(const extensions::ExtensionId& id);
 
-  void OnToggleButtonPressed();
-
   // Accessors used by tests:
   // Returns the currently-showing menu items.
   views::ToggleButton* GetSiteSettingsToggleForTesting() {
     return site_settings_toggle_;
   }
   views::Label* GetTextContainerForTesting();
+  views::View* GetReloadContainerForTesting();
   views::View* GetRequestsAccessContainerForTesting();
   std::vector<extensions::ExtensionId>
   GetExtensionsRequestingAccessForTesting();

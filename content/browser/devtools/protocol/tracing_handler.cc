@@ -34,6 +34,7 @@
 #include "content/browser/devtools/devtools_stream_file.h"
 #include "content/browser/devtools/devtools_traceable_screenshot.h"
 #include "content/browser/devtools/devtools_video_consumer.h"
+#include "content/browser/devtools/tracing_process_set_monitor.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -44,6 +45,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tracing_service.h"
+#include "content/public/browser/web_contents.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_session.h"
@@ -188,30 +190,29 @@ void SendProcessReadyInBrowserEvent(const base::UnguessableToken& frame_token,
 }
 
 void FillFrameData(base::trace_event::TracedValue* data,
-                   FrameTreeNode* node,
                    RenderFrameHostImpl* frame_host,
                    const GURL& url) {
+  CHECK(frame_host);
   GURL::Replacements strip_fragment;
   strip_fragment.ClearRef();
+  std::string trimmed_url = url.ReplaceComponents(strip_fragment).spec();
   data->SetString("frame", frame_host->devtools_frame_token().ToString());
-  data->SetString("url", url.ReplaceComponents(strip_fragment).spec());
-  data->SetString("name", node->frame_name());
-  if (node->parent()) {
-    data->SetString("parent",
-                    node->parent()->GetDevToolsFrameToken().ToString());
+  data->SetString("url", std::move(trimmed_url));
+  data->SetString("name", frame_host->GetFrameName());
+  if (frame_host->GetParent()) {
+    data->SetString(
+        "parent", frame_host->GetParent()->GetDevToolsFrameToken().ToString());
   }
-  if (frame_host) {
-    RenderProcessHost* process_host = frame_host->GetProcess();
-    const base::Process& process_handle = process_host->GetProcess();
-    if (!process_handle.IsValid()) {
-      data->SetString("processPseudoId", GetProcessHostHex(process_host));
-      frame_host->GetProcess()->PostTaskWhenProcessIsReady(
-          base::BindOnce(&SendProcessReadyInBrowserEvent,
-                         frame_host->devtools_frame_token(), process_host));
-    } else {
-      // Cast process id to int to be compatible with tracing.
-      data->SetInteger("processId", static_cast<int>(process_handle.Pid()));
-    }
+  RenderProcessHost* process_host = frame_host->GetProcess();
+  const base::Process& process_handle = process_host->GetProcess();
+  if (!process_handle.IsValid()) {
+    data->SetString("processPseudoId", GetProcessHostHex(process_host));
+    frame_host->GetProcess()->PostTaskWhenProcessIsReady(
+        base::BindOnce(&SendProcessReadyInBrowserEvent,
+                       frame_host->devtools_frame_token(), process_host));
+  } else {
+    // Cast process id to int to be compatible with tracing.
+    data->SetInteger("processId", static_cast<int>(process_handle.Pid()));
   }
 }
 
@@ -553,9 +554,13 @@ class TracingHandler::PerfettoTracingSession {
   base::WeakPtrFactory<PerfettoTracingSession> weak_factory_{this};
 };
 
-TracingHandler::TracingHandler(DevToolsIOContext* io_context)
+TracingHandler::TracingHandler(DevToolsAgentHostImpl* host,
+                               DevToolsIOContext* io_context,
+                               DevToolsSession* root_session)
     : DevToolsDomainHandler(Tracing::Metainfo::domainName),
       io_context_(io_context),
+      host_(host),
+      session_for_process_filter_(root_session),
       did_initiate_recording_(false),
       return_as_stream_(false),
       gzip_compression_(false),
@@ -574,9 +579,9 @@ std::vector<TracingHandler*> TracingHandler::ForAgentHost(
 
 void TracingHandler::SetRenderer(int process_host_id,
                                  RenderFrameHostImpl* frame_host) {
-  frame_host_ = frame_host;
-  if (!frame_host)
+  if (!frame_host) {
     return;
+  }
   video_consumer_->SetFrameSinkId(
       frame_host->GetRenderWidgetHost()->GetFrameSinkId());
 }
@@ -641,6 +646,7 @@ void TracingHandler::OnTraceComplete() {
   DCHECK(!trace_data_buffer_state_.slashed);
 
   bool data_loss = session_->HasDataLossOccurred();
+  process_set_monitor_.reset();
   session_.reset();
   frontend_->TracingComplete(data_loss);
 }
@@ -705,6 +711,7 @@ std::string TracingHandler::UpdateTraceDataBuffer(
 
 void TracingHandler::OnTraceToStreamComplete(const std::string& stream_handle) {
   bool data_loss = session_->HasDataLossOccurred();
+  process_set_monitor_.reset();
   session_.reset();
   std::string stream_format = (proto_format_ ? Tracing::StreamFormatEnum::Proto
                                              : Tracing::StreamFormatEnum::Json);
@@ -824,14 +831,26 @@ void TracingHandler::Start(Maybe<std::string> categories,
       buffer_usage_reporting_interval.fromMaybe(0);
   did_initiate_recording_ = true;
   trace_config_ = std::move(trace_config);
-  pids_being_traced_.clear();
 
-  GpuProcessHost* gpu_process_host =
-      GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED,
-                          /* force_create */ false);
-  base::ProcessId gpu_pid =
-      gpu_process_host ? gpu_process_host->process_id() : base::kNullProcessId;
-  SetupProcessFilter(gpu_pid, nullptr);
+  if (session_for_process_filter_) {
+    process_set_monitor_ = TracingProcessSetMonitor::Start(
+        *session_for_process_filter_,
+        base::BindRepeating(&TracingHandler::AddProcessToFilter,
+                            base::Unretained(this)));
+    std::unordered_set<base::ProcessId> pids = process_set_monitor_->GetPids();
+
+    base::ProcessId browser_pid = base::Process::Current().Pid();
+    pids.insert(browser_pid);
+    if (auto* gpu_process_host =
+            GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED,
+                                /* force_create */ false)) {
+      base::ProcessId gpu_pid = gpu_process_host->process_id();
+      if (gpu_pid != base::kNullProcessId) {
+        pids.insert(gpu_pid);
+      }
+    }
+    AddPidsToProcessFilter(pids, trace_config_);
+  }
 
   session_ = std::make_unique<PerfettoTracingSession>(proto_format_, *backend);
   session_->EnableTracing(
@@ -855,55 +874,11 @@ perfetto::TraceConfig TracingHandler::CreatePerfettoConfiguration(
           : tracing::mojom::kChromeTraceEventLabel);
 }
 
-void TracingHandler::SetupProcessFilter(
-    base::ProcessId gpu_pid,
-    RenderFrameHost* new_render_frame_host) {
-  if (!frame_host_)
-    return;
-
-  base::ProcessId browser_pid = base::Process::Current().Pid();
-  pids_being_traced_.insert(browser_pid);
-
-  if (gpu_pid != base::kNullProcessId)
-    pids_being_traced_.insert(gpu_pid);
-
-  if (new_render_frame_host)
-    AppendProcessId(new_render_frame_host, &pids_being_traced_);
-
-  DCHECK(!frame_host_->GetParent());
-  for (FrameTreeNode* node : frame_host_->frame_tree()->Nodes()) {
-    if (RenderFrameHost* frame_host = node->current_frame_host())
-      AppendProcessId(frame_host, &pids_being_traced_);
-  }
-
-  AddPidsToProcessFilter(pids_being_traced_, trace_config_);
-}
-
-void TracingHandler::AppendProcessId(
-    RenderFrameHost* render_frame_host,
-    std::unordered_set<base::ProcessId>* process_set) {
-  RenderProcessHost* process_host = render_frame_host->GetProcess();
-  if (process_host->GetProcess().IsValid()) {
-    process_set->insert(process_host->GetProcess().Pid());
-  } else {
-    process_host->PostTaskWhenProcessIsReady(
-        base::BindOnce(&TracingHandler::OnProcessReady,
-                       weak_factory_.GetWeakPtr(), process_host));
-  }
-}
-
-void TracingHandler::OnProcessReady(RenderProcessHost* process_host) {
-  AddProcess(process_host->GetProcess().Pid());
-}
-
-void TracingHandler::AddProcess(base::ProcessId pid) {
-  if (!did_initiate_recording_)
-    return;
-  if (!pids_being_traced_.insert(pid).second)
-    return;
+void TracingHandler::AddProcessToFilter(base::ProcessId pid) {
+  CHECK(did_initiate_recording_);
+  CHECK(session_);
   AddPidsToProcessFilter({pid}, trace_config_);
-  if (session_)
-    session_->ChangeTraceConfig(trace_config_);
+  session_->ChangeTraceConfig(trace_config_);
 }
 
 void TracingHandler::AttemptAdoptStartupSession(
@@ -911,8 +886,10 @@ void TracingHandler::AttemptAdoptStartupSession(
     bool gzip_compression,
     bool proto_format,
     perfetto::BackendType tracing_backend) {
-  if (frame_host_ != nullptr)
+  // Only adopt startup session for browser-level sessions.
+  if (session_for_process_filter_) {
     return;
+  }
   auto* startup_config = tracing::TraceStartupConfig::GetInstance();
   if (!startup_config->AttemptAdoptBySessionOwner(
           tracing::TraceStartupConfig::SessionOwner::kDevToolsTracingHandler)) {
@@ -1112,6 +1089,7 @@ void TracingHandler::StopTracing(
     const scoped_refptr<TracingController::TraceDataEndpoint>& endpoint) {
   DCHECK(session_);
   buffer_usage_poll_timer_.reset();
+  process_set_monitor_.reset();
   if (endpoint) {
     // Will delete |session_|.
     session_->DisableTracing(std::move(endpoint));
@@ -1128,22 +1106,36 @@ bool TracingHandler::IsTracing() const {
 
 void TracingHandler::EmitFrameTree() {
   auto data = std::make_unique<base::trace_event::TracedValue>();
-  if (frame_host_) {
-    DCHECK(!frame_host_->GetParent());
+  if (WebContents* wc = host_ ? host_->GetWebContents() : nullptr) {
+    auto* frame_host =
+        static_cast<RenderFrameHostImpl*>(wc->GetPrimaryMainFrame());
+    CHECK(frame_host);
     data->SetInteger("frameTreeNodeId",
-                     frame_host_->frame_tree_node()->frame_tree_node_id());
+                     frame_host->frame_tree_node()->frame_tree_node_id());
     data->SetBoolean("persistentIds", true);
     data->BeginArray("frames");
-    for (FrameTreeNode* node : frame_host_->frame_tree()->Nodes()) {
+    wc->ForEachRenderFrameHost([&data](RenderFrameHost* rfh) {
       data->BeginDictionary();
-      FillFrameData(data.get(), node, node->current_frame_host(),
-                    node->current_url());
+      FillFrameData(data.get(), static_cast<RenderFrameHostImpl*>(rfh),
+                    rfh->GetLastCommittedURL());
       data->EndDictionary();
-    }
+    });
     data->EndArray();
   }
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "TracingStartedInBrowser", TRACE_EVENT_SCOPE_THREAD,
+                       "data", std::move(data));
+}
+
+void TracingHandler::WillInitiatePrerender(FrameTreeNode* frame_tree_node) {
+  if (!did_initiate_recording_) {
+    return;
+  }
+  auto data = std::make_unique<base::trace_event::TracedValue>();
+  FillFrameData(data.get(), frame_tree_node->current_frame_host(),
+                frame_tree_node->current_url());
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                       "FrameCommittedInBrowser", TRACE_EVENT_SCOPE_THREAD,
                        "data", std::move(data));
 }
 
@@ -1152,16 +1144,11 @@ void TracingHandler::ReadyToCommitNavigation(
   if (!did_initiate_recording_)
     return;
   auto data = std::make_unique<base::trace_event::TracedValue>();
-  FillFrameData(data.get(), navigation_request->frame_tree_node(),
-                navigation_request->GetRenderFrameHost(),
+  FillFrameData(data.get(), navigation_request->GetRenderFrameHost(),
                 navigation_request->GetURL());
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "FrameCommittedInBrowser", TRACE_EVENT_SCOPE_THREAD,
                        "data", std::move(data));
-
-  SetupProcessFilter(base::kNullProcessId,
-                     navigation_request->GetRenderFrameHost());
-  session_->ChangeTraceConfig(trace_config_);
 }
 
 void TracingHandler::FrameDeleted(int frame_tree_node_id) {
@@ -1169,6 +1156,11 @@ void TracingHandler::FrameDeleted(int frame_tree_node_id) {
     return;
   FrameTreeNode* node = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
 
+  if (!node->current_frame_host()) {
+    // This might happen on prerendering activation when the prerender tree is
+    // shutting how and the RFH is migrated to a different frame tree.
+    return;
+  }
   auto data = std::make_unique<base::trace_event::TracedValue>();
   data->SetString(
       "frame", node->current_frame_host()->devtools_frame_token().ToString());

@@ -43,10 +43,6 @@ using testing::NiceMock;
 namespace autofill {
 
 namespace {
-
-// A constant value to use as an Autofill profile ID.
-constexpr Suggestion::FrontendId kAutofillProfileId = Suggestion::FrontendId(1);
-
 class MockAutofillDriver : public TestAutofillDriver {
  public:
   MockAutofillDriver() = default;
@@ -89,7 +85,6 @@ class MockAutofillClient : public TestAutofillClient {
                const std::vector<std::u16string>& lables),
               (override));
   MOCK_METHOD(void, HideAutofillPopup, (PopupHidingReason), (override));
-  MOCK_METHOD(void, ExecuteCommand, (Suggestion::FrontendId), (override));
   MOCK_METHOD(void,
               OpenPromoCodeOfferDetailsURL,
               (const GURL& url),
@@ -208,7 +203,7 @@ class AutofillExternalDelegateUnitTest : public testing::Test {
   void IssueOnSuggestionsReturned(FieldGlobalId field_id) {
     std::vector<Suggestion> suggestions;
     suggestions.emplace_back();
-    suggestions[0].frontend_id = kAutofillProfileId;
+    suggestions[0].popup_item_id = PopupItemId::kAddressEntry;
     external_delegate_->OnSuggestionsReturned(field_id, suggestions,
                                               AutoselectFirstSuggestion(false));
   }
@@ -247,11 +242,11 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
   // This should call ShowAutofillPopup.
   std::vector<Suggestion> autofill_item;
   autofill_item.emplace_back();
-  autofill_item[0].frontend_id = kAutofillProfileId;
+  autofill_item[0].popup_item_id = PopupItemId::kAddressEntry;
   external_delegate_->OnSuggestionsReturned(field_id_, autofill_item,
                                             AutoselectFirstSuggestion(false));
   EXPECT_THAT(open_args.suggestions,
-              SuggestionVectorIdsAre(kAutofillProfileId,
+              SuggestionVectorIdsAre(PopupItemId::kAddressEntry,
 #if !BUILDFLAG(IS_ANDROID)
                                      PopupItemId::kSeparator,
 #endif
@@ -289,7 +284,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateDataList) {
   // This should call ShowAutofillPopup.
   std::vector<Suggestion> autofill_item;
   autofill_item.emplace_back();
-  autofill_item[0].frontend_id = kAutofillProfileId;
+  autofill_item[0].popup_item_id = PopupItemId::kAddressEntry;
   external_delegate_->OnSuggestionsReturned(field_id_, autofill_item,
                                             AutoselectFirstSuggestion(false));
   EXPECT_THAT(open_args.suggestions,
@@ -297,7 +292,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateDataList) {
 #if !BUILDFLAG(IS_ANDROID)
                                      PopupItemId::kSeparator,
 #endif
-                                     kAutofillProfileId,
+                                     PopupItemId::kAddressEntry,
 #if !BUILDFLAG(IS_ANDROID)
                                      PopupItemId::kSeparator,
 #endif
@@ -342,7 +337,7 @@ TEST_F(AutofillExternalDelegateUnitTest, UpdateDataListWhileShowingPopup) {
   // Ensure the popup is displayed.
   std::vector<Suggestion> autofill_item;
   autofill_item.emplace_back();
-  autofill_item[0].frontend_id = kAutofillProfileId;
+  autofill_item[0].popup_item_id = PopupItemId::kAddressEntry;
   external_delegate_->OnSuggestionsReturned(field_id_, autofill_item,
                                             AutoselectFirstSuggestion(false));
   EXPECT_THAT(open_args.suggestions,
@@ -350,7 +345,7 @@ TEST_F(AutofillExternalDelegateUnitTest, UpdateDataListWhileShowingPopup) {
 #if !BUILDFLAG(IS_ANDROID)
                                      PopupItemId::kSeparator,
 #endif
-                                     kAutofillProfileId,
+                                     PopupItemId::kAddressEntry,
 #if !BUILDFLAG(IS_ANDROID)
                                      PopupItemId::kSeparator,
 #endif
@@ -395,7 +390,7 @@ TEST_F(AutofillExternalDelegateUnitTest, DuplicateAutofillDatalistValues) {
   autofill_item[0].main_text =
       Suggestion::Text(u"Rick", Suggestion::Text::IsPrimary(true));
   autofill_item[0].labels = {{Suggestion::Text(u"Deckard")}};
-  autofill_item[0].frontend_id = kAutofillProfileId;
+  autofill_item[0].popup_item_id = PopupItemId::kAddressEntry;
   external_delegate_->OnSuggestionsReturned(field_id_, autofill_item,
                                             AutoselectFirstSuggestion(false));
   EXPECT_THAT(open_args.suggestions,
@@ -404,7 +399,7 @@ TEST_F(AutofillExternalDelegateUnitTest, DuplicateAutofillDatalistValues) {
 #if !BUILDFLAG(IS_ANDROID)
                                      PopupItemId::kSeparator,
 #endif
-                                     kAutofillProfileId,
+                                     PopupItemId::kAddressEntry,
 #if !BUILDFLAG(IS_ANDROID)
                                      PopupItemId::kSeparator,
 #endif
@@ -436,11 +431,11 @@ TEST_F(AutofillExternalDelegateUnitTest, DuplicateAutocompleteDatalistValues) {
   autocomplete_items.emplace_back();
   autocomplete_items[0].main_text =
       Suggestion::Text(u"Rick", Suggestion::Text::IsPrimary(true));
-  autocomplete_items[0].frontend_id = PopupItemId::kAutocompleteEntry;
+  autocomplete_items[0].popup_item_id = PopupItemId::kAutocompleteEntry;
   autocomplete_items.emplace_back();
   autocomplete_items[1].main_text =
       Suggestion::Text(u"Cain", Suggestion::Text::IsPrimary(true));
-  autocomplete_items[1].frontend_id = PopupItemId::kAutocompleteEntry;
+  autocomplete_items[1].popup_item_id = PopupItemId::kAutocompleteEntry;
   external_delegate_->OnSuggestionsReturned(field_id_, autocomplete_items,
                                             AutoselectFirstSuggestion(false));
   EXPECT_THAT(open_args.suggestions,
@@ -467,7 +462,7 @@ TEST_F(AutofillExternalDelegateUnitTest, AutofillWarnings) {
   // This should call ShowAutofillPopup.
   std::vector<Suggestion> autofill_item;
   autofill_item.emplace_back();
-  autofill_item[0].frontend_id =
+  autofill_item[0].popup_item_id =
       PopupItemId::kInsecureContextPaymentDisabledMessage;
   external_delegate_->OnSuggestionsReturned(field_id_, autofill_item,
                                             AutoselectFirstSuggestion(false));
@@ -493,12 +488,12 @@ TEST_F(AutofillExternalDelegateUnitTest,
   // This should call ShowAutofillPopup.
   std::vector<Suggestion> suggestions;
   suggestions.emplace_back();
-  suggestions[0].frontend_id =
+  suggestions[0].popup_item_id =
       PopupItemId::kInsecureContextPaymentDisabledMessage;
   suggestions.emplace_back();
   suggestions[1].main_text =
       Suggestion::Text(u"Rick", Suggestion::Text::IsPrimary(true));
-  suggestions[1].frontend_id = PopupItemId::kAutocompleteEntry;
+  suggestions[1].popup_item_id = PopupItemId::kAutocompleteEntry;
   external_delegate_->OnSuggestionsReturned(field_id_, suggestions,
                                             AutoselectFirstSuggestion(false));
 
@@ -514,8 +509,9 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
   EXPECT_CALL(*browser_autofill_manager_, FillOrPreviewForm(_, _, _, _, _))
       .Times(0);
   EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
-  external_delegate_->DidSelectSuggestion(
-      std::u16string(), Suggestion::FrontendId(-1), Suggestion::BackendId());
+  const Suggestion suggestion{
+      PopupItemId::kInsecureContextPaymentDisabledMessage};
+  external_delegate_->DidSelectSuggestion(suggestion);
 
   // Ensure it doesn't try to fill the form in with the negative id.
   EXPECT_CALL(autofill_client_,
@@ -523,8 +519,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
   EXPECT_CALL(*browser_autofill_manager_, FillOrPreviewForm(_, _, _, _, _))
       .Times(0);
 
-  external_delegate_->DidAcceptSuggestion(
-      Suggestion(Suggestion::FrontendId(-1)), 0);
+  external_delegate_->DidAcceptSuggestion(suggestion, /*position=*/0);
 }
 
 // Test that the Autofill delegate still allows previewing and filling
@@ -544,7 +539,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateFillsIbanEntry) {
   suggestions[0].main_text.value = masked_iban_value;
   suggestions[0].labels = {{Suggestion::Text(u"My doctor's IBAN")}};
   suggestions[0].payload = Suggestion::ValueToFill(ummasked_iban_value);
-  suggestions[0].frontend_id = PopupItemId::kIbanEntry;
+  suggestions[0].popup_item_id = PopupItemId::kIbanEntry;
   external_delegate_->OnSuggestionsReturned(field_id_, suggestions,
                                             AutoselectFirstSuggestion(false));
 
@@ -554,8 +549,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateFillsIbanEntry) {
   EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
   EXPECT_CALL(*autofill_driver_, RendererShouldPreviewFieldWithValue(
                                      field_id_, masked_iban_value));
-  external_delegate_->DidSelectSuggestion(
-      masked_iban_value, PopupItemId::kIbanEntry, Suggestion::BackendId());
+  external_delegate_->DidSelectSuggestion(suggestions[0]);
   EXPECT_CALL(autofill_client_,
               HideAutofillPopup(PopupHidingReason::kAcceptSuggestion));
   EXPECT_CALL(*autofill_driver_,
@@ -579,7 +573,7 @@ TEST_F(AutofillExternalDelegateUnitTest,
   std::u16string promo_code_value = u"PROMOCODE1234";
   suggestions[0].main_text.value = promo_code_value;
   suggestions[0].labels = {{Suggestion::Text(u"12.34% off your purchase!")}};
-  suggestions[0].frontend_id = PopupItemId::kMerchantPromoCodeEntry;
+  suggestions[0].popup_item_id = PopupItemId::kMerchantPromoCodeEntry;
   external_delegate_->OnSuggestionsReturned(field_id_, suggestions,
                                             AutoselectFirstSuggestion(false));
 
@@ -589,18 +583,13 @@ TEST_F(AutofillExternalDelegateUnitTest,
   EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
   EXPECT_CALL(*autofill_driver_,
               RendererShouldPreviewFieldWithValue(field_id_, promo_code_value));
-  external_delegate_->DidSelectSuggestion(promo_code_value,
-                                          PopupItemId::kMerchantPromoCodeEntry,
-                                          Suggestion::BackendId());
+  external_delegate_->DidSelectSuggestion(suggestions[0]);
   EXPECT_CALL(autofill_client_,
               HideAutofillPopup(PopupHidingReason::kAcceptSuggestion));
   EXPECT_CALL(*autofill_driver_,
               RendererShouldFillFieldWithValue(field_id_, promo_code_value));
 
-  external_delegate_->DidAcceptSuggestion(
-      test::CreateAutofillSuggestion(PopupItemId::kMerchantPromoCodeEntry,
-                                     promo_code_value),
-      0);
+  external_delegate_->DidAcceptSuggestion(suggestions[0], 0);
 }
 
 // Test that the Autofill delegate routes the merchant promo code suggestions
@@ -624,21 +613,21 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
   IssueOnQuery();
   EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
   external_delegate_->DidSelectSuggestion(
-      u"baz foo", PopupItemId::kPasswordEntry, Suggestion::BackendId());
+      test::CreateAutofillSuggestion(PopupItemId::kPasswordEntry, u"baz foo"));
   EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
   EXPECT_CALL(
       *browser_autofill_manager_,
       FillOrPreviewForm(mojom::RendererFormDataAction::kPreview, _, _, _, _));
-  external_delegate_->DidSelectSuggestion(u"baz foo", Suggestion::FrontendId(1),
-                                          Suggestion::BackendId());
+  external_delegate_->DidSelectSuggestion(
+      test::CreateAutofillSuggestion(PopupItemId::kAddressEntry, u"baz foo"));
 
   // Ensure selecting an autocomplete entry will cause any previews to
   // get cleared.
   EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
   EXPECT_CALL(*autofill_driver_, RendererShouldPreviewFieldWithValue(
                                      field_id_, std::u16string(u"baz foo")));
-  external_delegate_->DidSelectSuggestion(
-      u"baz foo", PopupItemId::kAutocompleteEntry, Suggestion::BackendId());
+  external_delegate_->DidSelectSuggestion(test::CreateAutofillSuggestion(
+      PopupItemId::kAutocompleteEntry, u"baz foo"));
 
   // Ensure selecting a virtual card entry will cause any previews to
   // get cleared.
@@ -646,9 +635,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
   EXPECT_CALL(*browser_autofill_manager_,
               FillOrPreviewVirtualCardInformation(
                   mojom::RendererFormDataAction::kPreview, _, _, _, _));
-  external_delegate_->DidSelectSuggestion(std::u16string(),
-                                          PopupItemId::kVirtualCreditCardEntry,
-                                          Suggestion::BackendId());
+  external_delegate_->DidSelectSuggestion(
+      test::CreateAutofillSuggestion(PopupItemId::kVirtualCreditCardEntry));
 }
 
 // Test that the popup is hidden once we are done editing the autofill field.
@@ -689,7 +677,7 @@ TEST_F(AutofillExternalDelegateUnitTest,
       FillOrPreviewForm(mojom::RendererFormDataAction::kFill, _, _, _, _));
 
   external_delegate_->DidAcceptSuggestion(
-      test::CreateAutofillSuggestion(kAutofillProfileId, dummy_string),
+      test::CreateAutofillSuggestion(PopupItemId::kAddressEntry, dummy_string),
       2);  // Row 2
 }
 
@@ -779,18 +767,6 @@ TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardPromptMetricsTest) {
   }
 }
 
-// Test that autofill client will start the signin flow after the user accepted
-// the suggestion to sign in.
-TEST_F(AutofillExternalDelegateUnitTest, SigninPromoMenuItem) {
-  EXPECT_CALL(autofill_client_, ExecuteCommand(Suggestion::FrontendId(
-                                    PopupItemId::kCreditCardSigninPromo)));
-  EXPECT_CALL(autofill_client_,
-              HideAutofillPopup(PopupHidingReason::kAcceptSuggestion));
-
-  external_delegate_->DidAcceptSuggestion(
-      Suggestion(PopupItemId::kCreditCardSigninPromo), 0);
-}
-
 MATCHER_P(CreditCardMatches, card, "") {
   return !arg.Compare(card);
 }
@@ -816,7 +792,7 @@ TEST_F(AutofillExternalDelegateUnitTest, IgnoreAutocompleteOffForAutofill) {
 
   std::vector<Suggestion> autofill_items;
   autofill_items.emplace_back();
-  autofill_items[0].frontend_id = PopupItemId::kAutocompleteEntry;
+  autofill_items[0].popup_item_id = PopupItemId::kAutocompleteEntry;
 
   // Ensure the popup tries to show itself, despite autocomplete="off".
   EXPECT_CALL(autofill_client_, ShowAutofillPopup);
@@ -835,9 +811,8 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateFillFieldWithValue) {
   EXPECT_CALL(*autofill_driver_,
               RendererShouldFillFieldWithValue(field_id_, dummy_string));
   EXPECT_CALL(*autofill_client_.GetMockAutocompleteHistoryManager(),
-              OnSingleFieldSuggestionSelected(
-                  dummy_string,
-                  Suggestion::FrontendId(PopupItemId::kAutocompleteEntry)))
+              OnSingleFieldSuggestionSelected(dummy_string,
+                                              PopupItemId::kAutocompleteEntry))
       .Times(1);
   base::HistogramTester histogram_tester;
 
@@ -854,8 +829,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateFillFieldWithValue) {
               RendererShouldFillFieldWithValue(field_id_, dummy_string));
   EXPECT_CALL(*autofill_client_.GetMockMerchantPromoCodeManager(),
               OnSingleFieldSuggestionSelected(
-                  dummy_string,
-                  Suggestion::FrontendId(PopupItemId::kMerchantPromoCodeEntry)))
+                  dummy_string, PopupItemId::kMerchantPromoCodeEntry))
       .Times(1);
   external_delegate_->DidAcceptSuggestion(
       test::CreateAutofillSuggestion(PopupItemId::kMerchantPromoCodeEntry,
@@ -867,10 +841,9 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateFillFieldWithValue) {
   // Test that IBANs get autofilled.
   EXPECT_CALL(*autofill_driver_,
               RendererShouldFillFieldWithValue(field_id_, ummasked_iban_value));
-  EXPECT_CALL(
-      *autofill_client_.GetMockIBANManager(),
-      OnSingleFieldSuggestionSelected(
-          masked_iban_value, Suggestion::FrontendId(PopupItemId::kIbanEntry)));
+  EXPECT_CALL(*autofill_client_.GetMockIBANManager(),
+              OnSingleFieldSuggestionSelected(masked_iban_value,
+                                              PopupItemId::kIbanEntry));
   external_delegate_->DidAcceptSuggestion(
       test::CreateAutofillSuggestion(
           PopupItemId::kIbanEntry, masked_iban_value,
@@ -881,29 +854,31 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateFillFieldWithValue) {
 TEST_F(AutofillExternalDelegateUnitTest, ShouldShowGooglePayIcon) {
   IssueOnQuery();
 
-  auto element_icons = testing::ElementsAre(std::string(),
-#if !BUILDFLAG(IS_ANDROID)
-                                            std::string(),
-#endif
-                                            testing::StartsWith("googlePay"));
   AutofillClient::PopupOpenArgs open_args;
   EXPECT_CALL(autofill_client_, ShowAutofillPopup)
       .WillOnce(testing::SaveArg<0>(&open_args));
 
   std::vector<Suggestion> autofill_item;
   autofill_item.emplace_back();
-  autofill_item[0].frontend_id = kAutofillProfileId;
+  autofill_item[0].popup_item_id = PopupItemId::kAddressEntry;
 
   // This should call ShowAutofillPopup.
   external_delegate_->OnSuggestionsReturned(
       field_id_, autofill_item, AutoselectFirstSuggestion(false), true);
 
   // On Desktop, the GPay icon should be stored in the store indicator icon.
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-  EXPECT_THAT(open_args.suggestions, SuggestionVectorIconsAre(element_icons));
-#else
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_THAT(open_args.suggestions,
-              SuggestionVectorStoreIndicatorIconsAre(element_icons));
+              SuggestionVectorIconsAre(std::string(),
+                                       testing::StartsWith("googlePay")));
+#elif BUILDFLAG(IS_IOS)
+  EXPECT_THAT(open_args.suggestions,
+              SuggestionVectorIconsAre(std::string(), std::string(),
+                                       testing::StartsWith("googlePay")));
+#else
+  EXPECT_THAT(open_args.suggestions, SuggestionVectorStoreIndicatorIconsAre(
+                                         std::string(), std::string(),
+                                         testing::StartsWith("googlePay")));
 #endif
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
 }
@@ -912,50 +887,50 @@ TEST_F(AutofillExternalDelegateUnitTest,
        ShouldNotShowGooglePayIconIfSuggestionsContainLocalCards) {
   IssueOnQuery();
 
-  auto element_icons = testing::ElementsAre(std::string(),
-#if !BUILDFLAG(IS_ANDROID)
-                                            std::string(),
-#endif
-                                            "settingsIcon");
   AutofillClient::PopupOpenArgs open_args;
   EXPECT_CALL(autofill_client_, ShowAutofillPopup)
       .WillOnce(testing::SaveArg<0>(&open_args));
 
   std::vector<Suggestion> autofill_item;
   autofill_item.emplace_back();
-  autofill_item[0].frontend_id = kAutofillProfileId;
+  autofill_item[0].popup_item_id = PopupItemId::kAddressEntry;
 
   // This should call ShowAutofillPopup.
   external_delegate_->OnSuggestionsReturned(
       field_id_, autofill_item, AutoselectFirstSuggestion(false), false);
-  EXPECT_THAT(open_args.suggestions, SuggestionVectorIconsAre(element_icons));
+  EXPECT_THAT(open_args.suggestions, SuggestionVectorIconsAre(std::string(),
+#if !BUILDFLAG(IS_ANDROID)
+                                                              std::string(),
+#endif
+                                                              "settingsIcon"));
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
 }
 
 TEST_F(AutofillExternalDelegateUnitTest, ShouldUseNewSettingName) {
   IssueOnQuery();
 
-  auto element_main_texts = testing::ElementsAre(
-      Suggestion::Text(std::u16string(), Suggestion::Text::IsPrimary(true)),
-#if !BUILDFLAG(IS_ANDROID)
-      Suggestion::Text(std::u16string(), Suggestion::Text::IsPrimary(false)),
-#endif
-      Suggestion::Text(l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE),
-                       Suggestion::Text::IsPrimary(true)));
   AutofillClient::PopupOpenArgs open_args;
   EXPECT_CALL(autofill_client_, ShowAutofillPopup)
       .WillOnce(testing::SaveArg<0>(&open_args));
 
   std::vector<Suggestion> autofill_item;
   autofill_item.emplace_back();
-  autofill_item[0].frontend_id = kAutofillProfileId;
+  autofill_item[0].popup_item_id = PopupItemId::kAddressEntry;
   autofill_item[0].main_text.is_primary = Suggestion::Text::IsPrimary(true);
 
   // This should call ShowAutofillPopup.
   external_delegate_->OnSuggestionsReturned(field_id_, autofill_item,
                                             AutoselectFirstSuggestion(false));
-  EXPECT_THAT(open_args.suggestions,
-              SuggestionVectorMainTextsAre(element_main_texts));
+  EXPECT_THAT(
+      open_args.suggestions,
+      SuggestionVectorMainTextsAre(
+          Suggestion::Text(std::u16string(), Suggestion::Text::IsPrimary(true)),
+#if !BUILDFLAG(IS_ANDROID)
+          Suggestion::Text(std::u16string(),
+                           Suggestion::Text::IsPrimary(false)),
+#endif
+          Suggestion::Text(l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE),
+                           Suggestion::Text::IsPrimary(true))));
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
 }
 
@@ -974,9 +949,8 @@ TEST_F(AutofillExternalDelegateUnitTest, SelectVirtualCardOptionItem) {
   EXPECT_CALL(*browser_autofill_manager_,
               FillOrPreviewVirtualCardInformation(
                   mojom::RendererFormDataAction::kPreview, _, _, _, _));
-  external_delegate_->DidSelectSuggestion(std::u16string(),
-                                          PopupItemId::kVirtualCreditCardEntry,
-                                          Suggestion::BackendId());
+  external_delegate_->DidSelectSuggestion(
+      Suggestion(PopupItemId::kVirtualCreditCardEntry));
 }
 
 // Tests that the prompt to show account cards shows up when the corresponding
@@ -986,29 +960,30 @@ TEST_F(AutofillExternalDelegateCardsFromAccountTest,
        ShouldShowCardsFromAccountOptionWithCards) {
   IssueOnQuery();
 
-  auto element_main_texts = testing::ElementsAre(
-      Suggestion::Text(std::u16string(), Suggestion::Text::IsPrimary(true)),
-      Suggestion::Text(
-          l10n_util::GetStringUTF16(IDS_AUTOFILL_SHOW_ACCOUNT_CARDS),
-          Suggestion::Text::IsPrimary(true)),
-#if !BUILDFLAG(IS_ANDROID)
-      Suggestion::Text(std::u16string(), Suggestion::Text::IsPrimary(false)),
-#endif
-      Suggestion::Text(l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE),
-                       Suggestion::Text::IsPrimary(true)));
   AutofillClient::PopupOpenArgs open_args;
   EXPECT_CALL(autofill_client_, ShowAutofillPopup)
       .WillOnce(testing::SaveArg<0>(&open_args));
 
   std::vector<Suggestion> autofill_item;
   autofill_item.emplace_back();
-  autofill_item[0].frontend_id = kAutofillProfileId;
+  autofill_item[0].popup_item_id = PopupItemId::kAddressEntry;
   autofill_item[0].main_text.is_primary = Suggestion::Text::IsPrimary(true);
 
   external_delegate_->OnSuggestionsReturned(field_id_, autofill_item,
                                             AutoselectFirstSuggestion(false));
-  EXPECT_THAT(open_args.suggestions,
-              SuggestionVectorMainTextsAre(element_main_texts));
+  EXPECT_THAT(
+      open_args.suggestions,
+      SuggestionVectorMainTextsAre(
+          Suggestion::Text(std::u16string(), Suggestion::Text::IsPrimary(true)),
+          Suggestion::Text(
+              l10n_util::GetStringUTF16(IDS_AUTOFILL_SHOW_ACCOUNT_CARDS),
+              Suggestion::Text::IsPrimary(true)),
+#if !BUILDFLAG(IS_ANDROID)
+          Suggestion::Text(std::u16string(),
+                           Suggestion::Text::IsPrimary(false)),
+#endif
+          Suggestion::Text(l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE),
+                           Suggestion::Text::IsPrimary(true))));
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
 }
 
@@ -1019,9 +994,6 @@ TEST_F(AutofillExternalDelegateCardsFromAccountTest,
        ShouldShowCardsFromAccountOptionWithoutCards) {
   IssueOnQuery();
 
-  auto element_main_texts = testing::ElementsAre(Suggestion::Text(
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_SHOW_ACCOUNT_CARDS),
-      Suggestion::Text::IsPrimary(true)));
   AutofillClient::PopupOpenArgs open_args;
   EXPECT_CALL(autofill_client_, ShowAutofillPopup)
       .WillOnce(testing::SaveArg<0>(&open_args));
@@ -1029,7 +1001,9 @@ TEST_F(AutofillExternalDelegateCardsFromAccountTest,
   external_delegate_->OnSuggestionsReturned(
       field_id_, std::vector<Suggestion>(), AutoselectFirstSuggestion(false));
   EXPECT_THAT(open_args.suggestions,
-              SuggestionVectorMainTextsAre(element_main_texts));
+              SuggestionVectorMainTextsAre(Suggestion::Text(
+                  l10n_util::GetStringUTF16(IDS_AUTOFILL_SHOW_ACCOUNT_CARDS),
+                  Suggestion::Text::IsPrimary(true))));
   EXPECT_FALSE(open_args.autoselect_first_suggestion);
 }
 

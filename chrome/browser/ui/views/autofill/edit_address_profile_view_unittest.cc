@@ -83,8 +83,8 @@ class EditAddressProfileViewTest : public ChromeViewsTestBase {
   content::RenderViewHostTestEnabler test_render_host_factories_;
   std::unique_ptr<content::WebContents> test_web_contents_;
   std::unique_ptr<views::Widget> parent_widget_;
-  raw_ptr<views::Widget> widget_ = nullptr;
-  raw_ptr<EditAddressProfileView> dialog_;
+  raw_ptr<views::Widget, DanglingUntriaged> widget_ = nullptr;
+  raw_ptr<EditAddressProfileView, DanglingUntriaged> dialog_;
   testing::NiceMock<MockEditAddressProfileDialogController> mock_controller_;
 };
 
@@ -97,7 +97,7 @@ void EditAddressProfileViewTest::CreateViewAndShow() {
   dialog_ = new EditAddressProfileView(mock_controller());
   dialog_->ShowForWebContents(test_web_contents_.get());
 
-  gfx::NativeView parent = gfx::kNullNativeView;
+  gfx::NativeView parent = gfx::NativeView();
 #if BUILDFLAG(IS_MAC)
   // We need a native view parent for the dialog to avoid a DCHECK
   // on Mac.

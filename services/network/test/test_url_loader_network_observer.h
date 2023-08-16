@@ -26,6 +26,8 @@ class TestURLLoaderNetworkObserver
     ignore_certificate_errors_ = ignore_certificate_errors;
   }
 
+  void FlushReceivers();
+
   // mojom::URLLoaderNetworkServiceObserver overrides:
   void OnSSLCertificateError(const GURL& url,
                              int net_error,
@@ -58,6 +60,10 @@ class TestURLLoaderNetworkObserver
   void OnDataUseUpdate(int32_t network_traffic_annotation_id_hash,
                        int64_t recv_bytes,
                        int64_t sent_bytes) override;
+  void OnSharedStorageHeaderReceived(
+      const url::Origin& request_origin,
+      std::vector<network::mojom::SharedStorageOperationPtr> operations,
+      OnSharedStorageHeaderReceivedCallback callback) override;
   void Clone(
       mojo::PendingReceiver<URLLoaderNetworkServiceObserver> observer) override;
 

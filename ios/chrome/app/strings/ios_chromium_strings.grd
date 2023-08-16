@@ -234,9 +234,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_DEFAULT_BROWSER_DESCRIPTION" desc="Description of the default browser promotion modal. [iOS only]">
         To make Chromium your default browser, open Settings. Tap Default Browser App, and then select Chromium.
       </message>
-      <message name="IDS_IOS_DEFAULT_BROWSER_LEARN_MORE_MESSAGE" desc="Message when the user taps the addition information button in the default browser promotion modal. [iOS only]">
-          You can now use Chromium any time you tap links in messages, documents, and other apps.
-      </message>
       <message name="IDS_IOS_DEFAULT_BROWSER_LEARN_MORE_INSTRUCTIONS_MESSAGE" desc="Description to user about how to reach the default browser setting in their device. [iOS only]">
         To make Chromium your default:
 1. Open Settings
@@ -401,13 +398,16 @@ Things to consider:
       <message name="IDS_IOS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY" desc="The text of the identity section for iOS.">
         Chromium verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate.
       </message>
+      <message name="IDS_IOS_POST_RESTORE_DEFAULT_BROWSER_PROMO_TITLE" desc="The text of the title for the post restore default browser promo.">
+        Make Chromium your default browser?
+      </message>
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_PERMISSION_REDIRECT_ALERT_MESSAGE" desc="The description that argues why push notification permission is necessary for price tracking.">
           Chromium notifications are currently turned off in your device settings.
       </message>
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_PERMISSION_REDIRECT_ALERT_TITLE" desc="The title for the UIAlert that redirects the user to iOS' application settings for Chrome.">
           Allow Chromium notifications to get price drop alerts
       </message>
-      <message name="IDS_IOS_PRODUCT_NAME" desc="The Chrome application name">
+      <message name="IDS_IOS_PRODUCT_NAME" desc="The Chrome application name" translateable="false">
         Chromium
       </message>
       <message name="IDS_IOS_RECENT_TABS_OTHER_DEVICES_EMPTY_MESSAGE" desc="To use the Other Devices section of the Recent Tabs view, a user must be signed in and activate Tabs synchronization on multiple devices. This message is shown in this section when the user is signed in and has activated Tabs synchronization only on this device.">
@@ -607,6 +607,18 @@ Things to consider:
       </message>
       <message name="IDS_IOS_PASSWORD_CHECKUP_ERROR_OTHER" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="Password check failed due to specific reason (out of memory).">
         Chromium couldn't check all passwords. Try again later.
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_APP_SETTINGS" desc="Chromium version of Text of the row indicating the step of opening the app settings. [iOS only]">
+        Go to Chromium Settings
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_INCOGNITO_LOCK_STEP_3" desc="Chromium version of Text of the row indicating the third step to turn on Incognito Lock. [iOS only]">
+        Turn on “Lock Incognito Tabs When You Close Chromium”.
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CALENDAR_TITLE" desc="Chromium version of Google calendar title displayed in What's New. [iOS only]">
+        Create Calendar Events on Chromium
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_INCOGNITO_LOCK_SUBTITLE" desc="Chromium version of Incognito Lock subtitle displayed in What's New. [iOS only]">
+        Lock your incognito when you leave Chromium or switch to a different app.
       </message>
       <message name="IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED" desc="Text inside Password Details screen shown when password was compromised. [iOS only]" meaning="Text which explains the user that current password is compromised and it should be changed.">
         Your password was exposed in a data breach. Password Manager recommends changing it now.

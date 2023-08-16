@@ -17,7 +17,8 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/time/time.h"
-#import "components/breadcrumbs/core/features.h"
+#import "components/autofill/core/browser/data_model/credit_card.h"
+#import "components/breadcrumbs/core/breadcrumbs_status.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "components/infobars/core/infobar_manager.h"
@@ -142,7 +143,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
 #import "ios/chrome/browser/ui/whats_new/promo/whats_new_scene_agent.h"
-#import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
 #import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -152,6 +152,7 @@
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/signin/choice_api.h"
 #import "ios/public/provider/chrome/browser/ui_utils/ui_utils_api.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_data.h"
@@ -932,9 +933,12 @@ void InjectNTP(Browser* browser) {
                                   initWithPromosManager:promosManager]];
   }
 
-  if (IsWhatsNewEnabled()) {
-    [self.sceneState addAgent:[[WhatsNewSceneAgent alloc]
-                                  initWithPromosManager:promosManager]];
+  [self.sceneState addAgent:[[WhatsNewSceneAgent alloc]
+                                initWithPromosManager:promosManager]];
+
+  if (ios::provider::IsChoiceEnabled()) {
+    [self.sceneState
+        addAgent:ios::provider::CreateChoiceSceneAgent(promosManager)];
   }
 
   // Do not gate by feature flag so it can run for enabled -> disabled
@@ -1150,13 +1154,10 @@ void InjectNTP(Browser* browser) {
     return;
   }
 
-  BOOL isGeneralPromoEligibleUser =
-      !HasUserInteractedWithFullscreenPromoBefore() &&
+  if (!HasUserInteractedWithFullscreenPromoBefore() &&
       (IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeGeneral) ||
        isSignedIn) &&
-      !UserInPromoCooldown();
-  if (isGeneralPromoEligibleUser ||
-      ShouldShowRemindMeLaterDefaultBrowserFullscreenPromo()) {
+      !UserInPromoCooldown()) {
     self.sceneState.appState.shouldShowDefaultBrowserPromo = YES;
     self.sceneState.appState.defaultBrowserPromoTypeToShow =
         DefaultPromoTypeGeneral;
@@ -1213,6 +1214,10 @@ void InjectNTP(Browser* browser) {
   self.browserViewWrangler = nil;
 
   [self.sceneState.appState removeObserver:self];
+}
+
+- (void)dealloc {
+  CHECK(!self.sceneState.UIEnabled);
 }
 
 // Formats string for display on iPadOS application switcher with the
@@ -1430,10 +1435,6 @@ void InjectNTP(Browser* browser) {
 
 - (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion {
   [self dismissModalDialogsWithCompletion:completion dismissOmnibox:YES];
-}
-
-- (void)dismissModalDialogs {
-  [self dismissModalDialogsWithCompletion:nil dismissOmnibox:YES];
 }
 
 - (void)showHistory {
@@ -1989,7 +1990,7 @@ void InjectNTP(Browser* browser) {
   DCHECK(!self.signinCoordinator)
       << "self.signinCoordinator: "
       << base::SysNSStringToUTF8([self.signinCoordinator description]);
-  [self dismissModalDialogs];
+  [self dismissModalDialogsWithCompletion:nil];
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
         showSavedPasswordsSettingsFromViewController:baseViewController
@@ -2067,6 +2068,22 @@ void InjectNTP(Browser* browser) {
       presentViewController:self.settingsNavigationController
                    animated:YES
                  completion:nil];
+}
+
+- (void)showCreditCardDetails:(const autofill::CreditCard*)creditCard {
+  UIViewController* baseViewController = self.currentInterface.viewController;
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController showCreditCardDetails:creditCard];
+    return;
+  }
+  Browser* browser = self.mainInterface.browser;
+  self.settingsNavigationController = [SettingsNavigationController
+      autofillCreditCardEditControllerForBrowser:browser
+                                        delegate:self
+                                      creditCard:creditCard];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
 }
 
 - (void)showDefaultBrowserSettingsFromViewController:
@@ -2282,9 +2299,17 @@ void InjectNTP(Browser* browser) {
       return ^{
         [weakSelf startQRCodeScanner];
       };
-    case START_LENS:
+    case START_LENS_FROM_HOME_SCREEN_WIDGET:
       return ^{
-        [weakSelf startLens];
+        [weakSelf startLensWithEntryPoint:LensEntrypoint::HomeScreenWidget];
+      };
+    case START_LENS_FROM_APP_ICON_LONG_PRESS:
+      return ^{
+        [weakSelf startLensWithEntryPoint:LensEntrypoint::AppIconLongPress];
+      };
+    case START_LENS_FROM_SPOTLIGHT:
+      return ^{
+        [weakSelf startLensWithEntryPoint:LensEntrypoint::Spotlight];
       };
     case FOCUS_OMNIBOX:
       return ^{
@@ -2322,7 +2347,7 @@ void InjectNTP(Browser* browser) {
   [QRHandler showQRScanner];
 }
 
-- (void)startLens {
+- (void)startLensWithEntryPoint:(LensEntrypoint)entryPoint {
   if (!self.currentInterface.browser) {
     return;
   }
@@ -2330,7 +2355,7 @@ void InjectNTP(Browser* browser) {
       self.currentInterface.browser->GetCommandDispatcher(), LensCommands);
   OpenLensInputSelectionCommand* command = [[OpenLensInputSelectionCommand
       alloc]
-          initWithEntryPoint:LensEntrypoint::HomeScreenWidget
+          initWithEntryPoint:entryPoint
            presentationStyle:LensInputSelectionPresentationStyle::SlideFromRight
       presentationCompletion:nil];
   [lensHandler openLensInputSelection:command];
@@ -2940,6 +2965,10 @@ void InjectNTP(Browser* browser) {
 // Close Settings, or Signin or the 3rd-party intents Incognito interstitial.
 - (void)closePresentedViews:(BOOL)animated
                  completion:(ProceduralBlock)completion {
+  // If the Incognito interstitial is active, stop it.
+  [self.incognitoInterstitialCoordinator stop];
+  self.incognitoInterstitialCoordinator = nil;
+
   __weak __typeof(self) weakSelf = self;
   BOOL resetSigninState = self.signinCoordinator != nil;
   completion = ^{
@@ -2992,10 +3021,6 @@ void InjectNTP(Browser* browser) {
     // `self.signinCoordinator` can be presented without settings, from the
     // bookmarks or the recent tabs view.
     [self interruptSigninCoordinatorAnimated:animated completion:completion];
-  } else if (self.incognitoInterstitialCoordinator) {
-    [self.incognitoInterstitialCoordinator stop];
-    self.incognitoInterstitialCoordinator = nil;
-    completion();
   } else {
     completion();
   }
@@ -3405,7 +3430,7 @@ void InjectNTP(Browser* browser) {
   // will be destroyed.
   self.mainCoordinator.incognitoBrowser = nil;
 
-  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
+  if (breadcrumbs::IsEnabled()) {
     BreadcrumbManagerBrowserAgent::FromBrowser(self.incognitoInterface.browser)
         ->SetLoggingEnabled(false);
   }

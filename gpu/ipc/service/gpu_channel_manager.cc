@@ -28,11 +28,13 @@
 #include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/traced_value.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #if BUILDFLAG(USE_DAWN)
 #include "gpu/command_buffer/service/dawn_caching_interface.h"
 #endif
+#include "gpu/command_buffer/service/dawn_context_provider.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
@@ -325,7 +327,7 @@ GpuChannelManager::GpuChannelManager(
     ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
     viz::VulkanContextProvider* vulkan_context_provider,
     viz::MetalContextProvider* metal_context_provider,
-    viz::DawnContextProvider* dawn_context_provider)
+    DawnContextProvider* dawn_context_provider)
     : task_runner_(task_runner),
       io_task_runner_(io_task_runner),
       gpu_preferences_(gpu_preferences),
@@ -480,6 +482,11 @@ GpuChannel* GpuChannelManager::EstablishChannel(
     uint64_t client_tracing_id,
     bool is_gpu_host) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // Remove existing GPU channel with same client id before creating
+  // new GPU channel. if not, new SyncPointClientState in SyncPointManager
+  // will be destroyed when existing GPU channel is destroyed.
+  RemoveChannel(client_id);
 
   std::unique_ptr<GpuChannel> gpu_channel = GpuChannel::Create(
       this, channel_token, scheduler_, sync_point_manager_, share_group_,
@@ -758,10 +765,11 @@ void GpuChannelManager::OnBackgroundCleanup() {
   // goes to background on low-end devices.
   std::vector<int> channels_to_clear;
   for (auto& kv : gpu_channels_) {
-    // TODO(ssid): WebGL context loss event notification must be sent before
-    // clearing WebGL contexts crbug.com/725306.
-    if (kv.second->HasActiveWebGLContext())
+    // Stateful contexts (e.g. WebGL and WebGPU) support context lost
+    // notifications, but for now, skip those.
+    if (kv.second->HasActiveStatefulContext()) {
       continue;
+    }
     channels_to_clear.push_back(kv.first);
     kv.second->MarkAllContextsLost();
   }
@@ -1004,8 +1012,10 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   return shared_context_state_;
 }
 
-void GpuChannelManager::OnContextLost(int context_lost_count,
-                                      bool synthetic_loss) {
+void GpuChannelManager::OnContextLost(
+    int context_lost_count,
+    bool synthetic_loss,
+    error::ContextLostReason context_lost_reason) {
   if (context_lost_count < 0)
     context_lost_count = context_lost_count_ + 1;
   // Because of the DrDC, we may receive context loss from the GPU main and
@@ -1065,7 +1075,7 @@ void GpuChannelManager::OnContextLost(int context_lost_count,
   // Work around issues with recovery by allowing a new GPU process to launch.
   if (force_restart || gpu_driver_bug_workarounds_.exit_on_context_lost ||
       (shared_context_state_ && !shared_context_state_->GrContextIsGL())) {
-    delegate_->MaybeExitOnContextLost(synthetic_loss);
+    delegate_->MaybeExitOnContextLost(synthetic_loss, context_lost_reason);
   }
 }
 

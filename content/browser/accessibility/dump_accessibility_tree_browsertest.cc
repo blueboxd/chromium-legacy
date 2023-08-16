@@ -290,6 +290,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunCSSTest(FILE_PATH_LITERAL("inline-position-relative.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityCSSIframeHidden) {
+  RunCSSTest(FILE_PATH_LITERAL("iframe-hidden.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityCSSLanguage) {
   RunCSSTest(FILE_PATH_LITERAL("language.html"));
 }
@@ -1405,11 +1410,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityAriaTextboxWithRichText) {
   RunAriaTest(FILE_PATH_LITERAL("aria-textbox-with-rich-text.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityAriaTouchPassthrough) {
-  RunAriaTest(FILE_PATH_LITERAL("aria-touchpassthrough.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
@@ -2857,8 +2857,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("portal-with-widget-inside.html"));
 }
 
+// TODO(crbug.com/1367886): Flaky on multiple platforms
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityPortalNameFromVisibleText) {
+                       DISABLED_AccessibilityPortalNameFromVisibleText) {
   RunHtmlTest(FILE_PATH_LITERAL("portal-name-from-visible-text.html"));
 }
 
@@ -3429,7 +3430,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
       FILE_PATH_LITERAL("frozen-ancestor-cannot-change-descendants.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, HiddenTable) {
+// TODO(crbug.com/1454778) Flaky on ChromeOS, Linux, Mac, Windows for parameter
+// "blink".
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DISABLED_HiddenTable) {
   RunRegressionTest(FILE_PATH_LITERAL("hidden-table.html"));
 }
 
@@ -3558,6 +3561,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MathMLUnknown) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MalformedMap) {
   RunHtmlTest(FILE_PATH_LITERAL("malformed-map.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ShadowDomFirstChild) {
+  RunHtmlTest(FILE_PATH_LITERAL("shadow-dom-first-child.html"));
 }
 
 //

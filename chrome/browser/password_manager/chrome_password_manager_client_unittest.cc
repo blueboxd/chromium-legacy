@@ -266,13 +266,17 @@ class MockPasswordAccessoryControllerImpl
                                         credential_cache,
                                         mf_controller,
                                         password_client,
-                                        driver_supplier) {}
+                                        driver_supplier,
+                                        base::DoNothing()) {}
 
   MOCK_METHOD(void,
               RefreshSuggestionsForField,
               (autofill::mojom::FocusedFieldType, bool),
               (override));
-  MOCK_METHOD(void, UpdateCredManReentryUi, (), (override));
+  MOCK_METHOD(void,
+              UpdateCredManReentryUi,
+              (autofill::mojom::FocusedFieldType),
+              (override));
 };
 
 #endif
@@ -332,7 +336,7 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
 
   bool metrics_enabled_ = false;
 
-  raw_ptr<syncer::TestSyncService> sync_service_ = nullptr;
+  raw_ptr<syncer::TestSyncService, DanglingUntriaged> sync_service_ = nullptr;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 };

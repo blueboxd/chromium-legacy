@@ -202,7 +202,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.TokenManager.UnloadToken"
-    enum="TokenManagerStatus" expires_after="2023-10-01">
+    enum="TokenManagerStatus" expires_after="2023-12-04">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -465,24 +465,28 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.DiskUsageChronos" units="KB"
-    expires_after="2022-04-10">
-  <owner>keescook@google.com</owner>
+    expires_after="2024-06-01">
+  <owner>sarthakkukreti@google.com</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     Chrome OS KB in use in the /home/chronos filesystem tree. Logged once a day
-    during log file cleanup.
+    during log file cleanup. Warning: this histogram was expired from 2022-04-10
+    to 2023-06-01; data may be missing.
   </summary>
 </histogram>
 
-<histogram name="Platform.DiskUsageVar" units="KB" expires_after="2022-05-01">
-  <owner>keescook@google.com</owner>
+<histogram name="Platform.DiskUsageVar" units="KB" expires_after="2024-06-01">
+  <owner>sarthakkukreti@google.com</owner>
+  <owner>chromeos-storage@google.com</owner>
   <summary>
     Chrome OS KB in use in the /var filesystem tree. Logged once a day during
-    log file cleanup.
+    log file cleanup. Warning: this histogram was expired from 2022-05-01 to
+    2023-06-01; data may be missing.
   </summary>
 </histogram>
 
 <histogram name="Platform.DlcService.InstallResult"
-    enum="DlcService.InstallResult" expires_after="2023-10-01">
+    enum="DlcService.InstallResult" expires_after="2023-12-04">
   <owner>kimjae@chromium.org</owner>
   <owner>chromeos-core-services@google.com</owner>
   <summary>
@@ -492,7 +496,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.DlcService.UninstallResult"
-    enum="DlcService.UninstallResult" expires_after="2023-10-01">
+    enum="DlcService.UninstallResult" expires_after="2023-12-04">
   <owner>kimjae@chromium.org</owner>
   <owner>chromeos-core-services@google.com</owner>
   <summary>
@@ -514,7 +518,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.ExternalMetrics.SamplesRead" units="count"
-    expires_after="2023-09-27">
+    expires_after="2023-12-04">
   <owner>iby@google.com</owner>
   <owner>mutexlox@google.com</owner>
   <owner>cros-telemetry@google.com</owner>
@@ -570,7 +574,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Firmware.Mismatch" enum="BooleanDetected"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
   <owner>yuanpengni@chromium.org</owner>
   <owner>chromeos-core-services@google.com</owner>
   <summary>
@@ -610,7 +614,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Hibernate.Abort" enum="CrosHibernateAbortReason"
-    expires_after="2024-05-09">
+    expires_after="2024-06-08">
   <owner>mka@chromium.org</owner>
   <owner>bgeffon@chromium.org</owner>
   <owner>chromeos-hibernate@google.com</owner>
@@ -621,9 +625,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Hibernate.AdditionalMemoryNeeded" units="MiB"
-    expires_after="2023-08-04">
-  <owner>asavery@chromium.org</owner>
-  <owner>evgreen@chromium.org</owner>
+    expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
   <summary>
     The difference between the amount of memory and swap available and the
     amount of space needed to successfully hibernate on ChromeOS devices when
@@ -633,19 +638,33 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Hibernate.Duration.HibernateResumeReady"
-    units="seconds" expires_after="2023-08-04">
-  <owner>asavery@chromium.org</owner>
-  <owner>evgreen@chromium.org</owner>
+    units="seconds" expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
   <summary>
     The duration in seconds we waited for the hibernate Resume Signal Ready from
     powerd on ChromeOS devices. Reported at resume from hibernate.
   </summary>
 </histogram>
 
+<histogram name="Platform.Hibernate.Event" enum="CrosHibernateCycleEvent"
+    expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
+  <summary>
+    Tracks the top level events of the hibernate cycle: suspend attempt/failure
+    and resume attempt/success/failure. Reported at resume from hibernate or
+    failure to hibernate.
+  </summary>
+</histogram>
+
 <histogram name="Platform.Hibernate.ExcessMemoryAvailable" units="MiB"
-    expires_after="2023-08-04">
-  <owner>asavery@chromium.org</owner>
-  <owner>evgreen@chromium.org</owner>
+    expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
   <summary>
     The difference between the amount of memory and swap available and the
     amount of space needed to successfully hibernate on ChromeOS devices when
@@ -654,8 +673,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Platform.Hibernate.FileSystem.Hibermeta.FileSystemStatus"
+    enum="CrosHibernateFileSystemStatus" expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
+  <summary>
+    Result of 'hibermeta' file system checks. Reported at resume from hibernate.
+  </summary>
+</histogram>
+
 <histogram name="Platform.Hibernate.HibernateDuration" units="hours"
-    expires_after="2024-05-10">
+    expires_after="2024-06-08">
   <owner>mka@chromium.org</owner>
   <owner>bgeffon@chromium.org</owner>
   <owner>chromeos-hibernate@google.com</owner>
@@ -665,9 +694,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Hibernate.IO.ReadMainImage.Duration" units="seconds"
-    expires_after="2023-08-04">
-  <owner>asavery@chromium.org</owner>
-  <owner>evgreen@chromium.org</owner>
+    expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
   <summary>
     The duration in seconds spent moving in the hibernate image on ChromeOS
     devices. Reported at resume from hibernate.
@@ -675,9 +705,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Hibernate.IO.ReadMainImage.Rate" units="MiB/s"
-    expires_after="2023-08-04">
-  <owner>asavery@chromium.org</owner>
-  <owner>evgreen@chromium.org</owner>
+    expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
   <summary>
     The rate in MiB/s we are moving the hibernate image on ChromeOS devices.
     Reported at resume from hibernate.
@@ -685,9 +716,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Hibernate.IO.ReadMainImage.Size" units="KiB"
-    expires_after="2023-08-04">
-  <owner>asavery@chromium.org</owner>
-  <owner>evgreen@chromium.org</owner>
+    expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
   <summary>
     The size in KiB of the hibernate image we are moving on ChromeOS devices.
     Reported at resume from hibernate.
@@ -695,9 +727,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Hibernate.IO.WriteHibernateImage.Duration"
-    units="seconds" expires_after="2023-08-04">
-  <owner>asavery@chromium.org</owner>
-  <owner>evgreen@chromium.org</owner>
+    units="seconds" expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
   <summary>
     The duration in seconds spent writing the hibernate image on ChromeOS
     devices. Reported at hibernate.
@@ -705,9 +738,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Hibernate.IO.WriteHibernateImage.Rate" units="MiB/s"
-    expires_after="2023-08-04">
-  <owner>asavery@chromium.org</owner>
-  <owner>evgreen@chromium.org</owner>
+    expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
   <summary>
     The rate in MiB/s we wrote the hibernate image on ChromeOS devices. Reported
     at hibernate.
@@ -715,9 +749,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Hibernate.IO.WriteHibernateImage.Size" units="KiB"
-    expires_after="2023-08-04">
-  <owner>asavery@chromium.org</owner>
-  <owner>evgreen@chromium.org</owner>
+    expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
   <summary>
     The size in KiB of the hibernate image we wrote on ChromeOS devices.
     Reported at hibernate.
@@ -725,9 +760,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Hibernate.LoginToResumeReady" units="ms"
-    expires_after="2023-09-10">
-  <owner>asavery@chromium.org</owner>
-  <owner>evgreen@chromium.org</owner>
+    expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
   <summary>
     The time between when hiberman receives the request to resume, and when
     resume is ready to launch. This represents an approximation of how long the
@@ -738,9 +774,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Hibernate.MemoryAndSwapAvailable" units="MiB"
-    expires_after="2023-08-04">
-  <owner>asavery@chromium.org</owner>
-  <owner>evgreen@chromium.org</owner>
+    expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
   <summary>
     ChromeOS total memory and swap available in MiB when hibernate is triggered.
     Reported at hibernate.
@@ -748,9 +785,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Hibernate.MemoryAvailable" units="MiB"
-    expires_after="2023-08-04">
-  <owner>asavery@chromium.org</owner>
-  <owner>evgreen@chromium.org</owner>
+    expires_after="2024-06-08">
+  <owner>mka@chromium.org</owner>
+  <owner>bgeffon@chromium.org</owner>
+  <owner>chromeos-hibernate@google.com</owner>
   <summary>
     ChromeOS memory available in MiB when hibernate is triggered. Reported at
     hibernate.
@@ -1070,7 +1108,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.Meminfo" units="KB" expires_after="2023-10-08">
+<histogram name="Platform.Meminfo" units="KB" expires_after="2023-12-10">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
@@ -1080,7 +1118,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.Memory.ARC" units="MiB" expires_after="2023-10-01">
+<histogram name="Platform.Memory.ARC" units="MiB" expires_after="2023-12-04">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
   <owner>bgeffon@chromium.org</owner>
@@ -1093,7 +1131,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Memory.Browser" units="MiB"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
   <owner>bgeffon@chromium.org</owner>
@@ -1193,7 +1231,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.MiniDiag.Launch" units="launches"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>roccochen@chromium.org</owner>
   <owner>chromeos-minidiag-eng@google.com</owner>
   <summary>
@@ -1315,6 +1353,15 @@ chromium-metrics-reviews@google.com.
     Counter of each case RESOURCE_EXHAUSTED error was returned by missive
     Storage to the caller. This is reported only when such error happens
     (rarely), and only if the Missive daemon is running.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Missive.StorageDegradationAmount" units="KiB"
+    expires_after="2024-05-31">
+  <owner>lbaraz@google.com</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Total amount of space freed by controlled degradation performed by Storage.
   </summary>
 </histogram>
 
@@ -1573,7 +1620,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.StatefulFormat" enum="StatefulFormat"
-    expires_after="2023-09-25">
+    expires_after="2023-12-04">
   <owner>sarthakkukreti@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
   <owner>chromeos-storage@google.com</owner>
@@ -1635,7 +1682,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.StatefulUsedSpace" units="GB"
-    expires_after="2023-09-29">
+    expires_after="2023-12-04">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
   <owner>chromeos-storage@google.com</owner>
@@ -1666,7 +1713,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Storage.Nvme.PercentageUsed" units="%"
-    expires_after="2023-09-25">
+    expires_after="2023-12-04">
   <owner>asavery@chromium.org</owner>
   <owner>gwendal@chromium.org</owner>
   <owner>chromeos-storage@google.com</owner>
@@ -1852,7 +1899,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.FirmwareUpdate.Result"
-    enum="TPMFirmwareUpdateResult" expires_after="2023-10-01">
+    enum="TPMFirmwareUpdateResult" expires_after="2023-12-04">
   <owner>mnissler@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>Status of a complete TPM firmware update attempt.</summary>
@@ -1886,7 +1933,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.TakeOwnershipResult"
-    enum="TPMTakeOwnershipResult" expires_after="2023-09-29">
+    enum="TPMTakeOwnershipResult" expires_after="2023-12-04">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -1997,7 +2044,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Trunks.RecoverableWriteErrorNo" enum="PopularOSErrno"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
   <owner>cylai@google.com</owner>
   <owner>chingkang@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -2008,7 +2055,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Trunks.TpmErrorCode" enum="TPMResponseCode"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -2029,7 +2076,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Trunks.UnrecoverableWriteErrorNo"
-    enum="PopularOSErrno" expires_after="2023-10-01">
+    enum="PopularOSErrno" expires_after="2023-12-04">
   <owner>cylai@google.com</owner>
   <owner>chingkang@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -2062,7 +2109,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.UnaggregatedUsageTimeTooBig" units="seconds"
-    expires_after="2023-06-04">
+    expires_after="2024-05-31">
   <owner>mutexlox@chromium.org</owner>
   <owner>iby@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>

@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -159,7 +160,7 @@ void IDBCursor::advance(unsigned count, ExceptionState& exception_state) {
   request_->SetPendingCursor(this);
   request_->AssignNewMetrics(std::move(metrics));
   got_value_ = false;
-  backend_->Advance(count, request_->CreateWebCallbacks());
+  backend_->Advance(count, request_);
 }
 
 void IDBCursor::Continue(ScriptState* script_state,
@@ -317,8 +318,7 @@ void IDBCursor::Continue(std::unique_ptr<IDBKey> key,
   request_->SetPendingCursor(this);
   request_->AssignNewMetrics(std::move(metrics));
   got_value_ = false;
-  backend_->CursorContinue(key.get(), primary_key.get(),
-                           request_->CreateWebCallbacks());
+  backend_->CursorContinue(key.get(), primary_key.get(), request_);
 }
 
 IDBRequest* IDBCursor::Delete(ScriptState* script_state,
@@ -362,7 +362,7 @@ IDBRequest* IDBCursor::Delete(ScriptState* script_state,
       script_state, this, transaction_.Get(), std::move(metrics));
   transaction_->BackendDB()->Delete(
       transaction_->Id(), EffectiveObjectStore()->Id(), IdbPrimaryKey(),
-      request->CreateWebCallbacks().release());
+      WTF::BindOnce(&IDBRequest::OnDelete, WrapPersistent(request)));
   return request;
 }
 

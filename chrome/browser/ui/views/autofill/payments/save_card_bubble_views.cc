@@ -91,9 +91,16 @@ void SaveCardBubbleViews::AddedToWidget() {
   if (!controller_->IsUploadSave())
     return;
 
-  GetBubbleFrameView()->SetTitleView(
-      std::make_unique<TitleWithIconAndSeparatorView>(
-          GetWindowTitle(), TitleWithIconAndSeparatorView::Icon::GOOGLE_PAY));
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillMoveLegalTermsAndIconForNewCardEnrollment)) {
+    GetBubbleFrameView()->SetTitleView(
+        std::make_unique<TitleWithIconAfterLabelView>(
+            GetWindowTitle(), TitleWithIconAndSeparatorView::Icon::GOOGLE_PAY));
+  } else {
+    GetBubbleFrameView()->SetTitleView(
+        std::make_unique<TitleWithIconAndSeparatorView>(
+            GetWindowTitle(), TitleWithIconAndSeparatorView::Icon::GOOGLE_PAY));
+  }
 }
 
 std::u16string SaveCardBubbleViews::GetWindowTitle() const {

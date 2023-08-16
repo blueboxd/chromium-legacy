@@ -7,6 +7,10 @@
 #include "base/auto_reset.h"
 #include "base/check.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation MockCrApp
 
 + (NSApplication*)sharedApplication {
@@ -14,8 +18,8 @@
   DCHECK([app conformsToProtocol:@protocol(CrAppControlProtocol)])
       << "Existing NSApp (class " << [[app className] UTF8String]
       << ") does not conform to required protocol.";
-  DCHECK(base::MessagePumpMac::UsingCrApp())
-      << "MessagePumpMac::Create() was called before "
+  DCHECK(base::message_pump_mac::UsingCrApp())
+      << "message_pump_mac::Create() was called before "
       << "+[MockCrApp sharedApplication]";
   return app;
 }

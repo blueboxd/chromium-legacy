@@ -46,6 +46,7 @@ class ShoppingServiceMetricsTest : public ShoppingServiceTestBase {
   ~ShoppingServiceMetricsTest() override = default;
 
   void SetUp() override {
+    ShoppingServiceTestBase::SetUp();
     histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
@@ -60,9 +61,8 @@ TEST_F(ShoppingServiceMetricsTest,
   test_features_.InitWithFeatures({kShoppingList, kCommerceAllowLocalImages},
                                   {kCommerceAllowServerImages});
 
-  MockWebWrapper web(GURL(kProductUrl), false);
   base::Value js_result("{\"image\": \"" + std::string(kImageUrl2) + "\"}");
-  web.SetMockJavaScriptResult(&js_result);
+  MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   opt_guide_->SetResponse(GURL(kProductUrl), OptimizationType::PRICE_TRACKING,
                           OptimizationGuideDecision::kTrue,
@@ -95,9 +95,8 @@ TEST_F(ShoppingServiceMetricsTest,
   test_features_.InitWithFeatures({kShoppingList, kCommerceAllowServerImages},
                                   {kCommerceAllowLocalImages});
 
-  MockWebWrapper web(GURL(kProductUrl), false);
   base::Value js_result("{\"image\": \"" + std::string(kImageUrl2) + "\"}");
-  web.SetMockJavaScriptResult(&js_result);
+  MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   opt_guide_->SetResponse(GURL(kProductUrl), OptimizationType::PRICE_TRACKING,
                           OptimizationGuideDecision::kTrue,
@@ -130,9 +129,8 @@ TEST_F(ShoppingServiceMetricsTest, TestImageAvailabilityNoServerImage) {
       {kShoppingList, kCommerceAllowLocalImages, kCommerceAllowServerImages},
       {});
 
-  MockWebWrapper web(GURL(kProductUrl), false);
   base::Value js_result("{\"image\": \"" + std::string(kImageUrl2) + "\"}");
-  web.SetMockJavaScriptResult(&js_result);
+  MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   opt_guide_->SetResponse(GURL(kProductUrl), OptimizationType::PRICE_TRACKING,
                           OptimizationGuideDecision::kTrue,
@@ -164,9 +162,8 @@ TEST_F(ShoppingServiceMetricsTest, TestImageAvailabilityNoLocalImage) {
       {kShoppingList, kCommerceAllowLocalImages, kCommerceAllowServerImages},
       {});
 
-  MockWebWrapper web(GURL(kProductUrl), false);
   base::Value js_result("{\"irrelevant\": \"value\"}");
-  web.SetMockJavaScriptResult(&js_result);
+  MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   opt_guide_->SetResponse(GURL(kProductUrl), OptimizationType::PRICE_TRACKING,
                           OptimizationGuideDecision::kTrue,
@@ -218,10 +215,9 @@ TEST_F(ShoppingServiceMetricsTest, TestLocalPDPDetection_NoLocal) {
   test_features_.InitWithFeatures({kShoppingList, kCommerceLocalPDPDetection},
                                   {});
 
-  MockWebWrapper web(GURL(kProductUrl), false);
   //  Set the type as a non-product.
   base::Value js_result("{\"" + std::string(kOgType) + "\": \"article\"}");
-  web.SetMockJavaScriptResult(&js_result);
+  MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   opt_guide_->SetResponse(GURL(kProductUrl), OptimizationType::PRICE_TRACKING,
                           OptimizationGuideDecision::kTrue,
@@ -241,10 +237,9 @@ TEST_F(ShoppingServiceMetricsTest, TestLocalPDPDetection_BothServerAndLocal) {
   test_features_.InitWithFeatures({kShoppingList, kCommerceLocalPDPDetection},
                                   {});
 
-  MockWebWrapper web(GURL(kProductUrl), false);
   base::Value js_result("{\"" + std::string(kOgType) + "\": \"" +
                         kOgTypeOgProduct + "\"}");
-  web.SetMockJavaScriptResult(&js_result);
+  MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   opt_guide_->SetResponse(GURL(kProductUrl), OptimizationType::PRICE_TRACKING,
                           OptimizationGuideDecision::kTrue,
@@ -264,10 +259,9 @@ TEST_F(ShoppingServiceMetricsTest, TestLocalPDPDetection_NoServer) {
   test_features_.InitWithFeatures({kShoppingList, kCommerceLocalPDPDetection},
                                   {});
 
-  MockWebWrapper web(GURL(kProductUrl), false);
   base::Value js_result("{\"" + std::string(kOgType) + "\": \"" +
                         kOgTypeOgProduct + "\"}");
-  web.SetMockJavaScriptResult(&js_result);
+  MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   opt_guide_->SetResponse(GURL(kProductUrl), OptimizationType::PRICE_TRACKING,
                           OptimizationGuideDecision::kFalse,
@@ -283,15 +277,33 @@ TEST_F(ShoppingServiceMetricsTest, TestLocalPDPDetection_NoServer) {
   histogram_tester_->ExpectTotalCount(metrics::kPDPStateWithLocalMetaName, 1);
 }
 
+TEST_F(ShoppingServiceMetricsTest, TestLocalPDPDetection_IllegalScheme) {
+  test_features_.InitWithFeatures({kShoppingList, kCommerceLocalPDPDetection},
+                                  {});
+
+  base::Value js_result("{\"" + std::string(kOgType) + "\": \"" +
+                        kOgTypeOgProduct + "\"}");
+  MockWebWrapper web(GURL("chrome://internal-page"), false, &js_result);
+
+  opt_guide_->SetResponse(GURL(kProductUrl), OptimizationType::PRICE_TRACKING,
+                          OptimizationGuideDecision::kFalse,
+                          OptimizationMetadata());
+
+  DidNavigatePrimaryMainFrame(&web);
+  DidFinishLoad(&web);
+  SimulateProductInfoJsTaskFinished();
+
+  histogram_tester_->ExpectTotalCount(metrics::kPDPStateWithLocalMetaName, 0);
+}
+
 TEST_F(ShoppingServiceMetricsTest,
        TestLocalPDPDetection_NoServer_NoExperimentFlag) {
   test_features_.InitWithFeatures({kShoppingList},
                                   {kCommerceLocalPDPDetection});
 
-  MockWebWrapper web(GURL(kProductUrl), false);
   base::Value js_result("{\"" + std::string(kOgType) + "\": \"" +
                         kOgTypeOgProduct + "\"}");
-  web.SetMockJavaScriptResult(&js_result);
+  MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   opt_guide_->SetResponse(GURL(kProductUrl), OptimizationType::PRICE_TRACKING,
                           OptimizationGuideDecision::kFalse,
@@ -307,11 +319,10 @@ TEST_F(ShoppingServiceMetricsTest,
 TEST_F(ShoppingServiceMetricsTest, TestProductInfoJsExecutionTime) {
   test_features_.InitWithFeatures({kShoppingList}, {});
 
-  MockWebWrapper web(GURL(kProductUrl), false);
   // The content of the javascript result only needs to be json for this text,
   // the actual fields don't matter.
   base::Value js_result("{\"success\": true}");
-  web.SetMockJavaScriptResult(&js_result);
+  MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   opt_guide_->SetResponse(GURL(kProductUrl), OptimizationType::PRICE_TRACKING,
                           OptimizationGuideDecision::kTrue,

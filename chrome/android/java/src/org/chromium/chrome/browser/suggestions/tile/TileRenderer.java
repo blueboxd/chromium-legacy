@@ -50,8 +50,6 @@ import java.util.Map;
  * manipulating the views as needed.
  */
 public class TileRenderer {
-    private static final String TAG = "TileRenderer";
-
     private final Context mContext;
     private final Resources.Theme mTheme;
     private RoundedIconGenerator mIconGenerator;
@@ -326,8 +324,7 @@ public class TileRenderer {
                 isFallbackColorDefault ? TileVisualType.ICON_DEFAULT : TileVisualType.ICON_COLOR);
     }
 
-    @LayoutRes
-    private int getLayout() {
+    private @LayoutRes int getLayout() {
         switch (mStyle) {
             case TileStyle.MODERN:
                 return R.layout.suggestions_tile_view;
@@ -338,8 +335,7 @@ public class TileRenderer {
         return 0;
     }
 
-    @LayoutRes
-    private int getTopSitesLayout() {
+    private @LayoutRes int getTopSitesLayout() {
         switch (mStyle) {
             case TileStyle.MODERN:
                 return R.layout.top_sites_tile_view;

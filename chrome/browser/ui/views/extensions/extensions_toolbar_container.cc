@@ -410,22 +410,7 @@ bool ExtensionsToolbarContainer::CanShowActionsInToolbar() const {
 
 bool ExtensionsToolbarContainer::IsActionVisibleOnToolbar(
     const std::string& action_id) const {
-  return GetActionVisibility(action_id) !=
-         extensions::ExtensionContextMenuModel::UNPINNED;
-}
-
-extensions::ExtensionContextMenuModel::ButtonVisibility
-ExtensionsToolbarContainer::GetActionVisibility(
-    const std::string& action_id) const {
-  if (model_->IsActionPinned(action_id)) {
-    return extensions::ExtensionContextMenuModel::PINNED;
-  }
-
-  if (ShouldForceVisibility(action_id)) {
-    return extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
-  }
-
-  return extensions::ExtensionContextMenuModel::UNPINNED;
+  return model_->IsActionPinned(action_id) || ShouldForceVisibility(action_id);
 }
 
 void ExtensionsToolbarContainer::UndoPopOut() {
@@ -616,6 +601,19 @@ void ExtensionsToolbarContainer::OnShowAccessRequestsInToolbarChanged(
   // tricky because it would need to change the items in the dialog. Another
   // option is to close the hover card if its shown whenever request access
   // button is updated.
+}
+
+void ExtensionsToolbarContainer::OnExtensionDismissedRequests(
+    const extensions::ExtensionId& extension_id,
+    const url::Origin& origin) {
+  auto* web_contents = GetCurrentWebContents();
+  extensions::PermissionsManager::UserSiteSetting site_setting =
+      extensions::PermissionsManager::Get(browser_->profile())
+          ->GetUserSiteSetting(
+              web_contents->GetPrimaryMainFrame()->GetLastCommittedOrigin());
+
+  extensions_controls_->UpdateRequestAccessButton(actions_, site_setting,
+                                                  web_contents);
 }
 
 void ExtensionsToolbarContainer::ReorderViews() {

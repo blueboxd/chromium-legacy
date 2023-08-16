@@ -7,10 +7,10 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/companion/core/constants.h"
 #include "chrome/browser/companion/core/mojom/companion.mojom.h"
+#include "chrome/browser/companion/visual_search/visual_search_classifier_host.h"
 #include "chrome/browser/ui/side_panel/side_panel_enums.h"
 #include "components/lens/buildflags.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -76,22 +76,18 @@ class CompanionPageHandler
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info,
       const GoogleServiceAuthError& error) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
 
   // UrlKeyedDataCollectionConsentHelper::Observer overrides.
   void OnUrlKeyedDataCollectionConsentStateChanged(
       unified_consent::UrlKeyedDataCollectionConsentHelper* consent_helper)
       override;
 
-  // Attempts to retrieve a search query string and initiate a search if
-  // available. If it does not load a companion page, returns false.
-  bool OnSearchTextQuery();
+  // Informs the page handler that a new text query to initialize / reload the
+  // page with was sent from client.
+  void OnSearchTextQuery(const std::string& text_query);
   void OnImageQuery(side_panel::mojom::ImageQuery image_query);
-
-  // Notifies the companion side panel about a link click that happened in
-  // the side panel that maybe was handled by the browser (either new tab or
-  // same tab).
-  void NotifyLinkOpened(GURL opened_url,
-                        side_panel::mojom::LinkOpenMetadataPtr metadata);
 
  private:
   // Notifies the companion side panel about the URL of the main frame. Based on
@@ -115,6 +111,10 @@ class CompanionPageHandler
   void DidFinishFindingCqTexts(
       const std::vector<std::pair<std::string, bool>>& text_found_vec);
 
+  // This method is used as the callback that handles visual search results.
+  // Its role is to perform some checks and do a mojom IPC to side panel.
+  void HandleVisualSearchResult(std::vector<std::string> results);
+
   mojo::Receiver<side_panel::mojom::CompanionPageHandler> receiver_;
   mojo::Remote<side_panel::mojom::CompanionPage> page_;
   raw_ptr<CompanionSidePanelUntrustedUI> companion_untrusted_ui_ = nullptr;
@@ -123,6 +123,10 @@ class CompanionPageHandler
   std::unique_ptr<PromoHandler> promo_handler_;
   std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
       consent_helper_;
+
+  // Owns the orchestrator for visual search suggestions.
+  std::unique_ptr<visual_search::VisualSearchClassifierHost>
+      visual_search_host_;
 
   // Logs metrics for companion page. Reset when there is a new navigation.
   std::unique_ptr<CompanionMetricsLogger> metrics_logger_;
@@ -138,9 +142,6 @@ class CompanionPageHandler
       unified_consent::UrlKeyedDataCollectionConsentHelper,
       unified_consent::UrlKeyedDataCollectionConsentHelper::Observer>
       consent_helper_observation_{this};
-
-  absl::optional<base::TimeTicks> full_load_start_time_;
-  absl::optional<base::TimeTicks> reload_start_time_;
 
   base::WeakPtrFactory<CompanionPageHandler> weak_ptr_factory_{this};
 };

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/shell.h"
 #include "ash/system/system_notification_controller.h"
 #include "ash/system/test_system_sounds_delegate.h"
@@ -99,6 +100,11 @@ class PowerSoundsControllerTest : public AshTestBase {
   }
 
   void SetInitialPowerStatus() {
+    // The charging sounds toggle button is disabled as default, to test our
+    // charging sounds features, we will initialize it as enabled.
+    Shell::Get()->session_controller()->GetActivePrefService()->SetBoolean(
+        prefs::kChargingSoundsEnabled, true);
+
     // The default status for power is connected with a charger and the battery
     // level is 1%. We set the initial power status for each unit test to
     // disconnected with a charger and 5% battery level.
@@ -154,6 +160,20 @@ TEST_F(PowerSoundsControllerTest, PlaySoundsForCharging) {
   EXPECT_TRUE(VerifySounds({Sound::kChargeHighBattery}));
 }
 
+// Tests that when the user disables the toggle button for charging sounds, when
+// plugging in a charger, the device won't play any charging sound.
+TEST_F(PowerSoundsControllerTest, NoChargingSoundPlayedIfToggleButtonDisabled) {
+  PrefService* pref =
+      Shell::Get()->session_controller()->GetActivePrefService();
+
+  pref->SetBoolean(prefs::kChargingSoundsEnabled, false);
+  ASSERT_FALSE(pref->GetBoolean(prefs::kChargingSoundsEnabled));
+
+  // Charge the device after disabling the button, and no sounds will be played.
+  SetPowerStatus(5, /*line_power_connected=*/true);
+  EXPECT_TRUE(GetSystemSoundsDelegate()->empty());
+}
+
 // Tests if the warning sound can be played when the battery level drops below
 // 15% at the first time.
 TEST_F(PowerSoundsControllerTest, PlaySoundForLowBatteryWarning) {
@@ -170,6 +190,26 @@ TEST_F(PowerSoundsControllerTest, PlaySoundForLowBatteryWarning) {
   // When the battery level keeps dropping, the device shouldn't play sound for
   // warning.
   SetPowerStatus(14, /*line_power_connected=*/false);
+  EXPECT_TRUE(GetSystemSoundsDelegate()->empty());
+}
+
+// When the toggle button for the low battery sound is disabled, the sound won't
+// be played if the battery drops below 15%.
+TEST_F(PowerSoundsControllerTest,
+       NoLowBatterySoundPlayedIfToggleButtonDisabled) {
+  PrefService* pref =
+      Shell::Get()->session_controller()->GetActivePrefService();
+
+  pref->SetBoolean(prefs::kLowBatterySoundEnabled, false);
+  ASSERT_FALSE(pref->GetBoolean(prefs::kLowBatterySoundEnabled));
+
+  // Don't play warning sound if the battery level is no less than 15%.
+  SetPowerStatus(16, /*line_power_connected=*/false);
+  EXPECT_TRUE(GetSystemSoundsDelegate()->empty());
+
+  // When the battery drops below 15% at the first time, e.g. 15%, the device
+  // should play the sound for warning.
+  SetPowerStatus(15, /*line_power_connected=*/false);
   EXPECT_TRUE(GetSystemSoundsDelegate()->empty());
 }
 

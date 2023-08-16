@@ -34,6 +34,17 @@ enum ViewID {
   VIEW_ID_CAST_CAST_VIEW_LABEL,
   VIEW_ID_CAST_MAIN_VIEW,
   VIEW_ID_CAST_SELECT_VIEW,
+
+  // Game Dashboard elements
+  VIEW_ID_GD_CONTROLS_TILE,
+  VIEW_ID_GD_FEEDBACK_BUTTON,
+  VIEW_ID_GD_GENERAL_SETTINGS_BUTTON,
+  VIEW_ID_GD_HELP_BUTTON,
+  VIEW_ID_GD_RECORD_TILE,
+  VIEW_ID_GD_SCREEN_SIZE_TILE,
+  VIEW_ID_GD_SCREENSHOT_TILE,
+  VIEW_ID_GD_TOOLBAR_TILE,
+
   // The entry to add wifi network in the quick settings network subpage.
   VIEW_ID_JOIN_NETWORK_ENTRY,
 
@@ -71,6 +82,8 @@ enum ViewID {
   VIEW_ID_QS_DISPLAY_TILE_CONTAINER,
   VIEW_ID_QS_DISPLAY_MAX = VIEW_ID_QS_DISPLAY_TILE_CONTAINER,
 
+  VIEW_ID_QS_POWER_BUTTON_CHEVRON_ICON,
+
   // Status area trays:
   VIEW_ID_SA_MIN,
   VIEW_ID_SA_DATE_TRAY = VIEW_ID_SA_MIN,
@@ -79,6 +92,11 @@ enum ViewID {
 
   // Sticky header rows in a scroll view.
   VIEW_ID_STICKY_HEADER,
+
+  // System dialog delegate view:
+  VIEW_ID_STYLE_SYSTEM_DIALOG_DELEGATE_ACCEPT_BUTTON,
+  VIEW_ID_STYLE_SYSTEM_DIALOG_DELEGATE_CANCEL_BUTTON,
+
   // System tray up-arrow icon that shows an update is available.
   VIEW_ID_TRAY_UPDATE_ICON,
   // System tray menu item label for updates (e.g. "Restart to update").

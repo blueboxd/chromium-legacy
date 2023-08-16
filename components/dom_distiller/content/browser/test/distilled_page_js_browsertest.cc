@@ -16,8 +16,6 @@
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/resource/resource_scale_factor.h"
 
 namespace dom_distiller {
 namespace {
@@ -58,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(DistilledPageJsTest, MAYBE_Pinch) {
 }
 
 // FontSizeSlider is only used on Desktop.
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 #define MAYBE_FontSizeSlider DISABLED_FontSizeSlider
 #else
 #define MAYBE_FontSizeSlider FontSizeSlider

@@ -206,11 +206,16 @@ static constexpr base::FeatureParam<NavigationQueueingFeatureLevel>::Option
         {NavigationQueueingFeatureLevel::kFull, "full"}};
 const base::FeatureParam<NavigationQueueingFeatureLevel>
     kNavigationQueueingFeatureLevelParam{
-        &features::kQueueNavigationsWhileWaitingForCommit, "level",
-        NavigationQueueingFeatureLevel::kAvoidRedundantCancellations,
+        &features::kQueueNavigationsWhileWaitingForCommit, "queueing_level",
+        NavigationQueueingFeatureLevel::kFull,
         &kNavigationQueueingFeatureLevels};
 
 NavigationQueueingFeatureLevel GetNavigationQueueingFeatureLevel() {
+  if (ShouldCreateNewHostForSameSiteSubframe()) {
+    // When RenderDocument is enabled with a level of "subframes" or more,
+    // navigation queueing needs to be enabled to, to avoid crashes.
+    return NavigationQueueingFeatureLevel::kFull;
+  }
   if (base::FeatureList::IsEnabled(
           features::kQueueNavigationsWhileWaitingForCommit)) {
     return kNavigationQueueingFeatureLevelParam.Get();

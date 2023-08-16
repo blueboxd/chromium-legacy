@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarMediator.SaveOfflineButton
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator.PageInfoAction;
 import org.chromium.chrome.browser.omnibox.status.StatusView;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteControllerProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
@@ -249,7 +250,7 @@ public class LocationBarCoordinator
                 : R.color.omnibox_dropdown_bg_incognito;
         mDropdownIncognitoBackgroundColor = context.getColor(incognitoBgColorRes);
         mSuggestionStandardBackgroundColor =
-                ChromeColors.getSurfaceColor(context, R.dimen.omnibox_suggestion_bg_elevation);
+                OmniboxResourceProvider.getStandardSuggestionBackgroundColor(context);
         mSuggestionIncognitoBackgroundColor =
                 context.getColor(R.color.omnibox_suggestion_bg_incognito);
 
@@ -479,8 +480,7 @@ public class LocationBarCoordinator
      * @throws ClassCastException if this coordinator holds a {@link SubCoordinator} of a different
      *         type.
      */
-    @NonNull
-    public LocationBarCoordinatorPhone getPhoneCoordinator() {
+    public @NonNull LocationBarCoordinatorPhone getPhoneCoordinator() {
         assert mSubCoordinator != null;
         return (LocationBarCoordinatorPhone) mSubCoordinator;
     }
@@ -491,8 +491,7 @@ public class LocationBarCoordinator
      * @throws ClassCastException if this coordinator holds a {@link SubCoordinator} of a different
      *         type.
      */
-    @NonNull
-    public LocationBarCoordinatorTablet getTabletCoordinator() {
+    public @NonNull LocationBarCoordinatorTablet getTabletCoordinator() {
         assert mSubCoordinator != null;
         return (LocationBarCoordinatorTablet) mSubCoordinator;
     }

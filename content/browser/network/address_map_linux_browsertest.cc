@@ -19,8 +19,8 @@
 #include "base/task/thread_pool.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/network_service_util.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -159,7 +159,7 @@ class NCNLinuxMockedNetlinkTestUtil {
   }
 
  private:
-  raw_ptr<net::NetworkChangeNotifierLinux, DanglingUntriaged> ncn_linux_;
+  raw_ptr<net::NetworkChangeNotifierLinux, LeakedDanglingUntriaged> ncn_linux_;
   base::ScopedFD fake_netlink_fd_;
 
   bool initialized_ = false;

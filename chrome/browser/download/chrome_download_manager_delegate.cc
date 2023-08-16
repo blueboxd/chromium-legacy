@@ -377,6 +377,10 @@ void MaybeReportDangerousDownloadBlocked(
     return;
   }
 
+  if (!download) {
+    return;
+  }
+
   content::BrowserContext* browser_context =
       content::DownloadItemUtils::GetBrowserContext(download);
   Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -1104,7 +1108,8 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
           DownloadPathReservationTracker::UNIQUIFY,
           base::BindOnce(
               &ChromeDownloadManagerDelegate::GenerateUniqueFileNameDone,
-              weak_ptr_factory_.GetWeakPtr(), native_window,
+              weak_ptr_factory_.GetWeakPtr(),
+              base::UnsafeDanglingUntriaged(native_window),
               std::move(callback)));
       return;
     }

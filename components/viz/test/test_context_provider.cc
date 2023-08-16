@@ -19,6 +19,7 @@
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_raster_interface.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
@@ -299,6 +300,20 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create(
 }
 
 // static
+scoped_refptr<TestContextProvider> TestContextProvider::CreateRaster() {
+  return CreateRaster(std::make_unique<TestContextSupport>());
+}
+
+// static
+scoped_refptr<TestContextProvider> TestContextProvider::CreateRaster(
+    std::unique_ptr<TestContextSupport> context_support) {
+  CHECK(context_support);
+  return base::MakeRefCounted<TestContextProvider>(
+      std::move(context_support), std::make_unique<TestRasterInterface>(),
+      /*support_locking=*/false);
+}
+
+// static
 scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker() {
   return CreateWorker(std::make_unique<TestContextSupport>());
 }
@@ -538,6 +553,12 @@ void TestContextProvider::AddObserver(ContextLostObserver* obs) {
 
 void TestContextProvider::RemoveObserver(ContextLostObserver* obs) {
   observers_.RemoveObserver(obs);
+}
+
+unsigned int TestContextProvider::GetGrGLTextureFormat(
+    SharedImageFormat format) const {
+  return TextureStorageFormat(format.resource_format(),
+                              ContextCapabilities().angle_rgbx_internal_format);
 }
 
 }  // namespace viz

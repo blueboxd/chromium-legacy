@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/notreached.h"
@@ -18,8 +19,19 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_value_map.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/user_selectable_type.h"
+
+namespace {
+
+// Whether MaybeMigratePrefsForReplacingSyncWithSignin() has run in this
+// profile. Should be cleaned up after
+// MaybeMigratePrefsForReplacingSyncWithSignin() itself is gone.
+constexpr char kReplacingSyncWithSigninMigrated[] =
+    "sync.replacing_sync_with_signin_migrated";
+
+}  // namespace
 
 namespace syncer {
 
@@ -56,13 +68,14 @@ void SyncPrefs::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::internal::kSyncRequested, false);
   registry->RegisterBooleanPref(prefs::internal::kSyncKeepEverythingSynced,
                                 true);
+#if BUILDFLAG(IS_IOS)
   registry->RegisterBooleanPref(
       prefs::internal::kBookmarksAndReadingListAccountStorageOptIn, false);
+#endif  // BUILDFLAG(IS_IOS)
   for (UserSelectableType type : UserSelectableTypeSet::All()) {
     RegisterTypeSelectedPref(registry, type);
   }
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  registry->RegisterBooleanPref(prefs::internal::kOsSyncPrefsMigrated, false);
   registry->RegisterBooleanPref(prefs::internal::kSyncAllOsTypes, true);
   registry->RegisterBooleanPref(prefs::internal::kSyncOsApps, false);
   registry->RegisterBooleanPref(prefs::internal::kSyncOsPreferences, false);
@@ -72,6 +85,8 @@ void SyncPrefs::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   registry->RegisterBooleanPref(prefs::internal::kSyncAppsEnabledByOs, false);
 #endif
+
+  registry->RegisterBooleanPref(kReplacingSyncWithSigninMigrated, false);
 
   // The encryption bootstrap token represents a user-entered passphrase.
   registry->RegisterStringPref(prefs::internal::kSyncEncryptionBootstrapToken,
@@ -159,7 +174,9 @@ UserSelectableTypeSet SyncPrefs::GetSelectedTypes(
           // additional opt-in.
           // TODO(crbug.com/1440628): Cleanup the temporary behaviour of an
           // additional opt in for Bookmarks and Reading Lists.
-          if ((type == UserSelectableType::kBookmarks ||
+          if (!base::FeatureList::IsEnabled(
+                  kReplaceSyncPromosWithSignInPromos) &&
+              (type == UserSelectableType::kBookmarks ||
                type == UserSelectableType::kReadingList) &&
               !pref_service_->GetBoolean(
                   prefs::internal::
@@ -235,7 +252,7 @@ void SyncPrefs::SetBookmarksAndReadingListAccountStorageOptIn(bool value) {
   }
 }
 
-bool SyncPrefs::IsOptedInForBookmarksAndReadingListAccountStorage() {
+bool SyncPrefs::IsOptedInForBookmarksAndReadingListAccountStorageForTesting() {
   return pref_service_->GetBoolean(
       prefs::internal::kBookmarksAndReadingListAccountStorageOptIn);
 }
@@ -444,41 +461,58 @@ void SyncPrefs::ClearPassphrasePromptMutedProductVersion() {
       prefs::internal::kSyncPassphrasePromptMutedProductVersion);
 }
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-// static
-void SyncPrefs::MigrateSyncRequestedPrefPostMice(PrefService* pref_service) {
-  // Before MICe, there was a toggle in Sync settings that corresponded to the
-  // SyncRequested bit. After MICe, there's no such toggle anymore, but some
-  // users may still be in the legacy state where SyncRequested is false, for
-  // various reasons:
-  // * The original MICE implementation set SyncRequested to false if all data
-  //   types were disabled, for migration / backwards compatibility reasons.
-  //   This is no longer the case as of M104 (see crbug.com/1311270,
-  //   crbug.com/1291946).
-  // * On Android, users might have had the OS-level "auto sync" toggle
-  //   disabled since before M90 or so (see crbug.com/1105795). Since then,
-  //   Chrome does not integrate with the Android "auto sync" toggle anymore,
-  //   but not all users were migrated.
-  // Migrate all these users into a supported and equivalent state, where
-  // SyncRequested is true but all data types are off.
-
-  if (pref_service->GetBoolean(prefs::internal::kSyncRequested) ||
-      !pref_service->GetBoolean(
-          prefs::internal::kSyncInitialSyncFeatureSetupComplete)) {
-    // Either SyncRequested is already true, or FirstSetupComplete is false
-    // meaning Sync isn't enabled. Either way, there's nothing to be done here.
+void SyncPrefs::MaybeMigratePrefsForReplacingSyncWithSignin(
+    SyncAccountState account_state) {
+  if (!base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos)) {
+    // Ensure that the migration runs again when the feature gets enabled.
+    pref_service_->ClearPref(kReplacingSyncWithSigninMigrated);
     return;
   }
 
-  // Disable all data types.
-  pref_service->SetBoolean(prefs::internal::kSyncKeepEverythingSynced, false);
-  for (UserSelectableType type : UserSelectableTypeSet::All()) {
-    pref_service->ClearPref(SyncPrefs::GetPrefNameForType(type));
+  // Don't migrate again if this profile was previously migrated.
+  if (pref_service_->GetBoolean(kReplacingSyncWithSigninMigrated)) {
+    return;
   }
+  pref_service_->SetBoolean(kReplacingSyncWithSigninMigrated, true);
 
-  // ...but turn on SyncRequested.
-  pref_service->SetBoolean(prefs::internal::kSyncRequested, true);
+  switch (account_state) {
+    case SyncAccountState::kNotSignedIn:
+    case SyncAccountState::kSyncing: {
+      // Nothing to migrate for signed-out or syncing users.
+      break;
+    }
+    case SyncAccountState::kSignedInNotSyncing: {
+      // For pre-existing signed-in users, some state needs to be migrated:
+
+      // Settings aka preferences remains off by default.
+      pref_service_->SetBoolean(
+          GetPrefNameForType(UserSelectableType::kPreferences), false);
+
+      // Addresses remains enabled only if passwords is enabled (i.e. the user
+      // didn't opt out for passwords).
+      // TODO(crbug.com/1447020): Verify whether this is the intended behavior,
+      // and then add tests for it.
+      if (!pref_service_->GetBoolean(
+              GetPrefNameForType(UserSelectableType::kPasswords))) {
+        pref_service_->SetBoolean(
+            GetPrefNameForType(UserSelectableType::kAutofill), false);
+      }
+
+#if BUILDFLAG(IS_IOS)
+      // Bookmarks and reading list remain enabled only if the user previously
+      // explicitly opted in.
+      if (!pref_service_->GetBoolean(
+              prefs::internal::kBookmarksAndReadingListAccountStorageOptIn)) {
+        pref_service_->SetBoolean(
+            GetPrefNameForType(UserSelectableType::kBookmarks), false);
+        pref_service_->SetBoolean(
+            GetPrefNameForType(UserSelectableType::kReadingList), false);
+      }
+#endif  // BUILDFLAG(IS_IOS)
+
+      break;
+    }
+  }
 }
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 }  // namespace syncer

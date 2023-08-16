@@ -1288,25 +1288,30 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
       return false;
     }
 
-    if (const NGLayoutResult* layout_result =
-            layout_box->GetCachedLayoutResult(nullptr)) {
-      const NGPhysicalFragment& fragment = layout_result->PhysicalFragment();
+    const NGLayoutResult* layout_result =
+        layout_box->GetCachedLayoutResult(nullptr);
 
-      // Fragmented nodes cannot be relayout roots.
-      if (fragment.BreakToken())
-        return false;
+    // We need a previous layout result to begin layout at a subtree root.
+    if (!layout_result) {
+      return false;
+    }
 
-      // In LayoutNG, if box has any OOF descendants, they are propagated to
-      // parent. Therefore, we must mark parent chain for layout.
-      if (fragment.HasOutOfFlowPositionedDescendants())
-        return false;
+    const NGPhysicalFragment& fragment = layout_result->PhysicalFragment();
 
-      // Anchor queries should be propagated across the layout boundaries, even
-      // when `contain: strict` is explicitly set.
-      if (fragment.HasAnchorQuery())
-        return false;
-    } else if (RuntimeEnabledFeatures::LayoutNewSubtreeRootEnabled()) {
-      // We need a previous layout result to begin layout at a subtree root.
+    // Fragmented nodes cannot be relayout roots.
+    if (fragment.BreakToken()) {
+      return false;
+    }
+
+    // If a box has any OOF descendants, they are propagated up the tree to
+    // accumulate their static-position.
+    if (fragment.HasOutOfFlowPositionedDescendants()) {
+      return false;
+    }
+
+    // Anchor queries should be propagated across the layout boundaries, even
+    // when `contain: strict` is explicitly set.
+    if (fragment.HasAnchorQuery()) {
       return false;
     }
 
@@ -2800,16 +2805,8 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
           *this);
     }
 
-    if (IsFloating() &&
-        (style_->UnresolvedFloating() != new_style.UnresolvedFloating())) {
-      // For changes in float styles, we need to conceivably remove ourselves
-      // from the floating objects list.
-      if (!RuntimeEnabledFeatures::
-              LayoutDisableBrokenFloatInvalidationEnabled()) {
-        To<LayoutBox>(this)->RemoveFloatingOrPositionedChildFromBlockLists();
-      }
-    } else if (IsOutOfFlowPositioned() &&
-               (style_->GetPosition() != new_style.GetPosition())) {
+    if (IsOutOfFlowPositioned() &&
+        (style_->GetPosition() != new_style.GetPosition())) {
       // For changes in positioning styles, we need to conceivably remove
       // ourselves from the positioned objects list.
       LayoutBlock::RemovePositionedObject(To<LayoutBox>(this));
@@ -3805,8 +3802,12 @@ void LayoutObject::WillBeRemovedFromTree() {
 
 void LayoutObject::SetNeedsPaintPropertyUpdate() {
   NOT_DESTROYED();
+  if (bitfields_.NeedsPaintPropertyUpdate()) {
+    return;
+  }
   SetNeedsPaintPropertyUpdatePreservingCachedRects();
   InvalidateIntersectionObserverCachedRects();
+  GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
 }
 
 void LayoutObject::SetNeedsPaintPropertyUpdatePreservingCachedRects() {
@@ -3814,13 +3815,6 @@ void LayoutObject::SetNeedsPaintPropertyUpdatePreservingCachedRects() {
   DCHECK(!GetDocument().InPostLifecycleSteps());
   if (bitfields_.NeedsPaintPropertyUpdate())
     return;
-
-  // Anytime a layout object needs a paint property update, we should also do
-  // intersection observation.
-  // TODO(vmpstr): Figure out if there's a cleaner way to do this outside of
-  // this function, since this is potentially called many times for a single
-  // frame view subtree.
-  GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
 
   bitfields_.SetNeedsPaintPropertyUpdate(true);
   if (Parent())
@@ -4064,12 +4058,6 @@ void LayoutObject::ScheduleRelayout() {
   }
 }
 
-void LayoutObject::ForceLayout() {
-  NOT_DESTROYED();
-  SetSelfNeedsLayoutForAvailableSpace(true);
-  UpdateLayout();
-}
-
 const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
   NOT_DESTROYED();
   DCHECK(GetDocument().GetStyleEngine().UsesFirstLineRules());
@@ -4240,9 +4228,7 @@ bool LayoutObject::WillRenderImage() {
   // If paint invalidation of this object is delayed, animations can be
   // suspended. When the object is painted the next time, the animations will
   // be started again.
-  if (ShouldDelayFullPaintInvalidation() &&
-      base::FeatureList::IsEnabled(
-          features::kThrottleOffscreenAnimatingSvgImages)) {
+  if (ShouldDelayFullPaintInvalidation()) {
     return false;
   }
   return true;

@@ -2663,7 +2663,7 @@ bool Offset::ParseShorthand(
   } else if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
     css_parsing_utils::AddProperty(
         CSSPropertyID::kOffsetPosition, CSSPropertyID::kOffset,
-        *CSSInitialValue::Create(), important,
+        *CSSIdentifierValue::Create(CSSValueID::kAuto), important,
         css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
   }
 
@@ -2675,7 +2675,7 @@ bool Offset::ParseShorthand(
   } else {
     css_parsing_utils::AddProperty(
         CSSPropertyID::kOffsetPath, CSSPropertyID::kOffset,
-        *CSSInitialValue::Create(), important,
+        *CSSIdentifierValue::Create(CSSValueID::kNone), important,
         css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
   }
 
@@ -2687,8 +2687,10 @@ bool Offset::ParseShorthand(
   } else {
     css_parsing_utils::AddProperty(
         CSSPropertyID::kOffsetDistance, CSSPropertyID::kOffset,
-        *CSSInitialValue::Create(), important,
-        css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+        *CSSNumericLiteralValue::Create(0,
+                                        CSSPrimitiveValue::UnitType::kPixels),
+        important, css_parsing_utils::IsImplicitProperty::kNotImplicit,
+        properties);
   }
 
   if (offset_rotate) {
@@ -2699,7 +2701,7 @@ bool Offset::ParseShorthand(
   } else {
     css_parsing_utils::AddProperty(
         CSSPropertyID::kOffsetRotate, CSSPropertyID::kOffset,
-        *CSSInitialValue::Create(), important,
+        *CSSIdentifierValue::Create(CSSValueID::kAuto), important,
         css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
   }
 
@@ -2711,7 +2713,7 @@ bool Offset::ParseShorthand(
   } else if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
     css_parsing_utils::AddProperty(
         CSSPropertyID::kOffsetAnchor, CSSPropertyID::kOffset,
-        *CSSInitialValue::Create(), important,
+        *CSSIdentifierValue::Create(CSSValueID::kAuto), important,
         css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
   }
 
@@ -3353,9 +3355,8 @@ const CSSValue* ScrollStart::CSSValueFromComputedStyleInternal(
   const CSSValue* inline_value =
       scrollStartShorthand().properties()[1]->CSSValueFromComputedStyle(
           style, layout_object, allow_visited_style);
-  if (!(IsA<CSSIdentifierValue>(inline_value) &&
-        To<CSSIdentifierValue>(*inline_value).GetValueID() ==
-            CSSValueID::kStart)) {
+  if (const auto* ident_value = DynamicTo<CSSIdentifierValue>(inline_value);
+      !ident_value || ident_value->GetValueID() != CSSValueID::kStart) {
     return MakeGarbageCollected<CSSValuePair>(
         block_value, inline_value, CSSValuePair::kDropIdenticalValues);
   }

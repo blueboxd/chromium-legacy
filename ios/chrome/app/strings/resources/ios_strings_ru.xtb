@@ -91,7 +91,6 @@
 <translation id="152234381334907219">Сайты, пароли для которых не сохраняются</translation>
 <translation id="1523341279170789507">Разрешить все файлы сookie</translation>
 <translation id="1524563461097350801">Нет, спасибо</translation>
-<translation id="1531836666020185856">Популярные</translation>
 <translation id="1535268707340844072">Из-за текущего параметра некоторые сайты могут работать некорректно. Вы можете <ph name="BEGIN_LINK" />настроить файлы cookie<ph name="END_LINK" /> для разных сайтов.</translation>
 <translation id="1540800554400757039">Адрес, строка 1</translation>
 <translation id="1545749641540134597">Сканирование QR-кода</translation>
@@ -187,13 +186,13 @@
 <translation id="2230173723195178503">Веб-страница загружена</translation>
 <translation id="2239626343334228536">Удаление данных о работе в браузере…</translation>
 <translation id="2242467532204595597">Открывайте ссылки в сообщениях, документах и других приложениях с помощью Chrome.</translation>
-<translation id="22508856139286506">Закрытые предупреждения (<ph name="COUNT" />)</translation>
 <translation id="2251686759395008410">Меню → История</translation>
 <translation id="2252674110805316998">Веб-поиск</translation>
 <translation id="2256933947031277845">Согласно правилам, установленным организацией, выполнить вход можно только с одобренным аккаунтом.</translation>
 <translation id="225943865679747347">Код ошибки: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Добавить аккаунт</translation>
 <translation id="2268044343513325586">Уточнить</translation>
+<translation id="2269277877025820298">Ещё</translation>
 <translation id="2273327106802955778">Меню "Ещё"</translation>
 <translation id="2286505070150039482">Выделенный текст</translation>
 <translation id="2287614783861766820">{count,plural, =1{Адрес будет удален с устройства.}one{Адреса будут удалены с устройства.}few{Адреса будут удалены с устройства.}many{Адреса будут удалены с устройства.}other{Адреса будут удалены с устройства.}}</translation>
@@ -219,7 +218,6 @@
 <translation id="2423077901494354337">Теперь вы сможете использовать все возможности Chrome.</translation>
 <translation id="2434405374328098816">Пароль пользователя <ph name="USERNAME" /> для сайта <ph name="WEBSITE" /> уже сохранен.</translation>
 <translation id="2435457462613246316">Показать пароль</translation>
-<translation id="2439425774439590">Часто открываемые сайты</translation>
 <translation id="2451654228769116489">Закрепить вкладку</translation>
 <translation id="2461070143328828326">Настройки паролей</translation>
 <translation id="2469960372084740698">Отключить Безопасный просмотр?</translation>
@@ -356,6 +354,7 @@
 <translation id="3245744387817103524">Не удалось сохранить изменения.</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> из <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3264775633254836593">Автозаполнение паролей</translation>
+<translation id="3265534588625245297">Управляйте сайтами, на которые вы подписаны</translation>
 <translation id="3268451620468152448">Вкладки</translation>
 <translation id="3272527697863656322">Отмена</translation>
 <translation id="3277021493514034324">Адрес сайта скопирован</translation>
@@ -468,7 +467,6 @@
 <translation id="4045648459118332842">Вводите сохраненные пароли в любом приложении одним нажатием</translation>
 <translation id="4049507953662678203">Проверьте подключение к Интернету и повторите попытку.</translation>
 <translation id="4063300985191096908">Перейти к ленте</translation>
-<translation id="4066639687323968621">Чтобы синхронизировать закладки, историю и другие данные, достаточно войти в аккаунт Google.</translation>
 <translation id="408404951701638773">Пользоваться строкой поиска стало ещё удобнее</translation>
 <translation id="4092655288299341041">Справочная информация</translation>
 <translation id="4105841739161771091">{count,plural, =1{Удалить адрес}one{Удалить адреса}few{Удалить адреса}many{Удалить адреса}other{Удалить адреса}}</translation>
@@ -1085,7 +1083,7 @@
 
 Сайты могут использовать файлы cookie, чтобы отслеживать ваши действия в браузере, например для показа персонализированной рекламы.</translation>
 <translation id="7971521879845308059">Блок. вспл. окна</translation>
-<translation id="797413074872316787">Чтобы синхронизировать и персонализировать данные на всех устройствах, включите синхронизацию.</translation>
+<translation id="7975036700432177008">Запустить</translation>
 <translation id="7978018860671536736">3. Нажмите "Автозаполнение пароля".</translation>
 <translation id="7982789257301363584">Сеть</translation>
 <translation id="7987685713885608670">В целях повышения безопасности шифруйте пароли на устройстве, прежде чем они будут сохраняться в Google Менеджере паролей.</translation>
@@ -1147,6 +1145,7 @@
 <translation id="8323906514956095947">Нажмите и удерживайте, чтобы открыть список дополнительных действий с вкладками</translation>
 <translation id="8328777765163860529">Закрыть все</translation>
 <translation id="8343993175958086504">Создайте резервную копию данных и используйте их на любом устройстве.</translation>
+<translation id="834783239627985533">Часто посещаемые сайты</translation>
 <translation id="8378714024927312812">Управляется вашей организацией</translation>
 <translation id="8386068868580335421">Сбросить</translation>
 <translation id="838867811594159347">Ввести кодовую фразу</translation>
@@ -1276,7 +1275,6 @@
 <translation id="9157836665414082580">Блокировать диалоговые окна</translation>
 <translation id="9162432979321511934">Включите параметр "Автозаполнение паролей".</translation>
 <translation id="9165320910061267720">Чтобы получать оповещения о скидках, включите уведомления в настройках iOS.</translation>
-<translation id="9172603439892261948">Синхронизируйте закладки, историю и другие данные.</translation>
 <translation id="9177438225260810839">Поиск по открытым вкладкам</translation>
 <translation id="9187853111759024059">Закрыть более 99 неактивных вкладок?</translation>
 <translation id="9188680907066685419">Выход из управляемого аккаунта</translation>

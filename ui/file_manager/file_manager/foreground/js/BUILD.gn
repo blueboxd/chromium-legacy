@@ -170,6 +170,7 @@ js_library("actions_controller") {
     "metadata:metadata_model",
     "ui:context_menu_handler",
     "ui:file_manager_ui",
+    "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/externs:volume_manager",
     "//ui/file_manager/file_manager/externs/background:drive_sync_handler",
   ]
@@ -935,6 +936,7 @@ js_library("main_window_component") {
     ":directory_model",
     ":file_selection",
     ":naming_controller",
+    "ui:directory_tree",
     "ui:file_manager_ui",
     "ui:file_tap_handler",
     "ui:list_container",

@@ -55,17 +55,7 @@ class GPU_GLES2_EXPORT AbstractTexture {
   // Set a texture parameter.  The GL context must be current.
   virtual void SetParameteri(GLenum pname, GLint param) = 0;
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-  // Attaches |image| to the AbstractTexture. The decoder will call
-  // GLImage::Copy/Bind. Further, the decoder guarantees that
-  // ScheduleOverlayPlane will be called if the texture is ever promoted to an
-  // overlay.
-  //
-  // It is not required to SetCleared() if one binds an image.
-  //
-  // The context must be current.
-  virtual void SetUnboundImage(gl::GLImage* image) = 0;
-#else
+#if BUILDFLAG(IS_OZONE)
   // Attaches |image| to the AbstractTexture. The decoder does not call
   // GLImage::Copy/Bind. Further, the decoder guarantees that
   // ScheduleOverlayPlane will be called if the texture is ever promoted to an
@@ -76,9 +66,6 @@ class GPU_GLES2_EXPORT AbstractTexture {
   // The context must be current.
   virtual void SetBoundImage(gl::GLImage* image) = 0;
 #endif
-
-  // Return the image, if any, for testing purposes.
-  virtual gl::GLImage* GetImageForTesting() const = 0;
 
   // Marks the texture as cleared, to help prevent sending an uninitialized
   // texture to the (untrusted) renderer.  One should call this only when one

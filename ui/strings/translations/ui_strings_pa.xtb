@@ -115,6 +115,7 @@
 <translation id="4746179598275229723">ਐਕਸਟੈਂਸ਼ਨ ਨੂੰ ਅਣਪਿੰਨ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 ਮਹੀਨਾ ਬਾਕੀ}one{# ਮਹੀਨਾ ਬਾਕੀ}other{# ਮਹੀਨੇ ਬਾਕੀ}}</translation>
 <translation id="4888938634149558681">ਕਾਲ ਕਰੋ</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 ਸਕਿੰਟ}one{# ਸਕਿੰਟ }other{# ਸਕਿੰਟ }}</translation>
 <translation id="4971687151119236543">ਮੀਡੀਆ ਪਿਛਲਾ ਟਰੈਕ</translation>
 <translation id="5046499563572181734">ਇੱਥੇ ਟੈਪ ਕਰੋ</translation>
@@ -147,6 +148,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6237461503717005873"><ph name="ROW_NAME" /> ਨੂੰ ਚੁਣਿਆ ਗਿਆ ਹੈ।</translation>
 <translation id="6264365405983206840">&amp;ਸਾਰੇ ਚੁਣੋ</translation>
+<translation id="6346952829206698721">ਕਲਿੱਪਬੋਰਡ ਤੋਂ ਪੇਸਟ ਕਰੋ</translation>
 <translation id="6364916375976753737">ਖੱਬੇ ਪਾਸੇ ਸਕ੍ਰੌਲ ਕਰੋ</translation>
 <translation id="6394627529324717982">ਕਾਮਾ</translation>
 <translation id="6397363302884558537">ਬੋਲਣਾ ਬੰਦ ਕਰੋ</translation>

@@ -24,6 +24,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/soda/soda_installer_impl_chromeos.h"
 #include "media/base/media_switches.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/controls/label.h"
@@ -112,6 +113,11 @@ void EnableSwitchAccess(bool enabled) {
   Shell::Get()->accessibility_controller()->switch_access().SetEnabled(enabled);
 }
 
+void EnableColorCorrection(bool enabled) {
+  Shell::Get()->accessibility_controller()->color_correction().SetEnabled(
+      enabled);
+}
+
 speech::LanguageCode en_us() {
   return speech::LanguageCode::kEnUs;
 }
@@ -144,7 +150,8 @@ class AccessibilityDetailedViewTest : public AshTestBase,
   AccessibilityDetailedViewTest() {
     scoped_feature_list_.InitWithFeatures(
         {media::kLiveCaption, media::kLiveCaptionSystemWideOnChromeOS,
-         ash::features::kOnDeviceSpeechRecognition},
+         ash::features::kOnDeviceSpeechRecognition,
+         ::features::kExperimentalAccessibilityColorEnhancementSettings},
         {});
   }
   AccessibilityDetailedViewTest(const AccessibilityDetailedViewTest&) = delete;
@@ -253,6 +260,10 @@ class AccessibilityDetailedViewTest : public AshTestBase,
     ClickView(detailed_menu_->dictation_view_);
   }
 
+  void ClickColorCorrectionOnDetailMenu() {
+    ClickView(detailed_menu_->color_correction_view_);
+  }
+
   bool IsSpokenFeedbackMenuShownOnDetailMenu() const {
     return detailed_menu_->spoken_feedback_view_;
   }
@@ -315,6 +326,10 @@ class AccessibilityDetailedViewTest : public AshTestBase,
 
   bool IsSwitchAccessShownOnDetailMenu() const {
     return detailed_menu_->switch_access_view_;
+  }
+
+  bool IsColorCorrectionShownOnDetailMenu() const {
+    return detailed_menu_->color_correction_view_;
   }
 
   // In material design we show the help button but theme it as disabled if
@@ -420,6 +435,11 @@ class AccessibilityDetailedViewTest : public AshTestBase,
   }
 
   bool IsStickyKeysEnabledOnDetailMenu() const {
+    // The sticky_keys_view_ is not created when Spoken Feedback is enabled.
+    if (IsSpokenFeedbackEnabledOnDetailMenu()) {
+      DCHECK(!detailed_menu_->sticky_keys_view_);
+      return false;
+    }
     return IsEnabledOnDetailMenu(controller_->sticky_keys().enabled(),
                                  detailed_menu_->sticky_keys_view_);
   }
@@ -427,6 +447,11 @@ class AccessibilityDetailedViewTest : public AshTestBase,
   bool IsSwitchAccessEnabledOnDetailMenu() const {
     return IsEnabledOnDetailMenu(controller_->switch_access().enabled(),
                                  detailed_menu_->switch_access_view_);
+  }
+
+  bool IsColorCorrectionEnabledOnDetailMenu() const {
+    return IsEnabledOnDetailMenu(controller_->color_correction().enabled(),
+                                 detailed_menu_->color_correction_view_);
   }
 
   const char* GetDetailedViewClassName() {
@@ -486,6 +511,9 @@ class AccessibilityDetailedViewTest : public AshTestBase,
   views::View* switch_access_view() const {
     return detailed_menu_->switch_access_view_;
   }
+  views::View* color_correction_view() const {
+    return detailed_menu_->color_correction_view_;
+  }
 
   // Accessors for the top views listing enabled items.
   HoverHighlightView* spoken_feedback_top_view() const {
@@ -535,6 +563,9 @@ class AccessibilityDetailedViewTest : public AshTestBase,
   }
   HoverHighlightView* switch_access_top_view() const {
     return detailed_menu_->switch_access_top_view_;
+  }
+  HoverHighlightView* color_correction_top_view() const {
+    return detailed_menu_->color_correction_top_view_;
   }
 
  private:
@@ -587,6 +618,7 @@ TEST_F(AccessibilityDetailedViewQsRevampTest, ListItemsAreInRoundedContainer) {
   EXPECT_TRUE(has_rounded_container_parent(highlight_keyboard_focus_view()));
   EXPECT_TRUE(has_rounded_container_parent(sticky_keys_view()));
   EXPECT_TRUE(has_rounded_container_parent(switch_access_view()));
+  EXPECT_TRUE(has_rounded_container_parent(color_correction_view()));
   CloseDetailMenu();
 }
 
@@ -627,6 +659,7 @@ TEST_F(AccessibilityDetailedViewQsRevampTest,
   EXPECT_FALSE(highlight_keyboard_focus_top_view());
   EXPECT_FALSE(sticky_keys_top_view());
   EXPECT_FALSE(switch_access_top_view());
+  EXPECT_FALSE(color_correction_top_view());
 }
 
 // Verifies that pressing the tab key moves from row to row. In particular,
@@ -639,6 +672,8 @@ TEST_F(AccessibilityDetailedViewQsRevampTest, TabMovesFocusBetweenRows) {
   EXPECT_TRUE(select_to_speak_view()->HasFocus());
   PressAndReleaseKey(ui::VKEY_TAB);
   EXPECT_TRUE(dictation_view()->HasFocus());
+  PressAndReleaseKey(ui::VKEY_TAB);
+  EXPECT_TRUE(color_correction_view()->HasFocus());
   PressAndReleaseKey(ui::VKEY_TAB);
   EXPECT_TRUE(high_contrast_view()->HasFocus());
   PressAndReleaseKey(ui::VKEY_TAB);
@@ -883,6 +918,19 @@ TEST_F(AccessibilityDetailedViewQsRevampTest, SwitchAccessTopView) {
   EXPECT_FALSE(controller()->switch_access().enabled());
 }
 
+TEST_F(AccessibilityDetailedViewQsRevampTest, ColorCorrectionTopView) {
+  EnableColorCorrection(true);
+  CreateDetailedMenu();
+  ASSERT_TRUE(color_correction_top_view());
+  EXPECT_TRUE(IsSwitchToggled(color_correction_top_view()));
+  EXPECT_TRUE(IsCheckedForAccessibility(color_correction_top_view()));
+
+  ClickView(color_correction_top_view());
+  EXPECT_FALSE(IsSwitchToggled(color_correction_top_view()));
+  EXPECT_FALSE(IsCheckedForAccessibility(color_correction_top_view()));
+  EXPECT_FALSE(controller()->color_correction().enabled());
+}
+
 TEST_F(AccessibilityDetailedViewTest, CheckMenuVisibilityOnDetailMenu) {
   // Except help & settings, others should be kept the same
   // in LOGIN | NOT LOGIN | LOCKED. https://crbug.com/632107.
@@ -905,6 +953,7 @@ TEST_F(AccessibilityDetailedViewTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
   EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
   EXPECT_TRUE(IsSwitchAccessShownOnDetailMenu());
+  EXPECT_TRUE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Simulate screen lock.
@@ -928,6 +977,7 @@ TEST_F(AccessibilityDetailedViewTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
   EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
   EXPECT_TRUE(IsSwitchAccessShownOnDetailMenu());
+  EXPECT_TRUE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
   UnblockUserSession();
 
@@ -952,6 +1002,7 @@ TEST_F(AccessibilityDetailedViewTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
   EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
   EXPECT_TRUE(IsSwitchAccessShownOnDetailMenu());
+  EXPECT_TRUE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
   UnblockUserSession();
 }
@@ -1134,6 +1185,17 @@ TEST_F(AccessibilityDetailedViewTest, ClickDetailMenu) {
   CreateDetailedMenu();
   ClickDictationOnDetailMenu();
   EXPECT_FALSE(accessibility_controller->dictation().enabled());
+
+  // Confirms that the check item toggles color correction.
+  EXPECT_FALSE(accessibility_controller->color_correction().enabled());
+
+  CreateDetailedMenu();
+  ClickColorCorrectionOnDetailMenu();
+  EXPECT_TRUE(accessibility_controller->color_correction().enabled());
+
+  CreateDetailedMenu();
+  ClickColorCorrectionOnDetailMenu();
+  EXPECT_FALSE(accessibility_controller->color_correction().enabled());
 }
 
 // Trivial test to increase code coverage.
@@ -1329,6 +1391,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, NothingCheckedByDefault) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1354,6 +1418,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, SpokenFeedback) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling spoken feedback.
@@ -1377,6 +1443,32 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, SpokenFeedback) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  CloseDetailMenu();
+}
+
+TEST_F(AccessibilityDetailedViewLoginScreenTest,
+       SpokenFeedbackConflictingFeatures) {
+  EnableStickyKeys(true);
+  SetFocusHighlightEnabled(true);
+  CreateDetailedMenu();
+  EXPECT_TRUE(IsStickyKeysEnabledOnDetailMenu());
+  EXPECT_TRUE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
+  CloseDetailMenu();
+
+  // When ChromeVox is on, even though sticky keys and focus highlight were
+  // enabled, they will not be shown.
+  EnableSpokenFeedback(true);
+  CreateDetailedMenu();
+  EXPECT_FALSE(IsStickyKeysEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
+  CloseDetailMenu();
+
+  EnableSpokenFeedback(false);
+  CreateDetailedMenu();
+  EXPECT_TRUE(IsStickyKeysEnabledOnDetailMenu());
+  EXPECT_TRUE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1402,6 +1494,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, SelectToSpeak) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling select to speak.
@@ -1425,6 +1519,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, SelectToSpeak) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1450,6 +1546,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, Dictation) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling dictation.
@@ -1473,6 +1571,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, Dictation) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1498,6 +1598,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, HighContrast) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling high contrast.
@@ -1521,6 +1623,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, HighContrast) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1546,6 +1650,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, FullScreenMagnifier) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling screen magnifier.
@@ -1569,6 +1675,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, FullScreenMagnifier) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1594,6 +1702,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, DockedMagnifier) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling docked magnifier.
@@ -1617,6 +1727,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, DockedMagnifier) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1642,6 +1754,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, LargeCursor) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling large cursor.
@@ -1665,6 +1779,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, LargeCursor) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1690,6 +1806,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, LiveCaption) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling Live Caption.
@@ -1713,6 +1831,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, LiveCaption) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1738,6 +1858,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, VirtualKeyboard) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disable on-screen keyboard.
@@ -1761,6 +1883,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, VirtualKeyboard) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1786,6 +1910,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, MonoAudio) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling mono audio.
@@ -1809,6 +1935,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, MonoAudio) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1834,6 +1962,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, CaretHighlight) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling caret highlight.
@@ -1857,6 +1987,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, CaretHighlight) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1882,6 +2014,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, CursorHighlight) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling highlight mouse cursor.
@@ -1905,6 +2039,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, CursorHighlight) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1930,6 +2066,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, FocusHighlight) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling highlight keyboard focus.
@@ -1953,6 +2091,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, FocusHighlight) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -1978,6 +2118,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, StickyKeys) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling sticky keys.
@@ -2001,6 +2143,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, StickyKeys) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -2086,7 +2230,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, AllFeatures) {
   EXPECT_TRUE(IsHighlightMouseCursorEnabledOnDetailMenu());
   // Focus highlighting can't be on when spoken feedback is on
   EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
-  EXPECT_TRUE(IsStickyKeysEnabledOnDetailMenu());
+  // Sticky keys can't be on when spoken feedback is on.
+  EXPECT_FALSE(IsStickyKeysEnabledOnDetailMenu());
   EXPECT_TRUE(IsSwitchAccessEnabledOnDetailMenu());
   CloseDetailMenu();
 
@@ -2126,6 +2271,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, AllFeatures) {
   // Switch Access is currently cannot be enabled from the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 }
 
@@ -2151,6 +2298,8 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, Autoclick) {
   // Switch Access is currently not available on the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling autoclick.
@@ -2174,6 +2323,33 @@ TEST_F(AccessibilityDetailedViewLoginScreenTest, Autoclick) {
   // Switch Access is currently not available on the login screen.
   // TODO(crbug.com/1108808): Uncomment once issue is addressed.
   // EXPECT_FALSE(IsSwitchAccessEnabledOnDetailMenu());
+  // Color correction cannot be enabled from the login screen.
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  CloseDetailMenu();
+}
+
+class AccessibilityDetailedViewWithoutColorCorrectionTest
+    : public AccessibilityDetailedViewTest {
+ public:
+  AccessibilityDetailedViewWithoutColorCorrectionTest() {
+    feature_list_.InitAndDisableFeature(
+        ::features::kExperimentalAccessibilityColorEnhancementSettings);
+  }
+  AccessibilityDetailedViewWithoutColorCorrectionTest(
+      const AccessibilityDetailedViewWithoutColorCorrectionTest&) = delete;
+  AccessibilityDetailedViewWithoutColorCorrectionTest& operator=(
+      const AccessibilityDetailedViewWithoutColorCorrectionTest&) = delete;
+  ~AccessibilityDetailedViewWithoutColorCorrectionTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(AccessibilityDetailedViewWithoutColorCorrectionTest,
+       NoColorCorrectionIfFlagNotSet) {
+  CreateDetailedMenu();
+  EXPECT_FALSE(IsColorCorrectionShownOnDetailMenu());
+  EXPECT_FALSE(color_correction_top_view());
   CloseDetailMenu();
 }
 

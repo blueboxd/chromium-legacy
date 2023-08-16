@@ -406,7 +406,6 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
     case TaskType::kWebSocket:
     case TaskType::kMicrotask:
     case TaskType::kUnshippedPortMessage:
-    case TaskType::kFileReading:
     case TaskType::kPresentation:
     case TaskType::kSensor:
     case TaskType::kPerformanceTimeline:
@@ -423,6 +422,12 @@ QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
     case TaskType::kStorage:
       // TODO(altimin): Move appropriate tasks to throttleable task queue.
       return DeferrableTaskQueueTraits();
+    case TaskType::kFileReading:
+      // This is used by Blob operations (BlobURLStore in particular, which is
+      // associated to BlobRegistry) and should run with VT paused to prevent
+      // deadlocks when reading network requests as Blobs. See crbug.com/1455267
+      // for more details.
+      return DeferrableTaskQueueTraits().SetCanRunWhenVirtualTimePaused(true);
     // PostedMessage can be used for navigation, so we shouldn't defer it
     // when expecting a user gesture.
     case TaskType::kPostedMessage:
@@ -615,8 +620,6 @@ void FrameSchedulerImpl::OnStartedUsingNonStickyFeature(
     back_forward_cache_disabling_feature_tracker_.AddNonStickyFeature(
         feature, std::move(source_location), handle);
   }
-  if (policy.disable_align_wake_ups)
-    DisableAlignWakeUpsForProcess();
 }
 
 void FrameSchedulerImpl::OnStartedUsingStickyFeature(
@@ -629,8 +632,6 @@ void FrameSchedulerImpl::OnStartedUsingStickyFeature(
     back_forward_cache_disabling_feature_tracker_.AddStickyFeature(
         feature, std::move(source_location));
   }
-  if (policy.disable_align_wake_ups)
-    DisableAlignWakeUpsForProcess();
 }
 
 void FrameSchedulerImpl::OnStoppedUsingNonStickyFeature(
@@ -1117,13 +1118,6 @@ WTF::HashSet<SchedulingPolicy::Feature>
 FrameSchedulerImpl::GetActiveFeaturesTrackedForBackForwardCacheMetrics() {
   return back_forward_cache_disabling_feature_tracker_
       .GetActiveFeaturesTrackedForBackForwardCacheMetrics();
-}
-
-uint64_t
-FrameSchedulerImpl::GetActiveFeaturesTrackedForBackForwardCacheMetricsMask()
-    const {
-  return back_forward_cache_disabling_feature_tracker_
-      .GetActiveFeaturesTrackedForBackForwardCacheMetricsMask();
 }
 
 base::WeakPtr<FrameOrWorkerScheduler>

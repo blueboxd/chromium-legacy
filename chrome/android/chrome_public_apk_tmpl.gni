@@ -302,10 +302,6 @@ template("chrome_common_apk_or_module_tmpl") {
       custom_assertion_handler = crash_reporting_assertion_handler
     }
 
-    if (allow_jni_multiplexing) {
-      enable_jni_multiplexing = true
-    }
-
     # Include resource strings files only for supported locales.
     aapt_locale_allowlist = platform_pak_locales
 
@@ -371,7 +367,7 @@ template("chrome_common_apk_or_module_tmpl") {
 
         # Resources config for blocklisting resource names from obfuscation
         resources_config_paths = [ "//chrome/android/aapt2.config" ]
-        if (_is_monochrome || _is_trichrome) {
+        if (_is_monochrome) {
           resources_config_paths += [ "//android_webview/aapt2.config" ]
         }
         if (defined(invoker.resources_config_paths)) {

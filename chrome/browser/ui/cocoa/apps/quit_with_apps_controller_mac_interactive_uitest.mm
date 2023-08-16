@@ -29,6 +29,10 @@
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // The param selects whether to use ChromeNativeAppWindowViewsMac, otherwise it
@@ -159,12 +163,10 @@ IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitOnPowerOff) {
   // Simulate a terminate triggered by a power off or log out.
   // Cocoa will send an NSWorkspaceWillPowerOffNotification followed by
   // -[NSApplication terminate:].
-  AppController* app_controller =
-      base::mac::ObjCCast<AppController>([NSApp delegate]);
   NSNotification* notification =
       [NSNotification notificationWithName:NSWorkspaceWillPowerOffNotification
                                     object:nil];
-  [app_controller willPowerOff:notification];
+  [AppController.sharedController willPowerOff:notification];
   [NSApp terminate:nil];
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
 }

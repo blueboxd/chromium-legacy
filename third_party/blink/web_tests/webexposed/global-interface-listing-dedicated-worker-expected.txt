@@ -1192,7 +1192,9 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method sigmoid
 [Worker]     method slice
 [Worker]     method softmax
+[Worker]     method split
 [Worker]     method sub
+[Worker]     method tanh
 [Worker]     method transpose
 [Worker] interface MLOperand
 [Worker]     attribute @@toStringTag

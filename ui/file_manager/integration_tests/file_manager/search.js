@@ -7,7 +7,7 @@ import {addEntries, ENTRIES, EntryType, getCaller, getDateWithDayDiff, pending, 
 import {testcase} from '../testcase.js';
 
 import {mountCrostini, navigateWithDirectoryTree, remoteCall, setupAndWaitUntilReady} from './background.js';
-import {BASIC_ANDROID_ENTRY_SET, BASIC_DRIVE_ENTRY_SET, BASIC_FAKE_ENTRY_SET, BASIC_LOCAL_ENTRY_SET, NESTED_ENTRY_SET} from './test_data.js';
+import {BASIC_ANDROID_ENTRY_SET, BASIC_DRIVE_ENTRY_SET, BASIC_FAKE_ENTRY_SET, BASIC_LOCAL_ENTRY_SET, COMPLEX_DOCUMENTS_PROVIDER_ENTRY_SET, NESTED_ENTRY_SET} from './test_data.js';
 
 /**
  * @param {string} appId The ID that identifies the files app.
@@ -195,19 +195,11 @@ testcase.searchHidingViaTab = async () => {
   // Wait for the search box to expand.
   await remoteCall.waitForElementLost(appId, '#search-wrapper[collapsed]');
 
-  // Returns $i18n{} label if code coverage is enabled.
-  let expectedLabelText = 'Search';
-  const isDevtoolsCoverageActive =
-      await sendTestMessage({name: 'isDevtoolsCoverageActive'});
-  if (isDevtoolsCoverageActive === 'true') {
-    expectedLabelText = '$i18n{SEARCH_TEXT_LABEL}';
-  }
-
   // Verify the search input has focus.
   const input =
       await remoteCall.callRemoteTestUtil('deepGetActiveElement', appId, []);
   chrome.test.assertEq(input.attributes['id'], 'input');
-  chrome.test.assertEq(input.attributes['aria-label'], expectedLabelText);
+  chrome.test.assertEq(input.attributes['aria-label'], 'Search');
 
   // Send Tab key to focus the next element.
   const result = await sendTestMessage({name: 'dispatchTabKey'});
@@ -717,39 +709,39 @@ testcase.selectionPath = async () => {
     ENTRIES.deeplyBurriedSmallJpeg,
   ]));
   await remoteCall.waitUntilSelected(appId, ENTRIES.hello.nameText);
-  const singleSelectionPath = await remoteCall.waitForElement(appId, [
-    'xf-path-display',
+  const breadcrumbSingleSelection = await remoteCall.waitForElement(appId, [
+    '#search-breadcrumb',
   ]);
-  chrome.test.assertFalse(singleSelectionPath.hidden);
+  chrome.test.assertFalse(breadcrumbSingleSelection.hidden);
   chrome.test.assertEq(
       'My files/Downloads/' + ENTRIES.hello.nameText,
-      singleSelectionPath.attributes.path);
+      breadcrumbSingleSelection.attributes.path);
   // Select now the desktop entry, too. Two or more selected files,
   // regardless of the directory in which they sit, result in no path.
   await remoteCall.waitAndClickElement(
       appId, `#file-list [file-name="${ENTRIES.desktop.nameText}"]`,
       {ctrl: true});
-  const twoFilesSelectedPath = await remoteCall.waitForElement(appId, [
-    'xf-path-display',
+  const breadcrumbDoubleSelection = await remoteCall.waitForElement(appId, [
+    '#search-breadcrumb',
   ]);
-  chrome.test.assertTrue(twoFilesSelectedPath.hidden);
-  chrome.test.assertEq('', twoFilesSelectedPath.attributes.path);
+  chrome.test.assertTrue(breadcrumbDoubleSelection.hidden);
+  chrome.test.assertEq('', breadcrumbDoubleSelection.attributes.path);
   await remoteCall.waitAndClickElement(
       appId,
       `#file-list [file-name="${ENTRIES.deeplyBurriedSmallJpeg.nameText}"]`,
       {ctrl: true});
-  const threeFilesSelectedPath = await remoteCall.waitForElement(appId, [
-    'xf-path-display',
+  const breadcrumbTripleSelection = await remoteCall.waitForElement(appId, [
+    '#search-breadcrumb',
   ]);
-  chrome.test.assertTrue(threeFilesSelectedPath.hidden);
-  chrome.test.assertEq('', threeFilesSelectedPath.attributes.path);
+  chrome.test.assertTrue(breadcrumbTripleSelection.hidden);
+  chrome.test.assertEq('', breadcrumbTripleSelection.attributes.path);
 
   // Close search. Select any file. Confirm that the path display is not shown,
   // now that the search is inactive.
   await remoteCall.waitAndClickElement(appId, '#search-box .clear');
   await remoteCall.waitUntilSelected(appId, ENTRIES.hello.nameText);
   const pathDisplayWhileNotSearching = await remoteCall.waitForElement(appId, [
-    'xf-path-display',
+    '#search-breadcrumb',
   ]);
   chrome.test.assertTrue(pathDisplayWhileNotSearching.hidden);
 };
@@ -966,4 +958,128 @@ testcase.searchSharedWithMe = async () => {
   await remoteCall.typeSearchText(appId, 'nested.txt');
   await remoteCall.waitForFiles(
       appId, TestEntryInfo.getExpectedRows([nestedTestSharedFile]));
+};
+
+/**
+ * Checks that the simple search from the root of a documents provider directory
+ * works. No file category or modified time filters are used.
+ */
+testcase.searchDocumentsProvider = async () => {
+  await addEntries(
+      ['documents_provider'], COMPLEX_DOCUMENTS_PROVIDER_ENTRY_SET);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Wait for DocumentsProvider to mount and Verify that the files are visible.
+  await remoteCall.waitForElement(
+      appId, '[has-children="true"] [volume-type-icon="documents_provider"]');
+
+  // Search for all files with "nam" in their name.
+  await navigateWithDirectoryTree(appId, '/DocumentsProvider');
+  await remoteCall.typeSearchText(appId, 'nam');
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([ENTRIES.renamableFile]),
+      {ignoreLastModifiedTime: true});
+};
+
+/**
+ * Checks that changing file types options correctly filters
+ * files exposed via Documents Provider.
+ */
+testcase.searchDocumentsProviderWithTypeOptions = async () => {
+  await addEntries(
+      ['documents_provider'], COMPLEX_DOCUMENTS_PROVIDER_ENTRY_SET);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Wait for DocumentsProvider to mount and Verify that the files are visible.
+  await remoteCall.waitForElement(
+      appId, '[has-children="true"] [volume-type-icon="documents_provider"]');
+  await navigateWithDirectoryTree(appId, '/DocumentsProvider');
+
+  // Search the DocumentsProvider folder for files with "File" in their name.
+  await remoteCall.typeSearchText(appId, 'File');
+
+  await remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows([
+    ENTRIES.readOnlyFile,
+    ENTRIES.deletableFile,
+    ENTRIES.renamableFile,
+  ]));
+
+  // Click the second button, which is "Images" option.
+  chrome.test.assertTrue(
+      !!await remoteCall.selectSearchOption(appId, 'type', 4),
+      'Failed to click "Images" type selector');
+
+  await remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows([
+    ENTRIES.readOnlyFile,
+  ]));
+};
+
+/**
+ * Checks that changing file types options correctly filters
+ * files exposed via Documents Provider.
+ */
+testcase.searchDocumentsProviderWithRecencyOptions = async () => {
+  const recentHellos = [];
+  for (let i = 0; i < 10; ++i) {
+    recentHellos.push(ENTRIES.hello.cloneWith({
+      nameText: `hello-recent-${i}.txt`,
+      lastModifiedTime: getDateWithDayDiff(4 - (i % 3)),
+      targetPath: `hello-recent-${i}.txt`,
+    }));
+  }
+  await addEntries(
+      ['documents_provider'],
+      COMPLEX_DOCUMENTS_PROVIDER_ENTRY_SET.concat(recentHellos));
+
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Wait for DocumentsProvider to mount and Verify that the files are visible.
+  await remoteCall.waitForElement(
+      appId, '[has-children="true"] [volume-type-icon="documents_provider"]');
+  await navigateWithDirectoryTree(appId, '/DocumentsProvider');
+
+  // Search the DocumentsProvider for files with "hello" in their name.
+  await remoteCall.typeSearchText(appId, 'hello');
+
+  // Expect the original hello and recent hello files to be present.
+  await remoteCall.waitForFiles(
+      appId,
+      TestEntryInfo.getExpectedRows(recentHellos.concat([ENTRIES.hello])));
+
+  // Click the fourth button, which is "Last week" option.
+  chrome.test.assertTrue(
+      !!await remoteCall.selectSearchOption(appId, 'recency', 4),
+      'Failed to click "Last week" recency selector');
+
+  // Expect all rececent hello files to be present.
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows(recentHellos));
+};
+
+/**
+ * Checks that search works on volumes mounted via fileSystemProvider.
+ */
+testcase.searchFileSystemProvider = async () => {
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+  await sendTestMessage({
+    name: 'launchProviderExtension',
+    manifest: 'manifest_source_device.json',
+  });
+  await remoteCall.waitForElement(
+      appId, '.tree-row .icon[volume-type-icon="provided"]');
+  await navigateWithDirectoryTree(appId, '/Test (1)');
+  await remoteCall.waitForElement(
+      appId, '.tree-row[selected] .icon[volume-type-icon="provided"]');
+  await remoteCall.typeSearchText(appId, 'folder');
+  const expectedFolder = new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: 'folder',
+    lastModifiedTime: 'Jan 1, 2000, 1:00 PM',
+    nameText: 'folder',
+    sizeText: '--',
+    typeText: 'Folder',
+  });
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([expectedFolder]),
+      {ignoreLastModifiedTime: true});
 };

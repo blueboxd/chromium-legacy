@@ -7,12 +7,12 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/apple/bundle_locations.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
@@ -49,6 +49,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
 #include "ui/native_theme/native_theme_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // ChromeBrowserMainPartsMac ---------------------------------------------------
 
@@ -114,10 +118,10 @@ void ChromeBrowserMainPartsMac::PreCreateMainMessageLoop() {
   }
 #endif  // !BUILDFLAG(CHROME_FOR_TESTING)
 
-  // Create the app delegate. This object is intentionally leaked as a global
-  // singleton. It is accessed through -[NSApp delegate].
-  AppController* app_controller = [[AppController alloc] init];
-  [NSApp setDelegate:app_controller];
+  // Create the app delegate by requesting the shared AppController.
+  CHECK_EQ(nil, NSApp.delegate);
+  AppController* app_controller = AppController.sharedController;
+  CHECK_NE(nil, NSApp.delegate);
 
   chrome::BuildMainMenu(NSApp, app_controller,
                         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME), false);
@@ -180,7 +184,5 @@ void ChromeBrowserMainPartsMac::PostProfileInit(Profile* profile,
 }
 
 void ChromeBrowserMainPartsMac::DidEndMainMessageLoop() {
-  AppController* appController =
-      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
-  [appController didEndMainMessageLoop];
+  [AppController.sharedController didEndMainMessageLoop];
 }

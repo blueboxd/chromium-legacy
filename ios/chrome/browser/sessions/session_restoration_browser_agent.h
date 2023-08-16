@@ -108,26 +108,15 @@ class SessionRestorationBrowserAgent
                            web::WebState* new_web_state,
                            int active_index,
                            ActiveWebStateChangeReason reason) override;
+  void WebStateListChanged(WebStateList* web_state_list,
+                           const WebStateListChange& change,
+                           const WebStateSelection& selection) override;
   void WillDetachWebStateAt(WebStateList* web_state_list,
                             web::WebState* web_state,
                             int index) override;
   void WebStateDetachedAt(WebStateList* web_state_list,
                           web::WebState* web_state,
                           int index) override;
-  void WebStateInsertedAt(WebStateList* web_state_list,
-                          web::WebState* web_state,
-                          int index,
-                          bool activating) override;
-  void WebStateReplacedAt(WebStateList* web_state_list,
-                          web::WebState* old_web_state,
-                          web::WebState* new_web_state,
-                          int index) override;
-  void WebStateMoved(WebStateList* web_state_list,
-                     web::WebState* web_state,
-                     int from_index,
-                     int to_index) override;
-  void WillBeginBatchOperation(WebStateList* web_state_list) override;
-  void BatchOperationEnded(WebStateList* web_state_list) override;
 
   // web::WebStateObserver methods.
   void DidFinishNavigation(web::WebState* web_state,
@@ -154,13 +143,6 @@ class SessionRestorationBrowserAgent
 
   // True when session restoration is in progress.
   bool restoring_session_ = false;
-
-  // Used to delay saves requested while a batch operation was in progress.
-  // The save will be scheduled with a delay unless any of the SaveSession()
-  // call was asking for no delay.
-  bool batch_in_progress_ = false;
-  bool save_after_batch_ = false;
-  bool save_immediately_ = false;
 
   const bool enable_pinned_web_states_;
 

@@ -27,7 +27,6 @@
 #include "cc/raster/raster_source.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/features.h"
-#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -72,7 +71,7 @@ class GpuRasterBufferProvider::GpuRasterBacking
     pmd->AddOwnershipEdge(buffer_dump_guid, tracing_guid, importance);
   }
 
-  // The ContextProvider used to clean up the mailbox
+  // The context used to clean up the mailbox
   raw_ptr<viz::RasterContextProvider> worker_context_provider = nullptr;
 };
 
@@ -136,7 +135,7 @@ bool GpuRasterBufferProvider::RasterBufferImpl::
 }
 
 GpuRasterBufferProvider::GpuRasterBufferProvider(
-    viz::ContextProvider* compositor_context_provider,
+    viz::RasterContextProvider* compositor_context_provider,
     viz::RasterContextProvider* worker_context_provider,
     bool use_gpu_memory_buffer_resources,
     viz::SharedImageFormat tile_format,
@@ -399,7 +398,7 @@ void GpuRasterBufferProvider::RasterBufferImpl::RasterizeSource(
                               base::bits::Log2Floor(sample_count), 0, 7, 7);
   // With Raw Draw, the framebuffer will be the rasterization target. It cannot
   // support LCD text, so disable LCD text for Raw Draw backings.
-  // TODO(penghuang): remove it when GrSlug can be serialized.
+  // TODO(penghuang): remove it when sktext::gpu::Slug can be serialized.
   bool is_raw_draw_backing =
       client_->is_using_raw_draw_ && !backing_->overlay_candidate;
   bool use_lcd_text = playback_settings.use_lcd_text && !is_raw_draw_backing;

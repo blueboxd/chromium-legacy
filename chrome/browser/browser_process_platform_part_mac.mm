@@ -15,11 +15,13 @@
 #include "chrome/browser/chrome_browser_application_mac.h"
 #include "services/device/public/cpp/geolocation/system_geolocation_source_mac.h"
 
-BrowserProcessPlatformPart::BrowserProcessPlatformPart() {
-}
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
-BrowserProcessPlatformPart::~BrowserProcessPlatformPart() {
-}
+BrowserProcessPlatformPart::BrowserProcessPlatformPart() = default;
+
+BrowserProcessPlatformPart::~BrowserProcessPlatformPart() = default;
 
 void BrowserProcessPlatformPart::BeginStartTearDown() {
   if (app_shim_manager_)
@@ -44,10 +46,9 @@ void BrowserProcessPlatformPart::AttemptExit(bool try_to_quit_application) {
 
   if (!try_to_quit_application) {
     // A keyboard menu invocation.
-    AppController* app_controller =
-        base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
-    if (![app_controller runConfirmQuitPanel])
+    if (![AppController.sharedController runConfirmQuitPanel]) {
       return;
+    }
   }
 
   chrome_browser_application_mac::Terminate();
@@ -55,7 +56,7 @@ void BrowserProcessPlatformPart::AttemptExit(bool try_to_quit_application) {
 
 void BrowserProcessPlatformPart::PreMainMessageLoopRun() {
   // Create two AppShimManager::Delegates -- one for extensions-based apps
-  // (which will be deprecatedin 2020), and one for web apps (PWAs and
+  // (which will be deprecated in 2020), and one for web apps (PWAs and
   // bookmark apps). The WebAppShimManagerDelegate will defer to the
   // ExtensionAppShimManagerDelegate passed to it for extension-based apps.
   // When extension-based apps are deprecated, the
@@ -73,8 +74,8 @@ void BrowserProcessPlatformPart::PreMainMessageLoopRun() {
   DCHECK(!app_shim_listener_.get());
   app_shim_listener_ = new AppShimListener;
 
-  if (!g_browser_process->geolocation_manager()) {
-    g_browser_process->SetGeolocationManager(
+  if (!device::GeolocationManager::GetInstance()) {
+    device::GeolocationManager::SetInstance(
         device::SystemGeolocationSourceMac::CreateGeolocationManagerOnMac());
   }
 }

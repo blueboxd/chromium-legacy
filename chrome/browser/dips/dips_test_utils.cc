@@ -8,12 +8,46 @@
 #include "chrome/browser/dips/dips_features.h"
 #include "chrome/browser/dips/dips_service_factory.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using content::CookieAccessDetails;
 using content::NavigationHandle;
 using content::RenderFrameHost;
 using content::WebContents;
+
+void CloseTab(content::WebContents* web_contents) {
+  content::WebContentsDestroyedWatcher destruction_watcher(web_contents);
+  web_contents->Close();
+  destruction_watcher.Wait();
+}
+
+base::expected<WebContents*, std::string> OpenInNewTab(
+    WebContents* original_tab,
+    const GURL& url) {
+  OpenedWindowObserver tab_observer(original_tab,
+                                    WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  if (!content::ExecJs(original_tab,
+                       content::JsReplace("window.open($1, '_blank');", url))) {
+    return base::unexpected("window.open failed");
+  }
+  tab_observer.Wait();
+
+  // Wait for the new tab to finish navigating.
+  content::WaitForLoadStop(tab_observer.window());
+
+  return tab_observer.window();
+}
+
+void AccessCookieViaJSIn(content::WebContents* web_contents,
+                         content::RenderFrameHost* frame) {
+  FrameCookieAccessObserver observer(web_contents, frame,
+                                     CookieOperation::kChange);
+  ASSERT_TRUE(content::ExecJs(frame, "document.cookie = 'foo=bar';",
+                              content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  observer.Wait();
+}
 
 URLCookieAccessObserver::URLCookieAccessObserver(WebContents* web_contents,
                                                  const GURL& url,
@@ -182,3 +216,23 @@ ScopedInitDIPSFeature::ScopedInitDIPSFeature(
       override_profile_selections_for_dips_cleanup_service_(
           DIPSCleanupServiceFactory::GetInstance(),
           DIPSCleanupServiceFactory::CreateProfileSelections()) {}
+
+OpenedWindowObserver::OpenedWindowObserver(
+    content::WebContents* web_contents,
+    WindowOpenDisposition open_disposition)
+    : WebContentsObserver(web_contents), open_disposition_(open_disposition) {}
+
+void OpenedWindowObserver::DidOpenRequestedURL(
+    content::WebContents* new_contents,
+    content::RenderFrameHost* source_render_frame_host,
+    const GURL& url,
+    const content::Referrer& referrer,
+    WindowOpenDisposition disposition,
+    ui::PageTransition transition,
+    bool started_from_context_menu,
+    bool renderer_initiated) {
+  if (!window_ && disposition == open_disposition_) {
+    window_ = new_contents;
+    run_loop_.Quit();
+  }
+}

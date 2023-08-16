@@ -6,10 +6,12 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/observer_list.h"
+#include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/browser/ui/cookie_controls_view.h"
@@ -18,6 +20,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/cookie_controls_status.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -54,30 +57,47 @@ void CookieControlsController::Update(content::WebContents* web_contents) {
     tab_observer_ = std::make_unique<TabObserver>(this, web_contents);
   }
   auto status = GetStatus(web_contents);
-  int allowed_cookies = GetAllowedCookieCount();
-  int blocked_cookies = GetBlockedCookieCount();
-  int bounce_count = GetStatefulBounceCount();
-  for (auto& observer : observers_) {
-    observer.OnStatusChanged(status.first, status.second, allowed_cookies,
-                             blocked_cookies);
-    observer.OnStatefulBounceCountChanged(bounce_count);
+  if (base::FeatureList::IsEnabled(content_settings::features::kUserBypassUI)) {
+    int allowed_sites = GetAllowedSitesCount();
+    int blocked_sites = GetBlockedSitesCount();
+
+    for (auto& observer : observers_) {
+      observer.OnStatusChanged(status.status, status.enforcement,
+                               status.expiration);
+      observer.OnSitesCountChanged(allowed_sites, blocked_sites);
+      // TODO(crbug.com/1446230): Return the actual confidence level.
+      observer.OnBreakageConfidenceLevelChanged(
+          CookieControlsBreakageConfidenceLevel::kMedium);
+    }
+  } else {
+    int allowed_cookies = GetAllowedCookieCount();
+    int blocked_cookies = GetBlockedCookieCount();
+    int bounce_count = GetStatefulBounceCount();
+
+    for (auto& observer : old_observers_) {
+      observer.OnStatusChanged(status.status, status.enforcement,
+                               allowed_cookies, blocked_cookies);
+      observer.OnStatefulBounceCountChanged(bounce_count);
+    }
   }
 }
 
-std::pair<CookieControlsStatus, CookieControlsEnforcement>
-CookieControlsController::GetStatus(content::WebContents* web_contents) {
+CookieControlsController::Status CookieControlsController::GetStatus(
+    content::WebContents* web_contents) {
   if (!cookie_settings_->ShouldBlockThirdPartyCookies()) {
     return {CookieControlsStatus::kDisabled,
-            CookieControlsEnforcement::kNoEnforcement};
+            CookieControlsEnforcement::kNoEnforcement, absl::nullopt};
   }
   const GURL& url = web_contents->GetLastCommittedURL();
   if (url.SchemeIs(content::kChromeUIScheme) ||
       url.SchemeIs(kExtensionScheme)) {
     return {CookieControlsStatus::kDisabled,
-            CookieControlsEnforcement::kNoEnforcement};
+            CookieControlsEnforcement::kNoEnforcement, absl::nullopt};
   }
 
   SettingSource source;
+  // TODO(crbug.com/1446230): Return the expiration of the active exception when
+  // available.
   bool is_allowed = cookie_settings_->IsThirdPartyAccessAllowed(
       web_contents->GetLastCommittedURL(), &source);
 
@@ -97,7 +117,7 @@ CookieControlsController::GetStatus(content::WebContents* web_contents) {
   } else {
     enforcement = CookieControlsEnforcement::kNoEnforcement;
   }
-  return {status, enforcement};
+  return {status, enforcement, absl::nullopt};
 }
 
 void CookieControlsController::OnCookieBlockingEnabledForSite(
@@ -124,7 +144,7 @@ bool CookieControlsController::FirstPartyCookiesBlocked() {
       net::CookieSettingOverrides());
 }
 
-int CookieControlsController::GetAllowedCookieCount() {
+int CookieControlsController::GetAllowedCookieCount() const {
   auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
       tab_observer_->web_contents()->GetPrimaryPage());
   if (pscs) {
@@ -133,7 +153,7 @@ int CookieControlsController::GetAllowedCookieCount() {
     return 0;
   }
 }
-int CookieControlsController::GetBlockedCookieCount() {
+int CookieControlsController::GetBlockedCookieCount() const {
   auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
       tab_observer_->web_contents()->GetPrimaryPage());
   if (pscs) {
@@ -143,7 +163,29 @@ int CookieControlsController::GetBlockedCookieCount() {
   }
 }
 
-int CookieControlsController::GetStatefulBounceCount() {
+int CookieControlsController::GetAllowedSitesCount() const {
+  auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
+      tab_observer_->web_contents()->GetPrimaryPage());
+  if (!pscs) {
+    return 0;
+  }
+  return browsing_data::GetUniqueHostCount(
+      pscs->allowed_local_shared_objects(),
+      *(pscs->allowed_browsing_data_model()));
+}
+
+int CookieControlsController::GetBlockedSitesCount() const {
+  auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
+      tab_observer_->web_contents()->GetPrimaryPage());
+  if (!pscs) {
+    return 0;
+  }
+  return browsing_data::GetUniqueHostCount(
+      pscs->blocked_local_shared_objects(),
+      *(pscs->blocked_browsing_data_model()));
+}
+
+int CookieControlsController::GetStatefulBounceCount() const {
   auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
       tab_observer_->web_contents()->GetPrimaryPage());
   if (pscs) {
@@ -154,12 +196,22 @@ int CookieControlsController::GetStatefulBounceCount() {
 }
 
 void CookieControlsController::PresentBlockedCookieCounter() {
-  int allowed_cookies = GetAllowedCookieCount();
-  int blocked_cookies = GetBlockedCookieCount();
-  int bounce_count = GetStatefulBounceCount();
-  for (auto& observer : observers_) {
-    observer.OnCookiesCountChanged(allowed_cookies, blocked_cookies);
-    observer.OnStatefulBounceCountChanged(bounce_count);
+  if (base::FeatureList::IsEnabled(content_settings::features::kUserBypassUI)) {
+    int allowed_sites = GetAllowedSitesCount();
+    int blocked_sites = GetBlockedSitesCount();
+
+    for (auto& observer : observers_) {
+      observer.OnSitesCountChanged(allowed_sites, blocked_sites);
+    }
+  } else {
+    int allowed_cookies = GetAllowedCookieCount();
+    int blocked_cookies = GetBlockedCookieCount();
+    int bounce_count = GetStatefulBounceCount();
+
+    for (auto& observer : old_observers_) {
+      observer.OnCookiesCountChanged(allowed_cookies, blocked_cookies);
+      observer.OnStatefulBounceCountChanged(bounce_count);
+    }
   }
 }
 
@@ -183,11 +235,19 @@ content::WebContents* CookieControlsController::GetWebContents() {
   return tab_observer_->web_contents();
 }
 
-void CookieControlsController::AddObserver(CookieControlsView* obs) {
+void CookieControlsController::AddObserver(OldCookieControlsObserver* obs) {
+  old_observers_.AddObserver(obs);
+}
+
+void CookieControlsController::RemoveObserver(OldCookieControlsObserver* obs) {
+  old_observers_.RemoveObserver(obs);
+}
+
+void CookieControlsController::AddObserver(CookieControlsObserver* obs) {
   observers_.AddObserver(obs);
 }
 
-void CookieControlsController::RemoveObserver(CookieControlsView* obs) {
+void CookieControlsController::RemoveObserver(CookieControlsObserver* obs) {
   observers_.RemoveObserver(obs);
 }
 

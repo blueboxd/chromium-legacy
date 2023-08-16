@@ -47,6 +47,14 @@ struct MediaSerializer<base::Value> {
   }
 };
 
+// Serialize list value.
+template <>
+struct MediaSerializer<base::Value::List> {
+  static base::Value Serialize(const base::Value::List& value) {
+    return base::Value(value.Clone());
+  }
+};
+
 // Serialize vectors of things
 template <typename VecType>
 struct MediaSerializer<std::vector<VecType>> {
@@ -275,12 +283,14 @@ template <>
 struct MediaSerializer<gfx::HDRMetadata> {
   static base::Value Serialize(const gfx::HDRMetadata& value) {
     // TODO(tmathmeyer) serialize more fields here potentially.
+    gfx::HdrMetadataSmpteSt2086 smpte_st_2086 =
+        value.smpte_st_2086.value_or(gfx::HdrMetadataSmpteSt2086());
     base::Value::Dict result;
     FIELD_SERIALIZE(
         "luminance range",
-        base::StringPrintf("%.2f => %.2f", value.smpte_st_2086.luminance_min,
-                           value.smpte_st_2086.luminance_max));
-    const auto& primaries = value.smpte_st_2086.primaries;
+        base::StringPrintf("%.2f => %.2f", smpte_st_2086.luminance_min,
+                           smpte_st_2086.luminance_max));
+    const auto& primaries = smpte_st_2086.primaries;
     FIELD_SERIALIZE(
         "primaries",
         base::StringPrintf(

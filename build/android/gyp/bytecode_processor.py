@@ -13,11 +13,15 @@ import pathlib
 import sys
 from typing import Dict, List
 
-import javac_output_processor
 from util import build_utils
+from util import dep_utils
 from util import jar_utils
 from util import server_utils
 import action_helpers  # build_utils adds //build to sys.path.
+
+_SRC_PATH = pathlib.Path(build_utils.DIR_SOURCE_ROOT).resolve()
+sys.path.append(str(_SRC_PATH / 'tools/android/modularization/gn'))
+from dep_operations import NO_VALID_GN_STR
 
 
 def _ShouldIgnoreDep(dep_name: str):
@@ -56,12 +60,37 @@ def _ParseDepGraph(jar_path: str, output_dir: str):
   return dep_graph
 
 
-def _EnsureDirectClasspathIsComplete(*, input_jar: str, gn_target: str,
-                                     output_dir: str,
-                                     direct_classpath_jars: List[str],
-                                     full_classpath_jars: List[str],
-                                     full_classpath_gn_targets: List[str],
-                                     warnings_as_errors: bool):
+def _GnTargetToBuildFilePath(gn_target: str):
+  """Returns the relative BUILD.gn file path for this target from src root."""
+  assert gn_target.startswith('//'), f'Relative {gn_target} name not supported.'
+  ninja_target_name = gn_target[2:]
+
+  # Remove the colon at the end
+  colon_index = ninja_target_name.find(':')
+  if colon_index != -1:
+    ninja_target_name = ninja_target_name[:colon_index]
+
+  return os.path.join(ninja_target_name, 'BUILD.gn')
+
+
+def _EnsureDirectClasspathIsComplete(
+    *,
+    input_jar: str,
+    gn_target: str,
+    output_dir: str,
+    sdk_classpath_jars: List[str],
+    direct_classpath_jars: List[str],
+    full_classpath_jars: List[str],
+    full_classpath_gn_targets: List[str],
+    warnings_as_errors: bool,
+):
+  logging.info('Parsing %d direct classpath jars', len(sdk_classpath_jars))
+  sdk_classpath_deps = set()
+  for jar in sdk_classpath_jars:
+    deps = jar_utils.extract_full_class_names_from_jar(
+        build_output_dir=pathlib.Path(output_dir), jar_path=pathlib.Path(jar))
+    sdk_classpath_deps.update(deps)
+
   logging.info('Parsing %d direct classpath jars', len(direct_classpath_jars))
   direct_classpath_deps = set()
   for jar in direct_classpath_jars:
@@ -81,36 +110,65 @@ def _EnsureDirectClasspathIsComplete(*, input_jar: str, gn_target: str,
 
   transitive_deps = full_classpath_deps - direct_classpath_deps
 
-  missing_targets: Dict[str, Dict[str, str]] = collections.defaultdict(dict)
+  missing_targets: Dict[tuple, Dict[str, str]] = collections.defaultdict(dict)
   dep_graph = _ParseDepGraph(input_jar, output_dir)
   logging.info('Finding missing deps from %d classes', len(dep_graph))
   # dep_graph.keys() is a list of all the classes in the current input_jar. Skip
   # all of these to avoid checking dependencies in the same target (e.g. A
   # depends on B, but both A and B are in input_jar).
-  seen_deps = set(dep_graph.keys())
+  # Since the bundle will always have access to classes in the current android
+  # sdk, those should not be considered missing.
+  seen_deps = set(dep_graph.keys()) | sdk_classpath_deps
   for dep_from, deps_to in dep_graph.items():
     for dep_to in deps_to - seen_deps:
       if _ShouldIgnoreDep(dep_to):
         continue
       seen_deps.add(dep_to)
       if dep_to in transitive_deps:
-        missing_target_names = sorted(dep_to_target[dep_to])
-        if len(missing_target_names) == 1:
-          missing_target_key = tuple(missing_target_names)[0]
-        else:
-          missing_target_key = f'One of {", ".join(missing_target_names)}'
-        missing_targets[missing_target_key][dep_to] = dep_from
+        missing_target_names = tuple(sorted(dep_to_target[dep_to]))
+        missing_targets[missing_target_names][dep_to] = dep_from
 
   if missing_targets:
-    print('=' * 30 + ' Dependency Checks Failed ' + '=' * 30)
-    print(f'Target: {gn_target}')
-    print('Direct classpath is incomplete. To fix, add deps on:')
-    for missing_target_key, data in missing_targets.items():
-      print(f' * {missing_target_key}')
-      for missing_class, used_by in data.items():
-        print(f'     ** {missing_class} (needed by {used_by})')
-    if warnings_as_errors:
-      sys.exit(1)
+
+    def print_and_maybe_exit():
+      print('=' * 30 + ' Dependency Checks Failed ' + '=' * 30)
+      print(f'Target: {gn_target}')
+      print('Direct classpath is incomplete. To fix, add deps on:')
+      for missing_target_names, data in missing_targets.items():
+        if len(missing_target_names) > 1:
+          print(f' * One of {", ".join(missing_target_names)}')
+        else:
+          print(f' * {missing_target_names[0]}')
+        for missing_class, used_by in data.items():
+          print(f'     ** {missing_class} (needed by {used_by})')
+      if warnings_as_errors:
+        sys.exit(1)
+
+    # TODO(https://crbug.com/1099522): This is better as a GN arg.
+    if os.environ.get('AUTO_ADD_MISSING_DEPS') != '1':
+      print_and_maybe_exit()
+    else:
+      # TODO(https://crbug.com/1099522): This should be generalized into util.
+      build_file_path = _GnTargetToBuildFilePath(gn_target)
+      cmd = [
+          'tools/android/modularization/gn/dep_operations.py', 'add', '--quiet',
+          '--file', build_file_path, '--target', gn_target, '--deps'
+      ]
+      # For simplicity, always pick the first suggested target.
+      # TODO(https://crbug.com/1099522): Swap deps with preferred deps.
+      missing_deps = [names[0] for names in missing_targets.keys()]
+      cmd += missing_deps
+      try:
+        build_utils.CheckOutput(cmd, cwd=build_utils.DIR_SOURCE_ROOT)
+      except build_utils.CalledProcessError as e:
+        if NO_VALID_GN_STR in e.output:
+          print(f'Unable to add missing dep(s) to {build_file_path}.')
+          print_and_maybe_exit()
+        else:
+          raise
+      else:
+        print(f'Successfully updated {build_file_path} with missing direct '
+              f'deps: {missing_deps}')
 
 
 def _AddSwitch(parser, val):
@@ -119,6 +177,7 @@ def _AddSwitch(parser, val):
 
 
 def main(argv):
+  build_utils.InitLogging('BYTECODE_PROCESSOR_DEBUG')
   argv = build_utils.ExpandFileArgs(argv[1:])
   parser = argparse.ArgumentParser()
   parser.add_argument('--target-name', help='Fully qualified GN target name.')
@@ -156,7 +215,7 @@ def main(argv):
   args.full_classpath_jars = action_helpers.parse_gn_list(
       args.full_classpath_jars)
   args.full_classpath_gn_targets = [
-      javac_output_processor.ReplaceGmsPackageIfNeeded(t)
+      dep_utils.ReplaceGmsPackageIfNeeded(t)
       for t in action_helpers.parse_gn_list(args.full_classpath_gn_targets)
   ]
   args.missing_classes_allowlist = action_helpers.parse_gn_list(
@@ -173,6 +232,7 @@ def main(argv):
         input_jar=args.input_jar,
         gn_target=args.gn_target,
         output_dir=args.chromium_output_dir,
+        sdk_classpath_jars=args.sdk_classpath_jars,
         direct_classpath_jars=args.direct_classpath_jars,
         full_classpath_jars=args.full_classpath_jars,
         full_classpath_gn_targets=args.full_classpath_gn_targets,

@@ -4,8 +4,13 @@
 
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 
+#include <inttypes.h>
+
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "base/numerics/checked_math.h"
+#include "base/strings/stringprintf.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
@@ -217,6 +222,13 @@ bool GpuMemoryBufferSupport::IsConfigurationSupportedForTest(
   return false;
 }
 
+// static
+bool GpuMemoryBufferSupport::IsSizeValid(const gfx::Size& size) {
+  base::CheckedNumeric<int> bytes = size.width();
+  bytes *= size.height();
+  return bytes.IsValid();
+}
+
 std::unique_ptr<GpuMemoryBufferImpl>
 GpuMemoryBufferSupport::CreateGpuMemoryBufferImplFromHandle(
     gfx::GpuMemoryBufferHandle handle,
@@ -259,6 +271,51 @@ GpuMemoryBufferSupport::CreateGpuMemoryBufferImplFromHandle(
                    << gfx::BufferUsageToString(usage);
       return nullptr;
   }
+}
+
+AllocatedBufferInfo::AllocatedBufferInfo(
+    const gfx::GpuMemoryBufferHandle& handle,
+    const gfx::Size& size,
+    gfx::BufferFormat format)
+    : buffer_id_(handle.id),
+      type_(handle.type),
+      size_in_bytes_(gfx::BufferSizeForBufferFormat(size, format)) {
+  DCHECK_NE(gfx::EMPTY_BUFFER, type_);
+
+  if (type_ == gfx::SHARED_MEMORY_BUFFER) {
+    shared_memory_guid_ = handle.region.GetGUID();
+  }
+}
+
+AllocatedBufferInfo::~AllocatedBufferInfo() = default;
+
+bool AllocatedBufferInfo::OnMemoryDump(
+    base::trace_event::ProcessMemoryDump* pmd,
+    int client_id,
+    uint64_t client_tracing_process_id) const {
+  base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
+      base::StringPrintf("gpu/gpumemorybuffer/client_0x%" PRIX32 "/buffer_%d",
+                         client_id, buffer_id_.id));
+  if (!dump) {
+    return false;
+  }
+
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  size_in_bytes_);
+
+  // Create the shared ownership edge to avoid double counting memory.
+  if (type_ == gfx::SHARED_MEMORY_BUFFER) {
+    pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_memory_guid_,
+                                         /*importance=*/0);
+  } else {
+    auto shared_buffer_guid = gfx::GetGenericSharedGpuMemoryGUIDForTracing(
+        client_tracing_process_id, buffer_id_);
+    pmd->CreateSharedGlobalAllocatorDump(shared_buffer_guid);
+    pmd->AddOwnershipEdge(dump->guid(), shared_buffer_guid);
+  }
+
+  return true;
 }
 
 }  // namespace gpu

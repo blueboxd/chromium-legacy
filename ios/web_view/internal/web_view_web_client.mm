@@ -108,15 +108,18 @@ std::vector<web::JavaScriptFeature*> WebViewWebClient::GetJavaScriptFeatures(
       WebViewMessageHandlerJavaScriptFeature::FromBrowserState(browser_state)};
 }
 
+NSString* WebViewWebClient::GetDocumentStartScriptForAllFrames(
+    web::BrowserState* browser_state) const {
+  WebViewEarlyPageScriptProvider& provider =
+      WebViewEarlyPageScriptProvider::FromBrowserState(browser_state);
+  return provider.GetAllFramesScript();
+}
+
 NSString* WebViewWebClient::GetDocumentStartScriptForMainFrame(
     web::BrowserState* browser_state) const {
   WebViewEarlyPageScriptProvider& provider =
       WebViewEarlyPageScriptProvider::FromBrowserState(browser_state);
-  return provider.GetScript();
-}
-
-std::u16string WebViewWebClient::GetPluginNotSupportedText() const {
-  return l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_SUPPORTED);
+  return provider.GetMainFrameScript();
 }
 
 void WebViewWebClient::PrepareErrorPage(

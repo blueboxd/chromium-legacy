@@ -287,25 +287,6 @@ bool HQPAlsoDoHUPLikeScoring();
 bool HUPSearchDatabase();
 
 // ---------------------------------------------------------
-// For the aggressive keyword matching experiment that's part of the bundled
-// omnibox field trial.
-
-// One function is missing from here to avoid a cyclic dependency
-// between search_engine and omnibox. In the search_engine component
-// there is a OmniboxFieldTrialKeywordRequiresRegistry function
-// that logically should be here.
-//
-// It returns whether KeywordProvider should consider the registry portion
-// (e.g., co.uk) of keywords that look like hostnames as an important part of
-// the keyword name for matching purposes.  Returns true if the experiment
-// isn't active.
-
-// Returns the relevance score that KeywordProvider should assign to keywords
-// with sufficiently-complete matches, i.e., the user has typed all of the
-// important part of the keyword.  Returns -1 if the experiment isn't active.
-int KeywordScoreForSufficientlyCompleteMatch();
-
-// ---------------------------------------------------------
 // For UI experiments.
 
 // Returns true if the fuzzy URL suggestions feature is enabled.
@@ -343,18 +324,11 @@ extern const base::FeatureParam<int> kFuzzyUrlSuggestionsPenaltyTaperLength;
 bool IsOnDeviceHeadSuggestEnabledForIncognito();
 bool IsOnDeviceHeadSuggestEnabledForNonIncognito();
 bool IsOnDeviceHeadSuggestEnabledForAnyMode();
+bool IsOnDeviceHeadSuggestEnabledForLocale(const std::string& locale);
 bool IsOnDeviceTailSuggestEnabled();
 bool ShouldEncodeLeadingSpaceForOnDeviceTailSuggest();
 // Functions can be used in both non-incognito and incognito.
 std::string OnDeviceHeadModelLocaleConstraint(bool is_incognito);
-
-// Returns true if CGI parameter names should not be considered when scoring
-// suggestions.
-bool ShouldDisableCGIParamMatching();
-
-// If true, enables a "starter pack" of @history, @bookmarks, and @settings
-// scopes for Site Search.
-bool IsSiteSearchStarterPackEnabled();
 
 // Omnibox UI Simplification - Square icon backgrounds.
 // Blue rounded rect background icons for answers e.g. '1+1' and 'define x'.
@@ -380,13 +354,20 @@ extern const base::FeatureParam<int> kSuggestionRowHeight;
 // suggestions.
 extern const base::FeatureParam<int> kRichSuggestionVerticalMargin;
 
-// Omnibox GM3 - icons.
-// Returns true if the feature to enable GM3 icons is enabled.
+// Omnibox CR23 - icons.
+// Returns true if the feature to enable CR23 icons is enabled.
 bool IsChromeRefreshIconsEnabled();
-
 // Omnibox CR23 - suggestion icons.
 // Returns true if the feature to enable CR23 suggestion icons is enabled.
 bool IsChromeRefreshSuggestIconsEnabled();
+// Omnibox CR23 - action chip icons.
+// Returns true if the feature to enable CR23 action chip icons is enabled.
+bool IsChromeRefreshActionChipIconsEnabled();
+
+// Omnibox CR23 - suggestion hover fill shape.
+// Returns true if the feature to enable CR23 suggestion hover fill shape is
+// enabled.
+bool IsChromeRefreshSuggestHoverFillShapeEnabled();
 
 // Omnibox GM3 - text style.
 // Returns true if the feature to enable GM3 text styling is enabled.
@@ -429,11 +410,6 @@ extern const char kHQPNumTitleWordsRule[];
 extern const char kHQPAlsoDoHUPLikeScoringRule[];
 extern const char kHUPSearchDatabaseRule[];
 extern const char kPreventUWYTDefaultForNonURLInputsRule[];
-// kKeywordRequiresRegistryRule seemingly has no production uses, but the string
-// is actually used within TemplateURLService as a string to break a circular
-// omnibox -> search_engines -> omnibox dependency.
-extern const char kKeywordRequiresRegistryRule[];
-extern const char kKeywordScoreForSufficientlyCompleteMatchRule[];
 extern const char kHQPAllowDupMatchesForScoringRule[];
 extern const char kEmphasizeTitlesRule[];
 
@@ -512,14 +488,6 @@ bool IsZeroSuggestPrefetchingEnabled();
 // Returns whether zero-suggest prefetching is enabled in the given context.
 bool IsZeroSuggestPrefetchingEnabledInContext(
     metrics::OmniboxEventProto::PageClassification page_classification);
-
-// Shortcut boost
-// The scores to use for boosting search and URL suggestions respectively.
-// Default to 1414 (`kScoreForBestInlineableResult` + 1). Setting to 0 will
-// prevent boosting.
-extern const base::FeatureParam<int> kShortcutBoostSearchScore;
-extern const base::FeatureParam<int> kShortcutBoostUrlScore;
-extern const base::FeatureParam<bool> kShortcutBoostCounterfactual;
 
 // Rich autocompletion.
 bool IsRichAutocompletionEnabled();
@@ -709,8 +677,15 @@ extern const base::FeatureParam<bool>
 
 // Specify number of additional Related and Trending queries appended to the
 // suggestion list, when the Inspire Me feature is enabled.
-extern const base::FeatureParam<int> kInspireMeAdditionalRelatedQueries;
-extern const base::FeatureParam<int> kInspireMeAdditionalTrendingQueries;
+constexpr base::FeatureParam<int> kInspireMeAdditionalRelatedQueries(
+    &omnibox::kInspireMe,
+    "AdditionalRelatedQueries",
+    0);
+
+constexpr base::FeatureParam<int> kInspireMeAdditionalTrendingQueries(
+    &omnibox::kInspireMe,
+    "AdditionalTrendingQueries",
+    10);
 
 // <- Inspire Me
 // ---------------------------------------------------------

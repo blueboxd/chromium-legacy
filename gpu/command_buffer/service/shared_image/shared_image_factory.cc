@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
-#include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -129,6 +129,11 @@ FormatPixmapSupport GetFormatPixmapSupport(
 bool set_format_supported_metric = false;
 #endif
 
+void RecordIsNewMultiplanarFormat(bool is_multiplanar) {
+  base::UmaHistogramBoolean("GPU.SharedImage.IsNewMultiplanarFormat",
+                            is_multiplanar);
+}
+
 }  // namespace
 
 // Overrides for flat_set lookups:
@@ -200,7 +205,8 @@ SharedImageFactory::SharedImageFactory(
   }
 
   if (!feature_info) {
-    // For some unit tests, shared_context_state_ could be nullptr.
+    // For some unit tests like SharedImageFactoryTest, |shared_context_state_|
+    // could be nullptr.
     bool use_passthrough = gpu_preferences.use_passthrough_cmd_decoder &&
                            gles2::PassthroughCommandDecoderSupported();
     feature_info = new gles2::FeatureInfo(workarounds, gpu_feature_info);
@@ -338,12 +344,21 @@ SharedImageFactory::SharedImageFactory(
 #endif  // BUILDFLAG(IS_OZONE)
 
 #if BUILDFLAG(IS_APPLE)
-  auto iosurface_backing_factory =
-      std::make_unique<IOSurfaceImageBackingFactory>(
-          gpu_preferences, workarounds, feature_info.get(),
-          shared_context_state_ ? shared_context_state_->progress_reporter()
-                                : nullptr);
-  factories_.push_back(std::move(iosurface_backing_factory));
+  {
+    // For some unit tests like SharedImageFactoryTest, |shared_context_state_|
+    // could be nullptr.
+    int32_t max_texture_size = shared_context_state_
+                                   ? shared_context_state_->GetMaxTextureSize()
+                                   : 8192;
+    auto* progress_reporter = shared_context_state_
+                                  ? shared_context_state_->progress_reporter()
+                                  : nullptr;
+    auto iosurface_backing_factory =
+        std::make_unique<IOSurfaceImageBackingFactory>(
+            gpu_preferences.gr_context_type, max_texture_size,
+            feature_info.get(), progress_reporter);
+    factories_.push_back(std::move(iosurface_backing_factory));
+  }
 #endif
 }
 
@@ -363,7 +378,7 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   auto* factory = GetFactoryByUsage(usage, format, size,
                                     /*pixel_data=*/{}, gfx::EMPTY_BUFFER);
   if (!factory) {
-    LogGetFactoryFailed(usage, format, gfx::EMPTY_BUFFER);
+    LogGetFactoryFailed(usage, format, gfx::EMPTY_BUFFER, debug_label);
     return false;
   }
 
@@ -403,7 +418,7 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   }
 
   if (!factory) {
-    LogGetFactoryFailed(usage, format, gfx::EMPTY_BUFFER);
+    LogGetFactoryFailed(usage, format, gfx::EMPTY_BUFFER, debug_label);
     return false;
   }
 
@@ -446,6 +461,11 @@ bool SharedImageFactory::CreateSharedImage(
     return false;
   }
 
+  // Log UMA for multiplanar shared image formats.
+  if (format.is_multi_plane()) {
+    RecordIsNewMultiplanarFormat(/*is_multiplanar*/ true);
+  }
+
   gfx::GpuMemoryBufferType gmb_type = buffer_handle.type;
 
   bool use_compound = false;
@@ -464,7 +484,7 @@ bool SharedImageFactory::CreateSharedImage(
   }
 
   if (!factory) {
-    LogGetFactoryFailed(usage, format, gmb_type);
+    LogGetFactoryFailed(usage, format, gmb_type, debug_label);
     return false;
   }
 
@@ -505,6 +525,11 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   auto si_format = viz::GetSharedImageFormat(format);
   gfx::GpuMemoryBufferType gmb_type = handle.type;
 
+  // Log UMA for multiplanar shared image formats.
+  if (si_format.IsLegacyMultiplanar()) {
+    RecordIsNewMultiplanarFormat(/*is_multiplanar*/ false);
+  }
+
   bool use_compound = false;
   auto* factory = GetFactoryByUsage(usage, si_format, size,
                                     /*pixel_data=*/{}, gmb_type);
@@ -529,7 +554,7 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   }
 
   if (!factory) {
-    LogGetFactoryFailed(usage, si_format, gmb_type);
+    LogGetFactoryFailed(usage, si_format, gmb_type, debug_label);
     return false;
   }
 
@@ -708,15 +733,16 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
   return nullptr;
 }
 
-void SharedImageFactory::LogGetFactoryFailed(
-    uint32_t usage,
-    viz::SharedImageFormat format,
-    gfx::GpuMemoryBufferType gmb_type) {
+void SharedImageFactory::LogGetFactoryFailed(uint32_t usage,
+                                             viz::SharedImageFormat format,
+                                             gfx::GpuMemoryBufferType gmb_type,
+                                             const std::string& debug_label) {
   LOG(ERROR) << "Could not find SharedImageBackingFactory with params: usage: "
              << CreateLabelForSharedImageUsage(usage)
              << ", format: " << format.ToString()
              << ", share_between_threads: " << IsSharedBetweenThreads(usage)
-             << ", gmb_type: " << GmbTypeToString(gmb_type);
+             << ", gmb_type: " << GmbTypeToString(gmb_type)
+             << ", debug_label: " << debug_label;
 }
 
 bool SharedImageFactory::RegisterBacking(
@@ -757,6 +783,14 @@ bool SharedImageFactory::AddSecondaryReference(const gpu::Mailbox& mailbox) {
 
   shared_images_.emplace(std::move(shared_image));
   return true;
+}
+
+uint32_t SharedImageFactory::GetUsageForMailbox(const Mailbox& mailbox) {
+  auto iter = shared_images_.find(mailbox);
+  if (iter == shared_images_.end()) {
+    return 0;
+  }
+  return (*iter)->usage();
 }
 
 SharedImageRepresentationFactory::SharedImageRepresentationFactory(

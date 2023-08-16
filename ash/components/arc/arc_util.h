@@ -235,9 +235,6 @@ void ConfigureUpstartJobs(std::deque<JobDesc> jobs,
 // Gets the ArcVmDataMigrationStatus profile preference.
 ArcVmDataMigrationStatus GetArcVmDataMigrationStatus(PrefService* prefs);
 
-// Gets the ArcVmDatamigrationStrategy profile preference.
-ArcVmDataMigrationStrategy GetArcVmDataMigrationStrategy(PrefService* prefs);
-
 // Sets the ArcVmDataMigrationStatus profile preference.
 void SetArcVmDataMigrationStatus(PrefService* prefs,
                                  ArcVmDataMigrationStatus status);

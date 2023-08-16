@@ -200,35 +200,25 @@ void PrintViewManagerBase::DisableThirdPartyBlocking() {
 #endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
-  // Remember the ID for `rfh`, to enable checking that the `RenderFrameHost`
-  // is still valid after a possible inner message loop runs in
-  // `DisconnectFromCurrentPrintJob()`.
-  content::GlobalRenderFrameHostId rfh_id = rfh->GetGlobalId();
-  auto weak_this = weak_ptr_factory_.GetWeakPtr();
-  DisconnectFromCurrentPrintJob();
-  if (!weak_this)
+  if (!StartPrintCommon(rfh)) {
     return false;
-
-  // Don't print / print preview crashed tabs.
-  if (IsCrashed())
-    return false;
-
-  // Don't print if `rfh` is no longer live.
-  if (!content::RenderFrameHost::FromID(rfh_id) || !rfh->IsRenderFrameLive())
-    return false;
-
-#if BUILDFLAG(ENABLE_OOP_PRINTING)
-  if (printing::features::kEnableOopPrintDriversJobPrint.Get()) {
-    // Register this worker so that the service persists as long as the user
-    // keeps the system print dialog UI displayed.
-    if (!RegisterSystemPrintClient())
-      return false;
   }
-#endif
 
-  SetPrintingRFH(rfh);
   CompletePrintNow(rfh);
   return true;
+}
+
+void PrintViewManagerBase::PrintNodeUnderContextMenu(
+    content::RenderFrameHost* rfh) {
+  if (!StartPrintCommon(rfh)) {
+    return;
+  }
+
+  GetPrintRenderFrame(rfh)->PrintNodeUnderContextMenu();
+
+  for (auto& observer : GetTestObservers()) {
+    observer.OnPrintNow(rfh);
+  }
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -560,8 +550,9 @@ void PrintViewManagerBase::OnComposePdfDone(
 void PrintViewManagerBase::OnDidPrintDocument(DidPrintDocumentCallback callback,
                                               bool succeeded) {
   std::move(callback).Run(succeeded);
-  for (auto& observer : observers_)
+  for (auto& observer : GetTestObservers()) {
     observer.OnDidPrintDocument();
+  }
 }
 
 void PrintViewManagerBase::DidPrintDocument(
@@ -614,7 +605,7 @@ void PrintViewManagerBase::GetDefaultPrintSettings(
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
   if (printing::features::kEnableOopPrintDriversJobPrint.Get() &&
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
-      !snapshotting_for_content_analysis_ &&
+      !analyzing_content_ &&
 #endif
       !query_with_ui_client_id_.has_value()) {
     // Script initiated print, this is first signal of start of printing.
@@ -642,7 +633,7 @@ void PrintViewManagerBase::GetDefaultPrintSettings(
   // Sometimes it is desired to get the PDF settings as opposed to the settings
   // of the default system print driver.
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
-  bool want_pdf_settings = snapshotting_for_content_analysis_;
+  bool want_pdf_settings = analyzing_content_;
 #else
   bool want_pdf_settings = false;
 #endif
@@ -778,7 +769,7 @@ void PrintViewManagerBase::ScriptedPrint(mojom::ScriptedPrintParamsPtr params,
     auto scanning_done_callback = base::BindOnce(
         &PrintViewManagerBase::CompleteScriptedPrintAfterContentAnalysis,
         weak_ptr_factory_.GetWeakPtr(), std::move(params), std::move(callback));
-    set_snapshotting_for_content_analysis();
+    set_analyzing_content(/*analyzing=*/true);
     GetPrintRenderFrame(render_frame_host)
         ->SnapshotForContentAnalysis(base::BindOnce(
             &PrintViewManagerBase::OnGotSnapshotCallback,
@@ -814,12 +805,12 @@ void PrintViewManagerBase::PrintingFailed(int32_t cookie,
   ReleasePrinterQuery();
 }
 
-void PrintViewManagerBase::AddObserver(Observer& observer) {
-  observers_.AddObserver(&observer);
+void PrintViewManagerBase::AddTestObserver(TestObserver& observer) {
+  test_observers_.AddObserver(&observer);
 }
 
-void PrintViewManagerBase::RemoveObserver(Observer& observer) {
-  observers_.RemoveObserver(&observer);
+void PrintViewManagerBase::RemoveTestObserver(TestObserver& observer) {
+  test_observers_.RemoveObserver(&observer);
 }
 
 void PrintViewManagerBase::RenderFrameHostStateChanged(
@@ -1030,7 +1021,13 @@ void PrintViewManagerBase::ReleasePrintJob() {
     // Ensure that any residual registration of printing client is released.
     // This might be necessary in some abnormal cases, such as the associated
     // render process having terminated.
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+    if (!analyzing_content_) {
+      UnregisterSystemPrintClient();
+    }
+#else
     UnregisterSystemPrintClient();
+#endif
   }
 #endif
 
@@ -1108,8 +1105,9 @@ bool PrintViewManagerBase::OpportunisticallyCreatePrintJob(int cookie) {
 
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
   // Don't start printing if the print job was created only for snapshotting.
-  if (snapshotting_for_content_analysis_)
+  if (analyzing_content_) {
     return true;
+  }
 #endif
 
   // Settings are already loaded. Go ahead. This will set
@@ -1143,6 +1141,41 @@ void PrintViewManagerBase::SetPrintingRFH(content::RenderFrameHost* rfh) {
   printing_rfh_ = rfh;
 }
 
+bool PrintViewManagerBase::StartPrintCommon(content::RenderFrameHost* rfh) {
+  // Remember the ID for `rfh`, to enable checking that the `RenderFrameHost`
+  // is still valid after a possible inner message loop runs in
+  // `DisconnectFromCurrentPrintJob()`.
+  content::GlobalRenderFrameHostId rfh_id = rfh->GetGlobalId();
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
+  DisconnectFromCurrentPrintJob();
+  if (!weak_this) {
+    return false;
+  }
+
+  // Don't print / print preview crashed tabs.
+  if (IsCrashed()) {
+    return false;
+  }
+
+  // Don't print if `rfh` is no longer live.
+  if (!content::RenderFrameHost::FromID(rfh_id) || !rfh->IsRenderFrameLive()) {
+    return false;
+  }
+
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+  if (printing::features::kEnableOopPrintDriversJobPrint.Get()) {
+    // Register this worker so that the service persists as long as the user
+    // keeps the system print dialog UI displayed.
+    if (!RegisterSystemPrintClient()) {
+      return false;
+    }
+  }
+#endif
+
+  SetPrintingRFH(rfh);
+  return true;
+}
+
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 bool PrintViewManagerBase::RegisterSystemPrintClient() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -1154,7 +1187,7 @@ bool PrintViewManagerBase::RegisterSystemPrintClient() {
   if (!registered) {
     PRINTER_LOG(DEBUG) << "Unable to initiate a concurrent system print dialog";
   }
-  for (auto& observer : GetObservers()) {
+  for (auto& observer : GetTestObservers()) {
     observer.OnRegisterSystemPrintClient(registered);
   }
   return registered;
@@ -1193,8 +1226,9 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
 void PrintViewManagerBase::CompletePrintNow(content::RenderFrameHost* rfh) {
   GetPrintRenderFrame(rfh)->PrintRequestedPages();
 
-  for (auto& observer : GetObservers())
+  for (auto& observer : GetTestObservers()) {
     observer.OnPrintNow(rfh);
+  }
 }
 
 void PrintViewManagerBase::CompleteScriptedPrint(
@@ -1237,6 +1271,7 @@ void PrintViewManagerBase::CompleteScriptedPrintAfterContentAnalysis(
     mojom::ScriptedPrintParamsPtr params,
     ScriptedPrintCallback callback,
     bool allowed) {
+  set_analyzing_content(/*analyzing*/ false);
   if (!allowed || !printing_rfh_ || IsCrashed() ||
       !printing_rfh_->IsRenderFrameLive()) {
     std::move(callback).Run(nullptr);
@@ -1250,7 +1285,6 @@ void PrintViewManagerBase::OnGotSnapshotCallback(
     enterprise_connectors::ContentAnalysisDelegate::Data data,
     content::GlobalRenderFrameHostId rfh_id,
     mojom::DidPrintDocumentParamsPtr params) {
-  snapshotting_for_content_analysis_ = false;
   auto* rfh = content::RenderFrameHost::FromID(rfh_id);
   if (!params || !rfh || !PrintJobHasDocument(params->document_cookie) ||
       !params->content->metafile_data_region.IsValid()) {
@@ -1306,8 +1340,9 @@ void PrintViewManagerBase::OnCompositedForContentAnalysis(
       safe_browsing::DeepScanAccessPoint::PRINT);
 }
 
-void PrintViewManagerBase::set_snapshotting_for_content_analysis() {
-  snapshotting_for_content_analysis_ = true;
+void PrintViewManagerBase::set_analyzing_content(bool analyzing) {
+  DVLOG(1) << (analyzing ? "Starting" : "Completed") << " content analysis";
+  analyzing_content_ = analyzing;
 }
 
 #endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)

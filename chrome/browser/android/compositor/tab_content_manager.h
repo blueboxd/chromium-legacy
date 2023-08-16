@@ -14,6 +14,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/thumbnail/cc/thumbnail_cache.h"
 #include "content/public/browser/render_widget_host_view.h"
 
@@ -44,8 +45,7 @@ class TabContentManager : public thumbnail::ThumbnailCacheObserver {
                     jint compression_queue_max_size,
                     jint write_queue_max_size,
                     jboolean use_approximation_thumbnail,
-                    jboolean save_jpeg_thumbnails,
-                    jdouble jpeg_aspect_ratio);
+                    jboolean save_jpeg_thumbnails);
 
   TabContentManager(const TabContentManager&) = delete;
   TabContentManager& operator=(const TabContentManager&) = delete;
@@ -105,6 +105,10 @@ class TabContentManager : public thumbnail::ThumbnailCacheObserver {
   void NativeRemoveTabThumbnail(int tab_id);
   void RemoveTabThumbnail(JNIEnv* env, jint tab_id);
   void OnUIResourcesWereEvicted();
+  void WaitForJpegTabThumbnail(
+      JNIEnv* env,
+      jint tab_id,
+      const base::android::JavaParamRef<jobject>& j_callback);
   void GetEtc1TabThumbnail(
       JNIEnv* env,
       jint tab_id,
@@ -129,7 +133,13 @@ class TabContentManager : public thumbnail::ThumbnailCacheObserver {
   content::RenderWidgetHostView* GetRwhvForTab(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& tab);
+  std::unique_ptr<thumbnail::ThumbnailCaptureTracker, base::OnTaskRunnerDeleter>
+  TrackCapture(thumbnail::TabId tab_id);
+  void OnTrackingFinished(int tab_id,
+                          thumbnail::ThumbnailCaptureTracker* tracker);
   void OnTabReadback(int tab_id,
+                     std::unique_ptr<thumbnail::ThumbnailCaptureTracker,
+                                     base::OnTaskRunnerDeleter> tracker,
                      base::android::ScopedJavaGlobalRef<jobject> j_callback,
                      bool write_to_cache,
                      double aspect_ratio,
@@ -143,6 +153,9 @@ class TabContentManager : public thumbnail::ThumbnailCacheObserver {
       bool result,
       const SkBitmap& bitmap);
 
+  base::flat_map<thumbnail::TabId,
+                 base::WeakPtr<thumbnail::ThumbnailCaptureTracker>>
+      in_flight_captures_;
   std::unique_ptr<thumbnail::ThumbnailCache> thumbnail_cache_;
   ThumbnailLayerMap static_layer_cache_;
   LayerMap live_layer_list_;

@@ -4,14 +4,20 @@
 
 #include "chrome/browser/download/download_status_updater.h"
 
+#include "base/apple/bridging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/memory/scoped_policy.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #import "chrome/browser/ui/cocoa/dock_icon.h"
 #include "components/download/public/common/download_item.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -51,9 +57,9 @@ NSString* ProgressString(NSString* string) {
 
   NSString* result = cache[string];
   if (!result) {
-    NSString** ref = static_cast<NSString**>(
+    NSString* const* ref = static_cast<NSString* const*>(
         CFBundleGetDataPointerForName(foundation,
-                                      base::mac::NSToCFCast(string)));
+                                      base::apple::NSToCFPtrCast(string)));
     if (ref) {
       result = *ref;
       cache[string] = result;
@@ -62,7 +68,7 @@ NSString* ProgressString(NSString* string) {
 
   if (!result && string == kNSProgressEstimatedTimeRemainingKeyName) {
     // Perhaps this is 10.8; try the old name of this key.
-    NSString** ref = static_cast<NSString**>(
+    NSString* const* ref = static_cast<NSString* const*>(
         CFBundleGetDataPointerForName(foundation,
                                       CFSTR("NSProgressEstimatedTimeKey")));
     if (ref) {
@@ -99,16 +105,16 @@ class CrNSProgressUserData : public base::SupportsUserData::Data {
  public:
   CrNSProgressUserData(NSProgress* progress, const base::FilePath& target)
       : target_(target) {
-    progress_.reset(progress);
+    progress_ = progress;
   }
-  ~CrNSProgressUserData() override { [progress_.get() unpublish]; }
+  ~CrNSProgressUserData() override { [progress_ unpublish]; }
 
-  NSProgress* progress() const { return progress_.get(); }
+  NSProgress* progress() const { return progress_; }
   base::FilePath target() const { return target_; }
   void setTarget(const base::FilePath& target) { target_ = target; }
 
  private:
-  base::scoped_nsobject<NSProgress> progress_;
+  NSProgress* __strong progress_;
   base::FilePath target_;
 };
 
@@ -137,10 +143,9 @@ void CreateNSProgress(download::DownloadItem* download) {
   };
 
   Class progress_class = NSClassFromString(@"NSProgress");
-  NSProgress* progress = [progress_class performSelector:@selector(alloc)];
-  progress = [progress performSelector:@selector(initWithParent:userInfo:)
-                            withObject:nil
-                            withObject:user_info];
+  NSProgress* progress = [progress_class alloc];
+  progress = [progress initWithParent:nil
+                            userInfo:user_info];
   progress.kind = ProgressString(kNSProgressKindFileName);
 
   if (source_url) {
@@ -236,12 +241,12 @@ void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
         base::mac::FilePathToNSString(download->GetTargetFilePath());
     if (download->GetState() == download::DownloadItem::COMPLETE) {
       // Bounce the dock icon.
-      [[NSDistributedNotificationCenter defaultCenter]
+      [NSDistributedNotificationCenter.defaultCenter
           postNotificationName:@"com.apple.DownloadFileFinished"
                         object:download_path];
     }
 
     // Notify the Finder.
-    [[NSWorkspace sharedWorkspace] noteFileSystemChanged:download_path];
+    [NSWorkspace.sharedWorkspace noteFileSystemChanged:download_path];
   }
 }

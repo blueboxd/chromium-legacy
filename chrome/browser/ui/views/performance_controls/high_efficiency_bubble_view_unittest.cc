@@ -20,6 +20,8 @@
 #include "chrome/browser/ui/views/performance_controls/high_efficiency_chip_view.h"
 #include "chrome/browser/ui/views/performance_controls/high_efficiency_resource_view.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/google_chrome_strings.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/user_tuning/prefs.h"
@@ -255,6 +257,8 @@ TEST_F(HighEfficiencyBubbleViewTest,
   AddNewTab(kMemorySavingsKilobytes,
             ::mojom::LifecycleUnitDiscardReason::PROACTIVE);
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(2, tab_strip_model->GetTabCount());
 
   SetTabDiscardState(0, true);
@@ -262,11 +266,13 @@ TEST_F(HighEfficiencyBubbleViewTest,
 
   EXPECT_TRUE(GetPageActionIconView()->ShouldShowLabel());
   tab_strip_model->SelectNextTab();
+  web_contents->WasHidden();
 
   EXPECT_TRUE(GetPageActionIconView()->ShouldShowLabel());
   ClickPageActionChip();
 
   tab_strip_model->SelectPreviousTab();
+  web_contents->WasShown();
   EXPECT_FALSE(GetPageActionIconView()->ShouldShowLabel());
 }
 
@@ -310,13 +316,13 @@ TEST_F(HighEfficiencyBubbleViewMemorySavingsImprovementsTest,
 
   ClickPageActionChip();
 
-  views::StyledLabel* label = GetDialogLabel<views::StyledLabel>(
+  views::Label* label = GetDialogLabel<views::Label>(
       HighEfficiencyBubbleView::kHighEfficiencyDialogBodyElementId);
   EXPECT_EQ(
       label->GetText().find(ui::FormatBytes(kMemorySavingsKilobytes * 1024)),
       std::string::npos);
 
-  EXPECT_NE(
-      label->GetText().find(u"Memory Saver freed up memory for other tasks"),
-      std::string::npos);
+  EXPECT_NE(label->GetText().find(
+                l10n_util::GetStringUTF16(IDS_HIGH_EFFICIENCY_DIALOG_BODY_V2)),
+            std::string::npos);
 }

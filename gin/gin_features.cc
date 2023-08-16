@@ -34,6 +34,18 @@ BASE_FEATURE(kV8FlushBaselineCode,
              "V8FlushBaselineCode",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables code flushing based on tab visibility.
+BASE_FEATURE(kV8FlushCodeBasedOnTabVisibility,
+             "V8FlushCodeBasedOnTabVisibility",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables code flushing based on time.
+BASE_FEATURE(kV8FlushCodeBasedOnTime,
+             "V8FlushCodeBasedOnTime",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<int> kV8FlushCodeOldTime{&kV8FlushCodeBasedOnTime,
+                                                  "V8FlushCodeOldTime", 30};
+
 // Enables finalizing streaming JS compilations on a background thread.
 BASE_FEATURE(kV8OffThreadFinalization,
              "V8OffThreadFinalization",
@@ -78,6 +90,9 @@ BASE_FEATURE(kV8ExperimentalRegexpEngine,
 
 // Enables the Turbofan compiler.
 BASE_FEATURE(kV8Turbofan, "V8Turbofan", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables Turbofan's new compiler IR Turboshaft.
+BASE_FEATURE(kV8Turboshaft, "V8Turboshaft", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables experimental Maglev compiler.
 BASE_FEATURE(kV8Maglev, "V8Maglev", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -203,6 +218,11 @@ BASE_FEATURE(kJavaScriptArrayBufferTransfer,
 BASE_FEATURE(kJavaScriptCompileHintsMagic,
              "JavaScriptCompileHintsMagic",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the iterator helpers proposal.
+BASE_FEATURE(kJavaScriptIteratorHelpers,
+             "kJavaScriptIteratorHelpers",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // WebAssembly features.
 

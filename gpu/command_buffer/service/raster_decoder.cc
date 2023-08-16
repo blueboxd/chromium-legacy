@@ -30,7 +30,7 @@
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
 #include "cc/paint/transfer_cache_entry.h"
-#include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -69,7 +69,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkGraphics.h"
-#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -78,7 +77,9 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/GrYUVABackendTextures.h"
+#include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 #include "third_party/skia/include/gpu/graphite/Context.h"
+#include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -488,16 +489,6 @@ class RasterDecoderImpl final : public RasterDecoder,
                           int* entries_processed) override;
   base::StringPiece GetLogPrefix() override;
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-  void AttachImageToTextureWithDecoderBinding(uint32_t client_texture_id,
-                                              uint32_t texture_target,
-                                              gl::GLImage* image) override;
-#elif !BUILDFLAG(IS_ANDROID)
-  void AttachImageToTextureWithClientBinding(uint32_t client_texture_id,
-                                             uint32_t texture_target,
-                                             gl::GLImage* image) override;
-#endif
-
   gles2::ContextGroup* GetContextGroup() override;
   gles2::ErrorState* GetErrorState() override;
 #if !BUILDFLAG(IS_ANDROID)
@@ -764,7 +755,7 @@ class RasterDecoderImpl final : public RasterDecoder,
     for (int plane_index = 0; plane_index < num_planes; plane_index++) {
       auto* surface = access->surface(plane_index);
       DCHECK(surface);
-      surface->flush();
+      skgpu::ganesh::Flush(surface);
     }
     access->ApplyBackendSurfaceEndState();
 
@@ -1212,26 +1203,10 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   caps.texture_rg = feature_info()->feature_flags().ext_texture_rg;
   caps.supports_scanout_shared_images =
       SharedImageManager::SupportsScanoutImages();
-  // TODO(piman): have a consistent limit in shared image backings.
-  // https://crbug.com/960588
-  if (shared_context_state_->GrContextIsGL()) {
-    api()->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &caps.max_texture_size);
-  } else if (shared_context_state_->GrContextIsVulkan()) {
-#if BUILDFLAG(ENABLE_VULKAN)
-    caps.max_texture_size = shared_context_state_->vk_context_provider()
-                                ->GetDeviceQueue()
-                                ->vk_physical_device_properties()
-                                .limits.maxImageDimension2D;
-#else
-    NOTREACHED();
-#endif
-  } else {
-    // TODO(crbug.com/1090476): Query Dawn for this value once an API exists for
-    // capabilities.
-    caps.max_texture_size = 8192;
-  }
-caps.using_vulkan_context =
+  caps.max_texture_size = shared_context_state_->GetMaxTextureSize();
+  caps.using_vulkan_context =
       shared_context_state_->GrContextIsVulkan() ? true : false;
+
   if (feature_info()->workarounds().webgl_or_caps_max_texture_size) {
     caps.max_texture_size =
         std::min(caps.max_texture_size,
@@ -1278,7 +1253,9 @@ caps.using_vulkan_context =
   caps.shared_image_swap_chain = D3DImageBackingFactory::IsSwapChainSupported();
 #endif  // BUILDFLAG(IS_WIN)
   caps.disable_legacy_mailbox = disable_legacy_mailbox_;
-  caps.supports_yuv_rgb_conversion = true;
+  // TODO(crbug.com/1450879): Support YUV rendering and readback for Graphite.
+  caps.supports_yuv_rgb_conversion = !graphite_context();
+  caps.supports_yuv_readback = !graphite_context();
   return caps;
 }
 
@@ -1609,22 +1586,6 @@ void RasterDecoderImpl::ExitCommandProcessingEarly() {
 base::StringPiece RasterDecoderImpl::GetLogPrefix() {
   return logger_.GetLogPrefix();
 }
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-void RasterDecoderImpl::AttachImageToTextureWithDecoderBinding(
-    uint32_t client_texture_id,
-    uint32_t texture_target,
-    gl::GLImage* image) {
-  NOTIMPLEMENTED();
-}
-#elif !BUILDFLAG(IS_ANDROID)
-void RasterDecoderImpl::AttachImageToTextureWithClientBinding(
-    uint32_t client_texture_id,
-    uint32_t texture_target,
-    gl::GLImage* image) {
-  NOTIMPLEMENTED();
-}
-#endif
 
 gles2::ContextGroup* RasterDecoderImpl::GetContextGroup() {
   return nullptr;
@@ -2099,10 +2060,7 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
   }
 
   // Try a direct texture upload without using SkSurface.
-  // TODO(crbug.com/1423576): Enable this path for Graphite after fixing
-  // RGBA/BGRA mismatch.
-  if (!graphite_context() &&
-      gfx::Size(src_width, src_height) == dest_shared_image->size() &&
+  if (gfx::Size(src_width, src_height) == dest_shared_image->size() &&
       x_offset == 0 && y_offset == 0 &&
       (src_info.alphaType() == dest_shared_image->alpha_type() ||
        src_info.alphaType() == kUnknown_SkAlphaType) &&
@@ -2151,7 +2109,7 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
                        "Failed to write pixels to SkCanvas");
   }
 
-  surface->flush();
+  skgpu::ganesh::Flush(surface);
   dest_scoped_access->ApplyBackendSurfaceEndState();
   SubmitIfNecessary(std::move(end_semaphores));
 

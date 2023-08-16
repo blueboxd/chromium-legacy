@@ -74,6 +74,7 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/browser/content_settings_type_set.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -109,7 +110,6 @@
 #include "chrome/browser/badging/badge_manager_factory.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/web_applications/chromeos_web_app_experiments.h"
-#include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_features.h"
 #endif
 
@@ -252,6 +252,7 @@ apps::InstallSource GetInstallSource(
     case webapps::WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB:
     case webapps::WebappInstallSource::RICH_INSTALL_UI_WEBLAYER:
     case webapps::WebappInstallSource::EXTERNAL_POLICY:
+    case webapps::WebappInstallSource::ML_PROMOTION:
     case webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON:
     case webapps::WebappInstallSource::MENU_CREATE_SHORTCUT:
     case webapps::WebappInstallSource::SUB_APP:
@@ -462,15 +463,14 @@ void WebAppPublisherHelper::BadgeManagerDelegate::OnAppBadgeUpdated(
 
 WebAppPublisherHelper::WebAppPublisherHelper(Profile* profile,
                                              WebAppProvider* provider,
-                                             Delegate* delegate,
-                                             bool observe_media_requests)
+                                             Delegate* delegate)
     : profile_(profile),
       provider_(provider),
       app_type_(GetWebAppType()),
       delegate_(delegate) {
   DCHECK(profile_);
   DCHECK(delegate_);
-  Init(observe_media_requests);
+  Init();
 }
 
 WebAppPublisherHelper::~WebAppPublisherHelper() = default;
@@ -633,7 +633,7 @@ apps::IntentFilters WebAppPublisherHelper::CreateIntentFiltersForWebApp(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (ash::features::IsProjectorEnabled() &&
-      app_id == ash::kChromeUITrustedProjectorSwaAppId) {
+      app_id == ash::kChromeUIUntrustedProjectorSwaAppId) {
     filters.push_back(apps_util::MakeIntentFilterForUrlScope(
         GURL(ash::kChromeUIUntrustedProjectorPwaUrl)));
   }
@@ -1226,7 +1226,13 @@ apps::WindowMode WebAppPublisherHelper::ConvertDisplayModeToWindowMode(
     case blink::mojom::DisplayMode::kBrowser:
       return apps::WindowMode::kBrowser;
     case blink::mojom::DisplayMode::kTabbed:
-      return apps::WindowMode::kTabbedWindow;
+      if (base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) &&
+          base::FeatureList::IsEnabled(
+              features::kDesktopPWAsTabStripSettings)) {
+        return apps::WindowMode::kTabbedWindow;
+      } else {
+        [[fallthrough]];
+      }
     case blink::mojom::DisplayMode::kMinimalUi:
     case blink::mojom::DisplayMode::kStandalone:
     case blink::mojom::DisplayMode::kFullscreen:
@@ -1571,7 +1577,7 @@ void WebAppPublisherHelper::OnWebAppSettingsPolicyChanged() {
   }
 }
 
-void WebAppPublisherHelper::Init(bool observe_media_requests) {
+void WebAppPublisherHelper::Init() {
   // Allow for web app migration tests.
   if (!AreWebAppsEnabled(profile_)) {
     return;
@@ -1599,9 +1605,7 @@ void WebAppPublisherHelper::Init(bool observe_media_requests) {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
-  if (observe_media_requests) {
-    media_dispatcher_.Observe(MediaCaptureDevicesDispatcher::GetInstance());
-  }
+  media_dispatcher_.Observe(MediaCaptureDevicesDispatcher::GetInstance());
 #endif
 }
 
@@ -1797,13 +1801,9 @@ void WebAppPublisherHelper::MaybeAddWebPageNotifications(
                           : notification.origin_url();
 
     auto app_ids = registrar().FindAppsInScope(url);
-    int count = 0;
     for (const auto& app_id : app_ids) {
-      if (MaybeAddNotification(app_id, notification.id())) {
-        ++count;
-      }
+      MaybeAddNotification(app_id, notification.id());
     }
-    apps::RecordAppsPerNotification(count);
   }
 }
 

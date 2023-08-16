@@ -89,7 +89,9 @@
 #include "media/mojo/mojom/interface_factory.mojom-forward.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom-forward.h"
 #include "media/mojo/mojom/media_player.mojom-forward.h"
+#include "media/mojo/mojom/video_encoder_metrics_provider.mojom-forward.h"
 #include "media/mojo/services/media_metrics_provider.h"
+#include "media/mojo/services/video_encoder_metrics_provider.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -282,7 +284,6 @@ class RenderWidgetHostView;
 class ServiceWorkerContainerHost;
 class SiteInfo;
 class SpeechSynthesisImpl;
-class SubresourceWebBundleNavigationInfo;
 class TimeoutMonitor;
 class WebAuthRequestSecurityChecker;
 class WebBluetoothServiceImpl;
@@ -990,6 +991,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
     last_committed_frame_entry_ = frame_entry;
   }
 
+  // Returns the SiteInfo derived from the UrlInfo of the last navigation that
+  // committed in this RenderFrameHost.
+  // Note that this might be different from GetSiteInstance()->GetSiteInfo().
+  // See comment in the member declaration for more details.
+  const SiteInfo& last_committed_url_derived_site_info() {
+    return last_committed_url_derived_site_info_;
+  }
+
   // Return true if this contains at least one NavigationRequest waiting to
   // commit in this RenderFrameHost. This includes both same-document and
   // cross-document NavigationRequests.
@@ -1653,6 +1662,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   bool is_overriding_user_agent() { return is_overriding_user_agent_; }
 
+  ReloadType reload_type() { return reload_type_; }
+
   // Notifies the render frame that |frame_tree_node_| has received user
   // activation. May be invoked multiple times. This is called both for the
   // actual frame that saw user activation and any ancestor frames that might
@@ -1660,6 +1671,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // include frames activated by the same-origin visibility heuristic, see
   // `UserActivationState` for details.
   void DidReceiveUserActivation();
+
+  // Called when successful web authn assertion occurred in this
+  // RenderFrameHost.
+  void WebAuthnAssertionRequestSucceeded();
 
   // Apply any isolation policies, such as site isolation triggered by COOP
   // headers, that might be triggered when a particular frame has just seen a
@@ -2076,6 +2091,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindMediaMetricsProviderReceiver(
       mojo::PendingReceiver<media::mojom::MediaMetricsProvider> receiver);
 
+  void BindVideoEncoderMetricsProviderReceiver(
+      mojo::PendingReceiver<media::mojom::VideoEncoderMetricsProvider>
+          receiver);
+
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   void BindMediaRemoterFactoryReceiver(
       mojo::PendingReceiver<media::mojom::RemoterFactory> receiver);
@@ -2135,7 +2154,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Semi-formal definition of COOP:
   // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
-  network::CrossOriginOpenerPolicy cross_origin_opener_policy() const {
+  const network::CrossOriginOpenerPolicy& cross_origin_opener_policy() const {
     return policy_container_host_->cross_origin_opener_policy();
   }
 
@@ -2936,6 +2955,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // kept constant across navigations in a frame.
   const absl::optional<base::UnguessableToken>& GetDevToolsNavigationToken();
 
+  // Returns if the RenderFrameHostImpl is loaded with the "Cache-Control:
+  // no-store" header.
+  bool LoadedWithCacheControlNoStoreHeader();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -3536,14 +3559,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SetInheritedBaseUrl(const GURL& inherited_base_url);
 
   // Called when a navigation commits successfully to |url_info->url|. This
-  // will update |last_committed_site_info_| with the SiteInfo corresponding to
-  // |url_info|.  If |url_info| is empty, |last_committed_site_info_| will be
-  // cleared.
+  // will update |last_committed_url_derived_site_info_| with the SiteInfo
+  // corresponding to |url_info|.  If |url_info| is empty,
+  // |last_committed_url_derived_site_info_| will be cleared.
   //
   // Note that this will recompute the SiteInfo from |url_info| rather than
   // using GetSiteInstance()->GetSiteInfo(), so that
-  // |last_committed_site_info_| is always meaningful: e.g., without site
-  // isolation, b.com could commit in a SiteInstance for a.com, but this
+  // |last_committed_url_derived_site_info_| is always meaningful: e.g., without
+  // site isolation, b.com could commit in a SiteInstance for a.com, but this
   // function will still compute the last committed SiteInfo as b.com.  For
   // example, this can be used to track which sites have committed in which
   // process.
@@ -4163,7 +4186,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // GetSiteInstance()->GetSiteInfo()) on platforms with no site isolation.
   // This is used for tracking which sites have committed in various renderer
   // processes to support process reuse policies.
-  SiteInfo last_committed_site_info_;
+  // TODO(https://crbug.com/1195535): Remove this once SiteInstanceGroup is
+  // fully implemented, as at that point the SiteInstance's SiteInfo will be the
+  // same as the URL-derived SiteInfo.
+  SiteInfo last_committed_url_derived_site_info_;
 
   // The most recent non-error URL to commit in this frame.
   // TODO(clamy): Remove this in favor of GetLastCommittedURL().
@@ -4632,6 +4658,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // not.
   bool is_overriding_user_agent_ = false;
 
+  // Whether the currently committed document was reloaded in a particular
+  // way.
+  ReloadType reload_type_ = ReloadType::NONE;
+
   // Used to intercept DidCommit* calls in tests.
   raw_ptr<CommitCallbackInterceptor> commit_callback_interceptor_ = nullptr;
 
@@ -4682,11 +4712,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //    then the initial transient isolation info (i.e. the default value below)
   //    will be used.  This will match the opaque origin of such a frame.
   net::IsolationInfo isolation_info_ = net::IsolationInfo::CreateTransient();
-
-  // Subresource Web Bundle information that are kept around across
-  // same-document navigations.
-  std::unique_ptr<SubresourceWebBundleNavigationInfo>
-      subresource_web_bundle_navigation_info_;
 
   // Tainted once MediaStream access was granted.
   bool was_granted_media_access_ = false;

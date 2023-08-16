@@ -63,6 +63,7 @@ absl::optional<ViewID> GetViewID(
     case ImageType::CLIPBOARD_READ_WRITE:
     case ImageType::SENSORS:
     case ImageType::NOTIFICATIONS_QUIET_PROMPT:
+    case ImageType::STORAGE_ACCESS:
       return absl::nullopt;
 
     case ImageType::NUM_IMAGE_TYPES:
@@ -117,6 +118,10 @@ ContentSettingImageView::ContentSettingImageView(
       /*role_description*/ absl::nullopt,
       accessible_name.empty() ? ax::mojom::NameFrom::kAttributeExplicitlyEmpty
                               : ax::mojom::NameFrom::kAttribute);
+
+  // The chrome refresh version of this view has a ripple effect which is
+  // configured by the background.
+  UpdateBackground();
 }
 
 ContentSettingImageView::~ContentSettingImageView() = default;

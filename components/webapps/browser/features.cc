@@ -79,35 +79,10 @@ BASE_FEATURE(kCreateShortcutIgnoresManifest,
              "CreateShortcutIgnoresManifest",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Skip the service worker install criteria check for installing. This affect
-// only the "installable" status but not "promotable".
-BASE_FEATURE(kSkipServiceWorkerCheckInstallOnly,
-             "SkipServiceWorkerCheckInstallOnly",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables showing a detailed install dialog for user installs.
-BASE_FEATURE(kDesktopPWAsDetailedInstallDialog,
-             "DesktopPWAsDetailedInstallDialog",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables sending the beforeinstallprompt without a service worker check.
-BASE_FEATURE(kSkipServiceWorkerForInstallPrompt,
-             "SkipServiceWorkerForInstallPromot",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Use segmentation to decide whether install prompt should be shown.
 BASE_FEATURE(kInstallPromptSegmentation,
              "InstallPromptSegmentation",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool SkipInstallServiceWorkerCheck() {
-  return base::FeatureList::IsEnabled(kSkipServiceWorkerCheckInstallOnly);
-}
-
-bool SkipServiceWorkerForInstallPromotion() {
-  return base::FeatureList::IsEnabled(kSkipServiceWorkerCheckInstallOnly) &&
-         base::FeatureList::IsEnabled(kSkipServiceWorkerForInstallPrompt);
-}
 
 // Keys to use when querying the variations params.
 BASE_FEATURE(kAppBannerTriggering,
@@ -122,8 +97,8 @@ extern const base::FeatureParam<int> kBannerParamsDaysAfterBannerDismissedKey{
 extern const base::FeatureParam<int> kBannerParamsDaysAfterBannerIgnoredKey{
     &kAppBannerTriggering, "days_after_ignore", kMinimumDaysBetweenBannerShows};
 
-BASE_FEATURE(kWebAppsMlUkmCollection,
-             "WebAppsMlUkmCollection",
+BASE_FEATURE(kWebAppsEnableMLModelForPromotion,
+             "kWebAppsEnableMLModelForPromotion",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

@@ -11,6 +11,9 @@
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/containers/enum_set.h"
+#include "base/functional/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -32,11 +35,15 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/visible_time_request_trigger.h"
+#include "content/browser/webid/idp_network_request_manager.h"
 #include "content/common/content_navigation_policy.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/visibility.h"
+#include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -90,6 +97,11 @@ static constexpr size_t kDefaultForegroundBackForwardCacheSize = 0;
 // The default time to live in seconds for documents in BackForwardCache.
 // See also crbug.com/1305878.
 static constexpr int kDefaultTimeToLiveInBackForwardCacheInSeconds = 600;
+// For page with "Cache-Control: no-store", it should have a shorter time to
+// live.
+static constexpr int
+    kDefaultTimeForCacheControlNoStorePageToLiveInBackForwardCacheInSeconds =
+        180;
 
 #if BUILDFLAG(IS_ANDROID)
 bool IsProcessBindingEnabled() {
@@ -181,64 +193,83 @@ bool ShouldIgnoreBlocklists() {
 // cache. Some of these features are listed as blocking back/forward cache
 // when actually the blocking is flag controlled and they are not registered
 // as being used if we don't want them to block.
-constexpr WebSchedulerTrackedFeatures kDisallowedFeatures = {
-    WebSchedulerTrackedFeature::kBroadcastChannel,
-    WebSchedulerTrackedFeature::kContainsPlugins,
-    WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet,
-    WebSchedulerTrackedFeature::kDummy,
-    WebSchedulerTrackedFeature::kIdleManager,
-    WebSchedulerTrackedFeature::kIndexedDBConnection,
-    WebSchedulerTrackedFeature::kIndexedDBEvent,
-    WebSchedulerTrackedFeature::kKeyboardLock,
-    WebSchedulerTrackedFeature::kKeepaliveRequest,
-    WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction,
-    WebSchedulerTrackedFeature::kPaymentManager,
-    WebSchedulerTrackedFeature::kPictureInPicture,
-    WebSchedulerTrackedFeature::kPortal,
-    WebSchedulerTrackedFeature::kPrinting,
-    WebSchedulerTrackedFeature::kRequestedAudioCapturePermission,
-    WebSchedulerTrackedFeature::kRequestedBackForwardCacheBlockedSensors,
-    WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission,
-    WebSchedulerTrackedFeature::kRequestedMIDIPermission,
-    WebSchedulerTrackedFeature::kRequestedVideoCapturePermission,
-    WebSchedulerTrackedFeature::kSharedWorker,
-    WebSchedulerTrackedFeature::kSpeechRecognizer,
-    WebSchedulerTrackedFeature::kSpeechSynthesis,
-    WebSchedulerTrackedFeature::kWebDatabase,
-    WebSchedulerTrackedFeature::kWebHID,
-    WebSchedulerTrackedFeature::kWebLocks,
-    WebSchedulerTrackedFeature::kWebOTPService,
-    WebSchedulerTrackedFeature::kWebRTC,
-    WebSchedulerTrackedFeature::kWebShare,
-    WebSchedulerTrackedFeature::kWebSocket,
-    WebSchedulerTrackedFeature::kWebTransport,
-    WebSchedulerTrackedFeature::kWebXR};
-constexpr WebSchedulerTrackedFeatures kInjectionFeatures = {
-    WebSchedulerTrackedFeature::kInjectedJavascript,
-    WebSchedulerTrackedFeature::kInjectedStyleSheet};
-constexpr WebSchedulerTrackedFeatures kNetworkFeatures = {
-    WebSchedulerTrackedFeature::kOutstandingNetworkRequestOthers,
-    WebSchedulerTrackedFeature::kOutstandingNetworkRequestFetch,
-    WebSchedulerTrackedFeature::kOutstandingNetworkRequestXHR};
+WebSchedulerTrackedFeatures GetDisallowedWebSchedulerTrackedFeatures() {
+  return {WebSchedulerTrackedFeature::kBroadcastChannel,
+          WebSchedulerTrackedFeature::kContainsPlugins,
+          WebSchedulerTrackedFeature::kDummy,
+          WebSchedulerTrackedFeature::kIdleManager,
+          WebSchedulerTrackedFeature::kIndexedDBConnection,
+          WebSchedulerTrackedFeature::kIndexedDBEvent,
+          WebSchedulerTrackedFeature::kKeyboardLock,
+          WebSchedulerTrackedFeature::kKeepaliveRequest,
+          WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction,
+          WebSchedulerTrackedFeature::kPaymentManager,
+          WebSchedulerTrackedFeature::kPictureInPicture,
+          WebSchedulerTrackedFeature::kPortal,
+          WebSchedulerTrackedFeature::kPrinting,
+          WebSchedulerTrackedFeature::kRequestedAudioCapturePermission,
+          WebSchedulerTrackedFeature::kRequestedBackForwardCacheBlockedSensors,
+          WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission,
+          WebSchedulerTrackedFeature::kRequestedMIDIPermission,
+          WebSchedulerTrackedFeature::kRequestedVideoCapturePermission,
+          WebSchedulerTrackedFeature::kSharedWorker,
+          WebSchedulerTrackedFeature::kSpeechRecognizer,
+          WebSchedulerTrackedFeature::kSpeechSynthesis,
+          WebSchedulerTrackedFeature::kWebDatabase,
+          WebSchedulerTrackedFeature::kWebHID,
+          WebSchedulerTrackedFeature::kWebLocks,
+          WebSchedulerTrackedFeature::kWebOTPService,
+          WebSchedulerTrackedFeature::kWebRTC,
+          WebSchedulerTrackedFeature::kWebShare,
+          WebSchedulerTrackedFeature::kWebSocket,
+          WebSchedulerTrackedFeature::kWebTransport,
+          WebSchedulerTrackedFeature::kWebXR};
+}
+WebSchedulerTrackedFeatures GetInjectionWebSchedulerTrackedFeatures() {
+  return {WebSchedulerTrackedFeature::kInjectedJavascript,
+          WebSchedulerTrackedFeature::kInjectedStyleSheet};
+}
+WebSchedulerTrackedFeatures GetNetworkWebSchedulerTrackedFeatures() {
+  return {WebSchedulerTrackedFeature::kOutstandingNetworkRequestOthers,
+          WebSchedulerTrackedFeature::kOutstandingNetworkRequestFetch,
+          WebSchedulerTrackedFeature::kOutstandingNetworkRequestXHR};
+}
+// A list of WebSchedulerTrackedFeatures that should never block back/forward
+// cache unless the main frame has "Cache-Control: no-store" header.
+WebSchedulerTrackedFeatures GetDisallowedForCacheControlNoStoreFeatures() {
+  return {WebSchedulerTrackedFeature::kWebSocketSticky,
+          WebSchedulerTrackedFeature::kWebRTCSticky,
+          WebSchedulerTrackedFeature::kWebTransportSticky,
+          WebSchedulerTrackedFeature::
+              kJsNetworkRequestReceivedCacheControlNoStoreResource};
+}
 // A list of WebSchedulerTrackedFeatures that should never block back/forward
 // cache.
-constexpr WebSchedulerTrackedFeatures kAllowedFeatures = {
-    WebSchedulerTrackedFeature::kDocumentLoaded,
-    WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoCache,
-    // This is handled in |UpdateCanStoreToIncludeCacheControlNoStore()|, and no
-    // need to include in |GetDisallowedFeatures()|.
-    WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore,
-    // TODO(crbug.com/1357482): Figure out if these two should be allowed.
-    WebSchedulerTrackedFeature::kOutstandingNetworkRequestDirectSocket,
-    WebSchedulerTrackedFeature::kRequestedStorageAccessGrant,
-    // We don't block on subresource cache-control:no-store or no-cache.
-    WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoCache,
-    WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoStore,
-    // We only record this if "Cache-Control: no-store" header is present on the
-    // main frame.
-    WebSchedulerTrackedFeature::kAuthorizationHeader,
-    // TODO(crbug.com/1357482): Figure out if this should be allowed.
-    WebSchedulerTrackedFeature::kWebNfc};
+WebSchedulerTrackedFeatures GetAllowedWebSchedulerTrackedFeatures() {
+  return {
+      WebSchedulerTrackedFeature::kDocumentLoaded,
+      WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoCache,
+      // This is handled in |UpdateCanStoreToIncludeCacheControlNoStore()|,
+      // and no need to include in |GetDisallowedFeatures()|.
+      WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore,
+      // TODO(crbug.com/1357482): Figure out if these two should be allowed.
+      WebSchedulerTrackedFeature::kOutstandingNetworkRequestDirectSocket,
+      WebSchedulerTrackedFeature::kRequestedStorageAccessGrant,
+      // We don't block on subresource cache-control:no-store or no-cache.
+      WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoCache,
+      WebSchedulerTrackedFeature::kSubresourceHasCacheControlNoStore,
+      // TODO(crbug.com/1357482): Figure out if this should be allowed.
+      WebSchedulerTrackedFeature::kWebNfc,
+      WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet,
+  };
+}
+
+// WebSchedulerTrackedFeatures that do not affect back/forward cache, but
+// affects other scheduling policies (e.g. aggressive throttling).
+WebSchedulerTrackedFeatures
+GetNonBackForwardCacheAffectingWebSchedulerTrackedFeatures() {
+  return {WebSchedulerTrackedFeature::kWebSerial};
+}
 
 // The BackForwardCache feature is controlled via an experiment. This function
 // returns the allowed URL list where it is enabled.
@@ -400,8 +431,9 @@ bool IsSameOriginForTreeResult(RenderFrameHostImpl* rfh,
                                const url::Origin& main_document_origin) {
   // Treat any frame inside a fenced frame as cross origin so we don't leak
   // any information.
-  if (rfh->IsNestedWithinFencedFrame())
+  if (rfh->IsNestedWithinFencedFrame()) {
     return false;
+  }
   return url::Origin::Create(url).IsSameOriginWith(main_document_origin);
 }
 
@@ -409,46 +441,65 @@ bool IsSameOriginForTreeResult(RenderFrameHostImpl* rfh,
 
 // static
 BlockListedFeatures BackForwardCacheImpl::GetAllowedFeatures(
-    RequestedFeatures requested_features) {
-  WebSchedulerTrackedFeatures result = kAllowedFeatures;
+    RequestedFeatures requested_features,
+    CacheControlNoStoreContext ccns_context) {
+  WebSchedulerTrackedFeatures result =
+      Union(GetAllowedWebSchedulerTrackedFeatures(),
+            GetNonBackForwardCacheAffectingWebSchedulerTrackedFeatures());
   if (IsContentInjectionSupported()) {
-    result.PutAll(kInjectionFeatures);
+    result.PutAll(GetInjectionWebSchedulerTrackedFeatures());
   }
   if (IgnoresOutstandingNetworkRequestForTesting()) {
-    result.PutAll(kNetworkFeatures);
+    result.PutAll(GetNetworkWebSchedulerTrackedFeatures());
   }
   result.PutAll(SupportedFeatures());
   if (requested_features == RequestedFeatures::kOnlySticky) {
     // Add non-sticky disallowed features.
     WebSchedulerTrackedFeatures non_sticky =
-        Difference(kDisallowedFeatures, blink::scheduler::StickyFeatures());
+        Difference(GetDisallowedWebSchedulerTrackedFeatures(),
+                   blink::scheduler::StickyFeatures());
     if (!IsContentInjectionSupported()) {
-      non_sticky.PutAll(
-          Difference(kInjectionFeatures, blink::scheduler::StickyFeatures()));
+      non_sticky.PutAll(Difference(GetInjectionWebSchedulerTrackedFeatures(),
+                                   blink::scheduler::StickyFeatures()));
     }
     if (!IgnoresOutstandingNetworkRequestForTesting()) {
-      non_sticky.PutAll(
-          Difference(kNetworkFeatures, blink::scheduler::StickyFeatures()));
+      non_sticky.PutAll(Difference(GetNetworkWebSchedulerTrackedFeatures(),
+                                   blink::scheduler::StickyFeatures()));
     }
     result.PutAll(non_sticky);
+  }
+  // When not under "Cache-Control: no-store" context, the features listed in
+  // `GetDisallowedForCacheControlNoStoreFeatures()` should be considered as
+  // allowed features.
+  if (ccns_context == kNotInCCNSContext) {
+    result.PutAll(GetDisallowedForCacheControlNoStoreFeatures());
   }
   return result;
 }
 
 // static
 BlockListedFeatures BackForwardCacheImpl::GetDisallowedFeatures(
-    RequestedFeatures requested_features) {
-  WebSchedulerTrackedFeatures result = kDisallowedFeatures;
+    RequestedFeatures requested_features,
+    CacheControlNoStoreContext ccns_context) {
+  WebSchedulerTrackedFeatures result =
+      GetDisallowedWebSchedulerTrackedFeatures();
+  ;
   if (!IsContentInjectionSupported()) {
-    result.PutAll(kInjectionFeatures);
+    result.PutAll(GetInjectionWebSchedulerTrackedFeatures());
   }
   if (!IgnoresOutstandingNetworkRequestForTesting()) {
-    result.PutAll(kNetworkFeatures);
+    result.PutAll(GetNetworkWebSchedulerTrackedFeatures());
   }
   result.RemoveAll(SupportedFeatures());
   if (requested_features == RequestedFeatures::kOnlySticky) {
     // Remove all non-sticky features from |result|.
     result = Intersection(result, blink::scheduler::StickyFeatures());
+  }
+  // When under "Cache-Control: no-store" context, the features listed in
+  // `GetDisallowedForCacheControlNoStoreFeatures()` should be considered as
+  // disallowed features.
+  if (ccns_context == kInCCNSContext) {
+    result.PutAll(GetDisallowedForCacheControlNoStoreFeatures());
   }
   return result;
 }
@@ -527,12 +578,16 @@ absl::optional<int> GetFieldTrialParamByFeatureAsOptionalInt(
   return absl::optional<int>();
 }
 
-base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache() {
+base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache(
+    CacheControlNoStoreContext ccns_context) {
   // We use the following order of priority if multiple values exist:
   // - The TTL set in `kBackForwardCacheTimeToLiveControl` takes precedence over
   //   the default value.
   // - Infinite if kBackForwardCacheNoTimeEviction is enabled.
-  // - Default value otherwise, kDefaultTimeToLiveInBackForwardCacheInSeconds.
+  // - Default value otherwise, kDefaultTimeToLiveInBackForwardCacheInSeconds or
+  // kDefaultTimeForCacheControlNoStorePageToLiveInBackForwardCacheInSeconds
+  // depending on if the page's main frame has "Cache-Control: no-store" header
+  // or not.
 
   if (base::FeatureList::IsEnabled(
           features::kBackForwardCacheTimeToLiveControl)) {
@@ -547,7 +602,12 @@ base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache() {
     return base::TimeDelta::Max();
   }
 
-  return base::Seconds(kDefaultTimeToLiveInBackForwardCacheInSeconds);
+  if (ccns_context == kInCCNSContext) {
+    return base::Seconds(
+        kDefaultTimeForCacheControlNoStorePageToLiveInBackForwardCacheInSeconds);
+  } else {
+    return base::Seconds(kDefaultTimeToLiveInBackForwardCacheInSeconds);
+  }
 }
 
 // static
@@ -598,8 +658,7 @@ void BackForwardCacheImpl::UpdateCanStoreToIncludeCacheControlNoStore(
   if (!AllowStoringPagesWithCacheControlNoStore())
     return;
   // If the page didn't have cache-control: no-store, do nothing.
-  if (!render_frame_host->GetBackForwardCacheDisablingFeatures().Has(
-          WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore)) {
+  if (!render_frame_host->LoadedWithCacheControlNoStoreHeader()) {
     return;
   }
 
@@ -825,11 +884,32 @@ void BackForwardCacheImpl::PopulateReasonsForMainDocument(
   if (rfh->GetBackForwardCacheDisablingFeatures().Has(
           WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore)) {
     if (!AllowStoringPagesWithCacheControlNoStore()) {
-      // Block pages with cache-control: no-store only when
-      // |should_cache_control_no_store_enter| flag is false. If true, put the
-      // page in and evict later.
+      // Block pages with cache-control: no-store when
+      // |should_cache_control_no_store_enter| flag is false.
       result.NoDueToFeatures(
           {WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore});
+    } else {
+      // Even if `should_cache_control_no_store_enter` is true, we may still
+      // block pages with cache-control: no-store if the cookie is disabled.
+      // This is because the site is likely to rely on schemes other than
+      // cookies to store user credentials.
+      // Note that this only covers the case that the cookie is already disabled
+      // when the reasons are being populated. If the cookie is disabled after
+      // the procedure, it's still possible for the pages with cache-control: no
+      // store to be BFCached.
+      BrowserContext* browser_context = rfh->GetBrowserContext();
+      if (browser_context &&
+          !GetContentClient()
+               ->browser()
+               ->CanBackForwardCachedPageReceiveCookieChanges(
+                   *browser_context, rfh->GetLastCommittedURL(),
+                   rfh->ComputeSiteForCookies(),
+                   rfh->ComputeTopFrameOrigin(rfh->GetLastCommittedOrigin()),
+                   rfh->GetCookieSettingOverrides())) {
+        result.No(
+            BackForwardCacheMetrics::NotRestoredReason::kCacheControlNoStore);
+        result.No(BackForwardCacheMetrics::NotRestoredReason::kCookieDisabled);
+      }
     }
   }
 
@@ -880,25 +960,34 @@ void BackForwardCacheImpl::NotRestoredReasonBuilder::
   // cache, we should only consider "sticky" features here - features that
   // will always result in a page becoming ineligible for back-forward cache
   // since the first time it's used.
-  WebSchedulerTrackedFeatures banned_features =
-      Intersection(GetDisallowedFeatures(RequestedFeatures::kOnlySticky),
-                   rfh->GetBackForwardCacheDisablingFeatures());
+  // If the main document had CCNS and this document is same-origin with the
+  // main document, we should consider the features that are only disallowed for
+  // CCNS documents.
+  // This does not use `IsSameOriginForTreeResult` because we
+  // want to be more conservative and react to *any* same-origin frame using it.
+  CacheControlNoStoreContext ccns_context = kNotInCCNSContext;
+  if (root_rfh_->GetBackForwardCacheDisablingFeatures().Has(
+          WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore) &&
+      rfh->GetLastCommittedOrigin().IsSameOriginWith(
+          root_rfh_->GetLastCommittedOrigin())) {
+    ccns_context = kInCCNSContext;
+  }
+  WebSchedulerTrackedFeatures banned_features = Intersection(
+      GetDisallowedFeatures(RequestedFeatures::kOnlySticky, ccns_context),
+      rfh->GetBackForwardCacheDisablingFeatures());
+  // If the document has any features that are only disallowed for CCNS,
+  // we should explicitly record `kMainResourceHasCacheControlNoStore`
+  // as well.
+  if (!Intersection(banned_features,
+                    GetDisallowedForCacheControlNoStoreFeatures())
+           .Empty()) {
+    banned_features.Put(
+        WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore);
+  }
   if (!banned_features.Empty()) {
     if (!ShouldIgnoreBlocklists()) {
       result.NoDueToFeatures(banned_features);
     }
-  }
-  // If the main document had CCNS and this document is same-origin with the
-  // main document and used the "Authorization" header then add that reason.
-  // This does not use `IsSameOriginForTreeResult` because we want to be more
-  // conservative and react to *any* same-origin frame using it.
-  if (root_rfh_->GetBackForwardCacheDisablingFeatures().Has(
-          WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore) &&
-      rfh->GetLastCommittedOrigin().IsSameOriginWith(
-          root_rfh_->GetLastCommittedOrigin()) &&
-      rfh->GetBackForwardCacheDisablingFeatures().Has(
-          WebSchedulerTrackedFeature::kAuthorizationHeader)) {
-    result.NoDueToFeatures({WebSchedulerTrackedFeature::kAuthorizationHeader});
   }
 }
 
@@ -914,10 +1003,11 @@ void BackForwardCacheImpl::NotRestoredReasonBuilder::
     result.No(BackForwardCacheMetrics::NotRestoredReason::kLoading);
   }
 
-  // Check for non-sticky features that are present at the moment.
-  WebSchedulerTrackedFeatures banned_features =
-      Intersection(GetDisallowedFeatures(RequestedFeatures::kAll),
-                   rfh->GetBackForwardCacheDisablingFeatures());
+  // Check for non-sticky features that are present at the moment, ignoring CCNS
+  // related logic since they will be handled separately.
+  WebSchedulerTrackedFeatures banned_features = Intersection(
+      GetDisallowedFeatures(RequestedFeatures::kAll, kNotInCCNSContext),
+      rfh->GetBackForwardCacheDisablingFeatures());
   if (!banned_features.Empty() && !ShouldIgnoreBlocklists()) {
     if (requested_features == RequestedFeatures::kAll ||
         (requested_features == RequestedFeatures::kAllIfAcked &&
@@ -1405,6 +1495,12 @@ void BackForwardCacheImpl::WillCommitNavigationToCachedEntry(
 
 // static
 bool BackForwardCacheImpl::AllowStoringPagesWithCacheControlNoStore() {
+  if (base::CommandLine::InitializedForCurrentProcess() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBackForwardCacheForCacheControlNoStorePage)) {
+    return false;
+  }
+
   return GetCacheControlNoStoreLevel() >
          CacheControlNoStoreExperimentLevel::kDoNotStore;
 }

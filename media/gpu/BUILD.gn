@@ -64,7 +64,7 @@ component("gpu") {
     "//remoting/host:common",
   ]
 
-  if (is_mac) {
+  if (is_apple) {
     # On Mac, content/common reaches into here to do some pre-sandbox
     # initialization.
     visibility += [ "//content/common" ]
@@ -116,7 +116,7 @@ component("gpu") {
     ]
   }
 
-  if (is_mac) {
+  if (is_apple) {
     public_deps += [ "//media/gpu/mac" ]
   }
 
@@ -242,14 +242,6 @@ component("gpu") {
       "windows/d3d11_vp9_picture.h",
       "windows/d3d_accelerator.cc",
       "windows/d3d_accelerator.h",
-      "windows/dxva_picture_buffer_win.cc",
-      "windows/dxva_picture_buffer_win.h",
-      "windows/dxva_video_decode_accelerator_win.cc",
-      "windows/dxva_video_decode_accelerator_win.h",
-      "windows/gl_image_egl_stream.cc",
-      "windows/gl_image_egl_stream.h",
-      "windows/gl_image_pbuffer.cc",
-      "windows/gl_image_pbuffer.h",
       "windows/init_guid.cc",
       "windows/media_foundation_video_encode_accelerator_win.cc",
       "windows/media_foundation_video_encode_accelerator_win.h",
@@ -374,8 +366,6 @@ source_set("common") {
 
   if (is_win || use_vaapi) {
     sources += [
-      "video_rate_control.cc",
-      "video_rate_control.h",
       "vp9_svc_layers.cc",
       "vp9_svc_layers.h",
     ]
@@ -629,7 +619,7 @@ source_set("unit_tests") {
     libs = [ "dxguid.lib" ]
   }
 
-  if (is_mac) {
+  if (is_apple) {
     deps += [ "//media/gpu/mac:unit_tests" ]
   }
 

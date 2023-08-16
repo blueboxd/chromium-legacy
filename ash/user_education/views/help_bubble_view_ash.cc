@@ -11,8 +11,10 @@
 #include <utility>
 
 #include "ash/bubble/bubble_utils.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/style/style_util.h"
 #include "ash/style/typography.h"
+#include "ash/user_education/user_education_help_bubble_controller.h"
 #include "ash/user_education/user_education_types.h"
 #include "ash/user_education/user_education_util.h"
 #include "base/functional/bind.h"
@@ -20,10 +22,12 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "base/types/pass_key.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_education/common/help_bubble_params.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/aura/window.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -629,6 +633,9 @@ HelpBubbleViewAsh::HelpBubbleViewAsh(
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_close_on_deactivate(false);
   set_focus_traversable_from_anchor_view(false);
+  set_parent_window(
+      anchor_widget()->GetNativeWindow()->GetRootWindow()->GetChildById(
+          kShellWindowId_HelpBubbleContainer));
 
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(this);
 
@@ -641,15 +648,28 @@ HelpBubbleViewAsh::HelpBubbleViewAsh(
   UpdateRoundedCorners();
 
   widget->ShowInactive();
+
   auto* const anchor_bubble =
       anchor.view->GetWidget()->widget_delegate()->AsBubbleDialogDelegate();
   if (anchor_bubble) {
     anchor_pin_ = anchor_bubble->PreventCloseOnDeactivate();
   }
   MaybeStartAutoCloseTimer();
+
+  // NOTE: `controller` may be `nullptr` in testing.
+  if (auto* controller = UserEducationHelpBubbleController::Get()) {
+    controller->NotifyHelpBubbleShown(base::PassKey<HelpBubbleViewAsh>(),
+                                      /*help_bubble_view=*/this);
+  }
 }
 
-HelpBubbleViewAsh::~HelpBubbleViewAsh() = default;
+HelpBubbleViewAsh::~HelpBubbleViewAsh() {
+  // NOTE: `controller` may be `nullptr` in testing.
+  if (auto* controller = UserEducationHelpBubbleController::Get()) {
+    controller->NotifyHelpBubbleClosed(base::PassKey<HelpBubbleViewAsh>(),
+                                       /*help_bubble_view=*/this);
+  }
+}
 
 void HelpBubbleViewAsh::MaybeStartAutoCloseTimer() {
   if (timeout_.is_zero()) {
@@ -677,12 +697,12 @@ HelpBubbleViewAsh::CreateNonClientFrameView(views::Widget* widget) {
 void HelpBubbleViewAsh::OnAnchorBoundsChanged() {
   views::BubbleDialogDelegateView::OnAnchorBoundsChanged();
   UpdateRoundedCorners();
-}
 
-bool HelpBubbleViewAsh::OnMousePressed(const ui::MouseEvent& event) {
-  base::RecordAction(
-      base::UserMetricsAction("InProductHelp.Promos.BubbleClicked"));
-  return false;
+  // NOTE: `controller` may be `nullptr` in testing.
+  if (auto* controller = UserEducationHelpBubbleController::Get()) {
+    controller->NotifyHelpBubbleAnchorBoundsChanged(
+        base::PassKey<HelpBubbleViewAsh>(), /*help_bubble_view=*/this);
+  }
 }
 
 std::u16string HelpBubbleViewAsh::GetAccessibleWindowTitle() const {

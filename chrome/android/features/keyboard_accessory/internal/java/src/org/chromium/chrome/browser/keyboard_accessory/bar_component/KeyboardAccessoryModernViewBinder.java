@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.TraceEvent;
+import org.chromium.chrome.browser.autofill.AutofillUiUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.AutofillBarItem;
@@ -35,9 +36,6 @@ import org.chromium.ui.widget.RectProvider;
  * the {@link KeyboardAccessoryViewBinder} which will modify the view accordingly.
  */
 class KeyboardAccessoryModernViewBinder {
-    // Credit card suggestion ids are at least 17 bits long.
-    private static final int CREDIT_CARD_ID_BIT_MASK = 0xFFFF0000;
-
     static BarItemViewHolder create(ViewGroup parent, @BarItem.Type int viewType) {
         switch (viewType) {
             case BarItem.Type.SUGGESTION:
@@ -128,9 +126,7 @@ class KeyboardAccessoryModernViewBinder {
             }
             chipView.setIcon(
                     getCardIcon(chipView.getContext(), item.getSuggestion().getCustomIconUrl(),
-                            iconId, R.dimen.keyboard_accessory_bar_item_cc_icon_width,
-                            R.dimen.chip_icon_size,
-                            R.dimen.keyboard_accessory_card_art_corner_radius,
+                            iconId, AutofillUiUtils.CardIconSize.SMALL,
                             /* showCustomIcon= */ true),
                     /* tintWithTextColor= */ false);
             TraceEvent.end("BarItemChipViewHolder#bind");
@@ -179,7 +175,7 @@ class KeyboardAccessoryModernViewBinder {
     }
 
     private static boolean containsCreditCardInfo(AutofillSuggestion suggestion) {
-        return (suggestion.getSuggestionId() & CREDIT_CARD_ID_BIT_MASK) != 0
-                || suggestion.getSuggestionId() == PopupItemId.VIRTUAL_CREDIT_CARD_ENTRY;
+        return suggestion.getPopupItemId() == PopupItemId.CREDIT_CARD_ENTRY
+                || suggestion.getPopupItemId() == PopupItemId.VIRTUAL_CREDIT_CARD_ENTRY;
     }
 }

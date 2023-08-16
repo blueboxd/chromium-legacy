@@ -16,9 +16,11 @@
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "components/os_crypt/sync/os_crypt.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/nigori/nigori.h"
+#include "components/sync/engine/nigori/public_key.h"
 #include "components/sync/nigori/keystore_keys_cryptographer.h"
 #include "components/sync/nigori/nigori_storage.h"
 #include "components/sync/nigori/pending_local_nigori_commit.h"
@@ -227,6 +229,13 @@ bool IsValidEncryptedTypesTransition(bool old_encrypt_everything,
   return specifics.encrypt_everything() || !old_encrypt_everything;
 }
 
+absl::optional<PublicKey> PublicKeyFromProto(
+    const sync_pb::PublicKey& public_key) {
+  std::vector<uint8_t> key(public_key.x25519_public_key().begin(),
+                           public_key.x25519_public_key().end());
+  return PublicKey::CreateByImport(key);
+}
+
 }  // namespace
 
 class NigoriSyncBridgeImpl::BroadcastingObserver
@@ -332,6 +341,13 @@ NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
     DCHECK(!state_.keystore_keys_cryptographer->IsEmpty());
     QueuePendingLocalCommit(
         PendingLocalNigoriCommit::ForKeystoreInitialization());
+  }
+
+  if (base::FeatureList::IsEnabled(kSharingOfferKeyPairBootstrap) &&
+      !state_.cross_user_sharing_public_key.has_value()) {
+    QueuePendingLocalCommit(
+        PendingLocalNigoriCommit::
+            ForCrossUserSharingPublicPrivateKeyInitializer());
   }
 
   // Keystore key rotation might be not performed, but required.
@@ -700,6 +716,14 @@ absl::optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
   // passphrase type.
   state_.pending_keys = specifics.encryption_keybag();
   state_.cryptographer->ClearDefaultEncryptionKey();
+
+  if (specifics.has_public_key()) {
+    // Remote update wins over local update.
+    state_.cross_user_sharing_public_key =
+        PublicKeyFromProto(specifics.public_key());
+    state_.cross_user_sharing_key_pair_version =
+        specifics.public_key().version();
+  }
 
   absl::optional<ModelError> error =
       TryDecryptPendingKeysWith(decryption_key_bag_for_remote_update);

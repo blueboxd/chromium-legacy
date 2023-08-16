@@ -39,10 +39,10 @@ void LayoutNGTableCell::InvalidateLayoutResultCacheAfterMeasure() const {
   NOT_DESTROYED();
   if (LayoutBox* row = ParentBox()) {
     DCHECK(row->IsTableRow());
-    row->ClearLayoutResults();
+    row->SetShouldSkipLayoutCache(true);
     if (LayoutBox* section = row->ParentBox()) {
       DCHECK(section->IsTableSection());
-      section->ClearLayoutResults();
+      section->SetShouldSkipLayoutCache(true);
     }
   }
 }
@@ -126,16 +126,6 @@ LayoutNGTable* LayoutNGTableCell::Table() const {
     }
   }
   return nullptr;
-}
-
-void LayoutNGTableCell::UpdateBlockLayout() {
-  NOT_DESTROYED();
-
-  if (IsOutOfFlowPositioned()) {
-    UpdateOutOfFlowBlockLayout();
-    return;
-  }
-  UpdateInFlowBlockLayout();
 }
 
 void LayoutNGTableCell::StyleDidChange(StyleDifference diff,

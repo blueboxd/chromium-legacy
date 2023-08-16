@@ -36,6 +36,7 @@
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util/util.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/crash/core/common/crash_keys.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_POSIX)
@@ -76,11 +77,13 @@ void ReinitializeLoggingAfterCrashHandler(UpdaterScope updater_scope) {
   InitLogging(updater_scope);
 }
 
-void InitializeCrashReporting(UpdaterScope updater_scope) {
+void InitializeCrashReporting(UpdaterScope updater_scope,
+                              const base::CommandLine& command_line) {
   crash_reporter::InitializeCrashKeys();
   static crash_reporter::CrashKeyString<16> crash_key_process_type(
       "process_type");
   crash_key_process_type.Set("updater");
+  crash_keys::SetSwitchesFromCommandLine(command_line, nullptr);
   if (!CrashClient::GetInstance()->InitializeCrashReporting(updater_scope)) {
     VLOG(1) << "Crash reporting is not available.";
     return;
@@ -106,7 +109,7 @@ int HandleUpdaterCommands(UpdaterScope updater_scope,
   // Starts and connects to the external crash handler as early as possible.
   StartCrashReporter(updater_scope, kUpdaterVersion);
 
-  InitializeCrashReporting(updater_scope);
+  InitializeCrashReporting(updater_scope, *command_line);
 
   // Make the process more resilient to memory allocation issues.
   base::EnableTerminationOnHeapCorruption();
@@ -129,7 +132,7 @@ int HandleUpdaterCommands(UpdaterScope updater_scope,
 
   InitializeThreadPool("updater");
   const base::ScopedClosureRunner shutdown_thread_pool(
-      base::BindOnce([]() { base::ThreadPoolInstance::Get()->Shutdown(); }));
+      base::BindOnce([] { base::ThreadPoolInstance::Get()->Shutdown(); }));
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
 
   // Records a backtrace in the log, crashes the program, saves a crash dump,
@@ -224,7 +227,7 @@ const char* GetUpdaterCommand(const base::CommandLine* command_line) {
 }
 
 constexpr const char* BuildFlavor() {
-#if defined(NBEDUG)
+#if defined(NDEBUG)
   return "opt";
 #else
   return "debug";

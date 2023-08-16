@@ -36,7 +36,6 @@
 // Window management commands
 #define IDC_NEW_WINDOW                  34000
 #define IDC_NEW_INCOGNITO_WINDOW        34001
-#define IDC_PIN_TO_START_SCREEN         34005
 #define IDC_CLOSE_WINDOW                34012
 #define IDC_ALWAYS_ON_TOP               34013
 #define IDC_NEW_TAB                     34014
@@ -107,7 +106,7 @@
 #define IDC_EMAIL_PAGE_LOCATION         35006
 #define IDC_BASIC_PRINT                 35007
 #define IDC_SAVE_CREDIT_CARD_FOR_PAGE   35008
-#define IDC_TRANSLATE_PAGE              35009
+#define IDC_SHOW_TRANSLATE              35009
 #define IDC_MANAGE_PASSWORDS_FOR_PAGE   35010
 #define IDC_ROUTE_MEDIA                 35011
 #define IDC_WINDOW_MUTE_SITE            35012
@@ -132,6 +131,7 @@
 #define IDC_UNFOLLOW                    35034
 #define IDC_SAVE_IBAN_FOR_PAGE          35035
 #define IDC_AUTOFILL_MANDATORY_REAUTH   35036
+#define IDC_PROFILE_MENU_IN_APP_MENU    35039
 #define IDC_PASSWORDS_AND_AUTOFILL_MENU 35040
 #define IDC_SHOW_PASSWORD_MANAGER       35041
 #define IDC_SHOW_PAYMENT_METHODS        35042
@@ -160,12 +160,25 @@
 // Find/Edit sub menu
 #define IDC_FIND_AND_EDIT_MENU          37200
 
+// Save/Share sub menu
+#define IDC_SAVE_AND_SHARE_MENU         37300
+
+// Profile sub menu
+#define IDC_CUSTOMIZE_CHROME            37350
+#define IDC_CLOSE_PROFILE               35351
+#define IDC_MANAGE_GOOGLE_ACCOUNT       35352
+#define IDC_SHOW_SYNC_SETTINGS          35353
+#define IDC_TURN_ON_SYNC                35354
+#define IDC_SHOW_SIGNIN_WHEN_PAUSED     35355
+#define IDC_OPEN_GUEST_PROFILE          35356
+#define IDC_ADD_NEW_PROFILE             35357
+#define IDC_MANAGE_CHROME_PROFILES      35358
+
 // Zoom
 #define IDC_ZOOM_MENU                   38000
 #define IDC_ZOOM_PLUS                   38001
 #define IDC_ZOOM_NORMAL                 38002
 #define IDC_ZOOM_MINUS                  38003
-#define IDC_ZOOM_PERCENT_DISPLAY        38004
 
 // Focus various bits of UI
 #define IDC_FOCUS_TOOLBAR               39000
@@ -205,7 +218,6 @@
 #define IDC_UPGRADE_DIALOG              40024
 #define IDC_PROFILING_ENABLED           40028
 #define IDC_BOOKMARKS_MENU              40029
-#define IDC_SHOW_SIGNIN                 40030
 #define IDC_EXTENSION_ERRORS            40031
 #define IDC_SHOW_SETTINGS_CHANGE_FIRST  40033
 #define IDC_SHOW_SETTINGS_CHANGE_LAST   40133
@@ -217,7 +229,6 @@
 #define IDC_RECENT_TABS_MENU            40239
 #define IDC_RECENT_TABS_NO_DEVICE_TABS  40240
 #define IDC_SHOW_SETTINGS_RESET_BUBBLE  40241
-#define IDC_SHOW_SYNC_ERROR             40242
 #define IDC_DISTILL_PAGE                40243
 #define IDC_HELP_MENU                   40244
 #define IDC_SHOW_SRT_BUBBLE             40246
@@ -250,10 +261,10 @@
 #define IDC_READING_LIST_MENU           40270
 #define IDC_READING_LIST_MENU_ADD_TAB   40271
 #define IDC_READING_LIST_MENU_SHOW_UI   40272
-#define IDC_BOOKMARKS_LIST_TITLE        40273
 #define IDC_SHOW_BOOKMARK_SIDE_PANEL    40274
 #define IDC_SHOW_SEARCH_COMPANION       40275
 #define IDC_SHOW_CHROME_LABS            40276
+#define IDC_RECENT_TABS_LOGIN_FOR_DEVICE_TABS  40277
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
@@ -328,8 +339,9 @@
 // Audio/video items.
 #define IDC_CONTENT_CONTEXT_SAVEAVAS 50120
 #define IDC_CONTENT_CONTEXT_COPYAVLOCATION 50121
-#define IDC_CONTENT_CONTEXT_OPENAVNEWTAB 50122
-#define IDC_CONTENT_CONTEXT_PICTUREINPICTURE 50123
+#define IDC_CONTENT_CONTEXT_COPYVIDEOFRAME 50122
+#define IDC_CONTENT_CONTEXT_OPENAVNEWTAB 50123
+#define IDC_CONTENT_CONTEXT_PICTUREINPICTURE 50124
 // Media items.
 #define IDC_CONTENT_CONTEXT_PLAYPAUSE 50130
 #define IDC_CONTENT_CONTEXT_MUTE 50131
@@ -427,6 +439,7 @@
 #define IDC_CONTENT_CONTEXT_SHARING_SUBMENU 51035
 // Context menu item to show the clipboard history menu
 #define IDC_CONTENT_CLIPBOARD_HISTORY_MENU 51036
+#define IDC_CONTENT_PASTE_FROM_CLIPBOARD 51037
 
 // Context menu items in the status tray
 #define IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND 51100

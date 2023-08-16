@@ -7,6 +7,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_selections.h"
 #include "chrome/common/chrome_features.h"
@@ -265,6 +266,10 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
   };
   // clang-format on
 
+  if (base::FeatureList::IsEnabled(media_router::kMediaRouterOTRInstance)) {
+    guest_otr_active_services.insert("MediaRouter");
+  }
+
   Profile* guest_profile =
       CreateProfileAndWaitForAllTasks(ProfileManager::GetGuestProfilePath());
   ASSERT_TRUE(guest_profile->HasAnyOffTheRecordProfile());
@@ -286,7 +291,6 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "SessionStateChangedEventDispatcher",
 #else // !BUILDFLAG(IS_CHROMEOS_LACROS)
     "SystemIndicatorManager",
-    "WebAppAdjustments",
     "WebAppProvider",
 #endif
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
@@ -341,6 +345,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "BookmarksApiWatcher",
     "BrailleDisplayPrivateAPI",
     "BrowsingTopicsService",
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    "CastNotificationControllerLacros",
+#endif  // BUIDLFLAG(IS_CHROMEOS_LACROS)
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     "ChildAccountService",
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -403,6 +410,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     "LanguageSettingsPrivateDelegate",
     "LazyBackgroundTaskQueue",
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+    "ListFamilyMembersService",
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     "LoginUIServiceFactory",
     "MDnsAPI",
     "ManagedBookmarkService",

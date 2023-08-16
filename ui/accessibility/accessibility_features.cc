@@ -131,6 +131,12 @@ BASE_FEATURE(kSelectiveUIAEnablement,
 bool IsSelectiveUIAEnablementEnabled() {
   return base::FeatureList::IsEnabled(::features::kSelectiveUIAEnablement);
 }
+
+BASE_FEATURE(kUiaProvider, "UiaProvider", base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsUiaProviderEnabled() {
+  return base::FeatureList::IsEnabled(kUiaProvider);
+}
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -177,7 +183,7 @@ bool IsAccessibilitySelectToSpeakPageMigrationEnabled() {
 
 BASE_FEATURE(kAccessibilityChromeVoxPageMigration,
              "AccessibilityChromeVoxPageMigration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsAccessibilityChromeVoxPageMigrationEnabled() {
   return base::FeatureList::IsEnabled(
@@ -289,11 +295,6 @@ bool IsReadAnythingWithScreen2xEnabled() {
   return base::FeatureList::IsEnabled(::features::kReadAnythingWithScreen2x) &&
          !base::FeatureList::IsEnabled(
              ::features::kEmergencyDisableScreenAIMainContentExtraction);
-}
-
-bool IsScreenAIServiceNeeded() {
-  return IsPdfOcrEnabled() || IsLayoutExtractionEnabled() ||
-         IsReadAnythingWithScreen2xEnabled();
 }
 
 // This feature is only for debug purposes and for security/privacy reasons,

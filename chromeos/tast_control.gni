@@ -79,6 +79,8 @@ tast_disabled_tests_from_chrome_all = [
 
   # https://crbug.com/1282481
   "quicksettings.OpenSettings",
+  "quicksettings.OpenSettings.qs_revamp_disabled",
+  "quicksettings.OpenSettings.qs_revamp_enabled",
 
   # http://b/212644512
   "security.SELinuxFilesDataDir",
@@ -203,9 +205,6 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1341076
   "launcher.BubbleLaunchApp.disable_launcher_app_sort",
 
-  # https://crbug.com/1346149
-  "apps.Sharesheet",
-
   # b/241122961
   "policy.BlockThirdPartyCookies",
 
@@ -246,6 +245,9 @@ tast_disabled_tests_from_chrome_all = [
   "crostini.SecureCopyPaste.paste_wayland_bullseye_stable",
   "crostini.RestartIcon.buster_stable",
   "crostini.RestartIcon.bullseye_stable",
+
+  # https://crbug.com/1455410
+  "crostini.RestartApp.bullseye_clamshell_stable",
 
   # https://crbug.com/1368586
   "u2fd.WebauthnUsingPassword.tpm1",
@@ -328,6 +330,17 @@ tast_disabled_tests_from_chrome_all = [
 
   # b/281983222
   "inputs.InputMethodShelfInputs",
+
+  # b/287525851
+  "arc.AudioValidity.playback",
+  "arc.AudioValidity.record",
+  "arc.BuildProperties",
+
+  # https://crbug.com/1455848
+  "arc.CheckAndroidVersion",
+  "arc.ContainerMount",
+  "arc.Downloads",
+  "network.ConfigBaseline.login",
 
   # READ COMMENT AT TOP BEFORE ADDING NEW TESTS HERE.
 ]

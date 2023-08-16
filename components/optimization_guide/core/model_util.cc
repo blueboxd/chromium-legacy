@@ -96,11 +96,17 @@ std::string GetStringNameForOptimizationTarget(
       return "SegmentationAdaptiveToolbar";
     case proto::OPTIMIZATION_TARGET_SEGMENTATION_TABLET_PRODUCTIVITY_USER:
       return "SegmentationTabletProductivityUser";
+    case proto::OPTIMIZATION_TARGET_CLIENT_SIDE_PHISHING_IMAGE_EMBEDDER:
+      return "ClientSidePhishingImageEmbedder";
     case proto::
         OPTIMIZATION_TARGET_NEW_TAB_PAGE_HISTORY_CLUSTERS_MODULE_RANKING:
       return "NewTabPageHistoryClustersModuleRanking";
     case proto::OPTIMIZATION_TARGET_WEB_APP_INSTALLATION_PROMO:
       return "WebAppInstallationPromo";
+    case proto::OPTIMIZATION_TARGET_TEXT_EMBEDDER:
+      return "TextEmbedder";
+    case proto::OPTIMIZATION_TARGET_VISUAL_SEARCH_CLASSIFICATION:
+      return "VisualSearchClassification";
       // Whenever a new value is added, make sure to add it to the OptTarget
       // variant list in
       // //tools/metrics/histograms/metadata/optimization/histograms.xml.

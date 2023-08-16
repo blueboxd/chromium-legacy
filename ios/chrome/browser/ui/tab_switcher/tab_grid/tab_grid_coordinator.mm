@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/bring_android_tabs/bring_android_tabs_to_ios_service.h"
 #import "ios/chrome/browser/bring_android_tabs/bring_android_tabs_to_ios_service_factory.h"
 #import "ios/chrome/browser/bring_android_tabs/features.h"
+#import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/main/browser_util.h"
 #import "ios/chrome/browser/policy/policy_util.h"
@@ -31,6 +32,7 @@
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
@@ -49,6 +51,9 @@
 #import "ios/chrome/browser/shared/ui/util/named_guide.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/sync/session_sync_service_factory.h"
+#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/synced_sessions/distant_session.h"
 #import "ios/chrome/browser/synced_sessions/synced_sessions_util.h"
 #import "ios/chrome/browser/tabs/features.h"
@@ -86,7 +91,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_view_controller.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/tab_grid_transition_handler.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/legacy_tab_grid_transition_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_coordinator.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
@@ -169,7 +174,8 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 // controller will present this.
 @property(nonatomic, strong) BVCContainerViewController* bvcContainer;
 // Handler for the transitions between the TabGrid and the Browser.
-@property(nonatomic, strong) TabGridTransitionHandler* transitionHandler;
+@property(nonatomic, strong)
+    LegacyTabGridTransitionHandler* legacyTransitionHandler;
 // Mediator for regular Tabs.
 @property(nonatomic, strong) TabGridMediator* regularTabsMediator;
 // Mediator for incognito Tabs.
@@ -516,7 +522,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   bool thumbStripEnabled = self.isThumbStripEnabled;
   DCHECK(viewController || (thumbStripEnabled && self.bvcContainer));
 
-  if (shouldCloseTabGrid) {
+  if (shouldCloseTabGrid && !self.tabGridEnterTime.is_null()) {
     // Record when the tab switcher is dismissed.
     base::RecordAction(base::UserMetricsAction("MobileTabGridExited"));
 
@@ -661,12 +667,12 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
                                        animationEnabled:(BOOL)animationEnabled
                                              completion:
                                                  (ProceduralBlock)completion {
-  self.transitionHandler =
+  self.legacyTransitionHandler =
       [self createTransitionHanlderWithAnimationEnabled:animationEnabled];
-  [self.transitionHandler transitionFromBrowser:self.bvcContainer
-                                      toTabGrid:self.baseViewController
-                                     activePage:activePage
-                                 withCompletion:completion];
+  [self.legacyTransitionHandler transitionFromBrowser:self.bvcContainer
+                                            toTabGrid:self.baseViewController
+                                           activePage:activePage
+                                       withCompletion:completion];
 }
 
 // Performs the Tab Grid to Browser transition.
@@ -674,19 +680,19 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
                                        animationEnabled:(BOOL)animationEnabled
                                              completion:
                                                  (ProceduralBlock)completion {
-  self.transitionHandler =
+  self.legacyTransitionHandler =
       [self createTransitionHanlderWithAnimationEnabled:animationEnabled];
-  [self.transitionHandler transitionFromTabGrid:self.baseViewController
-                                      toBrowser:self.bvcContainer
-                                     activePage:activePage
-                                 withCompletion:completion];
+  [self.legacyTransitionHandler transitionFromTabGrid:self.baseViewController
+                                            toBrowser:self.bvcContainer
+                                           activePage:activePage
+                                       withCompletion:completion];
 }
 
 // Creates a transition handler with `animationEnabled` parameter.
-- (TabGridTransitionHandler*)createTransitionHanlderWithAnimationEnabled:
+- (LegacyTabGridTransitionHandler*)createTransitionHanlderWithAnimationEnabled:
     (BOOL)animationEnabled {
-  TabGridTransitionHandler* transitionHandler =
-      [[TabGridTransitionHandler alloc]
+  LegacyTabGridTransitionHandler* transitionHandler =
+      [[LegacyTabGridTransitionHandler alloc]
           initWithLayoutProvider:self.baseViewController];
   transitionHandler.animationDisabled = !animationEnabled;
 
@@ -893,8 +899,27 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   // TODO(crbug.com/845192) : Remove RecentTabsTableViewController dependency on
   // ChromeBrowserState so that we don't need to expose the view controller.
   baseViewController.remoteTabsViewController.browser = self.regularBrowser;
-  self.remoteTabsMediator = [[RecentTabsMediator alloc] init];
-  self.remoteTabsMediator.browserState = regularBrowserState;
+  sync_sessions::SessionSyncService* syncService =
+      SessionSyncServiceFactory::GetForBrowserState(regularBrowserState);
+  signin::IdentityManager* identityManager =
+      IdentityManagerFactory::GetForBrowserState(regularBrowserState);
+  sessions::TabRestoreService* restoreService =
+      IOSChromeTabRestoreServiceFactory::GetForBrowserState(
+          regularBrowserState);
+  FaviconLoader* faviconLoader =
+      IOSChromeFaviconLoaderFactory::GetForBrowserState(regularBrowserState);
+  SyncSetupService* service =
+      SyncSetupServiceFactory::GetForBrowserState(regularBrowserState);
+  BrowserList* browserList =
+      BrowserListFactory::GetForBrowserState(regularBrowserState);
+  self.remoteTabsMediator =
+      [[RecentTabsMediator alloc] initWithSessionSyncService:syncService
+                                             identityManager:identityManager
+                                              restoreService:restoreService
+                                               faviconLoader:faviconLoader
+                                            syncSetupService:service
+                                                 browserList:browserList];
+
   self.remoteTabsMediator.consumer = baseViewController.remoteTabsConsumer;
   baseViewController.remoteTabsViewController.imageDataSource =
       self.remoteTabsMediator;
@@ -916,7 +941,7 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
   // hierarchy. As a workaround, the view controller hierarchy is loaded here
   // before `RecentTabsMediator` updates are started.
   self.window.rootViewController = self.baseViewController;
-  if (self.remoteTabsMediator.browserState) {
+  if (regularBrowserState) {
     [self.remoteTabsMediator initObservers];
     [self.remoteTabsMediator refreshSessionsView];
   }
@@ -1008,6 +1033,13 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 
   [self.historyCoordinator stop];
   self.historyCoordinator = nil;
+
+  [_bookmarksCoordinator stop];
+  _bookmarksCoordinator = nil;
+}
+
+- (void)dealloc {
+  CHECK(!_recentTabsContextMenuHelper);
 }
 
 #pragma mark - TabPresentationDelegate

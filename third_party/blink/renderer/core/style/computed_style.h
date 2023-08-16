@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/style/font_size_style.h"
 #include "third_party/blink/renderer/core/style/style_cached_data.h"
 #include "third_party/blink/renderer/core/style/style_highlight_data.h"
+#include "third_party/blink/renderer/core/style/style_scrollbar_color.h"
 #include "third_party/blink/renderer/core/style/transform_origin.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/geometry/length_box.h"
@@ -735,7 +736,8 @@ class ComputedStyle : public ComputedStyleBase,
   // ignore non-standard ::-webkit-scrollbar when standard properties are in use
   bool HasCustomScrollbarStyle() const {
     return HasPseudoElementStyle(kPseudoIdScrollbar) &&
-           ScrollbarWidth() == EScrollbarWidth::kAuto;
+           ScrollbarWidth() == EScrollbarWidth::kAuto &&
+           ScrollbarColor() == absl::nullopt;
   }
 
   // shape-outside (aka -webkit-shape-outside)
@@ -876,6 +878,11 @@ class ComputedStyle : public ComputedStyleBase,
   // font-style
   FontSelectionValue GetFontStyle() const {
     return GetFontDescription().Style();
+  }
+
+  // font-palette
+  blink::FontPalette* FontPalette() const {
+    return GetFontDescription().GetFontPalette();
   }
 
   // Child is aligned to the parent by matching the parent’s dominant baseline
@@ -1189,6 +1196,12 @@ class ComputedStyle : public ComputedStyleBase,
   }
   const Length& UsedBottom() const {
     return AdjustLengthForAnchorQueries(Bottom(), Length::Auto());
+  }
+  bool HasAutoAnchorPositioning() const {
+    return UsedLeft().HasAutoAnchorPositioning() ||
+           UsedRight().HasAutoAnchorPositioning() ||
+           UsedTop().HasAutoAnchorPositioning() ||
+           UsedBottom().HasAutoAnchorPositioning();
   }
 
   // Width/height utility functions.
@@ -1761,8 +1774,14 @@ class ComputedStyle : public ComputedStyleBase,
     return IsInlineOrBlockSizeContainer() && StyleType() == kPseudoIdNone;
   }
 
+  bool IsContainerForStickyContainerQueries() const {
+    return IsStickyContainer() && StyleType() == kPseudoIdNone;
+  }
+
   bool DependsOnContainerQueries() const {
-    return DependsOnSizeContainerQueries() || DependsOnStyleContainerQueries();
+    return DependsOnSizeContainerQueries() ||
+           DependsOnStyleContainerQueries() ||
+           DependsOnStickyContainerQueries();
   }
 
   static bool IsContentVisibilityVisible(
@@ -2480,9 +2499,10 @@ class ComputedStyle : public ComputedStyleBase,
     return pseudo == kPseudoIdBefore || pseudo == kPseudoIdAfter;
   }
 
-  // Returns true if the element is a top layer candidate whose overlay property
-  // computes to 'auto'.
-  bool IsInTopLayer(const Element& element) const;
+  // Returns true if the element is rendered in the top layer. That is the case
+  // when the overlay property computes to 'auto', or when the element is a
+  // ::backdrop pseudo.
+  bool IsRenderedInTopLayer(const Element& element) const;
 
   // Load the images of CSS properties that were deferred by LazyLoad.
   void LoadDeferredImages(Document&) const;
@@ -2544,6 +2564,9 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool IsSizeContainer() const {
     return (ContainerType() & kContainerTypeSize) == kContainerTypeSize;
+  }
+  bool IsStickyContainer() const {
+    return ContainerType() & kContainerTypeSticky;
   }
 
   static bool IsDisplayBlockContainer(EDisplay display) {
@@ -2647,14 +2670,13 @@ class ComputedStyle : public ComputedStyleBase,
                                 gfx::Transform&) const;
   PointAndTangent CalculatePointAndTangentOnBasicShape(
       const BasicShape& shape,
-      const LayoutBox* box,
-      const gfx::PointF starting_point,
-      const gfx::SizeF reference_box_size) const;
+      const gfx::PointF& starting_point,
+      const gfx::SizeF& reference_box_size) const;
   PointAndTangent CalculatePointAndTangentOnRay(
       const StyleRay& ray,
       const LayoutBox* box,
-      const gfx::PointF starting_point,
-      const gfx::SizeF reference_box_size) const;
+      const gfx::PointF& starting_point,
+      const gfx::SizeF& reference_box_size) const;
   PointAndTangent CalculatePointAndTangentOnPath(const Path& path) const;
 
   bool ScrollAnchorDisablingPropertyChanged(const ComputedStyle& other,

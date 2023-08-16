@@ -108,6 +108,8 @@ void CrasAudioHandler::AudioObserver::OnOutputChannelRemixingChanged(
 
 void CrasAudioHandler::AudioObserver::OnNoiseCancellationStateChanged() {}
 
+void CrasAudioHandler::AudioObserver::OnForceRespectUiGainsStateChanged() {}
+
 void CrasAudioHandler::AudioObserver::OnHotwordTriggered(
     uint64_t /* tv_sec */,
     uint64_t /* tv_nsec */) {}
@@ -596,6 +598,23 @@ void CrasAudioHandler::SetNoiseCancellationSupportedForTesting(bool supported) {
   noise_cancellation_supported_ = supported;
 }
 
+bool CrasAudioHandler::GetForceRespectUiGainsState() const {
+  return audio_pref_handler_->GetForceRespectUiGainsState();
+}
+
+void CrasAudioHandler::RefreshForceRespectUiGainsState() {
+  SetForceRespectUiGainsState(GetForceRespectUiGainsState());
+}
+
+void CrasAudioHandler::SetForceRespectUiGainsState(bool state) {
+  CrasAudioClient::Get()->SetForceRespectUiGains(state);
+  audio_pref_handler_->SetForceRespectUiGainsState(state);
+
+  for (auto& observer : observers_) {
+    observer.OnForceRespectUiGainsStateChanged();
+  }
+}
+
 void CrasAudioHandler::SetKeyboardMicActive(bool active) {
   const AudioDevice* keyboard_mic = GetKeyboardMic();
   if (!keyboard_mic)
@@ -607,6 +626,10 @@ void CrasAudioHandler::SetKeyboardMicActive(bool active) {
     AddActiveNode(keyboard_mic->id, true);
   else
     RemoveActiveNodeInternal(keyboard_mic->id, true);
+}
+
+void CrasAudioHandler::SetSpeakOnMuteDetection(bool som_on) {
+  CrasAudioClient::Get()->SetSpeakOnMuteDetection(som_on);
 }
 
 void CrasAudioHandler::AddActiveNode(uint64_t node_id, bool notify) {
@@ -1419,10 +1442,6 @@ void CrasAudioHandler::InitializeAudioAfterCrasServiceAvailable(
   input_muted_by_microphone_mute_switch_ = IsMicrophoneMuteSwitchOn();
   if (input_muted_by_microphone_mute_switch_)
     SetInputMute(true, InputMuteChangeMethod::kPhysicalShutter);
-
-  // Sets speak-on-mute detection enabled based on feature flag.
-  CrasAudioClient::Get()->SetSpeakOnMuteDetection(
-      features::IsSpeakOnMuteEnabled());
 }
 
 void CrasAudioHandler::ApplyAudioPolicy() {

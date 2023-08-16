@@ -6,7 +6,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 
@@ -27,7 +27,8 @@ desks_storage::AdminTemplateService* AdminTemplateServiceFactory::GetForProfile(
 
 // static
 AdminTemplateServiceFactory* AdminTemplateServiceFactory::GetInstance() {
-  return base::Singleton<AdminTemplateServiceFactory>::get();
+  static base::NoDestructor<AdminTemplateServiceFactory> instance;
+  return instance.get();
 }
 
 AdminTemplateServiceFactory::AdminTemplateServiceFactory()
@@ -40,11 +41,10 @@ AdminTemplateServiceFactory::AdminTemplateServiceFactory()
 KeyedService* AdminTemplateServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  const AccountId account_id =
-      multi_user_util::GetAccountIdFromProfile(profile);
 
-  return new desks_storage::AdminTemplateService(profile->GetPath(),
-                                                 account_id);
+  return new desks_storage::AdminTemplateService(
+      profile->GetPath(), multi_user_util::GetAccountIdFromProfile(profile),
+      profile->GetPrefs());
 }
 
 }  // namespace ash

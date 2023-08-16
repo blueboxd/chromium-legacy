@@ -115,6 +115,7 @@
 <translation id="4746179598275229723">ایکسٹینشن کا پن ہٹایا گیا</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 مہینہ باقی}other{# مہینے باقی}}</translation>
 <translation id="4888938634149558681">کال کریں</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />، <ph name="TYPE_2" />، <ph name="TYPE_3" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 سیکنڈ}other{# سیکنڈ}}</translation>
 <translation id="4971687151119236543">میڈیا پچھلا ٹریک</translation>
 <translation id="5046499563572181734">یہاں تھپتھپائیں</translation>
@@ -147,6 +148,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY" /> بائٹس/سیکنڈ</translation>
 <translation id="6237461503717005873"><ph name="ROW_NAME" /> کو منتخب کیا گیا۔</translation>
 <translation id="6264365405983206840">&amp;سبھی کو منتخب کریں</translation>
+<translation id="6346952829206698721">کلپ بورڈ سے پیسٹ کریں</translation>
 <translation id="6364916375976753737">بائیں سکرول کریں</translation>
 <translation id="6394627529324717982">کوما</translation>
 <translation id="6397363302884558537">بولنا بند کریں</translation>

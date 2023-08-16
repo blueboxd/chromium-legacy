@@ -19,6 +19,7 @@
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -32,6 +33,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -342,6 +344,7 @@ std::u16string DownloadUIModel::GetWarningText(const std::u16string& filename,
                                         offset);
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
+    case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
@@ -632,6 +635,7 @@ bool DownloadUIModel::IsCommandEnabled(
     case DownloadCommands::BYPASS_DEEP_SCANNING:
     case DownloadCommands::REVIEW:
     case DownloadCommands::RETRY:
+    case DownloadCommands::CANCEL_DEEP_SCAN:
       return true;
   }
   NOTREACHED();
@@ -663,6 +667,7 @@ bool DownloadUIModel::IsCommandChecked(
     case DownloadCommands::BYPASS_DEEP_SCANNING:
     case DownloadCommands::REVIEW:
     case DownloadCommands::RETRY:
+    case DownloadCommands::CANCEL_DEEP_SCAN:
       return false;
   }
   return false;
@@ -716,6 +721,7 @@ void DownloadUIModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::BYPASS_DEEP_SCANNING:
     case DownloadCommands::REVIEW:
     case DownloadCommands::RETRY:
+    case DownloadCommands::CANCEL_DEEP_SCAN:
       break;
   }
 }
@@ -741,6 +747,14 @@ DownloadUIModel::BubbleUIInfo& DownloadUIModel::BubbleUIInfo::AddSubpageSummary(
     const std::u16string& summary) {
   CHECK(!summary.empty());  // An empty summary is interpreted as no subpage
   warning_summary = summary;
+  return *this;
+}
+DownloadUIModel::BubbleUIInfo&
+DownloadUIModel::BubbleUIInfo::AddSubpageSecondaryIconAndText(
+    const gfx::VectorIcon& icon,
+    const std::u16string& secondary_text) {
+  warning_secondary_icon = &icon;
+  warning_secondary_text = secondary_text;
   return *this;
 }
 DownloadUIModel::BubbleUIInfo& DownloadUIModel::BubbleUIInfo::AddProgressBar() {
@@ -827,24 +841,36 @@ DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfoForInterrupted(
       return DownloadUIModel::BubbleUIInfo()
           .AddSubpageSummary(l10n_util::GetStringUTF16(
               IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ENCRYPTED))
-          .AddIconAndColor(views::kInfoIcon, ui::kColorAlertHighSeverity);
+          .AddIconAndColor(features::IsChromeRefresh2023()
+                               ? views::kInfoChromeRefreshIcon
+                               : views::kInfoIcon,
+                           kColorDownloadItemIconDangerous);
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE:
       return DownloadUIModel::BubbleUIInfo()
           .AddSubpageSummary(l10n_util::GetStringUTF16(
               IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_TOO_BIG))
-          .AddIconAndColor(views::kInfoIcon, ui::kColorAlertHighSeverity);
+          .AddIconAndColor(features::IsChromeRefresh2023()
+                               ? views::kInfoChromeRefreshIcon
+                               : views::kInfoIcon,
+                           kColorDownloadItemIconDangerous);
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK: {
       if (enterprise_connectors::ShouldPromptReviewForDownload(
               profile(), GetDangerType())) {
         return DownloadUIModel::BubbleUIInfo()
-            .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
-                             ui::kColorAlertHighSeverity)
+            .AddIconAndColor(
+                features::IsChromeRefresh2023()
+                    ? vector_icons::kNotSecureWarningChromeRefreshIcon
+                    : vector_icons::kNotSecureWarningIcon,
+                kColorDownloadItemIconDangerous)
             .AddPrimaryButton(DownloadCommands::Command::REVIEW);
       } else {
         return DownloadUIModel::BubbleUIInfo()
             .AddSubpageSummary(l10n_util::GetStringUTF16(
                 IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SENSITIVE_CONTENT_BLOCK))
-            .AddIconAndColor(views::kInfoIcon, ui::kColorAlertHighSeverity);
+            .AddIconAndColor(features::IsChromeRefresh2023()
+                                 ? views::kInfoChromeRefreshIcon
+                                 : views::kInfoIcon,
+                             kColorDownloadItemIconDangerous);
       }
     }
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
@@ -858,6 +884,7 @@ DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfoForInterrupted(
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
+    case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
@@ -873,25 +900,34 @@ DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfoForInterrupted(
       return DownloadUIModel::BubbleUIInfo()
           .AddSubpageSummary(l10n_util::GetStringUTF16(
               IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_BLOCKED_ORGANIZATION))
-          .AddIconAndColor(views::kInfoIcon, ui::kColorAlertHighSeverity);
+          .AddIconAndColor(features::IsChromeRefresh2023()
+                               ? views::kInfoChromeRefreshIcon
+                               : views::kInfoIcon,
+                           kColorDownloadItemIconDangerous);
     case FailState::FILE_NAME_TOO_LONG:
       return DownloadUIModel::BubbleUIInfo()
           .AddSubpageSummary(l10n_util::GetStringUTF16(
               IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_PATH_TOO_LONG))
-          .AddIconAndColor(vector_icons::kFileDownloadOffIcon,
-                           ui::kColorAlertHighSeverity);
+          .AddIconAndColor(features::IsChromeRefresh2023()
+                               ? vector_icons::kFileDownloadOffChromeRefreshIcon
+                               : vector_icons::kFileDownloadOffIcon,
+                           kColorDownloadItemIconDangerous);
     case FailState::FILE_NO_SPACE:
       return DownloadUIModel::BubbleUIInfo()
           .AddSubpageSummary(l10n_util::GetStringUTF16(
               IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_DISK_FULL))
-          .AddIconAndColor(vector_icons::kFileDownloadOffIcon,
-                           ui::kColorAlertHighSeverity);
+          .AddIconAndColor(features::IsChromeRefresh2023()
+                               ? vector_icons::kFileDownloadOffChromeRefreshIcon
+                               : vector_icons::kFileDownloadOffIcon,
+                           kColorDownloadItemIconDangerous);
     case FailState::SERVER_UNAUTHORIZED:
       return DownloadUIModel::BubbleUIInfo()
           .AddSubpageSummary(l10n_util::GetStringUTF16(
               IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_FILE_UNAVAILABLE))
-          .AddIconAndColor(vector_icons::kFileDownloadOffIcon,
-                           ui::kColorAlertHighSeverity);
+          .AddIconAndColor(features::IsChromeRefresh2023()
+                               ? vector_icons::kFileDownloadOffChromeRefreshIcon
+                               : vector_icons::kFileDownloadOffIcon,
+                           kColorDownloadItemIconDangerous);
     // No Retry in these cases.
     case FailState::FILE_TOO_LARGE:
     case FailState::FILE_VIRUS_INFECTED:
@@ -901,7 +937,10 @@ DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfoForInterrupted(
     case FailState::FILE_SAME_AS_SOURCE:
     case FailState::SERVER_BAD_CONTENT:
       return DownloadUIModel::BubbleUIInfo().AddIconAndColor(
-          vector_icons::kFileDownloadOffIcon, ui::kColorAlertHighSeverity);
+          features::IsChromeRefresh2023()
+              ? vector_icons::kFileDownloadOffChromeRefreshIcon
+              : vector_icons::kFileDownloadOffIcon,
+          kColorDownloadItemIconDangerous);
     // Try resume if possible or retry if not in these cases, and in the default
     // case.
     case FailState::NETWORK_INVALID_REQUEST:
@@ -936,7 +975,10 @@ DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfoForInterrupted(
 
   DownloadUIModel::BubbleUIInfo bubble_ui_info =
       DownloadUIModel::BubbleUIInfo().AddIconAndColor(
-          vector_icons::kFileDownloadOffIcon, ui::kColorAlertHighSeverity);
+          features::IsChromeRefresh2023()
+              ? vector_icons::kFileDownloadOffChromeRefreshIcon
+              : vector_icons::kFileDownloadOffIcon,
+          kColorDownloadItemIconDangerous);
   if (IsBubbleV2Enabled()) {
     bubble_ui_info.AddPrimaryButton(CanResume()
                                         ? DownloadCommands::Command::RESUME
@@ -955,16 +997,18 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
           .AddPrimaryButton(DownloadCommands::Command::KEEP)
           .AddSubpageSummary(l10n_util::GetStringUTF16(
               IDS_DOWNLOAD_BUBBLE_WARNING_SUBPAGE_SUMMARY_INSECURE))
-          .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
-                           ui::kColorAlertMediumSeverityIcon)
-          .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
+          .AddIconAndColor(
+              features::IsChromeRefresh2023()
+                  ? vector_icons::kNotSecureWarningChromeRefreshIcon
+                  : vector_icons::kNotSecureWarningIcon,
+              kColorDownloadItemIconWarning)
+          .AddSecondaryTextColor(kColorDownloadItemTextWarning)
           .AddPrimarySubpageButton(
               l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
               DownloadCommands::Command::DISCARD)
           .AddSecondarySubpageButton(
               l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
-              DownloadCommands::Command::KEEP,
-              ui::kColorAlertMediumSeverityText);
+              DownloadCommands::Command::KEEP, kColorDownloadItemTextWarning);
     case download::DownloadItem::InsecureDownloadStatus::UNKNOWN:
     case download::DownloadItem::InsecureDownloadStatus::SAFE:
     case download::DownloadItem::InsecureDownloadStatus::VALIDATED:
@@ -977,20 +1021,27 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
     switch (GetDangerType()) {
       case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
         return DownloadUIModel::BubbleUIInfo()
-            .AddIconAndColor(vector_icons::kDangerousIcon,
-                             ui::kColorAlertHighSeverity)
+            .AddIconAndColor(features::IsChromeRefresh2023()
+                                 ? vector_icons::kDangerousChromeRefreshIcon
+                                 : vector_icons::kDangerousIcon,
+                             kColorDownloadItemIconDangerous)
             .AddPrimaryButton(DownloadCommands::Command::REVIEW);
       case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
         return DownloadUIModel::BubbleUIInfo()
-            .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
-                             ui::kColorAlertMediumSeverityIcon)
-            .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
+            .AddIconAndColor(
+                features::IsChromeRefresh2023()
+                    ? vector_icons::kNotSecureWarningChromeRefreshIcon
+                    : vector_icons::kNotSecureWarningIcon,
+                kColorDownloadItemIconWarning)
+            .AddSecondaryTextColor(kColorDownloadItemTextWarning)
             .AddPrimaryButton(DownloadCommands::Command::REVIEW);
       case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING:
         return DownloadUIModel::BubbleUIInfo()
-            .AddIconAndColor(views::kInfoIcon,
-                             ui::kColorAlertMediumSeverityIcon)
-            .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
+            .AddIconAndColor(features::IsChromeRefresh2023()
+                                 ? views::kInfoChromeRefreshIcon
+                                 : views::kInfoIcon,
+                             kColorDownloadItemIconWarning)
+            .AddSecondaryTextColor(kColorDownloadItemTextWarning)
             .AddPrimaryButton(DownloadCommands::Command::REVIEW);
       default:
         break;
@@ -1009,22 +1060,27 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
             .AddSubpageSummary(l10n_util::GetStringFUTF16(
                 IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_UNKNOWN_SOURCE,
                 l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)))
-            .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
-                             ui::kColorAlertMediumSeverityIcon)
-            .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
+            .AddIconAndColor(
+                features::IsChromeRefresh2023()
+                    ? vector_icons::kNotSecureWarningChromeRefreshIcon
+                    : vector_icons::kNotSecureWarningIcon,
+                kColorDownloadItemIconWarning)
+            .AddSecondaryTextColor(kColorDownloadItemTextWarning)
             .AddPrimarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
                 DownloadCommands::Command::DISCARD)
             .AddSecondarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
-                DownloadCommands::Command::KEEP,
-                ui::kColorAlertMediumSeverityText);
+                DownloadCommands::Command::KEEP, kColorDownloadItemTextWarning);
       } else {
         return DownloadUIModel::BubbleUIInfo()
             .AddSubpageSummary(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DANGEROUS_FILE))
-            .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
-                             ui::kColorSecondaryForeground)
+            .AddIconAndColor(
+                features::IsChromeRefresh2023()
+                    ? vector_icons::kNotSecureWarningChromeRefreshIcon
+                    : vector_icons::kNotSecureWarningIcon,
+                ui::kColorSecondaryForeground)
             .AddPrimaryButton(DownloadCommands::Command::KEEP)
             .AddPrimarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
@@ -1036,11 +1092,39 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_ACCOUNT_COMPROMISE:
+      ui_info =
+          DownloadUIModel::BubbleUIInfo()
+              .AddSubpageSummary(l10n_util::GetStringUTF16(
+                  IDS_DOWNLOAD_BUBBLE_MALICIOUS_URL_BLOCKED))
+              .AddIconAndColor(features::IsChromeRefresh2023()
+                                   ? vector_icons::kDangerousChromeRefreshIcon
+                                   : vector_icons::kDangerousIcon,
+                               kColorDownloadItemIconDangerous)
+              .AddPrimaryButton(DownloadCommands::Command::DISCARD)
+              .AddPrimarySubpageButton(
+                  l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
+                  DownloadCommands::Command::DISCARD);
+      if (!is_download_bubble_v2) {
+        ui_info
+            .AddCheckbox(
+                l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CHECKBOX_BYPASS))
+            .AddSecondarySubpageButton(
+                l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
+                DownloadCommands::Command::KEEP,
+                kColorDownloadItemTextDangerous);
+      }
+      return ui_info;
+
+    case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       ui_info = DownloadUIModel::BubbleUIInfo()
                     .AddSubpageSummary(l10n_util::GetStringUTF16(
                         IDS_DOWNLOAD_BUBBLE_MALICIOUS_URL_BLOCKED))
-                    .AddIconAndColor(vector_icons::kDangerousIcon,
-                                     ui::kColorAlertHighSeverity)
+                    .AddIconAndColor(
+                        features::IsChromeRefresh2023()
+                            ? vector_icons::kNotSecureWarningChromeRefreshIcon
+                            : vector_icons::kNotSecureWarningIcon,
+                        kColorDownloadItemIconWarning)
+                    .AddSecondaryTextColor(kColorDownloadItemTextWarning)
                     .AddPrimaryButton(DownloadCommands::Command::DISCARD)
                     .AddPrimarySubpageButton(
                         l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
@@ -1051,17 +1135,19 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CHECKBOX_BYPASS))
             .AddSecondarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
-                DownloadCommands::Command::KEEP, ui::kColorAlertHighSeverity);
+                DownloadCommands::Command::KEEP, kColorDownloadItemTextWarning);
       }
       return ui_info;
 
-    case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
       ui_info = DownloadUIModel::BubbleUIInfo()
                     .AddSubpageSummary(l10n_util::GetStringUTF16(
-                        IDS_DOWNLOAD_BUBBLE_MALICIOUS_URL_BLOCKED))
-                    .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
-                                     ui::kColorAlertMediumSeverityIcon)
-                    .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
+                        IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_MALWARE))
+                    .AddIconAndColor(
+                        features::IsChromeRefresh2023()
+                            ? vector_icons::kNotSecureWarningChromeRefreshIcon
+                            : vector_icons::kNotSecureWarningIcon,
+                        kColorDownloadItemIconDangerous)
                     .AddPrimaryButton(DownloadCommands::Command::DISCARD)
                     .AddPrimarySubpageButton(
                         l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
@@ -1073,27 +1159,7 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
             .AddSecondarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
                 DownloadCommands::Command::KEEP,
-                ui::kColorAlertMediumSeverityText);
-      }
-      return ui_info;
-
-    case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
-      ui_info = DownloadUIModel::BubbleUIInfo()
-                    .AddSubpageSummary(l10n_util::GetStringUTF16(
-                        IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_MALWARE))
-                    .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
-                                     ui::kColorAlertHighSeverity)
-                    .AddPrimaryButton(DownloadCommands::Command::DISCARD)
-                    .AddPrimarySubpageButton(
-                        l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-                        DownloadCommands::Command::DISCARD);
-      if (!is_download_bubble_v2) {
-        ui_info
-            .AddCheckbox(
-                l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CHECKBOX_BYPASS))
-            .AddSecondarySubpageButton(
-                l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
-                DownloadCommands::Command::KEEP, ui::kColorAlertHighSeverity);
+                kColorDownloadItemTextDangerous);
       }
       return ui_info;
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
@@ -1108,55 +1174,64 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
         return DownloadUIModel::BubbleUIInfo()
             .AddSubpageSummary(l10n_util::GetStringUTF16(
                 IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ADVANCED_PROTECTION))
-            .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
-                             ui::kColorAlertMediumSeverityIcon)
-            .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
+            .AddIconAndColor(
+                features::IsChromeRefresh2023()
+                    ? vector_icons::kNotSecureWarningChromeRefreshIcon
+                    : vector_icons::kNotSecureWarningIcon,
+                kColorDownloadItemIconWarning)
+            .AddSecondaryTextColor(kColorDownloadItemTextWarning)
             .AddPrimarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
                 DownloadCommands::Command::DISCARD)
             .AddSecondarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
-                DownloadCommands::Command::KEEP,
-                ui::kColorAlertMediumSeverityText);
+                DownloadCommands::Command::KEEP, kColorDownloadItemTextWarning);
       } else {
         return DownloadUIModel::BubbleUIInfo()
             .AddSubpageSummary(l10n_util::GetStringUTF16(
                 IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_UNCOMMON_FILE))
-            .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
-                             ui::kColorAlertMediumSeverityIcon)
-            .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
+            .AddIconAndColor(
+                features::IsChromeRefresh2023()
+                    ? vector_icons::kNotSecureWarningChromeRefreshIcon
+                    : vector_icons::kNotSecureWarningIcon,
+                kColorDownloadItemIconWarning)
+            .AddSecondaryTextColor(kColorDownloadItemTextWarning)
             .AddPrimaryButton(DownloadCommands::Command::DISCARD)
             .AddPrimarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
                 DownloadCommands::Command::DISCARD)
             .AddSecondarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
-                DownloadCommands::Command::KEEP,
-                ui::kColorAlertMediumSeverityText);
+                DownloadCommands::Command::KEEP, kColorDownloadItemTextWarning);
       }
     }
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING:
       return DownloadUIModel::BubbleUIInfo()
           .AddSubpageSummary(l10n_util::GetStringUTF16(
               IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SENSITIVE_CONTENT_WARNING))
-          .AddIconAndColor(views::kInfoIcon, ui::kColorAlertMediumSeverityIcon)
-          .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
+          .AddIconAndColor(features::IsChromeRefresh2023()
+                               ? views::kInfoChromeRefreshIcon
+                               : views::kInfoIcon,
+                           kColorDownloadItemIconWarning)
+          .AddSecondaryTextColor(kColorDownloadItemTextWarning)
           .AddPrimaryButton(DownloadCommands::Command::DISCARD)
           .AddPrimarySubpageButton(
               l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
               DownloadCommands::Command::DISCARD)
           .AddSecondarySubpageButton(
               l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
-              DownloadCommands::Command::KEEP,
-              ui::kColorAlertMediumSeverityText);
+              DownloadCommands::Command::KEEP, kColorDownloadItemTextWarning);
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
       ui_info =
           DownloadUIModel::BubbleUIInfo()
               .AddSubpageSummary(l10n_util::GetStringUTF16(
                   IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_DEEP_SCANNING_PROMPT))
-              .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
-                               ui::kColorAlertMediumSeverityIcon)
-              .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText);
+              .AddIconAndColor(
+                  features::IsChromeRefresh2023()
+                      ? vector_icons::kNotSecureWarningChromeRefreshIcon
+                      : vector_icons::kNotSecureWarningIcon,
+                  kColorDownloadItemIconWarning)
+              .AddSecondaryTextColor(kColorDownloadItemTextWarning);
       if (base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
         ui_info
             .AddPrimarySubpageButton(
@@ -1174,24 +1249,54 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
             .AddSecondarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_OPEN),
                 DownloadCommands::Command::BYPASS_DEEP_SCANNING,
-                ui::kColorAlertMediumSeverityText);
+                kColorDownloadItemTextWarning);
       }
 
       return ui_info;
-    case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING: {
-      BubbleUIInfo bubble_ui_info = DownloadUIModel::BubbleUIInfo()
-                                        .AddProgressBar()
-                                        .SetProgressBarLooping();
-      if (!download::IsDownloadConnectorEnabled(profile())) {
-        bubble_ui_info.AddPrimaryButton(
-            DownloadCommands::Command::BYPASS_DEEP_SCANNING);
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
+      if (base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
+        ui_info =
+            DownloadUIModel::BubbleUIInfo()
+                .AddProgressBar()
+                .SetProgressBarLooping()
+                .AddSubpageSummary(l10n_util::GetStringUTF16(
+                    IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING))
+                .AddSubpageSecondaryIconAndText(
+                    vector_icons::kDocumentScannerIcon,
+                    l10n_util::GetStringUTF16(
+                        IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_SECONDARY))
+                .AddIconAndColor(
+                    features::IsChromeRefresh2023()
+                        ? vector_icons::kNotSecureWarningChromeRefreshIcon
+                        : vector_icons::kNotSecureWarningIcon,
+                    kColorDownloadItemIconWarning)
+                .AddPrimarySubpageButton(
+                    l10n_util::GetStringUTF16(
+                        IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_DISCARD),
+                    DownloadCommands::Command::DISCARD);
+        ui_info.subpage_buttons[0].is_prominent = false;
+        if (!download::IsDownloadConnectorEnabled(profile())) {
+          ui_info.AddSecondarySubpageButton(
+              l10n_util::GetStringUTF16(
+                  IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_CANCEL),
+              DownloadCommands::Command::CANCEL_DEEP_SCAN,
+              ui::kColorButtonForeground);
+        }
+      } else {
+        ui_info = DownloadUIModel::BubbleUIInfo()
+                      .AddProgressBar()
+                      .SetProgressBarLooping();
+        if (!download::IsDownloadConnectorEnabled(profile())) {
+          ui_info.AddPrimaryButton(
+              DownloadCommands::Command::BYPASS_DEEP_SCANNING);
+        }
       }
-      return bubble_ui_info;
-    }
+      return ui_info;
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE:
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK:
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
+    case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
@@ -1213,11 +1318,15 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
         bubble_ui_info.AddQuickAction(
             DownloadCommands::Command::RESUME,
             l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_RESUME_QUICK_ACTION),
-            &vector_icons::kPlayArrowIcon);
+            features::IsChromeRefresh2023()
+                ? &vector_icons::kPlayArrowChromeRefreshIcon
+                : &vector_icons::kPlayArrowIcon);
         bubble_ui_info.AddQuickAction(
             DownloadCommands::Command::CANCEL,
             l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CANCEL_QUICK_ACTION),
-            &vector_icons::kCancelIcon);
+            features::IsChromeRefresh2023()
+                ? &vector_icons::kCancelChromeRefreshIcon
+                : &vector_icons::kCancelIcon);
       } else {
         bubble_ui_info.AddPrimaryButton(DownloadCommands::Command::RESUME);
       }
@@ -1226,11 +1335,15 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
         bubble_ui_info.AddQuickAction(
             DownloadCommands::Command::PAUSE,
             l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_PAUSE_QUICK_ACTION),
-            &vector_icons::kPauseIcon);
+            features::IsChromeRefresh2023()
+                ? &vector_icons::kPauseChromeRefreshIcon
+                : &vector_icons::kPauseIcon);
         bubble_ui_info.AddQuickAction(
             DownloadCommands::Command::CANCEL,
             l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CANCEL_QUICK_ACTION),
-            &vector_icons::kCancelIcon);
+            features::IsChromeRefresh2023()
+                ? &vector_icons::kCancelChromeRefreshIcon
+                : &vector_icons::kCancelIcon);
       } else {
         bubble_ui_info.AddPrimaryButton(DownloadCommands::Command::CANCEL);
       }
@@ -1241,11 +1354,15 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
           DownloadCommands::Command::SHOW_IN_FOLDER,
           l10n_util::GetStringUTF16(
               IDS_DOWNLOAD_BUBBLE_SHOW_IN_FOLDER_QUICK_ACTION),
-          &vector_icons::kFolderIcon);
+          features::IsChromeRefresh2023()
+              ? &vector_icons::kFolderChromeRefreshIcon
+              : &vector_icons::kFolderIcon);
       bubble_ui_info.AddQuickAction(
           DownloadCommands::Command::OPEN_WHEN_COMPLETE,
           l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_OPEN_QUICK_ACTION),
-          &kOpenInNewIcon);
+          features::IsChromeRefresh2023()
+              ? &vector_icons::kLaunchChromeRefreshIcon
+              : &kOpenInNewIcon);
     }
   }
   return bubble_ui_info;
@@ -1273,7 +1390,10 @@ DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfo(
     case DownloadItem::CANCELLED:
     case DownloadItem::MAX_DOWNLOAD_STATE:
       return DownloadUIModel::BubbleUIInfo().AddIconAndColor(
-          vector_icons::kFileDownloadOffIcon, ui::kColorSecondaryForeground);
+          features::IsChromeRefresh2023()
+              ? vector_icons::kFileDownloadOffChromeRefreshIcon
+              : vector_icons::kFileDownloadOffIcon,
+          ui::kColorSecondaryForeground);
   }
 }
 
@@ -1492,6 +1612,7 @@ DownloadUIModel::BubbleStatusTextBuilder::GetBubbleWarningStatusText() const {
                        IDS_DOWNLOAD_BUBBLE_STATUS_ASYNC_SCANNING);
 #endif
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
+    case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:

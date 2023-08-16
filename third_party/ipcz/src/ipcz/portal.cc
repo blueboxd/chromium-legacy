@@ -78,8 +78,7 @@ IpczResult Portal::Merge(Portal& other) {
 }
 
 IpczResult Portal::Put(absl::Span<const uint8_t> data,
-                       absl::Span<const IpczHandle> handles,
-                       const IpczPutLimits* limits) {
+                       absl::Span<const IpczHandle> handles) {
   std::vector<Ref<APIObject>> objects;
   if (!ValidateAndAcquireObjectsForTransitFrom(*this, handles, objects)) {
     return IPCZ_RESULT_INVALID_ARGUMENT;
@@ -87,10 +86,6 @@ IpczResult Portal::Put(absl::Span<const uint8_t> data,
 
   if (router_->IsPeerClosed()) {
     return IPCZ_RESULT_NOT_FOUND;
-  }
-
-  if (limits && router_->GetOutboundCapacityInBytes(*limits) < data.size()) {
-    return IPCZ_RESULT_RESOURCE_EXHAUSTED;
   }
 
   Parcel parcel;
@@ -118,27 +113,15 @@ IpczResult Portal::Put(absl::Span<const uint8_t> data,
 }
 
 IpczResult Portal::BeginPut(IpczBeginPutFlags flags,
-                            const IpczPutLimits* limits,
-                            size_t& num_data_bytes,
-                            void*& data) {
+                            volatile void** data,
+                            size_t* num_bytes,
+                            IpczTransaction* transaction) {
   const bool allow_partial = (flags & IPCZ_BEGIN_PUT_ALLOW_PARTIAL) != 0;
-  if (limits) {
-    size_t max_num_data_bytes = router_->GetOutboundCapacityInBytes(*limits);
-    if (max_num_data_bytes < num_data_bytes) {
-      num_data_bytes = max_num_data_bytes;
-      if (!allow_partial || max_num_data_bytes == 0) {
-        return IPCZ_RESULT_RESOURCE_EXHAUSTED;
-      }
-    }
-  }
-
   if (router_->IsPeerClosed()) {
     return IPCZ_RESULT_NOT_FOUND;
   }
 
-  // Always request a non-zero size for two-phase puts so that we always have
-  // a non-null data address upon which to key the operation in EndPut().
-  const size_t num_bytes_to_request = num_data_bytes ? num_data_bytes : 1;
+  const size_t num_bytes_to_request = num_bytes ? *num_bytes : 0;
   Parcel parcel;
   const IpczResult allocation_result = router_->AllocateOutboundParcel(
       num_bytes_to_request, allow_partial, parcel);
@@ -147,71 +130,49 @@ IpczResult Portal::BeginPut(IpczBeginPutFlags flags,
     return allocation_result;
   }
 
-  num_data_bytes = parcel.data_view().size();
-  data = parcel.data_view().data();
-  absl::visit(Overloaded{[&](absl::monostate) {
-                           pending_parcels_.emplace<Parcel>(std::move(parcel));
-                         },
-                         [&](Parcel& first_parcel) {
-                           const void* first_key =
-                               first_parcel.data_view().data();
-                           PendingParcelMap parcels;
-                           parcels[first_key] = std::move(first_parcel);
-                           parcels[data] = std::move(parcel);
-                           pending_parcels_.emplace<PendingParcelMap>(
-                               std::move(parcels));
-                         },
-                         [&](PendingParcelMap& parcels) {
-                           parcels[data] = std::move(parcel);
-                         }},
-              pending_parcels_);
+  if (num_bytes) {
+    *num_bytes = parcel.data_view().size();
+  }
+  if (data) {
+    *data = parcel.data_view().data();
+  }
+  *transaction = pending_puts_.Add(std::move(parcel));
   return IPCZ_RESULT_OK;
 }
 
-IpczResult Portal::CommitPut(const void* data,
-                             size_t num_data_bytes_produced,
-                             absl::Span<const IpczHandle> handles) {
+IpczResult Portal::EndPut(IpczTransaction transaction,
+                          size_t num_data_bytes_produced,
+                          absl::Span<const IpczHandle> handles,
+                          IpczEndPutFlags flags) {
+  const bool aborted = flags & IPCZ_END_PUT_ABORT;
   std::vector<Ref<APIObject>> objects;
-  if (!ValidateAndAcquireObjectsForTransitFrom(*this, handles, objects)) {
+  if (!aborted &&
+      !ValidateAndAcquireObjectsForTransitFrom(*this, handles, objects)) {
     return IPCZ_RESULT_INVALID_ARGUMENT;
   }
 
-  Parcel parcel;
+  absl::optional<Parcel> parcel;
   {
     absl::MutexLock lock(&mutex_);
-    const bool is_request_valid = absl::visit(
-        Overloaded{
-            [&](absl::monostate) { return false; },
-            [&](Parcel& first_parcel) {
-              if (first_parcel.data_view().data() != data ||
-                  num_data_bytes_produced > first_parcel.data_view().size()) {
-                return false;
-              }
-
-              parcel = std::move(first_parcel);
-              pending_parcels_ = absl::monostate{};
-              return true;
-            },
-            [&](PendingParcelMap& parcels) {
-              auto it = parcels.find(data);
-              if (it == parcels.end() ||
-                  num_data_bytes_produced > it->second.data_view().size()) {
-                return false;
-              }
-
-              parcel = std::move(it->second);
-              parcels.erase(it);
-              return true;
-            }},
-        pending_parcels_);
-    if (!is_request_valid) {
-      return IPCZ_RESULT_INVALID_ARGUMENT;
+    if (aborted) {
+      parcel = pending_puts_.FinalizeForPut(transaction, 0);
+    } else {
+      parcel =
+          pending_puts_.FinalizeForPut(transaction, num_data_bytes_produced);
     }
   }
 
-  parcel.CommitData(num_data_bytes_produced);
-  parcel.SetObjects(std::move(objects));
-  IpczResult result = router_->SendOutboundParcel(parcel);
+  if (!parcel) {
+    return IPCZ_RESULT_INVALID_ARGUMENT;
+  }
+
+  if (aborted) {
+    return IPCZ_RESULT_OK;
+  }
+
+  parcel->CommitData(num_data_bytes_produced);
+  parcel->SetObjects(std::move(objects));
+  IpczResult result = router_->SendOutboundParcel(*parcel);
   if (result == IPCZ_RESULT_OK) {
     // If the parcel was sent, the sender relinquishes handle ownership and
     // therefore implicitly releases its ref to each object.
@@ -221,35 +182,6 @@ IpczResult Portal::CommitPut(const void* data,
   }
 
   return result;
-}
-
-IpczResult Portal::AbortPut(const void* data) {
-  absl::MutexLock lock(&mutex_);
-  const bool is_request_valid =
-      absl::visit(Overloaded{[&](absl::monostate) { return false; },
-                             [&](Parcel& first_parcel) {
-                               if (first_parcel.data_view().data() != data) {
-                                 return false;
-                               }
-
-                               pending_parcels_ = absl::monostate{};
-                               return true;
-                             },
-                             [&](PendingParcelMap& parcels) {
-                               auto it = parcels.find(data);
-                               if (it == parcels.end()) {
-                                 return false;
-                               }
-
-                               parcels.erase(it);
-                               return true;
-                             }},
-                  pending_parcels_);
-  if (!is_request_valid) {
-    return IPCZ_RESULT_INVALID_ARGUMENT;
-  }
-
-  return IPCZ_RESULT_OK;
 }
 
 IpczResult Portal::Get(IpczGetFlags flags,
@@ -262,50 +194,20 @@ IpczResult Portal::Get(IpczGetFlags flags,
                                        num_handles, parcel);
 }
 
-IpczResult Portal::BeginGet(const void** data,
+IpczResult Portal::BeginGet(IpczBeginGetFlags flags,
+                            const volatile void** data,
                             size_t* num_data_bytes,
-                            size_t* num_handles) {
-  absl::MutexLock lock(&mutex_);
-  if (in_two_phase_get_) {
-    return IPCZ_RESULT_ALREADY_EXISTS;
-  }
-
-  if (router_->IsRouteDead()) {
-    return IPCZ_RESULT_NOT_FOUND;
-  }
-
-  const IpczResult result =
-      router_->BeginGetNextIncomingParcel(data, num_data_bytes, num_handles);
-  if (result == IPCZ_RESULT_OK) {
-    in_two_phase_get_ = true;
-  }
-  return result;
+                            IpczHandle* handles,
+                            size_t* num_handles,
+                            IpczTransaction* transaction) {
+  return router_->BeginGetNextInboundParcel(flags, data, num_data_bytes,
+                                            handles, num_handles, transaction);
 }
 
-IpczResult Portal::CommitGet(size_t num_data_bytes_consumed,
-                             absl::Span<IpczHandle> handles) {
-  TrapEventDispatcher dispatcher;
-  absl::MutexLock lock(&mutex_);
-  if (!in_two_phase_get_) {
-    return IPCZ_RESULT_FAILED_PRECONDITION;
-  }
-
-  IpczResult result = router_->CommitGetNextIncomingParcel(
-      num_data_bytes_consumed, handles, dispatcher);
-  if (result == IPCZ_RESULT_OK) {
-    in_two_phase_get_ = false;
-  }
-  return result;
-}
-
-IpczResult Portal::AbortGet() {
-  absl::MutexLock lock(&mutex_);
-  if (!in_two_phase_get_) {
-    return IPCZ_RESULT_FAILED_PRECONDITION;
-  }
-
-  in_two_phase_get_ = false;
-  return IPCZ_RESULT_OK;
+IpczResult Portal::EndGet(IpczTransaction transaction,
+                          IpczEndGetFlags flags,
+                          IpczHandle* parcel) {
+  return router_->EndGetNextInboundParcel(transaction, flags, parcel);
 }
 
 }  // namespace ipcz

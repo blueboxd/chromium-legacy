@@ -6,6 +6,7 @@
 
 #import "base/mac/foundation_util.h"
 #import "base/metrics/user_metrics.h"
+#import "base/notreached.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -19,6 +20,7 @@
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_mediator.h"
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_navigation_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
+#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
@@ -138,7 +140,9 @@ using l10n_util::GetNSString;
       [[ManageSyncSettingsCoordinator alloc]
           initWithBaseNavigationController:
               self.advancedSettingsSigninNavigationController
-                                   browser:self.browser];
+                                   browser:self.browser
+                              accountState:SyncSettingsAccountState::
+                                               kAdvancedInitialSyncSetup];
   manageSyncSettingsCoordinator.delegate = self;
   self.syncSettingsCoordinator = manageSyncSettingsCoordinator;
   [self.syncSettingsCoordinator start];
@@ -221,6 +225,10 @@ using l10n_util::GetNSString;
 
 - (NSString*)manageSyncSettingsCoordinatorTitle {
   return l10n_util::GetNSString(IDS_IOS_SYNC_SETTINGS_TITLE);
+}
+
+- (void)showSignOutToast {
+  NOTREACHED_NORETURN();
 }
 
 - (void)manageSyncSettingsCoordinatorNeedToOpenChromeSyncWebPage:

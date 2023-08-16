@@ -29,6 +29,10 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 static constexpr char kConditionalUIRequest[] = R"((() => {
@@ -124,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthnMacAutofillIntegrationTest, SelectAccount) {
   autofill::Suggestion webauthn_entry;
   for (suggestion_index = 0; suggestion_index < suggestions.size();
        ++suggestion_index) {
-    if (suggestions[suggestion_index].frontend_id ==
+    if (suggestions[suggestion_index].popup_item_id ==
         autofill::PopupItemId::kWebauthnCredential) {
       webauthn_entry = suggestions[suggestion_index];
       break;

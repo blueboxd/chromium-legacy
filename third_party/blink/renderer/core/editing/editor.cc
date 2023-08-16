@@ -624,6 +624,12 @@ void Editor::CopyImage(const HitTestResult& result) {
                             result.AltDisplayString());
 }
 
+void Editor::CopyImage(const HitTestResult& result,
+                       const scoped_refptr<Image>& image) {
+  WriteImageToClipboard(*frame_->GetSystemClipboard(), image, KURL(),
+                        result.AltDisplayString());
+}
+
 bool Editor::CanUndo() {
   return undo_stack_->CanUndo();
 }
@@ -648,9 +654,10 @@ void Editor::SetBaseWritingDirection(
       return;
     text_control->setAttribute(
         html_names::kDirAttr,
-        direction == mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT
-            ? "ltr"
-            : "rtl");
+        AtomicString(
+            direction == mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT
+                ? "ltr"
+                : "rtl"));
     text_control->DispatchInputEvent();
     return;
   }

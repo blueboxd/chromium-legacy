@@ -1746,12 +1746,8 @@ ScriptPromise RTCPeerConnection::PromiseBasedGetStats(
       // while leaving the associated promise pending as specified.
       resolver->Detach();
     } else {
-      bool is_track_stats_deprecation_trial_enabled =
-          RuntimeEnabledFeatures::RTCLegacyTrackStatsEnabled(context);
       peer_handler_->GetStats(WTF::BindOnce(WebRTCStatsReportCallbackResolver,
-                                            WrapPersistent(resolver)),
-                              GetExposedGroupIds(script_state),
-                              is_track_stats_deprecation_trial_enabled);
+                                            WrapPersistent(resolver)));
     }
     return promise;
   }
@@ -2955,10 +2951,19 @@ int RTCPeerConnection::PeerConnectionCountLimit() {
 
 void RTCPeerConnection::DisableBackForwardCache(ExecutionContext* context) {
   LocalDOMWindow* window = To<LocalDOMWindow>(context);
+  // Two features are registered here:
+  // - `kWebRTC`: a non-sticky feature that will disable BFCache for any page.
+  // It will be reset after the `RTCPeerConnection` is closed.
+  // - `kWebRTCSticky`: a sticky feature that will only disable BFCache for the
+  // page containing "Cache-Control: no-store" header. It won't be reset even if
+  // the `RTCPeerConnection` is closed.
   feature_handle_for_scheduler_ =
       window->GetFrame()->GetFrameScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebRTC,
           SchedulingPolicy{SchedulingPolicy::DisableBackForwardCache()});
+  window->GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
+      SchedulingPolicy::Feature::kWebRTCSticky,
+      SchedulingPolicy{SchedulingPolicy::DisableBackForwardCache()});
 }
 
 }  // namespace blink

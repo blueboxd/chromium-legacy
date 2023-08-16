@@ -29,7 +29,7 @@ ALIGNMENT_ORDER = [
     'ScaleTransformOperation',
     'RotateTransformOperation',
     'TranslateTransformOperation',
-    'GridTrackList',
+    'NGGridTrackList',
     'ComputedGridTrackList',
     'absl::optional<gfx::Size>',
     'double',
@@ -56,6 +56,7 @@ ALIGNMENT_ORDER = [
     'IntrinsicLength',
     'TextDecorationThickness',
     'StyleAspectRatio',
+    'absl::optional<StyleScrollbarColor>',
     'absl::optional<StyleIntrinsicLength>',
     'absl::optional<StyleOverflowClipMargin>',
     # Aligns like float

@@ -376,8 +376,11 @@ void WidgetInputHandlerManager::FindScrollTargetOnMainThread(
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(base::FeatureList::IsEnabled(::features::kScrollUnification));
 
-  cc::ElementId element_id =
-      widget_->client()->FrameWidget()->GetScrollableContainerIdAt(point);
+  cc::ElementId element_id;
+  if (widget_) {
+    element_id =
+        widget_->client()->FrameWidget()->GetScrollableContainerIdAt(point);
+  }
 
   InputThreadTaskRunner(TaskRunnerType::kInputBlocking)
       ->PostTask(FROM_HERE, base::BindOnce(std::move(callback), element_id));
@@ -1127,8 +1130,11 @@ void WidgetInputHandlerManager::UpdateBrowserControlsState(
     cc::BrowserControlsState constraints,
     cc::BrowserControlsState current,
     bool animate) {
+  if (!input_handler_proxy_) {
+    return;
+  }
+
   DCHECK(InputThreadTaskRunner()->BelongsToCurrentThread());
-  DCHECK(input_handler_proxy_);
   input_handler_proxy_->UpdateBrowserControlsState(constraints, current,
                                                    animate);
 }

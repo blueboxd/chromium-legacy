@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">DNSର ସମାଧାନ କରାଯାଇପାରିବ ନାହିଁ</translation>
 <translation id="1018656279737460067">ବାତିଲ୍‌ କରାଗଲା</translation>
 <translation id="1020274983236703756">ଏକ୍ସକ୍ଲୁସିଭ <ph name="PRODUCT_NAME" /> ଆସେଟଗୁଡ଼ିକ ବର୍ତ୍ତମାନ ଉପଲବ୍ଧ ଅଛି</translation>
-<translation id="1022433422498218992">ସାଧାରଣ ନିୟନ୍ତ୍ରଣଗୁଡ଼ିକ</translation>
 <translation id="1022628058306505708">ଆର୍ଥ ଫ୍ଲୋ</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" />ଟି ଥ୍ରେଡ୍, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1047773237499189053">ନୂଆ ଫିଚର୍ ଉପଲବ୍ଧ ଅଛି, ଅଧିକ ଜାଣିବାକୁ ଅପ୍ ତୀର କୀ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
@@ -59,6 +58,7 @@
 <translation id="1423591390236870726"><ph name="KEY_NAME" /> କୀ'କୁ ଦବାଯାଇନାହିଁ</translation>
 <translation id="1435763214710588005">ପ୍ରତି ମାସ ଚୟନ କରାଯାଇଥିବା ଗୋଟିଏ ଦିନରେ ସ୍ୱଚାଳିତ ଭାବରେ ଡାଟା ବ୍ୟବହାର ରିସେଟ ହୁଏ</translation>
 <translation id="1442433966118452622">ଇମେଜ ସୋର୍ସ</translation>
+<translation id="1449035143498573192">Google Searchରେ ଖୋଲନ୍ତୁ</translation>
 <translation id="1451536289672181509">ଡିଭାଇସଟି ଏକ କୀବୋର୍ଡ ଅଟେ।</translation>
 <translation id="1459693405370120464">ପାଣିପାଗ</translation>
 <translation id="1468664791493211953">ଅଫରଗୁଡ଼ିକ</translation>
@@ -114,7 +114,6 @@
 <translation id="1768959921651994223">ପ୍ରମାଣୀକରଣର ପ୍ରକାର</translation>
 <translation id="1776228893584526149">ୱାଲପେପର ଟୋନ</translation>
 <translation id="1782199038061388045">ଅନୁବାଦ</translation>
-<translation id="1790209694022261219">ୱିଣ୍ଡୋ ଏବଂ ଡେସ୍କଗୁଡ଼ିକ</translation>
 <translation id="1792647875738159689">ସ୍କାନିଂ ବାତିଲ୍ କରାଯାଉଛି</translation>
 <translation id="1801418420130173017">ଗାଢ଼ା ଥିମକୁ ଅକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="1807246157184219062">ଫିକା</translation>
@@ -245,7 +244,6 @@
 <translation id="3008341117444806826">ରିଫ୍ରେଶ୍ କରନ୍ତୁ</translation>
 <translation id="3009958530611748826">ଏଥିରେ ସେଭ୍ କରିବାକୁ ଏକ ଫୋଲ୍ଡର୍ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="3017079585324758401">ପୃଷ୍ଠପଟ</translation>
-<translation id="3020183492814296499">ସର୍ଟକଟ୍‌ଗୁଡ଼ିକ</translation>
 <translation id="3027578600144895987">କ୍ୟାମେରା ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="3031560714565892478">ଡିଭାଇସଟି ଏକ ଭିଡିଓ କ୍ୟାମେରା ଅଟେ।</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -615,6 +613,7 @@
 <translation id="5972388717451707488">ଇଞ୍ଜିନ୍ ଅପଡେଟ୍ କରନ୍ତୁ</translation>
 <translation id="5984145644188835034">ଡିଫଲ୍ଟ ୱାଲପେପର</translation>
 <translation id="6017514345406065928">ସବୁଜ</translation>
+<translation id="6019566113895157499">Key Shortcuts</translation>
 <translation id="6034694447310538551">ସ୍ୱଚାଳିତ ମାସିକ ରିସେଟକୁ ସକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="6037291330010597344">ସ୍କାନରର ଡକ୍ୟୁମେଣ୍ଟ ଫିଡର୍ ଖାଲି ଅଛି। ଡକ୍ୟୁମେଣ୍ଟଗୁଡ଼ିକ ଯୋଗ କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="6040143037577758943">ବନ୍ଦ</translation>
@@ -861,6 +860,7 @@
 <translation id="7953669802889559161">ଇନପୁଟଗୁଡ଼ିକ</translation>
 <translation id="7955587717700691983">ବ୍ଲୁଟୁଥ କୀବୋର୍ଡ</translation>
 <translation id="7960831585769876809">ତାପମାତ୍ରା</translation>
+<translation id="7971535376154084247">ସାଧାରଣ ନିୟନ୍ତ୍ରଣଗୁଡ଼ିକ</translation>
 <translation id="7977800524392185497">ଏକ <ph name="NETWORK_NAME" /> ନେଟୱାର୍କରେ ଯୋଗ ଦେବା ପାଇଁ, ସେଟିଂସକୁ ଯାଆନ୍ତୁ</translation>
 <translation id="7978412674231730200">ବ୍ୟକ୍ତିଗତ କୀ</translation>
 <translation id="7994702968232966508">EAP ପଦ୍ଧତି</translation>
@@ -924,6 +924,7 @@
 <translation id="8461329675984532579">ମୂଳ ପ୍ରଦାତା ନାମ</translation>
 <translation id="8475690821716466388">ଦୁର୍ବଳ ପ୍ରୋଟୋକଲ୍ WEP PSK ବ୍ୟବହାର କରି ୱାଇଫାଇ ନେଟୱାର୍କକୁ ସୁରକ୍ଷିତ କରାଯାଇଛି</translation>
 <translation id="8476242415522716722">କୀବୋର୍ଡ ଅଣ୍ଡରଗ୍ଲୋ କରନ୍ତୁ</translation>
+<translation id="8476942730579767658">ୱିଣ୍ଡୋ ଏବଂ ଡେସ୍କଗୁଡ଼ିକ</translation>
 <translation id="8477551185774834963">DNS ଲାଟେନ୍ସି ଅନୁମୋଦିତ ସୀମା ଠାରୁ ଅଳ୍ପ ଉପରେ ଅଛି</translation>
 <translation id="8483248364096924578">IP ଠିକଣା</translation>
 <translation id="8491311378305535241">Android ଆପଗୁଡ଼ିକରୁ ଫାୟାରୱାଲ ମାଧ୍ୟମରେ HTTP ୱେବସାଇଟଗୁଡ଼ିକ ସହ ସଂଯୋଗ କରାଯାଇପାରିବ ନାହିଁ</translation>
@@ -966,6 +967,7 @@
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="8834539327799336565">ବର୍ତ୍ତମାନ ସଂଯୁକ୍ତ ଅଛି</translation>
 <translation id="8845001906332463065">ସାହାଯ୍ୟ ପାଆନ୍ତୁ</translation>
+<translation id="8851859208664803097">ବନ୍ଦ ହୋଇଯାଇଛି - ପ୍ରିଣ୍ଟର ସହ ସଂଯୋଗ କରି ହେଉନାହିଁ</translation>
 <translation id="8855781559874488009">ଫାୟାରୱାଲ ମାଧ୍ୟମରେ HTTP ୱେବସାଇଟଗୁଡ଼ିକ ସହ ସଂଯୋଗ କରାଯାଇପାରିବ ନାହିଁ</translation>
 <translation id="885701979325669005">ଷ୍ଟୋରେଜ୍</translation>
 <translation id="885704831271383379">କୀବୋର୍ଡକୁ ଆହୁରି ଗାଢ଼ା କରନ୍ତୁ</translation>

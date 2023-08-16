@@ -69,10 +69,6 @@ void AccountSelectFillData::Reset() {
   last_requested_form_ = nullptr;
 }
 
-void AccountSelectFillData::ResetCache() {
-  credentials_.clear();
-}
-
 bool AccountSelectFillData::Empty() const {
   return credentials_.empty();
 }

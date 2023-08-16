@@ -5,7 +5,7 @@
 import {assert, assertNotReached} from 'chrome://resources/ash/common/assert.js';
 
 import {getDisallowedTransfers, startIOTask} from '../../common/js/api.js';
-import {queryRequiredElement} from '../../common/js/dom_utils.js';
+import {getFocusedTreeItem, isDirectoryTree, isDirectoryTreeItem, queryRequiredElement} from '../../common/js/dom_utils.js';
 import {FileType} from '../../common/js/file_type.js';
 import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.js';
 import {getEnabledTrashVolumeURLs, isAllTrashEntries, TrashEntry} from '../../common/js/trash.js';
@@ -17,9 +17,11 @@ import {EntryLocation} from '../../externs/entry_location.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
+import {XfTree} from '../../widgets/xf_tree.js';
+import {XfTreeItem} from '../../widgets/xf_tree_item.js';
 
 import {DirectoryModel} from './directory_model.js';
-import {DropEffectAndLabel, DropEffectType} from './drop_effect_and_label.js';
+import {DropEffectType} from './drop_effect_and_label.js';
 import {FileSelectionHandler} from './file_selection.js';
 import {MetadataModel} from './metadata/metadata_model.js';
 import {Command} from './ui/command.js';
@@ -51,6 +53,14 @@ const MISSING_FILE_CONTENTS = 'missingFileContents';
 const SOURCE_ROOT_URL = 'sourceRootURL';
 
 /**
+ * The key under which we store the flag denoting that the dragged file is
+ * encrypted with Google Drive CSE. Given that decrypting of such files is not
+ * implemented at the moment (May 2023), this allows us to unset the drag effect
+ * when moving such a file outside Drive.
+ */
+const ENCRYPTED = 'encrypted';
+
+/**
  * @typedef {{file:?File, externalFileUrl:string}}
  */
 let FileAsyncData;
@@ -59,7 +69,7 @@ export class FileTransferController {
   /**
    * @param {!Document} doc Owning document.
    * @param {!ListContainer} listContainer List container.
-   * @param {!DirectoryTree} directoryTree Directory tree.
+   * @param {!DirectoryTree|!XfTree} directoryTree Directory tree.
    * @param {function(boolean, !Array<string>): !Promise<boolean>}
    *     confirmationCallback called when operation requires user's
    *     confirmation. The operation will be executed if the return value
@@ -98,6 +108,10 @@ export class FileTransferController {
     /**
      * @private {!MetadataModel}
      * @const
+     * Note: We use synchronous `getCache` method under assumption that fields
+     * we request are already cached. See constants.js, specifically
+     * LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES for list of fields which
+     * are safe to use.
      */
     this.metadataModel_ = metadataModel;
 
@@ -253,7 +267,8 @@ export class FileTransferController {
   }
 
   /**
-   * @param {!DirectoryTree} tree Its sub items will could be drop target.
+   * @param {!DirectoryTree|!XfTree} tree Its sub items will could be drop
+   *     target.
    * @private
    */
   attachTreeDropTarget_(tree) {
@@ -347,12 +362,18 @@ export class FileTransferController {
       });
     }
 
+    const encrypted = this.metadataModel_.getCache(entries, ['contentMimeType'])
+                          .some(
+                              (metadata, i) => FileType.isEncrypted(
+                                  entries[i], metadata.contentMimeType));
+
     const sourceURLs = util.entriesToURLs(entries);
     clipboardData.setData('fs/sources', sourceURLs.join('\n'));
 
     clipboardData.effectAllowed = effectAllowed;
     clipboardData.setData('fs/effectallowed', effectAllowed);
 
+    clipboardData.setData(`fs/${ENCRYPTED}`, encrypted.toString());
     clipboardData.setData(
         `fs/${MISSING_FILE_CONTENTS}`, missingFileContents.toString());
   }
@@ -394,8 +415,10 @@ export class FileTransferController {
         storage.getItem(`${DRAG_AND_DROP_GLOBAL_DATA}.${SOURCE_ROOT_URL}`);
     const missingFileContents = storage.getItem(
         `${DRAG_AND_DROP_GLOBAL_DATA}.${MISSING_FILE_CONTENTS}`);
+    const encrypted =
+        storage.getItem(`${DRAG_AND_DROP_GLOBAL_DATA}.${ENCRYPTED}`) === 'true';
     if (sourceRootURL !== null && missingFileContents !== null) {
-      return {sourceRootURL, missingFileContents};
+      return {sourceRootURL, missingFileContents, encrypted};
     }
     return null;
   }
@@ -754,6 +777,9 @@ export class FileTransferController {
     storage.setItem(
         `${DRAG_AND_DROP_GLOBAL_DATA}.${MISSING_FILE_CONTENTS}`,
         dataTransfer.getData(`fs/${MISSING_FILE_CONTENTS}`));
+    storage.setItem(
+        `${DRAG_AND_DROP_GLOBAL_DATA}.${ENCRYPTED}`,
+        dataTransfer.getData(`fs/${ENCRYPTED}`));
   }
 
   /**
@@ -772,12 +798,13 @@ export class FileTransferController {
     const storage = window.localStorage;
     storage.removeItem(`${DRAG_AND_DROP_GLOBAL_DATA}.${SOURCE_ROOT_URL}`);
     storage.removeItem(`${DRAG_AND_DROP_GLOBAL_DATA}.${MISSING_FILE_CONTENTS}`);
+    storage.removeItem(`${DRAG_AND_DROP_GLOBAL_DATA}.${ENCRYPTED}`);
   }
 
   /**
    * @param {boolean} onlyIntoDirectories True if the drag is only into
    *     directories.
-   * @param {(!List|!DirectoryTree)} list Drop target list.
+   * @param {(!List|!DirectoryTree|!XfTree)} list Drop target list.
    * @param {Event} event A dragover event of DOM.
    * @private
    */
@@ -788,14 +815,13 @@ export class FileTransferController {
       entry = this.directoryModel_.getCurrentDirEntry();
     }
 
-    const effectAndLabel =
+    event.dataTransfer.dropEffect =
         this.selectDropEffect_(event, this.getDragAndDropGlobalData_(), entry);
-    event.dataTransfer.dropEffect = effectAndLabel.getDropEffect();
     event.preventDefault();
   }
 
   /**
-   * @param {(!List|!DirectoryTree)} list Drop target list.
+   * @param {!List} list Drop target list.
    * @param {!Event} event A dragenter event of DOM.
    * @private
    */
@@ -820,7 +846,7 @@ export class FileTransferController {
   }
 
   /**
-   * @param {!DirectoryTree} tree Drop target tree.
+   * @param {!DirectoryTree|!XfTree} tree Drop target tree.
    * @param {!Event} event A dragenter event of DOM.
    * @private
    */
@@ -834,7 +860,7 @@ export class FileTransferController {
 
     this.lastEnteredTarget_ = event.target;
     let item = event.target;
-    while (item && !(item instanceof TreeItem)) {
+    while (item && !(item instanceof TreeItem || item instanceof XfTreeItem)) {
       item = item.parentNode;
     }
 
@@ -918,8 +944,7 @@ export class FileTransferController {
         event.dataTransfer,
         /** @type {DirectoryEntry} */ (destinationEntry),
         this.selectDropEffect_(
-                event, this.getDragAndDropGlobalData_(), destinationEntry)
-            .getDropEffect());
+            event, this.getDragAndDropGlobalData_(), destinationEntry));
     this.clearDropTarget_();
   }
 
@@ -1082,9 +1107,10 @@ export class FileTransferController {
 
     // If current focus is on DirectoryTree, write selected item of
     // DirectoryTree to system clipboard.
-    if (document.activeElement instanceof DirectoryTree) {
+    if (isDirectoryTree(document.activeElement)) {
       this.cutOrCopyFromDirectoryTree(
-          document.activeElement, clipboardData, effectAllowed);
+          /** @type {!DirectoryTree|!XfTree} */ (document.activeElement),
+          clipboardData, effectAllowed);
       return;
     }
 
@@ -1096,17 +1122,17 @@ export class FileTransferController {
 
   /**
    * Performs cut or copy operation dispatched from directory tree.
-   * @param {!DirectoryTree} directoryTree
+   * @param {!DirectoryTree|!XfTree} directoryTree
    * @param {!DataTransfer} clipboardData
    * @param {string} effectAllowed
    */
   cutOrCopyFromDirectoryTree(directoryTree, clipboardData, effectAllowed) {
-    const selectedItem = document.activeElement.selectedItem;
-    if (selectedItem === null) {
+    const focusedItem = getFocusedTreeItem(document.activeElement);
+    if (focusedItem === null) {
       return;
     }
 
-    const entry = selectedItem.entry;
+    const entry = focusedItem.entry;
 
     const volumeInfo = this.volumeManager_.getVolumeInfo(entry);
     if (!volumeInfo) {
@@ -1451,51 +1477,54 @@ export class FileTransferController {
    *     getDragAndDropGlobalData_().
    * @param {DirectoryEntry|FilesAppEntry} destinationEntry Destination
    *     entry.
-   * @return {DropEffectAndLabel} Returns the appropriate drop query type
+   * @return {!string} Returns the appropriate drop query type
    *     ('none', 'move' or copy') to the current modifiers status and the
-   *     destination, as well as label message to describe why the operation is
-   *     not allowed.
+   *     destination.
    * @private
    */
   selectDropEffect_(event, dragAndDropData, destinationEntry) {
     if (!destinationEntry) {
-      return new DropEffectAndLabel(DropEffectType.NONE, null);
+      return DropEffectType.NONE;
     }
     const destinationLocationInfo =
         this.volumeManager_.getLocationInfo(destinationEntry);
     if (!destinationLocationInfo) {
-      return new DropEffectAndLabel(DropEffectType.NONE, null);
+      return DropEffectType.NONE;
     }
     if (destinationLocationInfo.volumeInfo &&
         destinationLocationInfo.volumeInfo.error) {
-      return new DropEffectAndLabel(DropEffectType.NONE, null);
+      return DropEffectType.NONE;
     }
     // Recent isn't read-only, but it doesn't support drop.
     if (destinationLocationInfo.rootType ===
         VolumeManagerCommon.RootType.RECENT) {
-      return new DropEffectAndLabel(DropEffectType.NONE, null);
+      return DropEffectType.NONE;
     }
     if (destinationLocationInfo.isReadOnly) {
       if (destinationLocationInfo.isSpecialSearchRoot) {
         // The location is a fake entry that corresponds to special search.
-        return new DropEffectAndLabel(DropEffectType.NONE, null);
+        return DropEffectType.NONE;
       }
       if (destinationLocationInfo.rootType ==
           VolumeManagerCommon.RootType.CROSTINI) {
         // The location is a the fake entry for crostini.  Start container.
-        return new DropEffectAndLabel(
-            DropEffectType.NONE, strf('OPENING_LINUX_FILES'));
+        return DropEffectType.NONE;
       }
       if (destinationLocationInfo.volumeInfo &&
           destinationLocationInfo.volumeInfo.isReadOnlyRemovableDevice) {
-        return new DropEffectAndLabel(
-            DropEffectType.NONE, strf('DEVICE_WRITE_PROTECTED'));
+        return DropEffectType.NONE;
       }
       // The disk device is not write-protected but read-only.
       // Currently, the only remaining possibility is that write access to
       // removable drives is restricted by device policy.
-      return new DropEffectAndLabel(
-          DropEffectType.NONE, strf('DEVICE_ACCESS_RESTRICTED'));
+      return DropEffectType.NONE;
+    }
+    // Decryption of CSE files is not currently supported on ChromeOS. However,
+    // moving such a file around Google Drive works fine.
+    if (dragAndDropData && dragAndDropData.encrypted &&
+        destinationLocationInfo.rootType !==
+            VolumeManagerCommon.RootType.DRIVE) {
+      return DropEffectType.NONE;
     }
     const destinationMetadata =
         this.metadataModel_.getCache([destinationEntry], ['canAddChildren']);
@@ -1503,9 +1532,7 @@ export class FileTransferController {
         destinationMetadata[0].canAddChildren === false) {
       // TODO(sashab): Distinguish between copy/move operations and display
       // corresponding warning text here.
-      return new DropEffectAndLabel(
-          DropEffectType.NONE,
-          strf('DROP_TARGET_FOLDER_NO_MOVE_PERMISSION', destinationEntry.name));
+      return DropEffectType.NONE;
     }
     // Files can be dragged onto the TrashRootEntry, but they must reside on a
     // volume that is trashable.
@@ -1515,24 +1542,24 @@ export class FileTransferController {
                          destinationLocationInfo, event.dataTransfer)) ?
           DropEffectType.MOVE :
           DropEffectType.NONE;
-      return new DropEffectAndLabel(effect, null);
+      return effect;
     }
     if (isDropEffectAllowed(event.dataTransfer.effectAllowed, 'move')) {
       if (!isDropEffectAllowed(event.dataTransfer.effectAllowed, 'copy')) {
-        return new DropEffectAndLabel(DropEffectType.MOVE, null);
+        return DropEffectType.MOVE;
       }
       // TODO(mtomasz): Use volumeId instead of comparing roots, as soon as
       // volumeId gets unique.
       if (this.getSourceRootURL_(event.dataTransfer, dragAndDropData) ===
               destinationLocationInfo.volumeInfo.fileSystem.root.toURL() &&
           !event.ctrlKey) {
-        return new DropEffectAndLabel(DropEffectType.MOVE, null);
+        return DropEffectType.MOVE;
       }
       if (event.shiftKey) {
-        return new DropEffectAndLabel(DropEffectType.MOVE, null);
+        return DropEffectType.MOVE;
       }
     }
-    return new DropEffectAndLabel(DropEffectType.COPY, null);
+    return DropEffectType.COPY;
   }
 
   /**

@@ -89,6 +89,9 @@ class HashPrefixMap {
   // Returns a read-only view of the data stored in this map.
   virtual HashPrefixMapView view() const = 0;
 
+  // Returns the prefix at `size`.
+  virtual HashPrefixesView at(PrefixSize size) const = 0;
+
   // Appends |prefix| to the prefix list of size |size|.
   virtual void Append(PrefixSize size, HashPrefixesView prefix) = 0;
 
@@ -143,6 +146,7 @@ class InMemoryHashPrefixMap : public HashPrefixMap {
   // HashPrefixMap implementation:
   void Clear() override;
   HashPrefixMapView view() const override;
+  HashPrefixesView at(PrefixSize size) const override;
   void Append(PrefixSize size, HashPrefixesView prefix) override;
   void Reserve(PrefixSize size, size_t capacity) override;
   ApplyUpdateResult ReadFromDisk(const V4StoreFileFormat& file_format) override;
@@ -164,15 +168,14 @@ class InMemoryHashPrefixMap : public HashPrefixMap {
 // prefix size. These will be mapped into memory on initialization.
 class MmapHashPrefixMap : public HashPrefixMap {
  public:
-  explicit MmapHashPrefixMap(
-      const base::FilePath& store_path,
-      scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr,
-      size_t buffer_size = 1024 * 512);
+  explicit MmapHashPrefixMap(const base::FilePath& store_path,
+                             size_t buffer_size = 1024 * 512);
   ~MmapHashPrefixMap() override;
 
   // HashPrefixMap implementation:
   void Clear() override;
   HashPrefixMapView view() const override;
+  HashPrefixesView at(PrefixSize size) const override;
   void Append(PrefixSize size, HashPrefixesView prefix) override;
   void Reserve(PrefixSize size, size_t capacity) override;
   ApplyUpdateResult ReadFromDisk(const V4StoreFileFormat& file_format) override;
@@ -190,7 +193,6 @@ class MmapHashPrefixMap : public HashPrefixMap {
                                 const std::string& extension);
 
   const std::string& GetExtensionForTesting(PrefixSize size);
-  void ClearAndWaitForTesting();
 
  private:
   class BufferedFileWriter;
@@ -219,10 +221,8 @@ class MmapHashPrefixMap : public HashPrefixMap {
   };
 
   FileInfo& GetFileInfo(PrefixSize size);
-  void ClearOnTaskRunner();
 
   base::FilePath store_path_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unordered_map<PrefixSize, FileInfo> map_;
   size_t buffer_size_;
 };

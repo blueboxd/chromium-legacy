@@ -5,7 +5,9 @@
 #include "ash/system/video_conference/video_conference_tray_controller.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/test/test_system_tray_client.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
@@ -16,9 +18,12 @@
 #include "ash/system/video_conference/video_conference_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/crosapi/mojom/video_conference.mojom.h"
+#include "components/prefs/pref_service.h"
 #include "media/capture/video/chromeos/mojom/cros_camera_service.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -26,29 +31,53 @@ namespace ash {
 
 namespace {
 
+// The max amount of times the "Speak-on-mute opt-in" nudge can show.
+constexpr int kSpeakOnMuteOptInNudgeMaxShownCount = 3;
+
 constexpr char kVideoConferenceTraySpeakOnMuteDetectedNudgeId[] =
     "video_conference_tray_nudge_ids.speak_on_mute_detected";
 
 constexpr char kVideoConferenceTrayUseWhileDisabledNudgeId[] =
     "video_conference_tray_nudge_ids.use_while_disabled";
 
+constexpr char kVideoConferenceTraySpeakOnMuteOptInNudgeId[] =
+    "video_conference_tray_nudge_ids.speak_on_mute_opt_in";
+
+constexpr char kRepeatedShowsHistogramName[] =
+    "Ash.VideoConference.NumberOfRepeatedShows";
+
 bool IsNudgeShown(const std::string& id) {
   return Shell::Get()->anchored_nudge_manager()->IsNudgeShown(id);
 }
 
 const std::u16string& GetNudgeText(const std::string& id) {
-  return Shell::Get()->anchored_nudge_manager()->GetNudgeText(id);
+  return Shell::Get()->anchored_nudge_manager()->GetNudgeBodyTextForTest(id);
 }
 
 views::View* GetNudgeAnchorView(const std::string& id) {
-  return Shell::Get()->anchored_nudge_manager()->GetNudgeAnchorView(id);
+  return Shell::Get()->anchored_nudge_manager()->GetNudgeAnchorViewForTest(id);
+}
+
+views::LabelButton* GetNudgeDismissButton(const std::string& id) {
+  return Shell::Get()->anchored_nudge_manager()->GetNudgeDismissButtonForTest(
+      id);
+}
+
+views::LabelButton* GetNudgeSecondButton(const std::string& id) {
+  return Shell::Get()->anchored_nudge_manager()->GetNudgeSecondButtonForTest(
+      id);
+}
+
+AnchoredNudge* GetShownNudge(const std::string& id) {
+  return Shell::Get()->anchored_nudge_manager()->GetShownNudgeForTest(id);
 }
 
 }  // namespace
 
 class VideoConferenceTrayControllerTest : public AshTestBase {
  public:
-  VideoConferenceTrayControllerTest() = default;
+  VideoConferenceTrayControllerTest()
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   VideoConferenceTrayControllerTest(const VideoConferenceTrayControllerTest&) =
       delete;
   VideoConferenceTrayControllerTest& operator=(
@@ -100,6 +129,10 @@ class VideoConferenceTrayControllerTest : public AshTestBase {
     state.is_capturing_microphone = true;
     controller()->UpdateWithMediaState(state);
     return state;
+  }
+
+  void ToggleVcTrayBubble() {
+    LeftClickOn(video_conference_tray()->toggle_bubble_button_);
   }
 
   FakeVideoConferenceTrayController* controller() { return controller_.get(); }
@@ -340,6 +373,235 @@ TEST_F(VideoConferenceTrayControllerTest, SpeakOnMuteNudge) {
   // cool down timer.
   controller()->OnSpeakOnMuteDetected();
   EXPECT_TRUE(IsNudgeShown(nudge_id));
+}
+
+TEST_F(VideoConferenceTrayControllerTest, SpeakOnMuteNudgeClick) {
+  auto* nudge_id = kVideoConferenceTraySpeakOnMuteDetectedNudgeId;
+
+  SetTrayAndButtonsVisible();
+
+  // Nudge should be displayed. Showing that client is speaking while on mute.
+  controller()->OnSpeakOnMuteDetected();
+  ASSERT_TRUE(IsNudgeShown(nudge_id));
+
+  // Clicks on the nudge should open the settings page.
+  EXPECT_EQ(GetSystemTrayClient()->show_speak_on_mute_detection_count(), 0);
+  LeftClickOn(GetShownNudge(nudge_id));
+  EXPECT_EQ(GetSystemTrayClient()->show_speak_on_mute_detection_count(), 1);
+}
+
+TEST_F(VideoConferenceTrayControllerTest, SpeakOnMuteNudgeTimeFrame) {
+  auto* nudge_id = kVideoConferenceTraySpeakOnMuteDetectedNudgeId;
+
+  SetTrayAndButtonsVisible();
+
+  // Nudge should be displayed. Showing that client is speaking while on mute,
+  // and the 60 seconds cool down counter starts at the same time.
+  controller()->OnSpeakOnMuteDetected();
+  ASSERT_TRUE(IsNudgeShown(nudge_id));
+
+  // Wait for 20 seconds to simulate that the nudge has disappeared.
+  task_environment()->AdvanceClock(base::Seconds(20));
+  Shell::Get()->anchored_nudge_manager()->Cancel(nudge_id);
+
+  // Nudge should not be displayed at 20 seconds as there is a cool down period
+  // for the nudge.
+  controller()->OnSpeakOnMuteDetected();
+  EXPECT_FALSE(IsNudgeShown(nudge_id));
+
+  // Wait for another 20 seconds and the cool down has not passed yet.
+  task_environment()->AdvanceClock(base::Seconds(20));
+
+  // Nudge should not be displayed at 40 seconds as there is a cool down period
+  // for the nudge.
+  controller()->OnSpeakOnMuteDetected();
+  EXPECT_FALSE(IsNudgeShown(nudge_id));
+
+  // Wait for another 20 seconds to so that the 60 seconds cool down periods has
+  // passed.
+  task_environment()->AdvanceClock(base::Seconds(60));
+
+  // Nudge should be displayed as the cool down period has passed.
+  controller()->OnSpeakOnMuteDetected();
+  ASSERT_TRUE(IsNudgeShown(nudge_id));
+}
+
+TEST_F(VideoConferenceTrayControllerTest, RecordRepeatedShows) {
+  // Set up 2 displays. Note that only one instance should be recorded for the
+  // primary display when there are repeated shows.
+  UpdateDisplay("100x200,300x400");
+
+  base::HistogramTester histograms;
+
+  auto flicker_vc_tray = [](int number_of_flicker,
+                            FakeVideoConferenceTrayController* controller,
+                            base::test::TaskEnvironment* task_environment) {
+    // Makes the view flicker (show then hide) for `number_of_flicker` of times.
+    for (auto i = 0; i < number_of_flicker; i++) {
+      VideoConferenceMediaState state;
+      state.has_media_app = true;
+      controller->UpdateWithMediaState(state);
+
+      state.has_media_app = false;
+      controller->UpdateWithMediaState(state);
+
+      task_environment->FastForwardBy(base::Milliseconds(80));
+    }
+    task_environment->FastForwardBy(base::Milliseconds(100));
+  };
+
+  int expected_sample = 6;
+  flicker_vc_tray(expected_sample, controller(), task_environment());
+  histograms.ExpectBucketCount(kRepeatedShowsHistogramName, expected_sample, 1);
+
+  // Makes one more flickering after 100ms. This flicker should not count
+  // towards the previous ones, but this will be counted in a bucket for 1 show.
+  VideoConferenceMediaState state;
+  state.has_media_app = true;
+  controller()->UpdateWithMediaState(state);
+
+  state.has_media_app = false;
+  controller()->UpdateWithMediaState(state);
+  task_environment()->FastForwardBy(base::Milliseconds(100));
+
+  histograms.ExpectBucketCount(kRepeatedShowsHistogramName, expected_sample + 1,
+                               0);
+  histograms.ExpectBucketCount(kRepeatedShowsHistogramName, 1, 1);
+
+  // Make sure it works again.
+  flicker_vc_tray(8, controller(), task_environment());
+  histograms.ExpectBucketCount(kRepeatedShowsHistogramName, 8, 1);
+
+  flicker_vc_tray(2, controller(), task_environment());
+  histograms.ExpectBucketCount(kRepeatedShowsHistogramName, 2, 1);
+
+  flicker_vc_tray(1, controller(), task_environment());
+  histograms.ExpectBucketCount(kRepeatedShowsHistogramName, 1, 2);
+}
+
+TEST_F(VideoConferenceTrayControllerTest, SpeakOnMuteOptInNudge) {
+  auto* nudge_id = kVideoConferenceTraySpeakOnMuteOptInNudgeId;
+
+  // Ensure relevant prefs have been registered.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  EXPECT_TRUE(prefs->FindPreference(prefs::kShouldShowSpeakOnMuteOptInNudge));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kSpeakOnMuteOptInNudgeShownCount));
+
+  SetTrayAndButtonsVisible();
+  EXPECT_TRUE(video_conference_tray()->GetVisible());
+
+  // Nudge has not been shown more than its max number of times.
+  EXPECT_EQ(0, prefs->GetInteger(prefs::kSpeakOnMuteOptInNudgeShownCount));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kShouldShowSpeakOnMuteOptInNudge));
+
+  // Microphone is not muted, nudge is not shown.
+  EXPECT_FALSE(controller()->GetMicrophoneMuted());
+  EXPECT_FALSE(IsNudgeShown(nudge_id));
+
+  // Microphone was just muted, nudge is shown.
+  controller()->SetMicrophoneMuted(true);
+  EXPECT_TRUE(controller()->GetMicrophoneMuted());
+  EXPECT_TRUE(IsNudgeShown(nudge_id));
+  EXPECT_EQ(1, prefs->GetInteger(prefs::kSpeakOnMuteOptInNudgeShownCount));
+
+  // Microphone was unmuted, nudge is cancelled.
+  controller()->SetMicrophoneMuted(false);
+  EXPECT_FALSE(controller()->GetMicrophoneMuted());
+  EXPECT_FALSE(IsNudgeShown(nudge_id));
+
+  // Microphone was just muted again, nudge is shown.
+  controller()->SetMicrophoneMuted(true);
+  EXPECT_TRUE(IsNudgeShown(nudge_id));
+  EXPECT_EQ(2, prefs->GetInteger(prefs::kSpeakOnMuteOptInNudgeShownCount));
+
+  // Open VC tray bubble, nudge is cancelled.
+  ToggleVcTrayBubble();
+  EXPECT_FALSE(IsNudgeShown(nudge_id));
+
+  // Close bubble, unmute and mute again, nudge is shown.
+  ToggleVcTrayBubble();
+  controller()->SetMicrophoneMuted(false);
+  controller()->SetMicrophoneMuted(true);
+  EXPECT_TRUE(IsNudgeShown(nudge_id));
+  EXPECT_EQ(3, prefs->GetInteger(prefs::kSpeakOnMuteOptInNudgeShownCount));
+
+  // Nudge has been shown its max number of times, it should not show again.
+  EXPECT_EQ(kSpeakOnMuteOptInNudgeMaxShownCount,
+            prefs->GetInteger(prefs::kSpeakOnMuteOptInNudgeShownCount));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kShouldShowSpeakOnMuteOptInNudge));
+
+  // Unmute and mute again, nudge has reached its max shown count, so it won't
+  // be shown again.
+  controller()->SetMicrophoneMuted(false);
+  controller()->SetMicrophoneMuted(true);
+  EXPECT_FALSE(IsNudgeShown(nudge_id));
+}
+
+TEST_F(VideoConferenceTrayControllerTest, SpeakOnMuteOptInNudge_OptOut) {
+  auto* nudge_id = kVideoConferenceTraySpeakOnMuteOptInNudgeId;
+
+  // Ensure relevant prefs have been registered.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  EXPECT_TRUE(prefs->FindPreference(prefs::kShouldShowSpeakOnMuteOptInNudge));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kUserSpeakOnMuteDetectionEnabled));
+
+  SetTrayAndButtonsVisible();
+  EXPECT_TRUE(video_conference_tray()->GetVisible());
+
+  // Nudge has not been shown or interacted with. The speak-on-mute feature has
+  // not been enabled through the nudge or through settings.
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kShouldShowSpeakOnMuteOptInNudge));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kUserSpeakOnMuteDetectionEnabled));
+
+  // Microphone was just muted, nudge is shown.
+  controller()->SetMicrophoneMuted(true);
+  EXPECT_TRUE(IsNudgeShown(nudge_id));
+
+  // Opt out of speak-on-mute. Nudge should be dismissed and never shown again.
+  LeftClickOn(GetNudgeDismissButton(nudge_id));
+  EXPECT_FALSE(IsNudgeShown(nudge_id));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kShouldShowSpeakOnMuteOptInNudge));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kUserSpeakOnMuteDetectionEnabled));
+
+  // Unmute and mute again, user opted out so nudge should not be shown.
+  controller()->SetMicrophoneMuted(false);
+  controller()->SetMicrophoneMuted(true);
+  EXPECT_FALSE(IsNudgeShown(nudge_id));
+}
+
+TEST_F(VideoConferenceTrayControllerTest, SpeakOnMuteOptInNudge_OptIn) {
+  auto* nudge_id = kVideoConferenceTraySpeakOnMuteOptInNudgeId;
+
+  // Ensure relevant prefs have been registered.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  EXPECT_TRUE(prefs->FindPreference(prefs::kShouldShowSpeakOnMuteOptInNudge));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kUserSpeakOnMuteDetectionEnabled));
+
+  SetTrayAndButtonsVisible();
+  EXPECT_TRUE(video_conference_tray()->GetVisible());
+
+  // Nudge has not been shown or interacted with. The speak-on-mute feature has
+  // not been enabled through the nudge or through settings.
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kShouldShowSpeakOnMuteOptInNudge));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kUserSpeakOnMuteDetectionEnabled));
+
+  // Microphone was just muted, nudge is shown.
+  controller()->SetMicrophoneMuted(true);
+  EXPECT_TRUE(IsNudgeShown(nudge_id));
+
+  // Opt in to speak-on-mute. Nudge should be dismissed and never shown again.
+  LeftClickOn(GetNudgeSecondButton(nudge_id));
+  EXPECT_FALSE(IsNudgeShown(nudge_id));
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kShouldShowSpeakOnMuteOptInNudge));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kUserSpeakOnMuteDetectionEnabled));
+
+  // Unmute and mute again, user opted in so nudge should not be shown.
+  controller()->SetMicrophoneMuted(false);
+  controller()->SetMicrophoneMuted(true);
+  EXPECT_FALSE(IsNudgeShown(nudge_id));
 }
 
 }  // namespace ash

@@ -49,6 +49,8 @@ class DeviceCommandStartCrdSessionJob : public RemoteCommandJob {
       bool show_confirmation_dialog = false;
       bool curtain_local_user_session = false;
       bool allow_troubleshooting_tools = false;
+      bool allow_reconnections = false;
+      bool allow_file_transfer = false;
     };
 
     virtual ~Delegate() = default;
@@ -119,7 +121,9 @@ class DeviceCommandStartCrdSessionJob : public RemoteCommandJob {
   std::string GetRobotAccountUserName() const;
   bool ShouldShowConfirmationDialog() const;
   bool ShouldTerminateUponInput() const;
+  bool ShouldAllowReconnections() const;
   bool ShouldAllowTroubleshootingTools() const;
+  bool ShouldAllowFileTransfer() const;
 
   ErrorCallback GetErrorCallback();
 

@@ -12,7 +12,7 @@
 
 BASE_FEATURE(kDefaultBrowserBlueDotPromo,
              "DefaultBrowserBlueDotPromo",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 constexpr base::FeatureParam<BlueDotPromoUserGroup>::Option
     kBlueDotPromoUserGroupOptions[] = {
@@ -23,8 +23,11 @@ constexpr base::FeatureParam<BlueDotPromoUserGroup>::Option
 
 constexpr base::FeatureParam<BlueDotPromoUserGroup> kBlueDotPromoUserGroupParam{
     &kDefaultBrowserBlueDotPromo, "user-group",
-    BlueDotPromoUserGroup::kOnlyBlueDotPromoEnabled,
-    &kBlueDotPromoUserGroupOptions};
+    BlueDotPromoUserGroup::kAllDBPromosEnabled, &kBlueDotPromoUserGroupOptions};
+
+BASE_FEATURE(kIOSPaymentsBottomSheet,
+             "IOSPaymentsBottomSheet",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExpandedTabStrip,
              "ExpandedTabStrip",
@@ -46,10 +49,6 @@ BASE_FEATURE(kIncognitoNtpRevamp,
              "IncognitoNtpRevamp",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kDefaultBrowserFullscreenPromoExperiment,
-             "DefaultBrowserFullscreenPromoExperiment",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kDefaultBrowserIntentsShowSettings,
              "DefaultBrowserIntentsShowSettings",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -68,14 +67,14 @@ BASE_FEATURE(kDefaultBrowserVideoPromo,
 
 BASE_FEATURE(kIOSCustomBrowserEditMenu,
              "IOSCustomBrowserEditMenu",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const char kIOSEditMenuPartialTranslateNoIncognitoParam[] =
     "IOSEditMenuPartialTranslateNoIncognitoParam";
 
 BASE_FEATURE(kIOSEditMenuPartialTranslate,
              "IOSEditMenuPartialTranslate",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsPartialTranslateEnabled() {
   if (@available(iOS 16, *)) {
@@ -90,7 +89,7 @@ bool ShouldShowPartialTranslateInIncognito() {
   }
   return !base::GetFieldTrialParamByFeatureAsBool(
       kIOSEditMenuPartialTranslate,
-      kIOSEditMenuPartialTranslateNoIncognitoParam, false);
+      kIOSEditMenuPartialTranslateNoIncognitoParam, true);
 }
 
 const char kIOSEditMenuSearchWithTitleParamTitle[] =
@@ -188,10 +187,14 @@ bool IsNewTabGridTransitionsEnabled() {
 
 BASE_FEATURE(kMultilineFadeTruncatingLabel,
              "MultilineFadeTruncatingLabel",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kNotificationSettingsMenuItem,
              "NotificationSettingsMenuItem",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSpotlightOpenTabsSource,
+             "SpotlightOpenTabsSource",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSpotlightReadingListSource,
@@ -208,7 +211,7 @@ bool IsConsistencyNewAccountInterfaceEnabled() {
 
 BASE_FEATURE(kAddToHomeScreen,
              "AddToHomeScreen",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const char kAddToHomeScreenDisableIncognitoParam[] =
     "AddToHomeScreenDisableIncognitoParam";
@@ -221,7 +224,7 @@ bool ShouldAddToHomeScreen(bool in_incognito) {
     return true;
   }
   return !base::GetFieldTrialParamByFeatureAsBool(
-      kAddToHomeScreen, kAddToHomeScreenDisableIncognitoParam, false);
+      kAddToHomeScreen, kAddToHomeScreenDisableIncognitoParam, true);
 }
 
 BASE_FEATURE(kNewNTPOmniboxLayout,
@@ -234,7 +237,7 @@ BASE_FEATURE(kEnableEmailInBookmarksReadingListSnackbar,
 
 BASE_FEATURE(kIndicateSyncErrorInOverflowMenu,
              "IndicateSyncErrorInOverflowMenu",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsIndicateSyncErrorInOverflowMenuEnabled() {
   return base::FeatureList::IsEnabled(kIndicateSyncErrorInOverflowMenu);
@@ -256,6 +259,6 @@ BASE_FEATURE(kOnlyAccessClipboardAsync,
              "OnlyAccessClipboardAsync",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kReplaceSyncPromosWithSignInPromos,
-             "ReplaceSyncPromosWithSignInPromos",
+BASE_FEATURE(kHideSettingsSyncPromo,
+             "HideSettingsSyncPromo",
              base::FEATURE_DISABLED_BY_DEFAULT);

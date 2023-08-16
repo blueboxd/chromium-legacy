@@ -121,19 +121,15 @@ class BrowserFeaturePromoControllerTest : public TestWithBrowserView {
     // Create a dummy tutorial.
     // This is just the first two steps of the "create tab group" tutorial.
     TutorialDescription desc;
-
-    TutorialDescription::Step step1(0, IDS_TUTORIAL_TAB_GROUP_ADD_TAB_TO_GROUP,
-                                    ui::InteractionSequence::StepType::kShown,
-                                    kTabStripElementId, std::string(),
-                                    HelpBubbleArrow::kTopCenter);
-    desc.steps.emplace_back(step1);
-
-    TutorialDescription::Step step2(
-        0, IDS_TUTORIAL_TAB_GROUP_ADD_TAB_TO_GROUP,
-        ui::InteractionSequence::StepType::kShown, kTabGroupEditorBubbleId,
-        std::string(), HelpBubbleArrow::kLeftCenter,
-        ui::CustomElementEventType(), false /*must_remain_visible*/);
-    desc.steps.emplace_back(std::move(step2));
+    desc.steps.emplace_back(
+        TutorialDescription::BubbleStep(kTabStripElementId)
+            .SetBubbleBodyText(IDS_TUTORIAL_TAB_GROUP_ADD_TAB_TO_GROUP)
+            .SetBubbleArrow(HelpBubbleArrow::kTopCenter));
+    desc.steps.emplace_back(
+        TutorialDescription::BubbleStep(kTabGroupEditorBubbleId)
+            .SetBubbleBodyText(IDS_TUTORIAL_TAB_GROUP_ADD_TAB_TO_GROUP)
+            .SetBubbleArrow(HelpBubbleArrow::kLeftCenter)
+            .AbortIfVisibilityLost(false));
 
     user_education_service->tutorial_registry().AddTutorial(
         kTestTutorialIdentifier, std::move(desc));
@@ -237,8 +233,9 @@ class BrowserFeaturePromoControllerTest : public TestWithBrowserView {
               controller_->GetPromoStatus(*feature));
   }
 
-  raw_ptr<BrowserFeaturePromoController> controller_;
-  raw_ptr<NiceMock<feature_engagement::test::MockTracker>> mock_tracker_;
+  raw_ptr<BrowserFeaturePromoController, DanglingUntriaged> controller_;
+  raw_ptr<NiceMock<feature_engagement::test::MockTracker>, DanglingUntriaged>
+      mock_tracker_;
   BrowserFeaturePromoController::TestLock lock_;
   int custom_callback_count_ = 0;
 

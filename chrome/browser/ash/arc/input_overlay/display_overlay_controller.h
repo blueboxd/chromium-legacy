@@ -23,7 +23,6 @@ namespace arc::input_overlay {
 
 class Action;
 class ActionEditMenu;
-class ActionView;
 class ButtonOptionsMenu;
 class EditFinishView;
 class EditingList;
@@ -34,6 +33,7 @@ class MenuEntryView;
 class MessageView;
 class NudgeView;
 class TouchInjector;
+class TouchInjectorObserver;
 
 // DisplayOverlayController manages the input mapping view, view and edit mode,
 // menu, and educational dialog. It also handles the visibility of the
@@ -49,9 +49,6 @@ class DisplayOverlayController : public ui::EventHandler,
   void SetDisplayMode(DisplayMode mode);
   // Get the bounds of |menu_entry_| in screen coordinates.
   absl::optional<gfx::Rect> GetOverlayMenuEntryBounds();
-
-  void AddActionEditMenu(ActionView* anchor, ActionType action_type);
-  void RemoveActionEditMenu();
 
   void AddEditMessage(const base::StringPiece& message,
                       MessageType message_type);
@@ -76,15 +73,17 @@ class DisplayOverlayController : public ui::EventHandler,
   InputOverlayWindowStateType GetWindowStateType() const;
 
   // For editor.
-  // Show the action view when adding |action|.
-  void OnActionAdded(Action* action);
-  // Remove the action view when removing |action|.
-  void OnActionRemoved(Action* action);
+  void AddNewAction(ActionType action_type = ActionType::TAP);
+  void RemoveAction(Action* action);
 
-  int GetInputMappingListSize();
+  int GetTouchInjectorActionsSize();
 
   // For menu entry hover state:
   void SetMenuEntryHoverState(bool curr_hover_state);
+
+  // Add UIs to observer touch injector change.
+  void AddTouchInjectorObserver(TouchInjectorObserver* observer);
+  void RemoveTouchInjectorObserver(TouchInjectorObserver* observer);
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -102,10 +101,12 @@ class DisplayOverlayController : public ui::EventHandler,
   const TouchInjector* touch_injector() const { return touch_injector_; }
 
  private:
+  friend class ActionView;
   friend class ArcInputOverlayManagerTest;
   friend class ButtonOptionsMenu;
   friend class DisplayOverlayControllerTest;
   friend class EditingList;
+  friend class EditLabelTest;
   friend class EducationalView;
   friend class InputMappingView;
   friend class InputMenuView;
@@ -146,7 +147,7 @@ class DisplayOverlayController : public ui::EventHandler,
   void RemoveEducationalView();
   void OnEducationalViewDismissed();
 
-  bool HasButtonOptionsMenu() const;
+  void AddButtonOptionsMenu(Action* action);
   void RemoveButtonOptionsMenu();
 
   void AddEditingList();
@@ -167,7 +168,7 @@ class DisplayOverlayController : public ui::EventHandler,
   void SetTouchInjectorEnable(bool enable);
   bool GetTouchInjectorEnable();
 
-  // Close |ActionEditMenu| Or |MessageView| if |LocatedEvent| happens outside
+  // Close |MessageView| if |LocatedEvent| happens outside
   // of their view bounds.
   void ProcessPressedEvent(const ui::LocatedEvent& event);
 
@@ -191,7 +192,6 @@ class DisplayOverlayController : public ui::EventHandler,
   raw_ptr<InputMenuView> input_menu_view_ = nullptr;
   raw_ptr<ButtonOptionsMenu> button_options_menu_ = nullptr;
   raw_ptr<MenuEntryView> menu_entry_ = nullptr;
-  raw_ptr<ActionEditMenu> action_edit_menu_ = nullptr;
   raw_ptr<EditFinishView> edit_finish_view_ = nullptr;
   raw_ptr<MessageView> message_ = nullptr;
   raw_ptr<EducationalView> educational_view_ = nullptr;

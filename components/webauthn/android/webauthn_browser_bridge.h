@@ -7,6 +7,8 @@
 
 #include "base/android/scoped_java_ref.h"
 
+namespace webauthn {
+
 class WebAuthnBrowserBridge {
  public:
   WebAuthnBrowserBridge(JNIEnv* env,
@@ -23,7 +25,8 @@ class WebAuthnBrowserBridge {
       const base::android::JavaParamRef<jobjectArray>& credentials,
       const base::android::JavaParamRef<jobject>& jframe_host,
       jboolean is_conditional_request,
-      const base::android::JavaParamRef<jobject>& jcallback) const;
+      const base::android::JavaParamRef<jobject>& jgetAssertionCallback,
+      const base::android::JavaParamRef<jobject>& jhybridCallback) const;
 
   void CleanupRequest(
       JNIEnv* env,
@@ -44,5 +47,7 @@ class WebAuthnBrowserBridge {
   // Java object that owns this WebAuthnBrowserBridge.
   base::android::ScopedJavaGlobalRef<jobject> owner_;
 };
+
+}  // namespace webauthn
 
 #endif  // COMPONENTS_WEBAUTHN_ANDROID_WEBAUTHN_BROWSER_BRIDGE_H_

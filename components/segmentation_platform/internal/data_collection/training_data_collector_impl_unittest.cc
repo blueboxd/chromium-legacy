@@ -221,7 +221,8 @@ class TrainingDataCollectorImplTest : public ::testing::Test {
           uma_trigger->mutable_uma_trigger()->mutable_uma_feature();
       uma_feature->set_name(kHistogramName0);
       uma_feature->set_name_hash(base::HashMetricName(kHistogramName0));
-      uma_feature->set_type(proto::SignalType::HISTOGRAM_VALUE);
+      uma_feature->set_type(proto::SignalType::HISTOGRAM_ENUM);
+      uma_feature->add_enum_ids(kSample);
     } else if (type == kPeriodicDecisionType) {
       // Add a uma feature output based on |kHistogramName0| if trigger type is
       // PERIODIC.
@@ -316,6 +317,20 @@ class TrainingDataCollectorImplTest : public ::testing::Test {
                SegmentationUkmHelper::FloatToInt64(3.f)});
   }
 
+  void ExpectResult1UkmWithSample(int sample) {
+    ExpectUkm({Segmentation_ModelExecution::kOptimizationTargetName,
+               Segmentation_ModelExecution::kModelVersionName,
+               Segmentation_ModelExecution::kInput0Name,
+               Segmentation_ModelExecution::kActualResultName,
+               Segmentation_ModelExecution::kActualResult2Name,
+               Segmentation_ModelExecution::kActualResult3Name},
+              {kTestOptimizationTarget0, kModelVersion,
+               SegmentationUkmHelper::FloatToInt64(1.f),
+               SegmentationUkmHelper::FloatToInt64(2.f),
+               SegmentationUkmHelper::FloatToInt64(3.f),
+               SegmentationUkmHelper::FloatToInt64(sample)});
+  }
+
   // TODO(xingliu): Share this test code with SegmentationUkmHelperTest, or test
   // with mock SegmentationUkmHelperTest.
   void ExpectUkm(std::vector<base::StringPiece> metric_names,
@@ -375,8 +390,10 @@ class TrainingDataCollectorImplTest : public ::testing::Test {
   NiceMock<processing::MockFeatureListQueryProcessor> feature_list_processor_;
   NiceMock<MockHistogramSignalHandler> histogram_signal_handler_;
   NiceMock<MockUserActionSignalHandler> user_action_signal_handler_;
-  raw_ptr<NiceMock<MockSignalStorageConfig>> signal_storage_config_;
-  raw_ptr<test::TestSegmentInfoDatabase> test_segment_info_db_;
+  raw_ptr<NiceMock<MockSignalStorageConfig>, DanglingUntriaged>
+      signal_storage_config_;
+  raw_ptr<test::TestSegmentInfoDatabase, DanglingUntriaged>
+      test_segment_info_db_;
   std::unique_ptr<TrainingDataCollectorImpl> collector_;
   TestingPrefServiceSimple prefs_;
   std::vector<std::unique_ptr<Config>> configs_;
@@ -648,7 +665,7 @@ TEST_F(TrainingDataCollectorImplTest, NoDataCollectionIfUkmAllowedPrefNotSet) {
 
 // Tests that if uma histogram trigger is set, collection will happen when the
 // trigger histogram is observed.
-TEST_F(TrainingDataCollectorImplTest, DataCollectionWithUMATrigger) {
+TEST_F(TrainingDataCollectorImplTest, DataCollectionWithEnumHistogramTrigger) {
   constexpr base::TimeDelta kTriggerDuration = base::Seconds(10);
   base::Time current = clock()->Now();
   SetupFeatureProcessorResult(kTestOptimizationTarget0, current,
@@ -667,9 +684,14 @@ TEST_F(TrainingDataCollectorImplTest, DataCollectionWithUMATrigger) {
   clock()->Advance(kTriggerDuration);
   ExpectUkmCount(0u);
 
+  // Expect to not trigger output collection if histogram is hit with an
+  // unlisted enum id.
+  collector()->OnHistogramSignalUpdated(kHistogramName0, 0);
+  ExpectUkmCount(0u);
+
   // Trigger output collection and ukm data recording.
   WaitForHistogramSignalUpdated(kHistogramName0, kSample);
-  ExpectResult1Ukm();
+  ExpectResult1UkmWithSample(kSample);
 }
 
 // Tests that if uma user action trigger is set, collection will happen when the
@@ -770,15 +792,7 @@ TEST_F(TrainingDataCollectorImplTest, DataCollectionWithTimeTrigger) {
   // Trigger output collection and ukm data recording.
   run_loop.Run();
   ExpectUkmCount(1u);
-  ExpectUkm({Segmentation_ModelExecution::kOptimizationTargetName,
-             Segmentation_ModelExecution::kModelVersionName,
-             Segmentation_ModelExecution::kInput0Name,
-             Segmentation_ModelExecution::kActualResultName,
-             Segmentation_ModelExecution::kActualResult2Name},
-            {kTestOptimizationTarget0, kModelVersion,
-             SegmentationUkmHelper::FloatToInt64(1.f),
-             SegmentationUkmHelper::FloatToInt64(2.f),
-             SegmentationUkmHelper::FloatToInt64(3.f)});
+  ExpectResult1Ukm();
 }
 
 TEST_F(TrainingDataCollectorImplTest, DataCollectionWithStoreToDisk) {
@@ -840,17 +854,7 @@ TEST_F(TrainingDataCollectorImplTest, DataCollectionWithTriggerAPI) {
                                    base::DoNothing());
   run_loop.Run();
   ExpectUkmCount(1u);
-  ExpectUkm({Segmentation_ModelExecution::kOptimizationTargetName,
-             Segmentation_ModelExecution::kModelVersionName,
-             Segmentation_ModelExecution::kInput0Name,
-             Segmentation_ModelExecution::kActualResultName,
-             Segmentation_ModelExecution::kActualResult2Name,
-             Segmentation_ModelExecution::kActualResult3Name},
-            {kTestOptimizationTarget0, kModelVersion,
-             SegmentationUkmHelper::FloatToInt64(1.f),
-             SegmentationUkmHelper::FloatToInt64(2.f),
-             SegmentationUkmHelper::FloatToInt64(3.f),
-             SegmentationUkmHelper::FloatToInt64(kSample)});
+  ExpectResult1UkmWithSample(kSample);
 }
 
 }  // namespace

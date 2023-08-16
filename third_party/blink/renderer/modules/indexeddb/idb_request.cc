@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_cursor_with_value.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
@@ -146,7 +147,10 @@ IDBRequest::IDBRequest(ScriptState* script_state,
       source_(source),
       event_queue_(
           MakeGarbageCollected<EventQueue>(ExecutionContext::From(script_state),
-                                           TaskType::kDatabaseAccess)) {}
+                                           TaskType::kDatabaseAccess)) {
+  async_task_context_.Schedule(ExecutionContext::From(script_state),
+                               indexed_db_names::kIndexedDB);
+}
 
 IDBRequest::~IDBRequest() {
   if (!GetExecutionContext())
@@ -382,6 +386,7 @@ void IDBRequest::HandleResponse(std::unique_ptr<IDBValue> value) {
   DCHECK(transit_blob_handles_.empty());
   DCHECK(transaction_);
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.get());
+  value->SetIsolate(GetIsolate());
   if (!transaction_->HasQueuedResults() && !is_wrapped)
     return EnqueueResponse(std::move(value));
   transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
@@ -416,11 +421,19 @@ void IDBRequest::HandleResponse(
                     WrapPersistent(transaction_.Get()))));
 }
 
-void IDBRequest::HandleResponse(std::unique_ptr<IDBKey> key,
-                                std::unique_ptr<IDBKey> primary_key,
-                                std::unique_ptr<IDBValue> value) {
+void IDBRequest::HandleResponse(
+    std::unique_ptr<IDBKey> key,
+    std::unique_ptr<IDBKey> primary_key,
+    absl::optional<std::unique_ptr<IDBValue>> optional_value) {
   DCHECK(transit_blob_handles_.empty());
   DCHECK(transaction_);
+
+  std::unique_ptr<IDBValue> value =
+      optional_value ? std::move(*optional_value)
+                     : std::make_unique<IDBValue>(scoped_refptr<SharedBuffer>(),
+                                                  Vector<WebBlobInfo>());
+  value->SetIsolate(GetIsolate());
+
   bool is_wrapped = IDBValueUnwrapper::IsWrapped(value.get());
   if (!transaction_->HasQueuedResults() && !is_wrapped) {
     return EnqueueResponse(std::move(key), std::move(primary_key),
@@ -445,6 +458,104 @@ void IDBRequest::HandleResponse(
                     WrapPersistent(transaction_.Get()))));
 }
 
+void IDBRequest::OnClear(bool success) {
+  if (success) {
+    probe::AsyncTask async_task(GetExecutionContext(), &async_task_context_,
+                                "clear");
+    HandleResponse();
+  }
+}
+
+void IDBRequest::OnDelete(bool success) {
+  if (success) {
+    probe::AsyncTask async_task(GetExecutionContext(), &async_task_context_,
+                                "delete");
+    HandleResponse();
+  }
+}
+
+void IDBRequest::OnGet(mojom::blink::IDBDatabaseGetResultPtr result) {
+  if (result->is_error_result()) {
+    HandleError(std::move(result->get_error_result()));
+    return;
+  }
+
+  probe::AsyncTask async_task(GetExecutionContext(), &async_task_context_,
+                              "get");
+  if (result->is_empty()) {
+    HandleResponse();
+  } else if (result->is_key()) {
+    HandleResponse(std::move(result->get_key()));
+  } else if (result->is_value()) {
+    std::unique_ptr<IDBValue> value =
+        IDBValue::ConvertReturnValue(result->get_value());
+    HandleResponse(std::move(value));
+  }
+}
+
+void IDBRequest::OnOpenCursor(
+    mojom::blink::IDBDatabaseOpenCursorResultPtr result) {
+  if (result->is_error_result()) {
+    HandleError(std::move(result->get_error_result()));
+    return;
+  }
+
+  probe::AsyncTask async_task(GetExecutionContext(), &async_task_context_,
+                              "openCursor");
+  if (result->is_empty()) {
+    std::unique_ptr<IDBValue> value = IDBValue::ConvertReturnValue(nullptr);
+    HandleResponse(std::move(value));
+    return;
+  }
+
+  std::unique_ptr<WebIDBCursor> cursor = std::make_unique<WebIDBCursor>(
+      std::move(result->get_value()->cursor), transaction_->Id(),
+      GetExecutionContext()->GetTaskRunner(TaskType::kDatabaseAccess));
+  std::unique_ptr<IDBValue> value;
+  if (result->get_value()->value) {
+    value = std::move(*result->get_value()->value);
+  } else {
+    value = std::make_unique<IDBValue>(scoped_refptr<SharedBuffer>(),
+                                       Vector<WebBlobInfo>());
+  }
+
+  value->SetIsolate(GetIsolate());
+  HandleResponse(std::move(cursor), std::move(result->get_value()->key),
+                 std::move(result->get_value()->primary_key), std::move(value));
+}
+
+void IDBRequest::OnAdvanceCursor(mojom::blink::IDBCursorResultPtr result) {
+  if (result->is_error_result()) {
+    HandleError(std::move(result->get_error_result()));
+    return;
+  }
+
+  if (result->is_empty() && !result->get_empty()) {
+    HandleError(nullptr);
+    return;
+  }
+
+  if (!result->is_empty() && (result->get_values()->keys.size() != 1u ||
+                              result->get_values()->primary_keys.size() != 1u ||
+                              result->get_values()->values.size() != 1u)) {
+    HandleError(nullptr);
+    return;
+  }
+
+  probe::AsyncTask async_task(GetExecutionContext(), &async_task_context_,
+                              "advanceCursor");
+
+  if (result->is_empty()) {
+    std::unique_ptr<IDBValue> value = IDBValue::ConvertReturnValue(nullptr);
+    HandleResponse(std::move(value));
+    return;
+  }
+
+  HandleResponse(std::move(result->get_values()->keys[0]),
+                 std::move(result->get_values()->primary_keys[0]),
+                 std::move(result->get_values()->values[0]));
+}
+
 void IDBRequest::EnqueueResponse(DOMException* error) {
   TRACE_EVENT0("IndexedDB", "IDBRequest::EnqueueResponse(DOMException)");
   if (!ShouldEnqueueEvent()) {
@@ -456,6 +567,32 @@ void IDBRequest::EnqueueResponse(DOMException* error) {
   SetResult(MakeGarbageCollected<IDBAny>(IDBAny::kUndefinedType));
   pending_cursor_.Clear();
   EnqueueEvent(Event::CreateCancelableBubble(event_type_names::kError));
+}
+
+void IDBRequest::HandleError(mojom::blink::IDBErrorPtr error) {
+  mojom::blink::IDBException code =
+      error ? error->error_code : mojom::blink::IDBException::kUnknownError;
+  // In some cases, the backend clears the pending transaction task queue
+  // which destroys all pending tasks.  If our callback was queued with a task
+  // that gets cleared, we'll get a signal with an IgnorableAbortError as the
+  // task is torn down.  This means the error response can be safely ignored.
+  if (code == mojom::blink::IDBException::kIgnorableAbortError) {
+    return;
+  }
+  probe::AsyncTask async_task(GetExecutionContext(), &async_task_context_,
+                              "error");
+  auto* exception = MakeGarbageCollected<DOMException>(
+      static_cast<DOMExceptionCode>(code),
+      error ? error->error_message : "Invalid response");
+
+  transit_blob_handles_.clear();
+  if (!transaction_ || !transaction_->HasQueuedResults()) {
+    return EnqueueResponse(exception);
+  }
+  transaction_->EnqueueResult(std::make_unique<IDBRequestQueueItem>(
+      this, exception,
+      WTF::BindOnce(&IDBTransaction::OnResultReady,
+                    WrapPersistent(transaction_.Get()))));
 }
 
 void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,

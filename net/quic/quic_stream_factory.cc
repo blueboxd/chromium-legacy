@@ -217,6 +217,12 @@ class QuicStreamFactory::QuicCryptoClientConfigOwner {
         FROM_HERE,
         base::BindRepeating(&QuicCryptoClientConfigOwner::OnMemoryPressure,
                             base::Unretained(this)));
+    if (quic_stream_factory_->ssl_config_service_->GetSSLContextConfig()
+            .PostQuantumKeyAgreementEnabled()) {
+      config_.set_preferred_groups({SSL_GROUP_X25519_KYBER768_DRAFT00,
+                                    SSL_GROUP_X25519, SSL_GROUP_SECP256R1,
+                                    SSL_GROUP_SECP384R1});
+    }
   }
 
   QuicCryptoClientConfigOwner(const QuicCryptoClientConfigOwner&) = delete;
@@ -1686,14 +1692,14 @@ void QuicStreamFactory::OnNetworkMadeDefault(handles::NetworkHandle network) {
     set_is_quic_known_to_work_on_current_network(false);
 }
 
-void QuicStreamFactory::OnCertDBChanged() {
+void QuicStreamFactory::OnTrustStoreChanged() {
   // We should flush the sessions if we removed trust from a
   // cert, because a previously trusted server may have become
   // untrusted.
   //
   // We should not flush the sessions if we added trust to a cert.
   //
-  // Since the OnCertDBChanged method doesn't tell us what
+  // Since the OnTrustStoreChanged method doesn't tell us what
   // kind of change it is, we have to flush the socket
   // pools to be safe.
   MarkAllActiveSessionsGoingAway(kCertDBChanged);

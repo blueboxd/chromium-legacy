@@ -21,14 +21,15 @@
 #import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_coordinator+subclassing.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_mediator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_actions_handler.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_visibility_configuration.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_mediator.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 
@@ -36,12 +37,12 @@
 #error "This file requires ARC support."
 #endif
 
-@interface AdaptiveToolbarCoordinator ()
+@interface AdaptiveToolbarCoordinator () <AdaptiveToolbarViewControllerDelegate>
 
 // Whether this coordinator has been started.
 @property(nonatomic, assign) BOOL started;
 // Mediator for updating the toolbar when the WebState changes.
-@property(nonatomic, strong) ToolbarMediator* mediator;
+@property(nonatomic, strong) AdaptiveToolbarMediator* mediator;
 // Actions handler for the toolbar buttons.
 @property(nonatomic, strong) ToolbarButtonActionsHandler* actionHandler;
 
@@ -57,19 +58,21 @@
 }
 
 - (void)start {
-  if (self.started)
+  if (_started) {
     return;
+  }
   Browser* browser = self.browser;
 
-  self.started = YES;
+  _started = YES;
 
   self.viewController.overrideUserInterfaceStyle =
       browser->GetBrowserState()->IsOffTheRecord()
           ? UIUserInterfaceStyleDark
           : UIUserInterfaceStyleUnspecified;
   self.viewController.layoutGuideCenter = LayoutGuideCenterForBrowser(browser);
+  self.viewController.adaptiveDelegate = self;
 
-  self.mediator = [[ToolbarMediator alloc] init];
+  self.mediator = [[AdaptiveToolbarMediator alloc] init];
   self.mediator.incognito = browser->GetBrowserState()->IsOffTheRecord();
   self.mediator.consumer = self.viewController;
   self.mediator.navigationBrowserAgent =
@@ -91,16 +94,20 @@
   [super stop];
   [self.mediator disconnect];
   self.mediator = nil;
+  _started = NO;
 }
 
 #pragma mark - Public
 
-- (BOOL)isOmniboxFirstResponder {
-  return [self.locationBarCoordinator isOmniboxFirstResponder];
+- (void)setLocationBarViewController:
+    (UIViewController*)locationBarViewController {
+  self.viewController.locationBarViewController = locationBarViewController;
 }
 
-- (BOOL)showingOmniboxPopup {
-  return [self.locationBarCoordinator showingOmniboxPopup];
+#pragma mark - AdaptiveToolbarViewControllerDelegate
+
+- (void)exitFullscreen {
+  FullscreenController::FromBrowser(self.browser)->ExitFullscreen();
 }
 
 #pragma mark - SideSwipeToolbarSnapshotProviding
@@ -124,7 +131,7 @@
 }
 
 - (UIResponder<UITextInput>*)fakeboxScribbleForwardingTarget {
-  // Only works in primary toolbar.
+  // Implemented in `ToolbarCoordinator`.
   return nil;
 }
 

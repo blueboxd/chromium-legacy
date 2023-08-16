@@ -16,6 +16,7 @@
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/password_manager/android/password_accessory_controller.h"
 #include "chrome/browser/password_manager/android/password_generation_dialog_view_interface.h"
+#include "chrome/browser/password_manager/android/password_infobar_utils.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/touch_to_fill/password_generation/android/touch_to_fill_password_generation_bridge_impl.h"
 #include "chrome/browser/touch_to_fill/password_generation/android/touch_to_fill_password_generation_controller.h"
@@ -254,7 +255,21 @@ std::unique_ptr<TouchToFillPasswordGenerationController>
 PasswordGenerationControllerImpl::CreateTouchToFillGenerationController() {
   return std::make_unique<TouchToFillPasswordGenerationController>(
       active_frame_driver_, &GetWebContents(),
-      std::make_unique<TouchToFillPasswordGenerationBridgeImpl>());
+      std::make_unique<TouchToFillPasswordGenerationBridgeImpl>(),
+      base::BindOnce(&PasswordGenerationControllerImpl::
+                         OnTouchToFillForGenerationDismissed,
+                     base::Unretained(this)));
+}
+
+std::unique_ptr<TouchToFillPasswordGenerationController>
+PasswordGenerationControllerImpl::
+    CreateTouchToFillGenerationControllerForTesting(
+        std::unique_ptr<TouchToFillPasswordGenerationBridge> bridge) {
+  return std::make_unique<TouchToFillPasswordGenerationController>(
+      active_frame_driver_, &GetWebContents(), std::move(bridge),
+      base::BindOnce(&PasswordGenerationControllerImpl::
+                         OnTouchToFillForGenerationDismissed,
+                     base::Unretained(this)));
 }
 
 void PasswordGenerationControllerImpl::ShowDialog(PasswordGenerationType type) {
@@ -291,12 +306,27 @@ bool PasswordGenerationControllerImpl::TryToShowGenerationTouchToFill() {
 
   touch_to_fill_generation_controller_ =
       create_touch_to_fill_generation_controller_.Run();
-  if (!touch_to_fill_generation_controller_->ShowTouchToFill()) {
+  std::u16string generated_password =
+      active_frame_driver_->GetPasswordGenerationHelper()->GeneratePassword(
+          GetWebContents().GetLastCommittedURL().DeprecatedGetOriginAsURL(),
+          generation_element_data_->form_signature,
+          generation_element_data_->field_signature,
+          generation_element_data_->max_password_length);
+  std::string account =
+      password_manager::GetDisplayableAccountName(&GetWebContents());
+  if (!touch_to_fill_generation_controller_->ShowTouchToFill(
+          std::move(generated_password), std::move(account))) {
     return false;
   }
 
   touch_to_fill_generation_state_ = TouchToFillState::kIsShowing;
   return true;
+}
+
+void PasswordGenerationControllerImpl::OnTouchToFillForGenerationDismissed() {
+  CHECK(touch_to_fill_generation_state_ == TouchToFillState::kIsShowing);
+  touch_to_fill_generation_state_ = TouchToFillState::kWasShown;
+  touch_to_fill_generation_controller_.reset();
 }
 
 bool PasswordGenerationControllerImpl::IsActiveFrameDriver(
@@ -321,8 +351,6 @@ void PasswordGenerationControllerImpl::ResetFocusState() {
 void PasswordGenerationControllerImpl::HideBottomSheetIfNeeded() {
   if (touch_to_fill_generation_state_ != TouchToFillState::kNone) {
     touch_to_fill_generation_state_ = TouchToFillState::kNone;
-    // TODO (crbug.com/1421753): Destroy the
-    // touch_to_fill_generation_controller_ when the bottom sheet is dismissed.
     touch_to_fill_generation_controller_.reset();
   }
 }

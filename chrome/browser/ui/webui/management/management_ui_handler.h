@@ -31,6 +31,10 @@ extern const char kManagementScreenCaptureEvent[];
 extern const char kManagementScreenCaptureData[];
 #endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+extern const char kManagementDeviceSignalsDisclosure[];
+#endif  // #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+
 #if BUILDFLAG(IS_CHROMEOS)
 extern const char kManagementLogUploadEnabled[];
 extern const char kManagementReportActivityTimes[];
@@ -110,6 +114,12 @@ class StatusCollector;
 class SystemLogUploader;
 }  // namespace policy
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+namespace device_signals {
+class UserPermissionService;
+}  // namespace device_signals
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+
 class Profile;
 
 // The JavaScript message handler for the chrome://management page.
@@ -163,6 +173,9 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   base::Value::Dict GetThreatProtectionInfo(Profile* profile);
   base::Value::List GetManagedWebsitesInfo(Profile* profile) const;
   virtual policy::PolicyService* GetPolicyService();
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  virtual device_signals::UserPermissionService* GetUserPermissionService();
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Protected for testing.
@@ -177,11 +190,11 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   void AddUpdateRequiredEolInfo(base::Value::Dict* response) const;
 
   // Adds a boolean which indicates if the network traffic can be monitored by
-  // the admin via policy configurations, either via a proxy server or via
-  // secure DNS templates with identifiers. If true, a warning will be added to
-  // the transparency panel to inform the user that the admin may be able to see
-  // their network traffic.
-  void AddMonitoredNetworkPrivacyDisclosure(base::Value::Dict* response) const;
+  // the admin via policy configurations, either via a proxy server, via
+  // secure DNS templates with identifiers, or via XDR monitoring. If true, a
+  // warning will be added to the transparency panel to inform the user that the
+  // admin may be able to see their network traffic.
+  void AddMonitoredNetworkPrivacyDisclosure(base::Value::Dict* response);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
  private:
   void GetManagementStatus(Profile* profile, base::Value::Dict* status) const;

@@ -23,7 +23,6 @@
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
-#include "components/aggregation_service/parsing_utils.h"
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/parsing_utils.h"
@@ -53,7 +52,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_errors.h"
-#include "services/network/public/cpp/attribution_utils.h"
 #include "services/network/public/mojom/attribution.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -175,8 +173,10 @@ attribution_internals::mojom::WebUIReportPtr WebUIReport(
                 ai_mojom::WebUIReportAggregatableAttributionData::New(
                     std::move(contributions),
                     aggregatable_data.common_data.verification_token,
-                    aggregation_service::SerializeAggregationCoordinator(
-                        aggregatable_data.common_data.aggregation_coordinator),
+                    aggregatable_data.common_data.aggregation_coordinator_origin
+                        ? aggregatable_data.common_data
+                              .aggregation_coordinator_origin->Serialize()
+                        : "",
                     /*is_null_report=*/false));
           },
 
@@ -192,8 +192,10 @@ attribution_internals::mojom::WebUIReportPtr WebUIReport(
                 ai_mojom::WebUIReportAggregatableAttributionData::New(
                     std::move(contributions),
                     null_data.common_data.verification_token,
-                    aggregation_service::SerializeAggregationCoordinator(
-                        null_data.common_data.aggregation_coordinator),
+                    null_data.common_data.aggregation_coordinator_origin
+                        ? null_data.common_data.aggregation_coordinator_origin
+                              ->Serialize()
+                        : "",
                     /*is_null_report=*/true));
           },
       },
@@ -255,9 +257,8 @@ void AttributionInternalsHandlerImpl::IsAttributionReportingEnabled(
           /*destination_origin=*/nullptr, /*reporting_origin=*/nullptr);
   bool debug_mode = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAttributionReportingDebugMode);
-  std::move(callback).Run(
-      attribution_reporting_enabled, debug_mode,
-      network::GetAttributionSupportHeader(AttributionManager::GetSupport()));
+  std::move(callback).Run(attribution_reporting_enabled, debug_mode,
+                          AttributionManager::GetSupport());
 }
 
 void AttributionInternalsHandlerImpl::GetActiveSources(
@@ -373,7 +374,8 @@ void AttributionInternalsHandlerImpl::OnReportSent(
       status = ReportStatus::NewNetworkError(
           net::ErrorToShortString(info.network_error));
       break;
-    case SendResult::Status::kFailedToAssemble:
+    case SendResult::Status::kAssemblyFailure:
+    case SendResult::Status::kTransientAssemblyFailure:
       status = ReportStatus::NewFailedToAssemble(Empty::New());
       break;
   }
@@ -387,7 +389,7 @@ void AttributionInternalsHandlerImpl::OnDebugReportSent(
     int status,
     base::Time time) {
   auto web_report = WebUIDebugReport::New();
-  web_report->url = report.report_url();
+  web_report->url = report.ReportUrl();
   web_report->time = time.ToJsTime();
   web_report->body =
       SerializeAttributionJson(report.ReportBody(), /*pretty_print=*/true);
@@ -536,7 +538,7 @@ void AttributionInternalsHandlerImpl::OnTriggerHandled(
       GetWebUITriggerStatus(result.event_level_status());
   web_ui_trigger->aggregatable_status =
       GetWebUITriggerStatus(result.aggregatable_status());
-  web_ui_trigger->verification = trigger.verification();
+  web_ui_trigger->verifications = trigger.verifications();
 
   observer_->OnTriggerHandled(std::move(web_ui_trigger));
 

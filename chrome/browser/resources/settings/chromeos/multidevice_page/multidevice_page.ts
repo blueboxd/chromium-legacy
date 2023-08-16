@@ -26,10 +26,10 @@ import {beforeNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/
 
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
+import {Section} from '../mojom-webui/routes.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
-import {Route, Router} from '../router.js';
+import {Route, Router, routes} from '../router.js';
 
 import {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from './multidevice_browser_proxy.js';
 import {MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, PhoneHubFeatureAccessStatus} from './multidevice_constants.js';
@@ -54,6 +54,12 @@ class SettingsMultidevicePageElement extends
 
   static get properties() {
     return {
+      section_: {
+        type: Number,
+        value: Section.kMultiDevice,
+        readOnly: true,
+      },
+
       /**
        * A Map specifying which element should be focused when exiting a
        * subpage. The key of the map holds a Route path, and the value holds a
@@ -177,6 +183,7 @@ class SettingsMultidevicePageElement extends
   private isPasswordDialogShowing_: boolean;
   private isPhoneScreenLockEnabled_: boolean;
   private isPinNumberDialogShowing_: boolean;
+  private section_: Section;
   private shouldEnableNearbyShareBackgroundScanningRevamp_: boolean;
   private showPasswordPromptDialog_: boolean;
   private showPhonePermissionSetupDialog_: boolean;

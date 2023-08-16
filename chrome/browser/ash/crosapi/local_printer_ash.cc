@@ -35,7 +35,6 @@
 #include "chrome/browser/ash/printing/print_server.h"
 #include "chrome/browser/ash/printing/print_servers_manager.h"
 #include "chrome/browser/ash/printing/printer_authenticator.h"
-#include "chrome/browser/ash/printing/printer_configurer.h"
 #include "chrome/browser/ash/printing/printer_setup_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -80,11 +79,7 @@ GURL GenerateEulaUrl(scoped_refptr<chromeos::PpdProvider>,
   return ash::PrinterConfigurer::GeneratePrinterEulaUrl(license);
 }
 
-// Destroys the PrinterConfigurer object once the callback has finished
-// running.
 mojom::CapabilitiesResponsePtr OnSetUpPrinter(
-    std::unique_ptr<ash::PrinterConfigurer>,
-    PrefService* prefs,
     const chromeos::Printer& printer,
     const absl::optional<printing::PrinterSemanticCapsAndDefaults>& caps) {
   return mojom::CapabilitiesResponse::New(
@@ -105,8 +100,6 @@ mojom::CapabilitiesResponsePtr OnSetUpPrinter(
 // this callback is executed.
 void OnPrinterAuthenticated(
     std::unique_ptr<ash::printing::PrinterAuthenticator> /* authenticator */,
-    std::unique_ptr<ash::PrinterConfigurer> printer_configurer,
-    Profile* profile,
     ash::CupsPrintersManager* printers_manager,
     const chromeos::Printer& printer,
     mojom::LocalPrinter::GetCapabilityCallback callback,
@@ -117,12 +110,9 @@ void OnPrinterAuthenticated(
     std::move(callback).Run(nullptr);
     return;
   }
-  ash::PrinterConfigurer* ptr = printer_configurer.get();
   ash::printing::SetUpPrinter(
-      printers_manager, ptr, printer,
-      base::BindOnce(OnSetUpPrinter, std::move(printer_configurer),
-                     profile->GetPrefs(), printer)
-          .Then(std::move(callback)));
+      printers_manager, printer,
+      base::BindOnce(OnSetUpPrinter, printer).Then(std::move(callback)));
 }
 
 void OnOAuthAccessTokenObtained(
@@ -169,18 +159,14 @@ bool IsSecureIppPrinter(const chromeos::Printer& printer) {
 
 }  // namespace
 
-LocalPrinterAsh::LocalPrinterAsh()
-    : profile_manager_(g_browser_process->profile_manager()) {
-  if (profile_manager_) {
-    profile_manager_->AddObserver(this);
+LocalPrinterAsh::LocalPrinterAsh() {
+  auto* profile_manager = g_browser_process->profile_manager();
+  if (profile_manager) {
+    profile_manager_observer_.Observe(profile_manager);
   }
 }
 
-LocalPrinterAsh::~LocalPrinterAsh() {
-  if (profile_manager_) {
-    profile_manager_->RemoveObserver(this);
-  }
-}
+LocalPrinterAsh::~LocalPrinterAsh() = default;
 
 // static
 mojom::PrintServersConfigPtr LocalPrinterAsh::ConfigToMojom(
@@ -256,8 +242,7 @@ void LocalPrinterAsh::OnProfileAdded(Profile* profile) {
 }
 
 void LocalPrinterAsh::OnProfileManagerDestroying() {
-  profile_manager_->RemoveObserver(this);
-  profile_manager_ = nullptr;
+  profile_manager_observer_.Reset();
 }
 
 void LocalPrinterAsh::OnPrintJobCreated(base::WeakPtr<ash::CupsPrintJob> job) {
@@ -359,8 +344,6 @@ void LocalPrinterAsh::GetCapability(const std::string& printer_id,
     std::move(callback).Run(nullptr);
     return;
   }
-  std::unique_ptr<ash::PrinterConfigurer> printer_configurer =
-      CreatePrinterConfigurer(profile);
 
   if (ash::features::IsOAuthIppEnabled()) {
     ash::printing::oauth2::AuthorizationZonesManager* auth_manager =
@@ -373,11 +356,10 @@ void LocalPrinterAsh::GetCapability(const std::string& printer_id,
         authenticator.get();
     authenticator_ptr->ObtainAccessTokenIfNeeded(
         base::BindOnce(OnPrinterAuthenticated, std::move(authenticator),
-                       std::move(printer_configurer), profile, printers_manager,
-                       *printer, std::move(callback)));
+                       printers_manager, *printer, std::move(callback)));
   } else {
-    OnPrinterAuthenticated(nullptr, std::move(printer_configurer), profile,
-                           printers_manager, *printer, std::move(callback),
+    OnPrinterAuthenticated(nullptr, printers_manager, *printer,
+                           std::move(callback),
                            ash::printing::oauth2::StatusCode::kOK, "");
   }
 }
@@ -695,11 +677,6 @@ void LocalPrinterAsh::GetIppClientInfo(const std::string& printer_id,
 scoped_refptr<chromeos::PpdProvider> LocalPrinterAsh::CreatePpdProvider(
     Profile* profile) {
   return ash::CreatePpdProvider(profile);
-}
-
-std::unique_ptr<ash::PrinterConfigurer>
-LocalPrinterAsh::CreatePrinterConfigurer(Profile* profile) {
-  return ash::PrinterConfigurer::Create(profile);
 }
 
 ash::printing::IppClientInfoCalculator*

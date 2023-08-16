@@ -10,7 +10,6 @@ import android.content.Context;
 
 import androidx.test.core.app.ApplicationProvider;
 
-import org.junit.Assert;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -83,8 +82,8 @@ public class CronetSmokeTestRule implements TestRule {
 
         // Check the response info
         UrlResponseInfo responseInfo = callback.getResponseInfo();
-        Assert.assertNotNull(responseInfo);
-        Assert.assertFalse(responseInfo.wasCached());
+        assertThat(responseInfo).isNotNull();
+        assertThat(responseInfo.wasCached()).isFalse();
         assertThat(responseInfo.getUrl()).isEqualTo(url);
         assertThat(responseInfo.getUrlChain().get(responseInfo.getUrlChain().size() - 1))
                 .isEqualTo(url);
@@ -93,12 +92,12 @@ public class CronetSmokeTestRule implements TestRule {
     }
 
     static void assertJavaEngine(CronetEngine engine) {
-        Assert.assertNotNull(engine);
+        assertThat(engine).isNotNull();
         assertThat(engine.getClass().getName()).isEqualTo("org.chromium.net.impl.JavaCronetEngine");
     }
 
     static void assertNativeEngine(CronetEngine engine) {
-        Assert.assertNotNull(engine);
+        assertThat(engine).isNotNull();
         assertThat(engine.getClass().getName())
                 .isEqualTo("org.chromium.net.impl.CronetUrlRequestContext");
     }

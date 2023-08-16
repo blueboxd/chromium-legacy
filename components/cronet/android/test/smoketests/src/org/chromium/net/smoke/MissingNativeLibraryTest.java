@@ -4,13 +4,15 @@
 
 package org.chromium.net.smoke;
 
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
+
 import static org.chromium.net.smoke.CronetSmokeTestRule.assertJavaEngine;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -57,7 +59,7 @@ public class MissingNativeLibraryTest {
         boolean foundNativeProvider = false;
         CronetProvider platformProvider = null;
         for (CronetProvider provider : availableProviders) {
-            Assert.assertTrue(provider.isEnabled());
+            assertThat(provider.isEnabled()).isTrue();
             if (provider.getName().equals(CronetProvider.PROVIDER_NAME_APP_PACKAGED)) {
                 foundNativeProvider = true;
             } else if (provider.getName().equals(CronetProvider.PROVIDER_NAME_FALLBACK)) {
@@ -65,19 +67,25 @@ public class MissingNativeLibraryTest {
             }
         }
 
-        Assert.assertTrue("Unable to find the native cronet provider", foundNativeProvider);
-        Assert.assertNotNull("Unable to find the platform cronet provider", platformProvider);
+        assertWithMessage("Unable to find the native cronet provider")
+                .that(foundNativeProvider)
+                .isTrue();
+        assertWithMessage("Unable to find the platform cronet provider")
+                .that(platformProvider)
+                .isNotNull();
 
         CronetEngine.Builder builder = platformProvider.createBuilder();
         CronetEngine engine = builder.build();
         assertJavaEngine(engine);
 
-        Assert.assertTrue("It should be always possible to cast the created builder to"
-                        + " ExperimentalCronetEngine.Builder",
-                builder instanceof ExperimentalCronetEngine.Builder);
+        assertWithMessage("It should be always possible to cast the created builder to"
+                + " ExperimentalCronetEngine.Builder")
+                .that(builder)
+                .isInstanceOf(ExperimentalCronetEngine.Builder.class);
 
-        Assert.assertTrue("It should be always possible to cast the created engine to"
-                        + " ExperimentalCronetEngine.Builder",
-                engine instanceof ExperimentalCronetEngine);
+        assertWithMessage("It should be always possible to cast the created engine to"
+                + " ExperimentalCronetEngine.Builder")
+                .that(engine)
+                .isInstanceOf(ExperimentalCronetEngine.class);
     }
 }

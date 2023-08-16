@@ -8,6 +8,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/destination_throttler.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
@@ -20,7 +21,12 @@ const base::FeatureParam<int> kMaxReportingOriginsPerSiteParam{
     AttributionConfig::RateLimitConfig::
         kDefaultMaxReportingOriginsPerSourceReportingSite};
 
-}
+const base::FeatureParam<int> kMaxAttributionsPerEventSourceParam{
+    &blink::features::kConversionMeasurement,
+    "max_attributions_per_event_source",
+    AttributionConfig::EventLevelLimit::kDefaultMaxAttributionsPerEventSource};
+
+}  // namespace
 
 bool AttributionConfig::Validate() const {
   if (max_sources_per_origin <= 0) {
@@ -43,8 +49,23 @@ bool AttributionConfig::Validate() const {
     return false;
   }
 
+  if (!throttler_policy.Validate()) {
+    return false;
+  }
+
   return true;
 }
+
+AttributionConfig::RateLimitConfig::RateLimitConfig()
+    : max_reporting_origins_per_source_reporting_site(
+          kMaxReportingOriginsPerSiteParam.Get()) {
+  if (max_reporting_origins_per_source_reporting_site <= 0) {
+    max_reporting_origins_per_source_reporting_site =
+        kDefaultMaxReportingOriginsPerSourceReportingSite;
+  }
+}
+
+AttributionConfig::RateLimitConfig::~RateLimitConfig() = default;
 
 bool AttributionConfig::RateLimitConfig::Validate() const {
   if (time_window <= base::TimeDelta()) {
@@ -63,12 +84,15 @@ bool AttributionConfig::RateLimitConfig::Validate() const {
     return false;
   }
 
-  return true;
-}
+  if (max_reporting_origins_per_source_reporting_site <= 0) {
+    return false;
+  }
 
-int AttributionConfig::RateLimitConfig::
-    GetMaxSourceReportingOriginsPerReportingSite() const {
-  return kMaxReportingOriginsPerSiteParam.Get();
+  if (!origins_per_site_window.is_positive()) {
+    return false;
+  }
+
+  return true;
 }
 
 bool AttributionConfig::EventLevelLimit::Validate() const {
@@ -146,7 +170,23 @@ bool AttributionConfig::AggregateLimit::Validate() const {
   return true;
 }
 
-AttributionConfig::EventLevelLimit::EventLevelLimit() = default;
+AttributionConfig::AttributionConfig() = default;
+AttributionConfig::AttributionConfig(const AttributionConfig&) = default;
+AttributionConfig::AttributionConfig(AttributionConfig&&) = default;
+AttributionConfig::~AttributionConfig() = default;
+
+AttributionConfig& AttributionConfig::operator=(const AttributionConfig&) =
+    default;
+AttributionConfig& AttributionConfig::operator=(AttributionConfig&&) = default;
+
+AttributionConfig::EventLevelLimit::EventLevelLimit()
+    : max_attributions_per_event_source(
+          kMaxAttributionsPerEventSourceParam.Get()) {
+  if (max_attributions_per_event_source <= 0) {
+    max_attributions_per_event_source = kDefaultMaxAttributionsPerEventSource;
+  }
+}
+
 AttributionConfig::EventLevelLimit::EventLevelLimit(const EventLevelLimit&) =
     default;
 AttributionConfig::EventLevelLimit::EventLevelLimit(EventLevelLimit&&) =

@@ -38,6 +38,7 @@
 #include "chrome/browser/ash/crostini/crostini_metrics_service.h"
 #include "chrome/browser/ash/crostini/crostini_package_service.h"
 #include "chrome/browser/ash/crostini/crostini_port_forwarder.h"
+#include "chrome/browser/ash/crostini/crostini_shared_devices.h"
 #include "chrome/browser/ash/crostini/crostini_upgrader.h"
 #include "chrome/browser/ash/crostini/throttle/crostini_throttle.h"
 #include "chrome/browser/ash/eche_app/eche_app_manager_factory.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/ash/file_system_provider/service_factory.h"
 #include "chrome/browser/ash/fileapi/file_change_service_factory.h"
 #include "chrome/browser/ash/fileapi/recent_model_factory.h"
+#include "chrome/browser/ash/floating_workspace/floating_workspace_service_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_mime_types_service_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/guest_os/guest_os_session_tracker_factory.h"
@@ -99,6 +101,7 @@
 #include "chrome/browser/ash/tether/tether_service_factory.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager_factory.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
+#include "chrome/browser/scalable_iph/scalable_iph_factory.h"
 #include "chrome/browser/sharesheet/sharesheet_service_factory.h"
 #include "chrome/browser/speech/cros_speech_recognition_service_factory.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer_chromeos.h"
@@ -175,6 +178,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   crostini::CrostiniMetricsService::Factory::GetInstance();
   crostini::CrostiniPackageService::EnsureFactoryBuilt();
   crostini::CrostiniPortForwarder::EnsureFactoryBuilt();
+  crostini::CrostiniSharedDevices::EnsureFactoryBuilt();
   crostini::CrostiniThrottle::EnsureFactoryBuilt();
   crostini::CrostiniUpgrader::EnsureFactoryBuilt();
 #if BUILDFLAG(USE_CUPS)
@@ -193,6 +197,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   file_manager::EventRouterFactory::GetInstance();
   file_manager::VolumeManagerFactory::GetInstance();
   file_system_provider::ServiceFactory::GetInstance();
+  FloatingWorkspaceServiceFactory::GetInstance();
   full_restore::FullRestoreServiceFactory::GetInstance();
   GlanceablesKeyedServiceFactory::GetInstance();
   guest_os::GuestOsMimeTypesServiceFactory::GetInstance();
@@ -222,6 +227,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   policy::UserCloudPolicyTokenForwarderFactory::GetInstance();
   printing::print_management::PrintingManagerFactory::GetInstance();
   PrintJobHistoryServiceFactory::GetInstance();
+  ScalableIphFactory::GetInstance();
   ScanServiceFactory::GetInstance();
   secure_channel::NearbyConnectorFactory::GetInstance();
   sharesheet::SharesheetServiceFactory::GetInstance();

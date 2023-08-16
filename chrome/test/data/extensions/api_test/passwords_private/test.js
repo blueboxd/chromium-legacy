@@ -121,6 +121,59 @@ var availableTests = [
         });
   },
 
+  async function changeCredentialChangePassword() {
+    let groups = await chrome.passwordsPrivate.getCredentialGroups();
+    let credential = groups[0].entries[0];
+    chrome.test.assertFalse(credential.isPasskey);
+
+    credential.username = 'anya';
+    credential.password = 'secret';
+    credential.note = 'note';
+    await chrome.passwordsPrivate.changeCredential(credential);
+
+    groups = await chrome.passwordsPrivate.getCredentialGroups();
+    credential = groups[0].entries.find(entry => entry.username == 'anya');
+    chrome.test.assertTrue(!!credential);
+    chrome.test.assertEq(credential.note, 'note');
+    chrome.test.succeed();
+  },
+
+  async function changeCredentialChangePasskey() {
+    let groups = await chrome.passwordsPrivate.getCredentialGroups();
+    let credential = groups[0].entries.find(credential => credential.isPasskey);
+
+    credential.username = 'anya';
+    credential.displayName = 'Anya Forger';
+    await chrome.passwordsPrivate.changeCredential(credential);
+
+    groups = await chrome.passwordsPrivate.getCredentialGroups();
+    credential = groups[0].entries.find(entry => entry.username == 'anya');
+    chrome.test.assertTrue(!!credential);
+    chrome.test.assertEq(credential.displayName, 'Anya Forger');
+    chrome.test.succeed();
+  },
+
+  async function changeCredentialNotFound() {
+    const expected =
+        'Error: Could not change the credential. Either the arguments are ' +
+        'not valid or the credential does not exist';
+    await chrome.test.assertPromiseRejects(
+        chrome.passwordsPrivate.changeCredential({
+          id: 42,
+          urls: {
+            shown: 'example.com',
+            link: 'https://example.com',
+            signonRealm: 'https://example.com',
+          },
+          isAndroidCredential: false,
+          isPasskey: false,
+          username: 'alice',
+          storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
+          note: '',
+        }), expected);
+    chrome.test.succeed();
+  },
+
   function removeAndUndoRemoveSavedPassword() {
     var numCalls = 0;
     var numSavedPasswords;
@@ -129,7 +182,7 @@ var availableTests = [
 
       if (numCalls == 1) {
         numSavedPasswords = savedPasswordsList.length;
-        chrome.passwordsPrivate.removeSavedPassword(savedPasswordsList[0].id,
+        chrome.passwordsPrivate.removeCredential(savedPasswordsList[0].id,
             chrome.passwordsPrivate.PasswordStoreSet.DEVICE);
       } else if (numCalls == 2) {
         chrome.test.assertEq(savedPasswordsList.length, numSavedPasswords - 1);
@@ -142,6 +195,30 @@ var availableTests = [
       }
     };
 
+    chrome.passwordsPrivate.onSavedPasswordsListChanged.addListener(callback);
+    chrome.passwordsPrivate.getSavedPasswordList(callback);
+  },
+
+  function removePasskey() {
+    var numCalls = 0;
+    var numSavedCredentials;
+    var callback = function(credentials) {
+      numCalls++;
+
+      if (numCalls == 1) {
+        numSavedCredentials = credentials.length;
+        var passkey = credentials[numSavedCredentials - 1];
+        chrome.test.assertTrue(passkey.isPasskey);
+        chrome.passwordsPrivate.removeCredential(passkey.id,
+                                                 passkey.storedIn);
+      } else if (numCalls == 2) {
+        chrome.test.assertEq(credentials.length, numSavedCredentials - 1);
+        chrome.test.assertEq(credentials.find(c => c.isPasskey), undefined);
+        chrome.test.succeed();
+      } else {
+        chrome.test.fail();
+      }
+    };
     chrome.passwordsPrivate.onSavedPasswordsListChanged.addListener(callback);
     chrome.passwordsPrivate.getSavedPasswordList(callback);
   },
@@ -417,6 +494,7 @@ var availableTests = [
             signonRealm: 'https://example.com',
           },
           isAndroidCredential: false,
+          isPasskey: false,
           username: 'alice',
           compromisedInfo: {
             compromiseTime: COMPROMISE_TIME,
@@ -444,6 +522,7 @@ var availableTests = [
             signonRealm: 'https://example.com',
           },
           isAndroidCredential: false,
+          isPasskey: false,
           username: 'alice',
           compromisedInfo: {
             compromiseTime: COMPROMISE_TIME,
@@ -473,6 +552,7 @@ var availableTests = [
             signonRealm: 'https://example.com',
           },
           isAndroidCredential: false,
+          isPasskey: false,
           username: 'alice',
           compromisedInfo: {
             compromiseTime: COMPROMISE_TIME,
@@ -500,6 +580,7 @@ var availableTests = [
             signonRealm: 'https://example.com',
           },
           isAndroidCredential: false,
+          isPasskey: false,
           username: 'alice',
           compromisedInfo: {
             compromiseTime: COMPROMISE_TIME,
@@ -529,6 +610,7 @@ var availableTests = [
             signonRealm: 'https://example.com',
           },
           isAndroidCredential: false,
+          isPasskey: false,
           username: 'alice',
           changePasswordUrl: 'https://example.com/.well-known/change-password',
           compromisedInfo: {
@@ -555,6 +637,7 @@ var availableTests = [
             signonRealm: '',
           },
           isAndroidCredential: true,
+          isPasskey: false,
           username: 'alice',
           compromisedInfo: {
             compromiseTime: COMPROMISE_TIME,
@@ -643,6 +726,11 @@ var availableTests = [
         chrome.test.assertTrue(!!entry.urls.link);
         idSet.add(entry.id);
       }
+
+      // The last entry should be a passkey.
+      var passkey = group.entries[group.entries.length - 1];
+      chrome.test.assertTrue(passkey.isPasskey);
+      chrome.test.assertEq(passkey.displayName, 'displayName');
 
       // Ensure that all entry ids are unique.
       chrome.test.assertEq(group.entries.length, idSet.size);

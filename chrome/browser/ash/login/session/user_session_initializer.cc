@@ -40,6 +40,7 @@
 #include "chrome/browser/net/nss_service.h"
 #include "chrome/browser/net/nss_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/scalable_iph/scalable_iph_factory.h"
 #include "chrome/browser/screen_ai/screen_ai_chromeos_installer.h"
 #include "chrome/browser/ui/ash/calendar/calendar_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/clipboard_image_model_factory_impl.h"
@@ -59,6 +60,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "media/base/media_switches.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
@@ -152,6 +154,7 @@ void UserSessionInitializer::OnUserProfileLoaded(const AccountId& account_id) {
     InitializeCerts(profile);
     InitializeCRLSetFetcher();
     InitializePrimaryProfileServices(profile, user);
+    InitializeScalableIph(profile);
 
     FamilyUserMetricsServiceFactory::GetForBrowserContext(profile);
   }
@@ -251,6 +254,12 @@ void UserSessionInitializer::InitializePrimaryProfileServices(
   g_browser_process->platform_part()->InitializePrimaryProfileServices(profile);
 }
 
+void UserSessionInitializer::InitializeScalableIph(Profile* profile) {
+  ScalableIphFactory* scalable_iph_factory = ScalableIphFactory::GetInstance();
+  CHECK(scalable_iph_factory);
+  scalable_iph_factory->InitializeServiceForProfile(profile);
+}
+
 void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
@@ -303,6 +312,9 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
     CrasAudioHandler::Get()->RefreshNoiseCancellationState();
 
     Shell::Get()->media_notification_provider()->OnPrimaryUserSessionStarted();
+    if (base::FeatureList::IsEnabled(media::kShowForceRespectUiGainsToggle)) {
+      CrasAudioHandler::Get()->RefreshForceRespectUiGainsState();
+    }
   }
 }
 

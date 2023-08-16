@@ -17,6 +17,7 @@ BASE_DECLARE_FEATURE(kAutofillAlwaysReturnCloudTokenizedCard);
 BASE_DECLARE_FEATURE(kAutofillAutoTriggerManualFallbackForCards);
 BASE_DECLARE_FEATURE(kAutofillEnableCardArtImage);
 BASE_DECLARE_FEATURE(kAutofillEnableCardProductName);
+BASE_DECLARE_FEATURE(kAutofillEnableCvcStorageAndFilling);
 BASE_DECLARE_FEATURE(kAutofillEnableEmailOtpForVcnYellowPath);
 BASE_DECLARE_FEATURE(kAutofillEnableFIDOProgressDialog);
 BASE_DECLARE_FEATURE(kAutofillEnableIbanClientSideUrlFiltering);
@@ -53,6 +54,10 @@ BASE_DECLARE_FEATURE(kAutofillUpstreamUseAlternateSecureDataType);
 BASE_DECLARE_FEATURE(kAutofillUseEloRegexForBinMatching);
 extern const base::FeatureParam<int>
     kAutofillVirtualCardEnrollDelayInStrikeDatabaseInDays;
+
+#if BUILDFLAG(IS_IOS)
+BASE_DECLARE_FEATURE(kAutofillUseTwoDotsForLastFourDigits);
+#endif
 
 // Return whether a [No thanks] button and new messaging is shown in the save
 // card bubbles. This will be called only on desktop platforms.

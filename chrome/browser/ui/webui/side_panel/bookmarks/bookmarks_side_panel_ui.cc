@@ -101,6 +101,8 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       {"addCurrentTab", IDS_READ_LATER_ADD_CURRENT_TAB},
       {"emptyTitle", IDS_BOOKMARKS_EMPTY_STATE_TITLE},
       {"emptyBody", IDS_BOOKMARKS_EMPTY_STATE_BODY},
+      {"emptyTitleFolder", IDS_BOOKMARKS_EMPTY_STATE_TITLE_FOLDER},
+      {"emptyBodyFolder", IDS_BOOKMARKS_EMPTY_STATE_BODY_FOLDER},
       {"emptyTitleGuest", IDS_BOOKMARKS_EMPTY_STATE_TITLE_GUEST},
       {"emptyBodyGuest", IDS_BOOKMARKS_EMPTY_STATE_BODY_GUEST},
       {"emptyTitleSearch", IDS_BOOKMARKS_EMPTY_STATE_TITLE_SEARCH},
@@ -143,12 +145,17 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       {"folderMenuLabel", IDS_FOLDER_OPTIONS_LABEL},
       {"openFolderLabel", IDS_BOOKMARKS_OPEN_FOLDER_LABEL},
       {"openBookmarkLabel", IDS_BOOKMARKS_OPEN_BOOKMARK_LABEL},
+      {"selectFolderLabel", IDS_BOOKMARKS_SELECT_FOLDER_LABEL},
+      {"selectBookmarkLabel", IDS_BOOKMARKS_SELECT_BOOKMARK_LABEL},
+      {"deselectFolderLabel", IDS_BOOKMARKS_DESELECT_FOLDER_LABEL},
+      {"deselectBookmarkLabel", IDS_BOOKMARKS_DESELECT_BOOKMARK_LABEL},
       {"a11yDescriptionPriceTracking",
        IDS_BOOKMARK_ACCESSIBLE_DESCRIPTION_PRICE_TRACKING},
       {"a11yDescriptionPriceChange",
        IDS_BOOKMARK_ACCESSIBLE_DESCRIPTION_PRICE_CHANGE},
       {"checkboxA11yLabel", IDS_BOOKMARKS_CHECKBOX_LABEL},
       {"editInvalidUrl", IDS_BOOKMARK_MANAGER_INVALID_URL},
+      {"bookmarkFolderChildCount", IDS_BOOKMARK_FOLDER_CHILD_COUNT},
   };
   for (const auto& str : kLocalizedStrings)
     webui::AddLocalizedString(source, str.name, str.id);
@@ -216,8 +223,6 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
 
   // Add a handler to provide pluralized strings.
   auto plural_string_handler = std::make_unique<PluralStringHandler>();
-  plural_string_handler->AddLocalizedString("bookmarkFolderChildCount",
-                                            IDS_BOOKMARK_FOLDER_CHILD_COUNT);
   plural_string_handler->AddLocalizedString("bookmarkDeletionCount",
                                             IDS_BOOKMARK_DELETION_COUNT);
   web_ui->AddMessageHandler(std::move(plural_string_handler));
@@ -288,7 +293,8 @@ void BookmarksSidePanelUI::CreateShoppingListHandler(
       feature_engagement::TrackerFactory::GetForBrowserContext(profile);
   shopping_list_handler_ = std::make_unique<commerce::ShoppingListHandler>(
       std::move(page), std::move(receiver), bookmark_model, shopping_service,
-      profile->GetPrefs(), tracker, g_browser_process->GetApplicationLocale());
+      profile->GetPrefs(), tracker, g_browser_process->GetApplicationLocale(),
+      nullptr);
   shopping_list_context_menu_controller_ =
       std::make_unique<commerce::ShoppingListContextMenuController>(
           bookmark_model, shopping_service, shopping_list_handler_.get());

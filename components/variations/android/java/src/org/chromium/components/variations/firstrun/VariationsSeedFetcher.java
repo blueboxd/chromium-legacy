@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /** Fetches the variations seed before the actual first run of Chrome. */
 public class VariationsSeedFetcher {
@@ -99,8 +100,7 @@ public class VariationsSeedFetcher {
     public static final int SEED_FETCH_RESULT_DELTA_PATCH_EXCEPTION = -6;
     @VisibleForTesting
     public static final int SEED_FETCH_RESULT_INVALID_IM_HEADER = -5;
-
-    private static final int SEED_FETCH_RESULT_INVALID_DATE_HEADER = -4;
+    // private static final int SEED_FETCH_RESULT_INVALID_DATE_HEADER = -4;
     private static final int SEED_FETCH_RESULT_UNKNOWN_HOST_EXCEPTION = -3;
     private static final int SEED_FETCH_RESULT_TIMEOUT = -2;
     @VisibleForTesting
@@ -252,10 +252,30 @@ public class VariationsSeedFetcher {
         private String mRestrictMode;
         private String mMilestone;
         private String mChannel;
-        private Boolean mIsFastFetchMode;
+        private boolean mIsFastFetchMode;
+
+        // This is added as a convenience for using Mockito.
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj == null) return false;
+            if (obj.getClass() != this.getClass()) return false;
+            if (!(obj instanceof SeedFetchParameters)) return false;
+            SeedFetchParameters castObj = (SeedFetchParameters) obj;
+
+            return getPlatform() == castObj.getPlatform()
+                    && getIsFastFetchMode() == castObj.getIsFastFetchMode()
+                    && Objects.equals(getMilestone(), castObj.getMilestone())
+                    && Objects.equals(getRestrictMode(), castObj.getRestrictMode())
+                    && Objects.equals(getChannel(), castObj.getChannel());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mPlatform, mRestrictMode, mMilestone, mChannel, mIsFastFetchMode);
+        }
 
         private SeedFetchParameters(@VariationsPlatform int platform, String restrictMode,
-                String milestone, String channel, Boolean isFastFetchMode) {
+                String milestone, String channel, boolean isFastFetchMode) {
             this.mPlatform = platform;
             this.mRestrictMode = restrictMode;
             this.mMilestone = milestone;
@@ -269,7 +289,7 @@ public class VariationsSeedFetcher {
             private String mRestrictMode;
             private String mMilestone;
             private String mChannel;
-            private Boolean mIsFastFetchMode;
+            private boolean mIsFastFetchMode;
 
             private Builder() {
                 this.mPlatform = VariationsPlatform.ANDROID;
@@ -328,7 +348,7 @@ public class VariationsSeedFetcher {
             return mChannel;
         }
 
-        public Boolean getIsFastFetchMode() {
+        public boolean getIsFastFetchMode() {
             return mIsFastFetchMode;
         }
     }

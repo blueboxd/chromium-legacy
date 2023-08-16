@@ -46,7 +46,9 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/color/color_provider.h"
+#include "ui/color/color_provider_manager.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/test_native_theme.h"
@@ -778,5 +780,37 @@ TEST_F(ThemeServiceTest, PolicyThemeColorSet) {
   EXPECT_TRUE(service_->IsExtensionEnabled(scoper.extension_id()));
   EXPECT_TRUE(registry_->GetInstalledExtension(scoper.extension_id()));
 }
+
+class BrowserColorSchemeTest : public ThemeServiceTest,
+                               public testing::WithParamInterface<bool> {
+ protected:
+  BrowserColorSchemeTest() {
+    feature_list_.InitWithFeatureState(features::kChromeRefresh2023,
+                                       GetParam());
+  }
+};
+
+// Sets and gets browser color scheme.
+TEST_P(BrowserColorSchemeTest, SetBrowserColorScheme) {
+  // Default without anything explicitly set should be kSystem.
+  ThemeService::BrowserColorScheme color_scheme =
+      theme_service_->GetBrowserColorScheme();
+  EXPECT_EQ(color_scheme, ThemeService::BrowserColorScheme::kSystem);
+
+  // Set browser color scheme to light mode.
+  theme_service_->SetBrowserColorScheme(
+      ThemeService::BrowserColorScheme::kLight);
+  color_scheme = theme_service_->GetBrowserColorScheme();
+
+  // If not running ChromeRefresh2023 the pref should always track the system's
+  // color scheme.
+  if (features::IsChromeRefresh2023()) {
+    EXPECT_EQ(color_scheme, ThemeService::BrowserColorScheme::kLight);
+  } else {
+    EXPECT_EQ(color_scheme, ThemeService::BrowserColorScheme::kSystem);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All, BrowserColorSchemeTest, testing::Bool());
 
 }  // namespace theme_service_internal

@@ -15,8 +15,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview_string.h"
 #include "third_party/blink/renderer/core/annotation/annotation_agent_container_impl.h"
 #include "third_party/blink/renderer/core/annotation/annotation_test_utils.h"
+#include "third_party/blink/renderer/core/annotation/text_annotation_selector.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/position.h"
@@ -58,6 +60,13 @@ class AnnotationAgentImplTest : public SimTest {
     if (expected != actual)
       return nullptr;
 
+    return MakeGarbageCollected<RangeInFlatTree>(
+        ToPositionInFlatTree(range_start), ToPositionInFlatTree(range_end));
+  }
+
+  RangeInFlatTree* CreateRangeForWholeDocument(Document& document) {
+    const auto& range_start = PositionInFlatTree::FirstPositionInNode(document);
+    const auto& range_end = PositionInFlatTree::LastPositionInNode(document);
     return MakeGarbageCollected<RangeInFlatTree>(
         ToPositionInFlatTree(range_start), ToPositionInFlatTree(range_end));
   }
@@ -107,6 +116,18 @@ class AnnotationAgentImplTest : public SimTest {
         mojom::blink::AnnotationType::kSharedHighlight, *mock_selector);
   }
 
+  // Creates an agent with a real text selector that will perform a real search
+  // of the DOM tree. Use a text selector string of the same format as a URL's
+  // text directive. (i.e. the part that comes after ":~:text=")
+  AnnotationAgentImpl* CreateTextFinderAgent(
+      const String& text_selector,
+      mojom::blink::AnnotationType type =
+          mojom::blink::AnnotationType::kSharedHighlight) {
+    auto* selector = MakeGarbageCollected<TextAnnotationSelector>(
+        TextFragmentSelector::FromTextDirective(text_selector));
+    auto* container = AnnotationAgentContainerImpl::From(GetDocument());
+    return container->CreateUnboundAgent(type, *selector);
+  }
   // Performs a check that the given node is fully visible in the visual
   // viewport - that is, it's entire bounding rect is contained in the visual
   // viewport. Returns whether the check passed so it can be used as an ASSERT
@@ -793,125 +814,212 @@ TEST_F(AnnotationAgentImplTest, ScrollIntoViewCollapsedRange) {
             0);
 }
 
-// kTextFinder annotations should fail to find text within an empty
-// overflow:hidden ancestor. This is a special case fix of
-// https://crbug.com/1456392.
-TEST_F(AnnotationAgentImplTest, TextFinderDoesntFindEmptyOverflowHidden) {
+// Ensure an annotation causes a hidden <details> section to be opened when
+// text inside it is attached.
+TEST_F(AnnotationAgentImplTest, OpenDetailsElement) {
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
     <!DOCTYPE html>
-    <div id="container">
-      <p id="text">FOO BAR</p>
-    </div>
+    <style>
+      details {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <details id='details'>foobar</p>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  Element* element_details = GetDocument().getElementById("details");
+  ASSERT_FALSE(element_details->FastHasAttribute(html_names::kOpenAttr));
+
+  auto* agent = CreateTextFinderAgent("foobar");
+  MockAnnotationAgentHost host;
+  host.BindToAgent(*agent);
+
+  bool finished = false;
+  EXPECT_FALSE(agent->IsAttachmentPending());
+  agent->Attach(base::BindLambdaForTesting([&finished]() { finished = true; }));
+  host.FlushForTesting();
+
+  // Since the matching text is inside a <details> it is initially hidden. The
+  // attachment will be asynchronous as the <details> element must be opened
+  // which needs to happen in a safe place during the document lifecycle.
+  EXPECT_FALSE(finished);
+  EXPECT_TRUE(agent->IsAttachmentPending());
+  EXPECT_FALSE(agent->IsAttached());
+  EXPECT_FALSE(host.did_finish_attachment_rect_);
+  EXPECT_FALSE(element_details->FastHasAttribute(html_names::kOpenAttr));
+
+  // ScrollIntoView, if called, shouldn't cause a scroll yet.
+  agent->ScrollIntoView();
+  EXPECT_EQ(GetDocument().View()->GetRootFrameViewport()->GetScrollOffset(),
+            ScrollOffset());
+
+  // Produce a compositor frame. This should process the DOM mutations and
+  // finish attaching the agent.
+  Compositor().BeginFrame();
+  host.FlushForTesting();
+
+  EXPECT_TRUE(element_details->FastHasAttribute(html_names::kOpenAttr));
+  EXPECT_FALSE(agent->IsAttachmentPending());
+  EXPECT_TRUE(agent->IsAttached());
+  EXPECT_TRUE(finished);
+  EXPECT_TRUE(host.did_finish_attachment_rect_);
+
+  // ScrollIntoView should now correctly scroll to the expanded details element.
+  agent->ScrollIntoView();
+  EXPECT_GT(GetDocument().View()->GetRootFrameViewport()->GetScrollOffset().y(),
+            100.f);
+}
+
+// Ensure an annotation causes a `hidden=until-found` section to be shown when
+// text inside it is attached.
+TEST_F(AnnotationAgentImplTest, OpenHiddenUntilFoundElement) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      p {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="section" hidden="until-found">foobar</p>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  Element* element = GetDocument().getElementById("section");
+
+  auto* agent = CreateTextFinderAgent("foobar");
+
+  bool finished = false;
+  agent->Attach(base::BindLambdaForTesting([&finished]() { finished = true; }));
+
+  EXPECT_FALSE(finished);
+  EXPECT_TRUE(element->FastHasAttribute(html_names::kHiddenAttr));
+  EXPECT_TRUE(agent->IsAttachmentPending());
+
+  // Produce a compositor frame. This should process the DOM mutations and
+  // finish attaching the agent.
+  Compositor().BeginFrame();
+
+  EXPECT_FALSE(element->FastHasAttribute(html_names::kHiddenAttr));
+  EXPECT_TRUE(agent->IsAttached());
+}
+
+// Ensure an annotation can target a content-visibility: auto section.
+TEST_F(AnnotationAgentImplTest, ActivatesContentVisibilityAuto) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      p {
+        position: absolute;
+        contain: strict;
+        width: 200px;
+        height: 20px;
+        left: 0;
+        top: 2000px;
+        content-visibility: auto;
+      }
+    </style>
+    <p id="section">foobar</p>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* agent = CreateTextFinderAgent("foobar");
+
+  bool finished = false;
+
+  agent->Attach(base::BindLambdaForTesting([&finished]() { finished = true; }));
+
+  EXPECT_FALSE(finished);
+  EXPECT_TRUE(agent->IsAttachmentPending());
+
+  // Produce a compositor frame. This should process the DOM mutations and
+  // finish attaching the agent.
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(agent->IsAttached());
+
+  Element* element = GetDocument().getElementById("section");
+  RangeInFlatTree* range = CreateRangeToExpectedText(element, 0, 6, "foobar");
+  EXPECT_FALSE(DisplayLockUtilities::NeedsActivationForFindInPage(
+      range->ToEphemeralRange()));
+}
+
+// kTextFinder type annotations must not cause side-effects. Ensure they do not
+// expand a hidden=until-found element.
+TEST_F(AnnotationAgentImplTest, TextFinderDoesntMutateDom) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <p hidden="until-found" id="text">TEST FOO PAGE BAR</p>
   )HTML");
   Compositor().BeginFrame();
 
   Element* p = GetDocument().getElementById("text");
-  Element* container = GetDocument().getElementById("container");
-  RangeInFlatTree* range_foo = CreateRangeToExpectedText(p, 0, 3, "FOO");
+  ASSERT_TRUE(p->FastHasAttribute(html_names::kHiddenAttr));
 
-  // Empty container with `overflow: visible hidden` (y being hidden makes x
-  // compute to auto).
-  {
-    container->setAttribute(html_names::kStyleAttr,
-                            "height: 0px; overflow: visible hidden");
-    GetDocument().View()->UpdateAllLifecyclePhasesForTest();
+  auto* agent_foo =
+      CreateTextFinderAgent("FOO", mojom::blink::AnnotationType::kTextFinder);
+  ASSERT_TRUE(agent_foo);
 
-    auto* agent_foo = CreateAgentForRange(
-        range_foo, mojom::blink::AnnotationType::kTextFinder);
-    agent_foo->Attach();
+  agent_foo->Attach();
 
-    // TextFinder should refuse to attach to the text since it has an empty,
-    // overflow: hidden ancestor.
-    EXPECT_FALSE(agent_foo->IsAttached());
-  }
+  // Attachment should have succeeded but the <p> should remain hidden.
+  ASSERT_TRUE(agent_foo->IsAttached());
+  EXPECT_TRUE(p->FastHasAttribute(html_names::kHiddenAttr));
 
-  // Empty container with `overflow: visible hidden` (y being hidden makes x
-  // compute to auto). TextFinder should refuse to attach to the text since
-  // it's clipped by the container.
-  {
-    container->setAttribute(html_names::kStyleAttr,
-                            "height: 0px; overflow: visible hidden");
-    GetDocument().View()->UpdateAllLifecyclePhasesForTest();
+  // Sanity check that a shared highlight does un-hide the <p>
+  auto* agent_bar = CreateTextFinderAgent(
+      "BAR", mojom::blink::AnnotationType::kSharedHighlight);
+  agent_bar->Attach();
+  ASSERT_TRUE(agent_bar->IsAttachmentPending());
+  Compositor().BeginFrame();
+  ASSERT_TRUE(agent_bar->IsAttached());
+  EXPECT_FALSE(p->FastHasAttribute(html_names::kHiddenAttr));
+}
 
-    auto* agent_foo = CreateAgentForRange(
-        range_foo, mojom::blink::AnnotationType::kTextFinder);
-    agent_foo->Attach();
+// kTextFinder type annotations must not cause side-effects. Ensure they do not
+// create document markers.
+TEST_F(AnnotationAgentImplTest, TextFinderDoesntAddMarkers) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <p id="text">TEST FOO PAGE BAR</p>
+  )HTML");
+  Compositor().BeginFrame();
 
-    EXPECT_FALSE(agent_foo->IsAttached());
-  }
+  RangeInFlatTree* doc_range = CreateRangeForWholeDocument(GetDocument());
+  ASSERT_EQ(NumMarkersInRange(*doc_range), 0ul);
 
-  // Empty container with `overflow: clip visible`. Should attach since
-  // `overflow: clip` can clip in a single axis and in this case is clipping
-  // the non-empty axis.
-  {
-    container->setAttribute(html_names::kStyleAttr,
-                            "height: 0px; overflow: clip visible");
-    GetDocument().View()->UpdateAllLifecyclePhasesForTest();
+  Element* p = GetDocument().getElementById("text");
+  RangeInFlatTree* range_foo = CreateRangeToExpectedText(p, 5, 8, "FOO");
+  auto* agent_foo =
+      CreateAgentForRange(range_foo, mojom::blink::AnnotationType::kTextFinder);
+  ASSERT_TRUE(agent_foo);
 
-    auto* agent_foo = CreateAgentForRange(
-        range_foo, mojom::blink::AnnotationType::kTextFinder);
-    agent_foo->Attach();
+  agent_foo->Attach();
 
-    EXPECT_TRUE(agent_foo->IsAttached());
-  }
+  // Attachment should have succeeded but no markers should be created.
+  EXPECT_EQ(NumMarkersInRange(*doc_range), 0ul);
 
-  // Empty container with clip on both axes. Shouldn't attach since it's
-  // clipped in the empty direction.
-  {
-    container->setAttribute(html_names::kStyleAttr,
-                            "height: 0px; overflow: clip clip");
-    GetDocument().View()->UpdateAllLifecyclePhasesForTest();
-
-    auto* agent_foo = CreateAgentForRange(
-        range_foo, mojom::blink::AnnotationType::kTextFinder);
-    agent_foo->Attach();
-
-    EXPECT_FALSE(agent_foo->IsAttached());
-  }
-
-  // Empty container with `overflow: visible clip`. Should fail since
-  // `overflow: clip` is in the empty direction
-  {
-    container->setAttribute(html_names::kStyleAttr,
-                            "height: 0px; overflow: visible clip");
-    GetDocument().View()->UpdateAllLifecyclePhasesForTest();
-
-    auto* agent_foo = CreateAgentForRange(
-        range_foo, mojom::blink::AnnotationType::kTextFinder);
-    agent_foo->Attach();
-
-    EXPECT_FALSE(agent_foo->IsAttached());
-  }
-
-  // Giving the container size should make it visible to TextFinder annotations.
-  {
-    container->setAttribute(html_names::kStyleAttr,
-                            "height: 1px; overflow: hidden");
-    GetDocument().View()->UpdateAllLifecyclePhasesForTest();
-
-    auto* agent_foo = CreateAgentForRange(
-        range_foo, mojom::blink::AnnotationType::kTextFinder);
-    agent_foo->Attach();
-
-    // Now that the ancestor has size TextFinder should attach.
-    EXPECT_TRUE(agent_foo->IsAttached());
-  }
-
-  // An empty container shouldn't prevent attaching if overflow is visible.
-  {
-    container->setAttribute(html_names::kStyleAttr,
-                            "height: 0px; overflow: visible");
-    GetDocument().View()->UpdateAllLifecyclePhasesForTest();
-
-    auto* agent_foo = CreateAgentForRange(
-        range_foo, mojom::blink::AnnotationType::kTextFinder);
-    agent_foo->Attach();
-
-    // Now that the ancestor has size TextFinder should attach.
-    EXPECT_TRUE(agent_foo->IsAttached());
-  }
+  // Sanity-check that a shared highlight does increase the marker count.
+  RangeInFlatTree* range_bar = CreateRangeToExpectedText(p, 14, 17, "BAR");
+  auto* agent_bar = CreateAgentForRange(
+      range_bar, mojom::blink::AnnotationType::kSharedHighlight);
+  agent_bar->Attach();
+  EXPECT_EQ(NumMarkersInRange(*doc_range), 1ul);
 }
 
 }  // namespace blink

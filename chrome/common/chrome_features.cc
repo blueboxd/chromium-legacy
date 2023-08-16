@@ -38,12 +38,6 @@ BASE_FEATURE(kAppManagementAppDetails,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-BASE_FEATURE(kAppDeduplicationService,
-             "AppDeduplicationService",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kAppDeduplicationServiceFondue,
              "AppDeduplicationServiceFondue",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -166,6 +160,12 @@ BASE_FEATURE(kCrostiniAnsibleSoftwareManagement,
 BASE_FEATURE(kCrostiniArcSideload,
              "CrostiniArcSideload",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables the new UI for browser created shortcut backed by web app system
+// on Chrome OS.
+BASE_FEATURE(kCrosWebAppShortcutUiUpdate,
+             "CrosWebAppShortcutUiUpdate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables distributed model for TPM1.2, i.e., using tpm_managerd and
 // attestationd.
@@ -840,10 +840,6 @@ BASE_FEATURE(kMetricsSettingsAndroid,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-BASE_FEATURE(kMigrateExternalPrefsToWebAppDB,
-             "MigrateExternalPrefsToWebAppDB",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kMoveWebApp,
              "MoveWebApp",
              base::FeatureState::FEATURE_DISABLED_BY_DEFAULT);
@@ -975,11 +971,6 @@ BASE_FEATURE(kPushMessagingBackgroundMode,
 BASE_FEATURE(kPwaUpdateDialogForIcon,
              "PwaUpdateDialogForIcon",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Shows a confirmation dialog when updates to a PWAs name has been detected.
-BASE_FEATURE(kPwaUpdateDialogForName,
-             "PwaUpdateDialogForName",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables using quiet prompts for notification permission requests.
 BASE_FEATURE(kQuietNotificationPrompts,
@@ -1422,6 +1413,10 @@ BASE_FEATURE(kUserActivityEventLogging,
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kWebAppDedupeInstallUrls,
+             "WebAppDedupeInstallUrls",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kWebAppManifestIconUpdating,
              "WebAppManifestIconUpdating",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1495,19 +1490,6 @@ BASE_FEATURE(kWebShare, "WebShare", base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kWebShare, "WebShare", base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-// Whether to enable "dark mode" enhancements in Mac Mojave, Windows 10, or
-// Linux for UIs implemented with web technologies.
-BASE_FEATURE(kWebUIDarkMode,
-             "WebUIDarkMode",
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) || \
-    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) ||
-        // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
-);
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Populates storage dimensions in UMA log if enabled. Requires diagnostics
 // package in the image.
@@ -1554,10 +1536,6 @@ BASE_FEATURE(kSupportsRtcWakeOver24Hours,
              "SupportsRtcWakeOver24Hours",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-BASE_FEATURE(kUseWebAppDBInsteadOfExternalPrefs,
-             "UseWebAppDBInsteadOfExternalPrefs",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kWebAuthFlowInBrowserTab,
              "WebAuthFlowInBrowserTab",

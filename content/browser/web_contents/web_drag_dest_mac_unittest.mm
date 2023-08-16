@@ -6,7 +6,6 @@
 
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,6 +18,7 @@
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 #import "ui/base/test/cocoa_helper.h"
 
+<<<<<<< HEAD
 using content::DropData;
 using content::RenderViewHostImplTestHarness;
 
@@ -34,6 +34,17 @@ class WebDragDestTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     drag_dest_.reset([[WebDragDest alloc] initWithWebContentsImpl:contents()]);
+=======
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+class WebDragDestTest : public content::RenderViewHostImplTestHarness {
+ public:
+  void SetUp() override {
+    content::RenderViewHostImplTestHarness::SetUp();
+    drag_dest_ = [[WebDragDest alloc] initWithWebContentsImpl:contents()];
+>>>>>>> origin/main
   }
 
   void PutURLOnPasteboard(NSString* urlString, NSPasteboard* pboard) {
@@ -58,7 +69,7 @@ class WebDragDestTest : public RenderViewHostImplTestHarness {
   }
 
   base::mac::ScopedNSAutoreleasePool pool_;
-  base::scoped_nsobject<WebDragDest> drag_dest_;
+  WebDragDest* __strong drag_dest_;
 };
 
 // Make sure nothing leaks.

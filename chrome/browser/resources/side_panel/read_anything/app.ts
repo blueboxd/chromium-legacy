@@ -27,7 +27,7 @@ const darkThemeBackgroundSkColor =
 const lightThemeBackgroundSkColor =
     rgbToSkColor(style.getPropertyValue('--google-grey-50-rgb'));
 const yellowThemeBackgroundSkColor =
-    rgbToSkColor(style.getPropertyValue('--google-yellow-200-rgb'));
+    rgbToSkColor(style.getPropertyValue('--google-yellow-100-rgb'));
 const darkThemeEmptyStateBodyColor = 'var(--google-grey-500)';
 const defaultThemeEmptyStateBodyColor = 'var(--google-grey-700)';
 const darkThemeLinkColors: LinkColor = {
@@ -72,33 +72,39 @@ class TwoWayMap extends Map {
 // Called by ReadAnythingPageHandler via callback router. //
 ////////////////////////////////////////////////////////////
 
-// The chrome.readAnything context is created by the ReadAnythingAppController
+// The chrome.readingMode context is created by the ReadAnythingAppController
 // which is only instantiated when the kReadAnything feature is enabled. This
-// check if chrome.readAnything exists prevents runtime errors when the feature
+// check if chrome.readingMode exists prevents runtime errors when the feature
 // is disabled.
-if (chrome.readAnything) {
-  chrome.readAnything.updateContent = () => {
+if (chrome.readingMode) {
+  chrome.readingMode.updateContent = () => {
     const readAnythingApp = document.querySelector('read-anything-app');
     assert(readAnythingApp);
     readAnythingApp.updateContent();
   };
 
-  chrome.readAnything.updateSelection = () => {
+  chrome.readingMode.updateSelection = () => {
     const readAnythingApp = document.querySelector('read-anything-app');
     assert(readAnythingApp);
     readAnythingApp.updateSelection();
   };
 
-  chrome.readAnything.updateTheme = () => {
+  chrome.readingMode.updateTheme = () => {
     const readAnythingApp = document.querySelector('read-anything-app');
     assert(readAnythingApp);
     readAnythingApp.updateTheme();
   };
 
-  chrome.readAnything.showLoading = () => {
+  chrome.readingMode.showLoading = () => {
     const readAnythingApp = document.querySelector('read-anything-app');
     assert(readAnythingApp);
     readAnythingApp.showLoading();
+  };
+
+  chrome.readingMode.showEmpty = () => {
+    const readAnythingApp = document.querySelector('read-anything-app');
+    assert(readAnythingApp);
+    readAnythingApp.showEmpty();
   };
 }
 
@@ -141,8 +147,8 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
   override connectedCallback() {
     super.connectedCallback();
-    if (chrome.readAnything) {
-      chrome.readAnything.onConnected();
+    if (chrome.readingMode) {
+      chrome.readingMode.onConnected();
     }
 
     this.showLoading();
@@ -162,25 +168,25 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
       const anchorNodeId = this.domNodeToAxNodeIdMap_.get(anchorNode);
       const focusNodeId = this.domNodeToAxNodeIdMap_.get(focusNode);
       assert(anchorNodeId && focusNodeId);
-      chrome.readAnything.onSelectionChange(
+      chrome.readingMode.onSelectionChange(
           anchorNodeId, anchorOffset, focusNodeId, focusOffset);
     };
 
     document.onscroll = () => {
-      chrome.readAnything.onScroll(this.scrollingOnSelection_);
+      chrome.readingMode.onScroll(this.scrollingOnSelection_);
       this.scrollingOnSelection_ = false;
     };
 
     // Pass copy commands to main page. Copy commands will not work if they are
     // disabled on the main page.
     document.oncopy = () => {
-      chrome.readAnything.onCopy();
+      chrome.readingMode.onCopy();
       return false;
     };
   }
 
   private buildSubtree_(nodeId: number): Node {
-    let htmlTag = chrome.readAnything.getHtmlTag(nodeId);
+    let htmlTag = chrome.readingMode.getHtmlTag(nodeId);
 
     // Text nodes do not have an html tag.
     if (!htmlTag.length) {
@@ -195,18 +201,18 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
     const element = document.createElement(htmlTag);
     this.domNodeToAxNodeIdMap_.set(element, nodeId);
-    const direction = chrome.readAnything.getTextDirection(nodeId);
+    const direction = chrome.readingMode.getTextDirection(nodeId);
     if (direction) {
       element.setAttribute('dir', direction);
     }
-    const url = chrome.readAnything.getUrl(nodeId);
+    const url = chrome.readingMode.getUrl(nodeId);
     if (url && element.nodeName === 'A') {
       element.setAttribute('href', url);
       element.onclick = () => {
-        chrome.readAnything.onLinkClicked(nodeId);
+        chrome.readingMode.onLinkClicked(nodeId);
       };
     }
-    const language = chrome.readAnything.getLanguage(nodeId);
+    const language = chrome.readingMode.getLanguage(nodeId);
     if (language) {
       element.setAttribute('lang', language);
     }
@@ -216,18 +222,18 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   }
 
   private appendChildSubtrees_(node: Node, nodeId: number) {
-    for (const childNodeId of chrome.readAnything.getChildren(nodeId)) {
+    for (const childNodeId of chrome.readingMode.getChildren(nodeId)) {
       const childNode = this.buildSubtree_(childNodeId);
       node.appendChild(childNode);
     }
   }
 
   private createTextNode_(nodeId: number): Node {
-    const textContent = chrome.readAnything.getTextContent(nodeId);
+    const textContent = chrome.readingMode.getTextContent(nodeId);
     const textNode = document.createTextNode(textContent);
     this.domNodeToAxNodeIdMap_.set(textNode, nodeId);
-    const shouldBold = chrome.readAnything.shouldBold(nodeId);
-    const isOverline = chrome.readAnything.isOverline(nodeId);
+    const shouldBold = chrome.readingMode.shouldBold(nodeId);
+    const isOverline = chrome.readingMode.isOverline(nodeId);
 
     if (!shouldBold && !isOverline) {
       return textNode;
@@ -240,6 +246,18 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     }
     parentElement.appendChild(textNode);
     return parentElement;
+  }
+
+  showEmpty() {
+    if (chrome.readingMode.isSelectable()) {
+      this.emptyStateHeading_ = loadTimeData.getString('emptyStateHeader');
+    } else {
+      this.emptyStateHeading_ = loadTimeData.getString('notSelectableHeader');
+    }
+    this.emptyStateImagePath_ = './images/empty_state.svg';
+    this.emptyStateDarkImagePath_ = './images/empty_state.svg';
+    this.emptyStateSubheading_ = loadTimeData.getString('emptyStateSubheader');
+    this.hasContent_ = false;
   }
 
   showLoading() {
@@ -270,26 +288,13 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     // would create a shadow node element representing each AXNode, because
     // experimentation found the shadow node creation to be ~8-10x slower than
     // constructing and appending nodes directly to the container element.
-    const rootId = chrome.readAnything.rootId;
+    const rootId = chrome.readingMode.rootId;
     if (!rootId) {
       return;
     }
 
-    // If there is no content to show, the empty state container will be shown.
     const node = this.buildSubtree_(rootId);
-    // The empty state header tells the user to select text to distill. Some web
-    // pages don't work with selection, so we show a different message.
     if (!node.textContent) {
-      if (chrome.readAnything.isSelectable()) {
-        this.emptyStateHeading_ = loadTimeData.getString('emptyStateHeader');
-      } else {
-        this.emptyStateHeading_ = loadTimeData.getString('notSelectableHeader');
-      }
-      this.emptyStateImagePath_ = './images/empty_state.svg';
-      this.emptyStateDarkImagePath_ = './images/empty_state.svg';
-      this.emptyStateSubheading_ =
-          loadTimeData.getString('emptyStateSubheader');
-      this.hasContent_ = false;
       return;
     }
 
@@ -305,10 +310,10 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     selection.removeAllRanges();
 
     const range = new Range();
-    const startNodeId = chrome.readAnything.startNodeId;
-    const startOffset = chrome.readAnything.startOffset;
-    const endNodeId = chrome.readAnything.endNodeId;
-    const endOffset = chrome.readAnything.endOffset;
+    const startNodeId = chrome.readingMode.startNodeId;
+    const startOffset = chrome.readingMode.startOffset;
+    const endNodeId = chrome.readingMode.endNodeId;
+    const endOffset = chrome.readingMode.endOffset;
     const startNode = this.domNodeToAxNodeIdMap_.keyFrom(startNodeId);
     const endNode = this.domNodeToAxNodeIdMap_.keyFrom(endNodeId);
     if (!startNode || !endNode) {
@@ -333,7 +338,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   private validatedFontName_(): string {
     // Validate that the given font name is a valid choice, or use the default.
     const validFontName = this.validFontNames_.find(
-        (f: {name: string}) => f.name === chrome.readAnything.fontName);
+        (f: {name: string}) => f.name === chrome.readingMode.fontName);
     return validFontName ? validFontName.css : this.defaultFontName_;
   }
 
@@ -367,17 +372,17 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
   updateTheme() {
     const foregroundColor:
-        SkColor = {value: chrome.readAnything.foregroundColor};
+        SkColor = {value: chrome.readingMode.foregroundColor};
     const backgroundColor:
-        SkColor = {value: chrome.readAnything.backgroundColor};
+        SkColor = {value: chrome.readingMode.backgroundColor};
     const linkColor = this.getLinkColor_(backgroundColor);
 
     this.updateStyles({
       '--font-family': this.validatedFontName_(),
-      '--font-size': chrome.readAnything.fontSize + 'em',
+      '--font-size': chrome.readingMode.fontSize + 'em',
       '--foreground-color': skColorToRgba(foregroundColor),
-      '--letter-spacing': chrome.readAnything.letterSpacing + 'em',
-      '--line-height': chrome.readAnything.lineSpacing,
+      '--letter-spacing': chrome.readingMode.letterSpacing + 'em',
+      '--line-height': chrome.readingMode.lineSpacing,
       '--link-color': linkColor.default,
       '--selection-color': this.getSelectionColor_(backgroundColor),
       '--sp-empty-state-heading-color': skColorToRgba(foregroundColor),

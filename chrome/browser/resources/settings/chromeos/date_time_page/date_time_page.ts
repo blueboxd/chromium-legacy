@@ -25,10 +25,10 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
+import {Section} from '../mojom-webui/routes.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
-import {Route, Router} from '../router.js';
+import {Route, Router, routes} from '../router.js';
 
 import {getTemplate} from './date_time_page.html.js';
 import {TimeZoneBrowserProxy, TimeZoneBrowserProxyImpl} from './timezone_browser_proxy.js';
@@ -36,7 +36,8 @@ import {TimeZoneBrowserProxy, TimeZoneBrowserProxyImpl} from './timezone_browser
 const SettingsDateTimePageElementBase = DeepLinkingMixin(RouteObserverMixin(
     PrefsMixin(I18nMixin(WebUiListenerMixin(PolymerElement)))));
 
-class SettingsDateTimePageElement extends SettingsDateTimePageElementBase {
+export class SettingsDateTimePageElement extends
+    SettingsDateTimePageElementBase {
   static get is() {
     return 'settings-date-time-page';
   }
@@ -47,6 +48,12 @@ class SettingsDateTimePageElement extends SettingsDateTimePageElementBase {
 
   static get properties() {
     return {
+      section_: {
+        type: Number,
+        value: Section.kDateAndTime,
+        readOnly: true,
+      },
+
       /**
        * Whether date and time are settable. Normally the date and time are
        * forced by network time, so default to false to initially hide the
@@ -115,6 +122,7 @@ class SettingsDateTimePageElement extends SettingsDateTimePageElementBase {
   private canSetDateTime_: boolean;
   private displayManagedByParentIcon_: boolean;
   private focusConfig_: Map<string, string>;
+  private section_: Section;
   private timeZoneSettingSubLabel_: string;
 
   constructor() {

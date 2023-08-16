@@ -80,7 +80,6 @@
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap_observer_set.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -124,54 +123,55 @@ enum class CSPDisposition : int32_t;
 
 namespace blink {
 
+class AXContext;
+class AXObjectCache;
 class Agent;
 class AnchorElementInteractionTracker;
 class AnimationClock;
 class AriaNotificationOptions;
-class AXContext;
-class AXObjectCache;
 class Attr;
 class BeforeUnloadEventListener;
 class CDATASection;
 class CSSStyleSheet;
 class CSSToggleInference;
 class CanvasFontCache;
+class CheckPseudoHasCacheScope;
 class ChromeClient;
 class Comment;
 class ComputedAccessibleNode;
-class DOMWrapperWorld;
-class DisplayLockDocumentState;
-class DocumentData;
-class ElementIntersectionObserverData;
 class ComputedStyle;
 class ConsoleMessage;
 class ContextFeatures;
 class CookieJar;
+class DOMFeaturePolicy;
 class DOMImplementation;
 class DOMWindow;
+class DOMWrapperWorld;
+class DisplayLockDocumentState;
 class DocumentAnimations;
+class DocumentData;
 class DocumentFragment;
 class DocumentInit;
 class DocumentLoader;
 class DocumentMarkerController;
 class DocumentNameCollection;
 class DocumentParser;
+class DocumentPartRoot;
 class DocumentResourceCoordinator;
 class DocumentState;
 class DocumentTimeline;
 class DocumentType;
-class DOMFeaturePolicy;
 class Element;
 class ElementDataCache;
+class ElementIntersectionObserverData;
 class ElementRegistrationOptions;
 class Event;
 class EventFactoryBase;
 class EventListener;
-template <typename EventType>
-class EventWithHitTestResults;
 class ExceptionState;
-class FontMatchingMetrics;
 class FocusedElementChangeObserver;
+class FontFaceSet;
+class FontMatchingMetrics;
 class FormController;
 class FragmentDirective;
 class FrameCallback;
@@ -185,7 +185,6 @@ class HTMLFrameOwnerElement;
 class HTMLHeadElement;
 class HTMLLinkElement;
 class HTMLMetaElement;
-class CheckPseudoHasCacheScope;
 class HitTestRequest;
 class HttpRefreshScheduler;
 class IdleRequestOptions;
@@ -194,8 +193,8 @@ class IntersectionObserverController;
 class LayoutUpgrade;
 class LayoutView;
 class LazyLoadImageObserver;
-class LiveNodeListBase;
 class ListedElement;
+class LiveNodeListBase;
 class LocalDOMWindow;
 class LocalFrame;
 class LocalFrameView;
@@ -214,6 +213,7 @@ class QualifiedName;
 class Range;
 class RenderBlockingResourceManager;
 class ResizeObserver;
+class Resource;
 class ResourceFetcher;
 class RootScrollerController;
 class SVGDocumentExtensions;
@@ -237,7 +237,6 @@ class SnapCoordinator;
 class StyleEngine;
 class StylePropertyMapReadOnly;
 class StyleResolver;
-class StyleSheetList;
 class Text;
 class TextAutosizer;
 class TransformSource;
@@ -251,7 +250,12 @@ class ViewportData;
 class VisitedLinkState;
 class WebMouseEvent;
 class WorkletAnimationController;
+
+template <typename EventType>
+class EventWithHitTestResults;
+
 enum class CSSPropertyID;
+
 struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
@@ -626,9 +630,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   bool IsForExternalHandler() const { return is_for_external_handler_; }
-
-  // This is a DOM function.
-  StyleSheetList& StyleSheets();
 
   StyleEngine& GetStyleEngine() const {
     DCHECK(style_engine_.Get());
@@ -1559,13 +1560,22 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void AttachCompositorTimeline(cc::AnimationTimeline*) const;
 
+  enum class TopLayerReason {
+    kFullscreen,
+    kDialog,
+    kPopover,
+  };
   void AddToTopLayer(Element*, const Element* before = nullptr);
   void RemoveFromTopLayerImmediately(Element*);
   const HeapVector<Member<Element>>& TopLayerElements() const {
     return top_layer_elements_;
   }
-  void ScheduleForTopLayerRemoval(Element*);
+  void ScheduleForTopLayerRemoval(Element*, TopLayerReason);
   void RemoveFinishedTopLayerElements();
+  // Returns absl::nullopt if the provided element is not scheduled for top
+  // layer removal. If it is scheduled for removal, then this returns the reason
+  // for the element being in the top layer.
+  absl::optional<TopLayerReason> IsScheduledForTopLayerRemoval(Element*) const;
 
   HTMLDialogElement* ActiveModalDialog() const;
 
@@ -1599,6 +1609,10 @@ class CORE_EXPORT Document : public ContainerNode,
   bool SetNeedsStyleRecalcForToggles();
   CSSToggleInference* GetCSSToggleInference() { return css_toggle_inference_; }
   CSSToggleInference& EnsureCSSToggleInference();
+
+  // https://crbug.com/1453291
+  // The DOM Parts API: https://github.com/tbondwilkinson/dom-parts.
+  DocumentPartRoot& getPartRoot();
 
   // A non-null template_document_host_ implies that |this| was created by
   // EnsureTemplateDocument().
@@ -1720,6 +1734,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void captureEvents() {}
   void releaseEvents() {}
+
+  FontFaceSet* fonts();
 
   ukm::UkmRecorder* UkmRecorder();
   ukm::SourceId UkmSourceID() const;
@@ -2360,7 +2376,6 @@ class CORE_EXPORT Document : public ContainerNode,
       document_explicit_root_intersection_observer_data_;
 
   Member<StyleEngine> style_engine_;
-  Member<StyleSheetList> style_sheet_list_;
 
   Member<FormController> form_controller_;
 
@@ -2476,8 +2491,20 @@ class CORE_EXPORT Document : public ContainerNode,
   // stack and is thus the one that will be visually on top.
   HeapVector<Member<Element>> top_layer_elements_;
 
-  // top_layer_elements_ to be removed when overlay computes to none.
-  HeapHashSet<Member<Element>> top_layer_elements_pending_removal_;
+  // top_layer_elements_pending_removal_ is a list of elements which will be
+  // removed from top_layer_elements_ when overlay computes to none. Each
+  // element also has a "reason" for being in the top layer which corresponds to
+  // the API which caused the element to enter the top layer in the first place.
+  class TopLayerPendingRemoval
+      : public GarbageCollected<TopLayerPendingRemoval> {
+   public:
+    TopLayerPendingRemoval(Element* new_element, TopLayerReason new_reason)
+        : element(new_element), reason(new_reason) {}
+    Member<Element> element;
+    TopLayerReason reason;
+    void Trace(Visitor* visitor) const { visitor->Trace(element); }
+  };
+  VectorOf<TopLayerPendingRemoval> top_layer_elements_pending_removal_;
 
   // The stack of currently-displayed `popover=auto` elements. Elements in the
   // stack go from earliest (bottom-most) to latest (top-most).
@@ -2499,6 +2526,8 @@ class CORE_EXPORT Document : public ContainerNode,
   HeapHashSet<Member<Element>> elements_needing_style_recalc_for_toggle_;
   // The inference engine for CSS toggles.
   Member<CSSToggleInference> css_toggle_inference_;
+
+  Member<DocumentPartRoot> document_part_root_;
 
   int load_event_delay_count_;
 

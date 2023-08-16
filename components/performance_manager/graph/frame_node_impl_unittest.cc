@@ -163,7 +163,7 @@ class LenientMockObserver : public FrameNodeImpl::Observer {
   const FrameNode* created_frame_node() { return created_frame_node_; }
 
  private:
-  raw_ptr<const FrameNode> created_frame_node_ = nullptr;
+  raw_ptr<const FrameNode, DanglingUntriaged> created_frame_node_ = nullptr;
 };
 
 using MockObserver = ::testing::StrictMock<LenientMockObserver>;
@@ -463,12 +463,13 @@ TEST_F(FrameNodeImplTest, Visibility) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
   auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
+  EXPECT_EQ(frame_node->visibility(), FrameNode::Visibility::kUnknown);
 
   MockObserver obs;
   graph()->AddFrameNodeObserver(&obs);
 
-  EXPECT_CALL(obs, OnFrameVisibilityChanged(
-                       frame_node.get(), FrameNode::Visibility::kNotVisible));
+  EXPECT_CALL(obs, OnFrameVisibilityChanged(frame_node.get(),
+                                            FrameNode::Visibility::kUnknown));
 
   frame_node->SetVisibility(FrameNode::Visibility::kVisible);
   EXPECT_EQ(frame_node->visibility(), FrameNode::Visibility::kVisible);

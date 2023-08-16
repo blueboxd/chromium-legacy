@@ -23,13 +23,15 @@ class CC_EXPORT ScrollJankDroppedFrameTracker {
                                     base::TimeDelta vsync_interval);
 
   static constexpr int kHistogramEmitFrequency = 64;
-  static constexpr const char* kDelayedFramesHistogram =
-      "Event.Jank.DelayedFramesPercentage";
-  static constexpr const char* kMissedVsyncsHistogram =
-      "Event.Jank.MissedVsyncCount";
+  static constexpr const char* kDelayedFramesWindowHistogram =
+      "Event.ScrollJank.DelayedFramesPercentage.FixedWindow";
+  static constexpr const char* kMissedVsyncsSumInWindowHistogram =
+      "Event.ScrollJank.MissedVsyncsSum.FixedWindow";
+  static constexpr const char* kMissedVsyncsPerFrameHistogram =
+      "Event.ScrollJank.MissedVsyncs.PerFrame";
 
  private:
-  void EmitHistogramsAndResetCounters();
+  void EmitPerWindowHistogramsAndResetCounters();
 
   // We could have two different frames with same presentation time and due to
   // this just having previous frame's data is not enough for calculating the

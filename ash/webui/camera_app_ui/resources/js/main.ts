@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {
-  startColorChangeUpdater,
+  ColorChangeUpdater,
 } from
     'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
 
@@ -419,15 +419,21 @@ export class App {
     await windowInstance.init(
         Comlink.proxy(releaseUsage), Comlink.proxy(exploitUsage));
     await ChromeHelper.getInstance().initCameraWindowController();
-    windowController.addWindowStateListener((states) => {
-      windowInstance
-          .onVisibilityChanged(!states.includes(WindowStateType.MINIMIZED))
-          .catch((e) => {
+    windowController.addWindowStateListener(
+        (states) => {
+          const isMinimizing = states.includes(WindowStateType.MINIMIZED);
+          // If the window is minimized while recording time-lapse, the camera
+          // usage will not be paused to keep recording.
+          if (isMinimizing && state.get(state.State.RECORDING) &&
+              state.get(state.State.RECORD_TYPE_TIME_LAPSE)) {
+            return;
+          }
+          windowInstance.onVisibilityChanged(!isMinimizing).catch((e) => {
             reportError(
                 ErrorType.MULTI_WINDOW_HANDLING_FAILURE, ErrorLevel.ERROR,
                 assertInstanceof(e, Error));
           });
-    });
+        });
     windowController.addWindowFocusListener((isFocused) => {
       // If we change the focus to another CCA window, it should get the camera
       // ownership.
@@ -510,7 +516,7 @@ async function setupDynamicColor(): Promise<void> {
     });
   }
   if (loadTimeData.getChromeFlag(Flag.JELLY)) {
-    startColorChangeUpdater();
+    ColorChangeUpdater.forDocument().start();
     await loadCSS('chrome://theme/colors.css?sets=ref,sys');
   } else {
     await loadCSS('/css/colors_default.css');

@@ -10,6 +10,12 @@
 #include "ui/gfx/geometry/size.h"
 
 enum LayoutConstant {
+  // The size of the avatar icon in the profile row of the app menu.
+  APP_MENU_PROFILE_ROW_AVATAR_ICON_SIZE,
+
+  // The maximum character length for strings in the app menu.
+  APP_MENU_MAXIMUM_CHARACTER_LENGTH,
+
   // The height of Bookmarks Bar when attached to the toolbar. The height of the
   // Bookmarks Bar is larger than the BOOKMARK_BAR_BUTTON_HEIGHT by a fixed
   // amount.
@@ -17,6 +23,13 @@ enum LayoutConstant {
 
   // The height of a button within the Bookmarks Bar.
   BOOKMARK_BAR_BUTTON_HEIGHT,
+
+  // The horizontal padding between buttons within the Bookmarks Bar.
+  BOOKMARK_BAR_BUTTON_PADDING,
+
+  // The horizontal padding between the image and the title of the bookmark
+  // button.
+  BOOKMARK_BAR_BUTTON_IMAGE_LABEL_PADDING,
 
   // The size of icons used in Download bubbles.
   // TODO(crbug/1296323): We should be sourcing the size of the file icon from
@@ -80,10 +93,16 @@ enum LayoutConstant {
   // used for all 3 states of normal, hovered and pressed.
   TAB_ALERT_INDICATOR_ICON_WIDTH,
 
+  // Width and height of the tab close button.
+  TAB_CLOSE_BUTTON_SIZE,
+
   // The height of a tab, including outer strokes.  In non-100% scales this is
   // slightly larger than the apparent height of the tab, as the top stroke is
   // drawn as a 1-px line flush with the bottom of the tab's topmost DIP.
   TAB_HEIGHT,
+
+  // The height of a separator in the tabstrip.
+  TAB_SEPARATOR_HEIGHT,
 
   // Padding before the tab title.
   TAB_PRE_TITLE_PADDING,
@@ -153,6 +172,12 @@ enum LayoutInset {
 
   // The padding inside the border of a toolbar button (around the image).
   TOOLBAR_BUTTON,
+
+  // The padding around the browser app menu chip.
+  BROWSER_APP_MENU_CHIP_PADDING,
+
+  // The padding around the profile menu chip.
+  AVATAR_CHIP_PADDING,
 
   // The padding between the edges of the toolbar and its content.
   TOOLBAR_INTERIOR_MARGIN,

@@ -324,6 +324,13 @@ TestPersonalDataManager::GetProfileUpdateStrikeDatabase() const {
   return &inmemory_profile_update_strike_database_;
 }
 
+bool TestPersonalDataManager::IsPaymentMethodsMandatoryReauthEnabled() {
+  if (payment_methods_mandatory_reauth_enabled_.has_value()) {
+    return payment_methods_mandatory_reauth_enabled_.value();
+  }
+  return PersonalDataManager::IsPaymentMethodsMandatoryReauthEnabled();
+}
+
 void TestPersonalDataManager::ClearProfiles() {
   synced_local_profiles_.clear();
   account_profiles_.clear();

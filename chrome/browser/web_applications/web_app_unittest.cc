@@ -116,7 +116,7 @@ void SaveExpectationsContentsOrDie(const base::FilePath path,
 }  // namespace
 
 TEST(WebAppTest, HasAnySources) {
-  WebApp app{GenerateAppId(/*manifest_id=*/absl::nullopt,
+  WebApp app{GenerateAppId(/*manifest_id_path=*/absl::nullopt,
                            GURL("https://example.com"))};
 
   EXPECT_FALSE(app.HasAnySources());
@@ -135,7 +135,7 @@ TEST(WebAppTest, HasAnySources) {
 }
 
 TEST(WebAppTest, HasOnlySource) {
-  WebApp app{GenerateAppId(/*manifest_id=*/absl::nullopt,
+  WebApp app{GenerateAppId(/*manifest_id_path=*/absl::nullopt,
                            GURL("https://example.com"))};
 
   for (int i = WebAppManagement::kMinValue; i <= WebAppManagement::kMaxValue;
@@ -175,7 +175,7 @@ TEST(WebAppTest, HasOnlySource) {
 }
 
 TEST(WebAppTest, WasInstalledByUser) {
-  WebApp app{GenerateAppId(/*manifest_id=*/absl::nullopt,
+  WebApp app{GenerateAppId(/*manifest_id_path=*/absl::nullopt,
                            GURL("https://example.com"))};
 
   app.AddSource(WebAppManagement::kSync);
@@ -228,7 +228,7 @@ TEST(WebAppTest, WasInstalledByUser) {
 }
 
 TEST(WebAppTest, CanUserUninstallWebApp) {
-  WebApp app{GenerateAppId(/*manifest_id=*/absl::nullopt,
+  WebApp app{GenerateAppId(/*manifest_id_path=*/absl::nullopt,
                            GURL("https://example.com"))};
 
   app.AddSource(WebAppManagement::kDefault);
@@ -305,9 +305,7 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
   const base::FilePath path_to_test_file =
       GetPathToTestFile("sample_web_app.json");
   const base::Value web_app_debug_value = WebAppToPlatformAgnosticDebugValue(
-      test::CreateRandomWebApp({.base_url = GURL("https://example.com/"),
-                                .seed = 1234,
-                                .non_zero = true}));
+      test::CreateRandomWebApp({.seed = 1234, .non_zero = true}));
 
   if (IsRebaseline()) {
     LOG(INFO) << "Generating expectations sample web app unit test in "
@@ -323,18 +321,29 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
       << kGenerateExpectationsMessage;
 }
 
+TEST(WebAppTest, RandomAppAsDebugValue_NoCrash) {
+  for (uint32_t seed = 0; seed < 1000; ++seed) {
+    const base::Value web_app_debug_value =
+        test::CreateRandomWebApp({.seed = seed})->AsDebugValue();
+
+    EXPECT_TRUE(web_app_debug_value.is_dict());
+    EXPECT_TRUE(base::ToString(web_app_debug_value).length() > 10);
+  }
+}
+
 TEST(WebAppTest, IsolationDataStartsEmpty) {
-  WebApp app{GenerateAppId(/*manifest_id=*/absl::nullopt,
+  WebApp app{GenerateAppId(/*manifest_id_path=*/absl::nullopt,
                            GURL("https://example.com"))};
 
   EXPECT_FALSE(app.isolation_data().has_value());
 }
 
 TEST(WebAppTest, IsolationDataDebugValue) {
-  WebApp app{GenerateAppId(/*manifest_id=*/absl::nullopt,
+  WebApp app{GenerateAppId(/*manifest_id_path=*/absl::nullopt,
                            GURL("https://example.com"))};
-  app.SetIsolationData(WebApp::IsolationData(InstalledBundle{
-      .path = base::FilePath(FILE_PATH_LITERAL("random_path"))}));
+  app.SetIsolationData(WebApp::IsolationData(
+      InstalledBundle{.path = base::FilePath(FILE_PATH_LITERAL("random_path"))},
+      base::Version("1.0.0")));
 
   EXPECT_TRUE(app.isolation_data().has_value());
 
@@ -344,7 +353,48 @@ TEST(WebAppTest, IsolationDataDebugValue) {
             "path": "random_path"
           }
         },
-        "controlled_frame_partitions": []
+        "version": "1.0.0",
+        "controlled_frame_partitions": [],
+        "pending_update_info": null
+      })")
+                                            .value();
+
+  base::Value::Dict debug_app = app.AsDebugValue().GetDict().Clone();
+  base::Value::Dict* debug_isolation_data =
+      debug_app.FindDict("isolation_data");
+  EXPECT_TRUE(debug_isolation_data != nullptr);
+  EXPECT_EQ(*debug_isolation_data, expected_isolation_data);
+}
+
+TEST(WebAppTest, IsolationDataPendingUpdateInfoDebugValue) {
+  WebApp app{GenerateAppId(/*manifest_id_path=*/absl::nullopt,
+                           GURL("https://example.com"))};
+  app.SetIsolationData(WebApp::IsolationData(
+      InstalledBundle{.path = base::FilePath(FILE_PATH_LITERAL("random_path"))},
+      base::Version("1.0.0"), {},
+      WebApp::IsolationData::PendingUpdateInfo(
+          InstalledBundle{
+              .path = base::FilePath(FILE_PATH_LITERAL("another_path"))},
+          base::Version("2.0.0"))));
+
+  EXPECT_TRUE(app.isolation_data().has_value());
+
+  base::Value expected_isolation_data = base::JSONReader::Read(R"({
+        "isolated_web_app_location": {
+          "installed_bundle": {
+            "path": "random_path"
+          }
+        },
+        "version": "1.0.0",
+        "controlled_frame_partitions": [],
+        "pending_update_info": {
+          "isolated_web_app_location": {
+            "installed_bundle": {
+              "path": "another_path"
+            }
+          },
+          "version": "2.0.0"
+        }
       })")
                                             .value();
 
@@ -356,7 +406,7 @@ TEST(WebAppTest, IsolationDataDebugValue) {
 }
 
 TEST(WebAppTest, PermissionsPolicyDebugValue) {
-  WebApp app{GenerateAppId(/*manifest_id=*/absl::nullopt,
+  WebApp app{GenerateAppId(/*manifest_id_path=*/absl::nullopt,
                            GURL("https://example.com"))};
   app.SetPermissionsPolicy({
       {blink::mojom::PermissionsPolicyFeature::kGyroscope,
@@ -370,12 +420,12 @@ TEST(WebAppTest, PermissionsPolicyDebugValue) {
        /*matches_all_origins=*/true,
        /*matches_opaque_src=*/false},
       {blink::mojom::PermissionsPolicyFeature::kGamepad,
-       {{url::Origin::Create(GURL("https://example.com")),
-         /*has_subdomain_wildcard=*/false},
-        {url::Origin::Create(GURL("https://example.net")),
-         /*has_subdomain_wildcard=*/true},
-        {url::Origin::Create(GURL("https://*.example.net")),
-         /*has_subdomain_wildcard=*/false}},
+       {*blink::OriginWithPossibleWildcards::FromOriginAndWildcardsForTest(
+            url::Origin::Create(GURL("https://example.com")),
+            /*has_subdomain_wildcard=*/false),
+        *blink::OriginWithPossibleWildcards::FromOriginAndWildcardsForTest(
+            url::Origin::Create(GURL("https://example.net")),
+            /*has_subdomain_wildcard=*/true)},
        /*self_if_matches=*/absl::nullopt,
        /*matches_all_origins=*/false,
        /*matches_opaque_src=*/false},
@@ -397,7 +447,7 @@ TEST(WebAppTest, PermissionsPolicyDebugValue) {
           "matches_opaque_src": false
         }
         , {
-          "allowed_origins": [ "https://example.com", "https://*.example.net", "https://%2A.example.net" ],
+          "allowed_origins": [ "https://example.com", "https://*.example.net" ],
           "feature": "gamepad",
           "matches_all_origins": false,
           "matches_opaque_src": false

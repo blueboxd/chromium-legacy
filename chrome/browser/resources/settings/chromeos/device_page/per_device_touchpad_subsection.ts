@@ -13,6 +13,7 @@ import '../settings_shared.css.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
+import '/shared/settings/controls/settings_dropdown_menu.js';
 import '/shared/settings/controls/settings_radio_group.js';
 import '/shared/settings/controls/settings_slider.js';
 import '/shared/settings/controls/settings_toggle_button.js';
@@ -26,12 +27,11 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
-import {Route} from '../router.js';
+import {Route, routes} from '../router.js';
 
 import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_provider.js';
-import {InputDeviceSettingsProviderInterface, Touchpad, TouchpadSettings} from './input_device_settings_types.js';
+import {InputDeviceSettingsProviderInterface, SimulateRightClickModifier, Touchpad, TouchpadSettings} from './input_device_settings_types.js';
 import {settingsAreEqual} from './input_device_settings_utils.js';
 import {getTemplate} from './per_device_touchpad_subsection.html.js';
 
@@ -126,6 +126,41 @@ export class SettingsPerDeviceTouchpadSubsectionElement extends
         },
       },
 
+      simulateRightClickPref: {
+        type: Object,
+        value() {
+          return {
+            key: 'fakeSimulateRightClickPref',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: SimulateRightClickModifier.kNone,
+          };
+        },
+      },
+
+      simulateRightClickOptions: {
+        readOnly: true,
+        type: Array,
+        value() {
+          return [
+            {
+              value: SimulateRightClickModifier.kNone,
+              name:
+                  loadTimeData.getString('touchpadSimulateRightClickOptionOff'),
+            },
+            {
+              value: SimulateRightClickModifier.kSearch,
+              name: loadTimeData.getString(
+                  'touchpadSimulateRightClickOptionSearch'),
+            },
+            {
+              value: SimulateRightClickModifier.kAlt,
+              name:
+                  loadTimeData.getString('touchpadSimulateRightClickOptionAlt'),
+            },
+          ];
+        },
+      },
+
       /**
        * TODO(khorimoto): Remove this conditional once the feature is launched.
        */
@@ -201,6 +236,15 @@ export class SettingsPerDeviceTouchpadSubsectionElement extends
         type: Boolean,
         reflectToAttribute: true,
       },
+
+      isAltClickAndSixPackCustomizationEnabled: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean(
+              'enableAltClickAndSixPackCustomization');
+        },
+        readOnly: true,
+      },
     };
   }
 
@@ -213,6 +257,7 @@ export class SettingsPerDeviceTouchpadSubsectionElement extends
           'scrollAccelerationPref.value,' +
           'scrollSensitivityPref.value,' +
           'hapticClickSensitivityPref.value,' +
+          'simulateRightClickPref.value,' +
           'reverseScrollValue,' +
           'hapticFeedbackValue)',
       'updateSettingsToCurrentPrefs(touchpad)',
@@ -239,6 +284,7 @@ export class SettingsPerDeviceTouchpadSubsectionElement extends
   private scrollAccelerationPref: chrome.settingsPrivate.PrefObject;
   private scrollSensitivityPref: chrome.settingsPrivate.PrefObject;
   private hapticClickSensitivityPref: chrome.settingsPrivate.PrefObject;
+  private simulateRightClickPref: chrome.settingsPrivate.PrefObject;
   private reverseScrollValue: boolean;
   private hapticFeedbackValue: boolean;
   private isInitialized: boolean = false;
@@ -246,6 +292,7 @@ export class SettingsPerDeviceTouchpadSubsectionElement extends
       getInputDeviceSettingsProvider();
   private touchpadIndex: number;
   private isLastDevice: boolean;
+  isAltClickAndSixPackCustomizationEnabled: boolean;
 
   private updateSettingsToCurrentPrefs(): void {
     // `updateSettingsToCurrentPrefs` gets called when the `keyboard` object
@@ -254,6 +301,9 @@ export class SettingsPerDeviceTouchpadSubsectionElement extends
     this.isInitialized = false;
     this.set(
         'enableTapToClickPref.value', this.touchpad.settings.tapToClickEnabled);
+    this.set(
+        'simulateRightClickPref.value',
+        this.touchpad.settings.simulateRightClick);
     this.set(
         'enableTapDraggingPref.value',
         this.touchpad.settings.tapDraggingEnabled);
@@ -308,6 +358,7 @@ export class SettingsPerDeviceTouchpadSubsectionElement extends
       scrollAcceleration: this.scrollAccelerationPref.value,
       scrollSensitivity: this.scrollSensitivityPref.value,
       hapticSensitivity: this.hapticClickSensitivityPref.value,
+      simulateRightClick: this.simulateRightClickPref.value,
       reverseScrolling: this.reverseScrollValue,
       hapticEnabled: this.hapticFeedbackValue,
     };

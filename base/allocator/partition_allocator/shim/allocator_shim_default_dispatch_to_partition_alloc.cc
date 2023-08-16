@@ -10,8 +10,8 @@
 #include <string>
 #include <tuple>
 
-#include "base/allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/allocation_guard.h"
+#include "base/allocator/partition_allocator/chromecast_buildflags.h"
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/bits.h"
@@ -19,17 +19,14 @@
 #include "base/allocator/partition_allocator/partition_alloc_base/no_destructor.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/numerics/checked_math.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/numerics/safe_conversions.h"
-#include "base/allocator/partition_allocator/partition_alloc_base/threading/platform_thread.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/allocator/partition_allocator/partition_stats.h"
 #include "base/allocator/partition_allocator/shim/allocator_shim_internals.h"
-#include "base/memory/nonscannable_memory.h"
-#include "base/threading/platform_thread.h"
+#include "base/allocator/partition_allocator/shim/nonscannable_allocator.h"
 #include "build/build_config.h"
-#include "build/chromecast_buildflags.h"
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include <malloc.h>
@@ -164,7 +161,6 @@ class MainPartitionConstructor {
             .thread_cache = thread_cache,
             .quarantine =
                 partition_alloc::PartitionOptions::Quarantine::kAllowed,
-            .cookie = partition_alloc::PartitionOptions::Cookie::kAllowed,
             .backup_ref_ptr =
                 partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
         });
@@ -364,11 +360,11 @@ void* PartitionRealloc(const AllocatorDispatch*,
       partition_alloc::AllocFlags::kNoHooks | g_alloc_flags, address, size, "");
 }
 
-#if BUILDFLAG(IS_CAST_ANDROID)
+#if BUILDFLAG(PA_IS_CAST_ANDROID)
 extern "C" {
 void __real_free(void*);
 }  // extern "C"
-#endif  // BUILDFLAG(IS_CAST_ANDROID)
+#endif  // BUILDFLAG(PA_IS_CAST_ANDROID)
 
 void PartitionFree(const AllocatorDispatch*, void* object, void* context) {
   partition_alloc::ScopedDisallowAllocations guard{};
@@ -388,7 +384,7 @@ void PartitionFree(const AllocatorDispatch*, void* object, void* context) {
   // malloc() pointer can be passed to PartitionAlloc's free(). If we don't own
   // the pointer, pass it along. This should not have a runtime cost vs regular
   // Android, since on Android we have a PA_CHECK() rather than the branch here.
-#if BUILDFLAG(IS_CAST_ANDROID)
+#if BUILDFLAG(PA_IS_CAST_ANDROID)
   if (PA_UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
                       reinterpret_cast<uintptr_t>(object)) &&
                   object)) {
@@ -397,7 +393,7 @@ void PartitionFree(const AllocatorDispatch*, void* object, void* context) {
     // here.
     return __real_free(object);
   }
-#endif  // BUILDFLAG(IS_CAST_ANDROID)
+#endif  // BUILDFLAG(PA_IS_CAST_ANDROID)
 
   partition_alloc::ThreadSafePartitionRoot::FreeNoHooks(object);
 }
@@ -493,7 +489,7 @@ void PartitionTryFreeDefault(const AllocatorDispatch*,
                              void* context) {
   partition_alloc::ScopedDisallowAllocations guard{};
 
-  if (UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
+  if (PA_UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
           reinterpret_cast<uintptr_t>(address)))) {
     // The object pointed to by `address` is not allocated by the
     // PartitionAlloc. Call find_zone_and_free.
@@ -586,7 +582,7 @@ void ConfigurePartitions(
     }
     PA_DCHECK(!enable_brp);
     PA_DCHECK(!use_dedicated_aligned_partition);
-    PA_DCHECK(!current_root->flags.with_thread_cache);
+    PA_DCHECK(!current_root->settings.with_thread_cache);
     return;
   }
 
@@ -607,7 +603,6 @@ void ConfigurePartitions(
           .thread_cache =
               partition_alloc::PartitionOptions::ThreadCache::kDisabled,
           .quarantine = partition_alloc::PartitionOptions::Quarantine::kAllowed,
-          .cookie = partition_alloc::PartitionOptions::Cookie::kAllowed,
           .backup_ref_ptr =
               enable_brp
                   ? partition_alloc::PartitionOptions::BackupRefPtr::kEnabled
@@ -633,7 +628,6 @@ void ConfigurePartitions(
                 partition_alloc::PartitionOptions::ThreadCache::kDisabled,
             .quarantine =
                 partition_alloc::PartitionOptions::Quarantine::kAllowed,
-            .cookie = partition_alloc::PartitionOptions::Cookie::kAllowed,
             .backup_ref_ptr =
                 partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
         });
@@ -685,7 +679,7 @@ void ConfigurePartitions(
 // to in `PartitionRoot::Init()`.
 uint32_t GetMainPartitionRootExtrasSize() {
 #if PA_CONFIG(EXTRAS_REQUIRED)
-  return g_root.Get()->flags.extras_size;
+  return g_root.Get()->settings.extras_size;
 #else
   return 0;
 #endif  // PA_CONFIG(EXTRAS_REQUIRED)
@@ -693,8 +687,6 @@ uint32_t GetMainPartitionRootExtrasSize() {
 
 #if BUILDFLAG(USE_STARSCAN)
 void EnablePCScan(partition_alloc::internal::PCScan::InitConfig config) {
-  partition_alloc::internal::base::PlatformThread::SetThreadNameHook(
-      &::base::PlatformThread::SetName);
   partition_alloc::internal::PCScan::Initialize(config);
 
   partition_alloc::internal::PCScan::RegisterScannableRoot(Allocator());
@@ -707,8 +699,8 @@ void EnablePCScan(partition_alloc::internal::PCScan::InitConfig config) {
         AlignedAllocator());
   }
 
-  base::internal::NonScannableAllocator::Instance().NotifyPCScanEnabled();
-  base::internal::NonQuarantinableAllocator::Instance().NotifyPCScanEnabled();
+  allocator_shim::NonScannableAllocator::Instance().NotifyPCScanEnabled();
+  allocator_shim::NonQuarantinableAllocator::Instance().NotifyPCScanEnabled();
 }
 #endif  // BUILDFLAG(USE_STARSCAN)
 }  // namespace allocator_shim
@@ -782,14 +774,14 @@ SHIM_ALWAYS_EXPORT struct mallinfo mallinfo(void) __THROW {
 
   // Dump stats for nonscannable and nonquarantinable allocators.
   auto& nonscannable_allocator =
-      base::internal::NonScannableAllocator::Instance();
+      allocator_shim::NonScannableAllocator::Instance();
   partition_alloc::SimplePartitionStatsDumper nonscannable_allocator_dumper;
   if (auto* nonscannable_root = nonscannable_allocator.root()) {
     nonscannable_root->DumpStats("malloc", true,
                                  &nonscannable_allocator_dumper);
   }
   auto& nonquarantinable_allocator =
-      base::internal::NonQuarantinableAllocator::Instance();
+      allocator_shim::NonQuarantinableAllocator::Instance();
   partition_alloc::SimplePartitionStatsDumper nonquarantinable_allocator_dumper;
   if (auto* nonquarantinable_root = nonquarantinable_allocator.root()) {
     nonquarantinable_root->DumpStats("malloc", true,

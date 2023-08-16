@@ -45,17 +45,11 @@ FedCmAccountSelectionView::FedCmAccountSelectionView(
 
 FedCmAccountSelectionView::~FedCmAccountSelectionView() {
   notify_delegate_of_dismiss_ = false;
+  should_show_bubble_widget_ = false;
+  should_destroy_bubble_widget_ = false;
   Close();
 
   TabStripModelObserver::StopObservingAll(this);
-
-  if (idp_signin_modal_dialog_) {
-    // Important to remove the observer here, so that we don't try to use it in
-    // FedCmModalDialogView's destructor to inform this
-    // FedCmAccountSelectionView, which would cause a use-after-free.
-    idp_signin_modal_dialog_->RemoveObserver();
-    CloseModalDialog();
-  }
 }
 
 void FedCmAccountSelectionView::Show(
@@ -138,13 +132,21 @@ void FedCmAccountSelectionView::Show(
     GetBubbleView()->ShowMultiAccountPicker(idp_display_data_list_);
   }
 
-  if (create_bubble) {
+  if (create_bubble || should_show_bubble_widget_) {
     input_protector_->VisibilityChanged(true);
     bubble_widget_->Show();
+    should_show_bubble_widget_ = false;
   }
   // Else:
   // Do not force show the bubble. The bubble may be purposefully hidden if the
   // WebContents are hidden.
+
+  if (!idp_close_popup_time_.is_null()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Blink.FedCm.IdpSigninStatus."
+        "IdpClosePopupToBrowserShowAccountsDuration",
+        base::TimeTicks::Now() - idp_close_popup_time_);
+  }
 }
 
 void FedCmAccountSelectionView::ShowFailureDialog(
@@ -181,7 +183,7 @@ void FedCmAccountSelectionView::ShowFailureDialog(
       base::UTF8ToUTF16(top_frame_etld_plus_one), iframe_etld_plus_one_u16,
       base::UTF8ToUTF16(idp_etld_plus_one), idp_metadata);
 
-  if (create_bubble) {
+  if (create_bubble || should_show_bubble_widget_) {
     bubble_widget_->Show();
     input_protector_->VisibilityChanged(true);
   }
@@ -247,6 +249,11 @@ void FedCmAccountSelectionView::SetInputEventActivationProtectorForTesting(
   input_protector_ = std::move(input_protector);
 }
 
+void FedCmAccountSelectionView::SetIdpSigninPopupWindowForTesting(
+    std::unique_ptr<FedCmModalDialogView> idp_signin_popup_window) {
+  idp_signin_modal_dialog_ = std::move(idp_signin_popup_window);
+}
+
 views::Widget* FedCmAccountSelectionView::CreateBubbleWithAccessibleTitle(
     const std::u16string& top_frame_etld_plus_one,
     const absl::optional<std::u16string>& iframe_etld_plus_one,
@@ -283,6 +290,7 @@ FedCmAccountSelectionView::GetBubbleView() const {
   return static_cast<const AccountSelectionBubbleView*>(
       bubble_widget_->widget_delegate());
 }
+
 void FedCmAccountSelectionView::OnWidgetDestroying(views::Widget* widget) {
   DismissReason dismiss_reason =
       (bubble_widget_->closed_reason() ==
@@ -373,32 +381,46 @@ void FedCmAccountSelectionView::OnCloseButtonClicked(const ui::Event& event) {
 
 void FedCmAccountSelectionView::OnSigninToIdP() {
   delegate_->OnSigninToIdP();
+  is_mismatch_continue_clicked_ = true;
+  UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.IdpSigninStatus.MismatchDialogResult",
+                            MismatchDialogResult::kContinued);
 }
 
 content::WebContents* FedCmAccountSelectionView::ShowModalDialog(
     const GURL& url) {
-  idp_signin_modal_dialog_ = FedCmModalDialogView::ShowFedCmModalDialog(
-      delegate_->GetWebContents(), url, this);
+  if (!idp_signin_modal_dialog_) {
+    idp_signin_modal_dialog_ = std::make_unique<FedCmModalDialogView>(
+        delegate_->GetWebContents(), this);
+  }
+
   input_protector_->VisibilityChanged(false);
   bubble_widget_->Hide();
-  return idp_signin_modal_dialog_->GetWebViewWebContents();
+  return idp_signin_modal_dialog_->ShowPopupWindow(url);
 }
 
 void FedCmAccountSelectionView::CloseModalDialog() {
+  should_destroy_bubble_widget_ = false;
   if (idp_signin_modal_dialog_) {
-    idp_signin_modal_dialog_->CloseFedCmModalDialog();
+    idp_signin_modal_dialog_->ClosePopupWindow();
+    idp_signin_modal_dialog_.reset();
+    should_show_bubble_widget_ = true;
+    idp_close_popup_time_ = base::TimeTicks::Now();
   }
-}
-
-void FedCmAccountSelectionView::OnFedCmModalDialogViewDestroyed() {
-  // The underlying FedCmModalDialogView has been destroyed.
-  idp_signin_modal_dialog_ = nullptr;
 
   if (show_accounts_dialog_callback_) {
     std::move(show_accounts_dialog_callback_).Run();
     input_protector_->VisibilityChanged(true);
     bubble_widget_->Show();
   }
+}
+
+void FedCmAccountSelectionView::OnPopupWindowDestroyed() {
+  if (!should_destroy_bubble_widget_) {
+    return;
+  }
+
+  // This triggers the OnDismiss call to notify delegate_
+  Close();
 }
 
 void FedCmAccountSelectionView::ShowVerifyingSheet(
@@ -462,4 +484,15 @@ void FedCmAccountSelectionView::OnDismiss(DismissReason dismiss_reason) {
 
   if (notify_delegate_of_dismiss_)
     delegate_->OnDismiss(dismiss_reason);
+
+  // Check is_mismatch_continue_clicked_ to ensure we don't record this metric
+  // after MismatchDialogResult::kContinued has been recorded.
+  if (state_ == State::IDP_SIGNIN_STATUS_MISMATCH &&
+      !is_mismatch_continue_clicked_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Blink.FedCm.IdpSigninStatus.MismatchDialogResult",
+        dismiss_reason == DismissReason::kCloseButton
+            ? MismatchDialogResult::kDismissedByCloseIcon
+            : MismatchDialogResult::kDismissedForOtherReasons);
+  }
 }

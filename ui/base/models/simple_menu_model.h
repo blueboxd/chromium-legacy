@@ -134,7 +134,6 @@ class COMPONENT_EXPORT(UI_BASE) SimpleMenuModel : public MenuModel {
   // Methods for inserting items into the model.
   void InsertItemAt(size_t index, int command_id, const std::u16string& label);
   void InsertItemWithStringIdAt(size_t index, int command_id, int string_id);
-  void InsertSeparatorAt(size_t index, MenuSeparatorType separator_type);
   void InsertCheckItemAt(size_t index,
                          int command_id,
                          const std::u16string& label);
@@ -149,6 +148,8 @@ class COMPONENT_EXPORT(UI_BASE) SimpleMenuModel : public MenuModel {
                                      int command_id,
                                      int string_id,
                                      int group_id);
+  void InsertTitleWithStringIdAt(size_t index, int string_id);
+  void InsertSeparatorAt(size_t index, MenuSeparatorType separator_type);
   void InsertSubMenuAt(size_t index,
                        int command_id,
                        const std::u16string& label,
@@ -229,7 +230,6 @@ class COMPONENT_EXPORT(UI_BASE) SimpleMenuModel : public MenuModel {
   void MenuWillClose() override;
 
  protected:
-  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
   Delegate* delegate() { return delegate_; }
 
   // One or more of the menu menu items associated with the model has changed.
@@ -275,8 +275,7 @@ class COMPONENT_EXPORT(UI_BASE) SimpleMenuModel : public MenuModel {
   void OnMenuClosed();
 
   ItemVector items_;
-
-  raw_ptr<Delegate, DanglingUntriaged> delegate_;
+  const raw_ptr<Delegate, DanglingUntriaged> delegate_;
 
   base::WeakPtrFactory<SimpleMenuModel> method_factory_{this};
 };

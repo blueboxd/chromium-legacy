@@ -30,7 +30,6 @@
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
-#import "ios/chrome/browser/ui/whats_new/feature_flags.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -127,6 +126,9 @@ id<GREYMatcher> notPracticallyVisible() {
 
 + (void)setUpForTestCase {
   [super setUpForTestCase];
+  // Mark What's New as already-seen so it does not override Bookmarks.
+  [ChromeEarlGrey setUserDefaultObject:@YES
+                                forKey:@"userHasInteractedWithWhatsNew"];
   [NTPHomeTestCase setUpHelper];
 }
 
@@ -141,6 +143,9 @@ id<GREYMatcher> notPracticallyVisible() {
 
 + (void)tearDown {
   [self closeAllTabs];
+  // Clean up What's New already-seen.
+  [ChromeEarlGrey
+      removeUserDefaultObjectForKey:@"userHasInteractedWithWhatsNew"];
 
   [super tearDown];
 }
@@ -193,7 +198,7 @@ id<GREYMatcher> notPracticallyVisible() {
 - (void)testCollectionShortcuts {
   AppLaunchConfiguration config = self.appConfigurationForTestCase;
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
-  config.features_disabled.push_back(kWhatsNewIOS);
+
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
   // Check the Bookmarks.
@@ -464,8 +469,8 @@ id<GREYMatcher> notPracticallyVisible() {
   [self focusFakebox];
   // Tap on a space in the collectionView that is not a Feed card.
   [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(ntp_home::DiscoverHeaderTitleAccessibilityID())]
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kContentSuggestionsCollectionIdentifier)]
       performAction:grey_tap()];
 
   [ChromeEarlGreyUI waitForAppToIdle];
@@ -1089,7 +1094,7 @@ id<GREYMatcher> notPracticallyVisible() {
   config.additional_args.push_back(
       "--force-fieldtrial-params=" + std::string(kMagicStack.name) +
       ".Test:" + std::string(kMagicStackMostVisitedModuleParam) + "/" + "true");
-  config.features_disabled.push_back(kWhatsNewIOS);
+
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
   // Verify Most Visited Tiles module title is visible.
@@ -1520,7 +1525,9 @@ id<GREYMatcher> notPracticallyVisible() {
 // Unfocus the omnibox.
 - (void)unfocusFakeBox {
   if ([ChromeEarlGrey isIPadIdiom]) {
-    [ChromeEarlGrey simulatePhysicalKeyboardEvent:UIKeyInputEscape flags:0];
+    // "escape" is a hardcoded key string in hardware_keyboard_util that maps to
+    // a HIDUsageCode.
+    [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"escape" flags:0];
   } else {
     id<GREYMatcher> cancelButton =
         grey_accessibilityID(kToolbarCancelOmniboxEditButtonIdentifier);

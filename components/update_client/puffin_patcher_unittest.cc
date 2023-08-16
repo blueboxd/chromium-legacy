@@ -16,6 +16,7 @@
 #include "base/sequence_checker.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/services/patch/in_process_file_patcher.h"
 #include "components/update_client/features.h"
 #include "components/update_client/patch/patch_impl.h"

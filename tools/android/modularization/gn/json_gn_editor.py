@@ -18,7 +18,7 @@ import shutil
 import subprocess
 import sys
 
-from typing import Iterator, List, Optional, Tuple
+from typing import Dict, Iterator, List, Optional, Tuple
 
 _TOOLS_ANDROID_PATH = pathlib.Path(__file__).resolve().parents[2]
 if str(_TOOLS_ANDROID_PATH) not in sys.path:
@@ -113,6 +113,7 @@ class DepList:
     target_name: Optional[str]  # The name of the target containing the list.
     variable_name: str  # Left-hand side variable name the list is assigned to.
     child_nodes: List[dict]  # Right-hand side list of nodes.
+    operation: str  # The assignment operation, whether += or =.
 
 
 class BuildFile:
@@ -229,15 +230,16 @@ class BuildFile:
         def match_list_assignments(node):
             r"""Matches and returns the list being assigned.
 
-            Binary node
+            Binary node (with an operation such as = or +=)
              /       \
             /         \
             name      list of nodes
 
-            Returns the pair (name, list of nodes)
+            Returns (name, list of nodes, op)
             """
             if node.get(NODE_TYPE) != 'BINARY':
                 return None
+            operation = node.get(NODE_VALUE)
             children = node.get(NODE_CHILD)
             assert len(children) == 2, (
                 'Binary nodes should have two child nodes, but the node is: '
@@ -249,18 +251,80 @@ class BuildFile:
             if right_child.get(NODE_TYPE) != 'LIST':
                 return None
             list_of_nodes = right_child.get(NODE_CHILD)
-            return name, list_of_nodes
+            return name, list_of_nodes, operation
 
         return self._find_all(match_list_assignments)
 
     def _find_all_deps_lists(self) -> Iterator[DepList]:
         list_tuples = self._find_all_list_assignments()
-        for target_name, (var_name, node_list) in list_tuples:
+        for target_name, (var_name, node_list, operation) in list_tuples:
             if (var_name == 'deps' or var_name.startswith('deps_')
                     or var_name.endswith('_deps') or '_deps_' in var_name):
                 yield DepList(target_name=target_name,
                               variable_name=var_name,
-                              child_nodes=node_list)
+                              child_nodes=node_list,
+                              operation=operation)
+
+    def _clone_replacing_value(self, node_to_copy: Dict, new_dep_name: str):
+        """Clone the existing node to preserve line numbers and update name.
+
+        It is easier to clone an existing node around the same location, as the
+        actual dict looks like this:
+        {
+            'location': {
+                'begin_column': 5,
+                'begin_line': 137,
+                'end_column': 27,
+                'end_line': 137
+            },
+            'type': 'LITERAL',
+            'value': '":anr_data_proto_java"'
+        }
+
+        Thus the new node to return should keep the same 'location' value (the
+        parser is tolerant as long as it's roughly in the correct spot) but
+        update the 'value' to the new dependency name.
+        """
+        new_dep = copy.deepcopy(node_to_copy)
+        # Any comments associated with the previous dep would not apply.
+        for comment_key in (BEFORE_COMMENT, AFTER_COMMENT, SUFFIX_COMMENT):
+            new_dep.pop(comment_key, None)  # Remove if exists.
+        new_dep[NODE_VALUE] = f'"{new_dep_name}"'
+        return new_dep
+
+    def add_deps(self, target: str, deps: List[str]) -> bool:
+        added_new_dep = False
+        normalized_target = self._normalize(target)
+        for dep_list in self._find_all_deps_lists():
+            if dep_list.target_name is None:
+                continue
+            # Only modify the first assignment operation to the deps variable,
+            # otherwise if there are += operations, then the list of deps will
+            # be added multiple times to the same target's deps.
+            if dep_list.operation != '=':
+                continue
+            full_target_name = f'{self._gn_rel_path}:{dep_list.target_name}'
+            # Support both the exact name and the absolute GN target names
+            # starting with //.
+            if (target != dep_list.target_name
+                    and normalized_target != full_target_name):
+                continue
+            if dep_list.variable_name != 'deps':
+                continue
+            existing_dep_names = set(
+                self._normalize(child.get(NODE_VALUE), abs_path=False)
+                for child in dep_list.child_nodes)
+            for new_dep_name in deps:
+                if new_dep_name in existing_dep_names:
+                    logging.info(
+                        f'Skipping existing {new_dep_name} in {target}.deps')
+                    continue
+                logging.info(f'Adding {new_dep_name} to {target}.deps')
+                new_dep = self._clone_replacing_value(dep_list.child_nodes[0],
+                                                      new_dep_name)
+                dep_list.child_nodes.append(new_dep)
+                added_new_dep = True
+        return added_new_dep
 
     def search_deps(self, name_query: Optional[str],
                     path_query: Optional[str]) -> bool:
@@ -335,12 +399,8 @@ class BuildFile:
                     target_str = f'{self._gn_rel_path}:{dep_list.target_name}'
                 location = f"{target_str}'s {dep_list.variable_name} variable"
                 logging.info(f'Adding {new_dep_name} to {location}')
-                new_dep = copy.deepcopy(dep_list.child_nodes[original_dep_idx])
-                # Any comments associated with the previous dep would not apply.
-                for comment_key in (BEFORE_COMMENT, AFTER_COMMENT,
-                                    SUFFIX_COMMENT):
-                    new_dep.pop(comment_key, None)  # Remove if exists.
-                new_dep[NODE_VALUE] = f'"{new_dep_name}"'
+                new_dep = self._clone_replacing_value(
+                    dep_list.child_nodes[original_dep_idx], new_dep_name)
                 # Add the new dep after the existing dep to preserve comments
                 # before the existing dep.
                 dep_list.child_nodes.insert(original_dep_idx + 1, new_dep)

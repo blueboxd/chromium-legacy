@@ -13,6 +13,10 @@
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #include "ui/message_center/message_center.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Verify that Chrome becomes the active app if a notification opens a popup
 // when clicked.
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestPopupShouldActivateApp) {
@@ -25,19 +29,19 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestPopupShouldActivateApp) {
       browser()->window()->GetNativeWindow()));
 
   {
-    base::scoped_nsobject<WindowedNSNotificationObserver> observer(
+    WindowedNSNotificationObserver* observer =
         [[WindowedNSNotificationObserver alloc]
             initForNotification:NSApplicationDidHideNotification
-                         object:NSApp]);
+                         object:NSApp];
     [NSApp hide:nil];
     [observer wait];
   }
   EXPECT_TRUE([NSApp isHidden]);
 
-  base::scoped_nsobject<WindowedNSNotificationObserver> observer(
+  WindowedNSNotificationObserver* observer =
       [[WindowedNSNotificationObserver alloc]
           initForNotification:NSApplicationDidUnhideNotification
-                       object:NSApp]);
+                       object:NSApp];
 
   std::string result = CreateNotification(
       browser(), true, "", "", "", "",

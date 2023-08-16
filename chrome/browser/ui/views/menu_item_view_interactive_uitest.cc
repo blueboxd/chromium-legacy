@@ -117,7 +117,7 @@ class MenuItemViewTestInsert : public MenuTestBase {
   }
 
  private:
-  raw_ptr<views::MenuItemView> inserted_item_ = nullptr;
+  raw_ptr<views::MenuItemView, DanglingUntriaged> inserted_item_ = nullptr;
 };
 
 // MenuItemViewTestInsertXY inserts an item at index X and selects the
@@ -224,8 +224,8 @@ class MenuItemViewTestInsertWithSubmenu : public MenuTestBase {
   }
 
  private:
-  raw_ptr<views::MenuItemView> submenu_ = nullptr;
-  raw_ptr<views::MenuItemView> inserted_item_ = nullptr;
+  raw_ptr<views::MenuItemView, DanglingUntriaged> submenu_ = nullptr;
+  raw_ptr<views::MenuItemView, DanglingUntriaged> inserted_item_ = nullptr;
 };
 
 // MenuItemViewTestInsertWithSubmenuX posts a menu and its submenu,
@@ -298,7 +298,13 @@ using MenuItemViewTestRemove21 = MenuItemViewTestRemove<2, 1>;
 VIEW_TEST(MenuItemViewTestRemove00, RemoveItem00)
 
 // If this flakes, disable and log details in http://crbug.com/523255.
-VIEW_TEST(MenuItemViewTestRemove01, RemoveItem01)
+// Super flaky on Wayland.
+#if BUILDFLAG(IS_OZONE)
+#define MAYBE_RemoveItem01 DISABLED_RemoveItem01
+#else
+#define MAYBE_RemoveItem01 RemoveItem01
+#endif
+VIEW_TEST(MenuItemViewTestRemove01, MAYBE_RemoveItem01)
 
 // If this flakes, disable and log details in http://crbug.com/523255.
 VIEW_TEST(MenuItemViewTestRemove10, RemoveItem10)
@@ -367,7 +373,7 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuTestBase {
   }
 
  private:
-  raw_ptr<views::MenuItemView> submenu_ = nullptr;
+  raw_ptr<views::MenuItemView, DanglingUntriaged> submenu_ = nullptr;
 };
 
 using MenuItemViewTestRemoveWithSubmenu0 = MenuItemViewTestRemoveWithSubmenu<0>;

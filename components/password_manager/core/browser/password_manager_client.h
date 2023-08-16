@@ -35,10 +35,6 @@
 
 class PrefService;
 
-#if BUILDFLAG(IS_ANDROID)
-class WebAuthnCredManDelegate;
-#endif  // BUILDFLAG(IS_ANDROID)
-
 namespace autofill {
 class AutofillDownloadManager;
 class LogManager;
@@ -78,6 +74,12 @@ class DeviceAuthenticator;
 namespace version_info {
 enum class Channel;
 }
+
+namespace webauthn {
+#if BUILDFLAG(IS_ANDROID)
+class WebAuthnCredManDelegate;
+#endif  // BUILDFLAG(IS_ANDROID)
+}  // namespace webauthn
 
 namespace password_manager {
 
@@ -201,10 +203,12 @@ class PasswordManagerClient {
       ErrorMessageFlowType flow_type,
       password_manager::PasswordStoreBackendErrorType error_type);
 
-  // Instructs the client to show the Touch To Fill UI.
-  virtual void ShowTouchToFill(
+  // Instructs the client to show a keyboard replacing surface UI (e.g.
+  // TouchToFill).
+  virtual void ShowKeyboardReplacingSurface(
       PasswordManagerDriver* driver,
-      autofill::mojom::SubmissionReadinessState submission_readiness);
+      autofill::mojom::SubmissionReadinessState submission_readiness,
+      bool is_webauthn_form);
 #endif
 
   // Returns a pointer to a DeviceAuthenticator. Might be null if
@@ -472,8 +476,8 @@ class PasswordManagerClient {
 
 #if BUILDFLAG(IS_ANDROID)
   // Returns the WebAuthnCredManDelegate for the driver.
-  virtual WebAuthnCredManDelegate* GetWebAuthnCredManDelegateForDriver(
-      PasswordManagerDriver* driver);
+  virtual webauthn::WebAuthnCredManDelegate*
+  GetWebAuthnCredManDelegateForDriver(PasswordManagerDriver* driver);
 #endif  // BUILDFLAG(IS_ANDROID)
 
   // Returns the Chrome channel for the installation.

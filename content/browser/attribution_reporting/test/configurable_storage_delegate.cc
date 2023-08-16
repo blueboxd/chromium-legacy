@@ -22,59 +22,51 @@
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
+#include "services/network/public/cpp/trigger_verification.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-
-namespace {
-
-content::AttributionConfig::EventLevelLimit EventLevelLimitWith(
-    base::FunctionRef<void(content::AttributionConfig::EventLevelLimit&)> f) {
-  content::AttributionConfig::EventLevelLimit limit;
-  f(limit);
-  return limit;
-}
-
-}  // namespace
 
 namespace content {
 
 ConfigurableStorageDelegate::ConfigurableStorageDelegate()
-    : AttributionStorageDelegate(AttributionConfig{
-          .max_sources_per_origin = std::numeric_limits<int>::max(),
-          .max_destinations_per_source_site_reporting_site =
-              std::numeric_limits<int>::max(),
-          .rate_limit =
-              {
-                  .time_window = base::TimeDelta::Max(),
-                  .max_source_registration_reporting_origins =
-                      std::numeric_limits<int64_t>::max(),
-                  .max_attribution_reporting_origins =
-                      std::numeric_limits<int64_t>::max(),
-                  .max_attributions = std::numeric_limits<int64_t>::max(),
-              },
-          .event_level_limit =
-              EventLevelLimitWith([](AttributionConfig::EventLevelLimit& e) {
-                e.navigation_source_trigger_data_cardinality =
-                    std::numeric_limits<uint64_t>::max();
-                e.event_source_trigger_data_cardinality =
-                    std::numeric_limits<uint64_t>::max();
-                e.randomized_response_epsilon =
-                    std::numeric_limits<double>::infinity();
-                e.max_reports_per_destination = std::numeric_limits<int>::max();
-                e.max_attributions_per_navigation_source =
-                    std::numeric_limits<int>::max();
-                e.max_attributions_per_event_source =
-                    std::numeric_limits<int>::max();
-              }),
-          .aggregate_limit =
-              {
-                  .max_reports_per_destination =
-                      std::numeric_limits<int>::max(),
-                  .aggregatable_budget_per_source =
-                      std::numeric_limits<int64_t>::max(),
-                  .min_delay = base::TimeDelta(),
-                  .delay_span = base::TimeDelta(),
-              },
-      }) {}
+    : AttributionStorageDelegate(
+          AttributionConfigWith([](AttributionConfig& c) {
+            c.max_sources_per_origin = std::numeric_limits<int>::max(),
+            c.max_destinations_per_source_site_reporting_site =
+                std::numeric_limits<int>::max();
+            c.rate_limit =
+                RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
+                  r.time_window = base::TimeDelta::Max();
+                  r.max_source_registration_reporting_origins =
+                      std::numeric_limits<int64_t>::max();
+                  r.max_attribution_reporting_origins =
+                      std::numeric_limits<int64_t>::max();
+                  r.max_attributions = std::numeric_limits<int64_t>::max();
+                  r.max_reporting_origins_per_source_reporting_site =
+                      std::numeric_limits<int>::max();
+                }),
+            c.event_level_limit =
+                EventLevelLimitWith([](AttributionConfig::EventLevelLimit& e) {
+                  e.navigation_source_trigger_data_cardinality =
+                      std::numeric_limits<uint64_t>::max();
+                  e.event_source_trigger_data_cardinality =
+                      std::numeric_limits<uint64_t>::max();
+                  e.randomized_response_epsilon =
+                      std::numeric_limits<double>::infinity();
+                  e.max_reports_per_destination =
+                      std::numeric_limits<int>::max();
+                  e.max_attributions_per_navigation_source =
+                      std::numeric_limits<int>::max();
+                  e.max_attributions_per_event_source =
+                      std::numeric_limits<int>::max();
+                });
+            c.aggregate_limit = {
+                .max_reports_per_destination = std::numeric_limits<int>::max(),
+                .aggregatable_budget_per_source =
+                    std::numeric_limits<int64_t>::max(),
+                .min_delay = base::TimeDelta(),
+                .delay_span = base::TimeDelta(),
+            };
+          })) {}
 
 ConfigurableStorageDelegate::~ConfigurableStorageDelegate() = default;
 
@@ -123,6 +115,15 @@ void ConfigurableStorageDelegate::ShuffleReports(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (reverse_reports_on_shuffle_) {
     base::ranges::reverse(reports);
+  }
+}
+
+void ConfigurableStorageDelegate::ShuffleTriggerVerifications(
+    std::vector<network::TriggerVerification>& verifications) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (reverse_verifications_on_shuffle_) {
+    base::ranges::reverse(verifications);
   }
 }
 
@@ -241,6 +242,11 @@ void ConfigurableStorageDelegate::set_offline_report_delay_config(
 void ConfigurableStorageDelegate::set_reverse_reports_on_shuffle(bool reverse) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   reverse_reports_on_shuffle_ = reverse;
+}
+void ConfigurableStorageDelegate::set_reverse_verifications_on_shuffle(
+    bool reverse) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  reverse_verifications_on_shuffle_ = reverse;
 }
 
 void ConfigurableStorageDelegate::set_randomized_response_rate(double rate) {

@@ -61,11 +61,11 @@
 #include "chrome/browser/ash/file_manager/zip_io_task.h"
 #include "chrome/browser/ash/fileapi/file_system_backend.h"
 #include "chrome/browser/ash/fileapi/recent_disk_source.h"
+#include "chrome/browser/ash/policy/dlp/dialogs/files_policy_dialog.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller_ash.h"
 #include "chrome/browser/ash/policy/dlp/files_policy_notification_manager.h"
 #include "chrome/browser/ash/policy/dlp/files_policy_notification_manager_factory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/dlp/dialogs/files_policy_dialog.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
@@ -941,8 +941,9 @@ FileManagerPrivateInternalGetDisallowedTransfersFunction::Run() {
   policy::DlpFilesControllerAsh* files_controller =
       static_cast<policy::DlpFilesControllerAsh*>(
           rules_manager->GetDlpFilesController());
-  files_controller->GetDisallowedTransfers(
-      source_urls_, destination_url_, params->is_move,
+  files_controller->CheckIfTransferAllowed(
+      /*task_id=*/absl::nullopt, source_urls_, destination_url_,
+      params->is_move,
       base::BindOnce(&FileManagerPrivateInternalGetDisallowedTransfersFunction::
                          OnGetDisallowedFiles,
                      this));
@@ -1464,7 +1465,7 @@ FileManagerPrivateInternalSearchFilesFunction::Run() {
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           &SearchByPattern, root_path, excluded_paths, search_params.query,
-          base::Time::FromJsTime(search_params.timestamp), file_type,
+          base::Time::FromJsTime(search_params.modified_timestamp), file_type,
           base::internal::checked_cast<size_t>(search_params.max_results)),
       base::BindOnce(
           &FileManagerPrivateInternalSearchFilesFunction::OnSearchByPatternDone,
@@ -1747,9 +1748,6 @@ FileManagerPrivateShowPolicyDialogFunction::Run() {
                             base::NumberToString(params->task_id)));
   }
 
-  absl::optional<policy::Policy> policy =
-      ApiPolicyErrorTypeToChromeEnum(params->policy);
-
   policy::FilesPolicyNotificationManager* manager =
       policy::FilesPolicyNotificationManagerFactory::GetForBrowserContext(
           browser_context());
@@ -1759,7 +1757,7 @@ FileManagerPrivateShowPolicyDialogFunction::Run() {
                << params->task_id;
     Respond(NoArguments());
   }
-  manager->ShowDialog(params->task_id, type, policy);
+  manager->ShowDialog(params->task_id, type);
 
   return RespondNow(NoArguments());
 }

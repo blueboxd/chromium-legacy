@@ -15,7 +15,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/managed_ui.h"
+#include "chrome/browser/ui/webui/management/management_ui.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -23,14 +25,18 @@
 #include "components/policy/core/common/management/management_service.h"
 #include "components/policy/core/common/management/scoped_management_service_override_for_testing.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/supervised_user/core/common/features.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/vector_icon_types.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
+#include "ui/chromeos/devicetype_utils.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -126,6 +132,107 @@ IN_PROC_BROWSER_TEST_P(ManagedUiTest, ShouldDisplayManagedUiSupervised) {
             chrome::ShouldDisplayManagedUi(profile.get()));
 }
 
+// On ChromeOS we don't display the management UI for enterprise or supervised
+// users.
+IN_PROC_BROWSER_TEST_P(ManagedUiTest, GetDeviceManagedUiHelpLabelEnterprise) {
+  // Simulate a managed profile.
+  AddEnterpriseManagedPolicies();
+  policy::ScopedManagementServiceOverrideForTesting browser_management(
+      policy::ManagementServiceFactory::GetForProfile(browser()->profile()),
+      policy::EnterpriseManagementAuthority::CLOUD);
+
+  TestingProfile::Builder builder;
+  auto profile = builder.Build();
+
+  TestingProfile::Builder builder_with_domain;
+  builder_with_domain.SetProfileName("foobar@example.com");
+  builder_with_domain.OverridePolicyConnectorIsManagedForTesting(true);
+  auto profile_with_domain = builder_with_domain.Build();
+
+  auto* profile_with_hosted_domain = browser()->profile();
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile_with_hosted_domain->GetPath());
+  ASSERT_TRUE(entry);
+  entry->SetHostedDomain("hosteddomain.com");
+
+  // Simulate a supervised profile.
+  TestingProfile::Builder builder_supervised;
+  builder_supervised.SetIsSupervisedProfile();
+  std::unique_ptr<TestingProfile> profile_supervised =
+      builder_supervised.Build();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
+                                       ui::GetChromeOSDeviceName()),
+            chrome::GetDeviceManagedUiHelpLabel(profile.get()));
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
+                                 ui::GetChromeOSDeviceName(), u"example.com"),
+      chrome::GetDeviceManagedUiHelpLabel(profile_with_domain.get()));
+  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
+                                       ui::GetChromeOSDeviceName()),
+            chrome::GetDeviceManagedUiHelpLabel(profile_with_hosted_domain));
+  // Enterprise management takes precedence over supervision in the management
+  // UI.
+  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
+                                       ui::GetChromeOSDeviceName()),
+            chrome::GetDeviceManagedUiHelpLabel(profile_supervised.get()));
+#else
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE),
+            chrome::GetDeviceManagedUiHelpLabel(profile.get()));
+  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
+                                       u"example.com"),
+            chrome::GetDeviceManagedUiHelpLabel(profile_with_domain.get()));
+  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
+                                       u"hosteddomain.com"),
+            chrome::GetDeviceManagedUiHelpLabel(profile_with_hosted_domain));
+  // Enterprise management takes precedence over supervision in the management
+  // UI.
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE),
+            chrome::GetDeviceManagedUiHelpLabel(profile_supervised.get()));
+#endif
+}
+
+IN_PROC_BROWSER_TEST_P(ManagedUiTest, GetDeviceManagedUiHelpLabelSupervised) {
+  if (!IsManagedUiEnabledForSupervisedUsers()) {
+    return;
+  }
+
+  // Simulate a supervised profile.
+  TestingProfile::Builder builder;
+  builder.SetIsSupervisedProfile();
+  std::unique_ptr<TestingProfile> profile = builder.Build();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
+                                       ui::GetChromeOSDeviceName()),
+            chrome::GetDeviceManagedUiHelpLabel(profile.get()));
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE),
+            chrome::GetDeviceManagedUiHelpLabel(profile.get()));
+#else
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_HELP_MANAGED_BY_YOUR_PARENT),
+            chrome::GetDeviceManagedUiHelpLabel(profile.get()));
+#endif
+}
+
+IN_PROC_BROWSER_TEST_P(ManagedUiTest, GetDeviceManagedUiHelpLabelNotManaged) {
+  // Simulate a non managed profile.
+  TestingProfile::Builder builder;
+  std::unique_ptr<TestingProfile> profile = builder.Build();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
+                                       ui::GetChromeOSDeviceName()),
+            chrome::GetDeviceManagedUiHelpLabel(profile.get()));
+#else
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE),
+            chrome::GetDeviceManagedUiHelpLabel(profile.get()));
+#endif
+}
+
 // TODO(crbug.com/1447988): update the tests below to not depend on the exact
 // value of the user-visible string (to make string updates simpler).
 
@@ -149,11 +256,15 @@ IN_PROC_BROWSER_TEST_P(ManagedUiTest, GetManagedUiIconEnterprise) {
   std::unique_ptr<TestingProfile> profile_supervised =
       builder_supervised.Build();
 
-  EXPECT_EQ(vector_icons::kBusinessIcon.name,
+  EXPECT_EQ(features::IsChromeRefresh2023()
+                ? vector_icons::kBusinessChromeRefreshIcon.name
+                : vector_icons::kBusinessIcon.name,
             chrome::GetManagedUiIcon(profile.get()).name);
   // Enterprise management takes precedence over supervision in the management
   // UI.
-  EXPECT_EQ(vector_icons::kBusinessIcon.name,
+  EXPECT_EQ(features::IsChromeRefresh2023()
+                ? vector_icons::kBusinessChromeRefreshIcon.name
+                : vector_icons::kBusinessIcon.name,
             chrome::GetManagedUiIcon(profile_supervised.get()).name);
 }
 
@@ -189,11 +300,11 @@ IN_PROC_BROWSER_TEST_P(ManagedUiTest, GetManagedUiMenuLinkUrlEnterprise) {
       builder_supervised.Build();
 
   EXPECT_EQ(GURL(chrome::kChromeUIManagementURL),
-            chrome::GetManagedUiMenuLinkUrl(profile.get()));
+            chrome::GetManagedUiUrl(profile.get()));
   // Enterprise management takes precedence over supervision in the management
   // UI.
   EXPECT_EQ(GURL(chrome::kChromeUIManagementURL),
-            chrome::GetManagedUiMenuLinkUrl(profile_supervised.get()));
+            chrome::GetManagedUiUrl(profile_supervised.get()));
 }
 
 IN_PROC_BROWSER_TEST_P(ManagedUiTest, GetManagedUiMenuLinkUrlSupervised) {
@@ -207,7 +318,15 @@ IN_PROC_BROWSER_TEST_P(ManagedUiTest, GetManagedUiMenuLinkUrlSupervised) {
   std::unique_ptr<TestingProfile> profile = builder.Build();
 
   EXPECT_EQ(GURL(supervised_user::kManagedByParentUiMoreInfoUrl.Get()),
-            chrome::GetManagedUiMenuLinkUrl(profile.get()));
+            chrome::GetManagedUiUrl(profile.get()));
+}
+
+IN_PROC_BROWSER_TEST_P(ManagedUiTest, GetManagedUiMenuLinkNotManaged) {
+  // Non-managed profile.
+  TestingProfile::Builder builder;
+  std::unique_ptr<TestingProfile> profile = builder.Build();
+
+  EXPECT_EQ(GURL(), chrome::GetManagedUiUrl(profile.get()));
 }
 
 IN_PROC_BROWSER_TEST_P(ManagedUiTest, GetManagedUiMenuItemLabelEnterprise) {

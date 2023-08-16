@@ -100,11 +100,9 @@ class IntegrationTest : public ::testing::Test {
     ASSERT_TRUE(WaitForUpdaterExit());
     ASSERT_NO_FATAL_FAILURE(Clean());
     ASSERT_NO_FATAL_FAILURE(ExpectClean());
-    // TODO(crbug.com/1233612) - reenable the code when system tests pass.
-    // SetUpTestService();
-    ASSERT_NO_FATAL_FAILURE(EnterTestMode(GURL("http://localhost:1234"),
-                                          GURL("http://localhost:1235"),
-                                          GURL("http://localhost:1236")));
+    ASSERT_NO_FATAL_FAILURE(EnterTestMode(
+        GURL("http://localhost:1234"), GURL("http://localhost:1235"),
+        GURL("http://localhost:1236"), base::Minutes(5)));
 #if BUILDFLAG(IS_LINUX)
     // On LUCI the XDG_RUNTIME_DIR and DBUS_SESSION_BUS_ADDRESS environment
     // variables may not be set. These are required for systemctl to connect to
@@ -138,9 +136,6 @@ class IntegrationTest : public ::testing::Test {
     CopyLog();
 
     DMCleanup();
-
-    // TODO(crbug.com/1233612) - reenable the code when system tests pass.
-    // TearDownTestService();
 
     // Updater process must not be running for `Clean()` to succeed.
     ASSERT_TRUE(WaitForUpdaterExit());
@@ -180,9 +175,10 @@ class IntegrationTest : public ::testing::Test {
 
   void EnterTestMode(const GURL& update_url,
                      const GURL& crash_upload_url,
-                     const GURL& device_management_url) {
+                     const GURL& device_management_url,
+                     const base::TimeDelta& idle_timeout) {
     test_commands_->EnterTestMode(update_url, crash_upload_url,
-                                  device_management_url);
+                                  device_management_url, idle_timeout);
   }
 
   void ExitTestMode() { test_commands_->ExitTestMode(); }
@@ -314,6 +310,11 @@ class IntegrationTest : public ::testing::Test {
     test_commands_->RunWakeActive(exit_code);
   }
 
+  void RunServer(int exit_code, bool internal) {
+    ASSERT_TRUE(WaitForUpdaterExit());
+    test_commands_->RunServer(exit_code, internal);
+  }
+
   void CheckForUpdate(const std::string& app_id) {
     test_commands_->CheckForUpdate(app_id);
   }
@@ -324,6 +325,10 @@ class IntegrationTest : public ::testing::Test {
   }
 
   void UpdateAll() { test_commands_->UpdateAll(); }
+
+  void GetAppStates(const base::Value::Dict& expected_app_states) {
+    test_commands_->GetAppStates(expected_app_states);
+  }
 
   void DeleteUpdaterDirectory() { test_commands_->DeleteUpdaterDirectory(); }
 
@@ -337,18 +342,6 @@ class IntegrationTest : public ::testing::Test {
 
   [[nodiscard]] bool WaitForUpdaterExit() {
     return test_commands_->WaitForUpdaterExit();
-  }
-
-  void SetUpTestService() {
-#if BUILDFLAG(IS_WIN)
-    test_commands_->SetUpTestService();
-#endif  // BUILDFLAG(IS_WIN)
-  }
-
-  void TearDownTestService() {
-#if BUILDFLAG(IS_WIN)
-    test_commands_->TearDownTestService();
-#endif  // BUILDFLAG(IS_WIN)
   }
 
   void ExpectUpdateCheckSequence(ScopedServer* test_server,
@@ -421,6 +414,12 @@ class IntegrationTest : public ::testing::Test {
 
   void RunOfflineInstall(bool is_legacy_install, bool is_silent_install) {
     test_commands_->RunOfflineInstall(is_legacy_install, is_silent_install);
+  }
+
+  void RunOfflineInstallOsNotSupported(bool is_legacy_install,
+                                       bool is_silent_install) {
+    test_commands_->RunOfflineInstallOsNotSupported(is_legacy_install,
+                                                    is_silent_install);
   }
 
   void DMDeregisterDevice() { test_commands_->DMDeregisterDevice(); }
@@ -656,13 +655,6 @@ TEST_F(IntegrationTest, CheckForUpdate_UpdaterNotInstalled) {
 }
 
 TEST_F(IntegrationTest, CheckForUpdate) {
-#if BUILDFLAG(IS_WIN)
-  // TODO(crbug.com/1425609): Remove procmon logging once bug is fixed.
-  const base::ScopedClosureRunner stop_procmon_logging(
-      base::BindOnce(&updater::test::StopProcmonLogging,
-                     updater::test::StartProcmonLogging()));
-#endif  // #if BUILDFLAG(IS_WIN)
-
   ScopedServer test_server(test_commands_);
   ASSERT_NO_FATAL_FAILURE(Install());
 
@@ -705,7 +697,7 @@ TEST_F(IntegrationTest, UpdateApp) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
-#if BUILDFLAG(IS_WIN)  // TODO(crbug.com/1422385): fix for mac and linux.
+#if BUILDFLAG(IS_WIN)
 TEST_F(IntegrationTest, InstallUpdaterAndApp) {
   ScopedServer test_server(test_commands_);
   const std::string kAppId("test");
@@ -790,6 +782,30 @@ TEST_F(IntegrationTest, MultipleUpdateAllsMultipleNetRequests) {
   ASSERT_NO_FATAL_FAILURE(UpdateAll());
   ASSERT_NO_FATAL_FAILURE(ExpectNoUpdateSequence(&test_server, kUpdaterAppId));
   ASSERT_NO_FATAL_FAILURE(UpdateAll());
+
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
+  ASSERT_NO_FATAL_FAILURE(Uninstall());
+}
+
+TEST_F(IntegrationTest, GetAppStates) {
+  ScopedServer test_server(test_commands_);
+  ASSERT_NO_FATAL_FAILURE(Install());
+
+  const std::string kAppId("test");
+  const base::Version v1("0.1");
+  ASSERT_NO_FATAL_FAILURE(InstallApp(kAppId));
+
+  base::Value::Dict expected_app_state;
+  expected_app_state.Set("app_id", kAppId);
+  expected_app_state.Set("version", v1.GetString());
+  expected_app_state.Set("ap", "");
+  expected_app_state.Set("brand_code", "");
+  expected_app_state.Set("brand_path", "");
+  expected_app_state.Set("ecp", "");
+  base::Value::Dict expected_app_states;
+  expected_app_states.Set(kAppId, std::move(expected_app_state));
+
+  ASSERT_NO_FATAL_FAILURE(GetAppStates(expected_app_states));
 
   ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
@@ -954,9 +970,6 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
 
 #if BUILDFLAG(CHROMIUM_BRANDING) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #if !defined(COMPONENT_BUILD)
-// TODO(crbug.com/1097297) Enable these tests once the `Brand the updater and
-// qualification app ids` change is available on CIPD.
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 TEST_F(IntegrationTest, MAYBE_SelfUpdateFromOldReal) {
   ScopedServer test_server(test_commands_);
 
@@ -1015,9 +1028,6 @@ TEST_F(IntegrationTest, MAYBE_UninstallIfUnusedSelfAndOldReal) {
 
   // Expect that the updater uninstalled itself as well as the lower version.
 }
-#endif  // #if BUILDFLAG(GOOGLE_CHROME_BRANDING) TODO(crbug.com/1097297) Enable
-        // these tests once the `Brand the updater and qualification app ids`
-        // change is available on CIPD.
 
 // Tests that installing and uninstalling an old version of the updater from
 // CIPD is possible.
@@ -1045,6 +1055,22 @@ TEST_F(IntegrationTest, UpdateServiceStress) {
   ASSERT_NO_FATAL_FAILURE(Install());
   ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
   ASSERT_NO_FATAL_FAILURE(StressUpdateService());
+  ASSERT_NO_FATAL_FAILURE(Uninstall());
+}
+
+TEST_F(IntegrationTest, IdleServerExits) {
+#if BUILDFLAG(IS_WIN)
+  if (GetTestScope() == UpdaterScope::kSystem) {
+    GTEST_SKIP() << "System server startup is complicated on Windows.";
+  }
+#endif
+  ASSERT_NO_FATAL_FAILURE(EnterTestMode(
+      GURL("http://localhost:1234"), GURL("http://localhost:1234"),
+      GURL("http://localhost:1234"), base::Seconds(1)));
+  ASSERT_NO_FATAL_FAILURE(Install());
+  ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
+  ASSERT_NO_FATAL_FAILURE(RunServer(kErrorIdle, true));
+  ASSERT_NO_FATAL_FAILURE(RunServer(kErrorIdle, false));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -1149,6 +1175,8 @@ TEST_F(IntegrationTest, RecoveryNoUpdater) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
+#if BUILDFLAG(IS_WIN)
+// TODO(crbug.com/1281688): standalone installers are supported on Windows only.
 TEST_F(IntegrationTest, OfflineInstall) {
   ASSERT_NO_FATAL_FAILURE(Install());
   ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
@@ -1157,7 +1185,16 @@ TEST_F(IntegrationTest, OfflineInstall) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
-TEST_F(IntegrationTest, SilentOfflineInstall) {
+TEST_F(IntegrationTest, OfflineInstallOsNotSupported) {
+  ASSERT_NO_FATAL_FAILURE(Install());
+  ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
+  ASSERT_NO_FATAL_FAILURE(
+      RunOfflineInstallOsNotSupported(/*is_legacy_install=*/false,
+                                      /*is_silent_install=*/false));
+  ASSERT_NO_FATAL_FAILURE(Uninstall());
+}
+
+TEST_F(IntegrationTest, OfflineInstallSilent) {
   ASSERT_NO_FATAL_FAILURE(Install());
   ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
   ASSERT_NO_FATAL_FAILURE(RunOfflineInstall(/*is_legacy_install=*/false,
@@ -1165,13 +1202,32 @@ TEST_F(IntegrationTest, SilentOfflineInstall) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
-TEST_F(IntegrationTest, LegacySilentOfflineInstall) {
+TEST_F(IntegrationTest, OfflineInstallOsNotSupportedSilent) {
+  ASSERT_NO_FATAL_FAILURE(Install());
+  ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
+  ASSERT_NO_FATAL_FAILURE(
+      RunOfflineInstallOsNotSupported(/*is_legacy_install=*/false,
+                                      /*is_silent_install=*/true));
+  ASSERT_NO_FATAL_FAILURE(Uninstall());
+}
+
+TEST_F(IntegrationTest, OfflineInstallSilentLegacy) {
   ASSERT_NO_FATAL_FAILURE(Install());
   ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
   ASSERT_NO_FATAL_FAILURE(RunOfflineInstall(/*is_legacy_install=*/true,
                                             /*is_silent_install=*/true));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
+
+TEST_F(IntegrationTest, OfflineInstallOsNotSupportedSilentLegacy) {
+  ASSERT_NO_FATAL_FAILURE(Install());
+  ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
+  ASSERT_NO_FATAL_FAILURE(
+      RunOfflineInstallOsNotSupported(/*is_legacy_install=*/true,
+                                      /*is_silent_install=*/true));
+  ASSERT_NO_FATAL_FAILURE(Uninstall());
+}
+#endif  // BUILDFLAG(IS_WIN)
 
 TEST_F(IntegrationTest, CrashUsageStatsEnabled) {
 #if BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)

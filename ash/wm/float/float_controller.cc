@@ -123,40 +123,6 @@ void ShowFloatedWindow(aura::Window* floated_window) {
   floated_window->Show();
 }
 
-FloatController::MagnetismCorner GetMagnetismCornerForBounds(
-    const gfx::Rect& bounds_in_screen) {
-  const gfx::Point display_bounds_center =
-      display::Screen::GetScreen()
-          ->GetDisplayMatching(bounds_in_screen)
-          .bounds()
-          .CenterPoint();
-  const int display_bounds_center_x = display_bounds_center.x();
-  const int display_bounds_center_y = display_bounds_center.y();
-
-  // Check which corner to magnetize to based on which quadrant of the display
-  // the centerpoint of the window was on touch released. Not that the
-  // centerpoint may be offscreen.
-  const gfx::Point center_point = bounds_in_screen.CenterPoint();
-  const int center_point_x = center_point.x();
-  const int center_point_y = center_point.y();
-  FloatController::MagnetismCorner magnetism_corner;
-  if (center_point_x < display_bounds_center_x &&
-      center_point_y < display_bounds_center_y) {
-    magnetism_corner = FloatController::MagnetismCorner::kTopLeft;
-  } else if (center_point_x >= display_bounds_center_x &&
-             center_point_y < display_bounds_center_y) {
-    magnetism_corner = FloatController::MagnetismCorner::kTopRight;
-  } else if (center_point_x < display_bounds_center_x &&
-             center_point_y >= display_bounds_center_y) {
-    magnetism_corner = FloatController::MagnetismCorner::kBottomLeft;
-  } else {
-    CHECK_GE(center_point_x, display_bounds_center_x);
-    CHECK_GE(center_point_y, display_bounds_center_y);
-    magnetism_corner = FloatController::MagnetismCorner::kBottomRight;
-  }
-  return magnetism_corner;
-}
-
 class FloatLayoutManager : public WmDefaultLayoutManager {
  public:
   FloatLayoutManager() = default;
@@ -165,6 +131,20 @@ class FloatLayoutManager : public WmDefaultLayoutManager {
   ~FloatLayoutManager() override = default;
 
   // WmDefaultLayoutManager:
+  void OnWindowAddedToLayout(aura::Window* child) override {
+    // We don't support multiple displays in tablet mode, so this function is
+    // called when the window is moved into the float container from a desk
+    // container. This happens during a state change, and we can let the
+    // transition event handle setting the floated window bounds instead.
+    if (Shell::Get()->IsInTabletMode()) {
+      return;
+    }
+
+    WindowState* window_state = WindowState::Get(child);
+    WMEvent event(WM_EVENT_ADDED_TO_WORKSPACE);
+    window_state->OnWMEvent(&event);
+  }
+
   void SetChildBounds(aura::Window* child,
                       const gfx::Rect& requested_bounds) override {
     // This should result in sending a bounds change WMEvent to properly support
@@ -263,9 +243,8 @@ class FloatController::FloatedWindowInfo : public aura::WindowObserver {
 
     if (!animate) {
       scoped_window_tucker_.reset();
-      TabletModeWindowState::UpdateWindowPosition(
-          WindowState::Get(floated_window_),
-          WindowState::BoundsChangeAnimationType::kNone);
+      UpdateWindowBoundsForTablet(
+          floated_window_, WindowState::BoundsChangeAnimationType::kNone);
       return;
     }
 
@@ -714,8 +693,9 @@ void FloatController::OnTabletModeStarted() {
 }
 
 void FloatController::OnTabletModeEnding() {
-  for (auto& [window, info] : floated_window_info_map_)
-    info->MaybeUntuckWindow(/*animate=*/true);
+  for (auto& [window, info] : floated_window_info_map_) {
+    info->MaybeUntuckWindow(/*animate=*/false);
+  }
 }
 
 void FloatController::OnTabletControllerDestroyed() {
@@ -767,8 +747,10 @@ void FloatController::OnDisplayMetricsChanged(const display::Display& display,
     return;
   }
 
-  if ((display::DisplayObserver::DISPLAY_METRIC_WORK_AREA & metrics) == 0)
+  const uint32_t filter = DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_WORK_AREA;
+  if ((filter & metrics) == 0) {
     return;
+  }
 
   DCHECK(!floated_window_info_map_.empty());
   std::vector<aura::Window*> windows_need_reset;
@@ -776,11 +758,18 @@ void FloatController::OnDisplayMetricsChanged(const display::Display& display,
     if (!chromeos::wm::CanFloatWindow(window)) {
       windows_need_reset.push_back(window);
     } else {
-      // Let the state object handle the work area change. This is normally
+      // Let the state object handle the display change. This is normally
       // handled by the `WorkspaceLayoutManager`, but the float container does
       // not have one attached.
-      const WMEvent event(WM_EVENT_WORKAREA_BOUNDS_CHANGED);
-      WindowState::Get(window)->OnWMEvent(&event);
+      if (metrics & display::DisplayObserver::DISPLAY_METRIC_BOUNDS) {
+        const DisplayMetricsChangedWMEvent wm_event(metrics);
+        WindowState::Get(window)->OnWMEvent(&wm_event);
+      }
+
+      if (metrics & display::DisplayObserver::DISPLAY_METRIC_WORK_AREA) {
+        const WMEvent wm_event(WM_EVENT_WORKAREA_BOUNDS_CHANGED);
+        WindowState::Get(window)->OnWMEvent(&wm_event);
+      }
     }
   }
   for (auto* window : windows_need_reset)
@@ -860,6 +849,29 @@ void FloatController::ToggleFloat(aura::Window* window) {
   window_state->OnWMEvent(&toggle_event);
 }
 
+// static
+FloatController::MagnetismCorner FloatController::GetMagnetismCornerForBounds(
+    const gfx::Rect& bounds_in_screen) {
+  // Check which corner to magnetize to based on which quadrant of the display
+  // the centerpoint of the window was on touch released. Note that the
+  // centerpoint may be offscreen.
+  const gfx::Point display_bounds_center =
+      display::Screen::GetScreen()
+          ->GetDisplayMatching(bounds_in_screen)
+          .bounds()
+          .CenterPoint();
+  const gfx::Point center_point = bounds_in_screen.CenterPoint();
+  const bool is_left_half = center_point.x() < display_bounds_center.x();
+  if (center_point.y() < display_bounds_center.y()) {
+    // Top half.
+    return is_left_half ? FloatController::MagnetismCorner::kTopLeft
+                        : FloatController::MagnetismCorner::kTopRight;
+  }
+  // Bottom half.
+  return is_left_half ? FloatController::MagnetismCorner::kBottomLeft
+                      : FloatController::MagnetismCorner::kBottomRight;
+}
+
 void FloatController::FloatForTablet(aura::Window* window,
                                      chromeos::WindowStateType old_state_type) {
   CHECK(Shell::Get()->IsInTabletMode());
@@ -910,7 +922,9 @@ void FloatController::FloatImpl(aura::Window* window) {
   // Get the desk where the window belongs to before moving it to float
   // container.
   const Desk* desk = desks_util::GetDeskForContext(window);
-  DCHECK(desk);
+  if (!desk) {
+    return;
+  }
 
   // TODO(b/267363112): Allow a floated window to be assigned to all desks.
   // If window is visible to all desks, unset it.

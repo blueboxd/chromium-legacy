@@ -17,6 +17,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/base/features.h"
 #include "cc/trees/property_animation_state.h"
 #include "ui/gfx/animation/keyframe/animation_curve.h"
 #include "ui/gfx/animation/keyframe/target_property.h"
@@ -59,6 +60,7 @@ KeyframeEffect::KeyframeEffect(Animation* animation)
       needs_to_start_keyframe_models_(false),
       scroll_offset_animation_was_interrupted_(false),
       is_ticking_(false),
+      awaiting_deletion_(false),
       needs_push_properties_(false) {}
 
 KeyframeEffect::~KeyframeEffect() {
@@ -111,17 +113,28 @@ void KeyframeEffect::DetachElement() {
   element_id_ = ElementId();
 }
 
-void KeyframeEffect::Tick(base::TimeTicks monotonic_time) {
+bool KeyframeEffect::Tick(base::TimeTicks monotonic_time) {
   DCHECK(has_bound_element_animations());
   if (needs_to_start_keyframe_models_)
     StartKeyframeModels(monotonic_time);
 
+  bool became_inactive = false;
+  bool is_effect_active = false;
   for (auto& keyframe_model : keyframe_models()) {
     TickKeyframeModel(monotonic_time, keyframe_model.get());
+    bool was_active = last_tick_time_.has_value() &&
+                      keyframe_model->HasActiveTime(*last_tick_time_);
+    bool is_active = keyframe_model->HasActiveTime(monotonic_time);
+    is_effect_active |= is_active;
+    became_inactive |= (was_active && !is_active);
   }
 
   last_tick_time_ = monotonic_time;
   element_animations_->UpdateClientAnimationState();
+  if (became_inactive) {
+    animation_->SetNeedsCommit();
+  }
+  return is_effect_active;
 }
 
 void KeyframeEffect::RemoveFromTicking() {
@@ -138,8 +151,9 @@ void KeyframeEffect::UpdateState(bool start_ready_keyframe_models,
 
   // Animate hasn't been called, this happens if an element has been added
   // between the Commit and Draw phases.
-  if (last_tick_time_ == absl::nullopt)
+  if (last_tick_time_ == absl::nullopt || awaiting_deletion_) {
     start_ready_keyframe_models = false;
+  }
 
   if (start_ready_keyframe_models)
     PromoteStartedKeyframeModels(events);
@@ -158,15 +172,44 @@ void KeyframeEffect::UpdateState(bool start_ready_keyframe_models,
 }
 
 void KeyframeEffect::UpdateTickingState() {
-  if (animation_->has_animation_host()) {
-    bool was_ticking = is_ticking_;
-    is_ticking_ = HasNonDeletedKeyframeModel();
+  if (!animation_->has_animation_host()) {
+    return;
+  }
+  bool was_ticking = is_ticking_;
+  is_ticking_ = false;
 
-    if (is_ticking_ && !was_ticking) {
-      animation_->AddToTicking();
-    } else if (!is_ticking_ && was_ticking) {
-      RemoveFromTicking();
+  for (const auto& keyframe_model : keyframe_models()) {
+    if (keyframe_model->run_state() !=
+        gfx::KeyframeModel::WAITING_FOR_DELETION) {
+      is_ticking_ = true;
+      awaiting_deletion_ = false;
+      break;
     }
+  }
+  if (was_ticking && !is_ticking_) {
+    awaiting_deletion_ = false;
+    if (base::FeatureList::IsEnabled(features::kNoPreserveLastMutation)) {
+      for (const auto& keyframe_model : keyframe_models()) {
+        // deleted impl side keyframe models keep ticking until the commit
+        // removes them.
+        KeyframeModel* cc_keyframe_model =
+            KeyframeModel::ToCcKeyframeModel(keyframe_model.get());
+        if (keyframe_model->run_state() ==
+                gfx::KeyframeModel::WAITING_FOR_DELETION &&
+            cc_keyframe_model->is_controlling_instance() &&
+            !cc_keyframe_model->is_impl_only()) {
+          awaiting_deletion_ = true;
+          is_ticking_ = true;
+          break;
+        }
+      }
+    }
+  }
+
+  if (is_ticking_ && !was_ticking) {
+    animation_->AddToTicking();
+  } else if (!is_ticking_ && was_ticking) {
+    RemoveFromTicking();
   }
 }
 
@@ -427,14 +470,6 @@ bool KeyframeEffect::AffectsNativeProperty() const {
     // composited scroll.
     if (it->TargetProperty() != TargetProperty::CSS_CUSTOM_PROPERTY &&
         it->TargetProperty() != TargetProperty::NATIVE_PROPERTY)
-      return true;
-  }
-  return false;
-}
-
-bool KeyframeEffect::HasNonDeletedKeyframeModel() const {
-  for (const auto& keyframe_model : keyframe_models()) {
-    if (keyframe_model->run_state() != gfx::KeyframeModel::WAITING_FOR_DELETION)
       return true;
   }
   return false;

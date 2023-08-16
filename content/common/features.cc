@@ -11,6 +11,10 @@ namespace content {
 
 // Please keep features in alphabetical order.
 
+BASE_FEATURE(kBeforeUnloadBrowserResponseQueue,
+             "BeforeUnloadBrowserResponseQueue",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kNavigationUpdatesChildViewsVisibility,
              "NavigationUpdatesChildViewsVisibility",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -28,6 +32,12 @@ BASE_FEATURE(kConsolidatedIPCForProxyCreation,
 BASE_FEATURE(kEnsureAllowBindingsIsAlwaysForWebUI,
              "EnsureAllowBindingsIsAlwaysForWebUI",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_WIN)
+BASE_FEATURE(kGpuInfoCollectionSeparatePrefetch,
+             "GpuInfoCollectionSeparatePrefetch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 BASE_FEATURE(kRestrictCanAccessDataForOriginToUIThread,
              "RestrictCanAccessDataForOriginToUIThread",

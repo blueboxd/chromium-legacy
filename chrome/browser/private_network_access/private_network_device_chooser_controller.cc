@@ -30,7 +30,7 @@ using content::WebContents;
 PrivateNetworkDeviceChooserController::PrivateNetworkDeviceChooserController(
     content::RenderFrameHost* render_frame_host,
     std::unique_ptr<blink::mojom::PrivateNetworkDevice> device,
-    const ChromePrivateNetworkDeviceChooser::EventHandler& event_handler)
+    ChromePrivateNetworkDeviceChooser::EventHandler event_handler)
     : ChooserController(
           CreateChooserTitle(render_frame_host,
                              IDS_PRIVATE_NETWORK_DEVICE_CHOOSER_PROMPT_ORIGIN)),

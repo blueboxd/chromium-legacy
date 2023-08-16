@@ -21,6 +21,7 @@
 #include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_uma.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_id_manager.h"
+#include "chrome/browser/ash/arc/input_overlay/touch_injector_observer.h"
 #include "chrome/browser/ash/arc/input_overlay/util.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -248,12 +249,6 @@ void TouchInjector::OnInputBindingChange(
   auto* overlapped_action = FindActionWithOverlapInputElement(
       actions_, target_action, *input_element);
 
-  // Check if there is conflict in pending list.
-  if (beta_ && !pending_add_user_actions_.empty() && !overlapped_action) {
-    overlapped_action = FindActionWithOverlapInputElement(
-        pending_add_user_actions_, target_action, *input_element);
-  }
-
   // Partially unbind or completely unbind the |overlapped_action| if it
   // conflicts with |input_element|.
   if (overlapped_action) {
@@ -261,25 +256,29 @@ void TouchInjector::OnInputBindingChange(
   }
 
   target_action->PrepareToBindInput(std::move(input_element));
+
+  // For Beta version, there is no "Cancel" & "Reset to default" feature, so
+  // apply the pending change right away if there is change.
+  if (IsBeta()) {
+    if (overlapped_action) {
+      overlapped_action->BindPending();
+      NotifyActionUpdated(*overlapped_action);
+    }
+    target_action->BindPending();
+    NotifyActionUpdated(*target_action);
+  }
 }
 
 void TouchInjector::OnApplyPendingBinding() {
-  if (beta_) {
-    if (!pending_add_user_actions_.empty()) {
-      std::move(pending_add_user_actions_.begin(),
-                pending_add_user_actions_.end(), std::back_inserter(actions_));
-      pending_add_user_actions_.clear();
-    }
-    pending_delete_user_actions_.clear();
-    pending_add_default_actions_.clear();
-    pending_delete_default_actions_.clear();
-  }
   for (auto& action : actions_)
     action->BindPending();
 }
 
 void TouchInjector::OnBindingSave() {
-  OnApplyPendingBinding();
+  // Pending is already applied for beta version.
+  if (!IsBeta()) {
+    OnApplyPendingBinding();
+  }
   if (display_overlay_controller_) {
     display_overlay_controller_->SetDisplayMode(DisplayMode::kView);
   }
@@ -287,35 +286,6 @@ void TouchInjector::OnBindingSave() {
 }
 
 void TouchInjector::OnBindingCancel() {
-  if (beta_) {
-    // Recover all the actions in |pending_delete_user_actions_|.
-    if (!pending_delete_user_actions_.empty()) {
-      auto it = pending_delete_user_actions_.begin();
-      while (it != pending_delete_user_actions_.end()) {
-        actions_.emplace_back(std::move(*it));
-        AddActionView(actions_.back().get());
-        pending_delete_user_actions_.erase(it);
-      }
-    }
-
-    // Remove all the actions in |pending_add_user_actions_|.
-    if (!pending_add_user_actions_.empty()) {
-      auto it = pending_add_user_actions_.begin();
-      while (it != pending_add_user_actions_.end()) {
-        RemoveActionView(it->get());
-        pending_add_user_actions_.erase(it);
-      }
-    }
-    next_action_id_ = kMaxDefaultActionID + 1;
-
-    // Recover all the actions in |pending_delete_default_actions_|.
-    AddDefaultActionsAndViews(pending_delete_default_actions_);
-    // Remove all the actions in |pending_add_default_actions_|, which means to
-    // cancel the restore operation.
-    RemoveDefaultActionsAndViews(pending_add_default_actions_);
-    DCHECK(pending_add_default_actions_.empty());
-  }
-
   for (auto& action : actions_) {
     if (beta_ && next_action_id_ <= action->id()) {
       next_action_id_ = action->id() + 1;
@@ -329,26 +299,6 @@ void TouchInjector::OnBindingCancel() {
 }
 
 void TouchInjector::OnBindingRestore() {
-  if (beta_) {
-    // Remove all user-added actions to |pending_delete_user_actions_| in case
-    // that users want to cancel the restore.
-    pending_delete_user_actions_.clear();
-    auto deleted_actions = RemoveUserActionsAndViews(actions_);
-    pending_delete_user_actions_ = std::move(deleted_actions);
-    RemoveUserActionsAndViews(pending_add_user_actions_);
-    DCHECK(pending_add_user_actions_.empty());
-
-    next_action_id_ = kMaxDefaultActionID + 1;
-
-    // Add default actions in |pending_delete_default_actions_|.
-    AddDefaultActionsAndViews(pending_delete_default_actions_);
-    DCHECK(pending_delete_default_actions_.empty());
-    // Save all default actions which are deleted before edting to
-    // |pending_add_default_actions_| in case that users want to cancel the
-    // restore.
-    AddDefaultActionsAndViews(actions_, pending_add_default_actions_);
-  }
-
   for (auto& action : actions_)
     action->RestoreToDefault();
 }
@@ -884,6 +834,14 @@ void TouchInjector::LoadSystemVersionFromProto(AppDataProto& proto) {
   }
 }
 
+void TouchInjector::AddObserver(TouchInjectorObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void TouchInjector::RemoveObserver(TouchInjectorObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 std::unique_ptr<Action> TouchInjector::CreateRawAction(ActionType action_type) {
   std::unique_ptr<Action> action;
   switch (action_type) {
@@ -900,66 +858,29 @@ std::unique_ptr<Action> TouchInjector::CreateRawAction(ActionType action_type) {
   return action;
 }
 
-std::vector<std::unique_ptr<Action>> TouchInjector::RemoveUserActionsAndViews(
-    std::vector<std::unique_ptr<Action>>& actions) {
-  std::vector<std::unique_ptr<Action>> removed_actions;
-  auto it = actions.begin();
-  while (it != actions.end()) {
-    if (it->get()->id() > kMaxDefaultActionID) {
-      removed_actions.emplace_back(std::move(*it));
-      RemoveActionView(removed_actions.back().get());
-      actions.erase(it);
-    } else {
-      it++;
-    }
-  }
-  return removed_actions;
-}
-
-void TouchInjector::AddDefaultActionsAndViews(
-    std::vector<std::unique_ptr<Action>>& actions,
-    std::vector<Action*>& added_actions) {
-  if (actions.empty()) {
-    return;
-  }
-
-  auto it = actions.begin();
-  while (it != actions.end()) {
-    if (it->get()->IsDefaultAction() && it->get()->deleted()) {
-      it->get()->set_deleted(false);
-      added_actions.emplace_back(it->get());
-      AddActionView(it->get());
-    }
-    it++;
+void TouchInjector::NotifyActionAdded(Action& action) {
+  for (auto& observer : observers_) {
+    observer.OnActionAdded(action);
   }
 }
 
-void TouchInjector::AddDefaultActionsAndViews(
-    std::vector<Action*>& deleted_default_actions) {
-  if (deleted_default_actions.empty()) {
-    return;
+void TouchInjector::NotifyActionRemoved(Action& action) {
+  for (auto& observer : observers_) {
+    observer.OnActionRemoved(action);
   }
-
-  for (auto* action : deleted_default_actions) {
-    DCHECK(action->deleted());
-    action->set_deleted(false);
-    AddActionView(action);
-  }
-  deleted_default_actions.clear();
 }
 
-void TouchInjector::RemoveDefaultActionsAndViews(
-    std::vector<Action*>& added_default_actions) {
-  if (added_default_actions.empty()) {
-    return;
+void TouchInjector::NotifyActionTypeChanged(const Action& action,
+                                            const Action& new_action) {
+  for (auto& observer : observers_) {
+    observer.OnActionTypeChanged(action, new_action);
   }
+}
 
-  for (auto* action : added_default_actions) {
-    DCHECK(!action->deleted());
-    action->set_deleted(true);
-    RemoveActionView(action);
+void TouchInjector::NotifyActionUpdated(const Action& action) {
+  for (auto& observer : observers_) {
+    observer.OnActionUpdated(action);
   }
-  added_default_actions.clear();
 }
 
 int TouchInjector::GetNextActionID() {
@@ -967,57 +888,25 @@ int TouchInjector::GetNextActionID() {
 }
 
 void TouchInjector::AddNewAction(ActionType action_type) {
+  DCHECK(IsBeta());
   auto action = CreateRawAction(action_type);
   if (!action) {
     return;
   }
-
   action->InitFromEditor();
-  pending_add_user_actions_.emplace_back(std::move(action));
-  AddActionView(pending_add_user_actions_.back().get());
-}
 
-void TouchInjector::AddActionView(Action* action) {
-  if (display_overlay_controller_) {
-    display_overlay_controller_->OnActionAdded(action);
-  }
+  // Apply the change right away for beta.
+  NotifyActionAdded(*actions_.emplace_back(std::move(action)));
 }
 
 void TouchInjector::RemoveAction(Action* action) {
   auto it = std::find_if(
       actions_.begin(), actions_.end(),
       [&](const std::unique_ptr<Action>& p) { return action == p.get(); });
-  if (it != actions_.end()) {
-    if (it->get()->IsDefaultAction()) {
-      DCHECK(!it->get()->deleted());
-      it->get()->set_deleted(true);
-      pending_delete_default_actions_.emplace_back(it->get());
-      RemoveActionView(it->get());
-    } else {
-      pending_delete_user_actions_.emplace_back(std::move(*it));
-      RemoveActionView(pending_delete_user_actions_.back().get());
-      actions_.erase(it);
-    }
-  } else if (!pending_add_user_actions_.empty()) {
-    it = std::find_if(
-        pending_add_user_actions_.begin(), pending_add_user_actions_.end(),
-        [&](const std::unique_ptr<Action>& p) { return action == p.get(); });
-    DCHECK(it != pending_add_user_actions_.end());
-    if (it == pending_add_user_actions_.end()) {
-      return;
-    }
+  DCHECK(it != actions_.end());
+  actions_.erase(it);
 
-    RemoveActionView(it->get());
-    pending_add_user_actions_.erase(it);
-  } else {
-    NOTREACHED();
-  }
-}
-
-void TouchInjector::RemoveActionView(Action* action) {
-  if (display_overlay_controller_) {
-    display_overlay_controller_->OnActionRemoved(action);
-  }
+  NotifyActionRemoved(*action);
 }
 
 void TouchInjector::RecordMenuStateOnLaunch() {

@@ -1498,14 +1498,14 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollWithoutRootLayer) {
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollWithoutRenderer) {
-  auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
-  gl_owned->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                                GL_INNOCENT_CONTEXT_RESET_ARB);
+  auto compositor_context = viz::TestContextProvider::CreateRaster();
+  compositor_context->UnboundTestRasterInterface()->LoseContextCHROMIUM(
+      GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
 
   // Initialization will fail.
-  EXPECT_FALSE(
-      CreateHostImpl(DefaultSettings(),
-                     FakeLayerTreeFrameSink::Create3d(std::move(gl_owned))));
+  EXPECT_FALSE(CreateHostImpl(
+      DefaultSettings(),
+      FakeLayerTreeFrameSink::Create3d(std::move(compositor_context))));
 
   SetupViewportLayersInnerScrolls(gfx::Size(50, 50), gfx::Size(100, 100));
 
@@ -11326,13 +11326,8 @@ class FakeDrawableLayerImpl : public LayerImpl {
 // submitted to the LayerTreeFrameSink, where it should request to swap only
 // the sub-buffer that is damaged.
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
-  auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
-  scoped_refptr<viz::TestContextProvider> context_provider(
-      viz::TestContextProvider::Create(std::move(gl_owned)));
-  context_provider->BindToCurrentSequence();
-
-  std::unique_ptr<FakeLayerTreeFrameSink> layer_tree_frame_sink(
-      FakeLayerTreeFrameSink::Create3d(context_provider));
+  std::unique_ptr<FakeLayerTreeFrameSink> layer_tree_frame_sink =
+      FakeLayerTreeFrameSink::Create3d();
   FakeLayerTreeFrameSink* fake_layer_tree_frame_sink =
       layer_tree_frame_sink.get();
 
@@ -11922,7 +11917,7 @@ TEST_F(LayerTreeHostImplTestPrepareTiles, PrepareTilesWhenInvisible) {
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, UIResourceManagement) {
-  auto test_context_provider = viz::TestContextProvider::Create();
+  auto test_context_provider = viz::TestContextProvider::CreateRaster();
   viz::TestSharedImageInterface* sii =
       test_context_provider->SharedImageInterface();
   CreateHostImpl(DefaultSettings(), FakeLayerTreeFrameSink::Create3d(
@@ -11966,7 +11961,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, UIResourceManagement) {
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, CreateETC1UIResource) {
-  auto test_context_provider = viz::TestContextProvider::Create();
+  auto test_context_provider = viz::TestContextProvider::CreateRaster();
   viz::TestSharedImageInterface* sii =
       test_context_provider->SharedImageInterface();
   CreateHostImpl(DefaultSettings(), FakeLayerTreeFrameSink::Create3d(
@@ -16029,13 +16024,10 @@ class MsaaIsSlowLayerTreeHostImplTest : public LayerTreeHostImplTest {
     settings.gpu_rasterization_msaa_sample_count = 4;
     auto frame_sink =
         FakeLayerTreeFrameSink::Builder()
-            .AllContexts(&viz::TestGLES2Interface::set_msaa_is_slow,
-                         &viz::TestRasterInterface::set_msaa_is_slow,
+            .AllContexts(&viz::TestRasterInterface::set_msaa_is_slow,
                          msaa_is_slow)
-            .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization,
-                         &viz::TestRasterInterface::set_gpu_rasterization, true)
-            .AllContexts(&viz::TestGLES2Interface::set_avoid_stencil_buffers,
-                         &viz::TestRasterInterface::set_avoid_stencil_buffers,
+            .AllContexts(&viz::TestRasterInterface::set_gpu_rasterization, true)
+            .AllContexts(&viz::TestRasterInterface::set_avoid_stencil_buffers,
                          avoid_stencil_buffers)
             .Build();
     EXPECT_TRUE(CreateHostImpl(settings, std::move(frame_sink)));
@@ -16069,74 +16061,6 @@ TEST_F(MsaaIsSlowLayerTreeHostImplTest, GpuRasterizationStatusMsaaIsSlow) {
   host_impl_->CommitComplete();
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
   EXPECT_FALSE(host_impl_->can_use_msaa());
-}
-
-class MsaaCompatibilityLayerTreeHostImplTest : public LayerTreeHostImplTest {
- public:
-  void CreateHostImplWithMultisampleCompatibility(
-      bool support_multisample_compatibility) {
-    LayerTreeSettings settings = DefaultSettings();
-    settings.gpu_rasterization_msaa_sample_count = 4;
-    auto frame_sink =
-        FakeLayerTreeFrameSink::Builder()
-            .AllContexts(
-                &viz::TestGLES2Interface::set_support_multisample_compatibility,
-                &viz::TestRasterInterface::set_multisample_compatibility,
-                support_multisample_compatibility)
-            .AllContexts(&viz::TestGLES2Interface::set_gpu_rasterization,
-                         &viz::TestRasterInterface::set_gpu_rasterization, true)
-            .Build();
-    EXPECT_TRUE(CreateHostImpl(settings, std::move(frame_sink)));
-  }
-};
-
-TEST_F(MsaaCompatibilityLayerTreeHostImplTest,
-       GpuRasterizationStatusNonAAPaint) {
-  // Always use a recording with slow paths so the toggle is dependent on non aa
-  // paint.
-  auto recording_source = FakeRecordingSource::CreateRecordingSource(
-      gfx::Rect(100, 100), gfx::Size(100, 100));
-  recording_source->set_has_slow_paths(true);
-
-  // Ensure that without non-aa paint and without multisample compatibility, we
-  // raster slow paths with msaa.
-  CreateHostImplWithMultisampleCompatibility(false);
-  recording_source->set_has_non_aa_paint(false);
-  recording_source->Rerecord();
-  EXPECT_TRUE(host_impl_->can_use_msaa());
-  EXPECT_GT(host_impl_->GetMSAASampleCountForRaster(
-                recording_source->GetDisplayItemList()),
-            0);
-
-  // Ensure that without non-aa paint and with multisample compatibility, we
-  // raster slow paths with msaa.
-  CreateHostImplWithMultisampleCompatibility(true);
-  recording_source->set_has_non_aa_paint(false);
-  recording_source->Rerecord();
-  EXPECT_TRUE(host_impl_->can_use_msaa());
-  EXPECT_GT(host_impl_->GetMSAASampleCountForRaster(
-                recording_source->GetDisplayItemList()),
-            0);
-
-  // Ensure that with non-aa paint and without multisample compatibility, we do
-  // not raster slow paths with msaa.
-  CreateHostImplWithMultisampleCompatibility(false);
-  recording_source->set_has_non_aa_paint(true);
-  recording_source->Rerecord();
-  EXPECT_TRUE(host_impl_->can_use_msaa());
-  EXPECT_EQ(host_impl_->GetMSAASampleCountForRaster(
-                recording_source->GetDisplayItemList()),
-            0);
-
-  // Ensure that with non-aa paint and with multisample compatibility, we raster
-  // slow paths with msaa.
-  CreateHostImplWithMultisampleCompatibility(true);
-  recording_source->set_has_non_aa_paint(true);
-  recording_source->Rerecord();
-  EXPECT_TRUE(host_impl_->can_use_msaa());
-  EXPECT_GT(host_impl_->GetMSAASampleCountForRaster(
-                recording_source->GetDisplayItemList()),
-            0);
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
@@ -18676,6 +18600,32 @@ TEST_F(LayerTreeHostImplTest, CollectRegionCaptureBounds) {
   // Finally, test a rotation instead of a simple scaling.
   EXPECT_EQ((gfx::Rect{0, 21, 290, 339}),
             collected_bounds.bounds().find(kFourthId)->second);
+}
+
+TEST_F(LayerTreeHostImplTest, RecomputeRasterCapsOnLayerTreeFrameSinkUpdate) {
+  host_impl_->ReleaseLayerTreeFrameSink();
+  host_impl_ = nullptr;
+
+  host_impl_ = LayerTreeHostImpl::Create(
+      DefaultSettings(), this, &task_runner_provider_, &stats_instrumentation_,
+      &task_graph_runner_,
+      AnimationHost::CreateForTesting(ThreadInstance::IMPL), nullptr, 0,
+      nullptr, nullptr);
+  InputHandler::Create(static_cast<CompositorDelegateForInput&>(*host_impl_));
+  host_impl_->SetVisible(true);
+
+  // InitializeFrameSink with a gpu-raster enabled output surface.
+  auto gpu_raster_layer_tree_frame_sink =
+      FakeLayerTreeFrameSink::Create3dForGpuRasterization();
+  host_impl_->InitializeFrameSink(gpu_raster_layer_tree_frame_sink.get());
+  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+  EXPECT_TRUE(host_impl_->can_use_msaa());
+
+  // Re-initialize with a software output surface.
+  layer_tree_frame_sink_ = FakeLayerTreeFrameSink::CreateSoftware();
+  host_impl_->InitializeFrameSink(layer_tree_frame_sink_.get());
+  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
+  EXPECT_FALSE(host_impl_->can_use_msaa());
 }
 
 // Check if picturelayer's ScrollInteractionInProgress() return true even when

@@ -600,6 +600,23 @@ class PLATFORM_EXPORT ResourceRequestHead {
     attribution_reporting_runtime_features_ = runtime_features;
   }
 
+  bool SharedDictionaryWriterEnabled() const {
+    return shared_dictionary_writer_enabled_;
+  }
+
+  void SetSharedDictionaryWriterEnabled(bool shared_dictionary_writer_enabled) {
+    shared_dictionary_writer_enabled_ = shared_dictionary_writer_enabled;
+  }
+
+  base::UnguessableToken GetServiceWorkerRaceNetworkRequestToken() const {
+    return service_worker_race_network_request_token_;
+  }
+
+  void SetServiceWorkerRaceNetworkRequestToken(
+      const base::UnguessableToken& token) {
+    service_worker_race_network_request_token_ = token;
+  }
+
  private:
   const CacheControlHeader& GetCacheControlHeader() const;
 
@@ -731,6 +748,14 @@ class PLATFORM_EXPORT ResourceRequestHead {
 
   network::AttributionReportingRuntimeFeatures
       attribution_reporting_runtime_features_;
+
+  // Indicate the state of CompressionDictionaryTransport feature. When it is
+  // true, `use-as-dictionary` response HTTP header may be processed.
+  // TODO(crbug.com/1413922): Remove this flag when we launch
+  // CompressionDictionaryTransport feature.
+  bool shared_dictionary_writer_enabled_ = false;
+
+  base::UnguessableToken service_worker_race_network_request_token_;
 };
 
 class PLATFORM_EXPORT ResourceRequestBody {

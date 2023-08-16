@@ -10,16 +10,21 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.ui.test.util.MockitoHelper.doCallback;
 import static org.chromium.ui.test.util.MockitoHelper.doRunnable;
 
 import android.app.Activity;
@@ -28,6 +33,8 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.Pair;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
@@ -55,19 +62,24 @@ import org.chromium.chrome.browser.bookmarks.BookmarkRow.Location;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowDisplayPref;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiState.BookmarkUiMode;
 import org.chromium.chrome.browser.bookmarks.ImprovedBookmarkRowProperties.StartImageVisibility;
+import org.chromium.chrome.browser.commerce.PriceTrackingUtils;
+import org.chromium.chrome.browser.commerce.PriceTrackingUtilsJni;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
-import org.chromium.chrome.browser.sync.SyncService;
-import org.chromium.chrome.browser.sync.SyncService.SyncStateChangedListener;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.ui.signin.SyncPromoController.SyncPromoState;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter.DragListener;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableRecyclerViewAdapter.DraggabilityProvider;
@@ -75,6 +87,7 @@ import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
+import org.chromium.components.commerce.core.ShoppingService;
 import org.chromium.components.favicon.IconType;
 import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.components.favicon.LargeIconBridge.LargeIconCallback;
@@ -87,9 +100,12 @@ import org.chromium.components.power_bookmarks.ShoppingSpecifics;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.sync.SyncService;
+import org.chromium.components.sync.SyncService.SyncStateChangedListener;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.components.url_formatter.UrlFormatterJni;
 import org.chromium.ui.base.TestActivity;
+import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -156,6 +172,14 @@ public class BookmarkManagerMediatorTest {
     private BookmarkImageFetcher mBookmarkImageFetcher;
     @Mock
     private Drawable mDrawable;
+    @Mock
+    private ShoppingService mShoppingService;
+    @Mock
+    private SnackbarManager mSnackbarManager;
+    @Mock
+    private PriceTrackingUtils.Natives mPriceTrackingUtilsJniMock;
+    @Mock
+    private ListObservable.ListObserver<Void> mListObserver;
 
     @Captor
     private ArgumentCaptor<BookmarkModelObserver> mBookmarkModelObserverArgumentCaptor;
@@ -275,7 +299,7 @@ public class BookmarkManagerMediatorTest {
             mBookmarkUiPrefs.setBookmarkRowDisplayPref(BookmarkRowDisplayPref.COMPACT);
 
             // Setup sync/identify mocks.
-            SyncService.overrideForTests(mSyncService);
+            SyncServiceFactory.overrideForTests(mSyncService);
             IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
             doReturn(mSigninManager).when(mIdentityServicesProvider).getSigninManager(any());
             doReturn(mIdentityManager).when(mSigninManager).getIdentityManager();
@@ -304,6 +328,13 @@ public class BookmarkManagerMediatorTest {
                     .when(mBookmarkImageFetcher)
                     .fetchFaviconForBookmark(any(), any());
 
+            // Setup price tracking utils JNI.
+            mJniMocker.mock(PriceTrackingUtilsJni.TEST_HOOKS, mPriceTrackingUtilsJniMock);
+            doCallback(3, (Callback<Boolean> callback) -> callback.onResult(true))
+                    .when(mPriceTrackingUtilsJniMock)
+                    .setPriceTrackingStateForBookmark(
+                            any(), anyLong(), anyBoolean(), any(), anyBoolean());
+
             mDragReorderableRecyclerViewAdapter =
                     spy(new DragReorderableRecyclerViewAdapter(mActivity, mModelList));
             mMediator = new BookmarkManagerMediator(mActivity, mBookmarkModel, mBookmarkOpener,
@@ -311,12 +342,12 @@ public class BookmarkManagerMediatorTest {
                     mDragReorderableRecyclerViewAdapter, mLargeIconBridge, /*isDialogUi=*/true,
                     /*isIncognito=*/false, mBackPressStateSupplier, mProfile,
                     mBookmarkUndoController, mModelList, mBookmarkUiPrefs, mHideKeyboardRunnable,
-                    mBookmarkImageFetcher);
+                    mBookmarkImageFetcher, mShoppingService, mSnackbarManager);
             mMediator.addUiObserver(mBookmarkUiObserver);
         });
     }
 
-    void finishLoading() {
+    private void finishLoading() {
         when(mBookmarkModel.isBookmarkModelLoaded()).thenReturn(true);
         verify(mBookmarkModel, atLeast(0))
                 .finishLoadingBookmarkModel(mFinishLoadingBookmarkModelCaptor.capture());
@@ -326,9 +357,49 @@ public class BookmarkManagerMediatorTest {
         }
     }
 
-    void verifyBookmarkListMenuItem(ListItem item, @StringRes int titleId, boolean enabled) {
+    private void verifyBookmarkListMenuItem(
+            ListItem item, @StringRes int titleId, boolean enabled) {
         assertEquals(item.model.get(ListMenuItemProperties.TITLE_ID), titleId);
         assertEquals(item.model.get(ListMenuItemProperties.ENABLED), enabled);
+    }
+
+    private void verifyCurrentViewTypes(int... expectedViewTypes) {
+        verifyModelListHaViewTypes(mModelList, expectedViewTypes);
+    }
+
+    private static void verifyModelListHaViewTypes(ModelList modelList, int... expectedViewTypes) {
+        assertEquals(expectedViewTypes.length, modelList.size());
+        for (int i = 0; i < expectedViewTypes.length; ++i) {
+            assertEquals("ViewType did not match at index " + i, expectedViewTypes[i],
+                    modelList.get(i).type);
+        }
+    }
+
+    private void verifyCurrentBookmarkIds(BookmarkId... expectedBookmarkIds) {
+        verifyModelListHasBookmarkIds(mModelList, expectedBookmarkIds);
+    }
+
+    private static void verifyModelListHasBookmarkIds(
+            ModelList modelList, BookmarkId... expectedBookmarkIds) {
+        assertEquals(expectedBookmarkIds.length, modelList.size());
+        for (int i = 0; i < expectedBookmarkIds.length; ++i) {
+            BookmarkId bookmarkId = getBookmarkIdFromModel(modelList.get(i).model);
+            assertEquals(
+                    "BookmarkId did not match at index " + i, expectedBookmarkIds[i], bookmarkId);
+        }
+    }
+
+    private static @Nullable BookmarkId getBookmarkIdFromModel(PropertyModel propertyModel) {
+        BookmarkListEntry bookmarkListEntry =
+                propertyModel.get(BookmarkManagerProperties.BOOKMARK_LIST_ENTRY);
+        if (bookmarkListEntry == null) {
+            return null;
+        }
+        BookmarkItem bookmarkItem = bookmarkListEntry.getBookmarkItem();
+        if (bookmarkItem == null) {
+            return null;
+        }
+        return bookmarkItem.getId();
     }
 
     @Test
@@ -428,6 +499,8 @@ public class BookmarkManagerMediatorTest {
         mMediator.onDestroy();
         verify(mBookmarkUiObserver).onDestroy();
         verify(mBookmarkUndoController).destroy();
+        verify(mBookmarkImageFetcher).destroy();
+        verify(mLargeIconBridge).destroy();
     }
 
     @Test
@@ -787,29 +860,17 @@ public class BookmarkManagerMediatorTest {
         finishLoading();
         mMediator.openFolder(mFolderId2);
 
-        ModelList modelList = mMediator.createListMenuModelList(mBookmarkId21, Location.MIDDLE);
-        assertEquals(6, modelList.size());
+        BookmarkListEntry entry = BookmarkListEntry.createBookmarkEntry(
+                mBookmarkItem21, null, BookmarkRowDisplayPref.COMPACT);
+        ModelList modelList = mMediator.createListMenuModelList(entry, Location.MIDDLE);
+        assertEquals(4, modelList.size());
         verifyBookmarkListMenuItem(modelList.get(0), R.string.bookmark_item_select, true);
         verifyBookmarkListMenuItem(modelList.get(1), R.string.bookmark_item_edit, true);
         verifyBookmarkListMenuItem(modelList.get(2), R.string.bookmark_item_move, true);
         verifyBookmarkListMenuItem(modelList.get(3), R.string.bookmark_item_delete, true);
-        verifyBookmarkListMenuItem(modelList.get(4), R.string.menu_item_move_up, true);
-        verifyBookmarkListMenuItem(modelList.get(5), R.string.menu_item_move_down, true);
-
-        modelList = mMediator.createListMenuModelList(mBookmarkId21, Location.TOP);
-        assertEquals(5, modelList.size());
-        verifyBookmarkListMenuItem(modelList.get(4), R.string.menu_item_move_down, true);
-
-        modelList = mMediator.createListMenuModelList(mBookmarkId21, Location.BOTTOM);
-        assertEquals(5, modelList.size());
-        verifyBookmarkListMenuItem(modelList.get(4), R.string.menu_item_move_up, true);
-
-        mMediator.openFolder(mRootFolderId);
-        modelList = mMediator.createListMenuModelList(mBookmarkId21, Location.MIDDLE);
-        assertEquals("neither move option should be visible", 4, modelList.size());
 
         mMediator.openSearchUi();
-        modelList = mMediator.createListMenuModelList(mBookmarkId21, Location.MIDDLE);
+        modelList = mMediator.createListMenuModelList(entry, Location.MIDDLE);
         assertEquals(5, modelList.size());
         verifyBookmarkListMenuItem(modelList.get(4), R.string.bookmark_show_in_folder, true);
     }
@@ -819,13 +880,46 @@ public class BookmarkManagerMediatorTest {
         finishLoading();
         mMediator.openFolder(mReadingListFolderId);
 
-        ModelList modelList = mMediator.createListMenuModelList(mReadingListId, Location.MIDDLE);
+        BookmarkListEntry entry = BookmarkListEntry.createBookmarkEntry(
+                mReadingListItem, null, BookmarkRowDisplayPref.COMPACT);
+        ModelList modelList = mMediator.createListMenuModelList(entry, Location.MIDDLE);
         assertEquals(5, modelList.size());
         verifyBookmarkListMenuItem(modelList.get(0), R.string.reading_list_mark_as_read, true);
         verifyBookmarkListMenuItem(modelList.get(1), R.string.bookmark_item_select, true);
         verifyBookmarkListMenuItem(modelList.get(2), R.string.bookmark_item_edit, true);
         verifyBookmarkListMenuItem(modelList.get(3), R.string.bookmark_item_move, true);
         verifyBookmarkListMenuItem(modelList.get(4), R.string.bookmark_item_delete, true);
+    }
+
+    @Test
+    public void testcreateListMenuModelList_shopping() {
+        finishLoading();
+        mMediator.openFolder(mFolderId2);
+
+        doReturn(true).when(mShoppingService).isSubscribedFromCache(any());
+        PowerBookmarkMeta meta =
+                PowerBookmarkMeta.newBuilder()
+                        .setShoppingSpecifics(ShoppingSpecifics.newBuilder()
+                                                      .setProductClusterId(123)
+                                                      .setOfferId(456)
+                                                      .setCountryCode("us")
+                                                      .setCurrentPrice(ProductPrice.newBuilder()
+                                                                               .setAmountMicros(100)
+                                                                               .build())
+                                                      .build())
+                        .build();
+        BookmarkListEntry entry = BookmarkListEntry.createBookmarkEntry(
+                mBookmarkItem21, meta, BookmarkRowDisplayPref.COMPACT);
+        ModelList modelList = mMediator.createListMenuModelList(entry, Location.MIDDLE);
+        assertEquals(5, modelList.size());
+        verifyBookmarkListMenuItem(
+                modelList.get(4), R.string.disable_price_tracking_menu_item, true);
+
+        doReturn(false).when(mShoppingService).isSubscribedFromCache(any());
+        modelList = mMediator.createListMenuModelList(entry, Location.MIDDLE);
+        assertEquals(5, modelList.size());
+        verifyBookmarkListMenuItem(
+                modelList.get(4), R.string.enable_price_tracking_menu_item, true);
     }
 
     @Test
@@ -857,6 +951,37 @@ public class BookmarkManagerMediatorTest {
 
     @Test
     @EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
+    public void testCreateListMenuForBookmark_priceTracking() {
+        finishLoading();
+
+        PowerBookmarkMeta meta =
+                PowerBookmarkMeta.newBuilder()
+                        .setShoppingSpecifics(ShoppingSpecifics.newBuilder()
+                                                      .setProductClusterId(123)
+                                                      .setOfferId(456)
+                                                      .setCountryCode("us")
+                                                      .setCurrentPrice(ProductPrice.newBuilder()
+                                                                               .setAmountMicros(100)
+                                                                               .build())
+                                                      .build())
+                        .build();
+        doReturn(meta).when(mBookmarkModel).getPowerBookmarkMeta(mBookmarkId21);
+        mMediator.openFolder(mFolderId2);
+
+        doReturn(true).when(mShoppingService).isSubscribedFromCache(any());
+        BasicListMenu menu =
+                (BasicListMenu) mMediator.createListMenuForBookmark(mModelList.get(1).model);
+        assertNotNull(menu);
+
+        // delete.
+        menu.onItemClick(null, null, 4, 0);
+        verify(mPriceTrackingUtilsJniMock)
+                .setPriceTrackingStateForBookmark(
+                        any(), anyLong(), anyBoolean(), any(), anyBoolean());
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
     public void testParentFolderUpdatedWhenChildDeleted() {
         finishLoading();
         mMediator.openFolder(mFolderId1);
@@ -872,5 +997,121 @@ public class BookmarkManagerMediatorTest {
 
         assertEquals(
                 0, mModelList.get(1).model.get(ImprovedBookmarkRowProperties.FOLDER_CHILD_COUNT));
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
+    public void testPromoHeader() {
+        BookmarkPromoHeader.forcePromoStateForTesting(SyncPromoState.PROMO_FOR_SIGNED_IN_STATE);
+        mMediator.getPromoHeaderManager().syncStateChanged();
+        finishLoading();
+        mMediator.openFolder(mFolderId1);
+
+        verifyCurrentViewTypes(ViewType.SEARCH_BOX, ViewType.PERSONALIZED_SYNC_PROMO,
+                ViewType.IMPROVED_BOOKMARK_COMPACT, ViewType.IMPROVED_BOOKMARK_COMPACT);
+
+        BookmarkPromoHeader.forcePromoStateForTesting(SyncPromoState.NO_PROMO);
+        mMediator.getPromoHeaderManager().syncStateChanged();
+
+        verifyCurrentViewTypes(ViewType.SEARCH_BOX, ViewType.IMPROVED_BOOKMARK_COMPACT,
+                ViewType.IMPROVED_BOOKMARK_COMPACT);
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
+    public void testSearchBox() {
+        when(mBookmarkModel.searchBookmarks(eq("3"), anyInt()))
+                .thenReturn(Collections.singletonList(mFolderId3));
+        finishLoading();
+        mMediator.openFolder(mFolderId1);
+        verifyCurrentViewTypes(ViewType.SEARCH_BOX, ViewType.IMPROVED_BOOKMARK_COMPACT,
+                ViewType.IMPROVED_BOOKMARK_COMPACT);
+
+        mModelList.addObserver(mListObserver);
+        mModelList.get(0).model.get(BookmarkSearchBoxRowProperties.QUERY_CALLBACK).onResult("3");
+        verifyCurrentViewTypes(ViewType.SEARCH_BOX, ViewType.IMPROVED_BOOKMARK_COMPACT);
+        verify(mListObserver, never()).onItemRangeChanged(any(), eq(0), anyInt(), any());
+        verify(mListObserver, never()).onItemRangeRemoved(any(), eq(0), anyInt());
+        verify(mListObserver, never()).onItemRangeInserted(any(), eq(0), anyInt());
+        verify(mListObserver).onItemRangeChanged(any(), eq(1), anyInt(), any());
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
+    public void testDeleteDuringSelection() {
+        // Inspired by https://crbug.com/1449447 where the search row didn't have a property and
+        // we crashed when trying to handle deletion during selection.
+
+        finishLoading();
+        mMediator.openFolder(mFolderId1);
+        assertEquals(3, mModelList.size());
+
+        // Setup selection mock to make it seem like folder 2 is selected.
+        when(mSelectionDelegate.isItemSelected(mFolderId2)).thenReturn(true);
+        doReturn(Arrays.asList(mFolderId2)).when(mSelectionDelegate).getSelectedItemsAsList();
+
+        // Pretend to delete folder 2.
+        doReturn(Arrays.asList(mFolderId3)).when(mBookmarkModel).getChildIds(mFolderId1);
+        verify(mBookmarkModel).addObserver(mBookmarkModelObserverArgumentCaptor.capture());
+        mBookmarkModelObserverArgumentCaptor.getValue().bookmarkNodeRemoved(
+                mFolderItem1, 0, mFolderItem2, /*isDoingExtensiveChanges*/ false);
+
+        // Mostly just verifying that #syncAdapterAndSelectionDelegate() doesn't crash.
+        assertEquals(2, mModelList.size());
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
+    public void testQueryCallback() {
+        finishLoading();
+        mMediator.openFolder(mFolderId1);
+        assertEquals(3, mModelList.size());
+        assertEquals(ViewType.SEARCH_BOX, mModelList.get(0).type);
+
+        PropertyModel propertyModel = mModelList.get(0).model;
+        Callback<String> queryCallback =
+                propertyModel.get(BookmarkSearchBoxRowProperties.QUERY_CALLBACK);
+        assertNotNull(queryCallback);
+
+        queryCallback.onResult("foo");
+        assertEquals(BookmarkUiMode.SEARCHING, mMediator.getCurrentUiMode());
+        verify(mBookmarkModel).searchBookmarks(eq("foo"), anyInt());
+
+        queryCallback.onResult("");
+        assertEquals(BookmarkUiMode.FOLDER, mMediator.getCurrentUiMode());
+        verify(mBookmarkModel, never()).searchBookmarks(eq(""), anyInt());
+        verify(mBookmarkModel, never()).searchBookmarks(eq(null), anyInt());
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
+    public void testImprovedSpecialFolders() {
+        final @ColorInt int specialBackgroundColor =
+                SemanticColorUtils.getColorPrimaryContainer(mActivity);
+        final @ColorInt int normalBackgroundColor =
+                ChromeColors.getSurfaceColor(mActivity, R.dimen.default_elevation_1);
+        finishLoading();
+
+        mMediator.openFolder(mRootFolderId);
+
+        assertEquals(3, mModelList.size());
+        verifyCurrentBookmarkIds(null, mReadingListFolderId, mDesktopFolderId);
+        assertEquals(specialBackgroundColor,
+                mModelList.get(1).model.get(
+                        ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR));
+        assertEquals(specialBackgroundColor,
+                mModelList.get(2).model.get(
+                        ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR));
+
+        mMediator.openFolder(mFolderId1);
+
+        assertEquals(3, mModelList.size());
+        verifyCurrentBookmarkIds(null, mFolderId2, mFolderId3);
+        assertEquals(normalBackgroundColor,
+                mModelList.get(1).model.get(
+                        ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR));
+        assertEquals(normalBackgroundColor,
+                mModelList.get(2).model.get(
+                        ImprovedBookmarkRowProperties.START_AREA_BACKGROUND_COLOR));
     }
 }

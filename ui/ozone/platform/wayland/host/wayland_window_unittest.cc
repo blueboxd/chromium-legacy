@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_command_line.h"
 #include "build/chromeos_buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -339,6 +340,12 @@ class WaylandWindowTest : public WaylandTest {
 
   MouseEvent test_mouse_event_;
 };
+
+// Regression test for crbug.com/1433175
+TEST_P(WaylandWindowTest, Shutdown) {
+  window_->PrepareForShutdown();
+  window_->OnDragSessionClose(mojom::DragOperation::kNone);
+}
 
 TEST_P(WaylandWindowTest, SetTitle) {
   window_->SetTitle(u"hello");
@@ -2438,6 +2445,154 @@ TEST_P(WaylandWindowTest, ToplevelWindowUpdateWindowScale) {
   EXPECT_EQ(gfx::Rect(800, 600), window_->GetBoundsInDIP());
 }
 
+TEST_P(WaylandWindowTest, ToplevelWindowOnRotateFocus) {
+  if (!IsAuraShellEnabled()) {
+    GTEST_SKIP();
+  }
+
+  base::MockRepeatingCallback<void(uint32_t, uint32_t)> ack_cb;
+
+  // For asserting server requests emitted by the client.
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    server->GetObject<wl::MockSurface>(surface_id_)
+        ->xdg_surface()
+        ->xdg_toplevel()
+        ->zaura_toplevel()
+        ->set_ack_rotate_focus_callback(ack_cb.Get());
+  });
+  SendConfigureEvent(surface_id_, {10, 10},
+                     InitializeWlArrayWithActivatedState());
+  SetKeyboardFocusedWindow(window_.get());
+
+  using Direction = PlatformWindowDelegate::RotateDirection;
+  int serial = 1;
+
+  // Test successful return cases
+
+  // Forward, restart
+  EXPECT_CALL(delegate_, OnRotateFocus(Direction::kForward, true))
+      .WillOnce(Return(true));
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    EXPECT_CALL(ack_cb,
+                Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_HANDLED));
+
+    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+    zaura_toplevel_send_rotate_focus(
+        toplevel->resource(), serial++, ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
+        ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
+  });
+
+  // Backward, no restart
+  EXPECT_CALL(delegate_, OnRotateFocus(Direction::kBackward, false))
+      .WillOnce(Return(true));
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    EXPECT_CALL(ack_cb,
+                Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_HANDLED));
+
+    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+    zaura_toplevel_send_rotate_focus(
+        toplevel->resource(), serial++,
+        ZAURA_TOPLEVEL_ROTATE_DIRECTION_BACKWARD,
+        ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_NO_RESTART);
+  });
+
+  // Test unsuccessful return cases
+
+  // Forward
+  EXPECT_CALL(delegate_, OnRotateFocus(_, _)).WillOnce(Return(false));
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    EXPECT_CALL(ack_cb,
+                Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_NOT_HANDLED));
+
+    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+    zaura_toplevel_send_rotate_focus(
+        toplevel->resource(), serial++, ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
+        ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
+  });
+
+  // Backward
+  EXPECT_CALL(delegate_, OnRotateFocus(_, _)).WillOnce(Return(false));
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    EXPECT_CALL(ack_cb,
+                Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_NOT_HANDLED));
+
+    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+    zaura_toplevel_send_rotate_focus(
+        toplevel->resource(), serial++,
+        ZAURA_TOPLEVEL_ROTATE_DIRECTION_BACKWARD,
+        ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_NO_RESTART);
+  });
+}
+
+TEST_P(WaylandWindowTest, ToplevelWindowOnRotateFocus_NotActiveOrNotFocused) {
+  if (!IsAuraShellEnabled()) {
+    GTEST_SKIP();
+  }
+
+  base::MockRepeatingCallback<void(uint32_t, uint32_t)> ack_cb;
+
+  // For asserting server requests emitted by the client.
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    server->GetObject<wl::MockSurface>(surface_id_)
+        ->xdg_surface()
+        ->xdg_toplevel()
+        ->zaura_toplevel()
+        ->set_ack_rotate_focus_callback(ack_cb.Get());
+  });
+
+  int serial = 1;
+
+  // Not active, should fail
+  SendConfigureEvent(surface_id_, {10, 10}, wl::ScopedWlArray({}));
+  SetKeyboardFocusedWindow(nullptr);
+
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    EXPECT_CALL(ack_cb,
+                Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_NOT_HANDLED));
+
+    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+    zaura_toplevel_send_rotate_focus(
+        toplevel->resource(), serial++, ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
+        ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
+  });
+
+  // Now activate, but don't grab keyboard focus, should still be rejected.
+  // Not active, should fail
+  SendConfigureEvent(surface_id_, {10, 10},
+                     InitializeWlArrayWithActivatedState());
+
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    EXPECT_CALL(ack_cb,
+                Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_NOT_HANDLED));
+
+    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+    zaura_toplevel_send_rotate_focus(
+        toplevel->resource(), serial++, ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
+        ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
+  });
+
+  // Now grab keyboard focus, we should have great success now.
+  SetKeyboardFocusedWindow(window_.get());
+
+  EXPECT_CALL(delegate_, OnRotateFocus(_, _)).WillOnce(Return(true));
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    EXPECT_CALL(ack_cb,
+                Run(serial, ZAURA_TOPLEVEL_ROTATE_HANDLED_STATE_HANDLED));
+
+    auto* surface = server->GetObject<wl::MockSurface>(surface_id_);
+    auto* toplevel = surface->xdg_surface()->xdg_toplevel()->zaura_toplevel();
+    zaura_toplevel_send_rotate_focus(
+        toplevel->resource(), serial++, ZAURA_TOPLEVEL_ROTATE_DIRECTION_FORWARD,
+        ZAURA_TOPLEVEL_ROTATE_RESTART_STATE_RESTART);
+  });
+}
+
 TEST_P(WaylandWindowTest, WaylandPopupSurfaceScale) {
   VerifyAndClearExpectations();
 
@@ -3445,9 +3600,16 @@ TEST_P(WaylandWindowTest, ReattachesBackgroundOnShow) {
   });
 }
 
+// TODO(https://crbug.com/1448391): Reenable for Lacros when adjusted for screen
+// coordinates.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_SetsPropertiesOnShow DISABLED_SetsPropertiesOnShow
+#else
+#define MAYBE_SetsPropertiesOnShow SetsPropertiesOnShow
+#endif
 // Tests that if the window gets hidden and shown again, the title, app id and
 // size constraints remain the same.
-TEST_P(WaylandWindowTest, SetsPropertiesOnShow) {
+TEST_P(WaylandWindowTest, MAYBE_SetsPropertiesOnShow) {
   constexpr char kAppId[] = "wayland_test";
   const std::u16string kTitle(u"WaylandWindowTest");
 
@@ -4591,6 +4753,8 @@ TEST_P(WaylandWindowTest, SetShape) {
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandWindowTest,
                          Values(wl::ServerConfig{}));
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
 INSTANTIATE_TEST_SUITE_P(
     XdgVersionStableTestWithAuraShell,
     WaylandWindowTest,
@@ -4599,9 +4763,13 @@ INSTANTIATE_TEST_SUITE_P(
            wl::ServerConfig{
                .enable_aura_shell = wl::EnableAuraShellProtocol::kEnabled,
                .use_aura_output_manager = true}));
+#endif
+
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandSubsurfaceTest,
                          Values(wl::ServerConfig{}));
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
 INSTANTIATE_TEST_SUITE_P(
     XdgVersionStableTestWithAuraShell,
     WaylandSubsurfaceTest,
@@ -4610,4 +4778,6 @@ INSTANTIATE_TEST_SUITE_P(
            wl::ServerConfig{
                .enable_aura_shell = wl::EnableAuraShellProtocol::kEnabled,
                .use_aura_output_manager = true}));
+#endif
+
 }  // namespace ui

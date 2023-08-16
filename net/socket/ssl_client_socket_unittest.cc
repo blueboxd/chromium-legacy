@@ -34,6 +34,7 @@
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/features.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -43,6 +44,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_and_ct_verifier.h"
+#include "net/cert/cert_database.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_verifier.h"
@@ -583,7 +585,7 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
     SetResult(result);
   }
 
-  raw_ptr<StreamSocket> socket_;
+  raw_ptr<StreamSocket, DanglingUntriaged> socket_;
 };
 
 // A mock CTVerifier that records every call to Verify but doesn't verify
@@ -828,7 +830,7 @@ class SSLClientSocketTest : public PlatformTest, public WithTaskEnvironment {
   }
 
   RecordingNetLogObserver log_observer_;
-  raw_ptr<ClientSocketFactory> socket_factory_;
+  raw_ptr<ClientSocketFactory, DanglingUntriaged> socket_factory_;
   std::unique_ptr<TestSSLConfigService> ssl_config_service_;
   std::unique_ptr<MockCertVerifier> cert_verifier_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
@@ -1388,6 +1390,13 @@ class HangingCertVerifier : public CertVerifier {
 
   base::RunLoop run_loop_;
   int num_active_requests_ = 0;
+};
+
+class MockSSLClientContextObserver : public SSLClientContext::Observer {
+ public:
+  MOCK_METHOD1(OnSSLConfigChanged, void(SSLClientContext::SSLConfigChangeType));
+  MOCK_METHOD1(OnSSLConfigForServersChanged,
+               void(const base::flat_set<HostPortPair>&));
 };
 
 }  // namespace
@@ -2724,18 +2733,12 @@ TEST_P(SSLClientSocketCertRequestInfoTest, CertKeyTypes) {
   config.client_cert_type = SSLServerConfig::OPTIONAL_CLIENT_CERT;
   ASSERT_TRUE(StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, config));
   scoped_refptr<SSLCertRequestInfo> request_info = GetCertRequest();
-  ASSERT_TRUE(request_info.get());
-  if (version() >= SSL_PROTOCOL_VERSION_TLS1_3) {
-    // TLS 1.3 does not use cert_key_types, only signature algorithms. This
-    // should be migrated to a more modern mechanism. See
-    // https://crbug.com/1270530.
-    EXPECT_EQ(0u, request_info->cert_key_types.size());
-  } else {
-    // BoringSSL always sends rsa_sign and ecdsa_sign.
-    ASSERT_EQ(2u, request_info->cert_key_types.size());
-    EXPECT_EQ(SSLClientCertType::kRsaSign, request_info->cert_key_types[0]);
-    EXPECT_EQ(SSLClientCertType::kEcdsaSign, request_info->cert_key_types[1]);
-  }
+  ASSERT_TRUE(request_info);
+  // Look for some values we expect BoringSSL to always send.
+  EXPECT_THAT(request_info->signature_algorithms,
+              testing::Contains(SSL_SIGN_ECDSA_SECP256R1_SHA256));
+  EXPECT_THAT(request_info->signature_algorithms,
+              testing::Contains(SSL_SIGN_RSA_PSS_RSAE_SHA256));
 }
 #endif  // !IS_IOS
 
@@ -3749,6 +3752,108 @@ TEST_F(SSLClientSocketTest, ClearSessionCacheOnClientCertChange) {
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsError(ERR_BAD_SSL_CLIENT_AUTH_CERT));
 }
+
+TEST_F(SSLClientSocketTest, ClearSessionCacheOnClientCertDatabaseChange) {
+  SSLServerConfig server_config;
+  // TLS 1.3 reports client certificate errors after the handshake, so test at
+  // TLS 1.2 for simplicity.
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  server_config.client_cert_type = SSLServerConfig::REQUIRE_CLIENT_CERT;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  HostPortPair host_port_pair2("example.com", 42);
+  testing::StrictMock<MockSSLClientContextObserver> observer;
+  EXPECT_CALL(observer, OnSSLConfigForServersChanged(
+                            base::flat_set<HostPortPair>({host_port_pair()})));
+  EXPECT_CALL(observer, OnSSLConfigForServersChanged(
+                            base::flat_set<HostPortPair>({host_port_pair2})));
+  EXPECT_CALL(observer,
+              OnSSLConfigForServersChanged(base::flat_set<HostPortPair>(
+                  {host_port_pair(), host_port_pair2})));
+
+  context_->AddObserver(&observer);
+
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  context_->SetClientCertificate(
+      host_port_pair(), ImportCertFromFile(certs_dir, "client_1.pem"),
+      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key")));
+
+  context_->SetClientCertificate(
+      host_port_pair2, ImportCertFromFile(certs_dir, "client_2.pem"),
+      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_2.key")));
+
+  EXPECT_EQ(2U, context_->GetClientCertificateCachedServersForTesting().size());
+
+  // Connect to `host_port_pair()` using the client cert.
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(sock_->IsConnected());
+
+  EXPECT_EQ(1U, context_->ssl_client_session_cache()->size());
+
+  CertDatabase::GetInstance()->NotifyObserversClientCertStoreChanged();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0U, context_->GetClientCertificateCachedServersForTesting().size());
+  EXPECT_EQ(0U, context_->ssl_client_session_cache()->size());
+
+  context_->RemoveObserver(&observer);
+}
+
+TEST_F(SSLClientSocketTest, DontClearSessionCacheOnServerCertDatabaseChange) {
+  SSLServerConfig server_config;
+  // TLS 1.3 reports client certificate errors after the handshake, so test at
+  // TLS 1.2 for simplicity.
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  server_config.client_cert_type = SSLServerConfig::REQUIRE_CLIENT_CERT;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  HostPortPair host_port_pair2("example.com", 42);
+  testing::StrictMock<MockSSLClientContextObserver> observer;
+  EXPECT_CALL(observer, OnSSLConfigForServersChanged(
+                            base::flat_set<HostPortPair>({host_port_pair()})));
+  EXPECT_CALL(observer, OnSSLConfigForServersChanged(
+                            base::flat_set<HostPortPair>({host_port_pair2})));
+  EXPECT_CALL(observer,
+              OnSSLConfigChanged(
+                  SSLClientContext::SSLConfigChangeType::kCertDatabaseChanged));
+
+  context_->AddObserver(&observer);
+
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  context_->SetClientCertificate(
+      host_port_pair(), ImportCertFromFile(certs_dir, "client_1.pem"),
+      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key")));
+
+  context_->SetClientCertificate(
+      host_port_pair2, ImportCertFromFile(certs_dir, "client_2.pem"),
+      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_2.key")));
+
+  EXPECT_EQ(2U, context_->GetClientCertificateCachedServersForTesting().size());
+
+  // Connect to `host_port_pair()` using the client cert.
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(sock_->IsConnected());
+
+  EXPECT_EQ(1U, context_->ssl_client_session_cache()->size());
+
+  CertDatabase::GetInstance()->NotifyObserversTrustStoreChanged();
+  base::RunLoop().RunUntilIdle();
+
+  // The `OnSSLConfigChanged` observer call should be verified by the
+  // mock observer, but the client auth and client session cache should be
+  // untouched.
+
+  EXPECT_EQ(2U, context_->GetClientCertificateCachedServersForTesting().size());
+  EXPECT_EQ(1U, context_->ssl_client_session_cache()->size());
+
+  context_->RemoveObserver(&observer);
+}
 #endif  // !IS_IOS
 
 HashValueVector MakeHashValueVector(uint8_t value) {
@@ -3847,37 +3952,50 @@ const uint16_t kSigningCipher = kModernTLS12Cipher;
 struct KeyUsageTest {
   EmbeddedTestServer::ServerCertificate server_cert;
   uint16_t cipher_suite;
-  bool known_root;
-  bool success;
+  bool match;
 };
 
 class SSLClientSocketKeyUsageTest
     : public SSLClientSocketTest,
-      public ::testing::WithParamInterface<struct KeyUsageTest> {};
+      public ::testing::WithParamInterface<
+          std::tuple<KeyUsageTest,
+                     bool /*known_root*/,
+                     bool /*rsa_key_usage_for_local_anchors_enabled*/,
+                     bool /*override_feature*/>> {};
 
-const struct KeyUsageTest kKeyUsageTests[] = {
-    // Known Root: Success iff keyUsage allows the key exchange method
-    {EmbeddedTestServer::CERT_KEY_USAGE_RSA_ENCIPHERMENT, kSigningCipher, true,
-     false},
+const KeyUsageTest kKeyUsageTests[] = {
+    // keyUsage matches cipher suite.
     {EmbeddedTestServer::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE, kSigningCipher,
-     true, true},
-    {EmbeddedTestServer::CERT_KEY_USAGE_RSA_ENCIPHERMENT, kEncryptingCipher,
-     true, true},
-    {EmbeddedTestServer::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE,
-     kEncryptingCipher, true, false},
-    // Unknown Root: Always succeeds
-    {EmbeddedTestServer::CERT_KEY_USAGE_RSA_ENCIPHERMENT, kSigningCipher, false,
      true},
-    {EmbeddedTestServer::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE, kSigningCipher,
-     false, true},
     {EmbeddedTestServer::CERT_KEY_USAGE_RSA_ENCIPHERMENT, kEncryptingCipher,
-     false, true},
+     true},
+    // keyUsage does not match cipher suite.
+    {EmbeddedTestServer::CERT_KEY_USAGE_RSA_ENCIPHERMENT, kSigningCipher,
+     false},
     {EmbeddedTestServer::CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE,
-     kEncryptingCipher, false, true},
+     kEncryptingCipher, false},
 };
 
-TEST_P(SSLClientSocketKeyUsageTest, RSAKeyUsageEnforcedForKnownRoot) {
-  const KeyUsageTest test = GetParam();
+TEST_P(SSLClientSocketKeyUsageTest, RSAKeyUsage) {
+  const auto& [test, known_root, rsa_key_usage_for_local_anchors_enabled,
+               override_feature] = GetParam();
+  bool enable_feature;
+  if (override_feature) {
+    // Configure the feature in the opposite way that we intend, to test that
+    // the configuration overrides it.
+    enable_feature = !rsa_key_usage_for_local_anchors_enabled;
+  } else {
+    enable_feature = rsa_key_usage_for_local_anchors_enabled;
+  }
+  base::test::ScopedFeatureList scoped_feature_list;
+  if (enable_feature) {
+    scoped_feature_list.InitAndEnableFeature(
+        features::kRSAKeyUsageForLocalAnchors);
+  } else {
+    scoped_feature_list.InitAndDisableFeature(
+        features::kRSAKeyUsageForLocalAnchors);
+  }
+
   SSLServerConfig server_config;
   server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
   server_config.cipher_suite_for_testing = test.cipher_suite;
@@ -3885,9 +4003,16 @@ TEST_P(SSLClientSocketKeyUsageTest, RSAKeyUsageEnforcedForKnownRoot) {
   scoped_refptr<X509Certificate> server_cert =
       embedded_test_server()->GetCertificate();
 
+  SSLContextConfig context_config;
+  if (override_feature) {
+    context_config.rsa_key_usage_for_local_anchors_override =
+        rsa_key_usage_for_local_anchors_enabled;
+  }
+  ssl_config_service_->UpdateSSLConfigAndNotify(context_config);
+
   // Certificate is trusted.
   CertVerifyResult verify_result;
-  verify_result.is_issued_by_known_root = test.known_root;
+  verify_result.is_issued_by_known_root = known_root;
   verify_result.verified_cert = server_cert;
   verify_result.public_key_hashes =
       MakeHashValueVector(kGoodHashValueVectorInput);
@@ -3899,7 +4024,7 @@ TEST_P(SSLClientSocketKeyUsageTest, RSAKeyUsageEnforcedForKnownRoot) {
   SSLInfo ssl_info;
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
 
-  if (test.success) {
+  if (test.match || (!known_root && !rsa_key_usage_for_local_anchors_enabled)) {
     EXPECT_THAT(rv, IsOk());
     EXPECT_TRUE(sock_->IsConnected());
   } else {
@@ -3908,9 +4033,10 @@ TEST_P(SSLClientSocketKeyUsageTest, RSAKeyUsageEnforcedForKnownRoot) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(RSAKeyUsageInstantiation,
-                         SSLClientSocketKeyUsageTest,
-                         ValuesIn(kKeyUsageTests));
+INSTANTIATE_TEST_SUITE_P(
+    RSAKeyUsageInstantiation,
+    SSLClientSocketKeyUsageTest,
+    Combine(ValuesIn(kKeyUsageTests), Bool(), Bool(), Bool()));
 
 // Test that when CT is required (in this case, by the delegate), the
 // absence of CT information is a socket error.

@@ -115,6 +115,7 @@
 <translation id="4746179598275229723">Fixarea extensiei a fost anulată</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 lună rămasă}few{# luni rămase}other{# de luni rămase}}</translation>
 <translation id="4888938634149558681">Apelează</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{o secundă}few{# secunde}other{# de secunde}}</translation>
 <translation id="4971687151119236543">Melodia anterioară din conținutul media</translation>
 <translation id="5046499563572181734">Atinge aici</translation>
@@ -147,6 +148,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6237461503717005873">S-a selectat <ph name="ROW_NAME" />.</translation>
 <translation id="6264365405983206840">Select&amp;ează tot</translation>
+<translation id="6346952829206698721">Inserează din clipboard</translation>
 <translation id="6364916375976753737">Derulează spre stânga</translation>
 <translation id="6394627529324717982">Virgulă</translation>
 <translation id="6397363302884558537">Opriți-vă din vorbit</translation>

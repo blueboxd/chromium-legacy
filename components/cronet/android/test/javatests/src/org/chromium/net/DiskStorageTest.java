@@ -6,11 +6,8 @@ package org.chromium.net;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
-import static org.chromium.net.CronetTestRule.getContext;
 import static org.chromium.net.CronetTestRule.getTestStorage;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -30,7 +27,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.util.Arrays;
 
 /**
  * Test CronetEngine disk storage.
@@ -38,14 +34,16 @@ import java.util.Arrays;
 @RunWith(AndroidJUnit4.class)
 public class DiskStorageTest {
     @Rule
-    public final CronetTestRule mTestRule = new CronetTestRule();
+    public final CronetTestRule mTestRule = CronetTestRule.withManualEngineStartup();
 
     private String mReadOnlyStoragePath;
 
     @Before
     public void setUp() throws Exception {
         System.loadLibrary("cronet_tests");
-        assertTrue(NativeTestServer.startNativeTestServer(getContext()));
+        assertThat(
+                NativeTestServer.startNativeTestServer(mTestRule.getTestFramework().getContext()))
+                .isTrue();
     }
 
     @After
@@ -63,15 +61,15 @@ public class DiskStorageTest {
     public void testReadOnlyStorageDirectory() throws Exception {
         mReadOnlyStoragePath = PathUtils.getDataDirectory() + "/read_only";
         File readOnlyStorage = new File(mReadOnlyStoragePath);
-        assertTrue(readOnlyStorage.mkdir());
+        assertThat(readOnlyStorage.mkdir()).isTrue();
         // Setting the storage directory as readonly has no effect.
-        assertTrue(readOnlyStorage.setReadOnly());
-        ExperimentalCronetEngine.Builder builder =
-                new ExperimentalCronetEngine.Builder(getContext());
-        builder.setStoragePath(mReadOnlyStoragePath);
-        builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1024 * 1024);
+        assertThat(readOnlyStorage.setReadOnly()).isTrue();
+        mTestRule.getTestFramework().applyEngineBuilderPatch((builder) -> {
+            builder.setStoragePath(mReadOnlyStoragePath);
+            builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1024 * 1024);
+        });
 
-        CronetEngine cronetEngine = builder.build();
+        CronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         UrlRequest.Builder requestBuilder =
@@ -89,16 +87,16 @@ public class DiskStorageTest {
             byte[] buffer = new byte[] {0, 0, 0, 0};
             int bytesRead = newVersionFile.read(buffer, 0, 4);
             assertThat(bytesRead).isEqualTo(4);
-            assertTrue(Arrays.equals(new byte[] {1, 0, 0, 0}, buffer));
+            assertThat(buffer).isEqualTo(new byte[] {1, 0, 0, 0});
         } finally {
             if (newVersionFile != null) {
                 newVersionFile.close();
             }
         }
         File diskCacheDir = new File(mReadOnlyStoragePath + "/disk_cache");
-        assertTrue(diskCacheDir.exists());
+        assertThat(diskCacheDir.exists()).isTrue();
         File prefsDir = new File(mReadOnlyStoragePath + "/prefs");
-        assertTrue(prefsDir.exists());
+        assertThat(prefsDir.exists()).isTrue();
     }
 
     @Test
@@ -106,7 +104,7 @@ public class DiskStorageTest {
     @OnlyRunNativeCronet
     // Crashing on Android Cronet Builder, see crbug.com/601409.
     public void testPurgeOldVersion() throws Exception {
-        String testStorage = getTestStorage(getContext());
+        String testStorage = getTestStorage(mTestRule.getTestFramework().getContext());
         File versionFile = new File(testStorage + "/version");
         FileOutputStream versionOut = null;
         try {
@@ -121,20 +119,21 @@ public class DiskStorageTest {
         FileOutputStream oldPrefsOut = null;
         try {
             oldPrefsOut = new FileOutputStream(oldPrefsFile);
-            String dummy = "dummy content";
-            oldPrefsOut.write(dummy.getBytes(), 0, dummy.length());
+            String sample = "sample content";
+            oldPrefsOut.write(sample.getBytes(), 0, sample.length());
         } finally {
             if (oldPrefsOut != null) {
                 oldPrefsOut.close();
             }
         }
 
-        ExperimentalCronetEngine.Builder builder =
-                new ExperimentalCronetEngine.Builder(getContext());
-        builder.setStoragePath(getTestStorage(getContext()));
-        builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1024 * 1024);
+        mTestRule.getTestFramework().applyEngineBuilderPatch((builder) -> {
+            builder.setStoragePath(getTestStorage(mTestRule.getTestFramework().getContext()));
+            builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1024 * 1024);
+        });
 
-        CronetEngine cronetEngine = builder.build();
+        CronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
+
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         UrlRequest.Builder requestBuilder =
@@ -150,18 +149,18 @@ public class DiskStorageTest {
             byte[] buffer = new byte[] {0, 0, 0, 0};
             int bytesRead = newVersionFile.read(buffer, 0, 4);
             assertThat(bytesRead).isEqualTo(4);
-            assertTrue(Arrays.equals(new byte[] {1, 0, 0, 0}, buffer));
+            assertThat(buffer).isEqualTo(new byte[] {1, 0, 0, 0});
         } finally {
             if (newVersionFile != null) {
                 newVersionFile.close();
             }
         }
         oldPrefsFile = new File(testStorage + "/local_prefs.json");
-        assertTrue(!oldPrefsFile.exists());
+        assertThat(!oldPrefsFile.exists()).isTrue();
         File diskCacheDir = new File(testStorage + "/disk_cache");
-        assertTrue(diskCacheDir.exists());
+        assertThat(diskCacheDir.exists()).isTrue();
         File prefsDir = new File(testStorage + "/prefs");
-        assertTrue(prefsDir.exists());
+        assertThat(prefsDir.exists()).isTrue();
     }
 
     @Test
@@ -171,8 +170,9 @@ public class DiskStorageTest {
     public void testCacheVersionCurrent() throws Exception {
         // Initialize a CronetEngine and shut it down.
         ExperimentalCronetEngine.Builder builder =
-                new ExperimentalCronetEngine.Builder(getContext());
-        builder.setStoragePath(getTestStorage(getContext()));
+                mTestRule.getTestFramework().createNewSecondaryBuilder(
+                        mTestRule.getTestFramework().getContext());
+        builder.setStoragePath(getTestStorage(mTestRule.getTestFramework().getContext()));
         builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1024 * 1024);
 
         CronetEngine cronetEngine = builder.build();
@@ -186,17 +186,17 @@ public class DiskStorageTest {
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         cronetEngine.shutdown();
 
-        // Create a dummy file in storage directory.
-        String testStorage = getTestStorage(getContext());
-        File dummyFile = new File(testStorage + "/dummy.json");
-        FileOutputStream dummyFileOut = null;
-        String dummyContent = "dummy content";
+        // Create a sample file in storage directory.
+        String testStorage = getTestStorage(mTestRule.getTestFramework().getContext());
+        File sampleFile = new File(testStorage + "/sample.json");
+        FileOutputStream sampleFileOut = null;
+        String sampleContent = "sample content";
         try {
-            dummyFileOut = new FileOutputStream(dummyFile);
-            dummyFileOut.write(dummyContent.getBytes(), 0, dummyContent.length());
+            sampleFileOut = new FileOutputStream(sampleFile);
+            sampleFileOut.write(sampleContent.getBytes(), 0, sampleContent.length());
         } finally {
-            if (dummyFileOut != null) {
-                dummyFileOut.close();
+            if (sampleFileOut != null) {
+                sampleFileOut.close();
             }
         }
 
@@ -211,19 +211,19 @@ public class DiskStorageTest {
         callback2.blockForDone();
         assertThat(callback2.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         engine.shutdown();
-        // Dummy file still exists.
-        BufferedReader reader = new BufferedReader(new FileReader(dummyFile));
+        // Sample file still exists.
+        BufferedReader reader = new BufferedReader(new FileReader(sampleFile));
         StringBuilder stringBuilder = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {
             stringBuilder.append(line);
         }
         reader.close();
-        assertThat(stringBuilder.toString()).isEqualTo(dummyContent);
+        assertThat(stringBuilder.toString()).isEqualTo(sampleContent);
         File diskCacheDir = new File(testStorage + "/disk_cache");
-        assertTrue(diskCacheDir.exists());
+        assertThat(diskCacheDir.exists()).isTrue();
         File prefsDir = new File(testStorage + "/prefs");
-        assertTrue(prefsDir.exists());
+        assertThat(prefsDir.exists()).isTrue();
     }
 
     @Test
@@ -232,16 +232,14 @@ public class DiskStorageTest {
     // Tests that enableHttpCache throws if storage path not set
     public void testEnableHttpCacheThrowsIfStoragePathNotSet() throws Exception {
         // Initialize a CronetEngine and shut it down.
-        ExperimentalCronetEngine.Builder builder =
-                new ExperimentalCronetEngine.Builder(getContext());
-        try {
-            builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1024 * 1024);
-            fail("Enabling http cache without a storage path should throw an exception");
-        } catch (IllegalArgumentException e) {
-            // Expected
-        }
+        mTestRule.getTestFramework().applyEngineBuilderPatch((builder) -> {
+            assertThrows(IllegalArgumentException.class,
+                    ()
+                            -> builder.enableHttpCache(
+                                    CronetEngine.Builder.HTTP_CACHE_DISK, 1024 * 1024));
+        });
 
-        CronetEngine cronetEngine = builder.build();
+        CronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         UrlRequest.Builder requestBuilder =
@@ -252,11 +250,11 @@ public class DiskStorageTest {
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         cronetEngine.shutdown();
 
-        String testStorage = getTestStorage(getContext());
+        String testStorage = getTestStorage(mTestRule.getTestFramework().getContext());
         File diskCacheDir = new File(testStorage + "/disk_cache");
-        assertFalse(diskCacheDir.exists());
+        assertThat(diskCacheDir.exists()).isFalse();
         File prefsDir = new File(testStorage + "/prefs");
-        assertFalse(prefsDir.exists());
+        assertThat(prefsDir.exists()).isFalse();
     }
 
     @Test
@@ -265,12 +263,11 @@ public class DiskStorageTest {
     // Tests that prefs file is created even if httpcache isn't enabled
     public void testPrefsFileCreatedWithoutHttpCache() throws Exception {
         // Initialize a CronetEngine and shut it down.
-        String testStorage = getTestStorage(getContext());
-        ExperimentalCronetEngine.Builder builder =
-                new ExperimentalCronetEngine.Builder(getContext());
-        builder.setStoragePath(testStorage);
+        String testStorage = getTestStorage(mTestRule.getTestFramework().getContext());
+        mTestRule.getTestFramework().applyEngineBuilderPatch(
+                (builder) -> builder.setStoragePath(testStorage));
 
-        CronetEngine cronetEngine = builder.build();
+        CronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         UrlRequest.Builder requestBuilder =
@@ -282,8 +279,8 @@ public class DiskStorageTest {
         cronetEngine.shutdown();
 
         File diskCacheDir = new File(testStorage + "/disk_cache");
-        assertFalse(diskCacheDir.exists());
+        assertThat(diskCacheDir.exists()).isFalse();
         File prefsDir = new File(testStorage + "/prefs");
-        assertTrue(prefsDir.exists());
+        assertThat(prefsDir.exists()).isTrue();
     }
 }

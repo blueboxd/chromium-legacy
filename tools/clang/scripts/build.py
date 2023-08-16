@@ -25,8 +25,9 @@ import argparse
 import glob
 import io
 import json
+import multiprocessing
 import os
-import pipes
+import shlex
 import platform
 import re
 import shutil
@@ -54,8 +55,7 @@ LLVM_INSTRUMENTED_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-instrumented')
 LLVM_PROFDATA_FILE = os.path.join(LLVM_INSTRUMENTED_DIR, 'profdata.prof')
 LLVM_BUILD_TOOLS_DIR = os.path.abspath(
     os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
-ANDROID_NDK_DIR = os.path.join(
-    CHROMIUM_DIR, 'third_party', 'android_ndk')
+ANDROID_NDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'android_toolchain')
 FUCHSIA_SDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'fuchsia-sdk',
                                'sdk')
 PINNED_CLANG_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR, 'pinned-clang')
@@ -94,14 +94,14 @@ def GetWinSDKDir():
   return win_sdk_dir
 
 
-def RunCommand(command, msvc_arch=None, env=None, fail_hard=True):
+def RunCommand(command, setenv=False, env=None, fail_hard=True):
   """Run command and return success (True) or failure; or if fail_hard is
-     True, exit on failure.  If msvc_arch is set, runs the command in a
-     shell with the msvc tools for that architecture."""
+     True, exit on failure.  If setenv is True, runs the command in a
+     shell with the msvc tools for x64 architecture."""
 
-  if msvc_arch and sys.platform == 'win32':
-    command = [os.path.join(GetWinSDKDir(), 'bin', 'SetEnv.cmd'),
-               "/" + msvc_arch, '&&'] + command
+  if setenv and sys.platform == 'win32':
+    command = [os.path.join(CHROMIUM_DIR, 'tools', 'win', 'setenv.bat'), '&&'
+               ] + command
 
   # https://docs.python.org/2/library/subprocess.html:
   # "On Unix with shell=True [...] if args is a sequence, the first item
@@ -112,12 +112,12 @@ def RunCommand(command, msvc_arch=None, env=None, fail_hard=True):
   #
   # We want to pass additional arguments to command[0], not to the shell,
   # so manually join everything into a single string.
-  # Annoyingly, for "svn co url c:\path", pipes.quote() thinks that it should
+  # Annoyingly, for "svn co url c:\path", shlex.quote() thinks that it should
   # quote c:\path but svn can't handle quoted paths on Windows.  Since on
   # Windows follow-on args are passed to args[0] instead of the shell, don't
   # do the single-string transformation there.
   if sys.platform != 'win32':
-    command = ' '.join([pipes.quote(c) for c in command])
+    command = ' '.join([shlex.quote(c) for c in command])
   print('Running', command)
   if subprocess.call(command, env=env, shell=True) == 0:
     return True
@@ -198,14 +198,14 @@ def GetCommitDescription(commit):
 def AddCMakeToPath():
   """Download CMake and add it to PATH."""
   if sys.platform == 'win32':
-    zip_name = 'cmake-3.23.0-windows-x86_64.zip'
-    dir_name = ['cmake-3.23.0-windows-x86_64', 'bin']
+    zip_name = 'cmake-3.26.4-windows-x86_64.zip'
+    dir_name = ['cmake-3.26.4-windows-x86_64', 'bin']
   elif sys.platform == 'darwin':
-    zip_name = 'cmake-3.23.0-macos-universal.tar.gz'
-    dir_name = ['cmake-3.23.0-macos-universal', 'CMake.app', 'Contents', 'bin']
+    zip_name = 'cmake-3.26.4-macos-universal.tar.gz'
+    dir_name = ['cmake-3.26.4-macos-universal', 'CMake.app', 'Contents', 'bin']
   else:
-    zip_name = 'cmake-3.23.0-linux-x86_64.tar.gz'
-    dir_name = ['cmake-3.23.0-linux-x86_64', 'bin']
+    zip_name = 'cmake-3.26.4-linux-x86_64.tar.gz'
+    dir_name = ['cmake-3.26.4-linux-x86_64', 'bin']
 
   cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, *dir_name)
   if not os.path.exists(cmake_dir):
@@ -258,12 +258,11 @@ def AddZlibToPath():
       '/nologo', '/O2', '/DZLIB_DLL', '/c', '/D_CRT_SECURE_NO_DEPRECATE',
       '/D_CRT_NONSTDC_NO_DEPRECATE'
   ]
-  RunCommand(
-      ['cl.exe'] + [f + '.c' for f in zlib_files] + cl_flags, msvc_arch='x64')
-  RunCommand(
-      ['lib.exe'] + [f + '.obj'
-                     for f in zlib_files] + ['/nologo', '/out:zlib.lib'],
-      msvc_arch='x64')
+  RunCommand(['cl.exe'] + [f + '.c' for f in zlib_files] + cl_flags,
+             setenv=True)
+  RunCommand(['lib.exe'] + [f + '.obj'
+                            for f in zlib_files] + ['/nologo', '/out:zlib.lib'],
+             setenv=True)
   # Remove the test directory so it isn't found when trying to find
   # test.exe.
   shutil.rmtree('test')
@@ -368,8 +367,8 @@ def BuildLibXml2():
           '-DLIBXML2_WITH_ZLIB=OFF',
           '..',
       ],
-      msvc_arch='x64')
-  RunCommand(['ninja', 'install'], msvc_arch='x64')
+      setenv=True)
+  RunCommand(['ninja', 'install'], setenv=True)
 
   if sys.platform == 'win32':
     libxml2_lib = os.path.join(dirs.lib_dir, 'libxml2s.lib')
@@ -413,8 +412,18 @@ def DownloadRPMalloc():
   return rpmalloc_dir
 
 
+def StartGomaAndGetGomaCCPath():
+  bat_ext = '.bat' if sys.platform == 'win32' else ''
+  exe_ext = '.exe' if sys.platform == 'win32' else ''
+  subprocess.check_output(['goma_ctl' + bat_ext, 'ensure_start'])
+  return os.path.join(
+      subprocess.check_output(['goma_ctl' + bat_ext, 'goma_dir'],
+                              universal_newlines=True).rstrip(),
+      'gomacc' + exe_ext)
+
+
 def DownloadPinnedClang():
-  PINNED_CLANG_VERSION = 'llvmorg-16-init-3375-gfed71b04-1'
+  PINNED_CLANG_VERSION = 'llvmorg-17-init-12166-g7586aeab-3'
   DownloadAndUnpackPackage('clang', PINNED_CLANG_DIR, GetDefaultHostOs(),
                            PINNED_CLANG_VERSION)
 
@@ -594,6 +603,10 @@ def main():
                       help='don\'t build Fuchsia clang_rt runtime (linux/mac)',
                       dest='with_fuchsia',
                       default=sys.platform in ('linux2', 'darwin'))
+  parser.add_argument('--with-goma',
+                      action='store_true',
+                      help='Use goma to build the stage 1 compiler')
+
   args = parser.parse_args()
 
   global CLANG_REVISION, PACKAGE_VERSION, LLVM_BUILD_DIR
@@ -708,8 +721,6 @@ def main():
       '-DCLANG_ENABLE_STATIC_ANALYZER=OFF',
       '-DCLANG_ENABLE_ARCMT=OFF',
       '-DBUG_REPORT_URL=' + BUG_REPORT_URL,
-      # Don't run Go bindings tests; PGO makes them confused.
-      '-DLLVM_INCLUDE_GO_TESTS=OFF',
       # See crbug.com/1126219: Use native symbolizer instead of DIA
       '-DLLVM_ENABLE_DIA_SDK=OFF',
       # Link all binaries with lld. Effectively passes -fuse-ld=lld to the
@@ -738,6 +749,14 @@ def main():
   ]
   cflags += sanitizers_override
   cxxflags += sanitizers_override
+
+  goma_cmake_args = []
+  goma_ninja_args = []
+  if args.with_goma:
+    goma_path = StartGomaAndGetGomaCCPath()
+    goma_cmake_args.append('-DCMAKE_C_COMPILER_LAUNCHER=' + goma_path)
+    goma_cmake_args.append('-DCMAKE_CXX_COMPILER_LAUNCHER=' + goma_path)
+    goma_ninja_args = ['-j' + str(multiprocessing.cpu_count() * 50)]
 
   if args.host_cc or args.host_cxx:
     assert args.host_cc and args.host_cxx, \
@@ -829,7 +848,7 @@ def main():
     base_cmake_args.append('-DLLVM_INTEGRATED_CRT_ALLOC=' + rpmalloc_dir)
 
     # Set a sysroot to make the build more hermetic.
-    base_cmake_args.append('-DLLVM_WINSYSROOT=' +
+    base_cmake_args.append('-DLLVM_WINSYSROOT="%s"' %
                            os.path.dirname(os.path.dirname(GetWinSDKDir())))
 
   # Statically link libxml2 to make lld-link not require mt.exe on Windows,
@@ -860,7 +879,7 @@ def main():
     if sys.platform == 'darwin':
       # Need ARM and AArch64 for building the ios clang_rt.
       bootstrap_targets += ';ARM;AArch64'
-    bootstrap_args = base_cmake_args + [
+    bootstrap_args = base_cmake_args + goma_cmake_args + [
         '-DLLVM_TARGETS_TO_BUILD=' + bootstrap_targets,
         '-DLLVM_ENABLE_PROJECTS=clang;lld',
         '-DLLVM_ENABLE_RUNTIMES=' + ';'.join(runtimes),
@@ -893,11 +912,11 @@ def main():
     if cxx is not None: bootstrap_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
     if lld is not None: bootstrap_args.append('-DCMAKE_LINKER=' + lld)
     RunCommand(['cmake'] + bootstrap_args + [os.path.join(LLVM_DIR, 'llvm')],
-               msvc_arch='x64')
-    RunCommand(['ninja'], msvc_arch='x64')
+               setenv=True)
+    RunCommand(['ninja'] + goma_ninja_args, setenv=True)
     if args.run_tests:
-      RunCommand(['ninja', 'check-all'], msvc_arch='x64')
-    RunCommand(['ninja', 'install'], msvc_arch='x64')
+      RunCommand(['ninja', 'check-all'], setenv=True)
+    RunCommand(['ninja', 'install'], setenv=True)
 
     if sys.platform == 'win32':
       cc = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang-cl.exe')
@@ -937,8 +956,8 @@ def main():
     if lld is not None: instrument_args.append('-DCMAKE_LINKER=' + lld)
 
     RunCommand(['cmake'] + instrument_args + [os.path.join(LLVM_DIR, 'llvm')],
-               msvc_arch='x64')
-    RunCommand(['ninja', 'clang'], msvc_arch='x64')
+               setenv=True)
+    RunCommand(['ninja', 'clang'], setenv=True)
     print('Instrumented compiler built.')
 
     # Train by building some C++ code.
@@ -971,13 +990,14 @@ def main():
                  '-fno-exceptions', '-fno-rtti', '-w', '-c', training_source]
     if sys.platform == 'darwin':
       train_cmd.extend(['-isysroot', isysroot])
-    RunCommand(train_cmd, msvc_arch='x64')
+    RunCommand(train_cmd, setenv=True)
 
     # Merge profiles.
     profdata = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'llvm-profdata')
-    RunCommand([profdata, 'merge', '-output=' + LLVM_PROFDATA_FILE] +
-                glob.glob(os.path.join(LLVM_INSTRUMENTED_DIR, 'profiles',
-                                       '*.profraw')), msvc_arch='x64')
+    RunCommand(
+        [profdata, 'merge', '-output=' + LLVM_PROFDATA_FILE] +
+        glob.glob(os.path.join(LLVM_INSTRUMENTED_DIR, 'profiles', '*.profraw')),
+        setenv=True)
     print('Profile generated.')
 
   deployment_target = '10.12'
@@ -1112,13 +1132,13 @@ def main():
         ('i386-pc-windows-msvc',
          compiler_rt_cmake_flags(sanitizers=False, profile=True) + [
              'LLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF',
-             'LLVM_WINSYSROOT=' + sysroot,
+             'LLVM_WINSYSROOT="%s"' % sysroot,
          ]))
     runtimes_triples_args.append(
         ('x86_64-pc-windows-msvc',
          compiler_rt_cmake_flags(sanitizers=True, profile=True) + [
              'LLVM_ENABLE_PER_TARGET_RUNTIME_DIR=OFF',
-             'LLVM_WINSYSROOT=' + sysroot,
+             'LLVM_WINSYSROOT="%s"' % sysroot,
          ]))
   elif sys.platform == 'darwin':
     compiler_rt_args = [
@@ -1254,19 +1274,24 @@ def main():
   cmake_args.append('-DLLVM_BUILTIN_TARGETS=' + all_triples)
   cmake_args.append('-DLLVM_RUNTIME_TARGETS=' + all_triples)
 
+  # If we're bootstrapping, Goma doesn't know about the bootstrap compiler
+  # we're using as the host compiler.
+  if not args.bootstrap:
+    cmake_args.extend(goma_cmake_args)
+
   if os.path.exists(LLVM_BUILD_DIR):
     RmTree(LLVM_BUILD_DIR)
   EnsureDirExists(LLVM_BUILD_DIR)
   os.chdir(LLVM_BUILD_DIR)
   RunCommand(['cmake'] + cmake_args + [os.path.join(LLVM_DIR, 'llvm')],
-             msvc_arch='x64',
+             setenv=True,
              env=deployment_env)
   CopyLibstdcpp(args, LLVM_BUILD_DIR)
-  RunCommand(['ninja'], msvc_arch='x64')
+  RunCommand(['ninja'] + goma_ninja_args, setenv=True)
 
   if chrome_tools:
     # If any Chromium tools were built, install those now.
-    RunCommand(['ninja', 'cr-install'], msvc_arch='x64')
+    RunCommand(['ninja', 'cr-install'], setenv=True)
 
   if args.bolt:
     print('Performing BOLT post-link optimizations.')
@@ -1337,7 +1362,7 @@ def main():
   # Run tests.
   if (not args.build_mac_arm and
       (args.run_tests or args.llvm_force_head_revision)):
-    RunCommand(['ninja', '-C', LLVM_BUILD_DIR, 'cr-check-all'], msvc_arch='x64')
+    RunCommand(['ninja', '-C', LLVM_BUILD_DIR, 'cr-check-all'], setenv=True)
 
   if not args.build_mac_arm and args.run_tests:
     env = None
@@ -1349,9 +1374,9 @@ def main():
                                ' :: Linux/crypt_r.cpp$')
     RunCommand(['ninja', '-C', LLVM_BUILD_DIR, 'check-all'],
                env=env,
-               msvc_arch='x64')
+               setenv=True)
   if args.install_dir:
-    RunCommand(['ninja', 'install'], msvc_arch='x64')
+    RunCommand(['ninja', 'install'], setenv=True)
 
   WriteStampFile(PACKAGE_VERSION, STAMP_FILE)
   WriteStampFile(PACKAGE_VERSION, FORCE_HEAD_REVISION_FILE)

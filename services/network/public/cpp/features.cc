@@ -79,6 +79,13 @@ BASE_FEATURE(kCoopRestrictProperties,
              "CoopRestrictProperties",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables the origin trial for COOP: restrict-properties. We need a new feature
+// because token validation is not possible in the network process. This also
+// allows us to keep using CoopRestrictProperties to enable COOP: RP for WPTs.
+BASE_FEATURE(kCoopRestrictPropertiesOriginTrial,
+             "CoopRestrictPropertiesOriginTrial",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or defaults splittup up server (not proxy) entries in the
 // HttpAuthCache.
 BASE_FEATURE(kSplitAuthCacheByNetworkIsolationKey,
@@ -303,6 +310,12 @@ BASE_FEATURE(kLocalNetworkAccessAllowPotentiallyTrustworthySameOrigin,
              "LocalNetworkAccessAllowPotentiallyTrustworthySameOrigin",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// When kPrivateNetworkAccessPermissionPrompt is enabled, public secure websites
+// are allowed to access private insecure subresources with user's permission.
+BASE_FEATURE(kPrivateNetworkAccessPermissionPrompt,
+             "PrivateNetworkAccessPermissionPrompt",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables out-of-process system DNS resolution so getaddrinfo() never runs in
 // the network service sandbox. System DNS resolution will instead be brokered
 // out over Mojo, likely to run in the browser process.
@@ -320,7 +333,7 @@ BASE_FEATURE(kPrefetchNoVarySearch,
 
 BASE_FEATURE(kLessChattyNetworkService,
              "LessChattyNetworkService",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kNetworkServiceEmptyOutOfProcess,
              "NetworkServiceEmptyOutOfProcess",

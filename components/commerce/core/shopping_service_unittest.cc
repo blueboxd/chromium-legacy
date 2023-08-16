@@ -23,6 +23,7 @@
 #include "components/power_bookmarks/core/proto/shopping_specifics.pb.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/search/ntp_features.h"
+#include "components/sync/test/test_sync_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using optimization_guide::OptimizationGuideDecision;
@@ -36,6 +37,7 @@ namespace commerce {
 namespace {
 const char kProductUrl[] = "http://example.com/";
 const char kTitle[] = "product title";
+const char kGpcTitle[] = "product gpc title";
 const char kImageUrl[] = "http://example.com/image.png";
 const uint64_t kOfferId = 123;
 const uint64_t kClusterId = 456;
@@ -53,6 +55,13 @@ const bool kContainsSensitiveContent = false;
 
 const char kEligibleCountry[] = "US";
 const char kEligibleLocale[] = "en-us";
+
+const char kPriceInsightsUrl[] = "http://example.com/price_insight";
+const int64_t kLowTypicalPrice = 2000;
+const int64_t kHighTypicalPrice = 3000;
+const char kAnotherCurrencyCode[] = "EUR";
+const char kAttributes[] = "Unlocked, 128GB";
+const char kJackpotUrl[] = "http://example.com/jackpot";
 
 }  // namespace
 
@@ -82,7 +91,7 @@ TEST_F(ShoppingServiceTest, TestProductInfoResponse) {
 
   OptimizationMetadata meta = opt_guide_->BuildPriceTrackingResponse(
       kTitle, kImageUrl, kOfferId, kClusterId, kCountryCode, kPrice,
-      kCurrencyCode);
+      kCurrencyCode, kGpcTitle);
   opt_guide_->AddPriceUpdateToPriceTrackingResponse(&meta, kCurrencyCode,
                                                     kNewPrice, kPrice);
 
@@ -99,6 +108,7 @@ TEST_F(ShoppingServiceTest, TestProductInfoResponse) {
             ASSERT_TRUE(info.has_value());
 
             ASSERT_EQ(kTitle, info->title);
+            ASSERT_EQ(kGpcTitle, info->product_cluster_title);
             ASSERT_EQ(kImageUrl, info->image_url);
             ASSERT_EQ(kOfferId, info->offer_id);
             ASSERT_EQ(kClusterId, info->product_cluster_id);
@@ -311,10 +321,9 @@ TEST_F(ShoppingServiceTest,
       {kShoppingList, kCommerceAllowLocalImages, kCommerceAllowServerImages},
       {});
 
-  MockWebWrapper web(GURL(kProductUrl), false);
   std::string json("{\"image\": \"" + std::string(kImageUrl) + "\"}");
   base::Value js_result(json);
-  web.SetMockJavaScriptResult(&js_result);
+  MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   // Assume the page hasn't finished loading.
   web.SetIsFirstLoadForNavigationFinished(false);
@@ -385,10 +394,9 @@ TEST_F(ShoppingServiceTest,
   test_features_.InitWithFeatures(
       {kCommerceAllowLocalImages, kCommerceAllowServerImages}, {});
 
-  MockWebWrapper web(GURL(kProductUrl), false);
   std::string json("{\"image\": \"" + std::string(kImageUrl) + "\"}");
   base::Value js_result(json);
-  web.SetMockJavaScriptResult(&js_result);
+  MockWebWrapper web(GURL(kProductUrl), false, &js_result);
 
   // Assume the page has already loaded for the navigation. This is usually the
   // case for single-page webapps.
@@ -777,6 +785,185 @@ TEST_F(ShoppingServiceTest,
   // specific countries and locales. The fake country and locale below should
   // be blocked.
   ASSERT_FALSE(IsShoppingListEligible(&checker, &prefs, "ZZ", "zz-zz"));
+}
+
+class ShoppingServiceReadyTest : public ShoppingServiceTest {
+ public:
+  ShoppingServiceReadyTest() = default;
+  ShoppingServiceReadyTest(const ShoppingServiceReadyTest&) = delete;
+  ShoppingServiceReadyTest operator=(const ShoppingServiceReadyTest&) = delete;
+  ~ShoppingServiceReadyTest() override = default;
+
+  void SetUp() override {
+    sync_service_->SetTransportState(
+        syncer::SyncService::TransportState::INITIALIZING);
+    ShoppingServiceTest::SetUp();
+  }
+};
+
+TEST_F(ShoppingServiceReadyTest, TestServiceReadyDelaysForSync) {
+  test_features_.InitWithFeatures({kShoppingList}, {});
+
+  bool service_ready = false;
+  shopping_service_->WaitForReady(
+      base::BindOnce([](bool* service_ready,
+                        ShoppingService* service) { *service_ready = true; },
+                     &service_ready));
+
+  base::RunLoop().RunUntilIdle();
+
+  // The ready check should not have run since sync is not ready.
+  ASSERT_FALSE(service_ready);
+
+  sync_service_->SetHasSyncConsent(true);
+  sync_service_->SetInitialSyncFeatureSetupComplete(true);
+  sync_service_->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+  sync_service_->FireStateChanged();
+
+  base::RunLoop().RunUntilIdle();
+
+  // The run loop should be finished now.
+  ASSERT_TRUE(service_ready);
+}
+
+TEST_F(ShoppingServiceReadyTest, TestServiceReadyDelaysForSync_SyncActive) {
+  test_features_.InitWithFeatures({kShoppingList}, {});
+
+  sync_service_->SetHasSyncConsent(true);
+  sync_service_->SetInitialSyncFeatureSetupComplete(true);
+  sync_service_->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+  sync_service_->FireStateChanged();
+
+  bool service_ready = false;
+  shopping_service_->WaitForReady(
+      base::BindOnce([](bool* service_ready,
+                        ShoppingService* service) { *service_ready = true; },
+                     &service_ready));
+
+  base::RunLoop().RunUntilIdle();
+
+  // The ready check should complete since sync was already active.
+  ASSERT_TRUE(service_ready);
+}
+
+TEST_F(ShoppingServiceTest, TestPriceInsightsInfoResponse) {
+  test_features_.InitAndEnableFeature(kPriceInsights);
+
+  std::vector<std::tuple<std::string, int64_t>> history_prices;
+  history_prices.emplace_back("2021-01-01", 100);
+  history_prices.emplace_back("2021-01-02", 200);
+
+  OptimizationMetadata meta = opt_guide_->BuildPriceInsightsResponse(
+      kClusterId, kCurrencyCode, kLowTypicalPrice, kHighTypicalPrice,
+      kCurrencyCode, kAttributes, history_prices, kJackpotUrl,
+      PriceBucket::kHighPrice, true);
+
+  opt_guide_->SetResponse(GURL(kPriceInsightsUrl),
+                          OptimizationType::PRICE_INSIGHTS,
+                          OptimizationGuideDecision::kTrue, meta);
+
+  base::RunLoop run_loop;
+  shopping_service_->GetPriceInsightsInfoForUrl(
+      GURL(kPriceInsightsUrl),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const GURL& url,
+             const absl::optional<PriceInsightsInfo>& info) {
+            ASSERT_EQ(kPriceInsightsUrl, url.spec());
+            ASSERT_TRUE(info.has_value());
+
+            ASSERT_EQ(kClusterId, info->product_cluster_id);
+            ASSERT_EQ(kCurrencyCode, info->currency_code);
+            ASSERT_EQ(kLowTypicalPrice, info->typical_low_price_micros);
+            ASSERT_EQ(kHighTypicalPrice, info->typical_high_price_micros);
+            ASSERT_EQ(kAttributes, info->catalog_attributes);
+            ASSERT_EQ(2, (int)(info->catalog_history_prices.size()));
+            ASSERT_EQ("2021-01-01",
+                      std::get<0>(info->catalog_history_prices[0]));
+            ASSERT_EQ("2021-01-02",
+                      std::get<0>(info->catalog_history_prices[1]));
+            ASSERT_EQ(100, std::get<1>(info->catalog_history_prices[0]));
+            ASSERT_EQ(200, std::get<1>(info->catalog_history_prices[1]));
+            ASSERT_EQ(kJackpotUrl, info->jackpot_url);
+            ASSERT_EQ(PriceBucket::kHighPrice, info->price_bucket);
+            ASSERT_EQ(true, info->has_multiple_catalogs);
+
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ShoppingServiceTest,
+       TestPriceInsightsInfoResponse_DifferentCurrencyCode) {
+  test_features_.InitAndEnableFeature(kPriceInsights);
+
+  std::vector<std::tuple<std::string, int64_t>> history_prices;
+  history_prices.emplace_back("2021-01-01", 100);
+  history_prices.emplace_back("2021-01-02", 200);
+
+  OptimizationMetadata meta = opt_guide_->BuildPriceInsightsResponse(
+      kClusterId, kCurrencyCode, kLowTypicalPrice, kHighTypicalPrice,
+      kAnotherCurrencyCode, kAttributes, history_prices, kJackpotUrl,
+      PriceBucket::kHighPrice, true);
+
+  opt_guide_->SetResponse(GURL(kPriceInsightsUrl),
+                          OptimizationType::PRICE_INSIGHTS,
+                          OptimizationGuideDecision::kTrue, meta);
+
+  base::RunLoop run_loop;
+  shopping_service_->GetPriceInsightsInfoForUrl(
+      GURL(kPriceInsightsUrl),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const GURL& url,
+             const absl::optional<PriceInsightsInfo>& info) {
+            ASSERT_EQ(kPriceInsightsUrl, url.spec());
+            ASSERT_TRUE(info.has_value());
+
+            ASSERT_EQ(kClusterId, info->product_cluster_id);
+            ASSERT_EQ(kCurrencyCode, info->currency_code);
+            ASSERT_EQ(kLowTypicalPrice, info->typical_low_price_micros);
+            ASSERT_EQ(kHighTypicalPrice, info->typical_high_price_micros);
+            ASSERT_EQ(absl::nullopt, info->catalog_attributes);
+            ASSERT_EQ(0, (int)(info->catalog_history_prices.size()));
+            ASSERT_EQ(absl::nullopt, info->jackpot_url);
+            ASSERT_EQ(PriceBucket::kHighPrice, info->price_bucket);
+            ASSERT_EQ(true, info->has_multiple_catalogs);
+
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ShoppingServiceTest, TestPriceInsightsInfoResponse_EmptyClusterId) {
+  test_features_.InitAndEnableFeature(kPriceInsights);
+
+  std::vector<std::tuple<std::string, int64_t>> history_prices;
+  history_prices.emplace_back("2021-01-01", 100);
+  history_prices.emplace_back("2021-01-02", 200);
+
+  OptimizationMetadata meta = opt_guide_->BuildPriceInsightsResponse(
+      0, kCurrencyCode, kLowTypicalPrice, kHighTypicalPrice,
+      kAnotherCurrencyCode, kAttributes, history_prices, kJackpotUrl,
+      PriceBucket::kHighPrice, true);
+
+  opt_guide_->SetResponse(GURL(kPriceInsightsUrl),
+                          OptimizationType::PRICE_INSIGHTS,
+                          OptimizationGuideDecision::kTrue, meta);
+
+  base::RunLoop run_loop;
+  shopping_service_->GetPriceInsightsInfoForUrl(
+      GURL(kPriceInsightsUrl),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const GURL& url,
+             const absl::optional<PriceInsightsInfo>& info) {
+            ASSERT_EQ(kPriceInsightsUrl, url.spec());
+            ASSERT_FALSE(info.has_value());
+
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
 }
 
 }  // namespace commerce

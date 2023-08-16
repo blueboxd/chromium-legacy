@@ -689,15 +689,22 @@ void AXObject::Init(AXObject* parent) {
   // determine whether an AXObject can have children.
   children_dirty_ = CanHaveChildren();
 
-  // Ensure that the aria-owns relationship is set before attempting
-  // to update cached attribute values.
-  if (GetNode())
-    AXObjectCache().MaybeNewRelationTarget(*GetNode(), this);
-
   UpdateCachedAttributeValuesIfNeeded(false);
 
   DCHECK(GetDocument()) << "All AXObjects must have a document: "
                         << ToString(true, true);
+
+  // Set the dirty bit for the root AX object when created. For all other
+  // objects, this is set by a descendant needing to be updated, and
+  // AXObjectCacheImpl::UpdateTreeIfNeeded will therefore process an object
+  // if its parent has has_dirty_descendants_ set. The root, however, has no
+  // parent, so there is no parent to mark in order to cause the root to update
+  // itself. Therefore this bit serves a second purpose of determining
+  // whether AXObjectCacheImpl::UpdateTreeIfNeeded needs to update the root
+  // object.
+  if (IsRoot()) {
+    has_dirty_descendants_ = true;
+  }
 }
 
 void AXObject::Detach() {
@@ -1475,6 +1482,11 @@ void AXObject::SerializeChildTreeID(ui::AXNodeData* node_data) {
     SANITIZER_CHECK(!IsFrame(GetNode()))
         << "If this is an iframe, it should also be a child tree owner: "
         << ToString(true, true);
+    return;
+  }
+
+  // Do not attach hidden child trees.
+  if (!IsVisible()) {
     return;
   }
 
@@ -2412,7 +2424,8 @@ AXObject* AXObject::GetControlsListboxForTextfieldCombobox() {
   Vector<String> ids;
   AXObject* listbox_candidate = nullptr;
   if (ElementsFromAttribute(GetElement(), owned_elements,
-                            html_names::kAriaOwnsAttr, ids)) {
+                            html_names::kAriaOwnsAttr, ids) &&
+      owned_elements.size() > 0) {
     DCHECK(owned_elements[0]);
     listbox_candidate = AXObjectCache().GetOrCreate(owned_elements[0]);
   }
@@ -3633,8 +3646,11 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
     // Allow the browser side ax tree to access "aria-hidden" nodes.
     // This is useful for APIs that return the node referenced by
     // aria-labeledby and aria-describedby.
-    if (IsAriaHidden())
-      return true;
+    // Exception: iframes, in order to stop exposing aria-hidden iframes, where
+    // there is no possibility for the content within to know it's aria-hidden.
+    if (IsAriaHidden()) {
+      return !IsChildTreeOwner();
+    }
   }
 
   if (const Element* owner = node->OwnerShadowHost()) {
@@ -4479,16 +4495,15 @@ bool AXObject::ElementsFromAttribute(Element* from,
   // We compute the attr-associated elements, which are either explicitly set
   // element references set via the IDL, or computed from the content attribute.
   TokenVectorFromAttribute(from, ids, attribute);
-
   HeapVector<Member<Element>>* attr_associated_elements =
       from->GetElementArrayAttribute(attribute);
   if (!attr_associated_elements)
-    return false;
+    return ids.size();
 
   for (const auto& element : *attr_associated_elements)
     elements.push_back(element);
 
-  return elements.size();
+  return ids.size();
 }
 
 // static
@@ -4498,12 +4513,14 @@ bool AXObject::AriaLabelledbyElementVector(
     Vector<String>& ids) {
   // Try both spellings, but prefer aria-labelledby, which is the official spec.
   if (ElementsFromAttribute(from, elements, html_names::kAriaLabelledbyAttr,
-                            ids)) {
+                            ids) &&
+      elements.size() > 0) {
     return true;
   }
 
   return ElementsFromAttribute(from, elements, html_names::kAriaLabeledbyAttr,
-                               ids);
+                               ids) &&
+         elements.size() > 0;
 }
 
 // static
@@ -4818,6 +4835,9 @@ const AtomicString& AXObject::LiveRegionRelevant() const {
 bool AXObject::IsDisabled() const {
   // <embed> or <object> with unsupported plugin, or more iframes than allowed.
   if (IsChildTreeOwner()) {
+    if (IsAriaHidden()) {
+      return true;
+    }
     auto* html_frame_owner_element = To<HTMLFrameOwnerElement>(GetElement());
     return !html_frame_owner_element->ContentFrame();
   }
@@ -5688,8 +5708,9 @@ void AXObject::ClearChildren() const {
         // Since this code only runs when |map| is set, and therefore
         // |node| is an image outside the map, this only needs to happen for
         // the map descendants, not the image descendants.
-        AXObjectCache().RemoveSubtreeWithFlatTraversal(ax_child_from_node,
-                                                       false);
+        AXObjectCache().RemoveSubtreeWithFlatTraversal(
+            child_node,
+            /* remove_root */ true, /* notify_parent */ false);
       } else {
         ax_child_from_node->DetachFromParent();
       }
@@ -5751,15 +5772,6 @@ void AXObject::ChildrenChangedWithCleanLayout() {
         ax_parent->ChildrenChangedWithCleanLayout();
       }
     }
-  }
-
-  // When pseudo element layout changes, we need to make sure we clear up all
-  // descendant objects, because we may not receive ChildrenChanged() calls for
-  // all of them, and we don't want to leave any parentless objects around. This
-  // will force re-creation of any AXObjects for this subtree.
-  if (GetNode() && GetNode()->IsPseudoElement()) {
-    AXObjectCache().RemoveSubtreeWithFlatTraversal(this,
-                                                   /* notify_parent */ false);
   }
 }
 
@@ -5871,7 +5883,7 @@ bool AXObject::IsUserScrollable() const {
   }
 
   return GetLayoutObject() && GetLayoutObject()->IsBox() &&
-         To<LayoutBox>(GetLayoutObject())->CanBeScrolledAndHasScrollableArea();
+         To<LayoutBox>(GetLayoutObject())->IsUserScrollable();
 }
 
 gfx::Point AXObject::GetScrollOffset() const {
@@ -6361,6 +6373,32 @@ LayoutRect AXObject::GetBoundsInFrameCoordinates() const {
 //
 
 bool AXObject::PerformAction(const ui::AXActionData& action_data) {
+  Document* document = GetDocument();
+  if (!document) {
+    return false;
+  }
+  AXObjectCacheImpl& cache = AXObjectCache();
+  Node* node = GetNode();
+  if (!node) {
+    node = GetClosestElement();
+  }
+
+  // In most cases, UpdateAllLifecyclePhasesExceptPaint() is enough, but if
+  // the action is part of a display locked node, that will not update the node
+  // because it's not part of the layout update cycle yet. In that case, calling
+  // UpdateStyleAndLayoutTreeForNode() is also necessary.
+  document->UpdateStyleAndLayoutTreeForNode(
+      node, DocumentUpdateReason::kAccessibility);
+  document->View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kAccessibility);
+
+  // Updating style and layout for the node can cause it to gain layout,
+  // detaching an AXNodeObject to make room for an AXLayoutObject.
+  if (IsDetached()) {
+    AXObject* new_object = cache.GetOrCreate(node);
+    return new_object ? new_object->PerformAction(action_data) : false;
+  }
+
   switch (action_data.action) {
     case ax::mojom::blink::Action::kBlur:
       return OnNativeBlurAction();
@@ -6392,6 +6430,8 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
           WTF::String::FromUTF8(action_data.value.c_str()));
     case ax::mojom::blink::Action::kShowContextMenu:
       return RequestShowContextMenuAction();
+    case ax::mojom::blink::Action::kScrollToMakeVisible:
+      return RequestScrollToMakeVisibleAction();
     case ax::mojom::blink::Action::kScrollBackward:
     case ax::mojom::blink::Action::kScrollDown:
     case ax::mojom::blink::Action::kScrollForward:
@@ -6410,7 +6450,6 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
     case ax::mojom::blink::Action::kLoadInlineTextBoxes:
     case ax::mojom::blink::Action::kNone:
     case ax::mojom::blink::Action::kReplaceSelectedText:
-    case ax::mojom::blink::Action::kScrollToMakeVisible:
     case ax::mojom::blink::Action::kSetSelection:
     case ax::mojom::blink::Action::kShowTooltip:
     case ax::mojom::blink::Action::kSignalEndOfTest:
@@ -6520,6 +6559,36 @@ bool AXObject::RequestScrollToMakeVisibleWithSubFocusAction(
     const gfx::Rect& subfocus,
     blink::mojom::blink::ScrollAlignment horizontal_scroll_alignment,
     blink::mojom::blink::ScrollAlignment vertical_scroll_alignment) {
+  Document* document = GetDocument();
+  if (!document) {
+    return false;
+  }
+  AXObjectCacheImpl& cache = AXObjectCache();
+  Node* node = GetNode();
+  if (!node) {
+    node = GetClosestElement();
+  }
+
+  // In most cases, UpdateAllLifecyclePhasesExceptPaint() is enough, but if
+  // focus is is moving to a display locked node, that will not update the node
+  // because it's not part of the layout update cycle yet. In that case, calling
+  // UpdateStyleAndLayoutTreeForNode() is also necessary.
+  document->UpdateStyleAndLayoutTreeForNode(
+      node, DocumentUpdateReason::kAccessibility);
+  document->View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kAccessibility);
+
+  // Updating style and layout for the node can cause it to gain layout,
+  // detaching an AXNodeObject to make room for an AXLayoutObject.
+  if (IsDetached()) {
+    AXObject* new_object = cache.GetOrCreate(node);
+    return new_object
+               ? new_object->OnNativeScrollToMakeVisibleWithSubFocusAction(
+                     subfocus, horizontal_scroll_alignment,
+                     vertical_scroll_alignment)
+               : false;
+  }
+
   return OnNativeScrollToMakeVisibleWithSubFocusAction(
       subfocus, horizontal_scroll_alignment, vertical_scroll_alignment);
 }

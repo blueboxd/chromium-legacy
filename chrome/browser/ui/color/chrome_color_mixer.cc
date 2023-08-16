@@ -182,6 +182,9 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorBookmarkBarBackground] = {kColorToolbar};
   mixer[kColorBookmarkBarForeground] = {kColorToolbarText};
   mixer[kColorBookmarkButtonIcon] = {kColorToolbarButtonIcon};
+  mixer[kColorBookmarkDialogProductImageBorder] =
+      ui::SetAlpha(gfx::kGoogleGrey900, 0x24);
+  mixer[kColorBookmarkDialogTrackPriceIcon] = {gfx::kGoogleGrey700};
   mixer[kColorBookmarkFavicon] = ui::PickGoogleColor(
       gfx::kGoogleGrey500, kColorBookmarkBarBackground, 6.0f);
   mixer[kColorBookmarkFolderIcon] = {ui::kColorIcon};
@@ -214,9 +217,13 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorDownloadItemForegroundSafe] = ui::PickGoogleColor(
       ui::kColorAlertLowSeverity, kColorDownloadShelfBackground,
       color_utils::kMinimumReadableContrastRatio);
+  mixer[kColorDownloadItemIconDangerous] = {ui::kColorAlertHighSeverity};
+  mixer[kColorDownloadItemIconWarning] = {ui::kColorAlertMediumSeverityIcon};
   mixer[kColorDownloadItemProgressRingBackground] = ui::SetAlpha(
       kColorDownloadItemProgressRingForeground, gfx::kGoogleGreyAlpha400);
   mixer[kColorDownloadItemProgressRingForeground] = {ui::kColorThrobber};
+  mixer[kColorDownloadItemTextDangerous] = {ui::kColorAlertHighSeverity};
+  mixer[kColorDownloadItemTextWarning] = {ui::kColorAlertMediumSeverityText};
   mixer[kColorDownloadShelfBackground] = {kColorToolbar};
   mixer[kColorDownloadShelfButtonBackground] = {kColorDownloadShelfBackground};
   mixer[kColorDownloadShelfButtonIcon] = {kColorToolbarButtonIcon};
@@ -259,7 +266,7 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorExtensionMenuPinButtonIconDisabled] = ui::SetAlpha(
       kColorExtensionMenuPinButtonIcon, gfx::kDisabledControlAlpha);
   mixer[kColorExtensionsMenuHighlightedBackground] = {
-      kColorToolbarBackgroundSubtleEmphasis};
+      ui::kColorSysNeutralContainer};
   mixer[kColorExtensionsToolbarControlsBackground] = {
       kColorToolbarBackgroundSubtleEmphasis};
   mixer[kColorEyedropperBoundary] = {SK_ColorDKGRAY};
@@ -285,7 +292,6 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       ui::DeriveDefaultIconColor(ui::kColorTextfieldForegroundDisabled);
   mixer[kColorFindBarForeground] = {ui::kColorTextfieldForeground};
   mixer[kColorFindBarMatchCount] = {ui::kColorSecondaryForeground};
-  mixer[kColorFindBarSeparator] = {ui::kColorSeparator};
   mixer[kColorFlyingIndicatorBackground] = {kColorToolbar};
   mixer[kColorFlyingIndicatorForeground] = {kColorToolbarButtonIcon};
   mixer[kColorFocusHighlightDefault] = {SkColorSetRGB(0x10, 0x10, 0x10)};
@@ -335,6 +341,12 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorOmniboxChipForegroundLowVisibility] = {kColorToolbarButtonIcon};
   mixer[kColorOmniboxChipForegroundNormalVisibility] = {
       ui::kColorButtonForeground};
+  // This color ID is only for Material Refresh 2023, but is a fallback when
+  // themes are used.
+  mixer[kColorOmniboxChipInkDropHover] = {
+      ui::SetAlpha(kColorToolbarButtonIcon, std::ceil(0.10f * 255.0f))};
+  mixer[kColorOmniboxChipInkDropRipple] = {
+      ui::SetAlpha(kColorToolbarButtonIcon, std::ceil(0.16f * 255.0f))};
   mixer[kColorPageInfoChosenObjectDeleteButtonIcon] = {ui::kColorIcon};
   mixer[kColorPageInfoChosenObjectDeleteButtonIconDisabled] = {
       ui::kColorIconDisabled};
@@ -662,6 +674,20 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
                                     : SK_ColorWHITE};
   mixer[kColorToolbarButtonBackgroundHighlightedDefault] =
       ui::SetAlpha(ui::GetColorWithMaxContrast(kColorToolbarButtonText), 0xCC);
+  mixer[kColorAvatarButtonHighlightIncognito] = {
+      kColorToolbarButtonBackgroundHighlightedDefault};
+  mixer[kColorAvatarButtonHighlightDefault] = {kColorToolbar};
+  mixer[kColorAvatarButtonHighlightNormalForeground] =
+      AdjustHighlightColorForContrast(ui::kColorAccent, kColorToolbar);
+  mixer[kColorAvatarButtonHighlightDefaultForeground] = {
+      kColorToolbarButtonText};
+  mixer[kColorAvatarButtonHighlightSyncErrorForeground] =
+      AdjustHighlightColorForContrast(ui::kColorAlertMediumSeverityIcon,
+                                      kColorToolbar);
+  mixer[kColorAvatarButtonHighlightIncognitoForeground] = {
+      kColorToolbarButtonText};
+  mixer[kColorAvatarButtonIncognitoHover] = {kColorToolbarInkDropHover};
+  mixer[kColorAvatarButtonNormalRipple] = {kColorToolbarInkDropRipple};
   mixer[kColorToolbarButtonBorder] = ui::SetAlpha(kColorToolbarInkDrop, 0x20);
   mixer[kColorToolbarButtonIcon] = {kColorToolbarButtonIconDefault};
   mixer[kColorToolbarButtonIconDefault] = ui::HSLShift(
@@ -722,10 +748,10 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorReadAnythingBackground] = {
       dark_mode ? kColorReadAnythingBackgroundDark
                 : kColorReadAnythingBackgroundLight};
-  mixer[kColorReadAnythingBackgroundBlue] = {gfx::kGoogleBlue200};
+  mixer[kColorReadAnythingBackgroundBlue] = {gfx::kGoogleBlue100};
   mixer[kColorReadAnythingBackgroundDark] = {gfx::kGoogleGrey900};
   mixer[kColorReadAnythingBackgroundLight] = {gfx::kGoogleGrey100};
-  mixer[kColorReadAnythingBackgroundYellow] = {gfx::kGoogleYellow200};
+  mixer[kColorReadAnythingBackgroundYellow] = {gfx::kGoogleYellow100};
   mixer[kColorReadAnythingForeground] = {
       dark_mode ? kColorReadAnythingForegroundDark
                 : kColorReadAnythingForegroundLight};

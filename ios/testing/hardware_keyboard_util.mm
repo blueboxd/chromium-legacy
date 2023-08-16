@@ -276,6 +276,9 @@ IOHIDEventRef CreateHIDKeyEvent(NSString* character,
 @interface PhysicalKeyboardEvent : UIEvent
 + (id)_eventWithInput:(id)arg1 inputFlags:(int)arg2;
 - (void)_setHIDEvent:(IOHIDEventRef)event keyboard:(void*)gsKeyboard;
+// >=iOS17 only.
+- (void)_setModifierFlags:(UIKeyModifierFlags)flags;
+// <=iOS16 only.
 @property(nonatomic) UIKeyModifierFlags _modifierFlags;
 @end
 
@@ -324,9 +327,37 @@ void SendKBEventWithModifiers(UIKeyModifierFlags flags, NSString* input) {
   PhysicalKeyboardEvent* keyboardEvent =
       [NSClassFromString(@"UIPhysicalKeyboardEvent") _eventWithInput:input
                                                           inputFlags:0];
-  keyboardEvent._modifierFlags = flags;
+  if (@available(iOS 17, *)) {
+    [keyboardEvent _setModifierFlags:flags];
+  } else {
+    keyboardEvent._modifierFlags = flags;
+  }
   IOHIDEventRef hidEvent =
       CreateHIDKeyEvent(input, keyboardEvent.timestamp, true);
+  [keyboardEvent _setHIDEvent:hidEvent keyboard:0];
+  [[UIApplication sharedApplication] handleKeyUIEvent:keyboardEvent];
+}
+
+// Simulate pressing a hardware keyboard key.
+void PressKey(NSString* key) {
+  // Fake up an event.
+  PhysicalKeyboardEvent* keyboardEvent =
+      [NSClassFromString(@"UIPhysicalKeyboardEvent") _eventWithInput:key
+                                                          inputFlags:0];
+  IOHIDEventRef hidEvent =
+      CreateHIDKeyEvent(key, keyboardEvent.timestamp, true);
+  [keyboardEvent _setHIDEvent:hidEvent keyboard:0];
+  [[UIApplication sharedApplication] handleKeyUIEvent:keyboardEvent];
+}
+
+// Simulate releasing a hardware keyboard key.
+void ReleaseKey(NSString* key) {
+  // Fake up an event.
+  PhysicalKeyboardEvent* keyboardEvent =
+      [NSClassFromString(@"UIPhysicalKeyboardEvent") _eventWithInput:key
+                                                          inputFlags:0];
+  IOHIDEventRef hidEvent =
+      CreateHIDKeyEvent(key, keyboardEvent.timestamp, false);
   [keyboardEvent _setHIDEvent:hidEvent keyboard:0];
   [[UIApplication sharedApplication] handleKeyUIEvent:keyboardEvent];
 }
@@ -418,6 +449,27 @@ void SimulatePhysicalKeyboardEventInternal(UIKeyModifierFlags flags,
 namespace chrome_test_util {
 
 void SimulatePhysicalKeyboardEvent(UIKeyModifierFlags flags, NSString* input) {
+  // No modifier keys pressed.
+  if (flags == 0) {
+    if (hidUsageCodeForCharacter(input)) {
+      // Input is a keyboard key.
+      PressKey(input);
+      ReleaseKey(input);
+      return;
+    }
+
+    // If there are no modifier keys and the input is not a keyboard key. Our
+    // intention is then to type the input.
+    for (NSUInteger i = 0; i < [input length]; i++) {
+      NSRange range = NSMakeRange(i, 1);
+      NSString* key = [input substringWithRange:range];
+      PressKey(key);
+      ReleaseKey(key);
+    }
+    return;
+  }
+
+  // Input with modifier keys.
   __block BOOL keyPressesFinished = NO;
 
   SimulatePhysicalKeyboardEventInternal(flags, input, 0, @"", ^{

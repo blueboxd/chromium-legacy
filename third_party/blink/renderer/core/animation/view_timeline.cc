@@ -150,7 +150,8 @@ Length InsetValueToLength(const CSSValue* inset_value,
     CSSToLengthConversionData::Flags ignored_flags = 0;
     CSSToLengthConversionData length_conversion_data(
         subject->ComputedStyleRef(), element_resolve_context.ParentStyle(),
-        element_resolve_context.RootElementStyle(), document.GetLayoutView(),
+        element_resolve_context.RootElementStyle(),
+        CSSToLengthConversionData::ViewportSize(document.GetLayoutView()),
         CSSToLengthConversionData::ContainerSizes(subject),
         subject->GetComputedStyle()->EffectiveZoom(), ignored_flags);
 
@@ -323,8 +324,9 @@ void ViewTimeline::CalculateOffsets(PaintLayerScrollableArea* scrollable_area,
 
   state->scroll_offsets =
       absl::make_optional<ScrollOffsets>(start_offset, end_offset);
-  state->view_offsets = absl::make_optional<ScrollOffsets>(
-      target_offset_min, target_offset_min + target_size);
+  // TODO(crbug.com/1448294): This will change to handle entry/exit stickiness.
+  state->view_offsets =
+      absl::make_optional<ViewOffsets>(target_size, target_size);
 }
 
 absl::optional<LayoutSize> ViewTimeline::SubjectSize() const {

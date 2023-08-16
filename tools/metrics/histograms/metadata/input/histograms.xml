@@ -79,7 +79,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.Assistive.AutocorrectV2.Actions.PK"
-    enum="IMEAutocorrectActions" expires_after="2023-10-08">
+    enum="IMEAutocorrectActions" expires_after="2023-12-10">
   <owner>mehrab@google.com</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -103,7 +103,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.Assistive.AutocorrectV2.Actions.VK"
-    enum="IMEAutocorrectActions" expires_after="2023-10-08">
+    enum="IMEAutocorrectActions" expires_after="2023-12-10">
   <owner>mehrab@google.com</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -657,8 +657,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="InputMethod.Assistive.MultiWord.ImplicitAcceptance"
+<histogram name="InputMethod.Assistive.MultiWord.EmptyCandidate"
     enum="IMEAssistiveMultiWordSuggestionType" expires_after="2023-10-01">
+  <owner>curtismcmullan@google.com</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <summary>
+    This histogram records when an empty completion candidate is added to a
+    suggestion generation request to the machine learning service. An empty
+    completion candidate in this context means a candidate with an empty string.
+    This is an invalid state and should never happen. The metric is recorded
+    once per empty candidate found.
+  </summary>
+</histogram>
+
+<histogram name="InputMethod.Assistive.MultiWord.ImplicitAcceptance"
+    enum="IMEAssistiveMultiWordSuggestionType" expires_after="2023-12-04">
   <owner>curtismcmullan@google.com</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -670,7 +683,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.Assistive.MultiWord.ImplicitRejection"
-    enum="IMEAssistiveMultiWordSuggestionType" expires_after="2023-10-01">
+    enum="IMEAssistiveMultiWordSuggestionType" expires_after="2023-12-04">
   <owner>curtismcmullan@google.com</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -726,7 +739,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.Assistive.MultiWord.SuggestionOpportunity"
-    enum="IMEAssistiveMultiWordSuggestionType" expires_after="2023-10-08">
+    enum="IMEAssistiveMultiWordSuggestionType" expires_after="2023-12-10">
   <owner>curtismcmullan@google.com</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -736,6 +749,23 @@ chromium-metrics-reviews@google.com.
     attempt to generate and display suggestions. It is recorded exactly once per
     surrounding text update.
   </summary>
+</histogram>
+
+<histogram name="InputMethod.Assistive.MultiWord.SuggestionState.{Type}"
+    enum="IMEAssistiveMultiWordSuggestionType" expires_after="2023-10-08">
+  <owner>curtismcmullan@google.com</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <summary>
+    This histogram records when a new suggestion is found and the system
+    attempts to reconcile it with the text found in the currently focused text
+    input. The histogram records the state of the reconciliation process. This
+    metric is recorded exactly once for every suggestion that goes through this
+    process.
+  </summary>
+  <token key="Type">
+    <variant name="Completion" summary="CompletionSuggestion"/>
+    <variant name="Prediction" summary="PredictionSuggestion"/>
+  </token>
 </histogram>
 
 <histogram name="InputMethod.Assistive.NotAllowed" enum="IMEAssistiveAction"
@@ -833,7 +863,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="InputMethod.Assistive.UserPref.PhysicalKeyboardDiacriticsOnLongpress"
-    enum="BooleanEnabled" expires_after="2023-10-08">
+    enum="BooleanEnabled" expires_after="2023-12-10">
   <owner>jhtin@google.com</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -844,7 +874,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.AutoCorrectLevel" enum="IMECorrectionLevel"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>shend@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>The auto-correction level for suggestion engine.</summary>
@@ -1506,7 +1536,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.VirtualKeyboard.InitLatency.KeyboardShownLongTail"
-    units="ms" expires_after="2023-10-01">
+    units="ms" expires_after="2023-12-04">
   <owner>jopalmer@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>

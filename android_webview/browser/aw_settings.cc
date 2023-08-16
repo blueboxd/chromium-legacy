@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_client_hints_controller_delegate.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_contents.h"
@@ -223,8 +224,7 @@ void AwSettings::UpdateUserAgentLocked(JNIEnv* env,
         !ua_string_override.empty() &&
         ua_string_override.find(ua_default) != std::string::npos) {
       override_ua_with_metadata.ua_metadata_override =
-          AwClientHintsControllerDelegate::GetUserAgentMetadataOverrideBrand(
-              AwBrowserContext::GetDefault()->GetPrefService());
+          AwClientHintsControllerDelegate::GetUserAgentMetadataOverrideBrand();
     }
 
     // Set overridden user-agent and default client hints metadata if applied.
@@ -636,17 +636,6 @@ AwSettings::UpdateXRequestedWithAllowListOriginMatcher(
   std::vector<std::string> bad_rules =
       xrw_allowlist_matcher_->UpdateRuleList(rules);
   return base::android::ToJavaArrayOfStrings(env, bad_rules);
-}
-
-void AwSettings::SetRestrictSensitiveWebContentEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean enabled) {
-  restrict_sensitive_web_content_enabled_ = enabled;
-}
-
-bool AwSettings::GetRestrictSensitiveWebContentEnabled() {
-  return restrict_sensitive_web_content_enabled();
 }
 
 scoped_refptr<AwContentsOriginMatcher> AwSettings::xrw_allowlist_matcher() {

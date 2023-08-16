@@ -34,6 +34,7 @@
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -45,6 +46,7 @@
 #include "ash/system/accessibility/floating_accessibility_controller.h"
 #include "ash/system/accessibility/select_to_speak/select_to_speak_menu_bubble_controller.h"
 #include "ash/system/accessibility/switch_access/switch_access_menu_bubble_controller.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
@@ -66,7 +68,6 @@
 #include "components/vector_icons/vector_icons.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/accessibility_features.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/aura/aura_window_properties.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_size.h"
@@ -110,6 +111,8 @@ const FeatureData kFeatures[] = {
      nullptr},
     {FeatureType::kDictation, prefs::kAccessibilityDictationEnabled,
      &kDictationMenuIcon},
+    {FeatureType::kColorCorrection, prefs::kAccessibilityColorFiltering,
+     &kColorCorrectionIcon},
     {FeatureType::kFocusHighlight, prefs::kAccessibilityFocusHighlightEnabled,
      nullptr, /* conflicting_feature= */ FeatureType::kSpokenFeedback},
     {FeatureType::kFloatingMenu, prefs::kAccessibilityFloatingMenuEnabled,
@@ -130,7 +133,8 @@ const FeatureData kFeatures[] = {
      &kSystemMenuAccessibilityChromevoxIcon},
     {FeatureType::kSelectToSpeak, prefs::kAccessibilitySelectToSpeakEnabled,
      &kSystemMenuAccessibilitySelectToSpeakIcon},
-    {FeatureType::kStickyKeys, prefs::kAccessibilityStickyKeysEnabled, nullptr},
+    {FeatureType::kStickyKeys, prefs::kAccessibilityStickyKeysEnabled, nullptr,
+     /*conflicting_feature=*/FeatureType::kSpokenFeedback},
     {FeatureType::kSwitchAccess, prefs::kAccessibilitySwitchAccessEnabled,
      &kSwitchAccessIcon},
     {FeatureType::kVirtualKeyboard, prefs::kAccessibilityVirtualKeyboardEnabled,
@@ -198,6 +202,7 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kAccessibilityChromeVoxVirtualBrailleColumns,
     prefs::kAccessibilityChromeVoxVirtualBrailleRows,
     prefs::kAccessibilityChromeVoxVoiceName,
+    prefs::kAccessibilityColorFiltering,
     prefs::kAccessibilityCursorHighlightEnabled,
     prefs::kAccessibilityCursorColorEnabled,
     prefs::kAccessibilityCursorColor,
@@ -807,6 +812,12 @@ void AccessibilityControllerImpl::Feature::UpdateFromPref() {
   PrefService* prefs = owner_->active_user_prefs_;
   DCHECK(prefs);
 
+  if (pref_name_ == prefs::kAccessibilityColorFiltering &&
+      !::features::
+          AreExperimentalAccessibilityColorEnhancementSettingsEnabled()) {
+    return;
+  }
+
   bool enabled = prefs->GetBoolean(pref_name_);
 
   if (conflicting_feature_ != FeatureType::kNoConflictingFeature &&
@@ -825,6 +836,26 @@ void AccessibilityControllerImpl::Feature::SetConflictingFeature(
     FeatureType feature) {
   DCHECK_EQ(conflicting_feature_, FeatureType::kNoConflictingFeature);
   conflicting_feature_ = feature;
+}
+
+void AccessibilityControllerImpl::Feature::ObserveConflictingFeature() {
+  std::string conflicting_pref_name = "";
+  switch (conflicting_feature_) {
+    case A11yFeatureType::kSpokenFeedback:
+      conflicting_pref_name = prefs::kAccessibilitySpokenFeedbackEnabled;
+      break;
+    default:
+      // No other features are used as conflicting features at the moment,
+      // but this could be populated if needed in the future.
+      NOTREACHED() << "No pref name for conflicting feature "
+                   << static_cast<int>(conflicting_feature_);
+  }
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(owner_->active_user_prefs_);
+  pref_change_registrar_->Add(
+      conflicting_pref_name,
+      base::BindRepeating(&AccessibilityControllerImpl::Feature::UpdateFromPref,
+                          base::Unretained(this)));
 }
 
 AccessibilityControllerImpl::FeatureWithDialog::FeatureWithDialog(
@@ -924,6 +955,11 @@ void AccessibilityControllerImpl::CreateAccessibilityFeatures() {
           feature_data.type, feature_data.pref, feature_data.icon, it->second,
           this);
     }
+    if (feature_data.conflicting_feature !=
+        FeatureType::kNoConflictingFeature) {
+      features_[feature_index]->SetConflictingFeature(
+          feature_data.conflicting_feature);
+    }
   }
 }
 
@@ -995,6 +1031,13 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
       prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted2, false);
   registry->RegisterBooleanPref(prefs::kShouldAlwaysShowAccessibilityMenu,
                                 false);
+
+  if (::features::
+          AreExperimentalAccessibilityColorEnhancementSettingsEnabled()) {
+    registry->RegisterBooleanPref(prefs::kAccessibilityColorFiltering, false);
+    registry->RegisterBooleanPref(
+        prefs::kAccessibilityColorFilteringHasBeenSetup, false);
+  }
 
   // TODO(b/266816160): Make ChromeVox prefs are syncable, to so that ChromeOS
   // backs up users' ChromeVox settings and reflects across their devices.
@@ -1179,21 +1222,6 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
 
   if (::features::
           AreExperimentalAccessibilityColorEnhancementSettingsEnabled()) {
-    registry->RegisterBooleanPref(
-        prefs::kAccessibilityColorFiltering, false,
-        user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
-    registry->RegisterIntegerPref(
-        prefs::kAccessibilityGreyscaleAmount, 0,
-        user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
-    registry->RegisterIntegerPref(
-        prefs::kAccessibilitySaturationAmount, 100,
-        user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
-    registry->RegisterIntegerPref(
-        prefs::kAccessibilitySepiaAmount, 0,
-        user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
-    registry->RegisterIntegerPref(
-        prefs::kAccessibilityHueRotationAmount, 0,
-        user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
     registry->RegisterIntegerPref(
         prefs::kAccessibilityColorVisionCorrectionAmount, 100,
         user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
@@ -1279,6 +1307,11 @@ AccessibilityControllerImpl::Feature& AccessibilityControllerImpl::dictation()
 }
 
 AccessibilityControllerImpl::Feature&
+AccessibilityControllerImpl::color_correction() const {
+  return GetFeature(FeatureType::kColorCorrection);
+}
+
+AccessibilityControllerImpl::Feature&
 AccessibilityControllerImpl::focus_highlight() const {
   return GetFeature(FeatureType::kFocusHighlight);
 }
@@ -1358,6 +1391,7 @@ bool AccessibilityControllerImpl::IsPrimarySettingsViewVisibleInTray() {
   return (IsSpokenFeedbackSettingVisibleInTray() ||
           IsSelectToSpeakSettingVisibleInTray() ||
           IsDictationSettingVisibleInTray() ||
+          IsColorCorrectionSettingVisibleInTray() ||
           IsHighContrastSettingVisibleInTray() ||
           IsFullScreenMagnifierSettingVisibleInTray() ||
           IsDockedMagnifierSettingVisibleInTray() ||
@@ -1436,6 +1470,25 @@ bool AccessibilityControllerImpl::IsHighContrastSettingVisibleInTray() {
 
 bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForHighContrast() {
   return high_contrast().IsEnterpriseIconVisible();
+}
+
+bool AccessibilityControllerImpl::IsColorCorrectionSettingVisibleInTray() {
+  if (!::features::
+          AreExperimentalAccessibilityColorEnhancementSettingsEnabled()) {
+    return false;
+  }
+  if (!color_correction().enabled() &&
+      Shell::Get()->session_controller()->login_status() ==
+          ash::LoginStatus::NOT_LOGGED_IN) {
+    // Don't allow users to enable this on not logged in profiles because it
+    // requires set-up in settings the first time it is run.
+    return false;
+  }
+  return color_correction().IsVisibleInTray();
+}
+
+bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForColorCorrection() {
+  return color_correction().IsEnterpriseIconVisible();
 }
 
 bool AccessibilityControllerImpl::IsLargeCursorSettingVisibleInTray() {
@@ -1911,6 +1964,9 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
         base::BindRepeating(
             &AccessibilityControllerImpl::Feature::UpdateFromPref,
             base::Unretained(feature.get())));
+    if (feature->conflicting_feature() != FeatureType::kNoConflictingFeature) {
+      feature->ObserveConflictingFeature();
+    }
     feature->UpdateFromPref();
   }
 
@@ -2005,31 +2061,6 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
           &AccessibilityControllerImpl::UpdateCursorColorFromPrefs,
           base::Unretained(this)));
   if (color_enhancement_feature_enabled) {
-    pref_change_registrar_->Add(
-        prefs::kAccessibilityColorFiltering,
-        base::BindRepeating(
-            &AccessibilityControllerImpl::UpdateColorFilteringFromPrefs,
-            base::Unretained(this)));
-    pref_change_registrar_->Add(
-        prefs::kAccessibilityGreyscaleAmount,
-        base::BindRepeating(
-            &AccessibilityControllerImpl::UpdateColorFilteringFromPrefs,
-            base::Unretained(this)));
-    pref_change_registrar_->Add(
-        prefs::kAccessibilitySaturationAmount,
-        base::BindRepeating(
-            &AccessibilityControllerImpl::UpdateColorFilteringFromPrefs,
-            base::Unretained(this)));
-    pref_change_registrar_->Add(
-        prefs::kAccessibilitySepiaAmount,
-        base::BindRepeating(
-            &AccessibilityControllerImpl::UpdateColorFilteringFromPrefs,
-            base::Unretained(this)));
-    pref_change_registrar_->Add(
-        prefs::kAccessibilityHueRotationAmount,
-        base::BindRepeating(
-            &AccessibilityControllerImpl::UpdateColorFilteringFromPrefs,
-            base::Unretained(this)));
     pref_change_registrar_->Add(
         prefs::kAccessibilityColorVisionCorrectionAmount,
         base::BindRepeating(
@@ -2243,23 +2274,6 @@ void AccessibilityControllerImpl::UpdateColorFilteringFromPrefs() {
         false);
     return;
   }
-  const float greyscale_amount =
-      active_user_prefs_->GetInteger(prefs::kAccessibilityGreyscaleAmount) /
-      100.f;
-  color_enhancement_controller->SetGreyscaleAmount(greyscale_amount);
-
-  const float saturation_amount =
-      active_user_prefs_->GetInteger(prefs::kAccessibilitySaturationAmount) /
-      100.f;
-  color_enhancement_controller->SetSaturationAmount(saturation_amount);
-
-  const float sepia_amount =
-      active_user_prefs_->GetInteger(prefs::kAccessibilitySepiaAmount) / 100.f;
-  color_enhancement_controller->SetSepiaAmount(sepia_amount);
-
-  const int hue_rotation_amount =
-      active_user_prefs_->GetInteger(prefs::kAccessibilityHueRotationAmount);
-  color_enhancement_controller->SetHueRotationAmount(hue_rotation_amount);
 
   const float cvd_correction_amount =
       active_user_prefs_->GetInteger(
@@ -2716,6 +2730,18 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
       break;
     case FeatureType::kCursorColor:
       UpdateCursorColorFromPrefs();
+      break;
+    case FeatureType::kColorCorrection:
+      if (enabled && !active_user_prefs_->GetBoolean(
+                         prefs::kAccessibilityColorFilteringHasBeenSetup)) {
+        Shell::Get()
+            ->system_tray_model()
+            ->client()
+            ->ShowColorCorrectionSettings();
+        active_user_prefs_->SetBoolean(
+            prefs::kAccessibilityColorFilteringHasBeenSetup, true);
+      }
+      UpdateColorFilteringFromPrefs();
       break;
     case FeatureType::kFeatureCount:
     case FeatureType::kNoConflictingFeature:

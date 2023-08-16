@@ -34,10 +34,10 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {isCrostiniAllowed, isCrostiniSupported} from '../common/load_time_booleans.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
+import {Section} from '../mojom-webui/routes.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
-import {Route, Router} from '../router.js';
+import {Route, Router, routes} from '../router.js';
 
 import {CrostiniBrowserProxy, CrostiniBrowserProxyImpl} from './crostini_browser_proxy.js';
 import {getTemplate} from './crostini_page.html.js';
@@ -56,6 +56,12 @@ class SettingsCrostiniPageElement extends SettingsCrostiniPageElementBase {
 
   static get properties() {
     return {
+      section_: {
+        type: Number,
+        value: Section.kCrostini,
+        readOnly: true,
+      },
+
       focusConfig_: {
         type: Object,
         value() {
@@ -147,6 +153,7 @@ class SettingsCrostiniPageElement extends SettingsCrostiniPageElementBase {
   private disableCrostiniInstall_: boolean;
   private isCrostiniAllowed_: boolean;
   private isCrostiniSupported_: boolean;
+  private section_: Section;
 
   constructor() {
     super();

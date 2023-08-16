@@ -125,9 +125,6 @@ extern const base::FeatureParam<bool> kFeedCloseRefreshRequireInteraction;
 // When enabled, no view cache is used.
 BASE_DECLARE_FEATURE(kFeedNoViewCache);
 
-// When enabled, play the feed video via inline playback.
-BASE_DECLARE_FEATURE(kFeedVideoInlinePlayback);
-
 // When enabled, allow tagging experiments with only an experiment ID.
 BASE_DECLARE_FEATURE(kFeedExperimentIDTagging);
 
@@ -153,6 +150,9 @@ BASE_DECLARE_FEATURE(kFeedSignedOutViewDemotion);
 
 // Feature that enables dynamic colors in the feed.
 BASE_DECLARE_FEATURE(kFeedDynamicColors);
+
+// Feature that enables UI update for Follow.
+BASE_DECLARE_FEATURE(kFeedFollowUiUpdate);
 
 }  // namespace feed
 

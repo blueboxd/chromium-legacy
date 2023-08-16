@@ -193,24 +193,6 @@ TEST(ProtoUtilTest, InfoCardTrackingStates) {
                                       .info_card_tracking_state(1)));
 }
 
-TEST(ProtoUtilTest, AutoplayEnabled) {
-  RequestMetadata request_metadata;
-  request_metadata.autoplay_enabled = true;
-
-  feedwire::FeedRequest request =
-      CreateFeedQueryRefreshRequest(
-          StreamType(StreamKind::kForYou), feedwire::FeedQuery::MANUAL_REFRESH,
-          request_metadata,
-          /*consistency_token=*/std::string(), SingleWebFeedEntryPoint::kOther,
-          /*doc_view_counts=*/{})
-          .feed_request();
-
-  ASSERT_THAT(request.client_capability(),
-              Contains(feedwire::Capability::INLINE_VIDEO_AUTOPLAY));
-  ASSERT_THAT(request.client_capability(),
-              Contains(feedwire::Capability::OPEN_VIDEO_COMMAND));
-}
-
 TEST(ProtoUtilTest, StampEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures({kFeedStamp}, {});
@@ -338,21 +320,6 @@ TEST(ProtoUtilTest, TabGroupsEnabledForBoth) {
               Contains(feedwire::Capability::OPEN_IN_TAB));
 }
 
-TEST(ProtoUtilTest, InlinePlayback) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({kFeedVideoInlinePlayback}, {});
-  feedwire::FeedRequest request =
-      CreateFeedQueryRefreshRequest(
-          StreamType(StreamKind::kForYou), feedwire::FeedQuery::MANUAL_REFRESH,
-          /*request_metadata=*/{},
-          /*consistency_token=*/std::string(), SingleWebFeedEntryPoint::kOther,
-          /*doc_view_counts=*/{})
-          .feed_request();
-
-  ASSERT_THAT(request.client_capability(),
-              Contains(feedwire::Capability::OPEN_VIDEO_COMMAND));
-}
-
 TEST(ProtoUtilTest, SignInStatusSetOnRequest) {
   RequestMetadata request_metadata;
   request_metadata.sign_in_status = feedwire::ChromeSignInStatus::NOT_SIGNED_IN;
@@ -418,6 +385,26 @@ TEST(ProtoUtilTest, WithDocIds) {
 }
 )",
       ToTextProto(request.client_user_profiles().view_demotion_profile()));
+}
+
+TEST(ProtoUtilTest, DefaultSearchEngineSetOnRequest) {
+  RequestMetadata request_metadata;
+  request_metadata.default_search_engine =
+      feedwire::DefaultSearchEngine::ENGINE_GOOGLE;
+
+  feedwire::Request request = CreateFeedQueryRefreshRequest(
+      StreamType(StreamKind::kForYou), feedwire::FeedQuery::MANUAL_REFRESH,
+      request_metadata,
+      /*consistency_token=*/std::string(), SingleWebFeedEntryPoint::kOther,
+      /*doc_view_counts=*/{});
+
+  feedwire::DefaultSearchEngine::SearchEngine search_engine =
+      request.feed_request()
+          .feed_query()
+          .chrome_fulfillment_info()
+          .default_search_engine()
+          .search_engine();
+  ASSERT_EQ(search_engine, request_metadata.default_search_engine);
 }
 
 }  // namespace

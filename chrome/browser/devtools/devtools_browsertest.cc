@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/devtools/protocol/browser_handler.h"
+#include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 #include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -97,6 +99,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
@@ -106,12 +109,16 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "extensions/browser/api_test_utils.h"
+#include "extensions/browser/extension_host_test_helper.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/offscreen_document_host.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/mojom/view_type.mojom.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
@@ -131,10 +138,6 @@
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_switches.h"
-#endif
 
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostObserver;
@@ -713,21 +716,6 @@ class DevToolsExtensionTest : public DevToolsTest {
   // Use std::deque to avoid dangling references to existing elements.
   std::deque<extensions::TestExtensionDir> test_extension_dirs_;
   const base::FilePath test_extensions_dir_;
-};
-
-class DevToolsExtensionChromeUrlTest : public DevToolsExtensionTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DevToolsExtensionTest::SetUpCommandLine(command_line);
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    // These tests use chrome:// URLs and are written on the assumption devtools
-    // are always available, so guarantee that assumption holds. Tests that
-    // check if devtools can be disabled should use a test fixture without the
-    // kForceDevToolsAvailable switch set.
-    command_line->AppendSwitch(ash::switches::kForceDevToolsAvailable);
-#endif
-  }
 };
 
 class DevToolsExperimentalExtensionTest : public DevToolsExtensionTest {
@@ -1839,6 +1827,97 @@ INSTANTIATE_TEST_SUITE_P(All,
                                              : "DevToolsTabTargetDisabled";
                          });
 
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, CanInspectExtensionOffscreenDoc) {
+  static constexpr char kManifest[] =
+      R"({
+           "name": "Offscreen Document Test",
+           "manifest_version": 3,
+           "version": "0.1"
+         })";
+  extensions::TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("offscreen.html"),
+                     "<html>offscreen</html>");
+
+  const extensions::Extension* extension =
+      LoadExtensionFromPath(test_dir.UnpackedPath());
+
+  // Create an offscreen document and wait for it to load.
+  GURL offscreen_url = extension->GetResourceURL("offscreen.html");
+  std::unique_ptr<extensions::OffscreenDocumentHost> offscreen_document =
+      std::make_unique<extensions::OffscreenDocumentHost>(
+          *extension,
+          extensions::ProcessManager::Get(browser()->profile())
+              ->GetSiteInstanceForURL(offscreen_url)
+              .get(),
+          offscreen_url);
+  {
+    extensions::ExtensionHostTestHelper offscreen_waiter(browser()->profile(),
+                                                         extension->id());
+    offscreen_waiter.RestrictToType(
+        extensions::mojom::ViewType::kOffscreenDocument);
+    offscreen_document->CreateRendererSoon();
+    offscreen_waiter.WaitForHostCompletedFirstLoad();
+  }
+
+  // Get the list of inspectable views for the extension.
+  auto get_info_function = base::MakeRefCounted<
+      extensions::api::DeveloperPrivateGetExtensionInfoFunction>();
+  absl::optional<base::Value> result =
+      extensions::api_test_utils::RunFunctionAndReturnSingleResult(
+          get_info_function.get(),
+          content::JsReplace(R"([$1])", extension->id()), browser()->profile());
+  ASSERT_TRUE(result);
+  std::unique_ptr<extensions::api::developer_private::ExtensionInfo> info =
+      extensions::api::developer_private::ExtensionInfo::FromValueDeprecated(
+          *result);
+  ASSERT_TRUE(info);
+
+  // The only inspectable view should be the offscreen document. Validate the
+  // metadata.
+  ASSERT_EQ(1u, info->views.size());
+  const extensions::api::developer_private::ExtensionView& view =
+      info->views[0];
+  EXPECT_EQ(extensions::api::developer_private::VIEW_TYPE_OFFSCREEN_DOCUMENT,
+            view.type);
+  content::WebContents* offscreen_contents =
+      offscreen_document->host_contents();
+  EXPECT_EQ(offscreen_url.spec(), view.url);
+  EXPECT_EQ(offscreen_document->render_process_host()->GetID(),
+            view.render_process_id);
+  EXPECT_EQ(offscreen_contents->GetPrimaryMainFrame()->GetRoutingID(),
+            view.render_view_id);
+  EXPECT_FALSE(view.incognito);
+  EXPECT_FALSE(view.is_iframe);
+
+  // The document shouldn't currently be under inspection.
+  EXPECT_FALSE(
+      DevToolsWindow::GetInstanceForInspectedWebContents(offscreen_contents));
+  DevToolsWindowCreationObserver observer;
+
+  // Call the API function to inspect the offscreen document.
+  auto dev_tools_function = base::MakeRefCounted<
+      extensions::api::DeveloperPrivateOpenDevToolsFunction>();
+  extensions::api_test_utils::RunFunction(
+      dev_tools_function.get(),
+      content::JsReplace(
+          R"([{"renderViewId": $1,
+               "renderProcessId": $2,
+               "extensionId": $3
+            }])",
+          view.render_view_id, view.render_process_id, extension->id()),
+      browser()->profile());
+
+  // Validate that the devtools window is now shown.
+  observer.WaitForLoad();
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      view.render_process_id, view.render_view_id);
+  ASSERT_TRUE(rfh);
+  DevToolsWindow::InspectElement(rfh, 0, 0);
+  DispatchOnTestSuite(observer.devtools_window(), "testInspectedElementIs",
+                      "HTML");
+}
+
 class DevToolsExtensionFileAccessTest : public DevToolsExtensionTest {
  protected:
   void Run(bool allow_file_access, const std::string& url_scheme) {
@@ -2544,13 +2623,12 @@ class DevToolsAllowedByCommandLineSwitch
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
-    // Same as `ash::switches::kForceDevToolsAvailable`, but used as a
+    // Same as `switches::kForceDevToolsAvailable`, but used as a
     // literal here so it's possible to verify that the switch does not apply on
     // non-ChromeOS platforms.
     const std::string kForceDevToolsAvailableBase = "force-devtools-available";
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    ASSERT_EQ(kForceDevToolsAvailableBase,
-              ash::switches::kForceDevToolsAvailable);
+#if BUILDFLAG(IS_CHROMEOS)
+    ASSERT_EQ(kForceDevToolsAvailableBase, switches::kForceDevToolsAvailable);
 #endif
     command_line->AppendSwitch("--" + kForceDevToolsAvailableBase);
   }
@@ -2564,7 +2642,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAllowedByCommandLineSwitch,
 
   DevToolsWindow::OpenDevToolsWindow(web_contents);
   auto agent_host = GetOrCreateDevToolsHostForWebContents(web_contents);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   EXPECT_TRUE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
 #else
   EXPECT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
@@ -2970,7 +3048,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
   ui_test_utils::WaitForBrowserToClose(browser());
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS)
 // Skip for ChromeOS because the keep alive is not created for ChromeOS.
 // See https://crbug.com/1174627.
 class KeepAliveDevToolsTest : public InProcessBrowserTest {
@@ -2996,7 +3074,7 @@ IN_PROC_BROWSER_TEST_F(KeepAliveDevToolsTest, KeepsAliveUntilBrowserClose) {
   EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
       KeepAliveOrigin::REMOTE_DEBUGGING));
 }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 class DevToolsPolicyTest : public InProcessBrowserTest {
  protected:
@@ -3337,4 +3415,34 @@ IN_PROC_BROWSER_TEST_F(DevToolsSyncTest, GetSyncInformation) {
 // TODO(https://crbug.com/1277018): Fix flakyness. Test is disabled for now.
 IN_PROC_BROWSER_TEST_F(DevToolsTest, DISABLED_NoCrashFor1270184) {
   OpenDevToolsWindow("/devtools/regress-crbug-1270184.html", true);
+}
+
+class DevToolsProcessPerSiteUpToMainFrameThresholdTest : public DevToolsTest {
+ public:
+  DevToolsProcessPerSiteUpToMainFrameThresholdTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kProcessPerSiteUpToMainFrameThreshold);
+  }
+
+  ~DevToolsProcessPerSiteUpToMainFrameThresholdTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(DevToolsProcessPerSiteUpToMainFrameThresholdTest,
+                       DontReuseProcess) {
+  OpenDevToolsWindow(kDebuggerTestPage, false);
+  DevToolsWindow* window =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(main_web_contents(), true);
+  WebContents* webcontents =
+      DevToolsWindowTesting::Get(window)->main_web_contents();
+
+  DevToolsWindow* window2 =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(GetInspectedTab(), false);
+  WebContents* webcontents2 =
+      DevToolsWindowTesting::Get(window2)->main_web_contents();
+
+  ASSERT_NE(webcontents->GetPrimaryMainFrame()->GetProcess(),
+            webcontents2->GetPrimaryMainFrame()->GetProcess());
 }

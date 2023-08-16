@@ -11,6 +11,10 @@
 #import "testing/gtest_mac.h"
 #include "ui/events/blink/web_input_event.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Going from NSEvent to WebKeyboardEvent and back should round trip.
 TEST(NativeWebKeyboardEventMac, CtrlCmdSpaceKeyDownRoundTrip) {
   NSEvent* ns_event =
@@ -31,8 +35,8 @@ TEST(NativeWebKeyboardEventMac, CtrlCmdSpaceKeyDownRoundTrip) {
       content::WebKeyboardEventBuilder::Build(ns_event);
   content::NativeWebKeyboardEvent native_event(web_event, gfx::NativeView());
 
-  NSEvent* round_trip_ns_event = native_event.os_event;
-  EXPECT_EQ([round_trip_ns_event type], [ns_event type]);
-  EXPECT_EQ([round_trip_ns_event modifierFlags], [ns_event modifierFlags]);
-  EXPECT_EQ([round_trip_ns_event keyCode], [ns_event keyCode]);
+  NSEvent* round_trip_ns_event = native_event.os_event.Get();
+  EXPECT_EQ(round_trip_ns_event.type, ns_event.type);
+  EXPECT_EQ(round_trip_ns_event.modifierFlags, ns_event.modifierFlags);
+  EXPECT_EQ(round_trip_ns_event.keyCode, ns_event.keyCode);
 }

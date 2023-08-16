@@ -15,6 +15,7 @@
 #include "device/fido/cable/v2_discovery.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_discovery_base.h"
+#include "device/fido/mac/icloud_keychain.h"
 
 // HID is not supported on Android.
 #if !BUILDFLAG(IS_ANDROID)
@@ -22,7 +23,11 @@
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_WIN)
+// rpc.h needs to be included before winuser.h.
+#include <rpc.h>
+
 #include <Winuser.h>
+
 #include "device/fido/win/discovery.h"
 #include "device/fido/win/webauthn_api.h"
 #endif  // BUILDFLAG(IS_WIN)
@@ -87,7 +92,8 @@ std::vector<std::unique_ptr<FidoDiscoveryBase>> FidoDiscoveryFactory::Create(
               std::move(contact_device_stream_),
               cable_data_.value_or(std::vector<CableDiscoveryData>()),
               std::move(cable_pairing_callback_),
-              std::move(cable_invalidated_pairing_callback_)));
+              std::move(cable_invalidated_pairing_callback_),
+              std::move(cable_event_callback_)));
         }
 
         ret.emplace_back(std::move(v1_discovery));
@@ -148,12 +154,17 @@ void FidoDiscoveryFactory::set_network_context(
 
 void FidoDiscoveryFactory::set_cable_pairing_callback(
     base::RepeatingCallback<void(std::unique_ptr<cablev2::Pairing>)> callback) {
-  cable_pairing_callback_.emplace(std::move(callback));
+  cable_pairing_callback_ = std::move(callback);
 }
 
 void FidoDiscoveryFactory::set_cable_invalidated_pairing_callback(
     base::RepeatingCallback<void(size_t)> callback) {
-  cable_invalidated_pairing_callback_.emplace(std::move(callback));
+  cable_invalidated_pairing_callback_ = std::move(callback);
+}
+
+void FidoDiscoveryFactory::set_cable_event_callback(
+    base::RepeatingCallback<void(cablev2::Event)> callback) {
+  cable_event_callback_ = std::move(callback);
 }
 
 base::RepeatingCallback<void(size_t)>
@@ -210,11 +221,16 @@ FidoDiscoveryFactory::MaybeCreateWinWebAuthnApiDiscovery() {
 #if BUILDFLAG(IS_MAC)
 std::vector<std::unique_ptr<FidoDiscoveryBase>>
 FidoDiscoveryFactory::MaybeCreatePlatformDiscovery() const {
+  std::vector<std::unique_ptr<FidoDiscoveryBase>> ret;
   if (mac_touch_id_config_) {
-    return SingleDiscovery(std::make_unique<fido::mac::FidoTouchIdDiscovery>(
+    ret.emplace_back(std::make_unique<fido::mac::FidoTouchIdDiscovery>(
         *mac_touch_id_config_));
   }
-  return {};
+  if (base::FeatureList::IsEnabled(kWebAuthnICloudKeychain) &&
+      fido::icloud_keychain::IsSupported()) {
+    ret.emplace_back(fido::icloud_keychain::NewDiscovery(nswindow_));
+  }
+  return ret;
 }
 #endif
 

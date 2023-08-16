@@ -106,6 +106,10 @@ void DateTray::ClickedOutsideBubble() {
   }
 }
 
+void DateTray::UpdateTrayItemColor(bool is_active) {
+  time_view_->UpdateLabelOrImageViewColor(is_active);
+}
+
 void DateTray::OnOpeningCalendarView() {
   SetIsActive(true);
 }

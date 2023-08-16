@@ -31,22 +31,25 @@ interface SpellCheckLanguages {
 const MoveType = chrome.languageSettingsPrivate.MoveType;
 
 // For some codes translate uses a different version from Chrome.  Some are
-// ISO 639 codes that have been renamed (e.g. "he" to "iw"). Wile others are
+// ISO 639 codes that have been renamed (e.g. "he" to "iw"). While others are
 // languages that Translate considers similar (e.g. "nb" and "no").
 // See also: components/language/core/common/language_util.cc.
 const kChromeToTranslateCode: Map<string, string> = new Map([
-  ['nb', 'no'],
   ['fil', 'tl'],
   ['he', 'iw'],
   ['jv', 'jw'],
+  ['kok', 'gom'],
+  ['nb', 'no'],
 ]);
 
 // Reverse of the map above. Just the languages code that translate uses but
 // Chrome has a different code for.
 const kTranslateToChromeCode: Map<string, string> = new Map([
-  ['tl', 'fil'],
+  ['gom', 'kok'],
   ['iw', 'he'],
   ['jw', 'jv'],
+  ['no', 'nb'],
+  ['tl', 'fil'],
 ]);
 
 // The fake language name used for ARC IMEs. The value must be in sync with the
@@ -786,6 +789,12 @@ class SettingsLanguagesElement extends SettingsLanguagesElementBase implements
       // necessary as a language code for the Translate server.
       return true;
     }
+
+    if (language.code === 'mni-Mtei') {
+      // Translate uses the Meitei Mayek script for Manipuri
+      return true;
+    }
+
     const baseLanguage = this.getBaseLanguage(language.code);
     if (baseLanguage === 'nb') {
       // Norwegian Bokmål (nb) is listed as supporting translate but the

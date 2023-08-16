@@ -161,7 +161,7 @@ html.breadcrumb-elider-expanded #directory-tree {
   background-color: transparent;
   background-position: center;
   background-repeat: no-repeat;
-  background-size: 16px 16px;
+  background-size: 20px 20px;
 }
 
 #directory-tree .tree-row > .file-row > .label {
@@ -279,10 +279,11 @@ html.focus-outline-visible #directory-tree:focus .tree-row[selected] > .file-row
 
 html[dir='rtl'] #directory-tree .tree-row > .file-row > .align-right-icon {
   left: -12px; /* Same as padding inline end of side nav. */
+  right: unset;
 }
 
 #directory-tree .tree-row > .file-row > .external-link-icon iron-icon {
-  padding: 6px;
+  padding: 10px;
 }
 
 #directory-tree .tree-row > .file-row > .root-eject {
@@ -314,6 +315,14 @@ html.col-resize #directory-tree .tree-row > .file-row > .root-eject:hover {
   --ink-color: var(--cros-sys-ripple_neutral_on_prominent);
 }
 /* Can be removed after new directory replacement. -- END */
+
+#directory-tree xf-tree-item > input::selection {
+  background-color: var(--cros-sys-highlight_text);
+}
+
+#directory-tree xf-tree-item > .external-link-icon iron-icon {
+  padding: 10px;
+}
 
 /* Splitter. */
 /* Prevent the sudden flickering when opening the Files app. "div.splitter" is
@@ -441,7 +450,7 @@ body.check-select .dialog-header
   height: 40px;
   margin: 4px;
   min-width: 40px;
-  padding: 0;
+  padding: 10px;
   width: 40px;
 }
 
@@ -741,26 +750,8 @@ html[dir='rtl'] #search-box .clear {
 .dialog-header.files-ng #pinned-toggle-label {
   color: var(--cros-sys-on_surface);
   font: var(--cros-button-2-font);
-}
-
-.dialog-header.files-ng cr-toggle {
-  --cr-toggle-checked-bar-color: var(--cros-sys-primary);
-  /* bar color above already defines the opacity, so use 100% here */
-  --cr-toggle-checked-bar-opacity: 100%;
-  --cr-toggle-checked-button-color: var(--cros-sys-on_primary);
-  --cr-toggle-checked-ripple-color: transparent;
-  --cr-toggle-unchecked-bar-color: var(--cros-sys-secondary);
-  --cr-toggle-unchecked-button-color: var(--cros-sys-on_secondary);
-  --cr-toggle-unchecked-ripple-color: transparent;
-  --cr-toggle-box-shadow: var(--cros-elevation-1-shadow);
-  --cr-toggle-ripple-diameter: 32px;
-  margin-inline: 6px;
-  margin-top: 2px;
-}
-
-/* only show the ripple ring for tab navigation */
-html.focus-outline-visible .dialog-header.files-ng cr-toggle:focus {
-  --cr-toggle-ripple-ring: 2px solid var(--cros-sys-focus_ring);
+  margin-inline-end: 16px;
+  margin-inline-start: 12px;
 }
 
 /* Container for the detail and thumbnail list views. */
@@ -923,7 +914,7 @@ html.focus-outline-visible
 html.focus-outline-visible
     .dialog-footer div.select > div.options:not(:hover) option.selected::after {
   border: 2px solid var(--cros-sys-focus_ring);
-  border-radius: 4px;
+  border-radius: 8px;
   content: '';
   height: 32px; /* option height - 2 x border width */
   left: 0;
@@ -978,7 +969,8 @@ body.check-select .breadcrumbs {
   padding-inline: 8px 12px;
 }
 
-body.check-select #read-only-indicator {
+body.check-select #read-only-indicator,
+body.check-select #offline-folder-indicator {
   display: none;
 }
 
@@ -1042,7 +1034,7 @@ body.check-select #read-only-indicator {
   width: 320px;
   /* Ensure links in label are on top when not hidden so a click is not
   absorbed by an empty file-list. */
-  z-index: 999;
+  z-index: 500;  /* Must be below the contextmenu (600). */
 }
 
 #empty-folder #empty-folder-title {
@@ -1234,7 +1226,8 @@ body.check-select #list-container.thumbnail-view .thumbnail-grid:focus
 
 /* Only display outlines for entries with thumbnails. */
 #list-container.thumbnail-view li:has(.thumbnail) .inline-status .progress,
-#list-container.thumbnail-view li.pinned:has(.thumbnail) .inline-status xf-icon[type=offline] {
+#list-container.thumbnail-view li.pinned:has(.thumbnail) .inline-status xf-icon[type=offline],
+#list-container.thumbnail-view li.cant-pin:has(.thumbnail) .inline-status xf-icon[type=cant-pin] {
   --xf-icon-color-outline: var(--cros-sys-app_base);
 }
 
@@ -1435,6 +1428,7 @@ body.files-ng #default-tasks-list {
 }
 
 #default-tasks-list li {
+  border-radius: 8px;
   height: 40px;
   line-height: 40px;
 }
@@ -1720,7 +1714,6 @@ li[renaming=''] .filename-label {
   -webkit-mask-size: 16px 16px;
   background-color: currentColor;
   height: 24px;
-  margin-inline-end: 14px;
   margin-inline-start: auto;
   padding-inline-start: 8px;
   width: 24px;
@@ -2020,11 +2013,14 @@ list:focus li[selected] .table-row-cell .dlp-managed-icon,
 
 .table-row-cell > .dateholder {
   display: flex;
+  margin-inline-end: 14px;
 }
 
 .table-row-cell > .dateholder > .date {
   flex: 1 1;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre;
 }
 
 .table-row-cell > .dateholder > .dlp-managed-icon {
@@ -2262,12 +2258,6 @@ list.autocomplete-suggestions > li > div[search-icon] {
 list.autocomplete-suggestions > [selected],
 list.autocomplete-suggestions > [lead] {
   background-color: var(--cros-menu-item-background-hover);
-}
-
-.cr-dialog-container.files-ng #suggest-app-dialog.cr-dialog-frame {
-  max-width: unset !important;
-  min-width: unset !important;
-  width: 735px;
 }
 
 .error-dialog-frame .error-dialog-img {

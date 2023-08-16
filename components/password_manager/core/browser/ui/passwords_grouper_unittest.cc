@@ -31,9 +31,13 @@ namespace {
 PasskeyCredential CreatePasskey(std::string rp_id,
                                 std::string username = "username",
                                 std::string display_name = "display_name") {
-  return PasskeyCredential(PasskeyCredential::Source::kAndroidPhone,
-                           std::move(rp_id), {1, 2, 3, 4}, {5, 6, 7, 8},
-                           std::move(username), std::move(display_name));
+  return PasskeyCredential(
+      PasskeyCredential::Source::kAndroidPhone,
+      PasskeyCredential::RpId(std::move(rp_id)),
+      PasskeyCredential::CredentialId({1, 2, 3, 4}),
+      PasskeyCredential::UserId({5, 6, 7, 8}),
+      PasskeyCredential::Username(std::move(username)),
+      PasskeyCredential::DisplayName(std::move(display_name)));
 }
 
 PasswordForm CreateForm(std::string signon_realm,
@@ -111,6 +115,45 @@ TEST_F(PasswordsGrouperTest, GetAllCredentials) {
               UnorderedElementsAre(CredentialUIEntry(form),
                                    CredentialUIEntry(federated_form),
                                    CredentialUIEntry(passkey)));
+}
+
+TEST_F(PasswordsGrouperTest, GetPasskeyFor) {
+  GroupedFacets group;
+  group.facets = {
+      Facet(FacetURI::FromPotentiallyInvalidSpec("https://test.com"))};
+  EXPECT_CALL(affiliation_service(), GetGroupingInfo)
+      .WillRepeatedly(base::test::RunOnceCallback<1>(
+          std::vector<GroupedFacets>{std::move(group)}));
+
+  PasskeyCredential passkey = CreatePasskey("test.com");
+  grouper().GroupCredentials(/*password_forms=*/{}, {passkey},
+                             base::DoNothing());
+  EXPECT_EQ(grouper().GetPasskeyFor(CredentialUIEntry(passkey)), passkey);
+}
+
+TEST_F(PasswordsGrouperTest, GetPasskeyForNoMatchingGroup) {
+  EXPECT_CALL(affiliation_service(), GetGroupingInfo)
+      .WillRepeatedly(
+          base::test::RunOnceCallback<1>(std::vector<GroupedFacets>{}));
+
+  grouper().GroupCredentials(/*password_forms=*/{}, {}, base::DoNothing());
+  PasskeyCredential passkey = CreatePasskey("notfound.com");
+  EXPECT_FALSE(grouper().GetPasskeyFor(CredentialUIEntry(passkey)).has_value());
+}
+
+TEST_F(PasswordsGrouperTest, GetPasskeyNoPasskeyForMatchingGroup) {
+  // Create a form for the same group so a form is found.
+  GroupedFacets group;
+  group.facets = {
+      Facet(FacetURI::FromPotentiallyInvalidSpec("https://test.com"))};
+  EXPECT_CALL(affiliation_service(), GetGroupingInfo)
+      .WillRepeatedly(base::test::RunOnceCallback<1>(
+          std::vector<GroupedFacets>{std::move(group)}));
+  grouper().GroupCredentials({CreateForm("https://test.com/")}, {},
+                             base::DoNothing());
+
+  PasskeyCredential passkey = CreatePasskey("test.com");
+  EXPECT_FALSE(grouper().GetPasskeyFor(CredentialUIEntry(passkey)).has_value());
 }
 
 TEST_F(PasswordsGrouperTest, GetAffiliatedGroupsWithGroupingInfo) {

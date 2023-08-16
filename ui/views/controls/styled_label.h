@@ -65,6 +65,9 @@ class VIEWS_EXPORT StyledLabel : public View {
     // DEPRECATED: Use TextStyle.
     absl::optional<SkColor> override_color;
 
+    // Overrides the text color given by |text_style| for this range.
+    absl::optional<ui::ColorId> override_color_id;
+
     // A callback to be called when this link is clicked. Only used if
     // |text_style| is style::STYLE_LINK.
     Link::ClickedCallback callback;
@@ -77,7 +80,7 @@ class VIEWS_EXPORT StyledLabel : public View {
 
     // A custom view shown instead of the underlying text. Ownership of custom
     // views must be passed to StyledLabel via AddCustomView().
-    raw_ptr<View> custom_view = nullptr;
+    raw_ptr<View, DanglingUntriaged> custom_view = nullptr;
   };
 
   // Sizing information for laying out the label based on a particular width.

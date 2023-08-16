@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/should_swap_browsing_instance.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/debug_utils.h"
@@ -183,9 +184,12 @@ void BackForwardCacheMetrics::DidCommitNavigation(
               ? static_cast<int>(
                     page_store_result_->browsing_instance_swap_result().value())
               : -1);
-      SCOPED_CRASH_KEY_NUMBER(
-          "BFCacheMismatch", "blocklisted",
-          page_store_result_->blocklisted_features().ToEnumBitmask());
+      std::vector<uint64_t> masks = blink::scheduler::ToEnumBitMasks(
+          page_store_result_->blocklisted_features());
+      SCOPED_CRASH_KEY_NUMBER("BFCacheMismatch", "blocklisted", masks[0]);
+      if (masks.size() > 1) {
+        SCOPED_CRASH_KEY_NUMBER("BFCacheMismatch", "blocklisted1", masks[1]);
+      }
       SCOPED_CRASH_KEY_NUMBER("BFCacheMismatch", "disabled",
                               page_store_result_->disabled_reasons().size());
       SCOPED_CRASH_KEY_NUMBER(
@@ -267,11 +271,28 @@ void BackForwardCacheMetrics::RecordHistoryNavigationUKM(
             last_committed_cross_document_main_frame_navigation_id_,
             ukm::SourceIdType::NAVIGATION_ID));
   }
-  builder.SetMainFrameFeatures(main_frame_features_.ToEnumBitmask());
-  builder.SetSameOriginSubframesFeatures(
-      same_origin_frames_features_.ToEnumBitmask());
+
+  std::vector<uint64_t> main_frame_features_masks =
+      blink::scheduler::ToEnumBitMasks(main_frame_features_);
+  builder.SetMainFrameFeatures(main_frame_features_masks[0]);
+  if (main_frame_features_masks.size() > 1) {
+    builder.SetMainFrameFeatures2(main_frame_features_masks[1]);
+  }
+  std::vector<uint64_t> same_origin_frames_features_masks =
+      blink::scheduler::ToEnumBitMasks(same_origin_frames_features_);
+  builder.SetSameOriginSubframesFeatures(same_origin_frames_features_masks[0]);
+  if (same_origin_frames_features_masks.size() > 1) {
+    builder.SetSameOriginSubframesFeatures2(
+        same_origin_frames_features_masks[1]);
+  }
+  std::vector<uint64_t> cross_origin_frames_features_masks =
+      blink::scheduler::ToEnumBitMasks(same_origin_frames_features_);
   builder.SetCrossOriginSubframesFeatures(
-      cross_origin_frames_features_.ToEnumBitmask());
+      cross_origin_frames_features_masks[0]);
+  if (cross_origin_frames_features_masks.size() > 1) {
+    builder.SetCrossOriginSubframesFeatures2(
+        cross_origin_frames_features_masks[1]);
+  }
   // DidStart notification might be missing for some same-document
   // navigations. It's good that we don't care about the time in the cache
   // in that case.
@@ -288,8 +309,14 @@ void BackForwardCacheMetrics::RecordHistoryNavigationUKM(
   builder.SetBackForwardCache_NotRestoredReasons(
       page_store_result_->not_restored_reasons().ToEnumBitmask());
 
-  builder.SetBackForwardCache_BlocklistedFeatures(
-      page_store_result_->blocklisted_features().ToEnumBitmask());
+  std::vector<uint64_t> page_store_result_masks =
+      blink::scheduler::ToEnumBitMasks(
+          page_store_result_->blocklisted_features());
+  builder.SetBackForwardCache_BlocklistedFeatures(page_store_result_masks[0]);
+  if (page_store_result_masks.size() > 1) {
+    builder.SetBackForwardCache_BlocklistedFeatures2(
+        page_store_result_masks[1]);
+  }
 
   if (browsing_instance_swap_result_) {
     builder.SetBackForwardCache_BrowsingInstanceNotSwappedReason(
@@ -457,25 +484,6 @@ void BackForwardCacheMetrics::RecordHistoryNavigationUMA(
     UMA_HISTOGRAM_ENUMERATION(
         "BackForwardCache.AllSites.EvictedAfterDocumentRestoredReason",
         EvictedAfterDocumentRestoredReason::kRestored);
-  } else {
-    if (back_forward_cache_allowed) {
-      base::UmaHistogramCounts100(
-          "BackForwardCache.HistoryNavigationOutcome.RelatedActiveContents."
-          "Count",
-          related_active_contents_count_);
-      base::UmaHistogramEnumeration(
-          "BackForwardCache.HistoryNavigationOutcome."
-          "RelatedActiveContents.IsPotentiallySyncAccessible",
-          related_active_contents_sync_access_info_);
-    }
-    base::UmaHistogramCounts100(
-        "BackForwardCache.AllSites.HistoryNavigationOutcome."
-        "RelatedActiveContents.Count",
-        related_active_contents_count_);
-    base::UmaHistogramEnumeration(
-        "BackForwardCache.AllSites.HistoryNavigationOutcome."
-        "RelatedActiveContents.IsPotentiallySyncAccessible",
-        related_active_contents_sync_access_info_);
   }
 
   if (back_forward_cache_allowed) {
@@ -563,6 +571,24 @@ void BackForwardCacheMetrics::RecordHistoryNavigationUMA(
         "BackForwardCache.AllSites.HistoryNavigationOutcome."
         "BrowsingInstanceNotSwappedReason",
         browsing_instance_swap_result_.value());
+
+    if (browsing_instance_swap_result_ ==
+        ShouldSwapBrowsingInstance::kNo_HasRelatedActiveContents) {
+      CHECK_GT(related_active_contents_count_, 1);
+      // If a page was not restored from the back/forward cache because there
+      // are related active contents, log the details of the related active
+      // contents. Note that this also logs in cases where there are other
+      // reasons causing the page to not get restored from the back/forward
+      // cache (e.g. use of blocking features).
+      base::UmaHistogramCounts100(
+          "BackForwardCache.HistoryNavigationOutcome."
+          "RelatedActiveContents.Count2",
+          related_active_contents_count_);
+      base::UmaHistogramEnumeration(
+          "BackForwardCache.HistoryNavigationOutcome."
+          "RelatedActiveContents.IsPotentiallySyncAccessible2",
+          related_active_contents_sync_access_info_);
+    }
   }
 }
 
@@ -627,54 +653,54 @@ void BackForwardCacheMetrics::SetRelatedActiveContentsInfo(
   related_active_contents_count_ =
       navigated_away_rfh->GetSiteInstance()->GetRelatedActiveContentsCount();
 
-  // Count how many documents in the navigating page uses each SiteInstance.
-  std::map<SiteInstanceId, int> doc_count_in_page;
-  navigated_away_rfh->ForEachRenderFrameHost(
-      [&doc_count_in_page](RenderFrameHost* rfh) {
-        auto id = rfh->GetSiteInstance()->GetId();
-        if (doc_count_in_page.contains(id)) {
-          doc_count_in_page[id]++;
-        } else {
-          doc_count_in_page[id] = 1;
-        }
-      });
+  // Count how many documents in the navigating page are using each SiteInfo.
+  std::map<SiteInfo, int> doc_count_in_page;
+  navigated_away_rfh->ForEachRenderFrameHost([&doc_count_in_page](
+                                                 RenderFrameHost* rfh) {
+    const SiteInfo& site_info = static_cast<RenderFrameHostImpl*>(rfh)
+                                    ->last_committed_url_derived_site_info();
+    if (doc_count_in_page.contains(site_info)) {
+      doc_count_in_page[site_info]++;
+    } else {
+      doc_count_in_page[site_info] = 1;
+    }
+  });
 
   // Determine if any document in the navigating page is potentially
   // synchronously accessible by documents in other pages, by checking if there
-  // are documents in other pages that use the same SiteInstance as a document
-  // in the navigating page.
-  // Note that when site isolation is turned off, most sites will use the same
-  // SiteInstance (default SiteInstance), even when they come from unrelated
-  // origins & domains and can't synchronously access each other. In that case,
-  // we might overcount the potentially synchronously accessible pages, so
-  // handle those cases separately.
-  // TODO(https://crbug.com/1444759): Handle the default SiteInstance case in a
-  // better way.
+  // are documents in other pages that use the same SiteInfo as a document in
+  // the navigating page. This uses SiteInfos derived from document URLs, which
+  // works even when Site Isolation is disabled and the default SiteInstance may
+  // contain multiple sites.
   related_active_contents_sync_access_info_ =
       RelatedActiveContentsSyncAccessInfo::kNoSyncAccess;
   navigated_away_rfh->ForEachRenderFrameHostWithAction(
       [&doc_count_in_page, this](RenderFrameHost* rfh) {
-        auto* site_instance =
-            static_cast<SiteInstanceImpl*>(rfh->GetSiteInstance());
-        // `active_document_count()` counts the number of active documents in
-        // all pages that are in `site_instance`, including the navigating page.
-        // To get the number of active documents using `site_instance` in pages
-        // other than the navigating page, just subtract by the number of
-        // active document using `site_instance` in the navigating page.
-        int doc_in_other_pages_count =
-            site_instance->active_document_count() -
-            doc_count_in_page[site_instance->GetId()];
-        if (doc_in_other_pages_count > 0) {
-          if (site_instance->IsDefaultSiteInstance()) {
-            related_active_contents_sync_access_info_ =
-                RelatedActiveContentsSyncAccessInfo::
-                    kPotentiallySyncAccessibleDefaultSiteInstance;
-          } else {
-            related_active_contents_sync_access_info_ =
-                RelatedActiveContentsSyncAccessInfo::
-                    kPotentiallySyncAccessibleNormalSiteInstance;
-            return RenderFrameHost::FrameIterationAction::kStop;
-          }
+        // `active_document_count()` counts the number of committed
+        // documents in all pages that are using the same SiteInfo, including
+        // the navigating page. To get the number of committed documents using
+        // the same SiteInfo in pages other than the navigating page, just
+        // subtract by the number of committed documents using SiteInfo in the
+        // navigating page.
+        auto* rfhi = static_cast<RenderFrameHostImpl*>(rfh);
+        const SiteInfo& site_info =
+            rfhi->last_committed_url_derived_site_info();
+        int matching_doc_count =
+            rfhi->GetSiteInstance()->GetActiveDocumentCount(site_info);
+        int matching_doc_in_other_pages_count =
+            matching_doc_count - doc_count_in_page[site_info];
+        if (matching_doc_in_other_pages_count > 0) {
+          // The document shares a SiteInfo with another tab. This means the
+          // contents of this document might be synchronously accessible by
+          // a document in another tab (either because the documents are
+          // same-origin, or through modifying document.domain), so note down
+          // this information.
+          related_active_contents_sync_access_info_ =
+              RelatedActiveContentsSyncAccessInfo::kPotentiallySyncAccessible;
+          // Once we've found a case where sync access is possible, we can stop,
+          // as we've reached the maximum value for the enum
+          // (kPotentiallySyncAccessible).
+          return RenderFrameHost::FrameIterationAction::kStop;
         }
         return RenderFrameHost::FrameIterationAction::kContinue;
       });

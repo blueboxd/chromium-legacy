@@ -22,7 +22,6 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwSettings;
-import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.test.util.CookieUtils;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.CallbackHelper;
@@ -49,9 +48,6 @@ public class ClientHintsTest {
             "sec-ch-ua-platform", "sec-ch-ua-model", "sec-ch-ua-mobile", "sec-ch-ua-full-version",
             "sec-ch-ua-platform-version", "sec-ch-ua-bitness", "sec-ch-ua-full-version-list",
             "sec-ch-ua-wow64"};
-
-    private static final String[] ORIGIN_TRIAL_USER_AGENT_CLIENT_HINTS = {
-            "sec-ch-ua-reduced", "sec-ch-ua-full"};
 
     private static final String ANDROID_WEBVIEW_BRAND_NAME = "Android WebView";
 
@@ -104,9 +100,9 @@ public class ClientHintsTest {
                 + "rtt,downlink,ect,sec-ch-lang,sec-ch-ua,sec-ch-ua-arch,sec-ch-ua-platform,"
                 + "sec-ch-ua-model,sec-ch-ua-mobile,sec-ch-ua-full-version,"
                 + "sec-ch-ua-platform-version,sec-ch-prefers-color-scheme,"
-                + "sec-ch-ua-bitness,sec-ch-ua-reduced,sec-ch-viewport-height,"
+                + "sec-ch-ua-bitness,sec-ch-viewport-height,"
                 + "sec-ch-device-memory,sec-ch-dpr,sec-ch-width,sec-ch-viewport-width,"
-                + "sec-ch-ua-full-version-list,sec-ch-ua-full,sec-ch-ua-wow64,save-data,"
+                + "sec-ch-ua-full-version-list,sec-ch-ua-wow64,save-data,"
                 + "sec-ch-prefers-reduced-motion");
 
         // Load twice to be sure hints are returned, then parse the results.
@@ -118,7 +114,7 @@ public class ClientHintsTest {
         JSONObject jsonObject = new JSONObject(textContent);
         // If you're here because this line broke, please update this test to verify whichever
         // client hints were added or removed and don't just modify the number below.
-        Assert.assertEquals(27, jsonObject.length());
+        Assert.assertEquals(25, jsonObject.length());
 
         // All client hints must be verified for default behavior.
         Assert.assertTrue(jsonObject.getInt("device-memory") > 0);
@@ -149,8 +145,6 @@ public class ClientHintsTest {
         Assert.assertEquals("light", jsonObject.getString("sec-ch-prefers-color-scheme"));
         // User agent client hints are inactive on android webview.
         Assert.assertEquals("HEADER_NOT_FOUND", jsonObject.getString("sec-ch-ua-bitness"));
-        // User agent client hints are inactive on android webview.
-        Assert.assertEquals("HEADER_NOT_FOUND", jsonObject.getString("sec-ch-ua-reduced"));
         Assert.assertTrue(jsonObject.getInt("sec-ch-viewport-height") > 0);
         Assert.assertTrue(jsonObject.getInt("sec-ch-device-memory") > 0);
         Assert.assertTrue(jsonObject.getDouble("sec-ch-dpr") > 0);
@@ -160,8 +154,6 @@ public class ClientHintsTest {
         // User agent client hints are inactive on android webview.
         Assert.assertEquals(
                 "HEADER_NOT_FOUND", jsonObject.getString("sec-ch-ua-full-version-list"));
-        // User agent client hints are inactive on android webview.
-        Assert.assertEquals("HEADER_NOT_FOUND", jsonObject.getString("sec-ch-ua-full"));
         // User agent client hints are inactive on android webview.
         Assert.assertEquals("HEADER_NOT_FOUND", jsonObject.getString("sec-ch-ua-wow64"));
         // This client hint isn't sent when data-saver is off.
@@ -176,7 +168,7 @@ public class ClientHintsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({AwSwitches.WEBVIEW_ENABLE_USER_AGENT_CLIENT_HINTS,
+    @CommandLineFlags.Add({"enable-features=UserAgentClientHint",
             ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
     public void
     testEnableUserAgentClientHintsNoCustom() throws Throwable {
@@ -194,7 +186,7 @@ public class ClientHintsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({AwSwitches.WEBVIEW_ENABLE_USER_AGENT_CLIENT_HINTS,
+    @CommandLineFlags.Add({"enable-features=UserAgentClientHint",
             ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
     public void
     testEnableUserAgentClientHintsCustomOverride() throws Throwable {
@@ -211,7 +203,7 @@ public class ClientHintsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add({AwSwitches.WEBVIEW_ENABLE_USER_AGENT_CLIENT_HINTS,
+    @CommandLineFlags.Add({"enable-features=UserAgentClientHint",
             ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
     public void
     testEnableUserAgentClientHintsModifyDefaultUserAgent() throws Throwable {
@@ -251,7 +243,7 @@ public class ClientHintsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    @CommandLineFlags.Add({AwSwitches.WEBVIEW_ENABLE_USER_AGENT_CLIENT_HINTS,
+    @CommandLineFlags.Add({"enable-features=UserAgentClientHint",
             ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
     public void
     testEnableUserAgentClientHintsJavaScript() throws Throwable {
@@ -261,7 +253,7 @@ public class ClientHintsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    @CommandLineFlags.Add({AwSwitches.WEBVIEW_ENABLE_USER_AGENT_CLIENT_HINTS,
+    @CommandLineFlags.Add({"enable-features=UserAgentClientHint",
             ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
     public void
     testEnableUserAgentClientHintsOverrideJavaScript() throws Throwable {
@@ -421,11 +413,6 @@ public class ClientHintsTest {
             }
         }
 
-        // User-agent origin trail client hints should not send in the request headers.
-        for (String hint : ORIGIN_TRIAL_USER_AGENT_CLIENT_HINTS) {
-            Assert.assertEquals("HEADER_NOT_FOUND", clientHintsMap.get(hint));
-        }
-
         // Cleanup after test.
         clearCookies();
         server.stopAndDestroyServer();
@@ -580,8 +567,7 @@ public class ClientHintsTest {
         }
         // If you're here because this line broke, please update USER_AGENT_CLIENT_HINTS to include
         // all the enabled user-agent client hints.
-        Assert.assertEquals(userAgentClientHintsCount,
-                USER_AGENT_CLIENT_HINTS.length + ORIGIN_TRIAL_USER_AGENT_CLIENT_HINTS.length);
+        Assert.assertEquals(userAgentClientHintsCount, USER_AGENT_CLIENT_HINTS.length);
         return result;
     }
 }

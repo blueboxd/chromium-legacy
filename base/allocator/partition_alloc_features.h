@@ -135,7 +135,7 @@ enum class MemoryTaggingEnabledProcesses {
   kAllProcesses,
 };
 
-enum class AlternateBucketDistributionMode : uint8_t {
+enum class BucketDistributionMode : uint8_t {
   kDefault,
   kDenser,
 };
@@ -160,8 +160,8 @@ extern const BASE_EXPORT base::FeatureParam<bool>
     kBackupRefPtrAsanEnableExtractionCheckParam;
 extern const BASE_EXPORT base::FeatureParam<bool>
     kBackupRefPtrAsanEnableInstantiationCheckParam;
-extern const BASE_EXPORT base::FeatureParam<AlternateBucketDistributionMode>
-    kPartitionAllocAlternateBucketDistributionParam;
+extern const BASE_EXPORT base::FeatureParam<BucketDistributionMode>
+    kPartitionAllocBucketDistributionParam;
 
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocBackupRefPtrForAsh);
 
@@ -172,7 +172,7 @@ BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocDCScan);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanImmediateFreeing);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanEagerClearing);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocSortActiveSlotSpans);
-BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocUseAlternateDistribution);
+BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocUseDenserDistribution);
 #if BUILDFLAG(IS_WIN)
 BASE_EXPORT BASE_DECLARE_FEATURE(kPageAllocatorRetryOnCommitFailure);
 #endif

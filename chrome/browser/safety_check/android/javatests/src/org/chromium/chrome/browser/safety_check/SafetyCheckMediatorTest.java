@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.ParameterizedRobolectricTestRunner;
 import org.robolectric.ParameterizedRobolectricTestRunner.Parameters;
@@ -61,12 +60,13 @@ import org.chromium.chrome.browser.safety_check.SafetyCheckMediator.SafetyCheckI
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.PasswordsState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.UpdatesState;
-import org.chromium.chrome.browser.sync.SyncService;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.ui.signin.SyncConsentActivityLauncher;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.sync.SyncService;
 import org.chromium.components.sync.UserSelectableType;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.user_prefs.UserPrefsJni;
@@ -84,7 +84,7 @@ public class SafetyCheckMediatorTest {
     private static final String SAFETY_CHECK_INTERACTIONS_HISTOGRAM =
             "Settings.SafetyCheck.Interactions";
     private static final String SAFETY_CHECK_PASSWORDS_RESULT_HISTOGRAM =
-            "Settings.SafetyCheck.PasswordsResult";
+            "Settings.SafetyCheck.PasswordsResult2";
     private static final String SAFETY_CHECK_SAFE_BROWSING_RESULT_HISTOGRAM =
             "Settings.SafetyCheck.SafeBrowsingResult";
     private static final String SAFETY_CHECK_UPDATES_RESULT_HISTOGRAM =
@@ -110,6 +110,8 @@ public class SafetyCheckMediatorTest {
     private SyncConsentActivityLauncher mSigninLauncher;
     @Mock
     private SettingsLauncher mSettingsLauncher;
+    @Mock
+    private SyncService mSyncService;
     @Mock
     private Handler mHandler;
     @Mock
@@ -254,14 +256,14 @@ public class SafetyCheckMediatorTest {
     }
 
     private void configureMockSyncService() {
-        SyncService mockSyncService = Mockito.mock(SyncService.class);
-        SyncService.overrideForTests(mockSyncService);
-        when(mockSyncService.isSyncFeatureEnabled()).thenReturn(true);
-        when(mockSyncService.isEngineInitialized()).thenReturn(true);
-        when(mockSyncService.hasSyncConsent()).thenReturn(true);
-        when(mockSyncService.getSelectedTypes())
+        // SyncService is injected in the mediator, but dependencies still access the factory.
+        SyncServiceFactory.overrideForTests(mSyncService);
+        when(mSyncService.isSyncFeatureEnabled()).thenReturn(true);
+        when(mSyncService.isEngineInitialized()).thenReturn(true);
+        when(mSyncService.hasSyncConsent()).thenReturn(true);
+        when(mSyncService.getSelectedTypes())
                 .thenReturn(CollectionUtil.newHashSet(UserSelectableType.PASSWORDS));
-        when(mockSyncService.getAccountInfo())
+        when(mSyncService.getAccountInfo())
                 .thenReturn(CoreAccountInfo.createFromEmailAndGaiaId(TEST_EMAIL_ADDRESS, "0"));
     }
 
@@ -290,11 +292,11 @@ public class SafetyCheckMediatorTest {
             when(mockPasswordCheckFactory.createHelper()).thenReturn(mPasswordCheckupHelper);
             PasswordCheckupClientHelperFactory.setFactoryForTesting(mockPasswordCheckFactory);
             mMediator = new SafetyCheckMediator(mModel, mUpdatesDelegate, mSettingsLauncher,
-                    mSigninLauncher, mPasswordStoreBridge, mHandler);
+                    mSigninLauncher, mSyncService, mPasswordStoreBridge, mHandler);
         } else {
             PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
-            mMediator = new SafetyCheckMediator(
-                    mModel, mUpdatesDelegate, mSettingsLauncher, mSigninLauncher, null, mHandler);
+            mMediator = new SafetyCheckMediator(mModel, mUpdatesDelegate, mSettingsLauncher,
+                    mSigninLauncher, mSyncService, null, mHandler);
         }
 
         // Execute any delayed tasks immediately.

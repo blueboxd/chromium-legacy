@@ -11,9 +11,11 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_gles2_export.h"
 #include "gpu/vulkan/buildflags.h"
+#include "skia/buildflags.h"
 #include "third_party/dawn/include/dawn/webgpu.h"
 #include "third_party/dawn/include/dawn/webgpu_cpp.h"
 #include "third_party/skia/include/core/SkYUVAInfo.h"
+#include "third_party/skia/include/gpu/graphite/TextureInfo.h"
 #include "ui/gfx/buffer_types.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -39,10 +41,6 @@ struct GLFormatDesc {
 // A set of utility functions to get the equivalent GPU API (GL, Vulkan, Dawn,
 // Metal) type/format information for a given SharedImageFormat. These functions
 // should ideally only be called from the GPU service and viz.
-
-// Only use this function with single planar formats.
-// Returns the bits per pixel for given `format`.
-GPU_GLES2_EXPORT int BitsPerPixel(viz::SharedImageFormat format);
 
 // BufferFormat is being transitioned out of SharedImage code (to use
 // SharedImageFormat instead). Refrain from using this function or preferably
@@ -96,13 +94,31 @@ GPU_GLES2_EXPORT VkFormat ToVkFormat(viz::SharedImageFormat format,
 
 // Following functions return the appropriate WebGPU/Dawn format for a
 // SharedImageFormat.
-// TODO (hitawala): Add support for multiplanar formats.
-// Returns wgpu::TextureFormat format for given `format`.
+// Returns wgpu::TextureFormat format for given `format`. Note that this will
+// return a multi-planar Dawn format for multi-planar SharedImageFormat.
 GPU_GLES2_EXPORT wgpu::TextureFormat ToDawnFormat(
     viz::SharedImageFormat format);
+// Returns wgpu::TextureFormat format for given `format` and `plane_index`. Note
+// that this returns a single plane Dawn format and not a multi-planar format.
+// `plane_index` must be 0 if `format` is single-plane.
+GPU_GLES2_EXPORT wgpu::TextureFormat ToDawnFormat(viz::SharedImageFormat format,
+                                                  int plane_index);
 // Same as ToDawnFormat, except it casts from wgpu::TextureFormat to
 // WGPUTextureFormat instead.
 GPU_GLES2_EXPORT WGPUTextureFormat ToWGPUFormat(viz::SharedImageFormat format);
+GPU_GLES2_EXPORT WGPUTextureFormat ToWGPUFormat(viz::SharedImageFormat format,
+                                                int plane_index);
+
+// Returns the supported Dawn texture usage for the given `format`. For
+// single-plane formats that are not legacy multiplanar, `is_yuv_plane`
+// indicates if the texture corresponds to a plane of a multi-planar image.
+wgpu::TextureUsage GetSupportedDawnTextureUsage(viz::SharedImageFormat format,
+                                                bool is_yuv_plane = false);
+
+// Same as GetSupportedDawnTextureUsage, except it casts from wgpu::TextureUsage
+// to WGPUTextureUsage instead.
+WGPUTextureUsage GetSupportedWGPUTextureUsage(viz::SharedImageFormat format,
+                                              bool is_yuv_plane = false);
 
 // Following function return the appropriate Metal format for a
 // SharedImageFormat.
@@ -112,13 +128,32 @@ GPU_GLES2_EXPORT unsigned int ToMTLPixelFormat(viz::SharedImageFormat format,
                                                int plane_index = 0);
 #endif
 
-// Returns the graphite::TextureInfo for a given `format`.
+// Returns the graphite::TextureInfo for a given `format` and `plane_index`. For
+// single-plane formats that are not legacy multiplanar, `is_yuv_plane`
+// indicates if the texture corresponds to a plane of a multi-planar image.
+// `mipmapped` indicates if the texture has mipmaps.
 GPU_GLES2_EXPORT skgpu::graphite::TextureInfo GetGraphiteTextureInfo(
     GrContextType gr_context_type,
     viz::SharedImageFormat format,
     int plane_index = 0,
-    bool mipmapped = false,
-    bool root_surface = false);
+    bool is_yuv_plane = false,
+    bool mipmapped = false);
+
+#if BUILDFLAG(SKIA_USE_DAWN)
+GPU_GLES2_EXPORT skgpu::graphite::DawnTextureInfo GetGraphiteDawnTextureInfo(
+    viz::SharedImageFormat format,
+    int plane_index = 0,
+    bool is_yuv_plane = false,
+    bool mipmapped = false);
+#endif
+
+#if BUILDFLAG(SKIA_USE_METAL)
+GPU_GLES2_EXPORT skgpu::graphite::MtlTextureInfo GetGraphiteMetalTextureInfo(
+    viz::SharedImageFormat format,
+    int plane_index = 0,
+    bool is_yuv_plane = false,
+    bool mipmapped = false);
+#endif
 
 }  // namespace gpu
 

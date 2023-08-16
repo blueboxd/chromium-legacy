@@ -32,6 +32,10 @@ GPU_EXPORT BASE_DECLARE_FEATURE(kDefaultEnableGpuRasterization);
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kCanvasOopRasterization);
 
+#if BUILDFLAG(IS_OZONE)
+GPU_EXPORT BASE_DECLARE_FEATURE(kOzoneFrontBufferUsage);
+#endif
+
 GPU_EXPORT BASE_DECLARE_FEATURE(kEnableMSAAOnNewIntelGPUs);
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kDefaultEnableANGLEValidation);
@@ -62,6 +66,10 @@ GPU_EXPORT BASE_DECLARE_FEATURE(kVulkan);
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kSkiaGraphite);
 
+#if BUILDFLAG(IS_WIN)
+GPU_EXPORT BASE_DECLARE_FEATURE(kSkiaGraphiteDawnUseD3D12);
+#endif
+
 GPU_EXPORT BASE_DECLARE_FEATURE(kEnableGrShaderCacheForVulkan);
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kEnableWatchdogReportOnlyModeOnGpuInit);
@@ -80,6 +88,8 @@ GPU_EXPORT BASE_DECLARE_FEATURE(kForceRestartGpuKillSwitch);
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kUseGpuSchedulerDfs);
 
+GPU_EXPORT BASE_DECLARE_FEATURE(kUseClientGmbInterface);
+
 #if BUILDFLAG(IS_ANDROID)
 // This flag is use additionally with kEnableDrDc to enable the feature for
 // vulkan enabled android devices.
@@ -87,12 +97,11 @@ GPU_EXPORT BASE_DECLARE_FEATURE(kEnableDrDcVulkan);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kWebGPUService);
+GPU_EXPORT BASE_DECLARE_FEATURE(kWebGPUBlobCache);
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kIncreasedCmdBufferParseSlice);
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kPassthroughYuvRgbConversion);
-
-GPU_EXPORT BASE_DECLARE_FEATURE(kCmdDecoderAlwaysGetSizeFromSourceTexture);
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kGpuCleanupInBackground);
 

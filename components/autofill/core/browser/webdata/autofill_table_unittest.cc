@@ -174,7 +174,8 @@ class AutofillTableProfileTest
     AutofillTableTest::SetUp();
     features_.InitWithFeatures(
         {features::kAutofillEnableSupportForLandmark,
-         features::kAutofillEnableSupportForBetweenStreets},
+         features::kAutofillEnableSupportForBetweenStreets,
+         features::kAutofillEnableSupportForAdminLevel2},
         {});
   }
   AutofillProfile::Source profile_source() const { return GetParam(); }
@@ -967,6 +968,8 @@ TEST_P(AutofillTableProfileTest, AutofillProfile) {
   home_profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_BETWEEN_STREETS,
                                                 u"Marcos y Oliva",
                                                 VerificationStatus::kObserved);
+  home_profile.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_ADMIN_LEVEL2, u"Oxaca", VerificationStatus::kObserved);
 
   home_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"18181234567");
   home_profile.SetRawInfoAsInt(BIRTHDATE_DAY, 14);
@@ -996,11 +999,11 @@ TEST_P(AutofillTableProfileTest, AutofillProfile) {
   EXPECT_TRUE(
       table_->RemoveAutofillProfile(home_profile.guid(), profile_source()));
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  EXPECT_TRUE(table_->GetAutofillProfiles(&profiles, profile_source()));
+  EXPECT_TRUE(table_->GetAutofillProfiles(profile_source(), &profiles));
   EXPECT_TRUE(profiles.empty());
 }
 
-// Tests that `GetAutofillProfiles(profiles, source)` cleares `profiles` and
+// Tests that `GetAutofillProfiles(source, profiles)` clears `profiles` and
 // only returns profiles from the correct `source`.
 // Not part of the `AutofillTableProfileTest` fixture, as it doesn't benefit
 // from parameterization on the `profile_source()`.
@@ -1012,25 +1015,35 @@ TEST_F(AutofillTableTest, GetAutofillProfiles) {
 
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
   EXPECT_TRUE(table_->GetAutofillProfiles(
-      &profiles, AutofillProfile::Source::kLocalOrSyncable));
+      AutofillProfile::Source::kLocalOrSyncable, &profiles));
   EXPECT_THAT(profiles, ElementsAre(testing::Pointee(local_profile)));
-  EXPECT_TRUE(table_->GetAutofillProfiles(&profiles,
-                                          AutofillProfile::Source::kAccount));
+  EXPECT_TRUE(table_->GetAutofillProfiles(AutofillProfile::Source::kAccount,
+                                          &profiles));
   EXPECT_THAT(profiles, ElementsAre(testing::Pointee(account_profile)));
 }
 
-// Tests that `RemoveAllAutofillProfiles()` cleares all kAccount profiles.
-TEST_F(AutofillTableTest, RemoveAllAutofillProfiles_kAccount) {
-  EXPECT_TRUE(table_->AddAutofillProfile(
+// Tests that `RemoveAllAutofillProfiles()` clears all profiles of the given
+// source.
+TEST_P(AutofillTableProfileTest, RemoveAllAutofillProfiles) {
+  ASSERT_TRUE(table_->AddAutofillProfile(
+      AutofillProfile(AutofillProfile::Source::kLocalOrSyncable)));
+  ASSERT_TRUE(table_->AddAutofillProfile(
       AutofillProfile(AutofillProfile::Source::kAccount)));
 
-  EXPECT_TRUE(
-      table_->RemoveAllAutofillProfiles(AutofillProfile::Source::kAccount));
+  EXPECT_TRUE(table_->RemoveAllAutofillProfiles(profile_source()));
 
+  // Expect that the profiles from `profile_source()` are gone.
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  EXPECT_TRUE(table_->GetAutofillProfiles(&profiles,
-                                          AutofillProfile::Source::kAccount));
+  ASSERT_TRUE(table_->GetAutofillProfiles(profile_source(), &profiles));
   EXPECT_TRUE(profiles.empty());
+
+  // Expect that the profile from the opposite source remains.
+  const auto other_source =
+      profile_source() == AutofillProfile::Source::kAccount
+          ? AutofillProfile::Source::kLocalOrSyncable
+          : AutofillProfile::Source::kAccount;
+  ASSERT_TRUE(table_->GetAutofillProfiles(other_source, &profiles));
+  EXPECT_EQ(profiles.size(), 1u);
 }
 
 TEST_F(AutofillTableTest, IBAN) {
@@ -1043,13 +1056,13 @@ TEST_F(AutofillTableTest, IBAN) {
 
   EXPECT_TRUE(table_->AddIBAN(iban));
 
-  // Get the inserted Iban.
+  // Get the inserted IBAN.
   std::unique_ptr<IBAN> db_iban = table_->GetIBAN(iban.guid());
   ASSERT_TRUE(db_iban);
   EXPECT_EQ(guid, db_iban->guid());
   sql::Statement s_work(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT guid, use_count, use_date, "
-      "value, nickname FROM ibans WHERE guid = ?"));
+      "value_encrypted, nickname FROM ibans WHERE guid = ?"));
   s_work.BindString(0, iban.guid());
   ASSERT_TRUE(s_work.is_valid());
   ASSERT_TRUE(s_work.Step());
@@ -1070,7 +1083,7 @@ TEST_F(AutofillTableTest, IBAN) {
   EXPECT_EQ(another_guid, db_iban->guid());
   sql::Statement s_target(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT guid, use_count, use_date, "
-      "value, nickname FROM ibans WHERE guid = ?"));
+      "value_encrypted, nickname FROM ibans WHERE guid = ?"));
   s_target.BindString(0, another_iban.guid());
   ASSERT_TRUE(s_target.is_valid());
   ASSERT_TRUE(s_target.Step());
@@ -1085,7 +1098,7 @@ TEST_F(AutofillTableTest, IBAN) {
   EXPECT_EQ(another_guid, db_iban->guid());
   sql::Statement s_target_updated(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT guid, use_count, use_date, "
-      "value, nickname FROM ibans WHERE guid = ?"));
+      "value_encrypted, nickname FROM ibans WHERE guid = ?"));
   s_target_updated.BindString(0, another_iban.guid());
   ASSERT_TRUE(s_target_updated.is_valid());
   ASSERT_TRUE(s_target_updated.Step());

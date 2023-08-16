@@ -21,7 +21,15 @@ class QuickStartScreen
  public:
   using TView = QuickStartView;
 
-  enum class Result { CANCEL };
+  // State of the flow when the screen is shown.
+  enum class FlowState {
+    INITIAL,
+    RESUMING_AFTER_CRITICAL_UPDATE,
+    CONTINUING_AFTER_ENROLLMENT_CHECKS,
+    UNKNOWN,
+  };
+
+  enum class Result { CANCEL, WIFI_CONNECTED };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
 
@@ -35,6 +43,10 @@ class QuickStartScreen
 
   static std::string GetResultString(Result result);
 
+  // Sets the flow state that determines the actions that will be performed when
+  // the screen is shown.
+  void SetFlowState(FlowState flow_state);
+
  private:
   // BaseScreen:
   bool MaybeSkip(WizardContext& context) override;
@@ -46,13 +58,18 @@ class QuickStartScreen
   void OnStatusChanged(
       const quick_start::TargetDeviceBootstrapController::Status& status) final;
 
+  // Sets in the UI the discoverable name that will be used for advertising.
+  // Android devices will see this fast pair notification 'Chromebook (123)'
+  void DetermineDiscoverableName();
+
   void UnbindFromBootstrapController();
-  void SendRandomFiguresForTesting() const;
 
   // Retrieves the connected phone ID and saves it for later use in OOBE on the
   // MultideviceSetupScreen.
   void SavePhoneInstanceID();
 
+  FlowState flow_state_ = FlowState::UNKNOWN;
+  std::string discoverable_name_;
   base::WeakPtr<TView> view_;
   ScreenExitCallback exit_callback_;
 

@@ -66,11 +66,10 @@ BASE_DECLARE_FEATURE(kZeroSuggestPrefetchingOnWeb);
 // On Device Suggest.
 BASE_DECLARE_FEATURE(kOnDeviceHeadProviderIncognito);
 BASE_DECLARE_FEATURE(kOnDeviceHeadProviderNonIncognito);
+BASE_DECLARE_FEATURE(kOnDeviceHeadProviderKorean);
 BASE_DECLARE_FEATURE(kOnDeviceTailModel);
 
 // Provider-specific - These features change the behavior of specific providers.
-BASE_DECLARE_FEATURE(kDisableCGIParamMatching);
-BASE_DECLARE_FEATURE(kShortcutBoost);
 // TODO(crbug.com/1202964): Clean up feature flag used in staged roll-out of
 // various CLs related to the contents/description clean-up work.
 BASE_DECLARE_FEATURE(kStoreTitleInContentsAndUrlInDescription);
@@ -82,7 +81,9 @@ BASE_DECLARE_FEATURE(kDomainSuggestions);
 // Suggestions UI - these affect the UI or function of the suggestions popup.
 BASE_DECLARE_FEATURE(kAdaptiveSuggestionsCount);
 BASE_DECLARE_FEATURE(kClipboardSuggestionContentHidden);
+BASE_DECLARE_FEATURE(kSuppressClipboardSuggestionAfterFirstUsed);
 BASE_DECLARE_FEATURE(kCr2023ActionChips);
+BASE_DECLARE_FEATURE(kCr2023ActionChipsIcons);
 BASE_DECLARE_FEATURE(kSuggestionAnswersColorReverse);
 BASE_DECLARE_FEATURE(kMostVisitedTiles);
 BASE_DECLARE_FEATURE(kRichAutocompletion);
@@ -99,6 +100,7 @@ BASE_DECLARE_FEATURE(kExpandedStateShape);
 BASE_DECLARE_FEATURE(kExpandedStateColors);
 BASE_DECLARE_FEATURE(kExpandedStateSuggestIcons);
 BASE_DECLARE_FEATURE(kExpandedLayout);
+BASE_DECLARE_FEATURE(kSuggestionHoverFillShape);
 
 // Omnibox UI - these affect the UI or function of the location bar (not the
 // popup).
@@ -132,12 +134,7 @@ BASE_DECLARE_FEATURE(kUseExistingAutocompleteClient);
 
 // Omnibox & Suggestions UI - these affect both the omnibox and the suggestions
 // popup.
-BASE_DECLARE_FEATURE(kClosePopupWithEscape);
 BASE_DECLARE_FEATURE(kOmniboxModernizeVisualUpdate);
-
-// Settings Page - these affect the appearance of the Search Engines settings
-// page
-BASE_DECLARE_FEATURE(kSiteSearchStarterPack);
 
 // Experiment to introduce new security indicators for HTTPS.
 BASE_DECLARE_FEATURE(kUpdatedConnectionSecurityIndicators);

@@ -14,15 +14,20 @@ import 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 import '../icons.html.js';
 import '../settings_shared.css.js';
 
+import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {CrSliderElement} from 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {AudioDevice, AudioDeviceType, AudioEffectState, AudioSystemProperties, AudioSystemPropertiesObserverReceiver, MuteState} from '../mojom-webui/cros_audio_config.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
+import {Setting} from '../mojom-webui/setting.mojom-webui.js';
+import {AudioAndCaptionsPageBrowserProxy, AudioAndCaptionsPageBrowserProxyImpl} from '../os_a11y_page/audio_and_captions_page_browser_proxy.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
-import {Route} from '../router.js';
+import {Route, routes} from '../router.js';
 
 import {getTemplate} from './audio.html.js';
 import {CrosAudioConfigInterface, getCrosAudioConfig} from './cros_audio_config.js';
@@ -33,14 +38,15 @@ function clampPercent(percent: number): number {
   return Math.max(0, Math.min(percent, 100));
 }
 
-const SettingsAudioElementBase = RouteObserverMixin(I18nMixin(PolymerElement));
+const SettingsAudioElementBase = WebUiListenerMixin(DeepLinkingMixin(
+    PrefsMixin(RouteObserverMixin(I18nMixin(PolymerElement)))));
 const VOLUME_ICON_OFF_LEVEL = 0;
 // TODO(b/271871947): Match volume icon logic to QS revamp sliders.
 // Matches level calculated in unified_volume_view.cc.
 const VOLUME_ICON_LOUD_LEVEL = 34;
 const SETTINGS_20PX_ICON_PREFIX = 'settings20:';
 
-class SettingsAudioElement extends SettingsAudioElementBase {
+export class SettingsAudioElement extends SettingsAudioElementBase {
   static get is() {
     return 'settings-audio';
   }
@@ -82,9 +88,48 @@ class SettingsAudioElement extends SettingsAudioElementBase {
       outputVolume_: {
         type: Number,
       },
+
+      systemSoundsEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('areSystemSoundsEnabled');
+        },
+        readOnly: true,
+      },
+
+      startupSoundEnabled_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /**
+       * Used by DeepLinkingMixin to focus this page's deep links.
+       */
+      supportedSettingIds: {
+        type: Object,
+        value: () => new Set<Setting>([
+          Setting.kChargingSounds,
+          Setting.kLowBatterySound,
+        ]),
+      },
+
+      showAllowAGC: {
+        type: Boolean,
+        value: loadTimeData.getBoolean('enableForceRespectUiGainsToggle'),
+        readonly: true,
+      },
+
+      isAllowAGCEnabled: {
+        type: Boolean,
+        observer: SettingsAudioElement.prototype.onAllowAGCEnabledChanged,
+      },
     };
   }
 
+  protected isAllowAGCEnabled: boolean;
+  protected showAllowAGC: boolean;
+
+  private audioAndCaptionsBrowserProxy_: AudioAndCaptionsPageBrowserProxy;
   private audioSystemProperties_: AudioSystemProperties;
   private audioSystemPropertiesObserverReceiver_:
       AudioSystemPropertiesObserverReceiver;
@@ -94,6 +139,8 @@ class SettingsAudioElement extends SettingsAudioElementBase {
   private isNoiseCancellationEnabled_: boolean;
   private isNoiseCancellationSupported_: boolean;
   private outputVolume_: number;
+  private systemSoundsEnabled_: boolean;
+  private startupSoundEnabled_: boolean;
 
   constructor() {
     super();
@@ -101,12 +148,20 @@ class SettingsAudioElement extends SettingsAudioElementBase {
 
     this.audioSystemPropertiesObserverReceiver_ =
         new AudioSystemPropertiesObserverReceiver(this);
+
+    this.audioAndCaptionsBrowserProxy_ =
+        AudioAndCaptionsPageBrowserProxyImpl.getInstance();
   }
 
   override ready() {
     super.ready();
 
     this.observeAudioSystemProperties_();
+
+    this.addWebUiListener(
+        'startup-sound-setting-retrieved', (startupSoundEnabled: boolean) => {
+          this.startupSoundEnabled_ = startupSoundEnabled;
+        });
   }
 
   /**
@@ -127,6 +182,9 @@ class SettingsAudioElement extends SettingsAudioElementBase {
     this.isNoiseCancellationSupported_ =
         !(activeInputDevice?.noiseCancellationState ===
           AudioEffectState.kNotSupported);
+    this.isAllowAGCEnabled =
+        (activeInputDevice?.forceRespectUiGainsState ===
+         AudioEffectState.kNotEnabled);
     this.outputVolume_ = this.audioSystemProperties_.outputVolumePercent;
   }
 
@@ -185,6 +243,21 @@ class SettingsAudioElement extends SettingsAudioElementBase {
     this.crosAudioConfig_.setNoiseCancellationEnabled(enabled);
   }
 
+  /** Handles updates to force respect ui gains state. */
+  protected onAllowAGCEnabledChanged(
+      enabled: SettingsAudioElement['isAllowAGCEnabled'],
+      previousEnabled: SettingsAudioElement['isAllowAGCEnabled']): void {
+    // Polymer triggers change event on all assignment to
+    // `isAllowAGCEnabled` even if the value is logically unchanged.
+    // Check previous value before calling `setAllowAGCEnabled` to
+    // test if value actually updated.
+    if (previousEnabled === undefined || previousEnabled === enabled) {
+      return;
+    }
+
+    this.crosAudioConfig_.setForceRespectUiGainsEnabled(!enabled);
+  }
+
   /**
    * Handles the event where the input volume slider is being changed.
    */
@@ -225,6 +298,8 @@ class SettingsAudioElement extends SettingsAudioElementBase {
     if (route !== routes.AUDIO) {
       return;
     }
+
+    this.audioAndCaptionsBrowserProxy_.getStartupSoundEnabled();
   }
 
   /** Handles updating the mic icon depending on the input mute state. */
@@ -339,6 +414,10 @@ class SettingsAudioElement extends SettingsAudioElementBase {
     return this.isOutputMuted_ ?
         this.i18n('audioOutputMuteButtonAriaLabelMuted') :
         this.i18n('audioOutputMuteButtonAriaLabelNotMuted');
+  }
+
+  private toggleStartupSoundEnabled_(e: CustomEvent<boolean>): void {
+    this.audioAndCaptionsBrowserProxy_.setStartupSoundEnabled(e.detail);
   }
 }
 

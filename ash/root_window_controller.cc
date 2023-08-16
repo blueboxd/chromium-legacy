@@ -836,7 +836,8 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
       Shell::Get()->tablet_mode_controller()->InTabletMode();
   root_window_menu_model_adapter_ =
       std::make_unique<RootWindowMenuModelAdapter>(
-          std::make_unique<ShelfContextMenuModel>(nullptr, display_id),
+          std::make_unique<ShelfContextMenuModel>(nullptr, display_id,
+                                                  /*menu_in_shelf=*/false),
           wallpaper_widget_controller()->GetWidget(), source_type,
           base::BindOnce(&RootWindowController::OnMenuClosed,
                          base::Unretained(this)),
@@ -1301,6 +1302,12 @@ void RootWindowController::CreateContainers() {
   ::wm::SetChildWindowVisibilityChangesAnimated(settings_bubble_container);
   settings_bubble_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   settings_bubble_container->SetProperty(kLockedToRootKey, true);
+
+  aura::Window* help_bubble_container =
+      CreateContainer(kShellWindowId_HelpBubbleContainer, "HelpBubbleContainer",
+                      lock_screen_related_containers);
+  ::wm::SetChildWindowVisibilityChangesAnimated(help_bubble_container);
+  help_bubble_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
 
   aura::Window* virtual_keyboard_parent_container = CreateContainer(
       kShellWindowId_ImeWindowParentContainer, "ImeWindowParentContainer",

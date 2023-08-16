@@ -22,6 +22,11 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<variants name="ApnTypes">
+  <variant name="DEFAULT" summary="Default/Data APN"/>
+  <variant name="DUN" summary="Tethering APN"/>
+</variants>
+
 <variants name="AshNetworkType">
 <!-- The following variants are names of network types tracked in the Chrome layer.
   These are used for various Network.Ash.* histograms to record network connection
@@ -47,6 +52,37 @@ chromium-metrics-reviews@google.com.
 <variants name="IPsecVPNType">
   <variant name="Ikev2" summary="IKEv2"/>
   <variant name="L2tpIpsec" summary="L2TP/IPsec"/>
+</variants>
+
+<variants name="NetworkRequestDestination">
+<!-- Should be kept in sync with variants RequestDestination in
+  tools/metrics/histograms/metadata/page/histograms.xml and BlinkRequestDestination
+  in tools/metrics/histograms/metadata/blink/histograms.xml.
+-->
+
+  <variant name="audio"/>
+  <variant name="audioworklet"/>
+  <variant name="document"/>
+  <variant name="embed"/>
+  <variant name="empty"/>
+  <variant name="fencedframe"/>
+  <variant name="font"/>
+  <variant name="frame"/>
+  <variant name="iframe"/>
+  <variant name="image"/>
+  <variant name="manifest"/>
+  <variant name="object"/>
+  <variant name="paintworklet"/>
+  <variant name="report"/>
+  <variant name="script"/>
+  <variant name="serviceworker"/>
+  <variant name="sharedworker"/>
+  <variant name="style"/>
+  <variant name="track"/>
+  <variant name="video"/>
+  <variant name="webbundle"/>
+  <variant name="worker"/>
+  <variant name="xslt"/>
 </variants>
 
 <variants name="PhysicalTechnology">
@@ -1911,7 +1947,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Network.Shill.Cellular.3GPPRegistrationDelayedDrop"
     enum="NetworkCellular3GPPRegistrationDelayedDrop"
-    expires_after="2023-10-01">
+    expires_after="2023-12-10">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1956,8 +1992,23 @@ chromium-metrics-reviews@google.com.
     layers. This captures any success or failure as a result of a Connect call
     through ModemManager, or any causes of early failure in shill that prevents
     a connect attempt altogether. Refer to go/cros-cellular-apn-metrics for
-    details.
+    details. This metric was replaced by
+    Network.Shill.Cellular.ConnectResult.{ApnType} in R116.
   </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.ConnectResult.{ApnType}"
+    enum="PlatformCellularConnectResult" expires_after="2023-12-31">
+  <owner>danielwinkler@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Reports the result of Cellular connection attempts through the platform
+    layers when using the {ApnType}. This captures any success or failure as a
+    result of a Connect call through ModemManager, or any causes of early
+    failure in shill that prevents a connect attempt altogether. Refer to
+    go/cros-cellular-apn-metrics for details.
+  </summary>
+  <token key="ApnType" variants="ApnTypes"/>
 </histogram>
 
 <histogram name="Network.Shill.Cellular.DevicePresenceStatus"
@@ -1971,7 +2022,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.Drop" enum="NetworkCellularTechnology"
-    expires_after="2023-10-01">
+    expires_after="2023-12-10">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2049,7 +2100,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.SignalStrengthBeforeDrop" units="units"
-    expires_after="2023-10-01">
+    expires_after="2023-12-10">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2110,7 +2161,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToInitialize" units="ms"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2130,7 +2181,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToPortal" units="ms"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2140,7 +2191,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToRedirectFound" units="ms"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>matthewmwang@chromium.org</owner>
   <owner>hugobenichi@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
@@ -2283,7 +2334,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.ServiceErrors"
-    enum="NetworkServiceError" expires_after="2023-10-01">
+    enum="NetworkServiceError" expires_after="2023-12-04">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2355,7 +2406,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.TimeToRedirectFound" units="ms"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
   <owner>matthewmwang@chromium.org</owner>
   <owner>hugobenichi@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
@@ -4005,6 +4056,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="NetworkService.CorsURLLoaderFactoryStart" enum="Boolean"
+    expires_after="2023-11-19">
+  <owner>yoichio@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Records when CorsURLLoaderFactory::CreateLoaderAndStart is called from mojo
+    to investigate another histogram issue. See https://crbug.com/1439721.
+  </summary>
+</histogram>
+
 <histogram name="NetworkService.CrossOriginResourcePolicy.ReportOnlyResult"
     enum="NetworkServiceCorpResult" expires_after="2020-09-30">
   <owner>mkwst@chromium.org</owner>
@@ -4048,6 +4109,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="NetworkService.InitializedTime" units="ms"
+    expires_after="2023-11-19">
+  <owner>yoichio@chromium.org</owner>
+  <owner>blink-network-stack@google.com</owner>
+  <summary>
+    Recoards the time from origin to the network service starts when the network
+    service is initialized. See https://crbug.com/1439721.
+  </summary>
+</histogram>
+
 <histogram name="NetworkService.MdnsResponder.ServiceError"
     enum="MdnsResponderServiceError" expires_after="M81">
   <owner>qingsi@chromium.org</owner>
@@ -4059,57 +4130,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="NetworkService.MemoryCache.BlockedByRequestHeaderReason"
-    enum="NetworkServiceMemoryCacheBlockedByRequestHeaderReason"
-    expires_after="2023-08-28">
-  <owner>bashi@chromium.org</owner>
-  <owner>blink-network-stack@google.com</owner>
-  <summary>
-    Records a reason why a request cannot be served from the in-memory cache due
-    to request header checks. Recorded when the in-memory cache tries to serve a
-    stored response.
-  </summary>
-</histogram>
-
-<histogram name="NetworkService.MemoryCache.ContentLength.{RequestDestination}"
-    units="bytes" expires_after="2023-07-10">
-  <owner>bashi@chromium.org</owner>
-  <owner>blink-network-stack@google.com</owner>
-  <summary>
-    Size of a response body that is going to be stored to the network service
-    in-memory cache. Recorded before a response is going to be stored to the
-    in-memory cache. If the size is larger than a configurable limit, the
-    response won't be stored in the in-memory cache. This histogram is recorded
-    for {RequestDestination}.
-  </summary>
-  <token key="RequestDestination" variants="RequestDestination"/>
-</histogram>
-
-<histogram name="NetworkService.MemoryCache.EntryStatus"
-    enum="NetworkServiceMemoryCacheEntryStatus" expires_after="2023-07-18">
-  <owner>bashi@chromium.org</owner>
-  <owner>blink-network-stack@google.com</owner>
-  <summary>
-    Records whether an HTTP response is served from the in-memory cache in the
-    network service. Recorded when the network service starts a network request
-    and the request satisfies preconditions. Preconditions include: CORS checks
-    passed, the request was a valid GET request, and the request didn't force
-    network access etc. See NetworkServiceMemoryCache::CanServe() for details.
-  </summary>
-</histogram>
-
-<histogram name="NetworkService.MemoryCache.FreshnessAtStore" units="seconds"
-    expires_after="2023-07-10">
-  <owner>bashi@chromium.org</owner>
-  <owner>blink-network-stack@google.com</owner>
-  <summary>
-    Records freshness of a response when it is going to be stored into the
-    in-memory cache. The range is from 1 seconds to 864000 seconds (10 days).
-  </summary>
-</histogram>
-
 <histogram name="NetworkService.NetworkLoaderCompletionTime.{Source}"
-    units="ms" expires_after="2023-07-10">
+    units="ms" expires_after="2024-05-30">
   <owner>bashi@chromium.org</owner>
   <owner>blink-network-stack@google.com</owner>
   <summary>
@@ -4136,7 +4158,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.TimeToGrantCacheAccess" units="ms"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -4161,6 +4183,21 @@ chromium-metrics-reviews@google.com.
     histogram is platform dependent so values from different platforms cannot be
     directly compared. On Windows, this records the amount of time taken to set
     the filesystem ACLs to allow the sandbox access to the data directory.
+  </summary>
+</histogram>
+
+<histogram name="NetworkService.TimeToGrantSharedDictionaryAccess" units="ms"
+    expires_after="2023-10-08">
+  <owner>horo@chromium.org</owner>
+  <owner>src/net/extras/shared_dictionary/OWNERS</owner>
+  <summary>
+    The time taken to permit the sandbox access to the shared dictionary
+    directory during network context initialization. This is recorded each time
+    a network context is created with a valid shared dictionary directory
+    specified. This histogram is platform dependent so values from different
+    platforms cannot be directly compared. On Windows, this records the amount
+    of time taken to set the filesystem ACLs to allow the sandbox access to the
+    cache directory.
   </summary>
 </histogram>
 

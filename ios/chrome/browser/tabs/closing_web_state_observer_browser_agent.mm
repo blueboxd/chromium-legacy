@@ -83,12 +83,31 @@ void ClosingWebStateObserverBrowserAgent::BrowserDestroyed(Browser* browser) {
 
 #pragma mark - WebStateListObserving
 
-void ClosingWebStateObserverBrowserAgent::WebStateReplacedAt(
+void ClosingWebStateObserverBrowserAgent::WebStateListChanged(
     WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int index) {
-  SnapshotTabHelper::FromWebState(old_web_state)->RemoveSnapshot();
+    const WebStateListChange& change,
+    const WebStateSelection& selection) {
+  switch (change.type()) {
+    case WebStateListChange::Type::kSelectionOnly:
+      // Do nothing when a WebState is selected and its status is updated.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // Do nothing when a WebState is detached.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace: {
+      const WebStateListChangeReplace& replace_change =
+          change.As<WebStateListChangeReplace>();
+      SnapshotTabHelper::FromWebState(replace_change.replaced_web_state())
+          ->RemoveSnapshot();
+      break;
+    }
+    case WebStateListChange::Type::kInsert:
+      // Do nothing when a new WebState is inserted.
+      break;
+  }
 }
 
 void ClosingWebStateObserverBrowserAgent::WillCloseWebStateAt(

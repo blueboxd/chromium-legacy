@@ -5,8 +5,6 @@
 #ifndef ASH_CAPTURE_MODE_CAPTURE_WINDOW_OBSERVER_H_
 #define ASH_CAPTURE_MODE_CAPTURE_WINDOW_OBSERVER_H_
 
-#include <set>
-
 #include "ash/ash_export.h"
 #include "ash/capture_mode/capture_mode_types.h"
 #include "base/memory/raw_ptr.h"
@@ -34,6 +32,9 @@ class ASH_EXPORT CaptureWindowObserver : public aura::WindowObserver,
 
   ~CaptureWindowObserver() override;
 
+  aura::Window* window() { return window_; }
+  bool bar_anchored_to_window() const { return bar_anchored_to_window_; }
+
   // Updates selected window depending on the mouse/touch event location. If
   // there is an eligible window under the current mouse/touch event location,
   // its bounds will be highlighted.
@@ -41,15 +42,19 @@ class ASH_EXPORT CaptureWindowObserver : public aura::WindowObserver,
 
   // Sets the given `window` as the current observed `window_`. `window` will be
   // ignored if it's a child of the wallpaper container or it's the home
-  // launcher window. If `allow_window_change` is false, `window_` will not be
-  // allowed to be altered throughout the entire capture mode session.
-  void SetSelectedWindow(aura::Window* window, bool allow_window_change = true);
+  // launcher window. If `bar_anchored_to_window` is true, the capture bar will
+  // be anchored to `window_` and it will not be allowed to be altered through
+  // the entire capture mode session.
+  void SetSelectedWindow(aura::Window* window,
+                         bool bar_anchored_to_window = false);
 
   // aura::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
+  void OnWindowParentChanged(aura::Window* window,
+                             aura::Window* parent) override;
   void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
   void OnWindowDestroying(aura::Window* window) override;
 
@@ -57,8 +62,6 @@ class ASH_EXPORT CaptureWindowObserver : public aura::WindowObserver,
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
-
-  aura::Window* window() { return window_; }
 
  private:
   void StartObserving(aura::Window* window);
@@ -70,9 +73,11 @@ class ASH_EXPORT CaptureWindowObserver : public aura::WindowObserver,
   // Current observed window.
   raw_ptr<aura::Window, ExperimentalAsh> window_ = nullptr;
 
-  // If false, `window_` is not allowed to be changed throughout the capture
-  // mode session once set.
-  bool allow_window_change_ = true;
+  // If true, the capture bar will be anchored to the selected window instead of
+  // the bottom of the display by default. And the selected window is not
+  // allowed to be changed throughout the session. This is set to true for the
+  // game capture session for now.
+  bool bar_anchored_to_window_ = false;
 
   // Stores current mouse or touch location in screen coordinate.
   gfx::Point location_in_screen_;

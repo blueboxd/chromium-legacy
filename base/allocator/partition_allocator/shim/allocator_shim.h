@@ -8,10 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/allocator/partition_alloc_features.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/types/strong_alias.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/base_export.h"
-#include "base/types/strong_alias.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
@@ -179,16 +178,19 @@ BASE_EXPORT void InitializeAllocatorShim();
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 BASE_EXPORT void EnablePartitionAllocMemoryReclaimer();
 
-using EnableBrp = base::StrongAlias<class EnableBrpTag, bool>;
-using EnableBrpPartitionMemoryReclaimer =
-    base::StrongAlias<class EnableBrpPartitionMemoryReclaimerTag, bool>;
+using EnableBrp =
+    partition_alloc::internal::base::StrongAlias<class EnableBrpTag, bool>;
+using EnableBrpPartitionMemoryReclaimer = partition_alloc::internal::base::
+    StrongAlias<class EnableBrpPartitionMemoryReclaimerTag, bool>;
 using EnableMemoryTagging =
-    base::StrongAlias<class EnableMemoryTaggingTag, bool>;
-using SplitMainPartition = base::StrongAlias<class SplitMainPartitionTag, bool>;
-using UseDedicatedAlignedPartition =
-    base::StrongAlias<class UseDedicatedAlignedPartitionTag, bool>;
-using AlternateBucketDistribution =
-    base::features::AlternateBucketDistributionMode;
+    partition_alloc::internal::base::StrongAlias<class EnableMemoryTaggingTag,
+                                                 bool>;
+using SplitMainPartition =
+    partition_alloc::internal::base::StrongAlias<class SplitMainPartitionTag,
+                                                 bool>;
+using UseDedicatedAlignedPartition = partition_alloc::internal::base::
+    StrongAlias<class UseDedicatedAlignedPartitionTag, bool>;
+enum class AlternateBucketDistribution : uint8_t { kDefault, kDenser };
 
 // If |thread_cache_on_non_quarantinable_partition| is specified, the
 // thread-cache will be enabled on the non-quarantinable partition. The

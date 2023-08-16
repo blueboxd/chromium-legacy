@@ -79,9 +79,9 @@ void ModelExecutionManagerImpl::OnSegmentationModelUpdated(
       segment_id, /* processed = */ false, validation);
   if (validation != metadata_utils::ValidationResult::kValidationSuccess)
     return;
-
+  // TODO (ritikagup@) : Add handling for default models, if required.
   segment_database_->GetSegmentInfo(
-      segment_id,
+      segment_id, proto::ModelSource::SERVER_MODEL_SOURCE,
       base::BindOnce(
           &ModelExecutionManagerImpl::OnSegmentInfoFetchedForModelUpdate,
           weak_ptr_factory_.GetWeakPtr(), segment_id, std::move(metadata),
@@ -153,7 +153,8 @@ void ModelExecutionManagerImpl::OnSegmentInfoFetchedForModelUpdate(
   // Now that we've merged the old and the new SegmentInfo, we want to store
   // the new version in the database.
   segment_database_->UpdateSegment(
-      segment_id, absl::make_optional(new_segment_info),
+      segment_id, new_segment_info.model_source(),
+      absl::make_optional(new_segment_info),
       base::BindOnce(&ModelExecutionManagerImpl::OnUpdatedSegmentInfoStored,
                      weak_ptr_factory_.GetWeakPtr(), new_segment_info));
 }

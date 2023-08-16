@@ -123,7 +123,7 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
   // are ARC app windows and have task id or session id.
   void CheckAndAttachControllers();
   void AttachControllerToTask(int taskId);
-  void AttachControllerToSession(int session_id, const ArcAppWindowInfo& info);
+  void AttachControllerToSession(int session_id);
 
   // arc::ArcSessionManagerObserver:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;

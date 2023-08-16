@@ -212,13 +212,7 @@ CSSValue* ConsumeImageOrNone(CSSParserTokenRange&, const CSSParserContext&);
 
 CSSValue* ConsumeAxis(CSSParserTokenRange&, const CSSParserContext& context);
 
-// Old syntax: auto | <length>
-CSSValue* ConsumeIntrinsicSizeLonghandOld(CSSParserTokenRange&,
-                                          const CSSParserContext&);
-// New syntax: none | <length> | auto && <length>
-CSSValue* ConsumeIntrinsicSizeLonghandNew(CSSParserTokenRange&,
-                                          const CSSParserContext&);
-// Picks between Old and New based on RuntimeEnabledFeatures
+// Syntax: none | <length> | auto && <length>
 CSSValue* ConsumeIntrinsicSizeLonghand(CSSParserTokenRange&,
                                        const CSSParserContext&);
 
@@ -540,6 +534,9 @@ CSSValue* ConsumeBorderWidth(CSSParserTokenRange&,
                              UnitlessQuirk);
 CSSValue* ConsumeSVGPaint(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ParseSpacing(CSSParserTokenRange&, const CSSParserContext&);
+CSSFunctionValue* CreateWordBoundaryDetectionValue();
+CSSValue* ParseWordBoundaryDetection(CSSParserTokenRange&,
+                                     const CSSParserContext&);
 
 CSSValue* ConsumeSingleContainerName(CSSParserTokenRange&,
                                      const CSSParserContext&);

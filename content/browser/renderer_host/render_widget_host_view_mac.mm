@@ -11,6 +11,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/apple/owned_objc.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -1326,6 +1327,10 @@ bool RenderWidgetHostViewMac::CanBeMouseLocked() {
   return HasFocus() && is_window_key_;
 }
 
+bool RenderWidgetHostViewMac::AccessibilityHasFocus() {
+  return HasFocus() && is_window_key_;
+}
+
 bool RenderWidgetHostViewMac::LockKeyboard(
     absl::optional<base::flat_set<ui::DomCode>> dom_codes) {
   absl::optional<std::vector<uint32_t>> uint_dom_codes;
@@ -2119,8 +2124,9 @@ void RenderWidgetHostViewMac::SetRemoteAccessibilityWindowToken(
   if (window_token.empty()) {
     remote_window_accessible_.reset();
   } else {
-    remote_window_accessible_ =
-        ui::RemoteAccessibility::GetRemoteElementFromToken(window_token);
+    remote_window_accessible_.reset(
+        ui::RemoteAccessibility::GetRemoteElementFromToken(window_token),
+        base::scoped_policy::RETAIN);
   }
 }
 
@@ -2146,8 +2152,8 @@ void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
   // close to the original NSEvent, resulting in all sorts of bugs. Use the
   // native event serialization to reconstruct the NSEvent.
   // https://crbug.com/919167,943197,964052
-  [native_event.os_event release];
-  native_event.os_event = [ui::EventFromData(native_event_data) retain];
+  native_event.os_event =
+      base::apple::OwnedNSEvent(ui::EventFromData(native_event_data));
   ForwardKeyboardEventWithCommands(native_event, input_event->latency_info(),
                                    std::move(edit_commands));
 }

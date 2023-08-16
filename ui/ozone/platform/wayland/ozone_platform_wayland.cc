@@ -310,8 +310,7 @@ class OzonePlatformWayland : public OzonePlatform,
       // their position on screens and always assume they are located at some
       // arbitrary position.
       properties->supports_global_screen_coordinates =
-          features::IsWaylandScreenCoordinatesEnabled();
-
+          kDefaultScreenCoordinateEnabled;
       initialised = true;
     }
 
@@ -399,6 +398,12 @@ class OzonePlatformWayland : public OzonePlatform,
             &OzonePlatformWayland::CreateWaylandBufferManagerGpuBinding,
             base::Unretained(this)),
         gpu_task_runner);
+  }
+
+  void DumpState(std::ostream& out) const override {
+    if (connection_) {
+      connection_->DumpState(out);
+    }
   }
 
   void CreateWaylandBufferManagerGpuBinding(

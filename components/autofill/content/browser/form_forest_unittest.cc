@@ -288,7 +288,7 @@ class MockContentAutofillDriver : public ContentAutofillDriver {
   void set_sub_root(bool b) { is_sub_root_ = b; }
   bool is_sub_root() const { return is_sub_root_; }
 
-  MOCK_METHOD(void, TriggerReparse, (), (override));
+  MOCK_METHOD(void, TriggerFormExtraction, (), (override));
 
  private:
   bool is_sub_root_ = false;
@@ -400,8 +400,7 @@ class FormForestTest : public content::RenderViewHostTestHarness {
       url::Origin origin) {
     return {blink::ParsedPermissionsPolicyDeclaration(
         blink::mojom::PermissionsPolicyFeature::kSharedAutofill,
-        {blink::OriginWithPossibleWildcards(origin,
-                                            /*has_subdomain_wildcard=*/false)},
+        {*blink::OriginWithPossibleWildcards::FromOrigin(origin)},
         /*self_if_matches=*/absl::nullopt,
         /*matches_all_origins=*/false,
         /*matches_opaque_src=*/false)};
@@ -665,9 +664,9 @@ TEST_F(FormForestTestUpdateTree, MultipleRoots) {
   EXPECT_THAT(ff, Equals(flattened_forms_));
 }
 
-// Tests that (only) for forms with unseen parent form TriggerReparse is called
-// on the parent frame.
-TEST_F(FormForestTestUpdateTree, TriggerReparse) {
+// Tests that (only) for forms with unseen parent form TriggerFormExtraction is
+// called on the parent frame.
+TEST_F(FormForestTestUpdateTree, TriggerFormExtraction) {
   MockFormForest(
       {.forms = {
            {.name = "main1", .frames = {{.forms = {{.name = "child1"}}}}},
@@ -675,15 +674,15 @@ TEST_F(FormForestTestUpdateTree, TriggerReparse) {
   MockFlattening({{"main1"}, {"child1"}});
   MockFlattening({{"main2"}, {"child2"}});
   FormForest ff;
-  EXPECT_CALL(*driver("main1"), TriggerReparse).Times(1);
+  EXPECT_CALL(*driver("main1"), TriggerFormExtraction).Times(1);
   UpdateTreeOfRendererForm(ff, "child1");
-  EXPECT_CALL(*driver("main1"), TriggerReparse).Times(0);
+  EXPECT_CALL(*driver("main1"), TriggerFormExtraction).Times(0);
   UpdateTreeOfRendererForm(ff, "main1");
-  EXPECT_CALL(*driver("main1"), TriggerReparse).Times(0);
+  EXPECT_CALL(*driver("main1"), TriggerFormExtraction).Times(0);
   UpdateTreeOfRendererForm(ff, "child1");
-  EXPECT_CALL(*driver("main2"), TriggerReparse).Times(1);
+  EXPECT_CALL(*driver("main2"), TriggerFormExtraction).Times(1);
   UpdateTreeOfRendererForm(ff, "child2");
-  EXPECT_CALL(*driver("main2"), TriggerReparse).Times(0);
+  EXPECT_CALL(*driver("main2"), TriggerFormExtraction).Times(0);
   UpdateTreeOfRendererForm(ff, "main2");
   EXPECT_THAT(ff, Equals(flattened_forms_));
 }
@@ -1648,15 +1647,12 @@ TEST_F(FormForestTestUnflattenSharedAutofillPolicy, FromOtherOrigin) {
 }
 
 // Tests irreflexivity, asymmetry, transitivity of FrameData less-than relation.
-TEST(FormForestTest, FrameDataComparator) {
+TEST_F(FormForestTest, FrameDataComparator) {
   FrameData::CompareByFrameToken less;
   std::unique_ptr<FrameData> null;
   auto x = std::make_unique<FrameData>(test::MakeLocalFrameToken());
-  auto xx = std::make_unique<FrameData>(test::MakeLocalFrameToken());
-  auto y = std::make_unique<FrameData>(
-      LocalFrameToken(base::UnguessableToken::CreateForTesting(
-          x->frame_token->GetHighForSerialization() + 1,
-          x->frame_token->GetLowForSerialization() + 1)));
+  auto xx = std::make_unique<FrameData>(x->frame_token);
+  auto y = std::make_unique<FrameData>(test::MakeLocalFrameToken());
   ASSERT_TRUE(x->frame_token < y->frame_token);
   EXPECT_FALSE(less(null, null));
   EXPECT_TRUE(less(null, x));

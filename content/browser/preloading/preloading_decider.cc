@@ -8,13 +8,17 @@
 #include "base/containers/enum_set.h"
 #include "base/strings/string_split.h"
 #include "content/browser/preloading/prefetch/no_vary_search_helper.h"
+#include "content/browser/preloading/prefetch/prefetch_document_manager.h"
+#include "content/browser/preloading/prefetch/prefetch_params.h"
 #include "content/browser/preloading/preloading.h"
 #include "content/browser/preloading/prerenderer_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/preloading.h"
+#include "content/public/browser/weak_document_ptr.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/preloading/anchor_element_interaction_host.mojom.h"
 
 namespace content {
 
@@ -36,6 +40,15 @@ EagernessSet EagernessSetFromFeatureParam(base::StringPiece value) {
     }
   }
   return set;
+}
+
+void PrefetchEvictionCallback(WeakDocumentPtr document, const GURL& url) {
+  PreloadingDecider* preloading_decider =
+      PreloadingDecider::GetForCurrentDocument(
+          document.AsRenderFrameHostIfValid());
+  if (preloading_decider) {
+    preloading_decider->OnPrefetchEvicted(url);
+  }
 }
 
 }  // namespace
@@ -82,7 +95,13 @@ PreloadingDecider::PreloadingDecider(RenderFrameHost* rfh)
       observer_for_testing_(nullptr),
       preconnector_(render_frame_host()),
       prefetcher_(render_frame_host()),
-      prerenderer_(std::make_unique<PrerendererImpl>(render_frame_host())) {}
+      prerenderer_(std::make_unique<PrerendererImpl>(render_frame_host())) {
+  if (PrefetchContentRefactorIsEnabled() && PrefetchNewLimitsEnabled()) {
+    PrefetchDocumentManager::GetOrCreateForCurrentDocument(rfh)
+        ->SetPrefetchEvictionCallback(base::BindRepeating(
+            &PrefetchEvictionCallback, rfh->GetWeakDocumentPtr()));
+  }
+}
 
 PreloadingDecider::~PreloadingDecider() = default;
 
@@ -136,7 +155,9 @@ void PreloadingDecider::OnPointerDown(const GURL& url) {
   preconnector_.MaybePreconnect(url);
 }
 
-void PreloadingDecider::OnPointerHover(const GURL& url) {
+void PreloadingDecider::OnPointerHover(
+    const GURL& url,
+    blink::mojom::AnchorElementPointerDataPtr mouse_data) {
   if (observer_for_testing_) {
     observer_for_testing_->OnPointerHover(url);
   }
@@ -160,7 +181,6 @@ void PreloadingDecider::OnPointerHover(const GURL& url) {
     // ditto (async fallback)
     if (ShouldWaitForPrefetchResult(url))
       return;
-    preconnector_.MaybePreconnect(url);
   }
 }
 
@@ -189,6 +209,9 @@ void PreloadingDecider::RemoveStandbyCandidate(
   auto it = no_vary_search_hint_on_standby_candidates_.find(key_no_vary_search);
   if (it != no_vary_search_hint_on_standby_candidates_.end()) {
     it->second.erase(key);
+    if (it->second.empty()) {
+      no_vary_search_hint_on_standby_candidates_.erase(it);
+    }
   }
   on_standby_candidates_.erase(key);
 }
@@ -263,7 +286,8 @@ void PreloadingDecider::UpdateSpeculationCandidates(
       return true;
     }
 
-    processed_candidates_.insert(std::move(key));
+    processed_candidates_[key].push_back(candidate.Clone());
+
     // TODO(crbug.com/1341019): Pass the action requested by speculation rules
     // to PreloadingPrediction.
     AddPreloadingPrediction(candidate->url, GetPredictorForSpeculationRules(
@@ -273,6 +297,23 @@ void PreloadingDecider::UpdateSpeculationCandidates(
   };
 
   ClearStandbyCandidates();
+
+  // The lists of SpeculationCandidates cached in |processed_candidates_| will
+  // be stale now, so we clear the lists now and repopulate them below.
+  for (auto& entry : processed_candidates_) {
+    entry.second.clear();
+  }
+
+  // Move eager candidates to the front. This will avoid unnecessarily
+  // marking some non-eager candidates as on-standby when there is an eager
+  // candidate with the same URL that will be processed immediately.
+  base::ranges::stable_partition(candidates, [&](const auto& candidate) {
+    return candidate->eagerness == blink::mojom::SpeculationEagerness::kEager;
+  });
+
+  // The candidates remaining after this call will be all eager candidates,
+  // and all non-eager candidates whose (url, action) pair has already been
+  // processed.
   base::EraseIf(candidates, should_mark_as_on_standby);
 
   prefetcher_.ProcessCandidatesForPrefetch(candidates);
@@ -283,7 +324,7 @@ void PreloadingDecider::UpdateSpeculationCandidates(
 bool PreloadingDecider::MaybePrefetch(const GURL& url,
                                       const PreloadingPredictor& predictor) {
   SpeculationCandidateKey key{url, blink::mojom::SpeculationAction::kPrefetch};
-  std::vector<blink::mojom::SpeculationCandidatePtr> candidates;
+  blink::mojom::SpeculationCandidatePtr candidate;
 
   auto it = on_standby_candidates_.find(key);
   if (it != on_standby_candidates_.end()) {
@@ -292,13 +333,11 @@ bool PreloadingDecider::MaybePrefetch(const GURL& url,
           return IsSuitableCandidate(candidate, predictor);
         });
     if (inner_it != it->second.end()) {
-      // TODO(isaboori): prefetcher should provide MaybePrefetch interface to
-      // directly send the candidate to it instead of passing it as a vector.
-      candidates.push_back(inner_it->Clone());
+      candidate = inner_it->Clone();
     }
   }
 
-  if (candidates.empty()) {
+  if (!candidate) {
     // Check all URLs that might match via NVS hint.
     // If there are multiple candidates that match prefetch the first one.
     GURL::Replacements replacements;
@@ -319,31 +358,34 @@ bool PreloadingDecider::MaybePrefetch(const GURL& url,
       // has a No-Vary-Search hint that is matching.
       auto standby_it = on_standby_candidates_.find(standby_key);
       CHECK(standby_it != on_standby_candidates_.end());
-      auto inner_it =
-          base::ranges::find_if(standby_it->second, [&](const auto& candidate) {
-            return candidate->no_vary_search_hint &&
-                   NoVarySearchHelper::ParseHttpNoVarySearchDataFromMojom(
-                       candidate->no_vary_search_hint)
+      auto inner_it = base::ranges::find_if(
+          standby_it->second, [&](const auto& on_standby_candidate) {
+            return on_standby_candidate->no_vary_search_hint &&
+                   no_vary_search::ParseHttpNoVarySearchDataFromMojom(
+                       on_standby_candidate->no_vary_search_hint)
                        .AreEquivalent(url, prefetch_url) &&
-                   IsSuitableCandidate(candidate, predictor);
+                   IsSuitableCandidate(on_standby_candidate, predictor);
           });
       if (inner_it != standby_it->second.end()) {
-        candidates.push_back(inner_it->Clone());
+        candidate = inner_it->Clone();
         key = standby_key;
         break;
       }
     }
   }
 
-  if (candidates.empty()) {
+  if (!candidate) {
     return false;
   }
 
-  prefetcher_.ProcessCandidatesForPrefetch(candidates);
-  bool result = candidates.empty();
+  bool result = prefetcher_.MaybePrefetch(std::move(candidate));
 
+  // |key| might have changed since we first computed |it|.
+  it = on_standby_candidates_.find(key);
+  std::vector<blink::mojom::SpeculationCandidatePtr> candidates_for_key =
+      std::move(it->second);
   RemoveStandbyCandidate(key);
-  processed_candidates_.insert(std::move(key));
+  processed_candidates_[std::move(key)] = std::move(candidates_for_key);
   return result;
 }
 
@@ -376,8 +418,10 @@ bool PreloadingDecider::MaybePrerender(const GURL& url,
 
   bool result = prerenderer_->MaybePrerender(inner_it->Clone());
 
+  std::vector<blink::mojom::SpeculationCandidatePtr> processed =
+      std::move(it->second);
   RemoveStandbyCandidate(it->first);
-  processed_candidates_.insert(std::move(key));
+  processed_candidates_[std::move(key)] = std::move(processed);
   return result;
 }
 
@@ -411,6 +455,30 @@ bool PreloadingDecider::IsOnStandByForTesting(
     blink::mojom::SpeculationAction action) {
   return on_standby_candidates_.find({url, action}) !=
          on_standby_candidates_.end();
+}
+
+void PreloadingDecider::OnPrefetchEvicted(const GURL& url) {
+  SpeculationCandidateKey key{url, blink::mojom::SpeculationAction::kPrefetch};
+  auto it = processed_candidates_.find(key);
+  CHECK(it != processed_candidates_.end());
+  std::vector<blink::mojom::SpeculationCandidatePtr> candidates =
+      std::move(it->second);
+  processed_candidates_.erase(it);
+  for (const auto& candidate : candidates) {
+    if (candidate->eagerness != blink::mojom::SpeculationEagerness::kEager) {
+      AddStandbyCandidate(candidate);
+    }
+    // TODO(crbug.com/1445086): Add support for the case where |candidate|'s
+    // eagerness is kEager. In a scenario where the prefetch evicted is a
+    // non-eager prefetch, we could theoretically reprefetch using the eager
+    // candidate (and have it use the eager prefetch quota). In that scenario,
+    // perhaps not evicting and just making the prefetch use the eager limit
+    // might be a better option too. In the case where an eager prefetch is
+    // evicted, we don't want to immediately try and reprefetch the candidate;
+    // it would defeat the purpose of evicting in the first place, and due to a
+    // possible-rentrancy into PrefetchService::Prefetch(), it could cause us to
+    // exceed the limit.
+  }
 }
 
 }  // namespace content

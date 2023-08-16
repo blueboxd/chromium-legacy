@@ -28,6 +28,7 @@
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
+#include "chrome/browser/password_manager/android/cred_man_controller.h"
 #include "chrome/browser/password_manager/chrome_webauthn_credentials_delegate.h"
 #include "chrome/browser/password_manager/chrome_webauthn_credentials_delegate_factory.h"
 #include "chrome/browser/password_manager/field_info_manager_factory.h"
@@ -132,6 +133,7 @@
 #include "chrome/browser/password_manager/android/credential_leak_controller_android.h"
 #include "chrome/browser/password_manager/android/password_accessory_controller.h"
 #include "chrome/browser/password_manager/android/password_accessory_controller_impl.h"
+#include "chrome/browser/password_manager/android/password_checkup_launcher_helper_impl.h"
 #include "chrome/browser/password_manager/android/password_generation_controller.h"
 #include "chrome/browser/password_manager/android/password_manager_launcher_android.h"
 #include "chrome/browser/password_manager/android/password_manager_ui_util_android.h"
@@ -140,7 +142,8 @@
 #include "chrome/browser/touch_to_fill/touch_to_fill_controller_autofill_delegate.h"
 #include "components/messages/android/messages_feature.h"
 #include "components/password_manager/core/browser/credential_cache.h"
-#include "components/webauthn/android/webauthn_cred_man_delegate.h"
+#include "components/password_manager/core/browser/password_credential_filler_impl.h"
+#include "components/webauthn/android/webauthn_cred_man_delegate_factory.h"
 #include "ui/base/ui_base_features.h"
 #else
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
@@ -341,7 +344,7 @@ void ChromePasswordManagerClient::FocusedInputChanged(
 #if BUILDFLAG(IS_ANDROID)
   ManualFillingController::GetOrCreate(web_contents())
       ->NotifyFocusedInputChanged(focused_field_id, focused_field_type);
-  GetOrCreatePasswordAccessory()->UpdateCredManReentryUi();
+  GetOrCreatePasswordAccessory()->UpdateCredManReentryUi(focused_field_type);
 
   password_manager::ContentPasswordManagerDriver* content_driver =
       static_cast<password_manager::ContentPasswordManagerDriver*>(driver);
@@ -406,23 +409,35 @@ void ChromePasswordManagerClient::ShowPasswordManagerErrorMessage(
   }
 }
 
-void ChromePasswordManagerClient::ShowTouchToFill(
-    PasswordManagerDriver* driver,
-    autofill::mojom::SubmissionReadinessState submission_readiness) {
+void ChromePasswordManagerClient::ShowKeyboardReplacingSurface(
+    password_manager::PasswordManagerDriver* driver,
+    autofill::mojom::SubmissionReadinessState submission_readiness,
+    bool is_webauthn_form) {
+  if (GetOrCreateCredManController()->Show(driver, is_webauthn_form)) {
+    return;
+  }
   auto* webauthn_delegate = GetWebAuthnCredentialsDelegateForDriver(driver);
   std::vector<password_manager::PasskeyCredential> passkeys;
+  bool should_show_hybrid_option = false;
   if (webauthn_delegate && webauthn_delegate->GetPasskeys().has_value()) {
     passkeys = *webauthn_delegate->GetPasskeys();
+    should_show_hybrid_option = webauthn_delegate->IsAndroidHybridAvailable();
   }
+  auto filler =
+      std::make_unique<password_manager::PasswordCredentialFillerImpl>(
+          driver->AsWeakPtr(), submission_readiness);
+  auto ttf_controller_autofill_delegate =
+      std::make_unique<TouchToFillControllerAutofillDelegate>(
+          this, GetDeviceAuthenticator(), webauthn_delegate->AsWeakPtr(),
+          std::move(filler),
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(
+              should_show_hybrid_option));
   GetOrCreateTouchToFillController()->Show(
       credential_cache_
           .GetCredentialStore(url::Origin::Create(
               driver->GetLastCommittedURL().DeprecatedGetOriginAsURL()))
           .GetCredentials(),
-      passkeys,
-      std::make_unique<TouchToFillControllerAutofillDelegate>(
-          this, GetDeviceAuthenticator(), driver->AsWeakPtr(),
-          submission_readiness));
+      passkeys, std::move(ttf_controller_autofill_delegate));
 }
 #endif
 
@@ -599,6 +614,7 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
       password_manager::GetLeakDialogType(leak_type));
   (new CredentialLeakControllerAndroid(
        leak_type, url, username, web_contents()->GetTopLevelNativeWindow(),
+       std::make_unique<PasswordCheckupLauncherHelperImpl>(),
        std::move(metrics_recorder)))
       ->ShowDialog();
 #else   // !BUILDFLAG(IS_ANDROID)
@@ -964,14 +980,14 @@ ChromePasswordManagerClient::GetWebAuthnCredentialsDelegateForDriver(
 }
 
 #if BUILDFLAG(IS_ANDROID)
-WebAuthnCredManDelegate*
+webauthn::WebAuthnCredManDelegate*
 ChromePasswordManagerClient::GetWebAuthnCredManDelegateForDriver(
     PasswordManagerDriver* driver) {
   auto* frame_host =
       static_cast<password_manager::ContentPasswordManagerDriver*>(driver)
           ->render_frame_host();
-  return WebAuthnCredManDelegate::GetRequestDelegate(
-      content::WebContents::FromRenderFrameHost(frame_host));
+  return webauthn::WebAuthnCredManDelegateFactory::GetFactory(web_contents())
+      ->GetRequestDelegate(frame_host);
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -1242,6 +1258,15 @@ ChromePasswordManagerClient::GetOrCreateTouchToFillController() {
   }
   return touch_to_fill_controller_.get();
 }
+
+password_manager::CredManController*
+ChromePasswordManagerClient::GetOrCreateCredManController() {
+  if (!cred_man_controller_) {
+    cred_man_controller_ =
+        std::make_unique<password_manager::CredManController>(this);
+  }
+  return cred_man_controller_.get();
+}
 #endif  // BUILDFLAG(IS_ANDROID)
 
 ChromePasswordManagerClient::ChromePasswordManagerClient(
@@ -1370,6 +1395,13 @@ void ChromePasswordManagerClient::HideFillingUI() {
       PasswordGenerationController::GetIfExisting(web_contents());
   if (generation_controller) {
     generation_controller->HideBottomSheetIfNeeded();
+  }
+  if (touch_to_fill_controller_) {
+    touch_to_fill_controller_->Reset();
+  }
+
+  if (cred_man_controller_) {
+    cred_man_controller_.reset();
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 }

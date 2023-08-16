@@ -525,15 +525,15 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   [self updateFakeOmniboxForScrollPosition];
 }
 
-- (void)updateHeightAboveFeedAndScrollToTopIfNeeded {
-  if (self.viewDidFinishLoading &&
-      !self.hasSavedOffsetFromPreviousScrollState) {
-    // Do not scroll to the top if there is a saved scroll state. Also,
-    // `-setContentOffsetToTop` potentially updates constaints, and if
-    // viewDidLoad has not finished, some views may not in the view hierarchy
-    // yet.
+- (void)updateHeightAboveFeed {
+  if (self.viewDidFinishLoading) {
+    CGFloat oldHeightAboveFeed = self.collectionView.contentInset.top;
+    CGFloat oldOffset = self.collectionView.contentOffset.y;
     [self updateFeedInsetsForContentAbove];
-    [self setContentOffsetToTop];
+    CGFloat change = self.collectionView.contentInset.top - oldHeightAboveFeed;
+    // Offset the change by subtracting it from the content offset, in order to
+    // visually keep the same scroll position.
+    [self setContentOffset:oldOffset - change];
   }
 }
 
@@ -1398,6 +1398,22 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 - (void)updateModularHomeBackgroundColorForUserInterfaceStyle:
     (UIUserInterfaceStyle)style {
   _backgroundGradientView.hidden = style == UIUserInterfaceStyleLight;
+}
+
+// Signal to the ViewController that the height above the feed needs to be
+// recalculated and thus also likely needs to be scrolled up to accommodate for
+// the new height. Nothing may happen if the ViewController determines that the
+// current scroll state should not change.
+- (void)updateHeightAboveFeedAndScrollToTopIfNeeded {
+  if (self.viewDidFinishLoading &&
+      !self.hasSavedOffsetFromPreviousScrollState) {
+    // Do not scroll to the top if there is a saved scroll state. Also,
+    // `-setContentOffsetToTop` potentially updates constaints, and if
+    // viewDidLoad has not finished, some views may not in the view hierarchy
+    // yet.
+    [self updateFeedInsetsForContentAbove];
+    [self setContentOffsetToTop];
+  }
 }
 
 #pragma mark - Helpers

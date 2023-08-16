@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.layouts.content;
 
 import android.graphics.Bitmap;
 import android.os.Handler;
+import android.util.Size;
 import android.view.PixelCopy;
 import android.view.SurfaceView;
 
@@ -17,19 +18,24 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.Callback;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.CompositorView;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.RenderTestRule;
 
@@ -78,6 +84,40 @@ public class TabContentManagerTest {
                 sActivityTestRule.getTestServer().getURL("/chrome/test/data/android/google.html");
         sActivityTestRule.loadUrlInNewTab(testHttpsUrl2);
         mRenderTestRule.compareForResult(captureBitmap(), "contentViewTab2");
+    }
+
+    @Test
+    @MediumTest
+    @DisabledTest(message = "https://crbug.com/1454653")
+    // Disable "AImageReader" as a workaround for https://crbug.com/1454914
+    @DisableFeatures("AImageReader")
+    public void testJpegRefetch() throws Exception {
+        final String testHttpsUrl1 =
+                sActivityTestRule.getTestServer().getURL("/chrome/test/data/android/test.html");
+        sActivityTestRule.loadUrlInNewTab(testHttpsUrl1);
+
+        final CallbackHelper helper = new CallbackHelper();
+        final Bitmap[] bitmapHolder = new Bitmap[1];
+        Callback<Bitmap> bitmapCallback = (bitmap) -> {
+            bitmapHolder[0] = bitmap;
+            helper.notifyCalled();
+        };
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            final Tab currentTab = sActivityTestRule.getActivity().getActivityTab();
+            final TabContentManager tabContentManager =
+                    sActivityTestRule.getActivity().getTabContentManagerSupplier().get();
+            final int height = 100;
+            final int width = Math.round(
+                    height * TabUtils.getTabThumbnailAspectRatio(sActivityTestRule.getActivity()));
+            tabContentManager.cacheTabThumbnail(currentTab);
+            tabContentManager.getTabThumbnailWithCallback(currentTab.getId(),
+                    new Size(width, height), bitmapCallback, /*forceUpdate=*/false,
+                    /*writeToCache=*/false);
+        });
+
+        helper.waitForFirst();
+        Assert.assertNotNull(bitmapHolder[0]);
     }
 
     /**

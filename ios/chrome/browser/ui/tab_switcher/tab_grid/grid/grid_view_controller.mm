@@ -47,21 +47,22 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_grid_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_provider.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/grid_transition_layout.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/legacy_grid_transition_layout.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/modals/modals_api.h"
+#import "third_party/abseil-cpp/absl/types/optional.h"
 #import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-class ScrollingTimeLogger {
+class ScopedScrollingTimeLogger {
  public:
-  ScrollingTimeLogger() : start_(base::TimeTicks::Now()) {}
-  ~ScrollingTimeLogger() {
+  ScopedScrollingTimeLogger() : start_(base::TimeTicks::Now()) {}
+  ~ScopedScrollingTimeLogger() {
     base::TimeDelta duration = base::TimeTicks::Now() - start_;
     base::UmaHistogramTimes("IOS.TabSwitcher.TimeSpentScrolling", duration);
   }
@@ -192,12 +193,15 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @property(nonatomic) BOOL localDragActionInProgress;
 // Tracks if the Inactive Tabs button is being animated out.
 @property(nonatomic) BOOL inactiveTabsHeaderHideAnimationInProgress;
+// Tracks if the items are in a batch action, which are the "Close All" or
+// "Undo" the close all.
+@property(nonatomic) BOOL isClosingAllOrUndoRunning;
 @end
 
 @implementation GridViewController {
   // Tracks when the grid view is scrolling. Create a new instance to start
   // timing and reset to stop and log the associated time histogram.
-  std::unique_ptr<ScrollingTimeLogger> _scrollingTimeLogger;
+  absl::optional<ScopedScrollingTimeLogger> _scopedScrollingTimeLogger;
 }
 
 @synthesize thumbStripEnabled = _thumbStripEnabled;
@@ -469,11 +473,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       containsObject:selectedIndexPath];
 }
 
-- (GridTransitionLayout*)transitionLayout {
+- (LegacyGridTransitionLayout*)transitionLayout {
   [self.collectionView layoutIfNeeded];
-  NSMutableArray<GridTransitionItem*>* items = [[NSMutableArray alloc] init];
-  GridTransitionActiveItem* activeItem;
-  GridTransitionItem* selectionItem;
+  NSMutableArray<LegacyGridTransitionItem*>* items =
+      [[NSMutableArray alloc] init];
+  LegacyGridTransitionActiveItem* activeItem;
+  LegacyGridTransitionItem* selectionItem;
   for (NSIndexPath* path in self.collectionView.indexPathsForVisibleItems) {
     if (path.section != kOpenTabsSectionIndex)
       continue;
@@ -488,27 +493,28 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     if ([cell hasIdentifier:self.selectedItemID]) {
       GridTransitionCell* activeCell =
           [GridTransitionCell transitionCellFromCell:cell];
-      activeItem = [GridTransitionActiveItem itemWithCell:activeCell
-                                                   center:attributes.center
-                                                     size:attributes.size];
+      activeItem =
+          [LegacyGridTransitionActiveItem itemWithCell:activeCell
+                                                center:attributes.center
+                                                  size:attributes.size];
       // If the active item is the last inserted item, it needs to be animated
       // differently.
       if ([cell hasIdentifier:self.lastInsertedItemID])
         activeItem.isAppearing = YES;
-      selectionItem = [GridTransitionItem
+      selectionItem = [LegacyGridTransitionItem
           itemWithCell:[GridCell transitionSelectionCellFromCell:cell]
                 center:attributes.center];
     } else {
       UIView* cellSnapshot = [cell snapshotViewAfterScreenUpdates:YES];
-      GridTransitionItem* item =
-          [GridTransitionItem itemWithCell:cellSnapshot
-                                    center:attributes.center];
+      LegacyGridTransitionItem* item =
+          [LegacyGridTransitionItem itemWithCell:cellSnapshot
+                                          center:attributes.center];
       [items addObject:item];
     }
   }
-  return [GridTransitionLayout layoutWithInactiveItems:items
-                                            activeItem:activeItem
-                                         selectionItem:selectionItem];
+  return [LegacyGridTransitionLayout layoutWithInactiveItems:items
+                                                  activeItem:activeItem
+                                               selectionItem:selectionItem];
 }
 
 - (void)prepareForAppearance {
@@ -548,6 +554,34 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // Stop animating the collection view to prevent the insertion animation from
   // interfering with the tab presentation animation.
   self.currentLayout.animatesItemUpdates = NO;
+}
+
+- (void)willCloseAll {
+  self.isClosingAllOrUndoRunning = YES;
+}
+
+- (void)didCloseAll {
+  self.isClosingAllOrUndoRunning = NO;
+}
+
+- (void)willUndoCloseAll {
+  self.isClosingAllOrUndoRunning = YES;
+}
+
+- (void)didUndoCloseAll {
+  self.isClosingAllOrUndoRunning = NO;
+
+  // Reload the button and ensure it is not hidden, as this is the only flow
+  // where the button can dynamically reappear when the app is running and the
+  // reappearance is not managed by default.
+  [self reloadInactiveTabsButtonHeader];
+  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0
+                                               inSection:kOpenTabsSectionIndex];
+  InactiveTabsButtonHeader* header =
+      base::mac::ObjCCast<InactiveTabsButtonHeader>([self.collectionView
+          supplementaryViewForElementKind:UICollectionElementKindSectionHeader
+                              atIndexPath:indexPath]);
+  header.hidden = NO;
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -709,6 +743,29 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return cell;
 }
 
+- (void)collectionView:(UICollectionView*)collectionView
+       willDisplayCell:(UICollectionViewCell*)cell
+    forItemAtIndexPath:(NSIndexPath*)indexPath {
+  // Checking and updating the GridCell's `state` if needed.
+  //
+  // For the context: `setMode:` method updates the `state` property of the
+  // visible GridCells only. However, there are might be some cells that were
+  // dequeued already but haven't been displayed yet. Those will never update
+  // their `state` unless we forcely handle it here.
+  //
+  // See crbug.com//1427278
+  if ([cell isKindOfClass:[GridCell class]]) {
+    GridCell* gridCell = base::mac::ObjCCastStrict<GridCell>(cell);
+
+    BOOL isTabGridInSelectionMode = _mode == TabGridModeSelection;
+    BOOL isGridCellInSelectionMode = gridCell.state != GridCellStateNotEditing;
+
+    if (isTabGridInSelectionMode != isGridCellInSelectionMode) {
+      gridCell.state = isTabGridInSelectionMode ? GridCellStateEditingUnselected
+                                                : GridCellStateNotEditing;
+    }
+  }
+}
 #pragma mark - UICollectionViewDelegate
 
 - (CGSize)collectionView:(UICollectionView*)collectionView
@@ -717,6 +774,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // `collectionViewLayout` should always be a flow layout.
   DCHECK(
       [collectionViewLayout isKindOfClass:[UICollectionViewFlowLayout class]]);
+  if (self.isClosingAllOrUndoRunning) {
+    return CGSizeZero;
+  }
   UICollectionViewFlowLayout* layout =
       (UICollectionViewFlowLayout*)collectionViewLayout;
   CGSize itemSize = layout.itemSize;
@@ -742,6 +802,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   switch (_mode) {
     case TabGridModeNormal:
       if (!IsInactiveTabsAvailable()) {
+        return CGSizeZero;
+      }
+      if (self.isClosingAllOrUndoRunning) {
         return CGSizeZero;
       }
       if (self.inactiveTabsHeaderHideAnimationInProgress) {
@@ -1147,18 +1210,18 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
   [self.delegate gridViewControllerWillBeginDragging:self];
   base::RecordAction(base::UserMetricsAction("MobileTabGridUserScrolled"));
-  _scrollingTimeLogger = std::make_unique<ScrollingTimeLogger>();
+  _scopedScrollingTimeLogger = ScopedScrollingTimeLogger();
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
                   willDecelerate:(BOOL)decelerate {
   if (!decelerate) {
-    _scrollingTimeLogger = nullptr;
+    _scopedScrollingTimeLogger.reset();
   }
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
-  _scrollingTimeLogger = nullptr;
+  _scopedScrollingTimeLogger.reset();
 }
 
 - (void)scrollViewDidScrollToTop:(UIScrollView*)scrollView {
@@ -2057,6 +2120,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // collection. This might be due a UIKit/SwiftUI interaction bug, as this is
   // not necessary for `InactiveTabsPreambleHeader` below for example.
   gHeader.parent = self;
+  [self.view addSubview:gHeader];
 
   CGSize size =
       [gHeader systemLayoutSizeFittingSize:targetSize

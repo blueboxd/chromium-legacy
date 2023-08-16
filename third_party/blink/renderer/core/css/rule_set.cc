@@ -177,6 +177,7 @@ void RuleSet::AddToRuleSet(HeapVector<RuleData>& rules,
                            const RuleData& rule_data) {
   rules.push_back(rule_data);
   rules.back().ComputeBloomFilterHashes();
+  rules.back().ComputeEntirelyCoveredByBucketing();
   need_compaction_ = true;
 }
 
@@ -697,8 +698,9 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
       }
       AddChildRules(scope_rule->ChildRules(), medium, add_rule_flags,
                     container_query, cascade_layer, inner_style_scope);
-    } else if (auto* initial_rule = DynamicTo<StyleRuleStartingStyle>(rule)) {
-      AddChildRules(initial_rule->ChildRules(), medium,
+    } else if (auto* starting_style_rule =
+                   DynamicTo<StyleRuleStartingStyle>(rule)) {
+      AddChildRules(starting_style_rule->ChildRules(), medium,
                     add_rule_flags | kRuleIsStartingStyle, container_query,
                     cascade_layer, style_scope);
     }

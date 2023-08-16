@@ -97,9 +97,9 @@ extern sandbox::TargetServices* g_utility_target_services;
         // (BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC))
 
 #if BUILDFLAG(IS_ANDROID)
-#include "content/public/common/network_service_util.h"
 #include "services/network/empty_network_service.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/network_switches.h"
 #endif
 
 #if BUILDFLAG(ENABLE_ACCESSIBILITY_SERVICE)
@@ -387,9 +387,8 @@ void RegisterIOThreadServices(mojo::ServiceFactory& services) {
   // loop of type IO that can get notified when pipes have data.
   services.Add(RunNetworkService);
 #if BUILDFLAG(IS_ANDROID)
-  if (IsInProcessNetworkService() &&
-      base::FeatureList::IsEnabled(
-          network::features::kNetworkServiceEmptyOutOfProcess)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          network::switches::kRegisterEmptyNetworkService)) {
     network::RegisterEmptyNetworkService(services);
   }
 #endif

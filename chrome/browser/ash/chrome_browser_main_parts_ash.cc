@@ -108,6 +108,7 @@
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/login_screen_extensions_storage_cleaner.h"
 #include "chrome/browser/ash/login/login_wizard.h"
+#include "chrome/browser/ash/login/osauth/chrome_auth_parts.h"
 #include "chrome/browser/ash/login/session/chrome_session_manager.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/login/startup_utils.h"
@@ -160,6 +161,7 @@
 #include "chrome/browser/ash/system_token_cert_db_initializer.h"
 #include "chrome/browser/ash/usb/cros_usb_detector.h"
 #include "chrome/browser/ash/video_conference/video_conference_app_service_client.h"
+#include "chrome/browser/ash/video_conference/video_conference_ash_feature_client.h"
 #include "chrome/browser/ash/wilco_dtc_supportd/wilco_dtc_supportd_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
@@ -215,6 +217,7 @@
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/local_search_service/public/cpp/local_search_service_proxy_factory.h"
 #include "chromeos/ash/components/login/auth/auth_events_recorder.h"
+#include "chromeos/ash/components/login/hibernate/hibernate_manager.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/login/session/session_termination_manager.h"
 #include "chromeos/ash/components/network/fast_transition_observer.h"
@@ -222,7 +225,6 @@
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector_stub.h"
 #include "chromeos/ash/components/network/system_token_cert_db_storage.h"
-#include "chromeos/ash/components/osauth/public/auth_parts.h"
 #include "chromeos/ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "chromeos/ash/components/power/dark_resume_controller.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
@@ -853,7 +855,7 @@ int ChromeBrowserMainPartsAsh::PreMainMessageLoopRun() {
   auth_events_recorder_ =
       base::WrapUnique<AuthEventsRecorder>(new AuthEventsRecorder());
 
-  auth_parts_ = AuthParts::Create();
+  auth_parts_ = std::make_unique<ChromeAuthParts>();
 
   return ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
@@ -1400,6 +1402,8 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
   dark_resume_controller_ = std::make_unique<system::DarkResumeController>(
       std::move(wake_lock_provider));
 
+  HibernateManager::InitializePlatformSupport();
+
   // DiagnosticsBrowserDelegate has to be initialized after ProfilerHelper and
   // UserManager. Initializing in PostProfileInit to ensure Profile data is
   // available and shell has been initialized.
@@ -1423,6 +1427,8 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
         std::make_unique<video_conference::VideoConferenceManagerClientImpl>();
     vc_app_service_client_ =
         std::make_unique<VideoConferenceAppServiceClient>();
+    vc_ash_feature_client_ =
+        std::make_unique<VideoConferenceAshFeatureClient>();
   }
 
   apn_migrator_ = std::make_unique<ApnMigrator>(
@@ -1495,6 +1501,8 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   if (pre_profile_init_called_) {
     KioskModeIdleAppNameNotification::Shutdown();
   }
+
+  auth_parts_.reset();
 
   // Tell DeviceSettingsService to stop talking to session_manager. Do not
   // shutdown DeviceSettingsService yet, it might still be accessed by
@@ -1637,6 +1645,7 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
 
   // vc_app_service_client_ has to be destructed before PostMainMessageLoopRun.
   vc_app_service_client_.reset();
+  vc_ash_feature_client_.reset();
 
   // Has a dependency on Profile, so it needs to be destroyed before Profile
   // gets destroyed during ProfileManager destruction, which happens inside

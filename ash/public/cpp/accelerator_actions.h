@@ -107,6 +107,7 @@ namespace ash {
   ACCELERATOR_ACTION_ENTRY(ShowStylusTools)                             \
   ACCELERATOR_ACTION_ENTRY(ShowTaskManager)                             \
   ACCELERATOR_ACTION_ENTRY(StartAssistant)                              \
+  ACCELERATOR_ACTION_ENTRY(StopScreenRecording)                         \
   ACCELERATOR_ACTION_ENTRY(Suspend)                                     \
   ACCELERATOR_ACTION_ENTRY(SwapPrimaryDisplay)                          \
   /* Switch to another IME depending on the accelerator. */             \
@@ -164,10 +165,6 @@ namespace ash {
   ACCELERATOR_ACTION_ENTRY(DebugPrintWindowHierarchy)                   \
   ACCELERATOR_ACTION_ENTRY(DebugShowToast)                              \
   ACCELERATOR_ACTION_ENTRY(DebugSystemUiStyleViewer)                    \
-  /* TODO(crbug.com/1336836): Remove fling accelerators after float is  \
-   * released. */                                                       \
-  ACCELERATOR_ACTION_ENTRY(DebugTuckFloatedWindowLeft)                  \
-  ACCELERATOR_ACTION_ENTRY(DebugTuckFloatedWindowRight)                 \
   ACCELERATOR_ACTION_ENTRY(DebugToggleDarkMode)                         \
   ACCELERATOR_ACTION_ENTRY(DebugToggleDynamicColor)                     \
   ACCELERATOR_ACTION_ENTRY(DebugToggleGlanceables)                      \

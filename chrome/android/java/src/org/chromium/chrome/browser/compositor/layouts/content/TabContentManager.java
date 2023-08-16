@@ -62,14 +62,16 @@ public class TabContentManager {
     // GridTabSwitcherThumbnailFetchingResult enum in enums.xml if these change.
     @IntDef({ThumbnailFetchingResult.GOT_JPEG, ThumbnailFetchingResult.GOT_ETC1,
             ThumbnailFetchingResult.GOT_NOTHING,
-            ThumbnailFetchingResult.GOT_DIFFERENT_ASPECT_RATIO_JPEG})
+            ThumbnailFetchingResult.GOT_DIFFERENT_ASPECT_RATIO_JPEG,
+            ThumbnailFetchingResult.GOT_JPEG_ON_REFETCH})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ThumbnailFetchingResult {
         int GOT_JPEG = 0;
         int GOT_ETC1 = 1;
         int GOT_NOTHING = 2;
         int GOT_DIFFERENT_ASPECT_RATIO_JPEG = 3;
-        int NUM_ENTRIES = 4;
+        int GOT_JPEG_ON_REFETCH = 4;
+        int NUM_ENTRIES = 5;
     }
 
     // This is to accommodate for pixel rounding errors.
@@ -193,10 +195,9 @@ public class TabContentManager {
                 && !sThumbnailCacheRefactor.isEnabled();
         boolean saveJpegThumbnails = TabUiFeatureUtilities.isGridTabSwitcherEnabled(mContext);
 
-        mNativeTabContentManager =
-                TabContentManagerJni.get().init(TabContentManager.this, mFullResThumbnailsMaxSize,
-                        approximationCacheSize, compressionQueueMaxSize, writeQueueMaxSize,
-                        useApproximationThumbnails, saveJpegThumbnails, getTabCaptureAspectRatio());
+        mNativeTabContentManager = TabContentManagerJni.get().init(TabContentManager.this,
+                mFullResThumbnailsMaxSize, approximationCacheSize, compressionQueueMaxSize,
+                writeQueueMaxSize, useApproximationThumbnails, saveJpegThumbnails);
     }
 
     /**
@@ -334,6 +335,10 @@ public class TabContentManager {
             @NonNull Callback<Bitmap> callback, boolean forceUpdate, boolean writeBack) {
         if (!mSnapshotsEnabled) return;
 
+        // TODO(crbug/1444782): Remove forceUpdate and writeBack params from here and don't
+        // trigger a captureThumbnail. This should be feasible once the
+        // ThumbnailCacheRefactor is enabled & the Tab shrink/expand animations are updated
+        // to use Java rather than compositor animations.
         if (!forceUpdate) {
             assert !writeBack : "writeBack is ignored if not forceUpdate";
             getTabThumbnailFromDisk(tabId, thumbnailSize, callback);
@@ -424,6 +429,17 @@ public class TabContentManager {
 
     private void getTabThumbnailFromDisk(
             @NonNull int tabId, @NonNull Size thumbnailSize, @NonNull Callback<Bitmap> callback) {
+        // Get the JPEG once it is ready if a capture is ongoing. Ignore any possible refetch
+        // attempts as aspect ratio will be ignored if the ThumbnailCacheRefactor is enabled.
+        if (mNativeTabContentManager != 0 && sThumbnailCacheRefactor.isEnabled()) {
+            TraceEvent.startAsync("GetTabThumbnailFromDiskJpegAwait", tabId);
+            fetchJpeg(tabId, thumbnailSize, (bitmap) -> {
+                TraceEvent.finishAsync("GetTabThumbnailFromDiskJpegAwait", tabId);
+                callback.onResult(bitmap);
+            });
+            return;
+        }
+
         // Try JPEG thumbnail first before using the more costly
         // TabContentManagerJni.get().getEtc1TabThumbnail.
         TraceEvent.startAsync("GetTabThumbnailFromDisk", tabId);
@@ -434,20 +450,91 @@ public class TabContentManager {
         });
     }
 
+    /**
+     * Read the JPEG in java and report back without refetch.
+     * @param tabId The Tab ID to wait for a JPEG of.
+     * @param thumbnailSize The size of thumbnail that will be shown.
+     * @param callback The callback to execute once native has finished any pending JPEG capture
+     *                 tasks for the tab.
+     */
+    private void getJpegForTabNoRefetch(
+            int tabId, @NonNull Size thumbnailSize, @NonNull Callback<Bitmap> callback) {
+        PostTask.postTask(TaskTraits.USER_VISIBLE_MAY_BLOCK, () -> {
+            Bitmap bitmap = getJpegForTab(tabId, thumbnailSize);
+            PostTask.postTask(TaskTraits.UI_USER_VISIBLE, () -> {
+                if (bitmap == null) {
+                    recordThumbnailFetchingResult(ThumbnailFetchingResult.GOT_NOTHING);
+                } else {
+                    recordThumbnailFetchingResult(ThumbnailFetchingResult.GOT_JPEG);
+                }
+                callback.onResult(bitmap);
+            });
+        });
+    }
+
+    /**
+     * Wait for the JPEG in native by using the capture progress tracker. Once available execute the
+     * callback.
+     * @param tabId The Tab ID to wait for a JPEG of.
+     * @param thumbnailSize The size of thumbnail that will be shown.
+     * @param callback The callback to execute once native has finished any pending JPEG capture
+     *                 tasks for the tab.
+     */
+    private void fetchJpeg(
+            int tabId, @NonNull Size thumbnailSize, @NonNull Callback<Bitmap> callback) {
+        if (!mSnapshotsEnabled) {
+            callback.onResult(null);
+            return;
+        }
+
+        // Wait for the JPEG in native to be ready. There are two possibilities.
+        // 1. A capture is ongoing. Wait for it.
+        // 2. A capture is not-ongoing. Proceed under the assumption a thumbnail exists, but if
+        //    it is missing fallback to null.
+        assert mNativeTabContentManager != 0;
+        TabContentManagerJni.get().waitForJpegTabThumbnail(
+                mNativeTabContentManager, tabId, (maybeAvailable) -> {
+                    if (!maybeAvailable) {
+                        recordThumbnailFetchingResult(ThumbnailFetchingResult.GOT_NOTHING);
+                        callback.onResult(null);
+                        return;
+                    }
+                    getJpegForTabNoRefetch(tabId, thumbnailSize, callback);
+                });
+    }
+
+    private boolean shouldRefetchForAspectRatio(@NonNull Size thumbnailSize, @NonNull Bitmap jpeg) {
+        // Pixel difference between the real aspect ratio and the actual aspect ratio.
+        final int aspectRatioPixelError = Math.abs(
+                (int) Math.round(jpeg.getHeight() * getTabCaptureAspectRatio()) - jpeg.getWidth());
+        // Allow a pixel error proportional to the size of the thumbnail that will be shown.
+        // thumbnailSize will be within a factor of 2 of the size of jpeg due to resizeJpeg.
+        final int aspectRatioAllowedError =
+                (int) Math.round(Math.min(thumbnailSize.getWidth(), thumbnailSize.getHeight())
+                        * PIXEL_TOLERANCE_PERCENT);
+
+        return aspectRatioPixelError >= aspectRatioAllowedError;
+    }
+
+    private void refetchEtc1(int tabId, @NonNull Callback<Bitmap> callback, boolean emitMetrics) {
+        TabContentManagerJni.get().getEtc1TabThumbnail(
+                mNativeTabContentManager, tabId, getTabCaptureAspectRatio(), (etc1) -> {
+                    if (emitMetrics) {
+                        if (etc1 != null) {
+                            recordThumbnailFetchingResult(ThumbnailFetchingResult.GOT_ETC1);
+                        } else {
+                            recordThumbnailFetchingResult(ThumbnailFetchingResult.GOT_NOTHING);
+                        }
+                    }
+                    callback.onResult(etc1);
+                });
+    }
+
     private void onBitmapRead(@NonNull int tabId, @NonNull Size thumbnailSize, Bitmap jpeg,
             @NonNull Callback<Bitmap> callback) {
         TraceEvent.finishAsync("GetTabThumbnailFromDisk", tabId);
         if (jpeg != null) {
-            // Pixel difference between the real aspect ratio and the actual aspect ratio.
-            final int aspectRatioPixelError =
-                    Math.abs((int) Math.round(jpeg.getHeight() * getTabCaptureAspectRatio())
-                            - jpeg.getWidth());
-            // Allow a pixel error proportional to the size of the thumbnail that will be shown.
-            // thumbnailSize will be within a factor of 2 of the size of jpeg due to resizeJpeg.
-            final int aspectRatioAllowedError =
-                    (int) Math.round(Math.min(thumbnailSize.getWidth(), thumbnailSize.getHeight())
-                            * PIXEL_TOLERANCE_PERCENT);
-            if (aspectRatioPixelError >= aspectRatioAllowedError) {
+            if (shouldRefetchForAspectRatio(thumbnailSize, jpeg)) {
                 recordThumbnailFetchingResult(
                         ThumbnailFetchingResult.GOT_DIFFERENT_ASPECT_RATIO_JPEG);
 
@@ -455,27 +542,22 @@ public class TabContentManager {
                     callback.onResult(jpeg);
                     return;
                 }
+
                 if (!mSnapshotsEnabled) return;
 
-                TabContentManagerJni.get().getEtc1TabThumbnail(
-                        mNativeTabContentManager, tabId, getTabCaptureAspectRatio(), callback);
+                refetchEtc1(tabId, callback, false);
                 return;
             }
-            recordThumbnailFetchingResult(ThumbnailFetchingResult.GOT_JPEG);
 
+            recordThumbnailFetchingResult(ThumbnailFetchingResult.GOT_JPEG);
             callback.onResult(jpeg);
             return;
         }
         if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
-        TabContentManagerJni.get().getEtc1TabThumbnail(
-                mNativeTabContentManager, tabId, getTabCaptureAspectRatio(), (etc1) -> {
-                    if (etc1 != null) {
-                        recordThumbnailFetchingResult(ThumbnailFetchingResult.GOT_ETC1);
-                    } else {
-                        recordThumbnailFetchingResult(ThumbnailFetchingResult.GOT_NOTHING);
-                    }
-                    callback.onResult(etc1);
-                });
+
+        // Generate a thumbnail from the ETC1. This masks a race condition between the thumbnail
+        // being captured and an ETC1 or JPEG version of it being available.
+        refetchEtc1(tabId, callback, true);
     }
 
     private static void recordThumbnailFetchingResult(@ThumbnailFetchingResult int result) {
@@ -516,7 +598,6 @@ public class TabContentManager {
         assert mSnapshotsEnabled;
 
         if (tab.getNativePage() != null || isNativeViewShowing(tab)) {
-            final float downsamplingScale = 0.5f;
             // If we use readbackNativeBitmap() with a downsampled scale and not saving it through
             // TabContentManagerJni.get().cacheTabWithBitmap(), the logic
             // of InvalidationAwareThumbnailProvider might prevent captureThumbnail() from getting
@@ -529,17 +610,26 @@ public class TabContentManager {
                 callback.onResult(null);
                 return;
             }
+
             // In portrait mode, we want to show thumbnails in squares.
             // Therefore, the thumbnail saved in portrait mode needs to be cropped to
             // a square, or it would become too tall and break the layout.
+            final float downsamplingScale = 0.5f;
             Matrix matrix = new Matrix();
             matrix.setScale(downsamplingScale, downsamplingScale);
-            Bitmap resized = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-                    TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
-                            ? Math.min(bitmap.getHeight(),
-                                    (int) (bitmap.getWidth() * 1.0 / getTabCaptureAspectRatio()))
-                            : min(bitmap.getWidth(), bitmap.getHeight()),
-                    matrix, true);
+            Bitmap resized;
+            if (sThumbnailCacheRefactor.isEnabled()) {
+                resized = Bitmap.createBitmap(
+                        bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            } else {
+                resized = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
+                        TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
+                                ? Math.min(bitmap.getHeight(),
+                                        (int) ((float) bitmap.getWidth()
+                                                / getTabCaptureAspectRatio()))
+                                : min(bitmap.getWidth(), bitmap.getHeight()),
+                        matrix, true);
+            }
             callback.onResult(resized);
         } else {
             if (tab.getWebContents() == null) return;
@@ -569,7 +659,8 @@ public class TabContentManager {
     }
 
     /**
-     * Update the priority-ordered list of visible tabs.
+     * Update the priority-ordered list of visible tabs. This should only be called directly via
+     * the active {@link Layout} to avoid invalidating visible tab IDs that are in use.
      * @param priority The list of tab ids to load cached thumbnails for. Only the first
      *                 {@link mFullResThumbnailsMaxSize} thumbnails will be loaded.
      * @param primaryTabId The id of the current tab this is not loaded under the assumption it will
@@ -625,8 +716,7 @@ public class TabContentManager {
         // Class Object Methods
         long init(TabContentManager caller, int defaultCacheSize, int approximationCacheSize,
                 int compressionQueueMaxSize, int writeQueueMaxSize,
-                boolean useApproximationThumbnail, boolean saveJpegThumbnails,
-                double jpegAspectRatio);
+                boolean useApproximationThumbnail, boolean saveJpegThumbnails);
 
         void attachTab(long nativeTabContentManager, Tab tab, int tabId);
         void detachTab(long nativeTabContentManager, Tab tab, int tabId);
@@ -637,6 +727,8 @@ public class TabContentManager {
         void invalidateIfChanged(long nativeTabContentManager, int tabId, GURL url);
         void updateVisibleIds(long nativeTabContentManager, int[] priority, int primaryTabId);
         void removeTabThumbnail(long nativeTabContentManager, int tabId);
+        void waitForJpegTabThumbnail(
+                long nativeTabContentManager, int tabId, Callback<Boolean> callback);
         void getEtc1TabThumbnail(long nativeTabContentManager, int tabId, double aspectRatio,
                 Callback<Bitmap> callback);
         void setCaptureMinRequestTimeForTesting(long nativeTabContentManager, int timeMs);

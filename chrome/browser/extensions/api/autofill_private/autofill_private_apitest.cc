@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/extensions/api/autofill_private.h"
+
+#include <memory>
+
+#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/command_line.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/values.h"
@@ -10,10 +15,12 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
-#include "chrome/common/extensions/api/autofill_private.h"
 #include "components/autofill/content/browser/test_autofill_client_injector.h"
 #include "components/autofill/content/browser/test_content_autofill_client.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/device_reauth/mock_device_authenticator.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/test/browser_test.h"
@@ -23,27 +30,6 @@
 namespace extensions {
 
 namespace {
-
-class TestChromeAutofillClient : public autofill::ChromeAutofillClient {
- public:
-  explicit TestChromeAutofillClient(content::WebContents* web_contents)
-      : ChromeAutofillClient(web_contents) {}
-
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-  scoped_refptr<device_reauth::DeviceAuthenticator> GetDeviceAuthenticator()
-      const override {
-    return mock_device_authenticator_;
-  }
-
-  void SetDeviceAuthenticator(
-      scoped_refptr<device_reauth::MockDeviceAuthenticator> mock_auth) {
-    mock_device_authenticator_ = mock_auth;
-  }
-
-  scoped_refptr<device_reauth::MockDeviceAuthenticator>
-      mock_device_authenticator_;
-#endif
-};
 
 class AutofillPrivateApiTest : public ExtensionApiTest {
  public:
@@ -71,13 +57,16 @@ class AutofillPrivateApiTest : public ExtensionApiTest {
                             {.load_as_component = true});
   }
 
-  TestChromeAutofillClient* autofill_client() {
+  autofill::TestContentAutofillClient* autofill_client() {
     return test_autofill_client_injector_
         [browser()->tab_strip_model()->GetActiveWebContents()];
   }
 
+  std::unique_ptr<autofill::TestPersonalDataManager>
+      test_personal_data_manager_;
+
  private:
-  autofill::TestAutofillClientInjector<TestChromeAutofillClient>
+  autofill::TestAutofillClientInjector<autofill::TestContentAutofillClient>
       test_autofill_client_injector_;
 };
 
@@ -164,19 +153,18 @@ IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, isValidIban) {
 IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest,
                        authenticateUserAndFlipMandatoryAuthToggle) {
   base::UserActionTester user_action_tester;
-  scoped_refptr<device_reauth::MockDeviceAuthenticator>
-      mock_device_authenticator =
-          base::MakeRefCounted<device_reauth::MockDeviceAuthenticator>();
-  TestChromeAutofillClient* test_client = autofill_client();
-  test_client->SetDeviceAuthenticator(mock_device_authenticator);
+  auto mock_device_authenticator = autofill_client()->GetDeviceAuthenticator();
 
-  ON_CALL(*mock_device_authenticator, AuthenticateWithMessage)
+  ON_CALL(*static_cast<device_reauth::MockDeviceAuthenticator*>(
+              mock_device_authenticator.get()),
+          AuthenticateWithMessage)
       .WillByDefault(
           testing::WithArg<1>([](base::OnceCallback<void(bool)> callback) {
             std::move(callback).Run(true);
           }));
 
-  EXPECT_CALL(*mock_device_authenticator,
+  EXPECT_CALL(*static_cast<device_reauth::MockDeviceAuthenticator*>(
+                  mock_device_authenticator.get()),
               AuthenticateWithMessage(testing::_, testing::_))
       .Times(1);
   EXPECT_TRUE(RunAutofillSubtest("authenticateUserAndFlipMandatoryAuthToggle"))
@@ -185,6 +173,35 @@ IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest,
                    "PaymentsUserAuthTriggeredForMandatoryAuthToggle"));
   EXPECT_EQ(1, user_action_tester.GetActionCount(
                    "PaymentsUserAuthSuccessfulForMandatoryAuthToggle"));
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest,
+                       authenticateUserToEditLocalCard) {
+  base::UserActionTester user_action_tester;
+
+  autofill_client()
+      ->GetPersonalDataManager()
+      ->SetPaymentMethodsMandatoryReauthEnabled(true);
+  auto mock_device_authenticator = autofill_client()->GetDeviceAuthenticator();
+
+  ON_CALL(*static_cast<device_reauth::MockDeviceAuthenticator*>(
+              mock_device_authenticator.get()),
+          AuthenticateWithMessage)
+      .WillByDefault(
+          testing::WithArg<1>([](base::OnceCallback<void(bool)> callback) {
+            std::move(callback).Run(true);
+          }));
+
+  EXPECT_CALL(*static_cast<device_reauth::MockDeviceAuthenticator*>(
+                  mock_device_authenticator.get()),
+              AuthenticateWithMessage(testing::_, testing::_))
+      .Times(1);
+  EXPECT_TRUE(RunAutofillSubtest("authenticateUserToEditLocalCard"))
+      << message_;
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "PaymentsUserAuthTriggeredToShowEditLocalCardDialog"));
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "PaymentsUserAuthSuccessfulToShowEditLocalCardDialog"));
 }
 #endif
 

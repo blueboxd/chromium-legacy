@@ -19,7 +19,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-forward.h"
-#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom-forward.h"
 
 namespace net {
 class HttpResponseHeaders;
@@ -55,20 +54,18 @@ class MockAttributionDataHostManager : public AttributionDataHostManager {
               NotifyNavigationRegistrationStarted,
               (const blink::AttributionSrcToken& attribution_src_token,
                const attribution_reporting::SuitableOrigin& source_origin,
-               blink::mojom::AttributionNavigationType,
                bool is_within_fenced_frame,
                GlobalRenderFrameHostId,
                int64_t navigation_id),
               (override));
 
-  MOCK_METHOD(void,
+  MOCK_METHOD(bool,
               NotifyNavigationRegistrationData,
               (const blink::AttributionSrcToken& attribution_src_token,
                const net::HttpResponseHeaders* headers,
                attribution_reporting::SuitableOrigin reporting_origin,
                const attribution_reporting::SuitableOrigin& source_origin,
                AttributionInputEvent input_event,
-               blink::mojom::AttributionNavigationType,
                bool is_within_fenced_frame,
                GlobalRenderFrameHostId,
                int64_t navigation_id,

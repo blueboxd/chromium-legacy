@@ -15,8 +15,10 @@
 #include "ash/ambient/ambient_ui_launcher.h"
 #include "ash/ambient/ambient_ui_settings.h"
 #include "ash/ambient/ambient_video_ui_launcher.h"
+#include "ash/ambient/managed/screensaver_images_policy_handler.h"
 #include "ash/ambient/metrics/ambient_metrics.h"
 #include "ash/ambient/metrics/ambient_session_metrics_recorder.h"
+#include "ash/ambient/metrics/managed_screensaver_metrics.h"
 #include "ash/ambient/model/ambient_animation_photo_config.h"
 #include "ash/ambient/model/ambient_backend_model_observer.h"
 #include "ash/ambient/model/ambient_slideshow_photo_config.h"
@@ -47,6 +49,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/power_status.h"
 #include "base/check.h"
+#include "base/check_deref.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -191,6 +194,20 @@ class AmbientWidgetDelegate : public views::WidgetDelegate {
   }
 };
 
+void RecordManagedScreensaverEnabledPref() {
+  if (!ash::features::IsAmbientModeManagedScreensaverEnabled()) {
+    return;
+  }
+
+  if (PrefService* pref_service = GetActivePrefService();
+      pref_service &&
+      pref_service->IsManagedPreference(
+          ambient::prefs::kAmbientModeManagedScreensaverEnabled)) {
+    RecordManagedScreensaverEnabled(pref_service->GetBoolean(
+        ambient::prefs::kAmbientModeManagedScreensaverEnabled));
+  }
+}
+
 }  // namespace
 
 // static
@@ -253,11 +270,9 @@ void AmbientController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
       ambient::prefs::kAmbientModeManagedScreensaverImageDisplayIntervalSeconds,
       kManagedScreensaverImageRefreshInterval.InSeconds());
 
-  if (ash::features::IsScreenSaverDurationEnabled()) {
-    registry->RegisterIntegerPref(
-        ambient::prefs::kAmbientModeRunningDurationMinutes,
-        kDefaultScreenSaverDuration.InMinutes());
-  }
+  registry->RegisterIntegerPref(
+      ambient::prefs::kAmbientModeRunningDurationMinutes,
+      kDefaultScreenSaverDuration.InMinutes());
 }
 
 AmbientController::AmbientController(
@@ -455,6 +470,9 @@ void AmbientController::OnActiveUserPrefServiceChanged(
   }
 
   if (managed_screensaver_flag_enabled) {
+    screensaver_images_policy_handler_ =
+        ScreensaverImagesPolicyHandler::Create(pref_service);
+
     pref_change_registrar_->Add(
         ambient::prefs::kAmbientModeManagedScreensaverEnabled,
         base::BindRepeating(&AmbientController::OnEnabledPrefChanged,
@@ -471,6 +489,9 @@ void AmbientController::OnSigninScreenPrefServiceInitialized(
   if (!ash::features::IsAmbientModeManagedScreensaverEnabled()) {
     return;
   }
+
+  screensaver_images_policy_handler_ =
+      ScreensaverImagesPolicyHandler::Create(pref_service);
 
   CHECK(!sign_in_pref_change_registrar_);
   CHECK(!pref_change_registrar_);
@@ -935,6 +956,8 @@ void AmbientController::AddConsumerPrefObservers() {
 }
 
 void AmbientController::OnEnabledPrefChanged() {
+  RecordManagedScreensaverEnabledPref();
+
   if (!IsAmbientModeEnabled()) {
     DVLOG(1) << "Ambient mode disabled";
     ResetAmbientControllerResources();
@@ -1341,7 +1364,7 @@ void AmbientController::CreateUiLauncher() {
 
   if (IsAmbientModeManagedScreensaverEnabled()) {
     ambient_ui_launcher_ = std::make_unique<AmbientManagedSlideshowUiLauncher>(
-        &delegate_, GetActivePrefService());
+        &delegate_, screensaver_images_policy_handler_.get());
   } else if (GetCurrentUiSettings().theme() == AmbientTheme::kVideo) {
     ambient_ui_launcher_ = std::make_unique<AmbientVideoUiLauncher>(
         GetPrimaryUserPrefService(), &delegate_);

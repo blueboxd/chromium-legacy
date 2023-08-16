@@ -8,6 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker.h"
 #include "third_party/blink/renderer/core/paint/paint_flags.h"
 #include "third_party/blink/renderer/core/style/applied_text_decoration.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -64,6 +65,13 @@ class CORE_EXPORT HighlightStyleUtils {
       Node* node,
       const ComputedStyle& style,
       PseudoId pseudo,
+      const AtomicString& pseudo_argument = g_null_atom);
+
+  static bool ShouldInvalidateVisualOverflow(const Node& node,
+                                             DocumentMarker::MarkerType type);
+
+  static bool CustomHighlightHasVisualOverflow(
+      const Node* node,
       const AtomicString& pseudo_argument = g_null_atom);
 };
 

@@ -25,6 +25,7 @@
 #include "gpu/vulkan/buildflags.h"
 #include "skia/buildflags.h"
 #include "third_party/skia/include/gpu/graphite/Context.h"
+#include "third_party/skia/include/gpu/mock/GrMockTypes.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
@@ -50,7 +51,11 @@
 #endif
 
 #if BUILDFLAG(SKIA_USE_DAWN)
-#include "components/viz/common/gpu/dawn_context_provider.h"
+#include "gpu/command_buffer/service/dawn_context_provider.h"
+#endif
+
+#if BUILDFLAG(IS_WIN)
+#include "ui/gl/gl_angle_util_win.h"
 #endif
 
 namespace {
@@ -152,7 +157,7 @@ SharedContextState::SharedContextState(
     GrContextType gr_context_type,
     viz::VulkanContextProvider* vulkan_context_provider,
     viz::MetalContextProvider* metal_context_provider,
-    viz::DawnContextProvider* dawn_context_provider,
+    DawnContextProvider* dawn_context_provider,
     base::WeakPtr<gpu::MemoryTracker::Observer> peak_memory_monitor,
     bool created_on_compositor_gpu_thread)
     : use_virtualized_gl_contexts_(use_virtualized_gl_contexts),
@@ -251,8 +256,8 @@ bool SharedContextState::InitializeSkia(
   crash_key.Set(
       base::StringPrintf("%u", static_cast<uint32_t>(gr_context_type_)));
 
-  if (gpu_preferences.gr_context_type == GrContextType::kGraphiteDawn ||
-      gpu_preferences.gr_context_type == GrContextType::kGraphiteMetal) {
+  if (gr_context_type_ == GrContextType::kGraphiteDawn ||
+      gr_context_type_ == GrContextType::kGraphiteMetal) {
     return InitializeGraphite(gpu_preferences);
   }
 
@@ -615,7 +620,8 @@ void SharedContextState::MarkContextLost(error::ContextLostReason reason) {
     // Notify |context_lost_callback_| and |context_lost_observers_| first,
     // since maybe they still need the GrDirectContext for releasing some skia
     // resources.
-    std::move(context_lost_callback_).Run(!device_needs_reset_);
+    std::move(context_lost_callback_)
+        .Run(!device_needs_reset_, context_lost_reason_.value());
     for (auto& observer : context_lost_observers_)
       observer.OnContextLost();
 
@@ -931,5 +937,46 @@ void SharedContextState::ScheduleGrContextCleanup() {
   if (gr_cache_controller_)
     gr_cache_controller_->ScheduleGrContextCleanup();
 }
+
+int32_t SharedContextState::GetMaxTextureSize() const {
+  int32_t max_texture_size = 0;
+  if (GrContextIsGL()) {
+    gl::GLApi* const api = gl::g_current_gl_context;
+    api->glGetIntegervFn(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+  } else if (GrContextIsVulkan()) {
+#if BUILDFLAG(ENABLE_VULKAN)
+    max_texture_size = vk_context_provider()
+                           ->GetDeviceQueue()
+                           ->vk_physical_device_properties()
+                           .limits.maxImageDimension2D;
+#else
+    NOTREACHED_NORETURN();
+#endif
+  } else {
+    // TODO(crbug.com/1090476): Query Dawn for this value once an API exists for
+    // capabilities.
+    max_texture_size = 8192;
+  }
+  // Ensure max_texture_size_ is less than INT_MAX so that gfx::Rect and friends
+  // can be used to accurately represent all valid sub-rects, with overflow
+  // cases, clamped to INT_MAX, always invalid.
+  max_texture_size = std::min(max_texture_size, INT32_MAX - 1);
+  return max_texture_size;
+}
+
+#if BUILDFLAG(IS_WIN)
+Microsoft::WRL::ComPtr<ID3D11Device> SharedContextState::GetD3D11Device()
+    const {
+  switch (gr_context_type_) {
+    case GrContextType::kGL:
+      return gl::QueryD3D11DeviceObjectFromANGLE();
+    case GrContextType::kGraphiteDawn:
+      return dawn_context_provider_->GetD3D11Device();
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+#endif
 
 }  // namespace gpu

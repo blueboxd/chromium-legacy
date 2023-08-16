@@ -22,7 +22,6 @@
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
 #import "components/sync_preferences/testing_pref_service_syncable.h"
-#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
@@ -30,6 +29,7 @@
 #import "ios/chrome/browser/shared/model/prefs/browser_prefs.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/sync/mock_sync_service_utils.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
@@ -178,15 +178,6 @@ TEST_P(PrivacyTableViewControllerTest, TestModel) {
       l10n_util::GetNSString(IDS_IOS_PRIVACY_SAFE_BROWSING_TITLE),
       SafeBrowsingDetailText(), currentSection, 0);
 
-  // Lockdown Mode section.
-  if (base::FeatureList::IsEnabled(web::kBrowserLockdownModeAvailable)) {
-    currentSection++;
-    EXPECT_EQ(1, NumberOfItemsInSection(currentSection));
-    CheckTextCellTextAndDetailText(
-        l10n_util::GetNSString(IDS_IOS_PRIVACY_LOCKDOWN_MODE_TITLE),
-        l10n_util::GetNSString(IDS_IOS_SETTING_OFF), currentSection, 0);
-  }
-
   // HTTPS-Only Mode section.
   if (base::FeatureList::IsEnabled(
           security_interstitials::features::kHttpsOnlyMode)) {
@@ -234,6 +225,15 @@ TEST_P(PrivacyTableViewControllerTest, TestModel) {
   } else {
     CheckSwitchCellStateAndTextWithId(
         NO, IDS_IOS_OPTIONS_ENABLE_INCOGNITO_INTERSTITIAL, currentSection, 0);
+  }
+
+  // Lockdown Mode section.
+  if (base::FeatureList::IsEnabled(web::kBrowserLockdownModeAvailable)) {
+    currentSection++;
+    EXPECT_EQ(1, NumberOfItemsInSection(currentSection));
+    CheckTextCellTextAndDetailText(
+        l10n_util::GetNSString(IDS_IOS_LOCKDOWN_MODE_TITLE),
+        l10n_util::GetNSString(IDS_IOS_SETTING_OFF), currentSection, 0);
   }
 
   // Testing section index and text of the privacy footer.

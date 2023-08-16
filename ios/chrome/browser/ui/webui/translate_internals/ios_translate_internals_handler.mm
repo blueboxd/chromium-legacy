@@ -110,21 +110,40 @@ IOSTranslateInternalsHandler::Observer::Observer(
     : handler_(handler) {}
 IOSTranslateInternalsHandler::Observer::~Observer() {}
 
-void IOSTranslateInternalsHandler::Observer::WebStateInsertedAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index,
-    bool activating) {
-  handler_->AddLanguageDetectionObserverForWebState(web_state);
-}
+#pragma mark - WebStateListObserver
 
-void IOSTranslateInternalsHandler::Observer::WebStateReplacedAt(
+void IOSTranslateInternalsHandler::Observer::WebStateListChanged(
     WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int index) {
-  handler_->RemoveLanguageDetectionObserverForWebState(old_web_state);
-  handler_->AddLanguageDetectionObserverForWebState(new_web_state);
+    const WebStateListChange& change,
+    const WebStateSelection& selection) {
+  switch (change.type()) {
+    case WebStateListChange::Type::kSelectionOnly:
+      // Do nothing when a WebState is selected and its status is updated.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // WebStateDetachedAt() to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace: {
+      const WebStateListChangeReplace& replace_change =
+          change.As<WebStateListChangeReplace>();
+      handler_->RemoveLanguageDetectionObserverForWebState(
+          replace_change.replaced_web_state());
+      handler_->AddLanguageDetectionObserverForWebState(
+          replace_change.inserted_web_state());
+      break;
+    }
+    case WebStateListChange::Type::kInsert: {
+      const WebStateListChangeInsert& insert_change =
+          change.As<WebStateListChangeInsert>();
+      handler_->AddLanguageDetectionObserverForWebState(
+          insert_change.inserted_web_state());
+      break;
+    }
+  }
 }
 
 void IOSTranslateInternalsHandler::Observer::WebStateDetachedAt(

@@ -18,6 +18,16 @@ class Clock;
 // TODO(rtarpine): remove dependence on DIPSService.
 class DIPSState;
 
+enum class OptionalBool {
+  kUnknown = 0,
+  kFalse = 1,
+  kTrue = 2,
+};
+
+inline OptionalBool ToOptionalBool(bool b) {
+  return b ? OptionalBool::kTrue : OptionalBool::kFalse;
+}
+
 // Observers a WebContents to detect pop-ups with user interaction, in order to
 // grant storage access.
 class OpenerHeuristicTabHelper
@@ -29,7 +39,9 @@ class OpenerHeuristicTabHelper
   // public so tests can see it.
   class PopupObserver : public content::WebContentsObserver {
    public:
-    PopupObserver(content::WebContents* web_contents, const GURL& initial_url);
+    PopupObserver(content::WebContents* web_contents,
+                  const GURL& initial_url,
+                  base::WeakPtr<OpenerHeuristicTabHelper> opener);
     ~PopupObserver() override;
 
     // Set the time that the user previously interacted with this pop-up's site.
@@ -39,6 +51,10 @@ class OpenerHeuristicTabHelper
     // Emit the OpenerHeuristic.PopupPastInteraction UKM event if we have all
     // the necessary information.
     void EmitPastInteractionIfReady();
+    // Emit the OpenerHeuristic.TopLevel UKM event.
+    void EmitTopLevel(OptionalBool has_iframe);
+    // See if the opener page has an iframe from the same site.
+    OptionalBool GetOpenerHasSameSiteIframe(const GURL& popup_url);
 
     // WebContentsObserver overrides:
     void DidFinishNavigation(
@@ -46,8 +62,14 @@ class OpenerHeuristicTabHelper
     void FrameReceivedUserActivation(
         content::RenderFrameHost* render_frame_host) override;
 
+    const int32_t popup_id_;
     // The URL originally passed to window.open().
     const GURL initial_url_;
+    // The top-level WebContents that opened this pop-up.
+    base::WeakPtr<OpenerHeuristicTabHelper> opener_;
+    const size_t opener_page_id_;
+    // A UKM source id for the page that opened the pop-up.
+    const ukm::SourceId opener_source_id_;
     // How long after the user last interacted with the site until the pop-up
     // opened.
     absl::optional<base::TimeDelta> time_since_interaction_;
@@ -56,9 +78,12 @@ class OpenerHeuristicTabHelper
     absl::optional<base::Time> commit_time_;
     size_t url_index_ = 0;
     bool interaction_reported_ = false;
+    bool toplevel_reported_ = false;
   };
 
   ~OpenerHeuristicTabHelper() override;
+
+  size_t page_id() const { return page_id_; }
 
   static base::Clock* SetClockForTesting(base::Clock* clock);
 
@@ -71,12 +96,17 @@ class OpenerHeuristicTabHelper
   explicit OpenerHeuristicTabHelper(content::WebContents* web_contents);
 
   // Called when the observed WebContents is a popup.
-  void InitPopup(const GURL& url);
+  void InitPopup(const GURL& popup_url,
+                 base::WeakPtr<OpenerHeuristicTabHelper> opener);
   // Asynchronous callback for reading past interaction timestamps from the
   // DIPSService.
   void GotPopupDipsState(const DIPSState& state);
+  // Returns true iff the current page contains an iframe whose committed URL
+  // belongs to the same site as `url`.
+  bool HasSameSiteIframe(const GURL& url);
 
   // WebContentsObserver overrides:
+  void PrimaryPageChanged(content::Page& page) override;
   void DidOpenRequestedURL(content::WebContents* new_contents,
                            content::RenderFrameHost* source_render_frame_host,
                            const GURL& url,
@@ -86,6 +116,10 @@ class OpenerHeuristicTabHelper
                            bool started_from_context_menu,
                            bool renderer_initiated) override;
 
+  // To detect whether the user navigated away from the opener page before
+  // interacting with a popup, we increment this ID on each committed
+  // navigation, and compare at the time of the interaction.
+  size_t page_id_ = 0;
   // Populated only when the observed WebContents is a pop-up.
   std::unique_ptr<PopupObserver> popup_observer_;
   base::WeakPtrFactory<OpenerHeuristicTabHelper> weak_factory_{this};

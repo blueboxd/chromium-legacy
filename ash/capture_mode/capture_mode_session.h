@@ -134,10 +134,13 @@ class ASH_EXPORT CaptureModeSession
   // Called when switching a capture type from another capture type.
   void A11yAlertCaptureType();
 
-  // Called when either the capture source, type, or recording type changes.
+  // Called when either the capture source, type, recording type, audio
+  // recording mode or demo tools changes.
   void OnCaptureSourceChanged(CaptureModeSource new_source);
   void OnCaptureTypeChanged(CaptureModeType new_type);
   void OnRecordingTypeChanged();
+  void OnAudioRecordingModeChanged();
+  void OnDemoToolsSettingsChanged();
 
   // When performing capture, or at the end of the 3-second count down, the DLP
   // manager is checked for any restricted content. The DLP manager may choose
@@ -265,6 +268,18 @@ class ASH_EXPORT CaptureModeSession
   // and will no longer be shown to the user.
   void MaybeDismissUserNudgeForever();
 
+  // Sets the correct screen bounds on the `capture_mode_bar_widget_` based on
+  // the `current_root_`, potentially moving the bar to a new display if
+  // `current_root_` is different`.
+  void RefreshBarWidgetBounds();
+
+  // Handles changing `root_window_`. For example, moving the mouse cursor to
+  // another display, a display was removed or the game window of the
+  // `kGameDashboard` session was moved to another display. Moves the capture
+  // mode widgets to `new_root` depending on the capture mode source and whether
+  // it was a display removal.
+  void MaybeChangeRoot(aura::Window* new_root);
+
  private:
   friend class CaptureModeSettingsTestApi;
   friend class CaptureModeSessionFocusCycler;
@@ -296,10 +311,9 @@ class ASH_EXPORT CaptureModeSession
   // could be shown, otherwise, returns false.
   bool CanShowWidget(views::Widget* widget) const;
 
-  // Sets the correct screen bounds on the `capture_mode_bar_widget_` based on
-  // the `current_root_`, potentially moving the bar to a new display if
-  // `current_root_` is different`.
-  void RefreshBarWidgetBounds();
+  // Triggers a selfie camera visibility update during capture mode session on
+  // capture mode type changed.
+  void MaybeUpdateSelfieCamInSessionVisibility();
 
   // If possible, this recreates and shows the nudge that alerts the user about
   // the new folder selection settings. The nudge will be created on top of the
@@ -392,12 +406,6 @@ class ASH_EXPORT CaptureModeSession
   // the event if its associated window is |event_target| and its capture button
   // child is visible.
   bool ShouldCaptureLabelHandleEvent(aura::Window* event_target);
-
-  // Handles changing |root_window_| when the mouse cursor changes to another
-  // display, or if a display was removed. Moves the capture mode widgets to
-  // |new_root| depending on the capture mode source an whether it was a display
-  // removal.
-  void MaybeChangeRoot(aura::Window* new_root);
 
   // Updates |root_window_dimmers_| to dim the correct root windows.
   void UpdateRootWindowDimmers();

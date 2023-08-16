@@ -39,6 +39,7 @@
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/webauthn/passkey_model_factory.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -53,6 +54,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/sync/base/features.h"
 #include "components/sync/service/sync_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/navigation_handle.h"
@@ -257,6 +259,16 @@ void MaybeShowProfileSwitchIPH(Profile* profile) {
 #endif
 }
 
+// Returns a passkey model instance if the feature is enabled.
+webauthn::PasskeyModel* MaybeGetPasskeyModel(Profile* profile) {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordManagerPasskeys) &&
+      base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials)) {
+    return PasskeyModelFactory::GetInstance()->GetForProfile(profile);
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 namespace extensions {
@@ -270,7 +282,8 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
               ServiceAccessType::EXPLICIT_ACCESS),
           AccountPasswordStoreFactory::GetForProfile(
               profile,
-              ServiceAccessType::EXPLICIT_ACCESS)),
+              ServiceAccessType::EXPLICIT_ACCESS),
+          MaybeGetPasskeyModel(profile)),
       password_manager_porter_(std::make_unique<PasswordManagerPorter>(
           profile,
           &saved_passwords_presenter_,
@@ -433,7 +446,39 @@ absl::optional<int> PasswordsPrivateDelegateImpl::ChangeSavedPassword(
   return credential_id_generator_.GenerateId(std::move(updated_credential));
 }
 
-void PasswordsPrivateDelegateImpl::RemoveSavedPassword(
+bool PasswordsPrivateDelegateImpl::ChangeCredential(
+    const api::passwords_private::PasswordUiEntry& credential) {
+  const CredentialUIEntry* original_credential =
+      credential_id_generator_.TryGetKey(credential.id);
+  if (!original_credential) {
+    return false;
+  }
+  CredentialUIEntry updated_credential = *original_credential;
+  updated_credential.username = base::UTF8ToUTF16(credential.username);
+  if (credential.password) {
+    updated_credential.password = base::UTF8ToUTF16(*credential.password);
+  }
+  if (credential.note) {
+    updated_credential.note = base::UTF8ToUTF16(*credential.note);
+  }
+  if (credential.display_name) {
+    CHECK(!updated_credential.passkey_credential_id.empty());
+    updated_credential.user_display_name =
+        base::UTF8ToUTF16(*credential.display_name);
+  }
+  switch (saved_passwords_presenter_.EditSavedCredentials(*original_credential,
+                                                          updated_credential)) {
+    case password_manager::SavedPasswordsPresenter::EditResult::kSuccess:
+    case password_manager::SavedPasswordsPresenter::EditResult::kNothingChanged:
+      return true;
+    case password_manager::SavedPasswordsPresenter::EditResult::kNotFound:
+    case password_manager::SavedPasswordsPresenter::EditResult::kAlreadyExisits:
+    case password_manager::SavedPasswordsPresenter::EditResult::kEmptyPassword:
+      return false;
+  }
+}
+
+void PasswordsPrivateDelegateImpl::RemoveCredential(
     int id,
     api::passwords_private::PasswordStoreSet from_stores) {
   ExecuteFunction(
@@ -457,6 +502,9 @@ void PasswordsPrivateDelegateImpl::RemoveEntryInternal(
   if (entry->blocked_by_user) {
     base::RecordAction(
         base::UserMetricsAction("PasswordManager_RemovePasswordException"));
+  } else if (!entry->passkey_credential_id.empty()) {
+    base::RecordAction(
+        base::UserMetricsAction("PasswordManager_RemovePasskey"));
   } else {
     base::RecordAction(
         base::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
@@ -1049,8 +1097,12 @@ PasswordsPrivateDelegateImpl::CreatePasswordUiEntryFromCredentialUiEntry(
           return domainInfo;
         });
   }
+  entry.is_passkey = !credential.passkey_credential_id.empty();
   entry.urls = extensions::CreateUrlCollectionFromCredential(credential);
   entry.username = base::UTF16ToUTF8(credential.username);
+  if (entry.is_passkey) {
+    entry.display_name = base::UTF16ToUTF8(credential.user_display_name);
+  }
   entry.stored_in = extensions::StoreSetFromCredential(credential);
   entry.is_android_credential = password_manager::IsValidAndroidFacetURI(
       credential.GetFirstSignonRealm());

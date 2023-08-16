@@ -105,7 +105,7 @@ class IdlCompiler(object):
         # This should be removed once the IDL definitions get fixed.
         self._supplement_missing_html_constructor_operation()
 
-        self._copy_named_constructor_extattrs()
+        self._copy_legacy_factory_function_extattrs()
 
         self._create_sync_iterators()
 
@@ -152,16 +152,10 @@ class IdlCompiler(object):
             new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
             is_partial = False
-            is_mixin = False
-            if 'LegacyTreatAsPartialInterface' in new_ir.extended_attributes:
+            if hasattr(new_ir, 'is_partial') and new_ir.is_partial:
                 is_partial = True
-            elif hasattr(new_ir, 'is_partial') and new_ir.is_partial:
-                is_partial = True
-            elif hasattr(new_ir, 'is_mixin') and new_ir.is_mixin:
-                is_mixin = True
             for member in new_ir.iter_all_members():
                 member.code_generator_info.set_defined_in_partial(is_partial)
-                member.code_generator_info.set_defined_in_mixin(is_mixin)
 
     def _propagate_extattrs_per_idl_fragment(self):
         def propagate_extattr(extattr_key_and_attr_name,
@@ -262,8 +256,7 @@ class IdlCompiler(object):
             new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
 
-            if (new_ir.is_mixin and 'LegacyTreatAsPartialInterface' not in
-                    new_ir.extended_attributes):
+            if new_ir.is_mixin and not new_ir.is_partial:
                 continue
 
             basepath, _ = posixpath.splitext(
@@ -378,9 +371,12 @@ class IdlCompiler(object):
                 new_ir_headers = new_ir.code_generator_info.blink_headers
                 to_be_merged_headers = (
                     to_be_merged.code_generator_info.blink_headers)
-                if (new_ir_headers is not None
-                        and to_be_merged_headers is not None):
-                    new_ir_headers.extend(to_be_merged_headers)
+                if to_be_merged_headers is not None:
+                    if new_ir_headers is None:
+                        new_ir.code_generator_info.set_blink_headers(
+                            to_be_merged_headers)
+                    else:
+                        new_ir_headers.extend(to_be_merged_headers)
 
     def _process_interface_inheritances(self):
         def create_inheritance_chain(obj, table):
@@ -468,27 +464,27 @@ class IdlCompiler(object):
                 debug_info=new_ir.debug_info)
             new_ir.constructors.append(html_constructor)
 
-    def _copy_named_constructor_extattrs(self):
+    def _copy_legacy_factory_function_extattrs(self):
         old_irs = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE)
 
         self._ir_map.move_to_new_phase()
 
         def copy_extattrs(ext_attrs, ir):
-            if 'NamedConstructor_CallWith' in ext_attrs:
+            if 'LegacyFactoryFunction_CallWith' in ext_attrs:
                 ir.extended_attributes.append(
-                    ExtendedAttribute(
-                        key='CallWith',
-                        values=ext_attrs.values_of(
-                            'NamedConstructor_CallWith')))
-            if 'NamedConstructor_RaisesException' in ext_attrs:
+                    ExtendedAttribute(key='CallWith',
+                                      values=ext_attrs.values_of(
+                                          'LegacyFactoryFunction_CallWith')))
+            if 'LegacyFactoryFunction_RaisesException' in ext_attrs:
                 ir.extended_attributes.append(
                     ExtendedAttribute(key='RaisesException'))
 
         for old_ir in old_irs:
             new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
-            for named_constructor_ir in new_ir.named_constructors:
-                copy_extattrs(new_ir.extended_attributes, named_constructor_ir)
+            for legacy_factory_function_ir in new_ir.legacy_factory_functions:
+                copy_extattrs(new_ir.extended_attributes,
+                              legacy_factory_function_ir)
 
     def _create_sync_iterators(self):
         old_irs = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE)
@@ -549,12 +545,12 @@ class IdlCompiler(object):
             self._ir_map.add(new_ir)
 
             assert not new_ir.constructor_groups
-            assert not new_ir.named_constructor_groups
+            assert not new_ir.legacy_factory_function_groups
             assert not new_ir.operation_groups
             new_ir.constructor_groups = make_groups(ConstructorGroup.IR,
                                                     new_ir.constructors)
-            new_ir.named_constructor_groups = make_groups(
-                ConstructorGroup.IR, new_ir.named_constructors)
+            new_ir.legacy_factory_function_groups = make_groups(
+                ConstructorGroup.IR, new_ir.legacy_factory_functions)
             new_ir.operation_groups = make_groups(OperationGroup.IR,
                                                   new_ir.operations)
 

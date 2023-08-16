@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/saved_tab_groups/saved_tab_group_model.h"
 
 namespace content {
@@ -70,6 +69,17 @@ void LocalTabGroupListener::ResumeTracking() {
   }
 }
 
+void LocalTabGroupListener::UpdateVisualDataFromLocal(
+    const TabGroupChange::VisualsChange* visual_change) {
+  if (paused_) {
+    return;
+  }
+
+  if (*(visual_change->old_visuals) != *(visual_change->new_visuals)) {
+    model_->UpdateVisualData(local_id_, visual_change->new_visuals);
+  }
+}
+
 void LocalTabGroupListener::AddWebContentsFromLocal(
     content::WebContents* web_contents,
     TabStripModel* tab_strip_model,
@@ -108,6 +118,10 @@ void LocalTabGroupListener::MoveWebContentsFromLocal(
     TabStripModel* tab_strip_model,
     content::WebContents* web_contents,
     int tabstrip_index_of_moved_tab) {
+  if (paused_) {
+    return;
+  }
+
   // Ex:        0 1   2 3 4
   //  TabStrip: A B [ C D E ]
   //  TabGroup:       0 1 2
@@ -186,6 +200,13 @@ LocalTabGroupListener::Liveness LocalTabGroupListener::UpdateFromSync() {
   TabStripModel* const tab_strip_model =
       SavedTabGroupUtils::GetBrowserWithTabGroupId(local_id_)
           ->tab_strip_model();
+
+  // Update the group to use the saved title and color.
+  tab_groups::TabGroupVisualData visual_data(saved_group->title(),
+                                             saved_group->color(),
+                                             /*is_collapsed=*/false);
+  tab_strip_model->group_model()->GetTabGroup(local_id_)->SetVisualData(
+      visual_data, /*is_customized=*/true);
 
   std::unordered_map<base::Token, content::WebContents*, base::TokenHash>
       token_to_contents_map;

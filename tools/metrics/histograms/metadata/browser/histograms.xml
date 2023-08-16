@@ -145,7 +145,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.ERP.EventUploadSizeAdjustment.{Param}" units="bytes"
-    expires_after="2023-06-30">
+    expires_after="2024-05-23">
   <owner>xuhong@chromium.org</owner>
   <owner>lbaraz@chromium.org</owner>
   <owner>cros-reporting-team@google.com</owner>
@@ -162,6 +162,24 @@ chromium-metrics-reviews@google.com.
     <variant name="RemainingStorageCapacity"
         summary="The remaining storage capacity"/>
   </token>
+</histogram>
+
+<histogram name="Browser.ERP.FilteredOutEvents" units="BooleanFiltered"
+    expires_after="2024-05-23">
+  <owner>lbaraz@chromium.org</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Records whether an event is filtered out by FilteredReportQueue.
+  </summary>
+</histogram>
+
+<histogram name="Browser.ERP.RateLimitedEvents" units="BooleanAccepted"
+    expires_after="2024-05-23">
+  <owner>lbaraz@chromium.org</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Records whether an event is accepted by ReportQueue rate limiter.
+  </summary>
 </histogram>
 
 <histogram name="Browser.ERP.RecordsPerUpload" units="records"
@@ -599,6 +617,50 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Browser.TabDragging.DragAmongTabsPresentationTime" units="ms"
+    expires_after="2023-12-07">
+  <owner>robliao@chromium.org</owner>
+  <owner>yuhengh@chromium.org</owner>
+  <summary>
+    Compositor presentation time when dragging tabs left or right to a different
+    index. This metric is used to measure tab dragging performance. Record on
+    the next compositor frame when the data is collected.
+  </summary>
+</histogram>
+
+<histogram name="Browser.TabDragging.DragToNewBrowserPresentationTime"
+    units="ms" expires_after="2023-12-07">
+  <owner>robliao@chromium.org</owner>
+  <owner>yuhengh@chromium.org</owner>
+  <summary>
+    Compositor presentation time when dragging tabs out to a new browser. This
+    metric is used to measure tab dragging performance. Record on the next
+    compositor frame when the data is collected.
+  </summary>
+</histogram>
+
+<histogram name="Browser.TabDragging.PresentationTime" units="ms"
+    expires_after="2023-12-07">
+  <owner>robliao@chromium.org</owner>
+  <owner>yuhengh@chromium.org</owner>
+  <summary>
+    Compositor presentation time when dragging tabs. This metric is used to
+    measure tab dragging performance. Record on the next compositor frame when
+    the data is collected.
+  </summary>
+</histogram>
+
+<histogram name="Browser.TabDragging.PresentationTimeMax" units="ms"
+    expires_after="2023-12-07">
+  <owner>robliao@chromium.org</owner>
+  <owner>yuhengh@chromium.org</owner>
+  <summary>
+    Maxinum compositor presentation time when dragging tabs. This metric is used
+    to measure tab dragging performance. Record after a drag and drop session is
+    ended.
+  </summary>
+</histogram>
+
 <histogram name="Browser.Tabs.SelectionToVisibilityRequestTime"
     units="microseconds" expires_after="2023-09-10">
   <owner>jonross@chromium.org</owner>
@@ -753,6 +815,28 @@ chromium-metrics-reviews@google.com.
   <summary>Count of renderer process launch failures grouped by type.</summary>
 </histogram>
 
+<histogram name="BrowserRenderProcessHost.Cleanup.DelayReason"
+    enum="RenderProcessHostDelayShutdownReason" expires_after="2023-12-15">
+  <owner>mych@chromium.org</owner>
+  <owner>bfcache-dev@chromium.org</owner>
+  <summary>
+    Recorded whenever a RenderProcessHost is cleaned up, with the reason the
+    cleanup fails or is delayed, or kNoDelay if it succeeded quickly.
+
+    The total count of this histogram should be equal to
+    BrowserRenderProcessHost.Cleanup.Total.
+  </summary>
+</histogram>
+
+<histogram name="BrowserRenderProcessHost.Cleanup.Total" enum="Boolean"
+    expires_after="2023-12-15">
+  <owner>mych@chromium.org</owner>
+  <owner>bfcache-dev@chromium.org</owner>
+  <summary>
+    Records true when an attempt is made to clean up a RenderProcessHost.
+  </summary>
+</histogram>
+
 <histogram name="BrowserRenderProcessHost.DisconnectedAlive"
     enum="RendererType" expires_after="never">
 <!-- expires-never: For monitoring stability regressions. -->
@@ -762,6 +846,28 @@ chromium-metrics-reviews@google.com.
   <summary>
     Count of renderer process crashes that we miscounted because we took the
     exit code too early. Grouped by type.
+  </summary>
+</histogram>
+
+<histogram name="BrowserRenderProcessHost.FastShutdownIfPossible.DelayReason"
+    enum="RenderProcessHostDelayShutdownReason" expires_after="2023-12-15">
+  <owner>mych@chromium.org</owner>
+  <owner>bfcache-dev@chromium.org</owner>
+  <summary>
+    Recorded whenever a RenderProcessHost is fast shutting down, with the reason
+    the shutdown fails or is delayed, or kNoDelay if it succeeded quickly.
+
+    The total count of this histogram should be equal to
+    BrowserRenderProcessHost.FastShutdownIfPossible.Total.
+  </summary>
+</histogram>
+
+<histogram name="BrowserRenderProcessHost.FastShutdownIfPossible.Total"
+    enum="Boolean" expires_after="2023-12-15">
+  <owner>mych@chromium.org</owner>
+  <owner>bfcache-dev@chromium.org</owner>
+  <summary>
+    Records true when an attempt is made to fast shutdown a RenderProcessHost.
   </summary>
 </histogram>
 
@@ -1102,7 +1208,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SidePanel.OpenDuration" units="ms" expires_after="2023-10-08">
+<histogram name="SidePanel.OpenDuration" units="ms" expires_after="2023-12-10">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1114,7 +1220,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.OpenTrigger" enum="SidePanelOpenTrigger"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>

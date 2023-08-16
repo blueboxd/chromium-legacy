@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include <gtest/gtest.h>
 #include "base/check.h"
@@ -22,7 +23,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/actions/history_clusters_action.h"
+#include "components/omnibox/browser/actions/omnibox_action.h"
 #include "components/omnibox/browser/actions/omnibox_pedal.h"
+#include "components/omnibox/browser/actions/tab_switch_action.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/suggestion_answer.h"
@@ -33,6 +36,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -81,9 +85,6 @@ IN_PROC_BROWSER_TEST_P(BrowserTestWithParam, MatchVectorIcons) {
     if (vector_icon.is_empty()) {
       // An empty resource name is effectively a blank icon.
       EXPECT_TRUE(svg_name.empty());
-    } else if (vector_icon.name == omnibox::kPedalIcon.name) {
-      // Pedals are not supported in the NTP Realbox.
-      EXPECT_TRUE(svg_name.empty());
     } else if (is_bookmark) {
       EXPECT_EQ("//resources/images/icon_bookmark.svg", svg_name);
     } else {
@@ -128,14 +129,22 @@ IN_PROC_BROWSER_TEST_P(BrowserTestWithParam, PedalVectorIcons) {
         RealboxHandler::PedalVectorIconToResourceName(vector_icon);
     EXPECT_FALSE(svg_name.empty());
   }
+}
 
-  const scoped_refptr<OmniboxAction> history_clusters_action =
+// Tests that all Omnibox Action vector icons map to an equivalent SVG for use
+// in the NTP Realbox.
+IN_PROC_BROWSER_TEST_P(BrowserTestWithParam, ActionVectorIcons) {
+  std::vector<scoped_refptr<OmniboxAction>> actions = {
       base::MakeRefCounted<history_clusters::HistoryClustersAction>(
-          "test", history::ClusterKeywordData());
-  const gfx::VectorIcon& vector_icon = history_clusters_action->GetVectorIcon();
-  const std::string& svg_name =
-      RealboxHandler::PedalVectorIconToResourceName(vector_icon);
-  EXPECT_FALSE(svg_name.empty());
+          "test", history::ClusterKeywordData()),
+      base::MakeRefCounted<TabSwitchAction>(GURL("test")),
+  };
+  for (auto const& action : actions) {
+    const gfx::VectorIcon& vector_icon = action->GetVectorIcon();
+    const std::string& svg_name =
+        RealboxHandler::PedalVectorIconToResourceName(vector_icon);
+    EXPECT_FALSE(svg_name.empty());
+  }
 }
 
 class RealboxSearchPreloadBrowserTest : public SearchPrefetchBaseBrowserTest {
@@ -162,8 +171,6 @@ class RealboxSearchPreloadBrowserTest : public SearchPrefetchBaseBrowserTest {
 class RealboxSearchBrowserTestPage : public omnibox::mojom::Page {
  public:
   // omnibox::mojom::Page
-  void OmniboxAutocompleteResultChanged(
-      omnibox::mojom::AutocompleteResultPtr result) override {}
   void AutocompleteResultChanged(
       omnibox::mojom::AutocompleteResultPtr result) override {}
   void SelectMatchAtLine(uint8_t line) override {}
@@ -181,7 +188,8 @@ IN_PROC_BROWSER_TEST_F(RealboxSearchPreloadBrowserTest, SearchPreloadSuccess) {
   RealboxSearchBrowserTestPage page;
   RealboxHandler realbox_handler = RealboxHandler(
       remote_page_handler.BindNewPipeAndPassReceiver(), browser()->profile(),
-      GetWebContents(), /*metrics_reporter=*/nullptr);
+      GetWebContents(), /*metrics_reporter=*/nullptr,
+      /*is_omnibox_popup_handler=*/false);
   realbox_handler.SetPage(page.GetRemotePage());
   content::test::PrerenderHostRegistryObserver registry_observer(
       *GetWebContents());

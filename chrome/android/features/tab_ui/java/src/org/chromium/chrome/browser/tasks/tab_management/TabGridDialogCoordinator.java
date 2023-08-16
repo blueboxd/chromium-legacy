@@ -13,7 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.TraceEvent;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -126,8 +125,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
         return mTabListCoordinator.getRecyclerViewPosition();
     }
 
-    @Nullable
-    private TabSelectionEditorController getTabSelectionEditorController() {
+    private @Nullable TabSelectionEditorController getTabSelectionEditorController() {
         if (mTabSelectionEditorCoordinator == null) {
             @TabListCoordinator.TabListMode
             int mode = TabUiFeatureUtilities.shouldUseListMode(mActivity)
@@ -206,9 +204,8 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
 
     @Override
     public @BackPressResult int handleBackPress() {
-        mMediator.hideDialog(true);
-        RecordUserAction.record("TabGridDialog.Exit");
-        return isVisible() ? BackPressResult.FAILURE : BackPressResult.SUCCESS;
+        final boolean handled = mMediator.handleBackPress();
+        return handled ? BackPressResult.SUCCESS : BackPressResult.FAILURE;
     }
 
     @Override

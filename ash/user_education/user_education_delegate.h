@@ -6,9 +6,11 @@
 #define ASH_USER_EDUCATION_USER_EDUCATION_DELEGATE_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/ash_export.h"
 #include "base/functional/callback_forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class AccountId;
 
@@ -47,6 +49,13 @@ class ASH_EXPORT UserEducationDelegate {
       ui::ElementIdentifier element_id,
       ui::ElementContext element_context) = 0;
 
+  // Returns the identifier for an element associated with the specified
+  // `app_id`, or an absent value if no such identifier exists. Note that
+  // existence of an identifier does not imply the existence of an associated
+  // element.
+  virtual absl::optional<ui::ElementIdentifier> GetElementIdentifierForAppId(
+      const std::string& app_id) const = 0;
+
   // Registers the tutorial defined by the specified `tutorial_id` and
   // `tutorial_description` for the user associated with the given `account_id`.
   // NOTE: Currently only the primary user profile is supported.
@@ -65,6 +74,12 @@ class ASH_EXPORT UserEducationDelegate {
                              ui::ElementContext element_context,
                              base::OnceClosure completed_callback,
                              base::OnceClosure aborted_callback) = 0;
+
+  // Aborts the currently running tutorial for the user associated with the
+  // given `account_id`, whether it was started by this delegate or not. Any
+  // `aborted_callback` passed in at the time of start will be called.
+  // NOTE: Currently only the primary user profile is supported.
+  virtual void AbortTutorial(const AccountId& account_id) = 0;
 };
 
 }  // namespace ash

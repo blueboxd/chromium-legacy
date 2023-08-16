@@ -148,6 +148,8 @@ class TestStoragePartition : public StoragePartition {
 
   AttributionDataModel* GetAttributionDataModel() override;
 
+  PrivateAggregationDataModel* GetPrivateAggregationDataModel() override;
+
   void set_browsing_topics_site_data_manager(
       BrowsingTopicsSiteDataManager* manager) {
     browsing_topics_site_data_manager_ = manager;
@@ -239,7 +241,8 @@ class TestStoragePartition : public StoragePartition {
   StoragePartitionConfig config_;
   base::FilePath file_path_;
   mojo::Remote<network::mojom::NetworkContext> network_context_remote_;
-  raw_ptr<network::mojom::NetworkContext> network_context_ = nullptr;
+  raw_ptr<network::mojom::NetworkContext, DanglingUntriaged> network_context_ =
+      nullptr;
   raw_ptr<network::mojom::CookieManager> cookie_manager_for_browser_process_ =
       nullptr;
   raw_ptr<storage::QuotaManager> quota_manager_ = nullptr;

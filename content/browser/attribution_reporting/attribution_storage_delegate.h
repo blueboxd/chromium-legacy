@@ -16,8 +16,13 @@
 #include "components/attribution_reporting/source_type.mojom-forward.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
+#include "content/browser/attribution_reporting/destination_throttler.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace network {
+class TriggerVerification;
+}  // namespace network
 
 namespace content {
 
@@ -123,6 +128,11 @@ class CONTENT_EXPORT AttributionStorageDelegate {
   // ordering on their conversion metadata bits.
   virtual void ShuffleReports(std::vector<AttributionReport>& reports) = 0;
 
+  // Shuffles trigger verifications to provide plausible deniability on the
+  // ordering and use of verification tokens.
+  virtual void ShuffleTriggerVerifications(
+      std::vector<network::TriggerVerification>& verifications) = 0;
+
   // Returns the rate used to determine whether to randomize the response to a
   // source with the given source type and expiry deadline, as implemented by
   // `GetRandomizedResponse()`. Must be in the range [0, 1] and remain constant
@@ -153,6 +163,8 @@ class CONTENT_EXPORT AttributionStorageDelegate {
   int64_t GetAggregatableBudgetPerSource() const;
 
   int GetMaxAggregatableReportsPerSource() const;
+
+  DestinationThrottler::Policy GetDestinationThrottlerPolicy() const;
 
   // Sanitizes `trigger_data` according to the data limits for `source_type`.
   uint64_t SanitizeTriggerData(uint64_t trigger_data,

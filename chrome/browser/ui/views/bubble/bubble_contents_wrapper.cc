@@ -40,19 +40,6 @@ bool BubbleContentsWrapper::Host::HandleKeyboardEvent(
   return false;
 }
 
-bool BubbleContentsWrapper::Host::HandleContextMenu(
-    content::RenderFrameHost& render_frame_host,
-    const content::ContextMenuParams& params) {
-  // Ignores context menu.
-  return true;
-}
-
-content::WebContents* BubbleContentsWrapper::Host::OpenURLFromTab(
-    content::WebContents* source,
-    const content::OpenURLParams& params) {
-  return nullptr;
-}
-
 BubbleContentsWrapper::BubbleContentsWrapper(
     const GURL& webui_url,
     content::BrowserContext* browser_context,
@@ -106,7 +93,8 @@ bool BubbleContentsWrapper::HandleKeyboardEvent(
 bool BubbleContentsWrapper::HandleContextMenu(
     content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params) {
-  return host_ ? host_->HandleContextMenu(render_frame_host, params) : true;
+  // Ignores context menu.
+  return true;
 }
 
 std::unique_ptr<content::EyeDropper> BubbleContentsWrapper::OpenEyeDropper(
@@ -115,22 +103,6 @@ std::unique_ptr<content::EyeDropper> BubbleContentsWrapper::OpenEyeDropper(
   BrowserWindow* window =
       BrowserWindow::FindBrowserWindowWithWebContents(web_contents_.get());
   return window->OpenEyeDropper(frame, listener);
-}
-
-content::WebContents* BubbleContentsWrapper::OpenURLFromTab(
-    content::WebContents* source,
-    const content::OpenURLParams& params) {
-  return host_ ? host_->OpenURLFromTab(source, params) : nullptr;
-}
-
-void BubbleContentsWrapper::RequestMediaAccessPermission(
-    content::WebContents* web_contents,
-    const content::MediaStreamRequest& request,
-    content::MediaResponseCallback callback) {
-  if (host_) {
-    host_->RequestMediaAccessPermission(web_contents, request,
-                                        std::move(callback));
-  }
 }
 
 void BubbleContentsWrapper::PrimaryPageChanged(content::Page& page) {

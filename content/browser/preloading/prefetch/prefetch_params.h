@@ -114,6 +114,15 @@ int PrefetchCanaryCheckRetries();
 bool PrefetchShouldBlockUntilHead(
     blink::mojom::SpeculationEagerness prefetch_eagerness);
 
+// The maximum amount of time to block until the head of a prefetch is received.
+// If the value is zero or less, then a navigation can be blocked indefinitely.
+base::TimeDelta PrefetchBlockUntilHeadTimeout(
+    blink::mojom::SpeculationEagerness prefetch_eagerness);
+
+// Gets the histogram suffix to use for the given eagerness parameter.
+CONTENT_EXPORT std::string GetPrefetchEagernessHistogramSuffix(
+    blink::mojom::SpeculationEagerness eagerness);
+
 // Returns whether the client is involved in the Holdback Finch
 // experiment group.
 bool IsContentPrefetchHoldback();

@@ -23,6 +23,7 @@ if (isOobeSimon) {
   }, {once: true});
 }
 
+
 // Right now we have only one priority screen and it is WelcomeScreen, that
 // means that there is no effect from async loading of screens on the login
 // page.

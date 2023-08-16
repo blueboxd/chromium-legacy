@@ -83,7 +83,8 @@ class WebGLConformanceIntegrationTestBase(
 
   websocket_server = None
 
-  def _SuiteSupportsParallelTests(self) -> bool:
+  @classmethod
+  def _SuiteSupportsParallelTests(cls) -> bool:
     return True
 
   def _GetSerialGlobs(self) -> Set[str]:
@@ -453,12 +454,6 @@ class WebGLConformanceIntegrationTestBase(
         # Force-enable SharedArrayBuffer to be able to test its
         # support in WEBGL_multi_draw.
         '--enable-blink-features=SharedArrayBuffer',
-        # When running tests in parallel, windows can be treated as occluded if
-        # a newly opened window fully covers a previous one, which can cause
-        # issues in a few tests. This is practically only an issue on Windows
-        # since Linux/Mac stagger new windows, but pass in on all platforms
-        # since it could technically be hit on any platform.
-        '--disable-backgrounding-occluded-windows',
     ])
     # Note that the overriding of the default --js-flags probably
     # won't interact well with RestartBrowserIfNecessaryWithArgs, but
@@ -472,12 +467,11 @@ class WebGLConformanceIntegrationTestBase(
         if o.startswith('--js-flags'):
           found_js_flags = True
           user_js_flags = o
-          break
-        if o.startswith('--use-gl='):
+        elif o.startswith('--use-gl='):
           cls._gl_backend = o[len('--use-gl='):]
-        if o.startswith('--use-angle='):
+        elif o.startswith('--use-angle='):
           cls._angle_backend = o[len('--use-angle='):]
-        if o.startswith('--use-cmd-decoder='):
+        elif o.startswith('--use-cmd-decoder='):
           cls._command_decoder = o[len('--use-cmd-decoder='):]
     if found_js_flags:
       logging.warning('Overriding built-in JavaScript flags:')

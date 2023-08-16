@@ -45,7 +45,8 @@ NearbyDependenciesProvider* NearbyDependenciesProviderFactory::GetForProfile(
 // static
 NearbyDependenciesProviderFactory*
 NearbyDependenciesProviderFactory::GetInstance() {
-  return base::Singleton<NearbyDependenciesProviderFactory>::get();
+  static base::NoDestructor<NearbyDependenciesProviderFactory> instance;
+  return instance.get();
 }
 
 NearbyDependenciesProviderFactory::NearbyDependenciesProviderFactory()

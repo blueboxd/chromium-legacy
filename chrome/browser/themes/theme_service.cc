@@ -63,9 +63,11 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/base/layout.h"
+#include "ui/base/resource/resource_scale_factor.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
+#include "ui/color/color_provider_manager.h"
 #include "ui/native_theme/native_theme.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -509,9 +511,42 @@ SkColor ThemeService::GetPolicyThemeColor() const {
   return profile_->GetPrefs()->GetInteger(prefs::kPolicyThemeColor);
 }
 
+void ThemeService::SetBrowserColorScheme(
+    ThemeService::BrowserColorScheme color_scheme) {
+  profile_->GetPrefs()->SetInteger(prefs::kBrowserColorScheme,
+                                   static_cast<int>(color_scheme));
+  NotifyThemeChanged();
+}
+
 ThemeService::BrowserColorScheme ThemeService::GetBrowserColorScheme() const {
-  return static_cast<BrowserColorScheme>(
-      profile_->GetPrefs()->GetInteger(prefs::kBrowserColorScheme));
+  // If not running ChromeRefresh2023 we should always defer to the system color
+  // scheme.
+  return features::IsChromeRefresh2023()
+             ? static_cast<BrowserColorScheme>(
+                   profile_->GetPrefs()->GetInteger(prefs::kBrowserColorScheme))
+             : BrowserColorScheme::kSystem;
+}
+
+void ThemeService::SetUserColor(absl::optional<SkColor> user_color) {
+  profile_->GetPrefs()->SetInteger(prefs::kUserColor,
+                                   user_color.value_or(SK_ColorTRANSPARENT));
+  NotifyThemeChanged();
+}
+
+absl::optional<SkColor> ThemeService::GetUserColor() const {
+  auto user_color = profile_->GetPrefs()->GetInteger(prefs::kUserColor);
+  return user_color == SK_ColorTRANSPARENT
+             ? absl::nullopt
+             : absl::optional<SkColor>(user_color);
+}
+
+void ThemeService::SetIsGrayscale(bool is_grayscale) {
+  profile_->GetPrefs()->SetBoolean(prefs::kGrayscaleThemeEnabled, is_grayscale);
+  NotifyThemeChanged();
+}
+
+bool ThemeService::GetIsGrayscale() const {
+  return profile_->GetPrefs()->GetBoolean(prefs::kGrayscaleThemeEnabled);
 }
 
 // static

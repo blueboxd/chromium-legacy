@@ -76,6 +76,7 @@ dependencies = [
  "cxx",
  "cxxbridge-cmd",
  "env_logger",
+ "font-types",
  "hex",
  "hex-literal",
  "lazy_static",
@@ -83,9 +84,11 @@ dependencies = [
  "memoffset",
  "once_cell",
  "proc-macro2",
+ "qr_code",
  "quote",
  "rand",
  "rand_pcg",
+ "read-fonts",
  "regex",
  "rstest",
  "rstest_reuse",
@@ -94,6 +97,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_json_lenient",
+ "skrifa",
  "small_ctor",
  "static_assertions",
  "syn",
@@ -172,6 +176,10 @@ version = "1.7.0"
 dependencies = [
  "instant",
 ]
+
+[[package]]
+name = "font-types"
+version = "0.3.0"
 
 [[package]]
 name = "getrandom"
@@ -278,6 +286,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "qr_code"
+version = "2.0.0"
+
+[[package]]
 name = "quote"
 version = "1.0.27"
 dependencies = [
@@ -313,6 +325,13 @@ name = "rand_pcg"
 version = "0.3.1"
 dependencies = [
  "rand_core",
+]
+
+[[package]]
+name = "read-fonts"
+version = "0.5.0"
+dependencies = [
+ "font-types",
 ]
 
 [[package]]
@@ -428,6 +447,13 @@ dependencies = [
  "itoa 0.4.8",
  "ryu",
  "serde",
+]
+
+[[package]]
+name = "skrifa"
+version = "0.4.0"
+dependencies = [
+ "read-fonts",
 ]
 
 [[package]]

@@ -299,26 +299,15 @@ const char kExtensionsInstallVerification[] = "extensions-install-verification";
 // be treated as not from the webstore when doing install verification.
 const char kExtensionsNotWebstore[] = "extensions-not-webstore";
 
-// Specifies a proxy server for origins specified in
-// kIPAnonymizationProxyAllowList. This proxy will be used on a best-effort
-// basis when normal proxy resolution would result in trying direct connections
-// (possibly after trying some other proxy server).
-const char kIPAnonymizationProxyServer[] = "ip-anonymization-proxy-server";
-
-// Specifies a list of origins on which to use the server specified by
-// `kIPAnonymizationProxyServer`. if `kIPAnonymizationProxyServer` is empty this
-// list will be ignored. This is intended as a reverse bypass rules list.
-const char kIPAnonymizationProxyAllowList[] =
-    "ip-anonymization-proxy-allow-list";
-
-// Specifies a value for the "password" header to be passed to the proxy
-// specified by `kIPAnonymizationProxyServer`. if `kIPAnonymizationProxyServer`
-// is empty this list will be ignored.
-const char kIPAnonymizationProxyPassword[] = "ip-anonymization-proxy-password";
-
 // Forces application mode. This hides certain system UI elements and forces
 // the app to be installed if it hasn't been already.
 const char kForceAppMode[] = "force-app-mode";
+
+#if BUILDFLAG(IS_CHROMEOS)
+// Forces developer tools availability, no matter what values the enterprise
+// policies DeveloperToolsDisabled and DeveloperToolsAvailability are set to.
+const char kForceDevToolsAvailable[] = "force-devtools-available";
+#endif
 
 // Displays the First Run experience when the browser is started, regardless of
 // whether or not it's actually the First Run (this overrides kNoFirstRun).
@@ -545,6 +534,10 @@ const char kSimulateOutdatedNoAU[] = "simulate-outdated-no-au";
 // Simulates an update being available.
 const char kSimulateUpgrade[] = "simulate-upgrade";
 
+// Sets the IdleTimeout policy to a very short value (shorter than normally
+// possible) for testing purposes.
+const char kSimulateIdleTimeout[] = "simulate-idle-timeout";
+
 // Specifies the maximum SSL/TLS version ("tls1.2" or "tls1.3").
 const char kSSLVersionMax[] = "ssl-version-max";
 
@@ -693,11 +686,6 @@ const char kForceUpdateMenuType[] = "force-update-menu-type";
 
 // Forces a custom summary to be displayed below the update menu item.
 const char kForceShowUpdateMenuItemCustomSummary[] = "custom_summary";
-
-// Force hiding non-displayable account email during the FRE flow. Only for
-// testing purposes.
-const char kForceHideNonDisplayableAccountEmailFRE[] =
-    "force-hide-non-displayable-account-email-fre";
 
 // Sets the market URL for Chrome for use in testing.
 const char kMarketUrlForTesting[] = "market-url-for-testing";

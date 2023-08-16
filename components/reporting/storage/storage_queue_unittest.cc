@@ -185,14 +185,14 @@ class StorageQueueTest
           .append("/")
           .append(base::NumberToString(generation_id))
           .append(" '")
-          .append(record.data().data(), record.data().size())
+          .append(record.data())
           .append("'\n");
       bool success =
           mock_upload_->UploadRecord(uploader_id, sequencing_id, record.data());
       if (success && possible_record_copy.has_value()) {
         const auto& record_copy = possible_record_copy.value();
         upload_progress_.append("Has unencrypted copy: ")
-            .append(record_copy.data().data(), record_copy.data().size())
+            .append(record_copy.data())
             .append("'\n");
         mock_upload_->HasUnencryptedCopy(uploader_id, record_copy.destination(),
                                          record_copy.data());
@@ -601,10 +601,17 @@ class StorageQueueTest
     const int64_t uploader_id_;
 
     absl::optional<int64_t> generation_id_;
-    const raw_ptr<absl::optional<int64_t>> last_upload_generation_id_;
-    const raw_ptr<LastRecordDigestMap> last_record_digest_map_;
 
-    const raw_ptr<const MockUpload> mock_upload_;
+    // These dangling raw_ptr occurred in:
+    // components_unittests:
+    // VaryingFileSize/StorageQueueTest.WriteAndRepeatedlyImmediateUpload/4
+    // https://ci.chromium.org/ui/p/chromium/builders/try/linux-rel/1425477/test-results?q=ExactID%3Aninja%3A%2F%2Fcomponents%3Acomponents_unittests%2FStorageQueueTest.WriteAndRepeatedlyImmediateUpload%2FVaryingFileSize.4+VHash%3A54d84870d628118f
+    const raw_ptr<absl::optional<int64_t>, FlakyDanglingUntriaged>
+        last_upload_generation_id_;
+    const raw_ptr<LastRecordDigestMap, FlakyDanglingUntriaged>
+        last_record_digest_map_;
+
+    const raw_ptr<const MockUpload, FlakyDanglingUntriaged> mock_upload_;
     const base::SequenceBound<SequenceBoundUpload> sequence_bound_upload_;
 
     Sequence test_encounter_sequence_;

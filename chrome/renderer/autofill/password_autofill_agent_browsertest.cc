@@ -132,6 +132,13 @@ const char kSearchFieldHTML[] =
     "  <INPUT type='submit' value='Chirp'/>"
     "</FORM>";
 
+const char kWebAutnFieldHTML[] =
+    "<FORM id='WebAuthnFieldForm' action='http://www.gewgle.de'>"
+    "  <INPUT type='text' id='username' autocomplete='webauthn'/>"
+    "  <INPUT type='password' id='password' autocomplete='webauthn'/>"
+    "  <INPUT type='submit' value='Login'/>"
+    "</FORM>";
+
 const char kVisibleFormWithNoUsernameHTML[] =
     "<head> <style> form {display: inline;} </style> </head>"
     "<body>"
@@ -1809,13 +1816,14 @@ TEST_F(PasswordAutofillAgentTest, TryToShowKeyboardReplacingSurfaceUsername) {
 
   // This changes once fill data is simulated. |random_element| continue  to
   // have no fill data, though.
+  fill_data_.wait_for_username = true;
   SimulateOnFillPasswordForm(fill_data_);
 
   EXPECT_TRUE(password_autofill_agent_->TryToShowKeyboardReplacingSurface(
       username_element_));
   EXPECT_TRUE(password_autofill_agent_->ShouldSuppressKeyboard());
-  EXPECT_EQ(WebAutofillState::kPreviewed, username_element_.GetAutofillState());
-  EXPECT_EQ(WebAutofillState::kPreviewed, password_element_.GetAutofillState());
+  EXPECT_EQ(WebAutofillState::kNotFilled, username_element_.GetAutofillState());
+  EXPECT_EQ(WebAutofillState::kNotFilled, password_element_.GetAutofillState());
 
   EXPECT_CALL(fake_driver_,
               ShowKeyboardReplacingSurface(
@@ -1825,12 +1833,13 @@ TEST_F(PasswordAutofillAgentTest, TryToShowKeyboardReplacingSurfaceUsername) {
 }
 
 TEST_F(PasswordAutofillAgentTest, TryToShowKeyboardReplacingSurfacePassword) {
+  fill_data_.wait_for_username = true;
   SimulateOnFillPasswordForm(fill_data_);
 
   EXPECT_TRUE(password_autofill_agent_->TryToShowKeyboardReplacingSurface(
       password_element_));
   EXPECT_TRUE(password_autofill_agent_->ShouldSuppressKeyboard());
-  EXPECT_EQ(WebAutofillState::kPreviewed, password_element_.GetAutofillState());
+  EXPECT_EQ(WebAutofillState::kNotFilled, password_element_.GetAutofillState());
 
   EXPECT_CALL(fake_driver_,
               ShowKeyboardReplacingSurface(
@@ -1874,12 +1883,13 @@ TEST_F(PasswordAutofillAgentTest,
   UpdateUrlForHTML(kPasswordChangeFormHTML);
   UpdateUsernameAndPasswordElements();
   // Enable filling for the old password field.
+  fill_data_.wait_for_username = true;
   SimulateOnFillPasswordForm(fill_data_);
 
   EXPECT_TRUE(password_autofill_agent_->TryToShowKeyboardReplacingSurface(
       password_element_));
   EXPECT_TRUE(password_autofill_agent_->ShouldSuppressKeyboard());
-  EXPECT_EQ(WebAutofillState::kPreviewed, password_element_.GetAutofillState());
+  EXPECT_EQ(WebAutofillState::kNotFilled, password_element_.GetAutofillState());
 
   // As there are other input fields, don't enable automatic submission.
   EXPECT_CALL(
@@ -1899,24 +1909,23 @@ TEST_F(PasswordAutofillAgentTest, KeyboardReplacingSurfaceSuppressesPopups) {
 }
 
 TEST_F(PasswordAutofillAgentTest, KeyboardReplacingSurfaceClosed) {
+  fill_data_.wait_for_username = true;
   SimulateOnFillPasswordForm(fill_data_);
 
-  auto previous_state = password_element_.GetAutofillState();
   // Touch to fill will be shown multiple times until
   // KeyboardReplacingSurfaceClosed() gets called.
   FocusElement(kPasswordName);
   EXPECT_TRUE(password_autofill_agent_->ShouldSuppressKeyboard());
-  EXPECT_EQ(WebAutofillState::kPreviewed, password_element_.GetAutofillState());
+  EXPECT_EQ(WebAutofillState::kNotFilled, password_element_.GetAutofillState());
 
   EXPECT_CALL(fake_driver_, ShowKeyboardReplacingSurface);
   base::RunLoop().RunUntilIdle();
 
-  // Make sure that resetting Touch To Fill resets the Autofill state.
   password_autofill_agent_->KeyboardReplacingSurfaceClosed(true);
   EXPECT_FALSE(password_autofill_agent_->TryToShowKeyboardReplacingSurface(
       password_element_));
   EXPECT_FALSE(password_autofill_agent_->ShouldSuppressKeyboard());
-  EXPECT_EQ(previous_state, password_element_.GetAutofillState());
+  EXPECT_EQ(WebAutofillState::kNotFilled, password_element_.GetAutofillState());
 
   // Reload the page and simulate fill.
   LoadHTML(kFormHTML);
@@ -1927,7 +1936,7 @@ TEST_F(PasswordAutofillAgentTest, KeyboardReplacingSurfaceClosed) {
 
   // After the reload touch to fill is shown again.
   EXPECT_TRUE(password_autofill_agent_->ShouldSuppressKeyboard());
-  EXPECT_EQ(WebAutofillState::kPreviewed, password_element_.GetAutofillState());
+  EXPECT_EQ(WebAutofillState::kNotFilled, password_element_.GetAutofillState());
 
   EXPECT_CALL(fake_driver_, ShowKeyboardReplacingSurface);
   base::RunLoop().RunUntilIdle();
@@ -3373,11 +3382,39 @@ TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutFillableFields) {
             fake_driver_.last_focused_field_type());
 }
 
-TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutFillablSearchField) {
+TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutFillableSearchField) {
   LoadHTML(kSearchFieldHTML);
   FocusElement(kSearchField);
   fake_driver_.Flush();
   EXPECT_EQ(FocusedFieldType::kFillableSearchField,
+            fake_driver_.last_focused_field_type());
+}
+
+TEST_F(PasswordAutofillAgentTest,
+       DriverInformedAboutWebAuthnIfNotPasswordOrUsername) {
+  LoadHTML(kWebAutnFieldHTML);
+  UpdateUrlForHTML(kWebAutnFieldHTML);
+  UpdateUsernameAndPasswordElements();
+
+  // Classify webauthn-tagged fields as webauthn if they aren't anything else.
+  FocusElement(kUsernameName);
+  fake_driver_.Flush();
+  EXPECT_EQ(FocusedFieldType::kFillableWebauthnTaggedField,
+            fake_driver_.last_focused_field_type());
+
+  // Don't classify password fields as webauthn. Fallbacks are the
+  // same anyway.
+  FocusElement(kPasswordName);
+  fake_driver_.Flush();
+  EXPECT_EQ(FocusedFieldType::kFillablePasswordField,
+            fake_driver_.last_focused_field_type());
+
+  // Once username fields are detectable, prefer username
+  // classification.
+  SimulateOnFillPasswordForm(fill_data_);
+  FocusElement(kUsernameName);
+  fake_driver_.Flush();
+  EXPECT_EQ(FocusedFieldType::kFillableUsernameField,
             fake_driver_.last_focused_field_type());
 }
 

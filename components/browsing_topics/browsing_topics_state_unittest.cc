@@ -38,7 +38,6 @@ constexpr browsing_topics::HmacKey kZeroKey = {};
 constexpr browsing_topics::HmacKey kTestKey = {1};
 constexpr browsing_topics::HmacKey kTestKey2 = {2};
 
-constexpr size_t kTaxonomySize = 349;
 constexpr int kTaxonomyVersion = 1;
 constexpr int64_t kModelVersion = 2;
 constexpr size_t kPaddedTopTopicsStartIndex = 3;
@@ -57,8 +56,8 @@ EpochTopics CreateTestEpochTopics(base::Time calculation_time) {
       TopicAndDomains(Topic(5), {HashedDomain(1)}));
 
   EpochTopics epoch_topics(std::move(top_topics_and_observing_domains),
-                           kPaddedTopTopicsStartIndex, kTaxonomySize,
-                           kTaxonomyVersion, kModelVersion, calculation_time);
+                           kPaddedTopTopicsStartIndex, kTaxonomyVersion,
+                           kModelVersion, calculation_time);
 
   return epoch_topics;
 }
@@ -70,9 +69,6 @@ class BrowsingTopicsStateTest : public testing::Test {
   BrowsingTopicsStateTest()
       : task_environment_(new base::test::TaskEnvironment(
             base::test::TaskEnvironment::TimeSource::MOCK_TIME)) {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        blink::features::kBrowsingTopics, {{"config_version", "123"}});
-
     OverrideHmacKeyForTesting(kTestKey);
 
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -165,7 +161,7 @@ TEST_F(BrowsingTopicsStateTest, InitFromNoFile_SaveToDiskAfterDelay) {
   EXPECT_TRUE(base::PathExists(TestFilePath()));
   EXPECT_EQ(
       GetTestFileContent(),
-      "{\"config_version\": 123,\"epochs\": [ ],\"hex_encoded_hmac_key\": "
+      "{\"config_version\": 1,\"epochs\": [ ],\"hex_encoded_hmac_key\": "
       "\"0100000000000000000000000000000000000000000000000000000000000000\","
       "\"next_scheduled_calculation_time\": \"0\"}");
 }
@@ -193,7 +189,7 @@ TEST_F(BrowsingTopicsStateTest,
   EXPECT_FALSE(state.HasScheduledSaveForTesting());
 
   std::string expected_content = base::StrCat(
-      {"{\"config_version\": 123,\"epochs\": [ ],\"hex_encoded_hmac_key\": "
+      {"{\"config_version\": 1,\"epochs\": [ ],\"hex_encoded_hmac_key\": "
        "\"0100000000000000000000000000000000000000000000000000000000000000"
        "\",\"next_scheduled_calculation_time\": \"",
        base::NumberToString(state.next_scheduled_calculation_time()
@@ -389,7 +385,7 @@ TEST_F(BrowsingTopicsStateTest, InitFromPreexistingFile_CorruptedHmacKey) {
   CreateOrOverrideTestFile(std::move(epochs),
                            /*next_scheduled_calculation_time=*/kTime2,
                            /*hex_encoded_hmac_key=*/"123",
-                           /*config_version=*/123);
+                           /*config_version=*/1);
 
   BrowsingTopicsState state(temp_dir_.GetPath(), base::DoNothing());
   task_environment_->RunUntilIdle();
@@ -412,7 +408,7 @@ TEST_F(BrowsingTopicsStateTest, InitFromPreexistingFile_SameConfigVersion) {
   CreateOrOverrideTestFile(std::move(epochs),
                            /*next_scheduled_calculation_time=*/kTime2,
                            /*hex_encoded_hmac_key=*/base::HexEncode(kTestKey2),
-                           /*config_version=*/123);
+                           /*config_version=*/1);
 
   BrowsingTopicsState state(temp_dir_.GetPath(), base::DoNothing());
   task_environment_->RunUntilIdle();
@@ -603,7 +599,7 @@ TEST_F(BrowsingTopicsStateTest, ShouldSaveFileDespiteShutdownWhileScheduled) {
   EXPECT_TRUE(base::PathExists(TestFilePath()));
   EXPECT_EQ(
       GetTestFileContent(),
-      "{\"config_version\": 123,\"epochs\": [ ],\"hex_encoded_hmac_key\": "
+      "{\"config_version\": 1,\"epochs\": [ ],\"hex_encoded_hmac_key\": "
       "\"0100000000000000000000000000000000000000000000000000000000000000\","
       "\"next_scheduled_calculation_time\": \"0\"}");
 }

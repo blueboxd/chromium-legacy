@@ -178,4 +178,86 @@ TEST_F(BubbleDialogModelHostTest,
             kFocusedField);
 }
 
+TEST_F(BubbleDialogModelHostTest, SetEnabledButtons) {
+  constexpr char16_t kExtraButtonText[] = u"Button";
+
+  std::unique_ptr<Widget> anchor_widget =
+      CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
+  anchor_widget->Show();
+
+  auto host_unique = std::make_unique<BubbleDialogModelHost>(
+      ui::DialogModel::Builder()
+          .AddOkButton(base::DoNothing())
+          .AddCancelButton(base::DoNothing(),
+                           ui::DialogModelButton::Params().SetEnabled(false))
+          .AddExtraButton(base::DoNothing(), ui::DialogModelButton::Params()
+                                                 .SetLabel(kExtraButtonText)
+                                                 .SetEnabled(true))
+          .Build(),
+      anchor_widget->GetContentsView(), BubbleBorder::Arrow::TOP_RIGHT);
+
+  auto* host = host_unique.get();
+  Widget* const bubble_widget =
+      BubbleDialogDelegate::CreateBubble(std::move(host_unique));
+  test::WidgetVisibleWaiter waiter(bubble_widget);
+  bubble_widget->Show();
+  waiter.Wait();
+
+  EXPECT_EQ(host->GetOkButton()->GetEnabled(), true);
+  EXPECT_EQ(host->GetCancelButton()->GetEnabled(), false);
+  EXPECT_EQ(host->GetExtraView()->GetEnabled(), true);
+
+  bubble_widget->CloseNow();
+}
+
+TEST_F(BubbleDialogModelHostTest, TestFieldVisibility) {
+  DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kField);
+
+  std::unique_ptr<Widget> anchor_widget =
+      CreateTestWidget(Widget::InitParams::TYPE_WINDOW);
+  anchor_widget->Show();
+  const ui::ElementContext context =
+      views::ElementTrackerViews::GetContextForWidget(anchor_widget.get());
+
+  std::unique_ptr<ui::DialogModel> dialog_model =
+      ui::DialogModel::Builder()
+          .AddTextfield(kField, u"label", u"text",
+                        ui::DialogModelTextfield::Params().SetVisible(false))
+          .Build();
+
+  // Get a raw pointer to the model before we move ownership so it can be
+  // changed after the host is created.
+  ui::DialogModel* model = dialog_model.get();
+
+  auto host = std::make_unique<BubbleDialogModelHost>(
+      std::move(dialog_model), anchor_widget->GetContentsView(),
+      BubbleBorder::Arrow::TOP_RIGHT);
+
+  Widget* const bubble_widget =
+      BubbleDialogDelegate::CreateBubble(std::move(host));
+  test::WidgetVisibleWaiter waiter(bubble_widget);
+  bubble_widget->Show();
+  waiter.Wait();
+
+  ASSERT_TRUE(bubble_widget->IsVisible());
+
+  // Since the view is invisible, the tracker shouldn't know about it.
+  // TODO(1455549): It would be nice to have a means of accessing fields
+  //                regardless of state.
+  EXPECT_EQ(
+      views::ElementTrackerViews::GetInstance()->GetUniqueView(kField, context),
+      nullptr);
+
+  model->SetVisible(kField, true);
+
+  // Now that the field is visible, we should be able to access it.
+  views::View* const text_field =
+      views::ElementTrackerViews::GetInstance()->GetUniqueView(kField, context);
+
+  EXPECT_NE(text_field, nullptr);
+  EXPECT_TRUE(text_field->GetVisible());
+
+  bubble_widget->CloseNow();
+}
+
 }  // namespace views

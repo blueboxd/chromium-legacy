@@ -16,6 +16,9 @@
 #include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_profile_client.h"
 #include "chromeos/ash/components/network/cellular_esim_profile.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_profile.h"
+#include "chromeos/ash/components/network/network_profile_handler.h"
 
 namespace ash {
 
@@ -25,6 +28,8 @@ namespace {
 constexpr char kSmdsGsma[] = "1$lpa.ds.gsma.com$";
 // The activation code for the Stork SM-DS server.
 constexpr char kSmdsStork[] = "1$prod.smds.rsp.goog$";
+// The activation code for the Android staging SM-DS server.
+constexpr char kSmdsAndroidStaging[] = "1$lpa.live.esimdiscovery.dev$";
 
 const char kNonShillCellularNetworkPathPrefix[] = "/non-shill-cellular/";
 
@@ -162,6 +167,13 @@ std::string GenerateStubCellularServicePath(const std::string& iccid) {
   return base::StrCat({kNonShillCellularNetworkPathPrefix, iccid});
 }
 
+const NetworkProfile* GetCellularProfile(
+    const NetworkProfileHandler* network_profile_handler) {
+  DCHECK(network_profile_handler);
+  return network_profile_handler->GetProfileForUserhash(
+      /*userhash=*/std::string());
+}
+
 bool IsStubCellularServicePath(const std::string& service_path) {
   return base::StartsWith(service_path, kNonShillCellularNetworkPathPrefix);
 }
@@ -184,10 +196,17 @@ absl::optional<dbus::ObjectPath> GetCurrentEuiccPath() {
 }
 
 std::vector<std::string> GetSmdsActivationCodes() {
-  if (features::IsUseStorkSmdsServerAddressEnabled()) {
-    return {kSmdsStork};
+  std::vector<std::string> activation_codes;
+  if (features::ShouldUseStorkSmds()) {
+    activation_codes.push_back(kSmdsStork);
   }
-  return {kSmdsGsma};
+  if (features::ShouldUseAndroidStagingSmds()) {
+    activation_codes.push_back(kSmdsAndroidStaging);
+  }
+  if (activation_codes.empty()) {
+    activation_codes.push_back(kSmdsGsma);
+  }
+  return activation_codes;
 }
 
 }  // namespace cellular_utils

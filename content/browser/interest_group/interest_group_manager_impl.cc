@@ -12,6 +12,8 @@
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
+#include "base/json/json_string_value_serializer.h"
+#include "base/json/values_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
@@ -21,6 +23,8 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
+#include "components/cbor/diagnostic_writer.h"
+#include "components/cbor/writer.h"
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/browser/interest_group/interest_group_update.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
@@ -28,6 +32,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
+
 #include "url/gurl.h"
 
 namespace content {
@@ -100,11 +105,17 @@ ConvertOwnerJoinerPairsToDataKeys(
   }
   return data_keys;
 }
-
 }  // namespace
 
 InterestGroupManagerImpl::ReportRequest::ReportRequest() = default;
 InterestGroupManagerImpl::ReportRequest::~ReportRequest() = default;
+
+InterestGroupManagerImpl::AdAuctionDataLoaderState::AdAuctionDataLoaderState() =
+    default;
+InterestGroupManagerImpl::AdAuctionDataLoaderState::AdAuctionDataLoaderState(
+    AdAuctionDataLoaderState&& state) = default;
+InterestGroupManagerImpl::AdAuctionDataLoaderState::
+    ~AdAuctionDataLoaderState() = default;
 
 InterestGroupManagerImpl::InterestGroupManagerImpl(
     const base::FilePath& path,
@@ -396,6 +407,58 @@ void InterestGroupManagerImpl::UpdateLastKAnonymityReported(
     const std::string& key) {
   impl_.AsyncCall(&InterestGroupStorage::UpdateLastKAnonymityReported)
       .WithArgs(key);
+}
+
+void InterestGroupManagerImpl::GetInterestGroupAdAuctionData(
+    url::Origin top_level_origin,
+    base::Uuid generation_id,
+    base::OnceCallback<void(BiddingAndAuctionData)> callback) {
+  AdAuctionDataLoaderState state;
+  state.serializer.SetPublisher(top_level_origin.Serialize());
+  state.serializer.SetGenerationId(std::move(generation_id));
+  state.callback = std::move(callback);
+  GetAllInterestGroupOwners(base::BindOnce(
+      &InterestGroupManagerImpl::LoadNextInterestGroupAdAuctionData,
+      weak_factory_.GetWeakPtr(), std::move(state)));
+}
+
+void InterestGroupManagerImpl::LoadNextInterestGroupAdAuctionData(
+    AdAuctionDataLoaderState state,
+    std::vector<url::Origin> owners) {
+  if (!owners.empty()) {
+    url::Origin next_owner = std::move(owners.back());
+    owners.pop_back();
+    GetInterestGroupsForOwner(
+        next_owner,
+        base::BindOnce(
+            &InterestGroupManagerImpl::OnLoadedNextInterestGroupAdAuctionData,
+            weak_factory_.GetWeakPtr(), std::move(state), std::move(owners),
+            next_owner));
+    return;
+  }
+  // Loading is finished.
+  OnAdAuctionDataLoadComplete(std::move(state));
+}
+
+void InterestGroupManagerImpl::OnLoadedNextInterestGroupAdAuctionData(
+    AdAuctionDataLoaderState state,
+    std::vector<url::Origin> owners,
+    url::Origin owner,
+    std::vector<StorageInterestGroup> groups) {
+  state.serializer.AddGroups(std::move(owner), std::move(groups));
+  LoadNextInterestGroupAdAuctionData(std::move(state), std::move(owners));
+}
+
+void InterestGroupManagerImpl::OnAdAuctionDataLoadComplete(
+    AdAuctionDataLoaderState state) {
+  std::move(state.callback).Run(state.serializer.Build());
+}
+
+void InterestGroupManagerImpl::GetBiddingAndAuctionServerKey(
+    network::mojom::URLLoaderFactory* loader,
+    base::OnceCallback<void(absl::optional<BiddingAndAuctionServerKey>)>
+        callback) {
+  ba_key_fetcher_.GetOrFetchKey(loader, std::move(callback));
 }
 
 void InterestGroupManagerImpl::OnJoinInterestGroupPermissionsChecked(

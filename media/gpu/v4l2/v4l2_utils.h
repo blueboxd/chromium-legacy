@@ -8,16 +8,31 @@
 #include <string>
 
 #include <linux/videodev2.h>
+#include <sys/mman.h>
 
 #include "base/functional/callback.h"
 #include "media/base/video_codecs.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+#ifndef V4L2_PIX_FMT_QC08C
+#define V4L2_PIX_FMT_QC08C \
+  v4l2_fourcc('Q', '0', '8', 'C') /* Qualcomm 8-bit compressed */
+#endif
 
 namespace gfx {
 class Size;
 }
 namespace media {
+class VideoFrameLayout;
 
 using IoctlAsCallback = base::RepeatingCallback<int(int, void*)>;
+
+// Ideally this should be a decltype(mmap) (void *mmap(void *addr, size_t
+// length, int prot, int flags, int fd, off_t offset)), but the types of e.g.
+// V4L2Device::Mmap are wrong.
+// TODO(b/279980150): correct types and argument order and use decltype.
+using MmapAsCallback =
+    base::RepeatingCallback<void*(void*, unsigned int, int, int, unsigned int)>;
 
 // Returns a human readable description of |memory|.
 const char* V4L2MemoryToString(v4l2_memory memory);
@@ -34,6 +49,14 @@ std::string V4L2BufferToString(const struct v4l2_buffer& buffer);
 // VIDEO_CODEC_PROFILE_UNKNOWN otherwise.
 VideoCodecProfile V4L2ProfileToVideoCodecProfile(uint32_t v4l2_codec,
                                                  uint32_t v4l2_profile);
+
+// Returns number of planes of |pix_fmt|, or 1, if this is unknown.
+size_t GetNumPlanesOfV4L2PixFmt(uint32_t pix_fmt);
+
+// Composes VideoFrameLayout based on v4l2_format.
+// If error occurs, it returns absl::nullopt.
+absl::optional<VideoFrameLayout> V4L2FormatToVideoFrameLayout(
+    const struct v4l2_format& format);
 
 // Enumerates the supported VideoCodecProfiles for a given device (accessed via
 // |ioctl_cb|) and for |codec_as_pix_fmt| (e.g. V4L2_PIX_FMT_VP9). Returns an

@@ -453,7 +453,11 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // LayoutObject.
   LayoutBox* EnclosingBox() const;
 
-  LayoutBox* EnclosingScrollableBox() const;
+  // This is deprecated because it doesn't meet the requirement of its only
+  // caller IntersectionObservation::CanUseCachedRects() because this doesn't
+  // handle programmatically-only scrollable scrollers. Another problem is
+  // that it may return wrong results for out-of-flow positioned objects.
+  LayoutBox* DeprecatedEnclosingScrollableBox() const;
 
   // Return the NG |LayoutBlockFlow| that will have any |NGFragmentItems| for
   // |this|, or nullptr if the containing block isn't an NG inline formatting
@@ -759,7 +763,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     if (Element* element = DynamicTo<Element>(GetNode())) {
       return StyleRef().StyleType() == kPseudoIdViewTransition ||
-             StyleRef().IsInTopLayer(*element);
+             StyleRef().IsRenderedInTopLayer(*element);
     }
     return false;
   }
@@ -2272,13 +2276,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
       UpdateLayout();
   }
 
-  void ForceLayout();
-  void ForceLayoutWithPaintInvalidation() {
-    NOT_DESTROYED();
-    SetShouldDoFullPaintInvalidation();
-    ForceLayout();
-  }
-
   // Used for element state updates that cannot be fixed with a paint
   // invalidation and do not need a relayout.
   virtual void UpdateFromElement() { NOT_DESTROYED(); }
@@ -3362,6 +3359,15 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     bitfields_.SetScrollAnchorDisablingStyleChanged(changed);
   }
 
+  bool ShouldSkipLayoutCache() const {
+    NOT_DESTROYED();
+    return bitfields_.ShouldSkipLayoutCache();
+  }
+  void SetShouldSkipLayoutCache(bool b) {
+    NOT_DESTROYED();
+    bitfields_.SetShouldSkipLayoutCache(b);
+  }
+
   BackgroundPaintLocation GetBackgroundPaintLocation() const {
     NOT_DESTROYED();
     return static_cast<BackgroundPaintLocation>(background_paint_location_);
@@ -3705,12 +3711,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   PhysicalOffset OffsetFromScrollableContainer(const LayoutObject*,
                                                bool ignore_scroll_offset) const;
 
-  void NotifyDisplayLockDidLayoutChildren() {
-    NOT_DESTROYED();
-    if (auto* context = GetDisplayLockContext())
-      context->DidLayoutChildren();
-  }
-
   bool BackgroundIsKnownToBeObscured() const {
     NOT_DESTROYED();
     DCHECK_GE(GetDocument().Lifecycle().GetState(),
@@ -3951,6 +3951,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
           can_composite_background_attachment_fixed_(false),
           is_scroll_anchor_object_(false),
           scroll_anchor_disabling_style_changed_(false),
+          should_skip_layout_cache_(false),
           has_box_decoration_background_(false),
           background_needs_full_paint_invalidation_(true),
           outline_may_be_affected_by_descendants_(false),
@@ -4187,6 +4188,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     // See http://bit.ly/sanaclap for more info.
     ADD_BOOLEAN_BITFIELD(scroll_anchor_disabling_style_changed_,
                          ScrollAnchorDisablingStyleChanged);
+
+    ADD_BOOLEAN_BITFIELD(should_skip_layout_cache_, ShouldSkipLayoutCache);
 
     ADD_BOOLEAN_BITFIELD(has_box_decoration_background_,
                          HasBoxDecorationBackground);
@@ -4493,6 +4496,8 @@ inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation() {
 #endif
 
   SetScrollAnchorDisablingStyleChanged(false);
+
+  SetShouldSkipLayoutCache(false);
 }
 
 inline void LayoutObject::ClearNeedsLayout() {

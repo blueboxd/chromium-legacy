@@ -38,6 +38,8 @@ typedef NS_ENUM(NSInteger, SyncSettingsSectionIdentifier) {
   AdvancedSettingsSectionIdentifier,
   // Sync errors.
   SyncErrorsSectionIdentifier,
+  // Section to show the signed-in account.
+  AccountSectionIdentifier,
 };
 
 // Item types used per Sync Setting section.
@@ -62,6 +64,8 @@ typedef NS_ENUM(NSInteger, SyncSettingsItemType) {
   SettingsDataTypeItemType,
   // Item for kAutofillWalletImportEnabled.
   AutocompleteWalletItemType,
+  // Sign out and turn off sync item,
+  SignOutAndTurnOffSyncItemType,
   // Sign out item,
   SignOutItemType,
   // AdvancedSettingsSectionIdentifier section.
@@ -79,6 +83,23 @@ typedef NS_ENUM(NSInteger, SyncSettingsItemType) {
   SyncDisabledByAdministratorErrorItemType,
   // Sign out item footer.
   SignOutItemFooterType,
+  // Item for the header and the footer of the types list.
+  TypesListHeaderOrFooterType,
+  // Item for the signed in identity.
+  IdentityAccountItemType,
+};
+
+// States for Sync Settings page to be in.
+enum class SyncSettingsAccountState {
+  // The user clicked "settings" in the Sync opt-in screen.
+  kAdvancedInitialSyncSetup,
+  // The user is viewing sync settings page when Sync-the-feature is on.
+  kSyncing,
+  // The user is viewing sync settings page when signed-in not syncing.
+  kSignedIn,
+  // The user signed out from the sync settings page, and the UI is being
+  // dismissed.
+  kSignedOut,
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_MANAGE_SYNC_SETTINGS_CONSTANTS_H_

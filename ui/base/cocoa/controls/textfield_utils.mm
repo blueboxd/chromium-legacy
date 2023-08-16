@@ -8,7 +8,7 @@
 
 + (NSTextField*)labelWithString:(NSString*)text {
   NSTextField* textfield =
-      [[[NSTextField alloc] initWithFrame:NSZeroRect] autorelease];
+      [[NSTextField alloc] initWithFrame:NSZeroRect];
   [textfield setBezeled:NO];
   [textfield setDrawsBackground:NO];
   [textfield setEditable:NO];

@@ -22,6 +22,7 @@
 #include "ash/wm/desks/desks_test_api.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/legacy_desk_bar_view.h"
+#include "ash/wm/float/float_test_api.h"
 #include "ash/wm/float/scoped_window_tucker.h"
 #include "ash/wm/float/tablet_mode_float_window_resizer.h"
 #include "ash/wm/float/tablet_mode_tuck_education.h"
@@ -407,6 +408,26 @@ TEST_F(WindowFloatTest, FloatOnOtherDisplay) {
       gfx::Rect(1200, 0, 1200, 800).Contains(window->GetBoundsInScreen()));
 }
 
+// Tests that floated windows that are moved to an external display are still
+// visible. Regression test for b/286864430.
+TEST_F(WindowFloatTest, MoveFloatedWindowToOtherDisplay) {
+  // On two displays of the same size, this was never an issue. The issue
+  // happened if the destination display was narrower than the source display.
+  UpdateDisplay("1200x800,1201+0-600x800");
+
+  // Create a floated window on the primary display. Upon floating, it will
+  // automatically reposition to the bottom right corner.
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+  ASSERT_EQ(Shell::GetAllRootWindows()[0], window->GetRootWindow());
+
+  // After moving the window to the secondary display, the bounds of `window`
+  // should be partially visible.
+  PressAndReleaseKey(ui::VKEY_M, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_EQ(Shell::GetAllRootWindows()[1], window->GetRootWindow());
+  EXPECT_TRUE(Shell::GetAllRootWindows()[1]->GetBoundsInScreen().Intersects(
+      window->GetBoundsInScreen()));
+}
+
 TEST_F(WindowFloatTest, FloatWindowBoundsWithZoomDisplay) {
   UpdateDisplay("1600x1000");
 
@@ -429,6 +450,23 @@ TEST_F(WindowFloatTest, FloatWindowBoundsWithZoomDisplay) {
   EXPECT_TRUE(WorkAreaInsets::ForWindow(window.get())
                   ->user_work_area_bounds()
                   .Contains(window->GetBoundsInScreen()));
+}
+
+TEST_F(WindowFloatTest, FloatWindowBoundsWithShelfChange) {
+  UpdateDisplay("1600x1000");
+
+  // This test makes some assumptions that the shelf starts bottom aligned.
+  ASSERT_EQ(ShelfAlignment::kBottom, GetPrimaryShelf()->alignment());
+
+  // Create a floated window and position so it is semi offscreen.
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+  const gfx::Rect ideal_bounds(1400, 0, 400, 300);
+  const SetBoundsWMEvent set_bounds_event(ideal_bounds);
+  WindowState::Get(window.get())->OnWMEvent(&set_bounds_event);
+
+  // Changing the shelf alignment should not alter the floated window bounds.
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kLeft);
+  EXPECT_EQ(ideal_bounds, window->GetBoundsInScreen());
 }
 
 // Test float window per desk logic.
@@ -863,6 +901,39 @@ TEST_F(WindowFloatTest, AlwaysOnTopWindow) {
   EXPECT_FALSE(WindowState::Get(always_on_top_window.get())->IsFloated());
 }
 
+// Tests that for unresizable windows, floatability depends on its window state
+// type.
+TEST_F(WindowFloatTest, UnresizableFloatPerWindowState) {
+  std::unique_ptr<aura::Window> window = CreateAppWindow(gfx::Rect(600, 600));
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      aura::client::kResizeBehaviorNone);
+  auto* const window_state = WindowState::Get(window.get());
+
+  // Unresizable freeform window should enter floating mode.
+  WMEvent restore_event(WM_EVENT_NORMAL);
+  window_state->OnWMEvent(&restore_event);
+  ASSERT_TRUE(window_state->IsNormalStateType());
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(window_state->IsFloated());
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_FALSE(window_state->IsFloated());
+
+  // Unresizable maximized window should not enter floating mode.
+  WMEvent maximize_event(WM_EVENT_MAXIMIZE);
+  window_state->OnWMEvent(&maximize_event);
+  ASSERT_TRUE(window_state->IsMaximized());
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  EXPECT_FALSE(window_state->IsFloated());
+
+  // Unresizable fullscreen window should not enter floating mode.
+  WMEvent fullscreen_event(WM_EVENT_FULLSCREEN);
+  window_state->OnWMEvent(&fullscreen_event);
+  ASSERT_TRUE(window_state->IsFullscreen());
+  window_state->Maximize();
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  EXPECT_FALSE(window_state->IsFloated());
+}
+
 // A test class that uses a mock time test environment.
 class WindowFloatMetricsTest : public WindowFloatTest {
  public:
@@ -890,7 +961,7 @@ TEST_F(WindowFloatMetricsTest, FloatWindowCountPerSession) {
   NewDesk();
   std::unique_ptr<aura::Window> window_2 = CreateFloatedWindow();
   // Check total counts.
-  EXPECT_EQ(Shell::Get()->float_controller()->floated_window_counter_, 3);
+  EXPECT_EQ(FloatTestApi::GetFloatedWindowCounter(), 3);
 }
 
 // Tests the float window moved to another desk counts.
@@ -924,12 +995,12 @@ TEST_F(WindowFloatMetricsTest, FloatWindowMovedToAnotherDeskCountPerSession) {
   auto* float_controller = Shell::Get()->float_controller();
   ASSERT_EQ(float_controller->FindDeskOfFloatedWindow(window_1.get()), desk_2);
   // Check total counts, it should count 1.
-  EXPECT_EQ(float_controller->floated_window_move_to_another_desk_counter_, 1);
+  EXPECT_EQ(FloatTestApi::GetFloatedWindowMoveToAnotherDeskCounter(), 1);
   // Move to `desk_2` and remove `desk_2` by combine 2 desks.
   // Check total counts, it should count 2.
   ActivateDesk(desk_2);
   RemoveDesk(desk_2, DeskCloseType::kCombineDesks);
-  EXPECT_EQ(float_controller->floated_window_move_to_another_desk_counter_, 2);
+  EXPECT_EQ(FloatTestApi::GetFloatedWindowMoveToAnotherDeskCounter(), 2);
 }
 
 // Tests that the float window duration histogram is properly recorded.

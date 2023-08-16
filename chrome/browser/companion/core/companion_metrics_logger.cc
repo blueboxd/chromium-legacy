@@ -43,7 +43,6 @@ bool IsListSurface(UiSurface ui_surface) {
     case UiSurface::kRelQr:
     case UiSurface::kRelQs:
     case UiSurface::kPageEntities:
-    case UiSurface::kPHResult:
       return true;
   }
 }
@@ -71,8 +70,6 @@ std::string UiSurfaceToHistogramVariant(UiSurface ui_surface) {
       return "PageEntities";
     case UiSurface::kATX:
       return "ATX";
-    case UiSurface::kPHResult:
-      return "PHResult";
     default:
       NOTREACHED();
       return "Unknown";
@@ -154,10 +151,10 @@ void CompanionMetricsLogger::RecordUiSurfaceShown(
   base::UmaHistogramBoolean(
       "Companion." + UiSurfaceToHistogramVariant(ui_surface) + ".Shown", true);
   if (IsListSurface(ui_surface)) {
-    base::UmaHistogramExactLinear(
-        "Companion." + UiSurfaceToHistogramVariant(ui_surface) +
-            ".ChildElementCount",
-        surface.child_element_shown_count, kMaxNumChildElements);
+    base::UmaHistogramBoolean("Companion." +
+                                  UiSurfaceToHistogramVariant(ui_surface) +
+                                  ".ChildElementCount",
+                              child_element_shown_count);
   }
 }
 
@@ -223,36 +220,16 @@ void CompanionMetricsLogger::FlushStats() {
     ukm_builder.SetPromoEvent(static_cast<int>(last_promo_event_.value()));
   }
 
-  // PH surface shown before requesting PH to be genenerated.
+  // PH surface.
   iter = ui_surface_metrics_.find(UiSurface::kPH);
   if (iter != ui_surface_metrics_.end()) {
     ukm_builder.SetPH_ComponentPosition(iter->second.ui_surface_position);
     ukm_builder.SetPH_LastEvent(static_cast<int64_t>(iter->second.last_event));
   }
 
-  // PHResult surface shown after PH request was made by clicking the generate
-  // button.
-  iter = ui_surface_metrics_.find(UiSurface::kPHResult);
-  if (iter != ui_surface_metrics_.end()) {
-    ukm_builder.SetPHResult_LastEvent(
-        static_cast<int64_t>(iter->second.last_event));
-    ukm_builder.SetPHResult_ComponentPosition(iter->second.ui_surface_position);
-    ukm_builder.SetPHResult_NumEntriesAvailable(
-        iter->second.child_element_available_count);
-    ukm_builder.SetPHResult_NumEntriesShown(
-        iter->second.child_element_shown_count);
-
-    auto click_position = iter->second.click_position;
-    if (click_position != kInvalidPosition) {
-      ukm_builder.SetPHResult_ClickPosition(click_position);
-    }
-  }
-
   // PH feedback.
   if (last_ph_feedback_.has_value()) {
     ukm_builder.SetPH_Feedback(static_cast<int>(last_ph_feedback_.value()));
-    base::UmaHistogramEnumeration("Companion.PHFeedback.Result",
-                                  last_ph_feedback_.value());
   }
 
   // CQ surface.

@@ -31,6 +31,7 @@ TestOmniboxClient::TestOmniboxClient()
           std::make_unique<TestSchemeClassifier>()) {}
 
 TestOmniboxClient::~TestOmniboxClient() {
+  template_url_service_ = nullptr;
   autocomplete_classifier_.Shutdown();
 }
 
@@ -109,15 +110,4 @@ gfx::Image TestOmniboxClient::GetSizedIcon(
   SkBitmap bitmap;
   bitmap.allocN32Pixels(16, 16);
   return gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
-}
-
-gfx::Image TestOmniboxClient::GetFaviconForPageUrl(
-    const GURL& page_url,
-    FaviconFetchedCallback on_favicon_fetched) {
-  page_url_for_last_favicon_request_ = page_url;
-  return gfx::Image();
-}
-
-GURL TestOmniboxClient::GetPageUrlForLastFaviconRequest() const {
-  return page_url_for_last_favicon_request_;
 }

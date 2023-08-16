@@ -14,8 +14,6 @@
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
-#include "net/log/net_log_source.h"
-#include "net/log/net_log_source_type.h"
 #include "services/network/public/cpp/crash_keys.h"
 #include "services/network/public/cpp/http_request_headers_mojom_traits.h"
 #include "services/network/public/cpp/isolation_info_mojom_traits.h"
@@ -46,6 +44,8 @@ EnumTraits<network::mojom::SourceType, net::SourceStream::SourceType>::ToMojom(
       return network::mojom::SourceType::kDeflate;
     case net::SourceStream::SourceType::TYPE_GZIP:
       return network::mojom::SourceType::kGzip;
+    case net::SourceStream::SourceType::TYPE_ZSTD:
+      return network::mojom::SourceType::kZstd;
     case net::SourceStream::SourceType::TYPE_NONE:
       return network::mojom::SourceType::kNone;
     case net::SourceStream::SourceType::TYPE_UNKNOWN:
@@ -67,6 +67,9 @@ bool EnumTraits<network::mojom::SourceType, net::SourceStream::SourceType>::
       return true;
     case network::mojom::SourceType::kGzip:
       *out = net::SourceStream::SourceType::TYPE_GZIP;
+      return true;
+    case network::mojom::SourceType::kZstd:
+      *out = net::SourceStream::SourceType::TYPE_ZSTD;
       return true;
     case network::mojom::SourceType::kNone:
       *out = net::SourceStream::SourceType::TYPE_NONE;
@@ -119,22 +122,6 @@ bool StructTraits<network::mojom::WebBundleTokenParamsDataView,
   out->handle = data.TakeWebBundleHandle<
       mojo::PendingRemote<network::mojom::WebBundleHandle>>();
   out->render_process_id = data.render_process_id();
-  return true;
-}
-
-bool StructTraits<network::mojom::NetLogSourceDataView, net::NetLogSource>::
-    Read(network::mojom::NetLogSourceDataView data, net::NetLogSource* out) {
-  if (data.source_type() >=
-      static_cast<uint32_t>(net::NetLogSourceType::COUNT)) {
-    return false;
-  }
-  base::TimeTicks start_time;
-  if (!data.ReadStartTime(&start_time)) {
-    return false;
-  }
-  *out =
-      net::NetLogSource(static_cast<net::NetLogSourceType>(data.source_type()),
-                        data.source_id(), start_time);
   return true;
 }
 
@@ -230,6 +217,8 @@ bool StructTraits<
   out->attribution_reporting_support = data.attribution_reporting_support();
   out->attribution_reporting_eligibility =
       data.attribution_reporting_eligibility();
+  out->shared_dictionary_writer_enabled =
+      data.shared_dictionary_writer_enabled();
   return true;
 }
 

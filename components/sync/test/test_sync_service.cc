@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/sync/base/progress_marker_map.h"
@@ -61,10 +62,12 @@ void TestSyncService::SetHasSyncConsent(bool has_sync_consent) {
   has_sync_consent_ = has_sync_consent;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void TestSyncService::SetSyncFeatureDisabledViaDashboard(
     bool disabled_via_dashboard) {
   sync_feature_disabled_via_dashboard_ = disabled_via_dashboard;
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void TestSyncService::SetPersistentAuthError() {
   transport_state_ = TransportState::PAUSED;
@@ -133,6 +136,14 @@ void TestSyncService::SetIsUsingExplicitPassphrase(bool enabled) {
   user_settings_.SetIsUsingExplicitPassphrase(enabled);
 }
 
+void TestSyncService::SetDownloadStatusFor(
+    const ModelTypeSet& types,
+    ModelTypeDownloadStatus download_status) {
+  for (const auto type : types) {
+    download_statuses_[type] = download_status;
+  }
+}
+
 void TestSyncService::FireStateChanged() {
   for (SyncServiceObserver& observer : observers_)
     observer.OnStateChanged(this);
@@ -143,8 +154,16 @@ void TestSyncService::FireSyncCycleCompleted() {
     observer.OnSyncCycleCompleted(this);
 }
 
+#if BUILDFLAG(IS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject> TestSyncService::GetJavaObject() {
+  return base::android::ScopedJavaLocalRef<jobject>();
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
 void TestSyncService::SetSyncFeatureRequested() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   sync_feature_disabled_via_dashboard_ = false;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 TestSyncUserSettings* TestSyncService::GetUserSettings() {
@@ -199,9 +218,11 @@ bool TestSyncService::RequiresClientUpgrade() const {
          syncer::UPGRADE_CLIENT;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 bool TestSyncService::IsSyncFeatureDisabledViaDashboard() const {
   return sync_feature_disabled_via_dashboard_;
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 std::unique_ptr<SyncSetupInProgressHandle>
 TestSyncService::GetSetupInProgressHandle() {
@@ -303,6 +324,9 @@ void TestSyncService::GetAllNodesForDebugging(
 
 SyncService::ModelTypeDownloadStatus TestSyncService::GetDownloadStatusFor(
     ModelType type) const {
+  if (base::Contains(download_statuses_, type)) {
+    return download_statuses_.at(type);
+  }
   return ModelTypeDownloadStatus::kUpToDate;
 }
 

@@ -293,11 +293,11 @@ void RenderWidgetHostViewChildFrame::SetInsets(const gfx::Insets& insets) {
 
 gfx::NativeView RenderWidgetHostViewChildFrame::GetNativeView() {
   if (!frame_connector_)
-    return nullptr;
+    return gfx::NativeView();
 
   RenderWidgetHostView* parent_view =
       frame_connector_->GetParentRenderWidgetHostView();
-  return parent_view ? parent_view->GetNativeView() : nullptr;
+  return parent_view ? parent_view->GetNativeView() : gfx::NativeView();
 }
 
 gfx::NativeViewAccessible
@@ -1003,6 +1003,22 @@ ui::TextInputType RenderWidgetHostViewChildFrame::GetTextInputType() const {
   if (text_input_manager_->GetTextInputState())
     return text_input_manager_->GetTextInputState()->type;
   return ui::TEXT_INPUT_TYPE_NONE;
+}
+
+bool RenderWidgetHostViewChildFrame::GetTextRange(gfx::Range* range) const {
+  if (!text_input_manager_ || !GetFocusedWidget()) {
+    return false;
+  }
+
+  const ui::mojom::TextInputState* state =
+      text_input_manager_->GetTextInputState();
+  if (!state) {
+    return false;
+  }
+
+  range->set_start(0);
+  range->set_end(state->value ? state->value->length() : 0);
+  return true;
 }
 
 RenderWidgetHostViewBase*

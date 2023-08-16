@@ -311,7 +311,9 @@ void FakeCrasAudioClient::SetFixA2dpPacketSize(bool enabled) {}
 
 void FakeCrasAudioClient::SetFlossEnabled(bool enabled) {}
 
-void FakeCrasAudioClient::SetSpeakOnMuteDetection(bool enabled) {}
+void FakeCrasAudioClient::SetSpeakOnMuteDetection(bool enabled) {
+  speak_on_mute_detection_enabled_ = enabled;
+}
 
 void FakeCrasAudioClient::AddActiveInputNode(uint64_t node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
@@ -449,6 +451,11 @@ void FakeCrasAudioClient::SetActiveInputStreamsWithPermission(
 
 AudioNodeList::iterator FakeCrasAudioClient::FindNode(uint64_t node_id) {
   return base::ranges::find(node_list_, node_id, &AudioNode::id);
+}
+
+void FakeCrasAudioClient::SetForceRespectUiGains(
+    bool force_respect_ui_gains_enabled) {
+  force_respect_ui_gains_enabled_ = force_respect_ui_gains_enabled;
 }
 
 }  // namespace ash

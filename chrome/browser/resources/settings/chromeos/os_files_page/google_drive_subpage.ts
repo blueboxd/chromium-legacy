@@ -9,6 +9,7 @@ import 'chrome://resources/cr_elements/action_link.css.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import '../settings_shared.css.js';
 import '../settings_vars.css.js';
+import '//resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 
 import {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
@@ -18,9 +19,8 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
-import {Route} from '../router.js';
+import {Route, routes} from '../router.js';
 
 import {GoogleDriveBrowserProxy, Stage, Status} from './google_drive_browser_proxy.js';
 import {getTemplate} from './google_drive_subpage.html.js';
@@ -80,6 +80,16 @@ export class SettingsGoogleDriveSubpageElement extends
        * is updated.
        */
       totalPinnedSize_: String,
+
+      /**
+       * Ensures the showSpinner variable is bound to the parent element and
+       * updates are propagated as the spinner element is in the parent element.
+       */
+      showSpinner: {
+        type: Boolean,
+        notify: true,
+        value: false,
+      },
     };
   }
 
@@ -123,6 +133,11 @@ export class SettingsGoogleDriveSubpageElement extends
    * Keeps track of the last requested total pinned size.
    */
   private totalPinnedSize_: string|null = null;
+
+  /**
+   * Whether to show the spinner in the top right of the settings page.
+   */
+  private showSpinner: boolean = false;
 
   /**
    * Returns the browser proxy page handler (to invoke functions).
@@ -193,6 +208,16 @@ export class SettingsGoogleDriveSubpageElement extends
         status.requiredSpace !== this.bulkPinningStatus_?.requiredSpace) {
       this.bulkPinningStatus_ = status;
     }
+
+    let requiredSpace: number;
+    try {
+      requiredSpace = parseInt(status?.requiredSpace);
+    } catch (e) {
+      console.error('Could not parse required space', e);
+      return;
+    }
+
+    this.showSpinner = (status?.stage === Stage.kSyncing && requiredSpace > 0);
   }
 
   /**

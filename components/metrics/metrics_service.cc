@@ -213,6 +213,69 @@ class DiscardingFlattener : public base::HistogramFlattener {
   }
 };
 
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+// Emits a histogram upon instantiation, and on destruction. Used to measure how
+// often the browser is ungracefully killed between two different points. In
+// particular, currently, this is used on mobile to measure how often the
+// browser is killed while finalizing a log, right after backgrounding. This
+// scenario is prone to data loss because a histogram may have been snapshotted
+// and put into a log, but the browser was killed before it could be fully
+// finalized and stored.
+//
+// TODO(crbug/1293026): Consider improving this. In particular, the "Started"
+// bucket is emitted before finalizing the log, and the "Finished" bucket is
+// emitted after. Hence, the latter will be reported in a different log, which
+// may cause a "lag" and/or bias (e.g. if the latter log is more prone to loss).
+// A better way to do this is to allocate an object on the persistent memory
+// upon instantiation, and flip a bit in it upon destruction. A future session
+// that will consume this persistent memory should take care of emitting the
+// histogram samples.
+class ScopedTerminationChecker {
+ public:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class Status {
+    kStarted = 0,
+    kFinished = 1,
+    kMaxValue = kFinished,
+  };
+
+  explicit ScopedTerminationChecker(base::StringPiece histogram_name) {
+    // Do nothing if the persistent histogram system is not being used.
+    // Otherwise, the "Finished" bucket may be more prone to loss, which may
+    // incorrectly make it seem like the browser was killed in between the
+    // scoped code.
+    if (!base::GlobalHistogramAllocator::Get()) {
+      return;
+    }
+
+    active_ = true;
+    histogram_name_ = histogram_name;
+    base::UmaHistogramEnumeration(histogram_name_, Status::kStarted);
+  }
+
+  ScopedTerminationChecker(const ScopedTerminationChecker& other) = delete;
+  ScopedTerminationChecker& operator=(const ScopedTerminationChecker& other) =
+      delete;
+
+  ~ScopedTerminationChecker() {
+    if (!active_) {
+      return;
+    }
+    base::UmaHistogramEnumeration(histogram_name_, Status::kFinished);
+  }
+
+ private:
+  // Name of the histogram to emit to upon instantiation/destruction.
+  std::string histogram_name_;
+
+  // Whether or not this will emit histograms. In particular, if this browser
+  // session does not make use of persistent memory, this will be false, and
+  // this object will do nothing.
+  bool active_ = false;
+};
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+
 // The delay, in seconds, after starting recording before doing expensive
 // initialization work.
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
@@ -532,8 +595,12 @@ void MetricsService::OnAppEnterBackground(bool keep_recording_in_background) {
     base::UmaHistogramBoolean(
         "UMA.MetricsService.PendingOngoingLogOnBackgrounded",
         pending_ongoing_log_);
-    PushPendingLogsToPersistentStorage(
-        MetricsLogsEventManager::CreateReason::kBackgrounded);
+    {
+      ScopedTerminationChecker scoped_termination_checker(
+          "UMA.MetricsService.OnBackgroundedScopedTerminationChecker");
+      PushPendingLogsToPersistentStorage(
+          MetricsLogsEventManager::CreateReason::kBackgrounded);
+    }
     // Persisting logs closes the current log, so start recording a new log
     // immediately to capture any background work that might be done before the
     // process is killed.
@@ -956,6 +1023,7 @@ void MetricsService::CloseCurrentLog(
 
   MetricsLog::LogType log_type = current_log->log_type();
   std::string signing_key = log_store()->GetSigningKeyForLogType(log_type);
+  std::string current_app_version = client_->GetVersionString();
   if (async) {
     // To finalize the log asynchronously, we snapshot the unlogged samples of
     // histograms and fill them into the log, without actually marking the
@@ -978,7 +1046,7 @@ void MetricsService::CloseCurrentLog(
         FROM_HERE,
         base::BindOnce(&MetricsService::SnapshotUnloggedSamplesAndFinalizeLog,
                        log_histogram_writer_ptr, std::move(current_log),
-                       /*truncate_events=*/true, client_->GetVersionString(),
+                       /*truncate_events=*/true, std::move(current_app_version),
                        std::move(signing_key)),
         base::BindOnce(&MetricsService::MaybeCleanUpAndStoreFinalizedLog,
                        self_ptr_factory_.GetWeakPtr(),
@@ -988,7 +1056,7 @@ void MetricsService::CloseCurrentLog(
   } else {
     FinalizedLog finalized_log = SnapshotDeltasAndFinalizeLog(
         std::move(log_histogram_writer), std::move(current_log),
-        /*truncate_events=*/true, client_->GetVersionString(),
+        /*truncate_events=*/true, std::move(current_app_version),
         std::move(signing_key));
     StoreFinalizedLog(log_type, reason, std::move(log_stored_callback),
                       std::move(finalized_log));
@@ -1319,7 +1387,7 @@ void MetricsService::PrepareProviderMetricsLogDone(
     std::string signing_key = log_store()->GetSigningKeyForLogType(log_type);
     FinalizedLog finalized_log =
         FinalizeLog(std::move(log), /*truncate_events=*/false,
-                    client_->GetVersionString(), std::move(signing_key));
+                    client_->GetVersionString(), signing_key);
     StoreFinalizedLog(log_type,
                       MetricsLogsEventManager::CreateReason::kIndependent,
                       base::DoNothing(), std::move(finalized_log));
@@ -1411,11 +1479,11 @@ MetricsService::FinalizedLog MetricsService::SnapshotDeltasAndFinalizeLog(
     std::unique_ptr<MetricsLogHistogramWriter> log_histogram_writer,
     std::unique_ptr<MetricsLog> log,
     bool truncate_events,
-    std::string current_app_version,
-    std::string signing_key) {
+    std::string&& current_app_version,
+    std::string&& signing_key) {
   log_histogram_writer->SnapshotStatisticsRecorderDeltas();
-  return FinalizeLog(std::move(log), truncate_events,
-                     std::move(current_app_version), std::move(signing_key));
+  return FinalizeLog(std::move(log), truncate_events, current_app_version,
+                     signing_key);
 }
 
 // static
@@ -1424,19 +1492,19 @@ MetricsService::SnapshotUnloggedSamplesAndFinalizeLog(
     MetricsLogHistogramWriter* log_histogram_writer,
     std::unique_ptr<MetricsLog> log,
     bool truncate_events,
-    std::string current_app_version,
-    std::string signing_key) {
+    std::string&& current_app_version,
+    std::string&& signing_key) {
   log_histogram_writer->SnapshotStatisticsRecorderUnloggedSamples();
-  return FinalizeLog(std::move(log), truncate_events,
-                     std::move(current_app_version), std::move(signing_key));
+  return FinalizeLog(std::move(log), truncate_events, current_app_version,
+                     signing_key);
 }
 
 // static
 MetricsService::FinalizedLog MetricsService::FinalizeLog(
     std::unique_ptr<MetricsLog> log,
     bool truncate_events,
-    std::string current_app_version,
-    std::string signing_key) {
+    const std::string& current_app_version,
+    const std::string& signing_key) {
   DCHECK(log->uma_proto()->has_record_id());
   std::string log_data;
   log->FinalizeLog(truncate_events, current_app_version, &log_data);

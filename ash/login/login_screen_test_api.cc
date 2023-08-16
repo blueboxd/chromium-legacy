@@ -348,8 +348,8 @@ bool LoginScreenTestApi::IsManagedIconShown(const AccountId& account_id) {
     return false;
   }
   LoginUserView::TestApi user_test(big_user_view->GetUserView());
-  auto* enterprise_icon = user_test.enterprise_icon();
-  return enterprise_icon->GetVisible();
+  auto* enterprise_icon_container = user_test.enterprise_icon_container();
+  return enterprise_icon_container->GetVisible();
 }
 
 // static
@@ -524,7 +524,7 @@ bool LoginScreenTestApi::PressAccelerator(const ui::Accelerator& accelerator) {
 // static
 bool LoginScreenTestApi::SendAcceleratorNatively(
     const ui::Accelerator& accelerator) {
-  gfx::NativeWindow login_window = nullptr;
+  gfx::NativeWindow login_window = gfx::NativeWindow();
   if (LockScreen::HasInstance()) {
     login_window = LockScreen::Get()->widget()->GetNativeWindow();
   } else {

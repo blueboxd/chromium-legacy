@@ -56,8 +56,8 @@ void SetPasteClipboardItemByIdImpl(PasteClipboardItemByIdImpl impl) {
 void PasteClipboardItemById(
     const base::UnguessableToken& id,
     int event_flags,
-    crosapi::mojom::ClipboardHistoryControllerShowSource show_source) {
-  GetPasteClipboardItemByIdImpl().Run(id, event_flags, show_source);
+    crosapi::mojom::ClipboardHistoryControllerShowSource paste_source) {
+  GetPasteClipboardItemByIdImpl().Run(id, event_flags, paste_source);
 }
 
 ui::ImageModel GetIconForDescriptor(
@@ -79,7 +79,7 @@ ui::ImageModel GetIconForDescriptor(
       // multi-file icon.
       icon = descriptor.file_count == 1
                  ? &chromeos::GetIconForPath(base::FilePath(
-                       base::UTF16ToASCII(descriptor.display_text)))
+                       base::UTF16ToUTF8(descriptor.display_text)))
                  : &vector_icons::kContentCopyIcon;
       break;
     }

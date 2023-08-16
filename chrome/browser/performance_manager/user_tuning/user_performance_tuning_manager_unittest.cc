@@ -27,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
@@ -158,15 +159,18 @@ class UserPerformanceTuningManagerTest : public ::testing::Test {
 
   TestingPrefServiceSimple local_state_;
 
-  raw_ptr<base::test::TestSamplingEventSource> sampling_source_;
-  raw_ptr<base::test::TestBatteryLevelProvider> battery_level_provider_;
-  raw_ptr<FakeHighEfficiencyModeDelegate> high_efficiency_mode_delegate_;
+  raw_ptr<base::test::TestSamplingEventSource, DanglingUntriaged>
+      sampling_source_;
+  raw_ptr<base::test::TestBatteryLevelProvider, DanglingUntriaged>
+      battery_level_provider_;
+  raw_ptr<FakeHighEfficiencyModeDelegate, DanglingUntriaged>
+      high_efficiency_mode_delegate_;
   std::unique_ptr<base::BatteryStateSampler> battery_sampler_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ScopedFakePowerManagerClientLifetime fake_power_manager_client_lifetime_;
 #endif
-  raw_ptr<FakePowerMonitorSource> power_monitor_source_;
+  raw_ptr<FakePowerMonitorSource, DanglingUntriaged> power_monitor_source_;
   bool throttling_enabled_ = false;
   std::unique_ptr<UserPerformanceTuningManager> manager_;
 };
@@ -285,20 +289,6 @@ TEST_F(UserPerformanceTuningManagerTest, InvalidPrefInStore) {
           1);
   EXPECT_FALSE(manager()->IsBatterySaverActive());
   EXPECT_FALSE(throttling_enabled());
-}
-
-TEST_F(UserPerformanceTuningManagerTest, SetDefaultTimeBeforeDiscardPref) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      performance_manager::user_tuning::UserPerformanceTuningManager::
-          kTimeBeforeDiscardInMinutesSwitch,
-      "5");
-  StartManager();
-
-  EXPECT_EQ(5, local_state_.GetInteger(
-                   performance_manager::user_tuning::prefs::
-                       kHighEfficiencyModeTimeBeforeDiscardInMinutes));
-  EXPECT_THAT(high_efficiency_mode_delegate_->GetLastTimeBeforeDiscard(),
-              Optional(base::Minutes(5)));
 }
 
 TEST_F(UserPerformanceTuningManagerTest, EnabledOnBatteryPower) {
@@ -525,8 +515,7 @@ TEST_F(UserPerformanceTuningManagerTest,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(UserPerformanceTuningManagerTest, ManagedFromPowerManager) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      performance_manager::features::kUseDeviceBatterySaverChromeOS);
+  feature_list.InitAndEnableFeature(ash::features::kBatterySaver);
 
   StartManager();
   EXPECT_FALSE(manager()->IsBatterySaverActive());
@@ -552,8 +541,7 @@ TEST_F(UserPerformanceTuningManagerTest, ManagedFromPowerManager) {
 TEST_F(UserPerformanceTuningManagerTest,
        StartsEnabledIfAlreadyEnabledInPowerManager) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      performance_manager::features::kUseDeviceBatterySaverChromeOS);
+  feature_list.InitAndEnableFeature(ash::features::kBatterySaver);
 
   // Request to enable PowerManager's BSM
   power_manager::SetBatterySaverModeStateRequest proto;

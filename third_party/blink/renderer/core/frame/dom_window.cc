@@ -543,7 +543,8 @@ void DOMWindow::PostMessageForTesting(
 void DOMWindow::InstallCoopAccessMonitor(
     LocalFrame* accessing_frame,
     network::mojom::blink::CrossOriginOpenerPolicyReporterParamsPtr
-        coop_reporter_params) {
+        coop_reporter_params,
+    bool is_in_same_virtual_coop_related_group) {
   CoopAccessMonitor monitor;
 
   DCHECK(accessing_frame->IsMainFrame());
@@ -553,6 +554,8 @@ void DOMWindow::InstallCoopAccessMonitor(
   monitor.endpoint_defined = coop_reporter_params->endpoint_defined;
   monitor.reported_window_url =
       std::move(coop_reporter_params->reported_window_url);
+  monitor.is_in_same_virtual_coop_related_group =
+      is_in_same_virtual_coop_related_group;
 
   monitor.reporter.Bind(std::move(coop_reporter_params->reporter));
   // CoopAccessMonitor are cleared when their reporter are gone. This avoids
@@ -628,6 +631,14 @@ void DOMWindow::ReportCoopAccess(const char* property_name) {
   auto* it = coop_access_monitor_.begin();
   while (it != coop_access_monitor_.end()) {
     if (it->accessing_main_frame != accessing_main_frame_token) {
+      ++it;
+      continue;
+    }
+
+    String property_name_as_string = property_name;
+    if (it->is_in_same_virtual_coop_related_group &&
+        (property_name_as_string == "postMessage" ||
+         property_name_as_string == "closed")) {
       ++it;
       continue;
     }
@@ -864,6 +875,43 @@ void DOMWindow::RecordWindowProxyAccessMetrics(
   if (accessing_frame->GetPage() != GetFrame()->GetPage()) {
     UseCounter::Count(accessing_window, property_access_from_other_page);
   }
+}
+
+bool DOMWindow::IsAccessBlockedByCoopRestrictProperties(
+    v8::Isolate* isolate) const {
+  if (!GetFrame()) {
+    return false;
+  }
+
+  LocalDOMWindow* accessing_window = CurrentDOMWindow(isolate);
+  CHECK(accessing_window);
+
+  LocalFrame* accessing_frame = accessing_window->GetFrame();
+  if (!accessing_frame) {
+    return false;
+  }
+
+  // If the two windows are not in the same CoopRelatedGroup, we should not
+  // restrict window proxy access here. This prevents restricting things that
+  // were not meant to. These are the cross browsing context group  accesses
+  // that already existed before COOP: restrict-properties.
+  // TODO(https://crbug.com/1221127): Is there actually any scenario where
+  // cross browsing context group was allowed before COOP: restrict-properties?
+  // Verify that we need to have this check.
+  if (accessing_frame->GetPage()->CoopRelatedGroupToken() !=
+      GetFrame()->GetPage()->CoopRelatedGroupToken()) {
+    return false;
+  }
+
+  // If we're dealing with an actual COOP: restrict-properties case, then
+  // compare the BrowsingInstance tokens. If they are different, the access
+  // should be restricted.
+  if (accessing_frame->GetPage()->BrowsingContextGroupToken() !=
+      GetFrame()->GetPage()->BrowsingContextGroupToken()) {
+    return true;
+  }
+
+  return false;
 }
 
 void DOMWindow::PostedMessage::Trace(Visitor* visitor) const {

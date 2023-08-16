@@ -82,6 +82,12 @@ class WizardContext {
   // screens in tests. Is set by WizardController::SkipPostLoginScreensForTests.
   bool skip_post_login_screens_for_tests = false;
 
+  // Whether CHOOBE screen should be skipped. Setting this flag will force skip
+  // CHOOBE screen regardless of the number of eligible optional screens.
+  // To test an optional screen without selecting the screen from CHOOBE screen,
+  // set this flag to true before logging in as a new user.
+  bool skip_choobe_for_tests = false;
+
   // Whether user creation screen is enabled (could be disabled due to disabled
   // feature or on managed device). It determines the behavior of back button
   // for GaiaScreen and OfflineLoginScreen. Value is set to true in
@@ -136,6 +142,10 @@ class WizardContext {
   // Start, Quick Start saves this ID. After Quick Start, the multidevice screen
   // will show UI enhancements if this quick_start_phone_instance_id is present.
   std::string quick_start_phone_instance_id;
+
+  // Whether the user is currently setting up OOBE using QuickStart.
+  // TODO(b/283724988) - Combine QuickStart fields into a class.
+  bool quick_start_setup_ongoing = false;
 
   // If this is a first login after update from CloudReady to a new version.
   // During such an update show users license agreement and data collection

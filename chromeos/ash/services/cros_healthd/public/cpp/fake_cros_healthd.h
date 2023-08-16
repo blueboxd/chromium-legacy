@@ -235,7 +235,8 @@ class FakeCrosHealthd final : public mojom::CrosHealthdDiagnosticsService,
       uint32_t length_seconds,
       uint32_t minimum_charge_percent_required,
       RunBatteryChargeRoutineCallback callback) override;
-  void RunMemoryRoutine(RunMemoryRoutineCallback callback) override;
+  void RunMemoryRoutine(absl::optional<uint32_t> max_testing_mem_kib,
+                        RunMemoryRoutineCallback callback) override;
   void RunLanConnectivityRoutine(
       RunLanConnectivityRoutineCallback callback) override;
   void RunSignalStrengthRoutine(
@@ -295,6 +296,9 @@ class FakeCrosHealthd final : public mojom::CrosHealthdDiagnosticsService,
   void RunBluetoothPairingRoutine(
       const std::string& peripheral_id,
       RunBluetoothPairingRoutineCallback callback) override;
+  void RunPowerButtonRoutine(uint32_t timeout_seconds,
+                             RunPowerButtonRoutineCallback callback) override;
+  void RunAudioDriverRoutine(RunAudioDriverRoutineCallback callback) override;
 
   // CrosHealthdEventService overrides:
   void DEPRECATED_AddBluetoothObserver(

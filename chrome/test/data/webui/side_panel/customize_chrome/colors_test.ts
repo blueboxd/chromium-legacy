@@ -5,11 +5,12 @@
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
 import {ColorElement} from 'chrome://customize-chrome-side-panel.top-chrome/color.js';
-import {Color, DARK_DEFAULT_COLOR, LIGHT_DEFAULT_COLOR} from 'chrome://customize-chrome-side-panel.top-chrome/color_utils.js';
+import {Color, DARK_BASELINE_BLUE_COLOR, DARK_DEFAULT_COLOR, LIGHT_BASELINE_BLUE_COLOR, LIGHT_DEFAULT_COLOR} from 'chrome://customize-chrome-side-panel.top-chrome/color_utils.js';
 import {ColorsElement} from 'chrome://customize-chrome-side-panel.top-chrome/colors.js';
 import {ChromeColor, CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote, CustomizeChromePageRemote, Theme} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome.mojom-webui.js';
 import {CustomizeChromeApiProxy} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome_api_proxy.js';
 import {ManagedDialogElement} from 'chrome://resources/cr_components/managed_dialog/managed_dialog.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertGE, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -33,34 +34,51 @@ suite('ColorsTest', () => {
     callbackRouter = CustomizeChromeApiProxy.getInstance()
                          .callbackRouter.$.bindNewPipeAndPassRemote();
     chromeColorsResolver = new PromiseResolver();
+  });
+
+  function initializeElement() {
     handler.setResultFor(
         'getOverviewChromeColors', chromeColorsResolver.promise);
     colorsElement = new ColorsElement();
     document.body.appendChild(colorsElement);
-  });
+  }
 
   ([
-    [true, DARK_DEFAULT_COLOR],
-    [false, LIGHT_DEFAULT_COLOR],
-  ] as Array<[boolean, Color]>)
-      .forEach(([systemDarkMode, defaultColor]) => {
-        test('renders default color', async () => {
-          const theme: Theme = createTheme(systemDarkMode);
+    [true, DARK_DEFAULT_COLOR, false],
+    [false, LIGHT_DEFAULT_COLOR, false],
+    [true, DARK_BASELINE_BLUE_COLOR, true],
+    [false, LIGHT_BASELINE_BLUE_COLOR, true],
+  ] as Array<[boolean, Color, boolean]>)
+      .forEach(([isDarkMode, defaultColor, refreshFlagOn]) => {
+        test(
+            `render GM3 ${refreshFlagOn} DarkMode ${isDarkMode} default color`,
+            async () => {
+              if (refreshFlagOn) {
+                loadTimeData.overrideValues({
+                  chromeRefresh2023Attribute: 'chrome-refresh-2023',
+                });
+              }
 
-          callbackRouter.setTheme(theme);
-          await callbackRouter.$.flushForTesting();
-          await waitAfterNextRender(colorsElement);
+              initializeElement();
+              const theme: Theme = createTheme(isDarkMode);
 
-          const defaultColorElement =
-              $$<ColorElement>(colorsElement, '#defaultColor')!;
-          assertDeepEquals(
-              defaultColor.foreground, defaultColorElement.foregroundColor);
-          assertDeepEquals(
-              defaultColor.background, defaultColorElement.backgroundColor);
-        });
+              callbackRouter.setTheme(theme);
+              await callbackRouter.$.flushForTesting();
+              await waitAfterNextRender(colorsElement);
+
+              const defaultColorElement =
+                  $$<ColorElement>(colorsElement, '#defaultColor')!;
+              assertDeepEquals(
+                  defaultColor.foreground, defaultColorElement.foregroundColor);
+              assertDeepEquals(
+                  defaultColor.background, defaultColorElement.backgroundColor);
+              assertDeepEquals(
+                  defaultColor.base, defaultColorElement.baseColor);
+            });
       });
 
   test('sets default color', async () => {
+    initializeElement();
     const theme = createTheme();
     theme.foregroundColor = undefined;
     callbackRouter.setTheme(theme);
@@ -73,6 +91,7 @@ suite('ColorsTest', () => {
   });
 
   test('renders main color', async () => {
+    initializeElement();
     const theme: Theme = createTheme();
     theme.foregroundColor = {value: 7};
     theme.backgroundImage = createBackgroundImage('https://foo.com');
@@ -88,6 +107,7 @@ suite('ColorsTest', () => {
   });
 
   test('sets main color', async () => {
+    initializeElement();
     const theme = createTheme();
     theme.foregroundColor = {value: 7};
     theme.backgroundImage = createBackgroundImage('https://foo.com');
@@ -103,6 +123,9 @@ suite('ColorsTest', () => {
   });
 
   test('renders chrome colors', async () => {
+    const theme = createTheme();
+    callbackRouter.setTheme(theme);
+    initializeElement();
     const colors = {
       colors: [
         {
@@ -111,6 +134,7 @@ suite('ColorsTest', () => {
           seed: {value: 5},
           background: {value: 1},
           foreground: {value: 2},
+          base: {value: 3},
         },
         {
           id: 2,
@@ -118,6 +142,7 @@ suite('ColorsTest', () => {
           seed: {value: 6},
           background: {value: 3},
           foreground: {value: 4},
+          base: {value: 5},
         },
       ],
     };
@@ -131,13 +156,18 @@ suite('ColorsTest', () => {
     assertEquals(2, colorElements.length);
     assertDeepEquals({value: 1}, colorElements[0]!.backgroundColor);
     assertDeepEquals({value: 2}, colorElements[0]!.foregroundColor);
+    assertDeepEquals({value: 3}, colorElements[0]!.baseColor);
     assertEquals('foo', colorElements[0]!.title);
     assertDeepEquals({value: 3}, colorElements[1]!.backgroundColor);
     assertDeepEquals({value: 4}, colorElements[1]!.foregroundColor);
+    assertDeepEquals({value: 5}, colorElements[1]!.baseColor);
     assertEquals('bar', colorElements[1]!.title);
   });
 
   test('sets chrome color', async () => {
+    const theme = createTheme();
+    callbackRouter.setTheme(theme);
+    initializeElement();
     const colors = {
       colors: [
         {
@@ -146,6 +176,7 @@ suite('ColorsTest', () => {
           seed: {value: 3},
           background: {value: 1},
           foreground: {value: 2},
+          base: {value: 4},
         },
       ],
     };
@@ -160,6 +191,7 @@ suite('ColorsTest', () => {
   });
 
   test('sets custom color', () => {
+    initializeElement();
     colorsElement.$.colorPicker.value = '#ff0000';
     colorsElement.$.colorPicker.dispatchEvent(new Event('change'));
 
@@ -169,6 +201,7 @@ suite('ColorsTest', () => {
   });
 
   test('updates custom color for theme', async () => {
+    initializeElement();
     const colors = {
       colors: [
         {
@@ -177,6 +210,7 @@ suite('ColorsTest', () => {
           seed: {value: 3},
           background: {value: 1},
           foreground: {value: 2},
+          base: {value: 3},
         },
       ],
     };
@@ -212,6 +246,7 @@ suite('ColorsTest', () => {
   });
 
   test('checks selected color', async () => {
+    initializeElement();
     const colors = {
       colors: [
         {
@@ -220,6 +255,7 @@ suite('ColorsTest', () => {
           seed: {value: 5},
           background: {value: 1},
           foreground: {value: 2},
+          base: {value: 3},
         },
         {
           id: 2,
@@ -227,6 +263,7 @@ suite('ColorsTest', () => {
           seed: {value: 6},
           background: {value: 3},
           foreground: {value: 4},
+          base: {value: 5},
         },
       ],
     };
@@ -283,6 +320,7 @@ suite('ColorsTest', () => {
     assertEquals('chrome-color', checkedColors[0]!.className);
     assertEquals(checkedColors[0]!.getAttribute('aria-checked'), 'true');
     assertEquals(2, (checkedColors[0]! as ColorElement).foregroundColor.value);
+    assertEquals(3, (checkedColors[0]! as ColorElement).baseColor.value);
     indexedColors =
         colorsElement.shadowRoot!.querySelectorAll('[tabindex="0"]');
     assertEquals(1, indexedColors.length);
@@ -311,6 +349,7 @@ suite('ColorsTest', () => {
     test(
         `background color visibility if theme has image ${hasBackgroundImage}`,
         async () => {
+          initializeElement();
           const theme = createTheme();
           if (hasBackgroundImage) {
             theme.backgroundImage = createBackgroundImage('https://foo.com');
@@ -333,45 +372,47 @@ suite('ColorsTest', () => {
     ['#mainColor', 7, 7],
     ['.chrome-color', 3, undefined],
     ['#customColor', 10, undefined],
-  ] as Array<[string, number?, number?]>).forEach(
-  ([selector, foregroundColor, mainColor]) => {
-    test(`respects policy for ${selector}`, async () => {
-      const colors = {
-        colors: [
-          {
-            id: 1,
-            name: 'foo',
-            seed: {value: 3},
-            background: {value: 1},
-            foreground: {value: 2},
-          },
-        ],
-      };
-      chromeColorsResolver.resolve(colors);
-      const theme = createTheme();
-      if (foregroundColor) {
-        theme.foregroundColor = {value: foregroundColor};
-      }
-      theme.backgroundImage = createBackgroundImage('https://foo.com');
-      if (mainColor) {
-        theme.backgroundImage.mainColor = {value: mainColor};
-      }
-      theme.colorsManagedByPolicy = true;
-      callbackRouter.setTheme(theme);
-      await callbackRouter.$.flushForTesting();
-      await waitAfterNextRender(colorsElement);
-      const click = capture(colorsElement.$.colorPicker, 'click');
+  ] as Array<[string, number?, number?]>)
+      .forEach(([selector, foregroundColor, mainColor]) => {
+        test(`respects policy for ${selector}`, async () => {
+          initializeElement();
+          const colors = {
+            colors: [
+              {
+                id: 1,
+                name: 'foo',
+                seed: {value: 3},
+                background: {value: 1},
+                foreground: {value: 2},
+                base: {value: 3},
+              },
+            ],
+          };
+          chromeColorsResolver.resolve(colors);
+          const theme = createTheme();
+          if (foregroundColor) {
+            theme.foregroundColor = {value: foregroundColor};
+          }
+          theme.backgroundImage = createBackgroundImage('https://foo.com');
+          if (mainColor) {
+            theme.backgroundImage.mainColor = {value: mainColor};
+          }
+          theme.colorsManagedByPolicy = true;
+          callbackRouter.setTheme(theme);
+          await callbackRouter.$.flushForTesting();
+          await waitAfterNextRender(colorsElement);
+          const click = capture(colorsElement.$.colorPicker, 'click');
 
-      $$<HTMLElement>(colorsElement, selector)!.click();
-      await waitAfterNextRender(colorsElement);
+          $$<HTMLElement>(colorsElement, selector)!.click();
+          await waitAfterNextRender(colorsElement);
 
-      const managedDialog =
-          $$<ManagedDialogElement>(colorsElement, 'managed-dialog');
-      assertTrue(!!managedDialog);
-      assertTrue(managedDialog.$.dialog.open);
-      assertEquals(0, handler.getCallCount('setDefaultColor'));
-      assertEquals(0, handler.getCallCount('setSeedColor'));
-      assertFalse(click.received);
-    });
-  });
+          const managedDialog =
+              $$<ManagedDialogElement>(colorsElement, 'managed-dialog');
+          assertTrue(!!managedDialog);
+          assertTrue(managedDialog.$.dialog.open);
+          assertEquals(0, handler.getCallCount('setDefaultColor'));
+          assertEquals(0, handler.getCallCount('setSeedColor'));
+          assertFalse(click.received);
+        });
+      });
 });

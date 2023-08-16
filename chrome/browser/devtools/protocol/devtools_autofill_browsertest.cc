@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/strcat.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "chrome/browser/ui/browser.h"
@@ -129,6 +130,54 @@ class DevToolsAutofillTest : public DevToolsProtocolTestBase {
       autofill_manager_injector_;
 };
 
+IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest, SetAddresses) {
+  embedded_test_server()->ServeFilesFromSourceDirectory(
+      "chrome/test/data/autofill");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url(
+      embedded_test_server()->GetURL("/autofill_creditcard_form.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  ASSERT_TRUE(content::WaitForLoadStop(web_contents()));
+  Attach();
+
+  EXPECT_TRUE(main_autofill_manager()->WaitForFormsSeen(1));
+
+  base::Value::Dict address_1_fields;
+  address_1_fields.Set("name", "ADDRESS_HOME_LINE1");
+  address_1_fields.Set("value", "Erika-mann");
+  base::Value::Dict address_1;
+  base::Value::List fields;
+  fields.Append(std::move(address_1_fields));
+  address_1.Set("fields", std::move(fields));
+
+  base::Value::Dict address_2_fields;
+  address_2_fields.Set("name", "ADDRESS_HOME_LINE2");
+  address_2_fields.Set("value", "Faria lima");
+  base::Value::Dict address_2;
+  base::Value::List fields_2;
+  fields_2.Append(std::move(address_2_fields));
+  address_2.Set("fields", std::move(fields_2));
+
+  base::Value::List test_addresses;
+  test_addresses.Append(std::move(address_1));
+  test_addresses.Append(std::move(address_2));
+
+  base::Value::Dict params;
+  params.Set("addresses", std::move(test_addresses));
+
+  SendCommandSync("Autofill.setAddresses", std::move(params));
+
+  std::vector<autofill::AutofillProfile> res =
+      main_autofill_manager()->test_addresses_for_test();
+  ASSERT_EQ(res.size(), 2u);
+  ASSERT_EQ(res[0].GetAddress().GetRawInfo(
+                autofill::ServerFieldType::ADDRESS_HOME_LINE1),
+            u"Erika-mann");
+  ASSERT_EQ(res[1].GetAddress().GetRawInfo(
+                autofill::ServerFieldType::ADDRESS_HOME_LINE2),
+            u"Faria lima");
+}
+
 IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest, TriggerCreditCard) {
   embedded_test_server()->ServeFilesFromSourceDirectory(
       "chrome/test/data/autofill");
@@ -152,10 +201,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest, TriggerCreditCard) {
   EXPECT_EQ(GetFilledOutForm(""), GetTestCreditCard());
 }
 
-// TODO(crbug.com/1445476): The test currently fails with Chrome-branded
-// patterns in Autofill.
-IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest,
-                       DISABLED_TriggerCreditCardInIframe) {
+IN_PROC_BROWSER_TEST_F(DevToolsAutofillTest, TriggerCreditCardInIframe) {
   embedded_test_server()->ServeFilesFromSourceDirectory(
       "chrome/test/data/autofill");
   ASSERT_TRUE(embedded_test_server()->Start());

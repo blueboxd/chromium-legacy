@@ -8461,7 +8461,6 @@
       {
         "args": [
           "--no-wpt-internal",
-          "--log-wptreport",
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
           "--use-upstream-wpt"
         ],
@@ -8931,46 +8930,6 @@
         },
         "test": "net_unittests",
         "test_id_prefix": "ninja://net:net_unittests/"
-      }
-    ]
-  },
-  "android-pie-arm64-wpt-rel-non-cq": {
-    "isolated_scripts": [
-      {
-        "args": [
-          "--no-wpt-internal"
-        ],
-        "experiment_percentage": 100,
-        "isolate_name": "system_webview_wpt",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "system_webview_wpt",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "walleye",
-              "os": "Android"
-            }
-          ],
-          "expiration": 18000,
-          "hard_timeout": 14400,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 25
-        },
-        "test_id_prefix": "ninja://android_webview/test:system_webview_wpt/"
       }
     ]
   },
@@ -9620,7 +9579,6 @@
         "args": [
           "--no-wpt-internal",
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
-          "--log-wptreport",
           "--use-upstream-wpt"
         ],
         "isolate_name": "system_webview_wpt",

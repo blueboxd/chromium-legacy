@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -188,14 +189,33 @@ inline bool IsInPrimaryPage(content::NavigationHandle* navigation_handle) {
              : navigation_handle->IsInPrimaryMainFrame();
 }
 
-// Returns `True` iff the 'rfh' represents a frame in the primary page.
+// Returns `True` iff the 'rfh' exists and represents a frame in the primary
+// page.
 inline bool IsInPrimaryPage(content::RenderFrameHost* rfh) {
-  return rfh->GetPage().IsPrimary();
+  return rfh && rfh->GetPage().IsPrimary();
+}
+
+// Returns the last committed or the to be committed url of the main frame of
+// the page containing the `navigation_handle`.
+inline GURL GetFirstPartyURL(content::NavigationHandle* navigation_handle) {
+  return navigation_handle->GetParentFrame()
+             ? navigation_handle->GetParentFrame()
+                   ->GetMainFrame()
+                   ->GetLastCommittedURL()
+             : navigation_handle->GetURL();
+}
+
+// Returns an optional last committed url of the main frame of the page
+// containing the `rfh`.
+inline absl::optional<GURL> GetFirstPartyURL(content::RenderFrameHost* rfh) {
+  return rfh ? absl::optional<GURL>(rfh->GetMainFrame()->GetLastCommittedURL())
+             : absl::nullopt;
 }
 
 enum class DIPSRecordedEvent {
   kStorage,
   kInteraction,
+  kWebAuthnAssertion,
 };
 
 // RedirectCategory is basically the cross-product of SiteDataAccessType and a

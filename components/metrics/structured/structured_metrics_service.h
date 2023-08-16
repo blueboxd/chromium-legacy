@@ -11,6 +11,7 @@
 #include "components/metrics/structured/reporting/structured_metrics_reporting_service.h"
 #include "components/metrics/structured/structured_metrics_recorder.h"
 #include "components/metrics/structured/structured_metrics_scheduler.h"
+#include "components/metrics/unsent_log_store.h"
 
 FORWARD_DECLARE_TEST(StructuredMetricsServiceTest, RotateLogs);
 
@@ -30,10 +31,9 @@ namespace metrics::structured {
 // Structured Metric events.
 class StructuredMetricsService final {
  public:
-  StructuredMetricsService(
-      base::raw_ptr<MetricsProvider> system_profile_provider,
-      MetricsServiceClient* client,
-      PrefService* local_state);
+  StructuredMetricsService(MetricsProvider* system_profile_provider,
+                           MetricsServiceClient* client,
+                           PrefService* local_state);
 
   ~StructuredMetricsService();
 
@@ -93,7 +93,7 @@ class StructuredMetricsService final {
   static std::string SerializeLog(const ChromeUserMetricsExtension& uma_proto);
 
   // Retrieves the storage parameters to control the reporting service.
-  static reporting::StorageLimits GetLogStoreLimits();
+  static UnsentLogStore::UnsentLogStoreLimits GetLogStoreLimits();
 
   // Manages on-device recording of events.
   std::unique_ptr<StructuredMetricsRecorder> recorder_;
@@ -107,6 +107,10 @@ class StructuredMetricsService final {
 
   // Marks that initialization has completed.
   bool initialize_complete_ = false;
+
+  // Represents if structured metrics and the service is enabled. This isn't
+  // to indicate if the service is recording.
+  bool structured_metrics_enabled_ = false;
 
   // The metrics client |this| is service is associated.
   base::raw_ptr<MetricsServiceClient> client_;

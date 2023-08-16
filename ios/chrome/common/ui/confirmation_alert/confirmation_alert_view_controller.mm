@@ -256,18 +256,20 @@ const CGFloat kFaviconBadgeSideLength = 24;
     ]];
     scrollViewBottomAnchor = actionStackView.topAnchor;
 
-    GradientView* gradientView = [self createGradientView];
-    [self.view addSubview:gradientView];
+    self.gradientView = [self createGradientView];
+    [self.view addSubview:self.gradientView];
 
     [NSLayoutConstraint activateConstraints:@[
-      [gradientView.bottomAnchor
+      [self.gradientView.bottomAnchor
           constraintEqualToAnchor:actionStackView.topAnchor],
-      [gradientView.leadingAnchor
+      [self.gradientView.leadingAnchor
           constraintEqualToAnchor:self.scrollView.leadingAnchor],
-      [gradientView.trailingAnchor
+      [self.gradientView.trailingAnchor
           constraintEqualToAnchor:self.scrollView.trailingAnchor],
-      [gradientView.heightAnchor constraintEqualToConstant:kGradientHeight],
     ]];
+    self.gradientViewHeightConstraint = [self.gradientView.heightAnchor
+        constraintEqualToConstant:self.customGradientViewHeight];
+    self.gradientViewHeightConstraint.active = YES;
   }
 
   self.scrollViewBottomAnchorConstraint = [self.scrollView.bottomAnchor
@@ -459,7 +461,7 @@ const CGFloat kFaviconBadgeSideLength = 24;
   UINavigationBar* navigationBar = [[UINavigationBar alloc] init];
   navigationBar.translucent = NO;
   [navigationBar setShadowImage:[[UIImage alloc] init]];
-  [navigationBar setBarTintColor:[UIColor colorNamed:kBackgroundColor]];
+  [navigationBar setBarTintColor:[UIColor colorNamed:kPrimaryBackgroundColor]];
 
   UINavigationItem* navigationItem = [[UINavigationItem alloc] init];
   if (self.helpButtonAvailable) {
@@ -484,7 +486,6 @@ const CGFloat kFaviconBadgeSideLength = 24;
 
   if (self.titleView) {
     navigationItem.titleView = self.titleView;
-    [navigationBar setBarTintColor:self.titleView.backgroundColor];
   }
 
   if (self.showDismissBarButton) {

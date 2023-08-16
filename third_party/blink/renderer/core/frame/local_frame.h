@@ -59,6 +59,7 @@
 #include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/lcp_critical_path_predictor/lcp_critical_path_predictor.mojom-blink.h"
 #include "third_party/blink/public/mojom/link_to_text/link_to_text.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_cache.mojom-blink-forward.h"
@@ -135,6 +136,7 @@ class InspectorIssueReporter;
 class InspectorTaskRunner;
 class InspectorTraceEvents;
 class InterfaceRegistry;
+class LCPCriticalPathPredictor;
 class LayoutView;
 class LocalDOMWindow;
 class LocalFrameClient;
@@ -297,6 +299,7 @@ class CORE_EXPORT LocalFrame final
   BackgroundColorPaintImageGenerator* GetBackgroundColorPaintImageGenerator();
   BoxShadowPaintImageGenerator* GetBoxShadowPaintImageGenerator();
   ClipPathPaintImageGenerator* GetClipPathPaintImageGenerator();
+  LCPCriticalPathPredictor* GetLCPP();
 
   // A local root is the root of a connected subtree that contains only
   // LocalFrames. The local root is responsible for coordinating input, layout,
@@ -639,6 +642,9 @@ class CORE_EXPORT LocalFrame final
   const mojom::blink::BackForwardCacheNotRestoredReasonsPtr&
   GetNotRestoredReasons();
 
+  // Sets the LCPP Hint available at the navigation commit timing.
+  void SetLCPPHint(mojom::blink::LCPCriticalPathPredictorNavigationTimeHintPtr);
+
   const AtomicString& GetReducedAcceptLanguage() const {
     return reduced_accept_language_;
   }
@@ -666,7 +672,7 @@ class CORE_EXPORT LocalFrame final
   bool IsHidden() const { return hidden_; }
 
   // Whether the frame clips its content to the frame's size.
-  bool ClipsContent(ScrollbarDisableReason* out_reason = nullptr) const;
+  bool ClipsContent() const;
 
   // For a navigation initiated from this LocalFrame with user gesture, record
   // the UseCounter AdClickNavigation if this frame is an adframe.
@@ -1127,6 +1133,8 @@ class CORE_EXPORT LocalFrame final
   // synchronous commit and otherwise is signaled from the browser process at
   // ready-to-commit time.
   absl::optional<blink::FrameAdEvidence> ad_evidence_;
+
+  Member<LCPCriticalPathPredictor> lcpp_;
 
   // True if this frame is a frame that had a script tagged as an ad on the v8
   // stack at the time of creation. This is updated in `SetAdEvidence()`,

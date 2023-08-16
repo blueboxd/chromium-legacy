@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "cc/base/region.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "ui/gfx/geometry/size.h"
@@ -212,11 +211,7 @@ class CC_EXPORT PictureLayerTilingSet {
       ~AutoClear() { *state_to_clear_ = StateSinceLastTilePriorityUpdate(); }
 
      private:
-      // Not a raw_ptr<...> for performance reasons: on-stack pointer +
-      // based on analysis of sampling profiler data
-      // (cc::PictureLayerTilingSet::UpdateTilePriorities -> creates AutoClear
-      // on stack).
-      RAW_PTR_EXCLUSION StateSinceLastTilePriorityUpdate* state_to_clear_;
+      raw_ptr<StateSinceLastTilePriorityUpdate> state_to_clear_;
     };
 
     StateSinceLastTilePriorityUpdate()

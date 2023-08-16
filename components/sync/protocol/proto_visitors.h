@@ -227,6 +227,7 @@ VISIT_PROTO_FIELDS(const sync_pb::AutofillProfileSpecifics& proto) {
   VISIT(address_home_country);
   VISIT(address_home_landmark);
   VISIT(address_home_between_streets);
+  VISIT(address_home_admin_level_2);
   VISIT(address_home_street_address);
   VISIT(address_home_sorting_code);
   VISIT(address_home_dependent_locality);
@@ -242,6 +243,7 @@ VISIT_PROTO_FIELDS(const sync_pb::AutofillProfileSpecifics& proto) {
   VISIT_ENUM(address_home_country_status);
   VISIT_ENUM(address_home_landmark_status);
   VISIT_ENUM(address_home_between_streets_status);
+  VISIT_ENUM(address_home_admin_level_2_status);
   VISIT_ENUM(address_home_street_address_status);
   VISIT_ENUM(address_home_sorting_code_status);
   VISIT_ENUM(address_home_dependent_locality_status);
@@ -345,6 +347,7 @@ VISIT_PROTO_FIELDS(const sync_pb::ContactInfoSpecifics& proto) {
   VISIT(address_floor);
   VISIT(address_landmark);
   VISIT(address_between_streets);
+  VISIT(address_admin_level_2);
   VISIT(phone_home_whole_number);
   VISIT(birthdate_day);
   VISIT(birthdate_month);
@@ -647,7 +650,6 @@ VISIT_PROTO_FIELDS(const sync_pb::GetUpdatesMessage& proto) {
   VISIT_REP(from_progress_marker);
   VISIT(streaming);
   VISIT(need_encryption_key);
-  VISIT(create_mobile_bookmarks_folder);
   VISIT_ENUM(get_updates_origin);
   VISIT(is_retry);
   VISIT_REP(client_contexts);
@@ -675,6 +677,11 @@ VISIT_PROTO_FIELDS(const sync_pb::HistoryDeleteDirectiveSpecifics& proto) {
 VISIT_PROTO_FIELDS(
     const sync_pb::IncomingPasswordSharingInvitationSpecifics& proto) {
   VISIT(guid);
+  VISIT(sender_info);
+  VISIT(encrypted_password_sharing_invitation_data);
+  VISIT(client_only_unencrypted_data);
+  VISIT(encrypted_key_for_recipient);
+  VISIT(recipient_key_version);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::InvalidationSpecificFields& proto) {
@@ -759,7 +766,7 @@ VISIT_PROTO_FIELDS(const sync_pb::NigoriLocalData& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::PublicKey& proto) {
   VISIT(version);
-  VISIT(x25519_public_key);
+  VISIT_BYTES(x25519_public_key);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PrivateKey& proto) {
@@ -872,6 +879,29 @@ VISIT_PROTO_FIELDS(const sync_pb::OsPriorityPreferenceSpecifics& proto) {
 VISIT_PROTO_FIELDS(
     const sync_pb::OutgoingPasswordSharingInvitationSpecifics& proto) {
   VISIT(guid);
+  VISIT(recipient_user_id);
+  VISIT(encrypted_password_sharing_invitation_data);
+  VISIT(client_only_unencrypted_data);
+  VISIT(encrypted_key_for_recipient);
+  VISIT(recipient_key_version);
+  VISIT(sender_key_version);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::PasswordSharingInvitationData& proto) {
+  VISIT(password_data);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::PasswordSharingInvitationData::PasswordData& proto) {
+  VISIT(password_value);
+  VISIT(scheme);
+  VISIT(signon_realm);
+  VISIT(origin);
+  VISIT(username_element);
+  VISIT(username_value);
+  VISIT(password_element);
+  VISIT(display_name);
+  VISIT(avatar_url);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecifics& proto) {
@@ -1151,6 +1181,10 @@ VISIT_PROTO_FIELDS(
   VISIT_BYTES(server);
 }
 
+VISIT_PROTO_FIELDS(const sync_pb::SharingSymmetricKey& proto) {
+  VISIT_BYTES(key_value);
+}
+
 VISIT_PROTO_FIELDS(const sync_pb::SyncCycleCompletedEventInfo& proto) {
   VISIT(num_encryption_conflicts);
   VISIT(num_hierarchy_conflicts);
@@ -1230,6 +1264,18 @@ VISIT_PROTO_FIELDS(
 // TODO(markusheintz): Remove.
 VISIT_PROTO_FIELDS(const sync_pb::GaiaPasswordReuse::PasswordCaptured& proto) {
   VISIT_ENUM(event_trigger);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::UserDisplayInfo& proto) {
+  VISIT(email);
+  VISIT(display_name);
+  VISIT(profile_image_url);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::UserInfo& proto) {
+  VISIT(user_id);
+  VISIT(user_display_info);
+  VISIT(public_key);
 }
 
 VISIT_PROTO_FIELDS(
@@ -1463,6 +1509,7 @@ VISIT_PROTO_FIELDS(const sync_pb::WebApkSpecifics& proto) {
   VISIT(theme_color);
   VISIT(scope);
   VISIT_REP(icon_infos);
+  VISIT(last_used_time_windows_epoch_micros);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WebAppIconInfo& proto) {

@@ -124,6 +124,55 @@
 
 #pragma mark - WebStateListObserving methods
 
+- (void)didChangeWebStateList:(WebStateList*)webStateList
+                       change:(const WebStateListChange&)change
+                    selection:(const WebStateSelection&)selection {
+  switch (change.type()) {
+    case WebStateListChange::Type::kSelectionOnly:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
+      // here. Note that here is reachable only when `reason` ==
+      // ActiveWebStateChangeReason::Activated.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // webStateList:didDetachWebState:atIndex: to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace: {
+      const WebStateListChangeReplace& replaceChange =
+          change.As<WebStateListChangeReplace>();
+      NewTabPageTabHelper* NTPTabHelper =
+          NewTabPageTabHelper::FromWebState(replaceChange.replaced_web_state());
+      if (NTPTabHelper->IsActive()) {
+        [self stopNTPIfNeeded];
+      }
+
+      web::WebState* currentWebState = _webStateList->GetActiveWebState();
+      web::WebState* newWebState = replaceChange.inserted_web_state();
+      // Add `newTab`'s view to the hierarchy if it's the current Tab.
+      if (currentWebState == newWebState) {
+        // Set this before triggering any of the possible page loads in
+        // displayTabViewIfActive.
+        newWebState->SetKeepRenderProcessAlive(true);
+        [self.consumer displayTabViewIfActive];
+      }
+      break;
+    }
+    case WebStateListChange::Type::kInsert: {
+      // If a tab is inserted in the background (not activating), trigger an
+      // animation. (The animation for foreground tab insertion is handled in
+      // `didChangeActiveWebState`).
+      if (!selection.activating) {
+        [self.consumer initiateNewTabBackgroundAnimation];
+      }
+      break;
+    }
+  }
+}
+
 - (void)webStateList:(WebStateList*)webStateList
     willDetachWebState:(web::WebState*)webState
                atIndex:(int)atIndex {
@@ -131,18 +180,6 @@
   web::WebState* currentWebState = _webStateList->GetActiveWebState();
   if (webState == currentWebState) {
     [self.consumer resetTab];
-  }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index
-           activating:(BOOL)activating {
-  // If a tab is inserted in the background (not activating), trigger an
-  // animation. (The animation for foreground tab insertion is handled in
-  // `didChangeActiveWebState`).
-  if (!activating) {
-    [self.consumer initiateNewTabBackgroundAnimation];
   }
 }
 
@@ -200,27 +237,6 @@
     }
 
     [self.consumer webStateSelected];
-  }
-}
-
-// Observer method, WebState replaced in `webStateList`.
-- (void)webStateList:(WebStateList*)webStateList
-    didReplaceWebState:(web::WebState*)oldWebState
-          withWebState:(web::WebState*)newWebState
-               atIndex:(int)atIndex {
-  NewTabPageTabHelper* NTPTabHelper =
-      NewTabPageTabHelper::FromWebState(oldWebState);
-  if (NTPTabHelper->IsActive()) {
-    [self stopNTPIfNeeded];
-  }
-
-  web::WebState* currentWebState = _webStateList->GetActiveWebState();
-  // Add `newTab`'s view to the hierarchy if it's the current Tab.
-  if (currentWebState == newWebState) {
-    // Set this before triggering any of the possible page loads in
-    // displayTabViewIfActive.
-    newWebState->SetKeepRenderProcessAlive(true);
-    [self.consumer displayTabViewIfActive];
   }
 }
 

@@ -4,14 +4,6 @@
 
 import("//build/config/ios/asset_catalog.gni")
 
-imageset("encryption_error") {
-  sources = [
-    "encryption_error.imageset/Contents.json",
-    "encryption_error.imageset/encryption_error@2x.png",
-    "encryption_error.imageset/encryption_error@3x.png",
-  ]
-}
-
 imageset("enterprise_icon") {
   sources = [
     "enterprise_icon.imageset/Contents.json",
@@ -33,14 +25,6 @@ imageset("settings_accounts_add_account") {
     "settings_accounts_add_account.imageset/Contents.json",
     "settings_accounts_add_account.imageset/settings_accounts_add_account@2x.png",
     "settings_accounts_add_account.imageset/settings_accounts_add_account@3x.png",
-  ]
-}
-
-imageset("settings_info") {
-  sources = [
-    "settings_info.imageset/Contents.json",
-    "settings_info.imageset/settings_info@2x.png",
-    "settings_info.imageset/settings_info@3x.png",
   ]
 }
 

@@ -52,8 +52,7 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
       const FormData& form,
       const FormFieldData& field,
       const gfx::RectF& bounding_box,
-      AutoselectFirstSuggestion autoselect_first_suggestion,
-      FormElementWasClicked form_element_was_clicked) override;
+      AutofillSuggestionTriggerSource trigger_source) override;
   void OnJavaScriptChangedAutofilledValue(
       const FormData& form,
       const FormFieldData& field,
@@ -81,8 +80,6 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
                       const AutofillTriggerSource trigger_source) override;
 
   // Unique to TestBrowserAutofillManager:
-
-  Suggestion::FrontendId GetPackedCreditCardID(int credit_card_id);
 
   void AddSeenForm(const FormData& form,
                    const std::vector<ServerFieldType>& field_types,
@@ -115,10 +112,8 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
       const FormData& form,
       const FormFieldData& field,
       const gfx::RectF& bounding_box = {},
-      AutoselectFirstSuggestion autoselect_first_suggestion =
-          AutoselectFirstSuggestion(false),
-      FormElementWasClicked form_element_was_clicked =
-          FormElementWasClicked(false));
+      AutofillSuggestionTriggerSource trigger_source =
+          AutofillSuggestionTriggerSource::kTextFieldDidChange);
 
   // Require a TestAutofillClient because `this` does not know whether its
   // `client()` is a *Test*AutofillClient.
@@ -131,13 +126,6 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
       const std::vector<ServerFieldTypeSet>& expected_types);
 
   void SetExpectedObservedSubmission(bool expected);
-
-  struct MakeFrontendIdParams {
-    std::string credit_card_id;
-    std::string profile_id;
-  };
-
-  Suggestion::FrontendId MakeFrontendId(const MakeFrontendIdParams& params);
 
  private:
   bool autofill_profile_enabled_ = true;

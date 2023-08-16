@@ -229,9 +229,10 @@ class CreditCard : public AutofillDataModel {
   // card.
   [[nodiscard]] int Compare(const CreditCard& credit_card) const;
 
-  // Determines if |this| is a local version of the server card |other|.
-  [[nodiscard]] bool IsLocalDuplicateOfServerCard(
-      const CreditCard& other) const;
+  // Determines if `this` and `other` are likely duplicates of each other (name,
+  // expiration date, cc number, billing address match each other if they are
+  // defined) but one card is a local card and the other is a server card.
+  [[nodiscard]] bool IsLocalOrServerDuplicateOf(const CreditCard& other) const;
 
   // Determines if `this` is the matching card as `other` (same card number and
   // expiration date). If either is a masked server card, compares their last
@@ -424,10 +425,15 @@ class CreditCard : public AutofillDataModel {
     card_art_url_ = card_art_url;
   }
 
-  std::u16string product_description() const { return product_description_; }
+  const std::u16string& product_description() const {
+    return product_description_;
+  }
   void set_product_description(const std::u16string& product_description) {
     product_description_ = product_description;
   }
+
+  const std::u16string& cvc() const { return cvc_; }
+  void set_cvc(const std::u16string& cvc) { cvc_ = cvc; }
 
  private:
   friend class CreditCardTestApi;
@@ -536,6 +542,9 @@ class CreditCard : public AutofillDataModel {
   // The product description for the card to be used in the UI when card is
   // presented.
   std::u16string product_description_;
+
+  // The card verification code of the card. May be empty.
+  std::u16string cvc_;
 };
 
 // So we can compare CreditCards with EXPECT_EQ().

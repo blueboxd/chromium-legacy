@@ -225,6 +225,7 @@ class MockDriveFsHostObserver : public DriveFsHostObserver {
               OnFilesChanged,
               (const std::vector<mojom::FileChange>& changes));
   MOCK_METHOD(void, OnError, (const mojom::DriveError& error));
+  MOCK_METHOD(void, OnItemProgress, (const mojom::ProgressEvent& event));
 };
 
 class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
@@ -911,8 +912,10 @@ TEST_F(DriveFsHostTest, OnMirrorSyncingStatusUpdate_ForwardToObservers) {
 }
 
 TEST_F(DriveFsHostTest, OnSyncingStatusUpdate_SyncStatusTracksStatus) {
-  base::test::ScopedFeatureList scoped_feature_list(
-      ash::features::kFilesInlineSyncStatus);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {ash::features::kFilesInlineSyncStatus},
+      {ash::features::kFilesInlineSyncStatusProgressEvents});
 
   ASSERT_NO_FATAL_FAILURE(DoMount());
 

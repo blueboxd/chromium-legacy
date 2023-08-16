@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/style/rounded_container.h"
 #include "ash/style/typography.h"
 #include "ash/system/audio/mic_gain_slider_controller.h"
@@ -28,7 +29,6 @@
 #include "ash/system/tray/tri_view.h"
 #include "ash/system/unified/quick_settings_slider.h"
 #include "ash/system/unified/unified_slider_view.h"
-#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -49,6 +49,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/focus_ring.h"
@@ -66,6 +67,7 @@ namespace {
 
 const int kLabelFontSizeDelta = 1;
 const int kToggleButtonRowViewSpacing = 18;
+const int kNbsWarningMinHeight = 80;
 constexpr auto kLiveCaptionContainerMargins = gfx::Insets::TLBR(0, 0, 8, 0);
 constexpr auto kToggleButtonRowLabelPadding = gfx::Insets::TLBR(16, 0, 15, 0);
 constexpr auto kToggleButtonRowViewPadding = gfx::Insets::TLBR(0, 56, 8, 0);
@@ -231,11 +233,13 @@ void AudioDetailedView::AddAudioSubHeader(views::View* container,
   auto* sub_header_label_ = TrayPopupUtils::CreateDefaultLabel();
   sub_header_label_->SetText(l10n_util::GetStringUTF16(text_id));
   sub_header_label_->SetEnabledColorId(cros_tokens::kCrosSysOnSurfaceVariant);
-  TrayPopupUtils::SetLabelFontList(sub_header_label_,
-                                   TrayPopupUtils::FontStyle::kSubHeader);
   if (chromeos::features::IsJellyEnabled()) {
+    sub_header_label_->SetAutoColorReadabilityEnabled(false);
     TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosBody2,
                                           *sub_header_label_);
+  } else {
+    TrayPopupUtils::SetLabelFontList(sub_header_label_,
+                                     TrayPopupUtils::FontStyle::kSubHeader);
   }
   sub_header_label_->SetBorder(views::CreateEmptyBorder(kTextRowInsets));
   container->AddChildView(sub_header_label_);
@@ -528,7 +532,6 @@ void AudioDetailedView::OnInputNoiseCancellationTogglePressed() {
 }
 
 void AudioDetailedView::OnSettingsButtonClicked() {
-  CHECK(features::IsAudioSettingsPageEnabled());
   if (!TrayPopupUtils::CanOpenWebUISettings()) {
     return;
   }
@@ -612,12 +615,24 @@ void AudioDetailedView::UpdateAudioDevices() {
 }
 
 void AudioDetailedView::UpdateScrollableList() {
-  scroll_content()->RemoveAllChildViews();
+  // Resets all raw pointers inside the `scroll_content()`. Otherwise it can
+  // lead to a crash when the the view is clicked. Also clears `device_map_`
+  // before removing all child views since it holds pointers to child views in
+  // `scroll_content()`.
+  noise_cancellation_view_ = nullptr;
+  noise_cancellation_icon_ = nullptr;
+  noise_cancellation_button_ = nullptr;
+  live_caption_view_ = nullptr;
+  live_caption_icon_ = nullptr;
+  live_caption_button_ = nullptr;
   device_map_.clear();
+  scroll_content()->RemoveAllChildViews();
+
+  const bool is_qs_revamp = features::IsQsRevampEnabled();
 
   // Uses the `RoundedContainer` for QsRevamp.
   views::View* container = scroll_content();
-  if (features::IsQsRevampEnabled()) {
+  if (is_qs_revamp) {
     container =
         scroll_content()->AddChildView(std::make_unique<RoundedContainer>());
   }
@@ -625,7 +640,7 @@ void AudioDetailedView::UpdateScrollableList() {
   // Adds the live caption toggle.
   AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();
-  if (features::IsQsRevampEnabled()) {
+  if (is_qs_revamp) {
     CreateLiveCaptionView();
   } else if (controller->IsLiveCaptionSettingVisibleInTray()) {
     live_caption_view_ = AddScrollListCheckableItem(
@@ -649,7 +664,7 @@ void AudioDetailedView::UpdateScrollableList() {
         container, gfx::kNoneIcon, GetAudioDeviceName(device), device.active);
     device_map_[device_name_container] = device;
 
-    if (features::IsQsRevampEnabled()) {
+    if (is_qs_revamp) {
       // Sets this flag to false to make the assigned color id effective.
       // Otherwise it will use `color_utils::BlendForMinContrast()` to improve
       // label readability over the background.
@@ -662,7 +677,7 @@ void AudioDetailedView::UpdateScrollableList() {
   }
 
   if (has_output_devices) {
-    if (features::IsQsRevampEnabled()) {
+    if (is_qs_revamp) {
       last_output_device->SetProperty(views::kMarginsKey, kQsSubsectionMargins);
     } else {
       container->AddChildView(TrayPopupUtils::CreateListSubHeaderSeparator());
@@ -683,7 +698,7 @@ void AudioDetailedView::UpdateScrollableList() {
         container, gfx::kNoneIcon, GetAudioDeviceName(device), device.active);
     device_map_[device_name_container] = device;
 
-    if (features::IsQsRevampEnabled()) {
+    if (is_qs_revamp) {
       // Sets this flag to false to make the assigned color id effective.
       device_name_container->text_label()->SetAutoColorReadabilityEnabled(
           /*enabled=*/false);
@@ -694,7 +709,7 @@ void AudioDetailedView::UpdateScrollableList() {
     // Adds the input noise cancellation toggle.
     if (audio_handler->GetPrimaryActiveInputNode() == device.id &&
         audio_handler->IsNoiseCancellationSupportedForDevice(device.id)) {
-      if (features::IsQsRevampEnabled()) {
+      if (is_qs_revamp) {
         noise_cancellation_view_ = container->AddChildView(
             AudioDetailedView::CreateQsNoiseCancellationToggleRow(device));
 
@@ -715,6 +730,48 @@ void AudioDetailedView::UpdateScrollableList() {
     if (!features::IsQsRevampEnabled()) {
       scroll_content()->AddChildView(mic_gain_controller_->CreateMicGainSlider(
           device.id, device.IsInternalMic()));
+    }
+
+    // Adds a warning message if NBS is selected.
+    if (features::IsAudioHFPNbsWarningEnabled()) {
+      if (audio_handler->GetPrimaryActiveInputNode() == device.id &&
+          device.type == AudioDeviceType::kBluetoothNbMic) {
+        std::unique_ptr<TriView> nbs_warning_view(
+            TrayPopupUtils::CreateDefaultRowView(
+                /*use_wide_layout=*/is_qs_revamp));
+        nbs_warning_view->SetMinHeight(kNbsWarningMinHeight);
+        nbs_warning_view->SetContainerVisible(TriView::Container::END, false);
+
+        std::unique_ptr<views::ImageView> image_view =
+            base::WrapUnique(TrayPopupUtils::CreateMainImageView(
+                /*use_wide_layout=*/is_qs_revamp));
+        image_view->SetImage(ui::ImageModel::FromVectorIcon(
+            vector_icons::kNotificationWarningIcon, kColorAshIconColorWarning,
+            kMenuIconSize));
+        image_view->SetBackground(
+            views::CreateSolidBackground(SK_ColorTRANSPARENT));
+        nbs_warning_view->AddView(TriView::Container::START,
+                                  std::move(image_view));
+
+        std::unique_ptr<views::Label> label =
+            base::WrapUnique(TrayPopupUtils::CreateDefaultLabel());
+        label->SetText(
+            l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_NBS_MESSAGE));
+        label->SetMultiLine(/*multi_line=*/true);
+        label->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
+        label->SetEnabledColorId(kColorAshTextColorWarning);
+        if (chromeos::features::IsJellyEnabled()) {
+          label->SetAutoColorReadabilityEnabled(false);
+          TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosBody2,
+                                                *label);
+        } else {
+          TrayPopupUtils::SetLabelFontList(
+              label.get(), TrayPopupUtils::FontStyle::kDetailedViewLabel);
+        }
+        nbs_warning_view->AddView(TriView::Container::CENTER, std::move(label));
+
+        container->AddChildView(std::move(nbs_warning_view));
+      }
     }
   }
 
@@ -792,16 +849,14 @@ void AudioDetailedView::HandleViewClicked(views::View* view) {
 }
 
 void AudioDetailedView::CreateExtraTitleRowButtons() {
-  if (features::IsAudioSettingsPageEnabled()) {
-    tri_view()->SetContainerVisible(TriView::Container::END, /*visible=*/true);
-    std::unique_ptr<views::Button> settings =
-        base::WrapUnique(CreateSettingsButton(
-            base::BindRepeating(&AudioDetailedView::OnSettingsButtonClicked,
-                                weak_factory_.GetWeakPtr()),
-            IDS_ASH_STATUS_TRAY_AUDIO_SETTINGS));
-    settings_button_ =
-        tri_view()->AddView(TriView::Container::END, std::move(settings));
-  }
+  tri_view()->SetContainerVisible(TriView::Container::END, /*visible=*/true);
+  std::unique_ptr<views::Button> settings =
+      base::WrapUnique(CreateSettingsButton(
+          base::BindRepeating(&AudioDetailedView::OnSettingsButtonClicked,
+                              weak_factory_.GetWeakPtr()),
+          IDS_ASH_STATUS_TRAY_AUDIO_SETTINGS));
+  settings_button_ =
+      tri_view()->AddView(TriView::Container::END, std::move(settings));
 }
 
 // SodaInstaller::Observer:

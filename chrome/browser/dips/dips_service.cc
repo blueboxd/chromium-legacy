@@ -326,6 +326,15 @@ void DIPSService::HandleRedirectChain(
                            content_settings_callback));
 }
 
+void DIPSService::DidSiteHaveInteractionSince(
+    const GURL& url,
+    base::Time bound,
+    CheckInteractionCallback callback) const {
+  storage_.AsyncCall(&DIPSStorage::DidSiteHaveInteractionSince)
+      .WithArgs(url, bound)
+      .Then(std::move(callback));
+}
+
 void DIPSService::GotState(
     std::vector<DIPSRedirectInfoPtr> redirects,
     DIPSRedirectChainInfoPtr chain,
@@ -433,6 +442,8 @@ void DIPSService::HandleRedirect(
         .SetClientBounceDelay(
             BucketizeBounceDelay(redirect.client_bounce_delay))
         .SetHasStickyActivation(redirect.has_sticky_activation)
+        .SetWebAuthnAssertionRequestSucceeded(
+            redirect.web_authn_assertion_request_succeeded)
         .Record(ukm::UkmRecorder::Get());
   }
 
@@ -480,6 +491,14 @@ void DIPSService::DeleteDIPSEligibleState(
     DeletedSitesCallback callback,
     base::Time deletion_start,
     std::vector<std::string> sites_to_clear) {
+  // Do not clear sites from currently open tabs.
+  for (const std::pair<std::string, int> site_ctr : open_sites_) {
+    CHECK(site_ctr.second > 0);
+    sites_to_clear.erase(std::remove(sites_to_clear.begin(),
+                                     sites_to_clear.end(), site_ctr.first),
+                         sites_to_clear.end());
+  }
+
   if (sites_to_clear.empty()) {
     UmaHistogramClearedSitesCount(GetCookieMode(), sites_to_clear.size());
     std::move(callback).Run(std::vector<std::string>());

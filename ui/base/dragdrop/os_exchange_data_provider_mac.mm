@@ -27,12 +27,12 @@
 @end
 
 @implementation CrPasteboardItemWrapper {
-  base::scoped_nsobject<NSPasteboardItem> _pasteboardItem;
+  NSPasteboardItem* _pasteboardItem;
 }
 
 - (instancetype)initWithPasteboardItem:(NSPasteboardItem*)pasteboardItem {
   if ((self = [super init])) {
-    _pasteboardItem.reset([pasteboardItem retain]);
+    _pasteboardItem = pasteboardItem;
   }
 
   return self;
@@ -99,7 +99,7 @@ class OwningProvider : public OSExchangeDataProviderMac {
 class WrappingProvider : public OSExchangeDataProviderMac {
  public:
   WrappingProvider(NSPasteboard* pasteboard)
-      : OSExchangeDataProviderMac(), wrapped_pasteboard_([pasteboard retain]) {}
+      : OSExchangeDataProviderMac(), wrapped_pasteboard_(pasteboard) {}
   WrappingProvider(const WrappingProvider& provider) = default;
 
   std::unique_ptr<OSExchangeDataProvider> Clone() const override {
@@ -109,7 +109,7 @@ class WrappingProvider : public OSExchangeDataProviderMac {
   NSPasteboard* GetPasteboard() const override { return wrapped_pasteboard_; }
 
  private:
-  base::scoped_nsobject<NSPasteboard> wrapped_pasteboard_;
+  NSPasteboard* wrapped_pasteboard_;
 };
 
 }  // namespace
@@ -162,7 +162,7 @@ void OSExchangeDataProviderMac::SetString(const std::u16string& string) {
 
 void OSExchangeDataProviderMac::SetURL(const GURL& url,
                                        const std::u16string& title) {
-  base::scoped_nsobject<NSPasteboardItem> item =
+  NSPasteboardItem* item =
       ClipboardUtil::PasteboardItemFromUrl(base::SysUTF8ToNSString(url.spec()),
                                            base::SysUTF16ToNSString(title));
   ClipboardUtil::AddDataToPasteboard(GetPasteboard(), item);
@@ -348,11 +348,11 @@ NSDraggingItem* OSExchangeDataProviderMac::GetDraggingItem() const {
   DCHECK(pasteboardItems);
   DCHECK_EQ(1u, [pasteboardItems count]);
 
-  CrPasteboardItemWrapper* wrapper = [[[CrPasteboardItemWrapper alloc]
-      initWithPasteboardItem:[pasteboardItems firstObject]] autorelease];
+  CrPasteboardItemWrapper* wrapper = [[CrPasteboardItemWrapper alloc]
+      initWithPasteboardItem:[pasteboardItems firstObject]];
 
   NSDraggingItem* drag_item =
-      [[[NSDraggingItem alloc] initWithPasteboardWriter:wrapper] autorelease];
+      [[NSDraggingItem alloc] initWithPasteboardWriter:wrapper];
 
   return drag_item;
 }

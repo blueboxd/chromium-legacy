@@ -68,6 +68,10 @@ static_library("safe_browsing") {
     "//services/preferences/public/cpp",
   ]
 
+  if (is_apple) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
+
   if (enable_extensions) {
     sources += [
       "settings_reset_prompt/default_settings_fetcher.cc",
@@ -391,6 +395,7 @@ static_library("safe_browsing") {
         "//chrome/services/file_util/public/cpp",
         "//components/content_settings/core/browser",
         "//components/enterprise/common/proto:connectors_proto",
+        "//components/file_access",
         "//components/gcm_driver",
         "//components/gcm_driver/instance_id",
         "//components/keyed_service/content",
@@ -400,6 +405,7 @@ static_library("safe_browsing") {
         "//components/safe_browsing/core/browser:verdict_cache_manager",
         "//components/safe_browsing/core/browser/db",
         "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_service",
+        "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_utils",
         "//components/safe_browsing/core/browser/realtime:policy_engine",
         "//components/safe_browsing/core/browser/realtime:url_lookup_service_base",
         "//components/safe_browsing/core/common/proto:client_model_proto",

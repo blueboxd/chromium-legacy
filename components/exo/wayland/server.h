@@ -36,7 +36,6 @@ struct WaylandSeat;
 struct WaylandTextInputExtension;
 struct WaylandTextInputManager;
 struct WaylandXdgShell;
-struct WaylandZxdgShell;
 struct WaylandRemoteShellData;
 class WaylandDmabufFeedbackManager;
 class WestonTest;
@@ -118,6 +117,7 @@ class Server : public display::DisplayObserver {
   std::unique_ptr<SecurityDelegate> security_delegate_;
   // Deleting wl_display depends on SerialTracker.
   std::unique_ptr<SerialTracker> serial_tracker_;
+  std::unique_ptr<SerialTracker> rotation_serial_tracker_;
   std::unique_ptr<wl_display, WlDisplayDeleter> wl_display_;
   base::flat_map<int64_t, std::unique_ptr<WaylandDisplayOutput>> outputs_;
   std::unique_ptr<WaylandDataDeviceManager> data_device_manager_data_;
@@ -129,7 +129,6 @@ class Server : public display::DisplayObserver {
   std::unique_ptr<WaylandKeyboardExtension> zcr_keyboard_extension_data_;
   std::unique_ptr<WaylandTextInputManager> zwp_text_manager_data_;
   std::unique_ptr<WaylandTextInputExtension> zcr_text_input_extension_data_;
-  std::unique_ptr<WaylandZxdgShell> zxdg_shell_data_;
   std::unique_ptr<WaylandXdgShell> xdg_shell_data_;
   std::unique_ptr<WaylandRemoteShellData> remote_shell_data_;
   std::unique_ptr<WestonTest> weston_test_holder_;

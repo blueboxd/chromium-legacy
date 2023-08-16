@@ -509,14 +509,12 @@ void WebApp::SetNoteTakingNewNoteUrl(const GURL& note_taking_new_note_url) {
   note_taking_new_note_url_ = note_taking_new_note_url;
 }
 
-void WebApp::SetShortcutsMenuItemInfos(
-    std::vector<WebAppShortcutsMenuItemInfo> shortcuts_menu_item_infos) {
+void WebApp::SetShortcutsMenuInfo(
+    std::vector<WebAppShortcutsMenuItemInfo> shortcuts_menu_item_infos,
+    std::vector<IconSizes> downloaded_sizes) {
+  CHECK_EQ(shortcuts_menu_item_infos.size(), downloaded_sizes.size());
   shortcuts_menu_item_infos_ = std::move(shortcuts_menu_item_infos);
-}
-
-void WebApp::SetDownloadedShortcutsMenuIconsSizes(
-    std::vector<IconSizes> sizes) {
-  downloaded_shortcuts_menu_icons_sizes_ = std::move(sizes);
+  downloaded_shortcuts_menu_icons_sizes_ = std::move(downloaded_sizes);
 }
 
 void WebApp::SetLastBadgingTime(const base::Time& time) {
@@ -630,27 +628,28 @@ void WebApp::AddInstallURLToManagementExternalConfigMap(
     GURL install_url) {
   DCHECK_NE(type, WebAppManagement::Type::kSync);
   DCHECK(install_url.is_valid());
-  management_to_external_config_map_[type].install_urls.emplace(install_url);
+  management_to_external_config_map_[type].install_urls.emplace(
+      std::move(install_url));
 }
 
 void WebApp::AddPolicyIdToManagementExternalConfigMap(
     WebAppManagement::Type type,
-    const std::string& policy_id) {
+    std::string policy_id) {
   DCHECK_NE(type, WebAppManagement::Type::kSync);
   DCHECK(!policy_id.empty());
   management_to_external_config_map_[type].additional_policy_ids.emplace(
-      policy_id);
+      std::move(policy_id));
 }
 
 void WebApp::AddExternalSourceInformation(WebAppManagement::Type type,
                                           GURL install_url,
                                           bool is_placeholder) {
-  AddInstallURLToManagementExternalConfigMap(type, install_url);
+  AddInstallURLToManagementExternalConfigMap(type, std::move(install_url));
   AddPlaceholderInfoToManagementExternalConfigMap(type, is_placeholder);
 }
 
 bool WebApp::RemoveInstallUrlForSource(WebAppManagement::Type type,
-                                       GURL install_url) {
+                                       const GURL& install_url) {
   if (!management_to_external_config_map_.count(type))
     return false;
 
@@ -740,13 +739,19 @@ base::Value::Dict WebApp::ExternalManagementConfig::AsDebugValue() const {
   return root;
 }
 
-WebApp::IsolationData::IsolationData(IsolatedWebAppLocation location)
-    : location(location) {}
+WebApp::IsolationData::IsolationData(IsolatedWebAppLocation location,
+                                     base::Version version)
+    : location(location), version(std::move(version)) {}
 WebApp::IsolationData::IsolationData(
     IsolatedWebAppLocation location,
-    const std::set<std::string>& controlled_frame_partitions)
+    base::Version version,
+    const std::set<std::string>& controlled_frame_partitions,
+    const absl::optional<PendingUpdateInfo>& pending_update_info)
     : location(location),
-      controlled_frame_partitions(controlled_frame_partitions) {}
+      version(std::move(version)),
+      controlled_frame_partitions(controlled_frame_partitions) {
+  SetPendingUpdateInfo(pending_update_info);
+}
 WebApp::IsolationData::~IsolationData() = default;
 WebApp::IsolationData::IsolationData(const WebApp::IsolationData&) = default;
 WebApp::IsolationData& WebApp::IsolationData::operator=(
@@ -757,8 +762,9 @@ WebApp::IsolationData& WebApp::IsolationData::operator=(
 
 bool WebApp::IsolationData::operator==(
     const WebApp::IsolationData& other) const {
-  return location == other.location &&
-         controlled_frame_partitions == other.controlled_frame_partitions;
+  return location == other.location && version == other.version &&
+         controlled_frame_partitions == other.controlled_frame_partitions &&
+         pending_update_info_ == other.pending_update_info_;
 }
 bool WebApp::IsolationData::operator!=(
     const WebApp::IsolationData& other) const {
@@ -766,16 +772,55 @@ bool WebApp::IsolationData::operator!=(
 }
 
 base::Value WebApp::IsolationData::AsDebugValue() const {
-  base::Value::Dict value;
-  value.Set("isolated_web_app_location",
-            IsolatedWebAppLocationAsDebugValue(location));
+  auto value = base::Value::Dict()
+                   .Set("isolated_web_app_location",
+                        IsolatedWebAppLocationAsDebugValue(location))
+                   .Set("version", version.GetString());
   base::Value::List* partitions =
       value.EnsureList("controlled_frame_partitions");
   for (const std::string& partition : controlled_frame_partitions) {
     partitions->Append(partition);
   }
+
+  value.Set("pending_update_info", pending_update_info_.has_value()
+                                       ? pending_update_info_->AsDebugValue()
+                                       : base::Value());
+
   return base::Value(std::move(value));
 }
+
+WebApp::IsolationData::PendingUpdateInfo::PendingUpdateInfo(
+    IsolatedWebAppLocation location,
+    base::Version version)
+    : location(std::move(location)), version(std::move(version)) {}
+WebApp::IsolationData::PendingUpdateInfo::~PendingUpdateInfo() = default;
+
+WebApp::IsolationData::PendingUpdateInfo::PendingUpdateInfo(
+    const PendingUpdateInfo&) = default;
+WebApp::IsolationData::PendingUpdateInfo&
+WebApp::IsolationData::PendingUpdateInfo::operator=(const PendingUpdateInfo&) =
+    default;
+
+base::Value WebApp::IsolationData::PendingUpdateInfo::AsDebugValue() const {
+  auto value = base::Value::Dict()
+                   .Set("isolated_web_app_location",
+                        IsolatedWebAppLocationAsDebugValue(location))
+                   .Set("version", version.GetString());
+  return base::Value(std::move(value));
+}
+
+void WebApp::IsolationData::SetPendingUpdateInfo(
+    const absl::optional<PendingUpdateInfo>& pending_update_info) {
+  if (pending_update_info.has_value()) {
+    CHECK_EQ(pending_update_info->location.index(), location.index());
+  }
+  pending_update_info_ = pending_update_info;
+}
+
+bool WebApp::IsolationData::PendingUpdateInfo::operator==(
+    const WebApp::IsolationData::PendingUpdateInfo& other) const = default;
+bool WebApp::IsolationData::PendingUpdateInfo::operator!=(
+    const WebApp::IsolationData::PendingUpdateInfo& other) const = default;
 
 bool WebApp::operator==(const WebApp& other) const {
   auto AsTuple = [](const WebApp& app) {

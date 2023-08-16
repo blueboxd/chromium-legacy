@@ -88,11 +88,14 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
 
   void EnterTestMode(const GURL& update_url,
                      const GURL& crash_upload_url,
-                     const GURL& device_management_url) const override {
+                     const GURL& device_management_url,
+                     const base::TimeDelta& idle_timeout) const override {
     RunCommand("enter_test_mode",
                {Param("update_url", update_url.spec()),
                 Param("crash_upload_url", crash_upload_url.spec()),
-                Param("device_management_url", device_management_url.spec())});
+                Param("device_management_url", device_management_url.spec()),
+                Param("idle_timeout",
+                      base::NumberToString(idle_timeout.InSeconds()))});
   }
 
   void ExitTestMode() const override { RunCommand("exit_test_mode"); }
@@ -218,6 +221,12 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
 
   void RunCrashMe() const override { RunCommand("run_crash_me", {}); }
 
+  void RunServer(int expected_exit_code, bool internal) const override {
+    RunCommand("run_server",
+               {Param("internal", internal ? "true" : "false"),
+                Param("exit_code", base::NumberToString(expected_exit_code))});
+  }
+
   void CheckForUpdate(const std::string& app_id) const override {
     RunCommand("check_for_update", {Param("app_id", app_id)});
   }
@@ -229,6 +238,14 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   }
 
   void UpdateAll() const override { RunCommand("update_all", {}); }
+
+  void GetAppStates(
+      const base::Value::Dict& expected_app_states) const override {
+    RunCommand(
+        "get_app_states",
+        {Param("expected_app_states",
+               StringFromValue(base::Value(expected_app_states.Clone())))});
+  }
 
   void DeleteUpdaterDirectory() const override {
     RunCommand("delete_updater_directory", {});
@@ -296,14 +313,6 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("run_uninstall_cmd_line");
   }
 
-  void SetUpTestService() const override {
-    updater::test::RunTestServiceCommand("setup");
-  }
-
-  void TearDownTestService() const override {
-    updater::test::RunTestServiceCommand("teardown");
-  }
-
   void RunHandoff(const std::string& app_id) const override {
     RunCommand("run_handoff", {Param("app_id", app_id)});
   }
@@ -366,6 +375,13 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void RunOfflineInstall(bool is_legacy_install,
                          bool is_silent_install) override {
     RunCommand("run_offline_install",
+               {Param("legacy_install", is_legacy_install ? "true" : "false"),
+                Param("silent", is_silent_install ? "true" : "false")});
+  }
+
+  void RunOfflineInstallOsNotSupported(bool is_legacy_install,
+                                       bool is_silent_install) override {
+    RunCommand("run_offline_install_os_not_supported",
                {Param("legacy_install", is_legacy_install ? "true" : "false"),
                 Param("silent", is_silent_install ? "true" : "false")});
   }

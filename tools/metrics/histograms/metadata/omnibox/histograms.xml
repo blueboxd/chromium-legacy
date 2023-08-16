@@ -116,7 +116,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Omnibox.AcceptedKeywordSuggestion"
-    enum="OmniboxEnteredKeywordMode2" expires_after="2023-10-08">
+    enum="OmniboxEnteredKeywordMode2" expires_after="2023-12-10">
   <owner>yoangela@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -152,7 +152,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.AnswerParseSuccess" enum="BooleanSuccess"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -177,7 +177,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.AssistedQueryStats.Length" units="chars"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -335,8 +335,8 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Omnibox.AutocompleteClassifierClassifyTime" units="ms"
-    expires_after="2023-12-01">
+<histogram name="Omnibox.AutocompleteClassifierClassifyTime"
+    units="microseconds" expires_after="2023-12-01">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-desktop-search@google.com</owner>
@@ -348,11 +348,16 @@ chromium-metrics-reviews@google.com.
 
     This is intended to measure some performance optimization features and be
     removed after.
+
+    This metric uses SCOPED_UMA_HISTOGRAM_TIMER_MICROS so clients without
+    high-resolution clocks will either a) be dropped, b) report 0 for very short
+    times, or c) be recorded as expected (depending on which comments you
+    believe ¯\_(ツ)_/¯).
   </summary>
 </histogram>
 
-<histogram name="Omnibox.AutocompletionTime.UpdateResult{Slice}" units="ms"
-    expires_after="2023-12-01">
+<histogram name="Omnibox.AutocompletionTime.UpdateResult{Slice}"
+    units="microseconds" expires_after="2023-12-01">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -379,15 +384,29 @@ chromium-metrics-reviews@google.com.
     implementation of `UpdateResult()`.
 
     {Slice}
+
+    This metric uses SCOPED_UMA_HISTOGRAM_TIMER_MICROS so clients without
+    high-resolution clocks will either a) be dropped, b) report 0 for very short
+    times, or c) be recorded as expected (depending on which comments you
+    believe ¯\_(ツ)_/¯).
   </summary>
   <token key="Slice">
     <variant name=""/>
+    <variant name=".DeduplicateMatches"
+        summary="The '.DeduplicateMatches' slice measures the time
+                 `AutocompleteResult::DeduplicateMatches()` took. When ML
+                 ranking is enabled, this can include async calls that aren't
+                 included in the unsliced metric. Otherwise, it's a subset of
+                 both the unsliced metric and the sliced '.SortAndCull'
+                 metric and is called exactly once per `SortAndCull()` call."/>
     <variant name=".SortAndCull"
         summary="The '.SortAndCull' slice measures the time
-                 `AutocompleteResult::SortAndCull()` took. This is invoked
-                 only from `AutocompleteController::UpdateResult()`; i.e.,
-                 this is included in the unsliced metric, `SortAndCull()` can
-                 be called up to twice per `UpdateResult()`. For all but the
+                 `AutocompleteResult::SortAndCull()` took. Besides being
+                 called from `AutocompleteController::UpdateResult()`, this
+                 is also called asyncly in ML ranking code paths. Therefore,
+                 when ML ranking is enabled, not all '.SortAndCull' times are
+                 included in the unsliced metric. `SortAndCull()` can be
+                 called up to twice per `UpdateResult()`. For all but the
                  last async update, it's called twice; for the last async
                  update (which may not occur if interrupted), it's called
                  once."/>
@@ -754,8 +773,7 @@ chromium-metrics-reviews@google.com.
     1) If there is temporary text (i.e. a non default suggestion is selected),
     it is cleared.
 
-    2) If the popup is open and the `kClosePopupWithEscape` feature is enabled,
-    the popup is closed.
+    2) If the popup is open, the popup is closed.
 
     3) If the popup is open, which is considered as user input in progress, then
     the popup is closed and user input is cleared.
@@ -1281,7 +1299,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.OmniboxEditModelOpenMatchTime" units="ms"
+<histogram name="Omnibox.OmniboxEditModelOpenMatchTime" units="microseconds"
     expires_after="2023-12-01">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -1294,10 +1312,15 @@ chromium-metrics-reviews@google.com.
 
     This is intended to measure some performance optimization features and be
     removed after.
+
+    This metric uses SCOPED_UMA_HISTOGRAM_TIMER_MICROS so clients without
+    high-resolution clocks will either a) be dropped, b) report 0 for very short
+    times, or c) be recorded as expected (depending on which comments you
+    believe ¯\_(ツ)_/¯).
   </summary>
 </histogram>
 
-<histogram name="Omnibox.OmniboxViewRevertAll" units="ms"
+<histogram name="Omnibox.OmniboxViewRevertAll" units="microseconds"
     expires_after="2023-12-01">
   <owner>manukh@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -1308,6 +1331,11 @@ chromium-metrics-reviews@google.com.
     etc. It includes the time to a) revert the edit model, b) close the popup,
     and c) refresh the model. This is intended to measure some performance
     optimization features and be removed after.
+
+    This metric uses SCOPED_UMA_HISTOGRAM_TIMER_MICROS so clients without
+    high-resolution clocks will either a) be dropped, b) report 0 for very short
+    times, or c) be recorded as expected (depending on which comments you
+    believe ¯\_(ツ)_/¯).
   </summary>
 </histogram>
 
@@ -1516,6 +1544,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.ScrollToTLD.Duration" units="ms"
+    expires_after="2023-08-12">
+  <owner>peilinwang@google.com</owner>
+  <owner>woa-performance-bugs+jank@google.com</owner>
+  <summary>
+    Measures the amount of time it takes to call UrlBar.scrollToTLD(). Logged
+    once per call.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.Search.OffTheRecord" enum="BooleanOffTheRecord"
     expires_after="2024-02-01">
   <owner>jdonnelly@chromium.org</owner>
@@ -1529,7 +1567,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SearchboxStats.Length" units="chars"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -2000,7 +2038,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SuggestionUsed.Search.NavigationToFirstContentfulPaint"
-    units="ms" expires_after="2023-10-01">
+    units="ms" expires_after="2023-12-04">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -2025,7 +2063,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SuggestionUsed.Search.NavigationToLargestContentfulPaint2Above2s"
-    units="ms" expires_after="2023-10-01">
+    units="ms" expires_after="2023-12-04">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -2117,7 +2155,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestRequest.Failure.GoogleResponseTime" units="ms"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>cch@chromium.org</owner>
@@ -2129,7 +2167,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestRequest.Success.GoogleResponseTime" units="ms"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>cch@chromium.org</owner>
@@ -2155,7 +2193,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestRequests" enum="OmniboxSuggestRequests"
-    expires_after="2023-09-24">
+    expires_after="2023-12-04">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>cch@chromium.org</owner>
@@ -2166,7 +2204,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestTiles.DeletedTileIndex" units="position"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>ender@google.com</owner>
   <owner>mahmadi@chromium.org</owner>
   <summary>
@@ -2181,7 +2219,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestTiles.DeletedTileType" enum="SuggestTileType"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>ender@google.com</owner>
   <owner>mahmadi@chromium.org</owner>
   <summary>
@@ -2195,7 +2233,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestTiles.SelectedTileIndex" units="position"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>ender@google.com</owner>
   <owner>mahmadi@chromium.org</owner>
   <summary>
@@ -2240,7 +2278,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.TabMatchTime" units="microseconds"
-    expires_after="2023-09-24">
+    expires_after="2023-12-04">
   <owner>gangwu@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
@@ -2315,7 +2353,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.URLNavigationScheme" enum="NavigationScheme"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -2358,9 +2396,9 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.ZeroPrefixOnFocusType" enum="OmniboxFocusType"
-    expires_after="2023-04-26">
-  <owner>rongtan@google.com</owner>
+<histogram name="Omnibox.ZeroPrefixFocusType" enum="OmniboxFocusType"
+    expires_after="2024-02-28">
+  <owner>pnoland@google.com</owner>
   <owner>ender@google.com</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -2408,7 +2446,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ZeroSuggestProvider.CacheMemoryUsage" units="Bytes"
-    expires_after="2023-09-30">
+    expires_after="2023-12-04">
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -2427,7 +2465,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ZeroSuggestProvider.Eligibility"
-    enum="ZeroSuggestEligibility" expires_after="2023-09-30">
+    enum="ZeroSuggestEligibility" expires_after="2023-12-04">
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>

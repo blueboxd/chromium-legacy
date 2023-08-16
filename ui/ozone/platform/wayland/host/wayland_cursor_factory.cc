@@ -46,7 +46,9 @@ WaylandCursorFactory::WaylandCursorFactory(WaylandConnection* connection)
   ReloadThemeCursors();
 }
 
-WaylandCursorFactory::~WaylandCursorFactory() = default;
+WaylandCursorFactory::~WaylandCursorFactory() {
+  connection_->SetCursorBufferListener(nullptr);
+}
 
 void WaylandCursorFactory::ObserveThemeChanges() {
   auto* linux_ui = LinuxUi::instance();
@@ -230,7 +232,8 @@ void WaylandCursorFactory::MaybeLoadThemeCursors() {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(wl_cursor_theme_load, name_.c_str(), GetCacheKey(),
+      base::BindOnce(wl_cursor_theme_load,
+                     name_.empty() ? nullptr : name_.c_str(), GetCacheKey(),
                      connection_->buffer_factory()->shm()),
       base::BindOnce(&WaylandCursorFactory::OnThemeLoaded,
                      weak_factory_.GetWeakPtr(), name_, size_));

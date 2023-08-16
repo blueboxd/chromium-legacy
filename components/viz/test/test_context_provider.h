@@ -142,18 +142,25 @@ class TestContextProvider
       public ContextProvider,
       public RasterContextProvider {
  public:
+  // Creates a context backed by TestGLES2Interface with no lock.
   static scoped_refptr<TestContextProvider> Create(
       std::string additional_extensions = std::string());
-  // Creates a worker context provider that can be used on any thread. This is
-  // equivalent to: Create(); BindToCurrentSequence().
-  static scoped_refptr<TestContextProvider> CreateWorker();
-  static scoped_refptr<TestContextProvider> CreateWorker(
-      std::unique_ptr<TestContextSupport> support);
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestGLES2Interface> gl);
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestSharedImageInterface> sii);
   static scoped_refptr<TestContextProvider> Create(
+      std::unique_ptr<TestContextSupport> support);
+
+  // Creates a context backed by TestRasterInterface with no lock.
+  static scoped_refptr<TestContextProvider> CreateRaster();
+  static scoped_refptr<TestContextProvider> CreateRaster(
+      std::unique_ptr<TestContextSupport> support);
+
+  // Creates a worker context provider that can be used on any thread. This is
+  // equivalent to: Create(); BindToCurrentSequence().
+  static scoped_refptr<TestContextProvider> CreateWorker();
+  static scoped_refptr<TestContextProvider> CreateWorker(
       std::unique_ptr<TestContextSupport> support);
 
   explicit TestContextProvider(std::unique_ptr<TestContextSupport> support,
@@ -184,6 +191,7 @@ class TestContextProvider
   base::Lock* GetLock() override;
   void AddObserver(ContextLostObserver* obs) override;
   void RemoveObserver(ContextLostObserver* obs) override;
+  unsigned int GetGrGLTextureFormat(SharedImageFormat format) const override;
 
   TestGLES2Interface* TestContextGL();
   TestRasterInterface* GetTestRasterInterface();

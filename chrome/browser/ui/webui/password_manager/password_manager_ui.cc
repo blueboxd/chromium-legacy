@@ -138,9 +138,15 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
     {"compromisedPasswordsTitle",
      IDS_PASSWORD_MANAGER_UI_HAS_COMPROMISED_PASSWORDS},
     {"controlledByExtension", IDS_SETTINGS_CONTROLLED_BY_EXTENSION},
+    {"copyDisplayName", IDS_PASSWORD_MANAGER_UI_COPY_DISPLAY_NAME_LABEL},
     {"copyPassword", IDS_PASSWORD_MANAGER_UI_COPY_PASSWORD},
     {"copyUsername", IDS_PASSWORD_MANAGER_UI_COPY_USERNAME},
+    {"delete", IDS_DELETE},
     {"deletePassword", IDS_DELETE},
+    {"deletePasskeyConfirmationDescription",
+     IDS_PASSWORD_MANAGER_UI_DELETE_PASSKEY_CONFIRMATION_DESCRIPTION},
+    {"deletePasskeyConfirmationTitle",
+     IDS_PASSWORD_MANAGER_UI_DELETE_PASSKEY_CONFIRMATION_TITLE},
     {"deletePasswordConfirmationDescription",
      IDS_PASSWORD_MANAGER_UI_DELETE_PASSWORD_CONFIRMATION_DESCRIPTION},
     {"deletePasswordConfirmationTitle",
@@ -152,11 +158,18 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
      IDS_PASSWORD_MANAGER_UI_DELETE_DIALOG_FROM_ACCOUNT_CHECKBOX_LABEL},
     {"deletePasswordDialogTitle", IDS_PASSWORD_MANAGER_UI_DELETE_DIALOG_TITLE},
     {"disable", IDS_DISABLE},
+    {"displayNameCopiedToClipboard",
+     IDS_PASSWORD_MANAGER_UI_DISPLAY_NAME_COPIED_TO_CLIPBOARD},
+    {"displayNameLabel", IDS_PASSWORD_MANAGER_UI_DISPLAY_NAME_LABEL},
+    {"displayNamePlaceholder",
+     IDS_PASSWORD_MANAGER_UI_DISPLAY_NAME_PLACEHOLDER},
     {"downloadFile", IDS_PASSWORD_MANAGER_UI_DOWNLOAD_FILE},
     {"downloadLinkShow", IDS_DOWNLOAD_LINK_SHOW},
+    {"edit", IDS_EDIT},
     {"editDisclaimerDescription",
      IDS_PASSWORD_MANAGER_UI_EDIT_DISCLAIMER_DESCRIPTION},
     {"editDisclaimerTitle", IDS_PASSWORD_MANAGER_UI_EDIT_DISCLAIMER_TITLE},
+    {"editPasskeyTitle", IDS_PASSWORD_MANAGER_UI_EDIT_PASSKEY},
     {"editPassword", IDS_EDIT},
     {"editPasswordFootnote", IDS_PASSWORD_MANAGER_UI_PASSWORD_EDIT_FOOTNOTE},
     {"editPasswordTitle", IDS_PASSWORD_MANAGER_UI_EDIT_PASSWORD},
@@ -247,6 +260,9 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
     {"noteLabel", IDS_PASSWORD_MANAGER_UI_NOTE_LABEL},
     {"noPasswordsFound", IDS_PASSWORD_MANAGER_UI_NO_PASSWORDS_FOUND},
     {"opensInNewTab", IDS_PASSWORD_MANAGER_UI_OPENS_IN_NEW_TAB},
+    {"passkeyDeleted", IDS_PASSWORD_MANAGER_UI_PASSKEY_DELETED},
+    {"passkeyManagementInfoLabel",
+     IDS_PASSWORD_MANAGER_UI_PASSKEY_MANAGEMENT_INFO_LABEL},
     {"passwordCopiedToClipboard",
      IDS_PASSWORD_MANAGER_UI_PASSWORD_COPIED_TO_CLIPBOARD},
     {"passwordDeleted", IDS_PASSWORD_MANAGER_UI_PASSWORD_DELETED},
@@ -297,6 +313,7 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
     {"usernameCopiedToClipboard",
      IDS_PASSWORD_MANAGER_UI_USERNAME_COPIED_TO_CLIPBOARD},
     {"usernameLabel", IDS_PASSWORD_MANAGER_UI_USERNAME_LABEL},
+    {"usernamePlaceholder", IDS_PASSWORD_MANAGER_UI_USERNAME_PLACEHOLDER},
     {"viewExistingPassword", IDS_PASSWORD_MANAGER_UI_VIEW_EXISTING_PASSWORD},
     {"viewExistingPasswordAriaDescription",
      IDS_PASSWORD_MANAGER_UI_VIEW_EXISTING_PASSWORD_ARIA_DESCRIPTION},
@@ -426,10 +443,7 @@ content::WebUIDataSource* CreateAndAddPasswordsUIHTMLSource(
   source->AddString("importPasswordsHelpURL",
                     chrome::kPasswordManagerImportLearnMoreURL);
 
-  source->AddBoolean(
-      "canAddShortcut",
-      web_app::WebAppProvider::GetForWebApps(profile) != nullptr &&
-          web_app::AreWebAppsUserInstallable(profile));
+  source->AddBoolean("canAddShortcut", web_app::AreWebAppsEnabled(profile));
 
   content::URLDataSource::Add(
       profile, std::make_unique<FaviconSource>(
@@ -481,8 +495,14 @@ void AddPluralStrings(content::WebUI* web_ui) {
 
 }  // namespace
 
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(PasswordManagerUI,
+                                      kSettingsMenuItemElementId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(PasswordManagerUI, kAddShortcutElementId);
+DEFINE_CLASS_CUSTOM_ELEMENT_EVENT_TYPE(PasswordManagerUI,
+                                       kAddShortcutCustomEventId);
+
 PasswordManagerUI::PasswordManagerUI(content::WebUI* web_ui)
-    : WebUIController(web_ui) {
+    : ui::MojoBubbleWebUIController(web_ui, /*enable_chrome_send=*/true) {
   // Set up the chrome://password-manager/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
   passwords_private_delegate_ =
@@ -516,4 +536,25 @@ base::RefCountedMemory* PasswordManagerUI::GetFaviconResourceBytes(
   return static_cast<base::RefCountedMemory*>(
       ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
           IDR_PASSWORD_MANAGER_FAVICON, scale_factor));
+}
+
+WEB_UI_CONTROLLER_TYPE_IMPL(PasswordManagerUI)
+
+void PasswordManagerUI::BindInterface(
+    mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandlerFactory>
+        pending_receiver) {
+  if (help_bubble_handler_factory_receiver_.is_bound()) {
+    help_bubble_handler_factory_receiver_.reset();
+  }
+  help_bubble_handler_factory_receiver_.Bind(std::move(pending_receiver));
+}
+
+void PasswordManagerUI::CreateHelpBubbleHandler(
+    mojo::PendingRemote<help_bubble::mojom::HelpBubbleClient> client,
+    mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandler> handler) {
+  help_bubble_handler_ = std::make_unique<user_education::HelpBubbleHandler>(
+      std::move(handler), std::move(client), this,
+      std::vector<ui::ElementIdentifier>{
+          PasswordManagerUI::kSettingsMenuItemElementId,
+          PasswordManagerUI::kAddShortcutElementId});
 }

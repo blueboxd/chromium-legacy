@@ -576,8 +576,7 @@ TEST_F(ServiceWorkerVersionTest, DevToolsAttachThenDetach) {
           // Add an external request.
           EXPECT_EQ(ServiceWorkerExternalRequestResult::kOk,
                     version_->StartExternalRequest(
-                        base::Uuid::GenerateRandomV4().AsLowercaseString(),
-                        timeout_type));
+                        base::Uuid::GenerateRandomV4(), timeout_type));
           run_loop.Run();
           EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
           EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
@@ -1779,8 +1778,8 @@ TEST_F(ServiceWorkerVersionTest, PendingExternalRequest) {
       ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
   ASSERT_EQ(EmbeddedWorkerStatus::STARTING, version_->running_status());
 
-  std::string uuid1 = base::Uuid::GenerateRandomV4().AsLowercaseString();
-  std::string uuid2 = base::Uuid::GenerateRandomV4().AsLowercaseString();
+  base::Uuid uuid1 = base::Uuid::GenerateRandomV4();
+  base::Uuid uuid2 = base::Uuid::GenerateRandomV4();
 
   // Test adding request with |uuid1| and different TimeoutType-s.
   EXPECT_EQ(Result::kOk,
@@ -1827,8 +1826,7 @@ TEST_F(ServiceWorkerVersionTest, WorkerLifetimeWithExternalRequest) {
           // Add an external request.
           EXPECT_EQ(ServiceWorkerExternalRequestResult::kOk,
                     version_->StartExternalRequest(
-                        base::Uuid::GenerateRandomV4().AsLowercaseString(),
-                        timeout_type));
+                        base::Uuid::GenerateRandomV4(), timeout_type));
           run_loop.Run();
           EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
           EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
@@ -1894,18 +1892,16 @@ TEST_F(ServiceWorkerVersionTest,
 
     // Add an external request, with kDoesNotTimeout timeout.
     EXPECT_EQ(ServiceWorkerExternalRequestResult::kOk,
-              version_->StartExternalRequest(
-                  base::Uuid::GenerateRandomV4().AsLowercaseString(),
-                  ReqTimeoutType::kDoesNotTimeout));
+              version_->StartExternalRequest(base::Uuid::GenerateRandomV4(),
+                                             ReqTimeoutType::kDoesNotTimeout));
     run_loop.Run();
     EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
     EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 
     // Add another external request with kDefault timeout.
     EXPECT_EQ(ServiceWorkerExternalRequestResult::kOk,
-              version_->StartExternalRequest(
-                  base::Uuid::GenerateRandomV4().AsLowercaseString(),
-                  ReqTimeoutType::kDefault));
+              version_->StartExternalRequest(base::Uuid::GenerateRandomV4(),
+                                             ReqTimeoutType::kDefault));
   }
 
   // Now advance time to check worker's running state.
@@ -1940,6 +1936,34 @@ TEST_F(ServiceWorkerVersionTest, SetResources) {
   // The checksum has been calculated after the SetResources.
   EXPECT_EQ("CBE5CFDF7C2118A9C3D78EF1D684F3AFA089201352886449A06A6511CFEF74A7",
             version->sha256_script_checksum());
+}
+
+TEST_F(ServiceWorkerVersionTest, SetRouterEvaluator) {
+  // Create a new version
+  scoped_refptr<ServiceWorkerVersion> version = CreateNewServiceWorkerVersion(
+      helper_->context()->registry(), registration_.get(),
+      GURL("https://www.example.com/test/service_worker.js"),
+      blink::mojom::ScriptType::kClassic);
+
+  // The router_evaluator should be unset on setup.
+  EXPECT_FALSE(version->router_evaluator());
+
+  // Leave the router_evaluator unset for invalid rules.
+  {
+    // No condition & source rule is invalid.
+    blink::ServiceWorkerRouterRules rules;
+    blink::ServiceWorkerRouterRule rule;
+    rules.rules.emplace_back(rule);
+    EXPECT_FALSE(version->SetupRouterEvaluator(rules));
+    EXPECT_FALSE(version->router_evaluator());
+  }
+
+  // Set correct rules will make the router_evaluator() return non-null.
+  {
+    blink::ServiceWorkerRouterRules rules;
+    EXPECT_TRUE(version->SetupRouterEvaluator(rules));
+    EXPECT_TRUE(version->router_evaluator());
+  }
 }
 }  // namespace service_worker_version_unittest
 }  // namespace content

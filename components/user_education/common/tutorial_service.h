@@ -88,10 +88,10 @@ class TutorialService {
   // Struct used to reconstruct a tutorial from the params initially used to
   // create it.
   struct TutorialCreationParams {
-    TutorialCreationParams(TutorialDescription* description,
+    TutorialCreationParams(const TutorialDescription* description,
                            ui::ElementContext context);
 
-    raw_ptr<TutorialDescription, DanglingUntriaged> description_;
+    raw_ptr<const TutorialDescription, DanglingUntriaged> description_;
     ui::ElementContext context_;
   };
 
@@ -106,9 +106,6 @@ class TutorialService {
 
   // Reset all of the running tutorial member variables.
   void ResetRunningTutorial();
-
-  // Tracks when the user toggles focus to a help bubble via the keyboard.
-  void OnFocusToggledForAccessibility(HelpBubble* bubble);
 
   // Called when there has been no bubble visible for enough time that the
   // current tutorial should probably be aborted.
@@ -151,10 +148,6 @@ class TutorialService {
   // help bubbles.
   const raw_ptr<TutorialRegistry> tutorial_registry_;
   const raw_ptr<HelpBubbleFactoryRegistry> help_bubble_factory_registry_;
-
-  // Number of times focus was toggled during the current tutorial.
-  int toggle_focus_count_ = 0;
-  base::CallbackListSubscription toggle_focus_subscription_;
 
   // status bit to denote that the tutorial service is in the process of
   // restarting a tutorial. This prevents calling the abort callbacks.

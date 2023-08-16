@@ -19,6 +19,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/video_frame.h"
+#include "skia/ext/skcolorspace_primaries.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -92,16 +93,16 @@ class VideoResourceUpdaterTest : public testing::Test {
   std::unique_ptr<VideoResourceUpdater> CreateUpdaterForHardware(
       bool use_stream_video_draw_quad = false) {
     return std::make_unique<VideoResourceUpdater>(
-        context_provider_.get(), /*raster_context_provider=*/nullptr, nullptr,
-        resource_provider_.get(), use_stream_video_draw_quad,
+        context_provider_.get(), nullptr, resource_provider_.get(),
+        use_stream_video_draw_quad,
         /*use_gpu_memory_buffer_resources=*/false,
         /*use_r16_texture=*/use_r16_texture_, /*max_resource_size=*/10000);
   }
 
   std::unique_ptr<VideoResourceUpdater> CreateUpdaterForSoftware() {
     return std::make_unique<VideoResourceUpdater>(
-        /*context_provider=*/nullptr, /*raster_context_provider=*/nullptr,
-        &shared_bitmap_reporter_, resource_provider_.get(),
+        /*context_provider=*/nullptr, &shared_bitmap_reporter_,
+        resource_provider_.get(),
         /*use_stream_video_draw_quad=*/false,
         /*use_gpu_memory_buffer_resources=*/false,
         /*use_r16_texture=*/false,
@@ -331,7 +332,7 @@ class VideoResourceUpdaterTest : public testing::Test {
   // VideoResourceUpdater registers as a MemoryDumpProvider, which requires
   // a TaskRunner.
   base::test::SingleThreadTaskEnvironment task_environment_;
-  raw_ptr<UploadCounterGLES2Interface> gl_;
+  raw_ptr<UploadCounterGLES2Interface, DanglingUntriaged> gl_;
   scoped_refptr<viz::TestContextProvider> context_provider_;
   FakeSharedBitmapReporter shared_bitmap_reporter_;
   std::unique_ptr<viz::ClientResourceProvider> resource_provider_;
@@ -972,7 +973,7 @@ TEST_F(VideoResourceUpdaterTest, GenerateReleaseSyncToken) {
 
   EXPECT_TRUE(release_sync_token_.HasData());
   EXPECT_NE(release_sync_token_, sync_token1);
-  EXPECT_NE(release_sync_token_, sync_token2);
+  EXPECT_EQ(release_sync_token_, sync_token2);
 }
 
 // Pass mailbox sync token as is if no GL operations are performed before frame
@@ -1022,8 +1023,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_SingleNV12) {
   EXPECT_EQ(1u, resources.resources.size());
   EXPECT_EQ((GLenum)GL_TEXTURE_EXTERNAL_OES,
             resources.resources[0].mailbox_holder.texture_target);
-  EXPECT_EQ(viz::YUV_420_BIPLANAR,
-            resources.resources[0].format.resource_format());
+  EXPECT_EQ(viz::LegacyMultiPlaneFormat::kNV12, resources.resources[0].format);
   EXPECT_EQ(0u, GetSharedImageCount());
 }
 
@@ -1098,7 +1098,10 @@ TEST_F(VideoResourceUpdaterTest,
 TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_SingleP016HDR) {
   constexpr auto kHDR10ColorSpace = gfx::ColorSpace::CreateHDR10();
   gfx::HDRMetadata hdr_metadata{};
-  hdr_metadata.smpte_st_2086.luminance_max = 1000;
+  hdr_metadata.smpte_st_2086 =
+      gfx::HdrMetadataSmpteSt2086(SkNamedPrimariesExt::kP3,
+                                  /*luminance_max=*/1000,
+                                  /*luminance_min=*/0);
   std::unique_ptr<VideoResourceUpdater> updater = CreateUpdaterForHardware();
   EXPECT_EQ(0u, GetSharedImageCount());
   scoped_refptr<VideoFrame> video_frame = CreateTestHardwareVideoFrame(
@@ -1112,8 +1115,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_SingleP016HDR) {
   EXPECT_EQ(1u, resources.resources.size());
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_EXTERNAL_OES),
             resources.resources[0].mailbox_holder.texture_target);
-  EXPECT_EQ(viz::ResourceFormat::P010,
-            resources.resources[0].format.resource_format());
+  EXPECT_EQ(viz::LegacyMultiPlaneFormat::kP010, resources.resources[0].format);
   EXPECT_EQ(kHDR10ColorSpace, resources.resources[0].color_space);
   EXPECT_EQ(hdr_metadata, resources.resources[0].hdr_metadata);
   EXPECT_EQ(0u, GetSharedImageCount());

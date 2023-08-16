@@ -25,8 +25,6 @@ after discussions on the right group.
       <annotation id="customtabs_parallel_request"/>
       <annotation id="download_bitmap"/>
       <annotation id="download_manager_service_retry"/>
-      <annotation id="explore_sites"/>
-      <annotation id="kids_chrome_management_client_classify_url"/>
       <annotation id="minidump_uploader_android"/>
       <annotation id="oma_download_handler_android"/>
       <annotation id="partner_bookmarks_reader_get_favicon"/>
@@ -111,10 +109,6 @@ after discussions on the right group.
   </group>
   <group name="Unsorted" hidden="true">
     <sender name="Unsorted Sender">
-      <annotation id="auction_downloader"/>
-      <annotation id="auction_report_sender"/>
-      <annotation id="interest_group_update_fetcher"/>
-      <annotation id="interest_group_well_known_fetcher"/>
       <annotation id="shared_storage_worklet_module_script_downloader"/>
       <annotation id="proxy_config_windows_resolver"/>
       <annotation id="remoting_directory_delete_host"/>
@@ -290,6 +284,10 @@ after discussions on the right group.
       <annotation id="unified_state_determination_kill_switch"/>
       <annotation id="crash_file_uploader"/>
       <annotation id="glanceables_classroom_integration"/>
+      <annotation id="promise_app_service_download_icon"/>
+      <annotation id="backdrop_image_link_verification"/>
+      <annotation id="ip_protection_service_get_token"/>
+      <annotation id="supervised_user_request_blocked_site_permission"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">
@@ -333,7 +331,9 @@ after discussions on the right group.
   <group name="Child-protection and Safe Browsing Features" hidden="true">
     <sender name="Safe Browsing">
       <annotation id="client_download_request"/>
-      <annotation id="kids_chrome_management_list_family_members"/>
+      <annotation id="kids_chrome_management_client_classify_url"/>
+      <annotation id="supervised_user_classify_url"/>
+      <annotation id="supervised_user_list_family_members"/>
       <annotation id="password_protection_request"/>
       <annotation id="permission_predictions"/>
       <annotation id="safe_browsing_certificate_error_reporting"/>
@@ -363,6 +363,13 @@ after discussions on the right group.
     <sender name="Aggregation Service">
       <annotation id="aggregation_service_helper_keys"/>
       <annotation id="aggregation_service_report"/>
+    </sender>
+    <sender name="Protected Audiences">
+      <annotation id="auction_downloader"/>
+      <annotation id="auction_report_sender"/>
+      <annotation id="bidding_and_auction_server_key_fetch"/>
+      <annotation id="interest_group_update_fetcher"/>
+      <annotation id="interest_group_well_known_fetcher"/>
     </sender>
   </group>
   <group name="Identity and Security" hidden="true">

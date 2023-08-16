@@ -4,24 +4,44 @@
 
 package org.chromium.chrome.browser.pwd_migration;
 
+import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.ACCOUNT_DISPLAY_NAME;
+import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.CURRENT_SCREEN;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.VISIBLE;
 
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.MigrationOption;
+import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.ScreenType;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.signin.Tribool;
+import org.chromium.components.signin.base.AccountInfo;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Contains the logic for the local passwords migration warning. It sets the state of the model and
  * reacts to events.
  */
-class PasswordMigrationWarningMediator {
+class PasswordMigrationWarningMediator implements PasswordMigrationWarningOnClickHandler {
     private PropertyModel mModel;
+    private Profile mProfile;
 
     void initialize(PropertyModel model) {
         mModel = model;
     }
 
-    void showWarning() {
+    void showWarning(int screenType, Profile profile) {
+        mProfile = profile;
+
         mModel.set(VISIBLE, true);
+        mModel.set(CURRENT_SCREEN, screenType);
+        mModel.set(ACCOUNT_DISPLAY_NAME, getAccountDisplayName(profile));
     }
 
     void onDismissed(@StateChangeReason int reason) {
@@ -29,7 +49,43 @@ class PasswordMigrationWarningMediator {
         mModel.set(VISIBLE, false);
     }
 
-    PropertyModel getModel() {
-        return mModel;
+    @Override
+    public void onAcknowledge(BottomSheetController bottomSheetController) {
+        mModel.set(VISIBLE, false);
+
+        PrefService prefService = UserPrefs.get(mProfile);
+        prefService.setBoolean(Pref.USER_ACKNOWLEDGED_LOCAL_PASSWORDS_MIGRATION_WARNING, true);
+    }
+
+    @Override
+    public void onMoreOptions() {
+        assert mModel.get(VISIBLE);
+        mModel.set(CURRENT_SCREEN, ScreenType.OPTIONS_SCREEN);
+    }
+
+    @Override
+    public void onNext(@MigrationOption int selectedOption) {
+        mModel.set(VISIBLE, false);
+        // TODO(crbug.com/1445065): Launch the password Export flow.
+    }
+
+    @Override
+    public void onCancel(BottomSheetController bottomSheetController) {
+        mModel.set(VISIBLE, false);
+    }
+
+    private String getAccountDisplayName(Profile profile) {
+        IdentityManager identityManager =
+                IdentityServicesProvider.get().getIdentityManager(profile);
+        CoreAccountInfo coreAccountInfo =
+                identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN);
+        if (coreAccountInfo == null) {
+            return null;
+        }
+        AccountInfo account =
+                identityManager.findExtendedAccountInfoByEmailAddress(coreAccountInfo.getEmail());
+        boolean canHaveEmailAddressDisplayed =
+                account.getAccountCapabilities().canHaveEmailAddressDisplayed() != Tribool.FALSE;
+        return canHaveEmailAddressDisplayed ? account.getEmail() : account.getFullName();
     }
 }

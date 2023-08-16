@@ -76,7 +76,8 @@ EncoderStatus SetUpAomConfig(const VideoEncoder::Options& opts,
 
   if (opts.bitrate.has_value()) {
     auto& bitrate = opts.bitrate.value();
-    config.rc_target_bitrate = bitrate.target_bps() / 1000;
+    config.rc_target_bitrate =
+        base::saturated_cast<int32_t>(bitrate.target_bps()) / 1000;
     switch (bitrate.mode()) {
       case Bitrate::Mode::kVariable:
         config.rc_end_usage = AOM_VBR;
@@ -351,9 +352,9 @@ void Av1VideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
 
   aom_img_fmt fmt = frame->format() == PIXEL_FORMAT_NV12 ? AOM_IMG_FMT_NV12
                                                          : AOM_IMG_FMT_I420;
-  aom_image_t* image = aom_img_wrap(
-      &image_, fmt, options_.frame_size.width(), options_.frame_size.height(),
-      1, const_cast<uint8_t*>(frame->visible_data(VideoFrame::kYPlane)));
+  aom_image_t* image = aom_img_wrap(&image_, fmt, options_.frame_size.width(),
+                                    options_.frame_size.height(), 1,
+                                    frame->writable_data(VideoFrame::kYPlane));
   DCHECK_EQ(image, &image_);
 
   switch (frame->format()) {

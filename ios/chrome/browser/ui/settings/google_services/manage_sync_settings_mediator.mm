@@ -11,11 +11,17 @@
 #import "base/notreached.h"
 #import "components/autofill/core/common/autofill_prefs.h"
 #import "components/prefs/pref_service.h"
+#import "components/signin/public/base/consent_level.h"
+#import "components/signin/public/base/signin_metrics.h"
+#import "components/signin/public/identity_manager/account_info.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/strings/grit/components_strings.h"
+#import "components/sync/base/features.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync/service/sync_service.h"
+#import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
@@ -23,17 +29,22 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
+#import "ios/chrome/browser/signin/constants.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
+#import "ios/chrome/browser/ui/authentication/cells/table_view_central_account_item.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_consumer.h"
 #import "ios/chrome/browser/ui/settings/google_services/sync_error_settings_command_handler.h"
-#import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
@@ -73,22 +84,10 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 
 }  // namespace
 
-@interface ManageSyncSettingsMediator () <
-    BooleanObserver,
-    IdentityManagerObserverBridgeDelegate> {
-  // Sync observer.
-  std::unique_ptr<SyncObserverBridge> _syncObserver;
-  // Whether Sync State changes should be currently ignored.
-  BOOL _ignoreSyncStateChanges;
-}
+@interface ManageSyncSettingsMediator () <BooleanObserver,
+                                          IdentityManagerObserverBridgeDelegate,
+                                          ChromeAccountManagerServiceObserver>
 
-// Preference value for kAutofillWalletImportEnabled.
-@property(nonatomic, strong, readonly)
-    PrefBackedBoolean* autocompleteWalletPreference;
-// Sync service.
-@property(nonatomic, assign) syncer::SyncService* syncService;
-// Pref service.
-@property(nonatomic, assign) PrefService* userPrefService;
 // Model item for sync everything.
 @property(nonatomic, strong) TableViewItem* syncEverythingItem;
 // Model item for each data types.
@@ -110,49 +109,150 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 
 @end
 
-@implementation ManageSyncSettingsMediator
+@implementation ManageSyncSettingsMediator {
+  // Sync observer.
+  std::unique_ptr<SyncObserverBridge> _syncObserver;
+  // Whether Sync State changes should be currently ignored.
+  BOOL _ignoreSyncStateChanges;
+  // Preference value for kAutofillWalletImportEnabled.
+  PrefBackedBoolean* _autocompleteWalletPreference;
+  // Sync service.
+  syncer::SyncService* _syncService;
+  // Observer for `IdentityManager`.
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
+      _identityManagerObserver;
+  // Authentication service.
+  AuthenticationService* _authenticationService;
+  // Account manager service to retrieve Chrome identities.
+  ChromeAccountManagerService* _chromeAccountManagerService;
+  // Chrome account manager service observer bridge.
+  std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
+      _accountAccountManagerServiceObserver;
+  // Signed-in identity. Note: may be nil while signing out.
+  id<SystemIdentity> _signedInIdentity;
+}
 
-- (instancetype)initWithSyncService:(syncer::SyncService*)syncService
-                    userPrefService:(PrefService*)userPrefService {
+- (instancetype)
+      initWithSyncService:(syncer::SyncService*)syncService
+          userPrefService:(PrefService*)userPrefService
+          identityManager:(signin::IdentityManager*)identityManager
+    authenticationService:(AuthenticationService*)authenticationService
+    accountManagerService:(ChromeAccountManagerService*)accountManagerService
+      initialAccountState:(SyncSettingsAccountState)initialAccountState {
   self = [super init];
   if (self) {
     DCHECK(syncService);
-    self.syncService = syncService;
-    self.userPrefService = userPrefService;
-    _syncObserver.reset(new SyncObserverBridge(self, syncService));
+    _syncService = syncService;
+    _syncObserver = std::make_unique<SyncObserverBridge>(self, syncService);
     _autocompleteWalletPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:autofill::prefs::kAutofillWalletImportEnabled];
     _autocompleteWalletPreference.observer = self;
+    _identityManagerObserver =
+        std::make_unique<signin::IdentityManagerObserverBridge>(identityManager,
+                                                                self);
+    _authenticationService = authenticationService;
+    _chromeAccountManagerService = accountManagerService;
+    _accountAccountManagerServiceObserver =
+        std::make_unique<ChromeAccountManagerServiceObserverBridge>(
+            self, _chromeAccountManagerService);
+    _signedInIdentity = _authenticationService->GetPrimaryIdentity(
+        signin::ConsentLevel::kSignin);
+    _initialAccountState = initialAccountState;
   }
   return self;
 }
 
+- (void)disconnect {
+  _syncObserver.reset();
+  _syncService = nullptr;
+  _autocompleteWalletPreference.observer = nil;
+  [_autocompleteWalletPreference stop];
+  _autocompleteWalletPreference = nil;
+  _identityManagerObserver.reset();
+  _authenticationService = nullptr;
+  _chromeAccountManagerService = nullptr;
+  _accountAccountManagerServiceObserver.reset();
+  _signedInIdentity = nil;
+}
+
 #pragma mark - Loads sync data type section
+
+// Loads the centered identity account section.
+- (void)loadIdentityAccountSection {
+  TableViewModel* model = self.consumer.tableViewModel;
+  switch (self.syncAccountState) {
+    case SyncSettingsAccountState::kSignedOut:
+    case SyncSettingsAccountState::kSyncing:
+    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
+      return;
+    case SyncSettingsAccountState::kSignedIn:
+      [model addSectionWithIdentifier:AccountSectionIdentifier];
+      CHECK(_signedInIdentity);
+      TableViewCentralAccountItem* identityAccountItem =
+          [[TableViewCentralAccountItem alloc]
+              initWithType:IdentityAccountItemType];
+      identityAccountItem.avatarImage =
+          _chromeAccountManagerService->GetIdentityAvatarWithIdentity(
+              _signedInIdentity, IdentityAvatarSize::ExtraLarge);
+      identityAccountItem.name = _signedInIdentity.userFullName;
+      identityAccountItem.email = _signedInIdentity.userEmail;
+      [model addItem:identityAccountItem
+          toSectionWithIdentifier:AccountSectionIdentifier];
+      break;
+  }
+}
 
 // Loads the sync data type section.
 - (void)loadSyncDataTypeSection {
   TableViewModel* model = self.consumer.tableViewModel;
-  [model addSectionWithIdentifier:SyncDataTypeSectionIdentifier];
-  if (self.allItemsAreSynceable) {
-    SyncSwitchItem* button =
-        [[SyncSwitchItem alloc] initWithType:SyncEverythingItemType];
-    button.text = GetNSString(IDS_IOS_SYNC_EVERYTHING_TITLE);
-    button.accessibilityIdentifier = kSyncEverythingItemAccessibilityIdentifier;
-    self.syncEverythingItem = button;
-    [self updateSyncEverythingItemNotifyConsumer:NO];
-  } else {
-    TableViewInfoButtonItem* button =
-        [[TableViewInfoButtonItem alloc] initWithType:SyncEverythingItemType];
-    button.text = GetNSString(IDS_IOS_SYNC_EVERYTHING_TITLE);
-    button.statusText = GetNSString(IDS_IOS_SETTING_OFF);
-    button.accessibilityIdentifier = kSyncEverythingItemAccessibilityIdentifier;
-    self.syncEverythingItem = button;
+  switch (self.syncAccountState) {
+    case SyncSettingsAccountState::kSignedOut:
+      return;
+    case SyncSettingsAccountState::kSyncing:
+    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
+      [model addSectionWithIdentifier:SyncDataTypeSectionIdentifier];
+      if (self.allItemsAreSynceable) {
+        SyncSwitchItem* button =
+            [[SyncSwitchItem alloc] initWithType:SyncEverythingItemType];
+        button.text = GetNSString(IDS_IOS_SYNC_EVERYTHING_TITLE);
+        button.accessibilityIdentifier =
+            kSyncEverythingItemAccessibilityIdentifier;
+        self.syncEverythingItem = button;
+        [self updateSyncEverythingItemNotifyConsumer:NO];
+      } else {
+        TableViewInfoButtonItem* button = [[TableViewInfoButtonItem alloc]
+            initWithType:SyncEverythingItemType];
+        button.text = GetNSString(IDS_IOS_SYNC_EVERYTHING_TITLE);
+        button.statusText = GetNSString(IDS_IOS_SETTING_OFF);
+        button.accessibilityIdentifier =
+            kSyncEverythingItemAccessibilityIdentifier;
+        self.syncEverythingItem = button;
+      }
+      self.syncEverythingItem.accessibilityIdentifier =
+          kSyncEverythingItemAccessibilityIdentifier;
+      [model addItem:self.syncEverythingItem
+          toSectionWithIdentifier:SyncDataTypeSectionIdentifier];
+      break;
+    case SyncSettingsAccountState::kSignedIn:
+      [model addSectionWithIdentifier:SyncDataTypeSectionIdentifier];
+      TableViewTextHeaderFooterItem* headerItem =
+          [[TableViewTextHeaderFooterItem alloc]
+              initWithType:TypesListHeaderOrFooterType];
+      headerItem.text = l10n_util::GetNSString(
+          IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_HEADER);
+      [model setHeader:headerItem
+          forSectionWithIdentifier:SyncDataTypeSectionIdentifier];
+
+      TableViewTextHeaderFooterItem* footerItem =
+          [[TableViewTextHeaderFooterItem alloc]
+              initWithType:TypesListHeaderOrFooterType];
+      footerItem.subtitle = l10n_util::GetNSString(
+          IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_DESCRIPTION);
+      [model setFooter:footerItem
+          forSectionWithIdentifier:SyncDataTypeSectionIdentifier];
+      break;
   }
-  self.syncEverythingItem.accessibilityIdentifier =
-      kSyncEverythingItemAccessibilityIdentifier;
-  [model addItem:self.syncEverythingItem
-      toSectionWithIdentifier:SyncDataTypeSectionIdentifier];
   NSMutableArray* syncSwitchItems = [[NSMutableArray alloc] init];
 
   for (syncer::UserSelectableType dataType : kSyncSwitchItems) {
@@ -186,30 +286,63 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 // Updates the sync everything item, and notify the consumer if `notifyConsumer`
 // is set to YES.
 - (void)updateSyncEverythingItemNotifyConsumer:(BOOL)notifyConsumer {
-  if ([self.syncEverythingItem isKindOfClass:[TableViewInfoButtonItem class]]) {
-    // It's possible that the sync everything pref remains true when a policy
-    // change doesn't allow to sync everthing anymore. Fix that here.
-    BOOL isSyncingEverything = self.syncSetupService->IsSyncEverythingEnabled();
-    BOOL canSyncEverything = self.allItemsAreSynceable;
-    if (isSyncingEverything && !canSyncEverything) {
-      self.syncSetupService->SetSyncEverythingEnabled(NO);
-    }
+  switch (self.syncAccountState) {
+    case SyncSettingsAccountState::kSignedOut:
+    case SyncSettingsAccountState::kSignedIn:
+      return;
+    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
+    case SyncSettingsAccountState::kSyncing:
+      if ([self.syncEverythingItem
+              isKindOfClass:[TableViewInfoButtonItem class]]) {
+        // It's possible that the sync everything pref remains true when a
+        // policy change doesn't allow to sync everthing anymore. Fix that here.
+        BOOL isSyncingEverything =
+            self.syncSetupService->IsSyncEverythingEnabled();
+        BOOL canSyncEverything = self.allItemsAreSynceable;
+        if (isSyncingEverything && !canSyncEverything) {
+          self.syncSetupService->SetSyncEverythingEnabled(NO);
+        }
+        return;
+      }
+
+      BOOL shouldSyncEverythingBeEditable = !self.disabledBecauseOfSyncError;
+      BOOL shouldSyncEverythingItemBeOn =
+          self.syncSetupService->IsSyncEverythingEnabled();
+      SyncSwitchItem* syncEverythingItem =
+          base::mac::ObjCCastStrict<SyncSwitchItem>(self.syncEverythingItem);
+      BOOL needsUpdate =
+          (syncEverythingItem.on != shouldSyncEverythingItemBeOn) ||
+          (syncEverythingItem.enabled != shouldSyncEverythingBeEditable);
+      syncEverythingItem.on = shouldSyncEverythingItemBeOn;
+      syncEverythingItem.enabled = shouldSyncEverythingBeEditable;
+      if (needsUpdate && notifyConsumer) {
+        [self.consumer reloadItem:self.syncEverythingItem];
+      }
+      break;
+  }
+}
+
+- (void)updateIdentityAccountSection {
+  if (![self.consumer.tableViewModel
+          hasItemForItemType:IdentityAccountItemType
+           sectionIdentifier:AccountSectionIdentifier]) {
     return;
   }
 
-  BOOL shouldSyncEverythingBeEditable = !self.disabledBecauseOfSyncError;
-  BOOL shouldSyncEverythingItemBeOn =
-      self.syncSetupService->IsSyncEverythingEnabled();
-  SyncSwitchItem* syncEverythingItem =
-      base::mac::ObjCCastStrict<SyncSwitchItem>(self.syncEverythingItem);
-  BOOL needsUpdate =
-      (syncEverythingItem.on != shouldSyncEverythingItemBeOn) ||
-      (syncEverythingItem.enabled != shouldSyncEverythingBeEditable);
-  syncEverythingItem.on = shouldSyncEverythingItemBeOn;
-  syncEverythingItem.enabled = shouldSyncEverythingBeEditable;
-  if (needsUpdate && notifyConsumer) {
-    [self.consumer reloadItem:self.syncEverythingItem];
-  }
+  NSIndexPath* accountCellIndexPath = [self.consumer.tableViewModel
+      indexPathForItemType:IdentityAccountItemType
+         sectionIdentifier:AccountSectionIdentifier];
+  TableViewCentralAccountItem* identityAccountItem =
+      base::mac::ObjCCast<TableViewCentralAccountItem>(
+          [self.consumer.tableViewModel itemAtIndexPath:accountCellIndexPath]);
+  CHECK(identityAccountItem);
+  CHECK(_signedInIdentity);
+  identityAccountItem.avatarImage =
+      _chromeAccountManagerService->GetIdentityAvatarWithIdentity(
+          _signedInIdentity, IdentityAvatarSize::ExtraLarge);
+  identityAccountItem.name = _signedInIdentity.userFullName;
+  identityAccountItem.email = _signedInIdentity.userEmail;
+  [self.consumer reloadItem:identityAccountItem];
 }
 
 // Updates all the items related to sync (sync data items and autocomplete
@@ -256,7 +389,7 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
       syncer::UserSelectableType::kAutofill);
   BOOL autocompleteWalletEnabled =
       isAutofillOn && self.shouldSyncDataItemEnabled;
-  BOOL autocompleteWalletOn = self.autocompleteWalletPreference.value;
+  BOOL autocompleteWalletOn = _autocompleteWalletPreference.value;
   BOOL needsUpdate = (syncSwitchItem.enabled != autocompleteWalletEnabled) ||
                      (syncSwitchItem.on != autocompleteWalletOn);
   syncSwitchItem.enabled = autocompleteWalletEnabled;
@@ -270,6 +403,9 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 
 // Loads the advanced settings section.
 - (void)loadAdvancedSettingsSection {
+  if (self.syncAccountState == SyncSettingsAccountState::kSignedOut) {
+    return;
+  }
   TableViewModel* model = self.consumer.tableViewModel;
   [model addSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
   // EncryptionItemType.
@@ -284,7 +420,7 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
   // be shown since the reauth dialog for the trusted vault is presented from
   // the bottom, and is not part of navigation controller.
   const syncer::SyncService::UserActionableError error =
-      self.syncService->GetUserActionableError();
+      _syncService->GetUserActionableError();
   BOOL hasDisclosureIndicator =
       error != syncer::SyncService::UserActionableError::
                    kNeedsTrustedVaultKeyForPasswords &&
@@ -335,9 +471,17 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
   dataFromChromeSyncItem.accessibilityIdentifier =
       kDataFromChromeSyncAccessibilityIdentifier;
   dataFromChromeSyncItem.accessibilityTraits |= UIAccessibilityTraitButton;
-  if (self.syncConsentGiven) {
-    [model addItem:dataFromChromeSyncItem
-        toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
+
+  switch (self.syncAccountState) {
+    case SyncSettingsAccountState::kSignedIn:
+    case SyncSettingsAccountState::kSyncing:
+      [model addItem:dataFromChromeSyncItem
+          toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
+      break;
+    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
+      break;
+    case SyncSettingsAccountState::kSignedOut:
+      NOTREACHED();
   }
 }
 
@@ -360,10 +504,18 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 
 #pragma mark - Loads sign out section
 
-- (void)loadSignOutSection {
-  if (!self.syncConsentGiven) {
-    self.signOutAndTurnOffSyncItem = nil;
-    return;
+- (void)loadSignOutAndTurnOffSyncSection {
+  switch (self.syncAccountState) {
+    case SyncSettingsAccountState::kSyncing:
+    case SyncSettingsAccountState::kSignedOut:
+      break;
+    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
+      CHECK(!self.signOutAndTurnOffSyncItem);
+      return;
+    case SyncSettingsAccountState::kSignedIn:
+      // For kSignedIn, loadSignOutAndManageAccountsSection will load the
+      // corresponding section.
+      return;
   }
   // Creates the sign-out item and its section.
   TableViewModel* model = self.consumer.tableViewModel;
@@ -373,7 +525,7 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
   [model insertSectionWithIdentifier:SignOutSectionIdentifier
                              atIndex:syncDataTypeSectionIndex + 1];
   TableViewTextItem* item =
-      [[TableViewTextItem alloc] initWithType:SignOutItemType];
+      [[TableViewTextItem alloc] initWithType:SignOutAndTurnOffSyncItemType];
   item.text = GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SIGN_OUT_TURN_OFF_SYNC);
   item.textColor = [UIColor colorNamed:kRedColor];
   self.signOutAndTurnOffSyncItem = item;
@@ -399,19 +551,64 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
   TableViewModel* model = self.consumer.tableViewModel;
   BOOL hasSignOutSection =
       [model hasSectionForSectionIdentifier:SignOutSectionIdentifier];
-  if (!hasSignOutSection && self.syncConsentGiven) {
-    [self loadSignOutSection];
-    DCHECK(self.signOutAndTurnOffSyncItem);
-    NSUInteger sectionIndex =
-        [model sectionForSectionIdentifier:SignOutSectionIdentifier];
-    [self.consumer insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]];
-  } else if (hasSignOutSection && !self.syncConsentGiven) {
-    NSUInteger sectionIndex =
-        [model sectionForSectionIdentifier:SignOutSectionIdentifier];
-    [model removeSectionWithIdentifier:SignOutSectionIdentifier];
-    self.signOutAndTurnOffSyncItem = nil;
-    [self.consumer deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex]];
+
+  switch (self.syncAccountState) {
+    case SyncSettingsAccountState::kSignedOut:
+      break;
+    case SyncSettingsAccountState::kSignedIn:
+      // There should be a sign-out section. Load it if it's not there yet.
+      if (!hasSignOutSection) {
+        [self loadSignOutAndManageAccountsSection];
+        NSUInteger sectionIndex =
+            [model sectionForSectionIdentifier:SignOutSectionIdentifier];
+        [self.consumer
+            insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]];
+      }
+      break;
+    case SyncSettingsAccountState::kSyncing:
+      // There should be a sign-out section. Load it if it's not there yet.
+      if (!hasSignOutSection) {
+        [self loadSignOutAndTurnOffSyncSection];
+        DCHECK(self.signOutAndTurnOffSyncItem);
+        NSUInteger sectionIndex =
+            [model sectionForSectionIdentifier:SignOutSectionIdentifier];
+        [self.consumer
+            insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]];
+      }
+      break;
+    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
+      // There shouldn't be a sign-out section. Remove it if it's there.
+      if (hasSignOutSection) {
+        NSUInteger sectionIndex =
+            [model sectionForSectionIdentifier:SignOutSectionIdentifier];
+        [model removeSectionWithIdentifier:SignOutSectionIdentifier];
+        self.signOutAndTurnOffSyncItem = nil;
+        [self.consumer
+            deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex]];
+      }
+      break;
   }
+}
+
+- (void)loadSignOutAndManageAccountsSection {
+  if (self.syncAccountState != SyncSettingsAccountState::kSignedIn) {
+    return;
+  }
+
+  // Creates the manage accounts and sign-out section.
+  TableViewModel* model = self.consumer.tableViewModel;
+  NSInteger advancedSettingsSectionIndex =
+      [model sectionForSectionIdentifier:AdvancedSettingsSectionIdentifier];
+  DCHECK_NE(NSNotFound, advancedSettingsSectionIndex);
+  [model insertSectionWithIdentifier:SignOutSectionIdentifier
+                             atIndex:advancedSettingsSectionIndex + 1];
+
+  // Creates items in the manage accounts and sign-out section.
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:SignOutItemType];
+  item.text = GetNSString(IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_ITEM);
+  item.textColor = [UIColor colorNamed:kBlueColor];
+  [model addItem:item toSectionWithIdentifier:SignOutSectionIdentifier];
 }
 
 #pragma mark - Private
@@ -489,7 +686,7 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 #pragma mark - Properties
 
 - (BOOL)disabledBecauseOfSyncError {
-  switch (self.syncService->GetUserActionableError()) {
+  switch (_syncService->GetUserActionableError()) {
     case syncer::SyncService::UserActionableError::kGenericUnrecoverableError:
     case syncer::SyncService::UserActionableError::kSignInNeedsUpdate:
       return YES;
@@ -509,25 +706,50 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 }
 
 - (BOOL)shouldSyncDataItemEnabled {
-  return (!self.syncSetupService->IsSyncEverythingEnabled() ||
-          !self.allItemsAreSynceable) &&
-         !self.disabledBecauseOfSyncError;
+  switch (self.syncAccountState) {
+    case SyncSettingsAccountState::kSignedOut:
+      return NO;
+    case SyncSettingsAccountState::kSignedIn:
+      return !self.disabledBecauseOfSyncError;
+    case SyncSettingsAccountState::kSyncing:
+    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
+      return (!self.syncSetupService->IsSyncEverythingEnabled() ||
+              !self.allItemsAreSynceable) &&
+             !self.disabledBecauseOfSyncError;
+  }
 }
 
 // Only requires Sync-the-feature to not be disabled because of a sync error and
 // to not need a trusted vault key.
 - (BOOL)shouldEncryptionItemBeEnabled {
   return !self.disabledBecauseOfSyncError &&
-         self.syncService->GetUserActionableError() !=
+         _syncService->GetUserActionableError() !=
              syncer::SyncService::UserActionableError::
                  kNeedsTrustedVaultKeyForPasswords &&
-         self.syncService->GetUserActionableError() !=
+         _syncService->GetUserActionableError() !=
              syncer::SyncService::UserActionableError::
                  kNeedsTrustedVaultKeyForEverything;
 }
 
-- (BOOL)syncConsentGiven {
-  return self.syncSetupService->IsInitialSyncFeatureSetupComplete();
+- (NSString*)overrideViewControllerTitle {
+  switch (self.syncAccountState) {
+    case SyncSettingsAccountState::kSignedIn:
+      return l10n_util::GetNSString(IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TITLE);
+    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
+    case SyncSettingsAccountState::kSyncing:
+    case SyncSettingsAccountState::kSignedOut:
+      return nil;
+  }
+}
+
+- (SyncSettingsAccountState)syncAccountState {
+  // As the manage sync settings mediator is running, the sync account state
+  // does not change except only when the user signs out of their account.
+
+  if (_syncService->GetAccountInfo().IsEmpty()) {
+    return SyncSettingsAccountState::kSignedOut;
+  }
+  return _initialAccountState;
 }
 
 #pragma mark - ManageSyncSettingsTableViewControllerModelDelegate
@@ -535,10 +757,12 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 - (void)manageSyncSettingsTableViewControllerLoadModel:
     (id<ManageSyncSettingsConsumer>)controller {
   DCHECK_EQ(self.consumer, controller);
+  [self loadIdentityAccountSection];
   [self loadSyncErrorsSection];
   [self loadSyncDataTypeSection];
-  [self loadSignOutSection];
+  [self loadSignOutAndTurnOffSyncSection];
   [self loadAdvancedSettingsSection];
+  [self loadSignOutAndManageAccountsSection];
 }
 
 #pragma mark - BooleanObserver
@@ -565,13 +789,27 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 
 - (void)onPrimaryAccountChanged:
     (const signin::PrimaryAccountChangeEvent&)event {
-  switch (event.GetEventTypeFor(signin::ConsentLevel::kSync)) {
+  switch (event.GetEventTypeFor(signin::ConsentLevel::kSignin)) {
     case signin::PrimaryAccountChangeEvent::Type::kSet:
-    case signin::PrimaryAccountChangeEvent::Type::kCleared:
-      [self updateSyncErrorsSection:YES];
+      _signedInIdentity = _authenticationService->GetPrimaryIdentity(
+          signin::ConsentLevel::kSignin);
+      [self updateIdentityAccountSection];
       break;
+    case signin::PrimaryAccountChangeEvent::Type::kCleared:
+      // Temporary state, we can ignore this event, until the UI is signed out.
     case signin::PrimaryAccountChangeEvent::Type::kNone:
       break;
+  }
+}
+
+#pragma mark - ChromeAccountManagerServiceObserver
+
+- (void)identityUpdated:(id<SystemIdentity>)identity {
+  if ([_signedInIdentity isEqual:identity]) {
+    [self updateIdentityAccountSection];
+    [self updateSyncItemsNotifyConsumer:YES];
+    [self updateSyncErrorsSection:YES];
+    [self updateEncryptionItem:YES];
   }
 }
 
@@ -598,7 +836,7 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
           // When sync everything is turned on, the autocomplete wallet
           // should be turned on. This code can be removed once
           // crbug.com/937234 is fixed.
-          self.autocompleteWalletPreference.value = true;
+          _autocompleteWalletPreference.value = true;
         }
         break;
       case AutofillDataTypeItemType:
@@ -614,14 +852,26 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
             static_cast<syncer::UserSelectableType>(syncSwitchItem.dataType);
         if ([self isManagedSyncSettingsDataType:dataType])
           break;
-        self.syncSetupService->SetDataTypeEnabled(dataType, value);
+
+        switch (self.syncAccountState) {
+          case SyncSettingsAccountState::kSignedIn:
+            _syncService->GetUserSettings()->SetSelectedType(dataType, value);
+            break;
+          case SyncSettingsAccountState::kSyncing:
+          case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
+            self.syncSetupService->SetDataTypeEnabled(dataType, value);
+            break;
+          case SyncSettingsAccountState::kSignedOut:
+            NOTREACHED();
+            break;
+        }
         if (dataType == syncer::UserSelectableType::kAutofill) {
           // When the auto fill data type is updated, the autocomplete wallet
           // should be updated too. Autocomplete wallet should not be enabled
           // when auto fill data type disabled. This behaviour not be
           // implemented in the UI code. This code can be removed once
           // crbug.com/937234 is fixed.
-          self.autocompleteWalletPreference.value = value;
+          _autocompleteWalletPreference.value = value;
         }
         break;
       }
@@ -630,8 +880,9 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
                                                     kAutofill]) {
           break;
         }
-        self.autocompleteWalletPreference.value = value;
+        _autocompleteWalletPreference.value = value;
         break;
+      case SignOutAndTurnOffSyncItemType:
       case SignOutItemType:
       case EncryptionItemType:
       case GoogleActivityControlsItemType:
@@ -642,6 +893,8 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
       case SyncTrustedVaultRecoverabilityDegradedErrorItemType:
       case SyncDisabledByAdministratorErrorItemType:
       case SignOutItemFooterType:
+      case TypesListHeaderOrFooterType:
+      case IdentityAccountItemType:
         NOTREACHED();
         break;
     }
@@ -655,7 +908,7 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
   switch (itemType) {
     case EncryptionItemType: {
       const syncer::SyncService::UserActionableError error =
-          self.syncService->GetUserActionableError();
+          _syncService->GetUserActionableError();
       if (error == syncer::SyncService::UserActionableError::
                        kNeedsTrustedVaultKeyForPasswords ||
           error == syncer::SyncService::UserActionableError::
@@ -684,8 +937,11 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
     case SyncTrustedVaultRecoverabilityDegradedErrorItemType:
       [self.syncErrorHandler openTrustedVaultReauthForDegradedRecoverability];
       break;
-    case SignOutItemType:
+    case SignOutAndTurnOffSyncItemType:
       [self.commandHandler showTurnOffSyncOptionsFromTargetRect:cellRect];
+      break;
+    case SignOutItemType:
+      [self.commandHandler signOut];
       break;
     case SyncEverythingItemType:
     case AutofillDataTypeItemType:
@@ -698,6 +954,8 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
     case AutocompleteWalletItemType:
     case SyncDisabledByAdministratorErrorItemType:
     case SignOutItemFooterType:
+    case TypesListHeaderOrFooterType:
+    case IdentityAccountItemType:
       // Nothing to do.
       break;
   }
@@ -720,7 +978,7 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
   syncErrorItem.textLayoutConstraintAxis = UILayoutConstraintAxisVertical;
   syncErrorItem.text = GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
   syncErrorItem.detailText =
-      GetSyncErrorDescriptionForSyncService(self.syncService);
+      GetSyncErrorDescriptionForSyncService(_syncService);
   syncErrorItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   switch (itemType) {
     case ShowPassphraseDialogErrorItemType:
@@ -821,38 +1079,43 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 // Returns the sync error item type or absl::nullopt if the item
 // is not an error.
 - (absl::optional<SyncSettingsItemType>)syncErrorItemType {
-  if (!self.syncConsentGiven) {
-    return absl::nullopt;
-  }
-  if (self.isSyncDisabledByAdministrator) {
-    return absl::make_optional<SyncSettingsItemType>(
-        SyncDisabledByAdministratorErrorItemType);
-  }
-  switch (self.syncService->GetUserActionableError()) {
-    case syncer::SyncService::UserActionableError::kSignInNeedsUpdate:
-      return absl::make_optional<SyncSettingsItemType>(
-          ReauthDialogAsSyncIsInAuthErrorItemType);
-    case syncer::SyncService::UserActionableError::kNeedsPassphrase:
-      return absl::make_optional<SyncSettingsItemType>(
-          ShowPassphraseDialogErrorItemType);
-    case syncer::SyncService::UserActionableError::
-        kNeedsTrustedVaultKeyForPasswords:
-    case syncer::SyncService::UserActionableError::
-        kNeedsTrustedVaultKeyForEverything:
-      return absl::make_optional<SyncSettingsItemType>(
-          SyncNeedsTrustedVaultKeyErrorItemType);
-    case syncer::SyncService::UserActionableError::
-        kTrustedVaultRecoverabilityDegradedForPasswords:
-    case syncer::SyncService::UserActionableError::
-        kTrustedVaultRecoverabilityDegradedForEverything:
-      return absl::make_optional<SyncSettingsItemType>(
-          SyncTrustedVaultRecoverabilityDegradedErrorItemType);
-    case syncer::SyncService::UserActionableError::kGenericUnrecoverableError:
-    case syncer::SyncService::UserActionableError::kNone:
+  switch (self.syncAccountState) {
+    case SyncSettingsAccountState::kSignedOut:
+    case SyncSettingsAccountState::kAdvancedInitialSyncSetup:
+      return absl::nullopt;
+    case SyncSettingsAccountState::kSignedIn:
+    case SyncSettingsAccountState::kSyncing:
+      if (self.isSyncDisabledByAdministrator) {
+        return absl::make_optional<SyncSettingsItemType>(
+            SyncDisabledByAdministratorErrorItemType);
+      }
+      switch (_syncService->GetUserActionableError()) {
+        case syncer::SyncService::UserActionableError::kSignInNeedsUpdate:
+          return absl::make_optional<SyncSettingsItemType>(
+              ReauthDialogAsSyncIsInAuthErrorItemType);
+        case syncer::SyncService::UserActionableError::kNeedsPassphrase:
+          return absl::make_optional<SyncSettingsItemType>(
+              ShowPassphraseDialogErrorItemType);
+        case syncer::SyncService::UserActionableError::
+            kNeedsTrustedVaultKeyForPasswords:
+        case syncer::SyncService::UserActionableError::
+            kNeedsTrustedVaultKeyForEverything:
+          return absl::make_optional<SyncSettingsItemType>(
+              SyncNeedsTrustedVaultKeyErrorItemType);
+        case syncer::SyncService::UserActionableError::
+            kTrustedVaultRecoverabilityDegradedForPasswords:
+        case syncer::SyncService::UserActionableError::
+            kTrustedVaultRecoverabilityDegradedForEverything:
+          return absl::make_optional<SyncSettingsItemType>(
+              SyncTrustedVaultRecoverabilityDegradedErrorItemType);
+        case syncer::SyncService::UserActionableError::
+            kGenericUnrecoverableError:
+        case syncer::SyncService::UserActionableError::kNone:
+          return absl::nullopt;
+      }
+      NOTREACHED();
       return absl::nullopt;
   }
-  NOTREACHED();
-  return absl::nullopt;
 }
 
 // Returns whether the sync setup service state has changed since the last
@@ -881,13 +1144,13 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 
 // Returns YES if the given type is managed by policies (i.e. is not syncable)
 - (BOOL)isManagedSyncSettingsDataType:(syncer::UserSelectableType)type {
-  return IsManagedSyncDataType(self.syncService, type);
+  return IsManagedSyncDataType(_syncService, type);
 }
 
 #pragma mark - Properties
 
 - (BOOL)isSyncDisabledByAdministrator {
-  return self.syncService->HasDisableReason(
+  return _syncService->HasDisableReason(
       syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
 }
 

@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/base64.h"
 #include "base/containers/cxx20_erase_vector.h"
 #include "base/functional/bind.h"
@@ -70,11 +71,16 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 // TODO(https://crbug.com/1060801): Here and elsewhere, possibly switch build
 // flag to #if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/supervised_user/supervised_user_browser_utils.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "components/supervised_user/core/common/features.h"
 #include "extensions/browser/api/management/management_api.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/supervised_user/chromeos/parent_access_extension_approvals_manager.h"
+#endif
 
 using safe_browsing::SafeBrowsingNavigationObserverManager;
 
@@ -232,7 +238,7 @@ const char kParentBlockedExtensionInstallError[] =
 // The number of user gestures to trace back for the referrer chain.
 const int kExtensionReferrerUserGestureLimit = 2;
 
-WebstoreInstaller::Delegate* test_webstore_installer_delegate = nullptr;
+WebstorePrivateApi::Delegate* test_delegate = nullptr;
 
 // We allow the web store to set a string containing login information when a
 // purchase is made, so that when a user logs into sync with a different
@@ -396,9 +402,10 @@ void ReportWebStoreInstallNotAllowlistedInstalled(bool installed,
 }  // namespace
 
 // static
-void WebstorePrivateApi::SetWebstoreInstallerDelegateForTesting(
-    WebstoreInstaller::Delegate* delegate) {
-  test_webstore_installer_delegate = delegate;
+base::AutoReset<WebstorePrivateApi::Delegate*>
+WebstorePrivateApi::SetDelegateForTesting(Delegate* delegate) {
+  CHECK_EQ(nullptr, test_delegate);
+  return base::AutoReset<Delegate*>(&test_delegate, delegate);
 }
 
 // static
@@ -650,8 +657,8 @@ void WebstorePrivateBeginInstallWithManifest3Function::
 
 void WebstorePrivateBeginInstallWithManifest3Function::
     OnExtensionApprovalCanceled() {
-  if (test_webstore_installer_delegate) {
-    test_webstore_installer_delegate->OnExtensionInstallFailure(
+  if (test_delegate) {
+    test_delegate->OnExtensionInstallFailure(
         dummy_extension_->id(), kWebstoreParentPermissionFailedError,
         WebstoreInstaller::FailureReason::FAILURE_REASON_CANCELLED);
   }
@@ -661,8 +668,8 @@ void WebstorePrivateBeginInstallWithManifest3Function::
 
 void WebstorePrivateBeginInstallWithManifest3Function::
     OnExtensionApprovalFailed() {
-  if (test_webstore_installer_delegate) {
-    test_webstore_installer_delegate->OnExtensionInstallFailure(
+  if (test_delegate) {
+    test_delegate->OnExtensionInstallFailure(
         dummy_extension_->id(), kWebstoreParentPermissionFailedError,
         WebstoreInstaller::FailureReason::FAILURE_REASON_OTHER);
   }
@@ -904,10 +911,13 @@ void WebstorePrivateBeginInstallWithManifest3Function::ShowInstallDialog(
       prompt->AddObserver(&supervised_user_extensions_metrics_recorder_);
       // Bypass the install prompt dialog if V2 is enabled. The
       // ParentAccessDialog handles both the blocked and install use case.
-      if (supervised_user::IsLocalExtensionApprovalsV2Enabled()) {
+#if BUILDFLAG(IS_CHROMEOS)
+      if (ParentAccessExtensionApprovalsManager::
+              ShouldShowExtensionApprovalsV2()) {
         RequestExtensionApproval(contents);
         return;
       }
+#endif  // BUILDFLAG(IS_CHROMEOS)
     }
   }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -1012,7 +1022,14 @@ WebstorePrivateCompleteInstallFunction::Run() {
   // The extension will install through the normal extension install flow, but
   // the allowlist entry will bypass the normal permissions install dialog.
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
-      profile, this, web_contents, params->expected_id, std::move(approval_),
+      profile,
+      base::BindOnce(
+          &WebstorePrivateCompleteInstallFunction::OnExtensionInstallSuccess,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(
+          &WebstorePrivateCompleteInstallFunction::OnExtensionInstallFailure,
+          weak_ptr_factory_.GetWeakPtr()),
+      web_contents, params->expected_id, std::move(approval_),
       WebstoreInstaller::INSTALL_SOURCE_OTHER);
   installer->Start();
 
@@ -1035,9 +1052,8 @@ void WebstorePrivateCompleteInstallFunction::OnExtensionInstallFailure(
     const std::string& id,
     const std::string& error,
     WebstoreInstaller::FailureReason reason) {
-  if (test_webstore_installer_delegate) {
-    test_webstore_installer_delegate->OnExtensionInstallFailure(id, error,
-                                                                reason);
+  if (test_delegate) {
+    test_delegate->OnExtensionInstallFailure(id, error, reason);
   }
 
   VLOG(1) << "Install failed, sending response";
@@ -1051,8 +1067,9 @@ void WebstorePrivateCompleteInstallFunction::OnExtensionInstallFailure(
 
 void WebstorePrivateCompleteInstallFunction::OnInstallSuccess(
     const std::string& id) {
-  if (test_webstore_installer_delegate)
-    test_webstore_installer_delegate->OnExtensionInstallSuccess(id);
+  if (test_delegate) {
+    test_delegate->OnExtensionInstallSuccess(id);
+  }
 }
 
 WebstorePrivateEnableAppLauncherFunction::

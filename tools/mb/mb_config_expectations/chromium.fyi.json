@@ -317,16 +317,6 @@
       "use_remoteexec": true
     }
   },
-  "VR Linux": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "enable_vr": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "use_ozone": true,
-      "use_remoteexec": true
-    }
-  },
   "Win 10 Fast Ring": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -735,30 +725,6 @@
       "use_remoteexec": true
     }
   },
-  "ios15-beta-simulator": {
-    "gn_args": {
-      "enable_run_ios_unittests_with_xctest": true,
-      "is_component_build": false,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "x64",
-      "target_environment": "simulator",
-      "target_os": "ios",
-      "use_remoteexec": true
-    }
-  },
-  "ios15-sdk-simulator": {
-    "gn_args": {
-      "enable_run_ios_unittests_with_xctest": true,
-      "is_component_build": false,
-      "is_debug": true,
-      "symbol_level": 1,
-      "target_cpu": "x64",
-      "target_environment": "simulator",
-      "target_os": "ios",
-      "use_remoteexec": true
-    }
-  },
   "ios16-beta-simulator": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
@@ -785,6 +751,30 @@
     }
   },
   "ios16-sdk-simulator": {
+    "gn_args": {
+      "enable_run_ios_unittests_with_xctest": true,
+      "is_component_build": false,
+      "is_debug": true,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "target_environment": "simulator",
+      "target_os": "ios",
+      "use_remoteexec": true
+    }
+  },
+  "ios17-beta-simulator": {
+    "gn_args": {
+      "enable_run_ios_unittests_with_xctest": true,
+      "is_component_build": false,
+      "is_debug": true,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "target_environment": "simulator",
+      "target_os": "ios",
+      "use_remoteexec": true
+    }
+  },
+  "ios17-sdk-simulator": {
     "gn_args": {
       "enable_run_ios_unittests_with_xctest": true,
       "is_component_build": false,
@@ -925,6 +915,63 @@
       "proprietary_codecs": true,
       "target_os": "chromeos",
       "use_remoteexec": true
+    }
+  },
+  "linux-chromeos-build-perf": {
+    "gn_args": {
+      "also_build_lacros_chrome": true,
+      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
+      "dcheck_always_on": true,
+      "enable_backup_ref_ptr_feature_flag": true,
+      "enable_dangling_raw_ptr_checks": true,
+      "enable_dangling_raw_ptr_feature_flag": true,
+      "ffmpeg_branding": "ChromeOS",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 0,
+      "target_os": "chromeos",
+      "use_clang_coverage": true,
+      "use_remoteexec": true
+    }
+  },
+  "linux-chromeos-build-perf-siso": {
+    "builtin": {
+      "gn_args": {
+        "also_build_lacros_chrome": true,
+        "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
+        "dcheck_always_on": true,
+        "enable_backup_ref_ptr_feature_flag": true,
+        "enable_dangling_raw_ptr_checks": true,
+        "enable_dangling_raw_ptr_feature_flag": true,
+        "ffmpeg_branding": "ChromeOS",
+        "is_component_build": false,
+        "is_debug": false,
+        "proprietary_codecs": true,
+        "symbol_level": 0,
+        "target_os": "chromeos",
+        "use_clang_coverage": true,
+        "use_goma": false,
+        "use_remoteexec": false
+      }
+    },
+    "reproxy": {
+      "gn_args": {
+        "also_build_lacros_chrome": true,
+        "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
+        "dcheck_always_on": true,
+        "enable_backup_ref_ptr_feature_flag": true,
+        "enable_dangling_raw_ptr_checks": true,
+        "enable_dangling_raw_ptr_feature_flag": true,
+        "ffmpeg_branding": "ChromeOS",
+        "is_component_build": false,
+        "is_debug": false,
+        "proprietary_codecs": true,
+        "symbol_level": 0,
+        "target_os": "chromeos",
+        "use_clang_coverage": true,
+        "use_remoteexec": true
+      }
     }
   },
   "linux-cr23-rel": {

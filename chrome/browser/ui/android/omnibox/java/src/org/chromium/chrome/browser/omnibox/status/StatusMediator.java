@@ -39,8 +39,6 @@ import org.chromium.components.browser_ui.site_settings.SiteSettingsUtil;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.page_info.PageInfoController;
-import org.chromium.components.page_info.PageInfoDiscoverabilityMetrics;
-import org.chromium.components.page_info.PageInfoDiscoverabilityMetrics.DiscoverabilityAction;
 import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
@@ -92,11 +90,8 @@ public class StatusMediator implements PermissionDialogController.Observer,
     private final PermissionDialogController mPermissionDialogController;
     private final Handler mPermissionTaskHandler = new Handler();
     private final Handler mStoreIconHandler = new Handler();
-    @ContentSettingsType
-    private int mLastPermission = ContentSettingsType.DEFAULT;
+    private @ContentSettingsType int mLastPermission = ContentSettingsType.DEFAULT;
     private final PageInfoIPHController mPageInfoIPHController;
-    private final PageInfoDiscoverabilityMetrics mDiscoverabilityMetrics =
-            new PageInfoDiscoverabilityMetrics();
     private final WindowAndroid mWindowAndroid;
 
     private boolean mUrlBarTextIsSearch = true;
@@ -314,7 +309,7 @@ public class StatusMediator implements PermissionDialogController.Observer,
         setShowIconsWhenUrlFocused(shouldShowLogo);
         if (!shouldShowLogo) return;
 
-        if (mProfileSupplier.get() != null && isNTPOrStartSurfaceVisible()) {
+        if (mProfileSupplier.hasValue() && isNTPOrStartSurfaceVisible()) {
             setStatusIconShown(shouldShowLogo && (mUrlHasFocus || mUrlFocusPercent > 0));
         } else {
             setStatusIconShown(true);
@@ -343,7 +338,7 @@ public class StatusMediator implements PermissionDialogController.Observer,
         updateStatusVisibility();
 
         // Only fade the animation on the new tab page or start surface.
-        if (mProfileSupplier.get() != null && isNTPOrStartSurfaceVisible()) {
+        if (mProfileSupplier.hasValue() && isNTPOrStartSurfaceVisible()) {
             setStatusIconAlpha(percent);
         } else {
             setStatusIconAlpha(1f);
@@ -542,7 +537,7 @@ public class StatusMediator implements PermissionDialogController.Observer,
         }
 
         return (mUrlHasFocus || mUrlFocusPercent > 0) && isNTPOrStartSurfaceVisible()
-                && mProfileSupplier.get() != null;
+                && mProfileSupplier.hasValue();
     }
 
     /**
@@ -637,9 +632,6 @@ public class StatusMediator implements PermissionDialogController.Observer,
         mModel.set(StatusProperties.STATUS_ICON_RESOURCE, permissionIconResource);
         Runnable finishIconAnimation = () -> updateLocationBarIcon(IconTransitionType.ROTATE);
         mPermissionTaskHandler.postDelayed(finishIconAnimation, mPermissionIconDisplayTimeoutMs);
-
-        mDiscoverabilityMetrics.recordDiscoverabilityAction(
-                DiscoverabilityAction.PERMISSION_ICON_SHOWN);
     }
 
     private void startIPH() {
@@ -676,7 +668,6 @@ public class StatusMediator implements PermissionDialogController.Observer,
             updateLocationBarIcon(IconTransitionType.ROTATE);
         }, mPermissionIconDisplayTimeoutMs);
         mIsStoreIconShowing = true;
-        mDiscoverabilityMetrics.recordDiscoverabilityAction(DiscoverabilityAction.STORE_ICON_SHOWN);
     }
 
     // Reset all customized icons' status to avoid different icons' conflicts.
@@ -698,13 +689,6 @@ public class StatusMediator implements PermissionDialogController.Observer,
 
     /** Notifies that the page info was opened. */
     void onPageInfoOpened() {
-        if (mLastPermission != ContentSettingsType.DEFAULT) {
-            mDiscoverabilityMetrics.recordDiscoverabilityAction(
-                    DiscoverabilityAction.PAGE_INFO_OPENED);
-        } else if (mIsStoreIconShowing) {
-            mDiscoverabilityMetrics.recordDiscoverabilityAction(
-                    DiscoverabilityAction.PAGE_INFO_OPENED_FROM_STORE_ICON);
-        }
         resetCustomIconsStatus();
         updateLocationBarIcon(IconTransitionType.CROSSFADE);
     }

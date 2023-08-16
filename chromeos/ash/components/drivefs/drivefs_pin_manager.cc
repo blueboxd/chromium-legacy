@@ -14,21 +14,24 @@
 #include "base/functional/callback_forward.h"
 #include "base/logging.h"
 #include "base/memory/raw_ref.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
-#include "chromeos/ash/components/dbus/spaced/spaced_client.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/drive/file_errors.h"
 #include "third_party/cros_system_api/constants/cryptohome.h"
 
 namespace drivefs::pinning {
 namespace {
 
+using ash::SpacedClient;
 using base::SequencedTaskRunner;
 using base::TimeDelta;
+using base::UmaHistogramBoolean;
 using mojom::FileMetadata;
 using mojom::FileMetadataPtr;
 using mojom::QueryItem;
@@ -46,7 +49,7 @@ int Percentage(const int64_t a, const int64_t b) {
 
 // Calls the spaced daemon.
 void GetFreeSpace(const Path& path, PinManager::SpaceResult callback) {
-  ash::SpacedClient* const spaced = ash::SpacedClient::Get();
+  SpacedClient* const spaced = SpacedClient::Get();
   DCHECK(spaced);
   spaced->GetFreeDiskSpace(path.value(),
                            base::BindOnce(
@@ -189,6 +192,13 @@ ostream& operator<<(ostream& out, Quoter<mojom::ItemEvent> q) {
              << ", is_download: " << e.is_download << "}";
 }
 
+ostream& operator<<(ostream& out, Quoter<mojom::ProgressEvent> q) {
+  const mojom::ProgressEvent& e = *q.value;
+  return out << "{" << PinManager::Id(e.stable_id) << " " << Quote(e.path)
+             << ", progress: " << base::StringPrintf("%hhu", e.progress)
+             << "%}";
+}
+
 ostream& operator<<(ostream& out, Quoter<mojom::FileChange> q) {
   const mojom::FileChange& change = *q.value;
   return out << "{" << Quote(change.type) << " "
@@ -272,7 +282,7 @@ Progress& Progress::operator=(const Progress&) = default;
 
 bool Progress::HasEnoughFreeSpace() const {
   // The free space should not go below this limit.
-  const int64_t margin = cryptohome::kMinFreeSpaceInBytes;
+  const int64_t margin = int64_t(2) << 30;
   const bool enough = required_space + margin <= free_space;
   LOG_IF(ERROR, !enough) << "Not enough space: Free space "
                          << HumanReadableSize(free_space)
@@ -292,7 +302,8 @@ bool Progress::IsError() const {
 
     case Stage::kGettingFreeSpace:
     case Stage::kListingFiles:
-    case Stage::kPaused:
+    case Stage::kPausedOffline:
+    case Stage::kPausedBatterySaver:
     case Stage::kSuccess:
     case Stage::kSyncing:
     case Stage::kStopped:
@@ -310,7 +321,29 @@ bool InProgress(const Stage stage) {
       return true;
 
     case Stage::kStopped:
-    case Stage::kPaused:
+    case Stage::kPausedOffline:
+    case Stage::kPausedBatterySaver:
+    case Stage::kSuccess:
+    case Stage::kCannotGetFreeSpace:
+    case Stage::kCannotListFiles:
+    case Stage::kNotEnoughSpace:
+    case Stage::kCannotEnableDocsOffline:
+      return false;
+  }
+
+  NOTREACHED_NORETURN() << "Unexpected Stage " << Quote(stage);
+}
+
+bool IsPaused(const Stage stage) {
+  switch (stage) {
+    case Stage::kPausedOffline:
+    case Stage::kPausedBatterySaver:
+      return true;
+
+    case Stage::kGettingFreeSpace:
+    case Stage::kListingFiles:
+    case Stage::kSyncing:
+    case Stage::kStopped:
     case Stage::kSuccess:
     case Stage::kCannotGetFreeSpace:
     case Stage::kCannotListFiles:
@@ -385,6 +418,13 @@ bool PinManager::Add(const FileMetadata& md, const Path& path) {
 
   const int64_t size = GetSize(md);
   DCHECK_GE(size, 0) << " for " << id << " " << Quote(path);
+
+  if (files_to_track_.empty() && progress_.emptied_queue) {
+    progress_.files_to_pin = 0;
+    progress_.bytes_to_pin = 0;
+    progress_.pinned_files = 0;
+    progress_.pinned_bytes = 0;
+  }
 
   const auto [it, ok] =
       files_to_track_.try_emplace(id, File{.path = path,
@@ -482,6 +522,22 @@ void PinManager::Remove(const Files::iterator it,
 
 bool PinManager::Update(const Id id,
                         const Path& path,
+                        const int8_t progress_percent) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const Files::iterator it = files_to_track_.find(id);
+  if (it == files_to_track_.end()) {
+    VLOG(3) << "Not tracked: " << id << " " << path;
+    return false;
+  }
+
+  DCHECK_EQ(it->first, id);
+  const int64_t transferred = it->second.total * progress_percent / 100;
+  return Update(*it, path, transferred, it->second.total);
+}
+
+bool PinManager::Update(const Id id,
+                        const Path& path,
                         const int64_t transferred,
                         const int64_t total) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -544,19 +600,26 @@ bool PinManager::Update(Files::value_type& entry,
   return modified;
 }
 
-PinManager::PinManager(Path profile_path, mojom::DriveFs* const drivefs)
+PinManager::PinManager(Path profile_path,
+                       Path mount_path,
+                       mojom::DriveFs* const drivefs)
     : profile_path_(std::move(profile_path)),
+      mount_path_(std::move(mount_path)),
       drivefs_(drivefs),
       space_getter_(base::BindRepeating(&GetFreeSpace)) {
   DCHECK(drivefs_);
-  CHECK(ash::UserDataAuthClient::Get());
   ash::UserDataAuthClient::Get()->AddObserver(this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
+  chromeos::PowerManagerClient::Get()->GetBatterySaverModeState(base::BindOnce(
+      &PinManager::OnGotBatterySaverState, weak_ptr_factory_.GetWeakPtr()));
 }
 
 PinManager::~PinManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(ash::UserDataAuthClient::Get());
+
+  StopMonitoringSpace();
   ash::UserDataAuthClient::Get()->RemoveObserver(this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 
   DCHECK(!InProgress(progress_.stage))
       << "Pin manager is " << Quote(progress_.stage);
@@ -584,7 +647,12 @@ void PinManager::Start() {
 
   if (!is_online_) {
     LOG(WARNING) << "Device is currently offline";
-    return Complete(Stage::kPaused);
+    return Complete(Stage::kPausedOffline);
+  }
+
+  if (!is_battery_ok_) {
+    LOG(WARNING) << "Device is currently in battery saver mode";
+    return Complete(Stage::kPausedBatterySaver);
   }
 
   VLOG(2) << "Getting free space";
@@ -616,7 +684,7 @@ void PinManager::OnFreeSpaceRetrieved1(const int64_t free_space) {
   DCHECK_EQ(progress_.stage, Stage::kGettingFreeSpace);
 
   if (free_space < 0) {
-    LOG(ERROR) << "Cannot get free space: " << free_space;
+    LOG(ERROR) << "Cannot get free space: Got negative number " << free_space;
     return Complete(Stage::kCannotGetFreeSpace);
   }
 
@@ -642,25 +710,61 @@ void PinManager::CheckFreeSpace() {
       base::BindOnce(&PinManager::OnFreeSpaceRetrieved2, GetWeakPtr()));
 }
 
+void PinManager::LowDiskSpace(const user_data_auth::LowDiskSpace& event) {
+  LOG(ERROR) << "LowDiskSpace: " << HumanReadableSize(event.disk_free_bytes());
+  OnFreeSpaceRetrieved2(event.disk_free_bytes());
+}
+
+void PinManager::OnSpaceUpdate(const SpaceEvent& event) {
+  VLOG(1) << "OnSpaceUpdate: " << HumanReadableSize(event.free_space_bytes());
+  OnFreeSpaceRetrieved2(event.free_space_bytes());
+}
+
 void PinManager::OnFreeSpaceRetrieved2(const int64_t free_space) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (free_space < 0) {
-    LOG(ERROR) << "Cannot get free space: " << free_space;
+    LOG(ERROR) << "Cannot get free space: Got negative number " << free_space;
     return Complete(Stage::kCannotGetFreeSpace);
   }
 
   progress_.free_space = free_space;
   VLOG(1) << "Free space: " << HumanReadableSize(progress_.free_space);
-  NotifyProgress();
 
-  if (!progress_.HasEnoughFreeSpace()) {
-    return Complete(Stage::kNotEnoughSpace);
+  if (progress_.HasEnoughFreeSpace()) {
+    if (progress_.stage == Stage::kNotEnoughSpace) {
+      // Transition from kNotEnoughSpace to kSuccess.
+      Complete(Stage::kSuccess);
+    } else {
+      NotifyProgress();
+    }
+  } else if (progress_.stage != Stage::kNotEnoughSpace) {
+    Complete(Stage::kNotEnoughSpace);
+  }
+}
+
+void PinManager::OnGotBatterySaverState(
+    absl::optional<power_manager::BatterySaverModeState> state) {
+  if (state) {
+    BatterySaverModeStateChanged(*state);
+  }
+}
+
+void PinManager::BatterySaverModeStateChanged(
+    const power_manager::BatterySaverModeState& state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  is_battery_ok_ = !state.enabled();
+  VLOG(2) << "Battery saver mode changed, online=" << is_online_
+          << ", battery=" << is_battery_ok_;
+  if (!is_battery_ok_ && InProgress(progress_.stage)) {
+    VLOG(1) << "Pausing for battery saver";
+    return Complete(Stage::kPausedBatterySaver);
   }
 
-  SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&PinManager::CheckFreeSpace, GetWeakPtr()),
-      space_check_interval_);
+  if (is_battery_ok_ && IsPaused(progress_.stage)) {
+    VLOG(1) << "Restarting from battery saver";
+    Start();
+  }
 }
 
 void PinManager::ListItems(const Id dir_id, Path dir_path) {
@@ -828,6 +932,7 @@ void PinManager::HandleQueryItem(Id dir_id,
     if (md.shortcut_details->target_lookup_status != LookupStatus::kOk) {
       // The shortcut target is not accessible.
       progress_.skipped_items++;
+      progress_.broken_shortcuts++;
       VLOG(1) << "Broken shortcut " << id << " " << Quote(path) << ": "
               << "Target " << Quote(md.type) << " "
               << Id(md.shortcut_details->target_stable_id)
@@ -841,6 +946,7 @@ void PinManager::HandleQueryItem(Id dir_id,
     if (md.trashed) {
       // The shortcut target is in the trash bin.
       progress_.skipped_items++;
+      progress_.broken_shortcuts++;
       VLOG(1) << "Broken shortcut " << id << " " << Quote(path) << ": "
               << "Target " << Quote(md.type) << " "
               << Id(md.shortcut_details->target_stable_id)
@@ -896,14 +1002,17 @@ void PinManager::Complete(const Stage stage) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!InProgress(stage));
 
-  progress_.stage = stage;
   switch (stage) {
     case Stage::kSuccess:
       VLOG(1) << "Finished with success";
       break;
 
-    case Stage::kPaused:
-      VLOG(1) << "Paused";
+    case Stage::kPausedOffline:
+      VLOG(1) << "Paused because offline";
+      break;
+
+    case Stage::kPausedBatterySaver:
+      VLOG(1) << "Paused because of battery saver";
       break;
 
     case Stage::kStopped:
@@ -912,6 +1021,29 @@ void PinManager::Complete(const Stage stage) {
 
     default:
       LOG(ERROR) << "Finished with error: " << Quote(stage);
+
+      switch (progress_.stage) {
+        case Stage::kListingFiles:
+          base::UmaHistogramEnumeration(
+              "FileBrowser.GoogleDrive.BulkPinning.Listing.Error", stage);
+          break;
+
+        case Stage::kSyncing:
+          base::UmaHistogramEnumeration(
+              "FileBrowser.GoogleDrive.BulkPinning.Syncing.Error", stage);
+          break;
+
+        default:
+          break;
+      }
+  }
+
+  progress_.stage = stage;
+
+  if (progress_.stage == Stage::kNotEnoughSpace) {
+    StartMonitoringSpace();
+  } else {
+    StopMonitoringSpace();
   }
 
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -941,7 +1073,15 @@ void PinManager::StartPinning() {
 
   if (!should_pin_) {
     VLOG(1) << "Should not pin files";
+    is_first_sync_ = true;
     return Complete(Stage::kSuccess);
+  }
+
+  if (is_first_sync_) {
+    base::UmaHistogramSparse(
+        "FileBrowser.GoogleDrive.BulkPinning.ToDownloadMiB",
+        progress_.bytes_to_pin >> 20);
+    is_first_sync_ = false;
   }
 
   timer_ = base::ElapsedTimer();
@@ -953,7 +1093,37 @@ void PinManager::StartPinning() {
       kStalledFileInterval);
 
   CheckFreeSpace();
+  StartMonitoringSpace();
   PinSomeFiles();
+}
+
+bool PinManager::StartMonitoringSpace() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (spaced_) {
+    VLOG(1) << "SpacedClient::Observer is already registered";
+    return true;
+  }
+
+  SpacedClient* const spaced = SpacedClient::Get();
+  DCHECK(spaced);
+  if (!spaced->IsConnected()) {
+    LOG(ERROR) << "SpacedClient is not connected";
+    return false;
+  }
+
+  spaced_ = spaced;
+  spaced_->AddObserver(this);
+  VLOG(1) << "Added SpacedClient::Observer";
+  return true;
+}
+
+void PinManager::StopMonitoringSpace() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (spaced_) {
+    spaced_->RemoveObserver(this);
+    spaced_ = nullptr;
+    VLOG(1) << "Removed SpacedClient::Observer";
+  }
 }
 
 void PinManager::PinSomeFiles() {
@@ -1017,13 +1187,25 @@ void PinManager::PinSomeFiles() {
 
 void PinManager::OnFilePinned(const Id id,
                               const Path& path,
-                              const drive::FileError status) {
+                              const drive::FileError error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (status != drive::FILE_ERROR_OK) {
-    LOG(ERROR) << "Cannot pin " << id << " " << Quote(path) << ": " << status;
+  // Records error in a UMA histogram. The `1 - error` expression converts the
+  // negative drive::FileError enum values 0, -1, -2, -3...  (defined in
+  // components/drive/file_errors.h) to the positive UMA DriveFileError enum
+  // values +1, +2, +3, +4... (defined in tools/metrics/histograms/enums.xml).
+  // The `2 - drive::FILE_ERROR_MAX` expression does likewise, but also
+  // converting from an inclusive to exclusive bound.
+  base::UmaHistogramExactLinear(
+      "FileBrowser.GoogleDrive.BulkPinning.Pinning.Error", 1 - error,
+      2 - drive::FILE_ERROR_MAX);
+
+  if (error != drive::FILE_ERROR_OK) {
+    LOG(ERROR) << "Cannot pin " << id << " " << Quote(path) << ": " << error;
     if (Remove(id, path, 0)) {
       progress_.failed_files++;
+      UmaHistogramBoolean("FileBrowser.GoogleDrive.BulkPinning.PinnedFiles",
+                          false);
       PinSomeFiles();
     }
     return;
@@ -1056,6 +1238,10 @@ void PinManager::OnFilePinned(const Id id,
 
 void PinManager::OnSyncingStatusUpdate(const mojom::SyncingStatus& status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (should_use_on_item_progress_) {
+    return;
+  }
 
   for (const mojom::ItemEventPtr& event : status.item_events) {
     DCHECK(event);
@@ -1110,6 +1296,8 @@ bool PinManager::OnSyncingEvent(mojom::ItemEvent& event) {
       VLOG(2) << "Synced " << id << " " << Quote(path) << ": " << Quote(event);
       VLOG_IF(1, !VLOG_IS_ON(2)) << "Synced " << id << " " << Quote(path);
       progress_.pinned_files++;
+      UmaHistogramBoolean("FileBrowser.GoogleDrive.BulkPinning.PinnedFiles",
+                          true);
       return true;
 
     case State::kFailed:
@@ -1120,11 +1308,53 @@ bool PinManager::OnSyncingEvent(mojom::ItemEvent& event) {
       LOG(ERROR) << Quote(event.state) << " " << id << " " << Quote(path)
                  << ": " << Quote(event);
       progress_.failed_files++;
+      UmaHistogramBoolean("FileBrowser.GoogleDrive.BulkPinning.PinnedFiles",
+                          false);
       return true;
   }
 
   LOG(ERROR) << "Unexpected event type: " << Quote(event);
   return false;
+}
+
+void PinManager::OnItemProgress(const mojom::ProgressEvent& event) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!should_use_on_item_progress_) {
+    return;
+  }
+
+  if (!InProgress(progress_.stage)) {
+    VLOG(2) << "Ignored " << Quote(event);
+    return;
+  }
+  VLOG(3) << "Received " << Quote(event);
+
+  Path relative_path("/");
+  if (!mount_path_.AppendRelativePath(Path(event.path), &relative_path)) {
+    LOG(ERROR) << "Path not relative to drive mount";
+    return;
+  }
+  const Id id = Id(event.stable_id);
+
+  if (event.progress >= 0 && event.progress < 100) {
+    Update(id, relative_path, event.progress);
+  } else if (event.progress == 100) {
+    if (!Remove(id, relative_path)) {
+      LOG(ERROR) << "Failed removing finished event " << Quote(event);
+      return;
+    }
+    VLOG(2) << "Synced " << id << " " << Quote(relative_path);
+    VLOG_IF(1, !VLOG_IS_ON(2))
+        << "Synced " << id << " " << Quote(relative_path);
+    progress_.pinned_files++;
+    UmaHistogramBoolean("FileBrowser.GoogleDrive.BulkPinning.PinnedFiles",
+                        true);
+  } else if (!Remove(id, relative_path)) {
+    LOG(ERROR) << "Invalid event " << Quote(event);
+  }
+
+  PinSomeFiles();
 }
 
 void PinManager::NotifyDelete(const Id id, const Path& path) {
@@ -1137,6 +1367,7 @@ void PinManager::NotifyDelete(const Id id, const Path& path) {
 
   VLOG(1) << "Stopped tracking " << id << " " << Quote(path);
   progress_.failed_files++;
+  UmaHistogramBoolean("FileBrowser.GoogleDrive.BulkPinning.PinnedFiles", false);
   PinSomeFiles();
 }
 
@@ -1253,12 +1484,6 @@ void PinManager::NotifyProgress() {
   }
 }
 
-void PinManager::LowDiskSpace(const ::user_data_auth::LowDiskSpace& status) {
-  LOG(ERROR) << "Got LowDiskSpace "
-             << HumanReadableSize(status.disk_free_bytes());
-  OnFreeSpaceRetrieved2(status.disk_free_bytes());
-}
-
 void PinManager::CheckStalledFiles() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -1349,6 +1574,8 @@ void PinManager::OnMetadataForModifiedFile(const Id id,
     LOG(ERROR) << "Got unexpectedly unpinned: " << id << " " << Quote(path);
     Remove(it, path, 0);
     progress_.failed_files++;
+    UmaHistogramBoolean("FileBrowser.GoogleDrive.BulkPinning.PinnedFiles",
+                        false);
     return PinSomeFiles();
   }
 
@@ -1357,23 +1584,25 @@ void PinManager::OnMetadataForModifiedFile(const Id id,
     Remove(it, path, GetSize(md));
     VLOG(1) << "Synced " << id << " " << Quote(path);
     progress_.pinned_files++;
+    UmaHistogramBoolean("FileBrowser.GoogleDrive.BulkPinning.PinnedFiles",
+                        true);
     PinSomeFiles();
   }
 }
 
 void PinManager::SetOnline(const bool online) {
-  VLOG(2) << "Online: " << online;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  VLOG(2) << "Online: " << online << ", battery: " << is_battery_ok_;
   is_online_ = online;
 
   if (!is_online_ && InProgress(progress_.stage)) {
     VLOG(1) << "Going offline";
-    return Complete(Stage::kPaused);
+    return Complete(Stage::kPausedOffline);
   }
 
-  if (is_online_ && progress_.stage == Stage::kPaused) {
+  if (is_online_ && IsPaused(progress_.stage)) {
     VLOG(1) << "Coming back online";
-    return Start();
+    Start();
   }
 }
 

@@ -4,13 +4,14 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_canvas_context.h"
 
-#include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_htmlcanvaselement_offscreencanvas.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_canvas_alpha_mode.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_canvas_configuration.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasrenderingcontext2d_gpucanvascontext_imagebitmaprenderingcontext_webgl2renderingcontext_webglrenderingcontext.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpucanvascontext_imagebitmaprenderingcontext_offscreencanvasrenderingcontext2d_webgl2renderingcontext_webglrenderingcontext.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/canvas/predefined_color_space.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
@@ -267,7 +268,13 @@ ImageBitmap* GPUCanvasContext::TransferToImageBitmap(
 
     // We intentionally leave the image in legacy color space.
     SkBitmap black_bitmap;
-    black_bitmap.allocN32Pixels(size.width(), size.height());
+    if (!black_bitmap.tryAllocN32Pixels(size.width(), size.height())) {
+      // It is not possible to create such a big image bitmap, return null in
+      // that case which will fail ImageBitmap creation with an exception
+      // instead.
+      return nullptr;
+    }
+
     if (alpha_mode == V8GPUCanvasAlphaMode::Enum::kOpaque) {
       black_bitmap.eraseARGB(255, 0, 0, 0);
     } else {
@@ -537,6 +544,7 @@ void GPUCanvasContext::unconfigure() {
 }
 
 GPUTexture* GPUCanvasContext::getCurrentTexture(
+    ScriptState* script_state,
     ExceptionState& exception_state) {
   if (!configured_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -602,6 +610,10 @@ GPUTexture* GPUCanvasContext::getCurrentTexture(
   } else {
     texture_ = swap_texture_;
   }
+
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  UseCounter::Count(execution_context,
+                    WebFeature::kWebGPUCanvasContextGetCurrentTexture);
 
   return texture_;
 }

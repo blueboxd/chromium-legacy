@@ -225,7 +225,11 @@ SET TIMEOUT: service-workers/service-worker/activation.https.html
 SET TIMEOUT: service-workers/service-worker/fetch-frame-resource.https.html
 SET TIMEOUT: service-workers/service-worker/fetch-request-redirect.https.html
 SET TIMEOUT: service-workers/service-worker/fetch-waits-for-activate.https.html
+SET TIMEOUT: service-workers/service-worker/postMessage-client-worker.js
 SET TIMEOUT: service-workers/service-worker/update-recovery.https.html
+SET TIMEOUT: service-workers/service-worker/resources/controlled-frame-postMessage.html
+SET TIMEOUT: service-workers/service-worker/resources/controlled-worker-late-postMessage.js
+SET TIMEOUT: service-workers/service-worker/resources/controlled-worker-postMessage.js
 SET TIMEOUT: service-workers/service-worker/resources/extendable-event-async-waituntil.js
 SET TIMEOUT: service-workers/service-worker/resources/fetch-event-async-respond-with-worker.js
 SET TIMEOUT: service-workers/service-worker/resources/fetch-event-test-worker.js
@@ -606,6 +610,8 @@ AHEM SYSTEM FONT: css/css-fonts/font-size-adjust-012.html
 AHEM SYSTEM FONT: css/css-fonts/font-size-adjust-012-ref.html
 AHEM SYSTEM FONT: css/css-fonts/font-size-adjust-013.html
 AHEM SYSTEM FONT: css/css-fonts/font-size-adjust-013-ref.html
+AHEM SYSTEM FONT: css/css-fonts/font-size-adjust-metrics-override.html
+AHEM SYSTEM FONT: css/css-fonts/font-size-adjust-metrics-override-ref.html
 AHEM SYSTEM FONT: css/css-fonts/line-gap-override.html
 AHEM SYSTEM FONT: html/dom/render-blocking/remove-attr-unblocks-rendering.optional.html
 AHEM SYSTEM FONT: html/dom/render-blocking/remove-element-unblocks-rendering.optional.html
@@ -659,8 +665,8 @@ TESTHARNESS-IN-OTHER-TYPE: svg/svg-in-svg/svg-in-svg-circular-filter-reference-c
 # Adding the testharnessreport.js script causes the test to never complete.
 MISSING-TESTHARNESSREPORT: accessibility/crashtests/computed-node-checked.html
 
-PRINT STATEMENT: webdriver/tests/print/*
 PRINT STATEMENT: webdriver/tests/bidi/browsing_context/print/*
+PRINT STATEMENT: webdriver/tests/classic/print/*
 PRINT STATEMENT: webdriver/tests/support/fixtures_bidi.py
 
 DUPLICATE-BASENAME-PATH: acid/acid3/empty.html

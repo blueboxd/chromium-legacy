@@ -51,10 +51,10 @@ import {afterNextRender, DomRepeatEvent, mixinBehaviors, PolymerElement} from 'c
 import {castExists} from '../assert_extras.js';
 import {DeepLinkingMixin, DeepLinkingMixinInterface} from '../deep_linking_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
+import {Section} from '../mojom-webui/routes.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin, RouteObserverMixinInterface} from '../route_observer_mixin.js';
-import {Route, Router} from '../router.js';
+import {Route, Router, routes} from '../router.js';
 
 import {ApnSubpageElement} from './apn_subpage.js';
 import {InternetConfigElement} from './internet_config.js';
@@ -116,6 +116,12 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
 
   static get properties() {
     return {
+      section_: {
+        type: Number,
+        value: Section.kNetwork,
+        readOnly: true,
+      },
+
       /**
        * The device state for each network device type, keyed by NetworkType.
        * Set by network-summary.
@@ -347,6 +353,7 @@ class SettingsInternetPageElement extends SettingsInternetPageElementBase {
   private pendingShowCellularSetupDialogAttemptPageName_: CellularSetupPageName|
       null;
   private pendingShowSimLockDialog_: boolean;
+  private section_: Section;
   private showCellularSetupDialog_: boolean;
   private showESimProfileRenameDialog_: boolean;
   private showESimRemoveProfileDialog_: boolean;

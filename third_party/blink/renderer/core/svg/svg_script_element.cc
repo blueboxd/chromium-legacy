@@ -199,6 +199,21 @@ DOMNodeId SVGScriptElement::GetDOMNodeId() {
   return DOMNodeIds::IdForNode(this);
 }
 
+SVGAnimatedPropertyBase* SVGScriptElement::PropertyFromAttribute(
+    const QualifiedName& attribute_name) const {
+  if (SVGAnimatedPropertyBase* ret =
+          SVGURIReference::PropertyFromAttribute(attribute_name);
+      ret) {
+    return ret;
+  }
+  return SVGElement::PropertyFromAttribute(attribute_name);
+}
+
+void SVGScriptElement::SynchronizeAllSVGAttributes() const {
+  SVGURIReference::SynchronizeAllSVGAttributes();
+  SVGElement::SynchronizeAllSVGAttributes();
+}
+
 void SVGScriptElement::Trace(Visitor* visitor) const {
   visitor->Trace(loader_);
   SVGElement::Trace(visitor);

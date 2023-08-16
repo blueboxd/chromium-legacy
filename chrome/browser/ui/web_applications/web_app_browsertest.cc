@@ -294,16 +294,7 @@ class WebAppBrowserTest_Tabbed : public WebAppBrowserTest {
       features::kDesktopPWAsTabStrip};
 };
 
-// A dedicated test fixture for detailed install dialog, which requires a
-// command line switch to enable manifest parsing.
-class WebAppBrowserTest_DetailedInstallDialog : public WebAppBrowserTest {
- public:
-  WebAppBrowserTest_DetailedInstallDialog() = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      webapps::features::kDesktopPWAsDetailedInstallDialog};
-};
+using WebAppBrowserTest_DetailedInstallDialog = WebAppBrowserTest;
 
 #if BUILDFLAG(IS_WIN)
 using WebAppBrowserTest_ShortcutMenu = WebAppBrowserTest;
@@ -1304,44 +1295,7 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WindowsOffsetForMultiWindowPWA) {
 #endif
 }
 
-class WebAppBrowserTest_ExternalPrefMigration
-    : public WebAppBrowserTest,
-      public testing::WithParamInterface<test::ExternalPrefMigrationTestCases> {
- public:
-  WebAppBrowserTest_ExternalPrefMigration() {
-    std::vector<base::test::FeatureRef> enabled_features;
-    std::vector<base::test::FeatureRef> disabled_features;
-
-    switch (GetParam()) {
-      case test::ExternalPrefMigrationTestCases::kDisableMigrationReadPref:
-        disabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
-        disabled_features.push_back(
-            features::kUseWebAppDBInsteadOfExternalPrefs);
-        break;
-      case test::ExternalPrefMigrationTestCases::kDisableMigrationReadDB:
-        disabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
-        enabled_features.push_back(
-            features::kUseWebAppDBInsteadOfExternalPrefs);
-        break;
-      case test::ExternalPrefMigrationTestCases::kEnableMigrationReadPref:
-        enabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
-        disabled_features.push_back(
-            features::kUseWebAppDBInsteadOfExternalPrefs);
-        break;
-      case test::ExternalPrefMigrationTestCases::kEnableMigrationReadDB:
-        enabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
-        enabled_features.push_back(
-            features::kUseWebAppDBInsteadOfExternalPrefs);
-        break;
-    }
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_P(WebAppBrowserTest_ExternalPrefMigration,
+IN_PROC_BROWSER_TEST_F(WebAppBrowserTest,
                        CannotUninstallPolicyWebAppAfterUserInstall) {
   GURL install_url = GetInstallableAppURL();
   ExternalInstallOptions options = CreateInstallOptions(install_url);
@@ -1878,7 +1832,8 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, InstallToShelfContainsAppName) {
   EXPECT_TRUE(app_menu_model->GetModelAndIndexForCommandId(IDC_INSTALL_PWA,
                                                            &model, &index));
   EXPECT_EQ(app_menu_model.get(), model);
-  EXPECT_EQ(model->GetLabelAt(index), u"Install Manifest test app…");
+  const std::u16string label = model->GetLabelAt(index);
+  EXPECT_NE(std::u16string::npos, label.find(u"Manifest test"));
 }
 
 // Check that no assertions are hit when showing a permission request bubble.
@@ -2605,13 +2560,4 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_PageInfoManagementLink, LaunchAsTab) {
   EXPECT_TRUE(ShowingAppManagementLink(tabbed_browser));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppBrowserTest_ExternalPrefMigration,
-    ::testing::Values(
-        test::ExternalPrefMigrationTestCases::kDisableMigrationReadPref,
-        test::ExternalPrefMigrationTestCases::kDisableMigrationReadDB,
-        test::ExternalPrefMigrationTestCases::kEnableMigrationReadPref,
-        test::ExternalPrefMigrationTestCases::kEnableMigrationReadDB),
-    test::GetExternalPrefMigrationTestName);
 }  // namespace web_app

@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/raw_ptr_exclusion.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "cc/paint/draw_image.h"
 #include "cc/raster/tile_task.h"
@@ -29,12 +29,7 @@ class TileManager;
 class CC_EXPORT Tile {
  public:
   struct CreateInfo {
-    // Not a raw_ptr<...> for performance reasons: on-stack pointer + based on
-    // analysis of sampling profiler data
-    // (PictureLayerTilingSet::UpdateTilePriorities ->
-    // PictureLayerTiling::ComputeTilePriorityRects ->
-    // PictureLayerTiling::SetLiveTilesRect -> creates Tile::CreateInfo).
-    RAW_PTR_EXCLUSION const PictureLayerTiling* tiling = nullptr;
+    raw_ptr<const PictureLayerTiling> tiling = nullptr;
     int tiling_i_index = 0;
     int tiling_j_index = 0;
     gfx::Rect enclosing_layer_rect;
@@ -151,14 +146,8 @@ class CC_EXPORT Tile {
        int source_frame_number,
        int flags);
 
-  // These are not a raw_ptr<...> for performance reasons: based on analysis of
-  // sampling profiler data (PictureLayerTilingSet::UpdateTilePriorities ->
-  // PictureLayerTiling::ComputeTilePriorityRects ->
-  // PictureLayerTiling::SetLiveTilesRect -> PictureLayerTiling::CreateTile ->
-  // allocates Tile).
-  RAW_PTR_EXCLUSION TileManager* const tile_manager_;
-  RAW_PTR_EXCLUSION const PictureLayerTiling* tiling_;
-
+  const raw_ptr<TileManager> tile_manager_;
+  raw_ptr<const PictureLayerTiling> tiling_;
   const gfx::Rect content_rect_;
   const gfx::Rect enclosing_layer_rect_;
   const gfx::AxisTransform2d raster_transform_;

@@ -60,8 +60,6 @@ using TestMakeCredentialRequestCallback = test::StatusAndValuesCallbackReceiver<
 
 }  // namespace
 
-constexpr char kRequestTransportHistogram[] =
-    "WebAuthentication.MakeCredentialRequestTransport";
 constexpr char kResponseTransportHistogram[] =
     "WebAuthentication.MakeCredentialResponseTransport";
 
@@ -146,9 +144,9 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<test::FakeFidoDiscoveryFactory> fake_discovery_factory_ =
       std::make_unique<test::FakeFidoDiscoveryFactory>();
-  raw_ptr<test::FakeFidoDiscovery> discovery_;
-  raw_ptr<test::FakeFidoDiscovery> nfc_discovery_;
-  raw_ptr<test::FakeFidoDiscovery> platform_discovery_;
+  raw_ptr<test::FakeFidoDiscovery, DanglingUntriaged> discovery_;
+  raw_ptr<test::FakeFidoDiscovery, DanglingUntriaged> nfc_discovery_;
+  raw_ptr<test::FakeFidoDiscovery, DanglingUntriaged> platform_discovery_;
   scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
   std::unique_ptr<MockFidoDevice> pending_mock_platform_device_;
   TestMakeCredentialRequestCallback cb_;
@@ -860,12 +858,6 @@ TEST_F(FidoMakeCredentialHandlerTest, ReportTransportMetric) {
 
   callback().WaitForCallback();
   EXPECT_EQ(MakeCredentialStatus::kSuccess, callback().status());
-  histograms.ExpectBucketCount(kRequestTransportHistogram,
-                               FidoTransportProtocol::kUsbHumanInterfaceDevice,
-                               1);
-  histograms.ExpectBucketCount(kRequestTransportHistogram,
-                               FidoTransportProtocol::kNearFieldCommunication,
-                               1);
   histograms.ExpectUniqueSample(kResponseTransportHistogram,
                                 FidoTransportProtocol::kUsbHumanInterfaceDevice,
                                 1);
@@ -881,7 +873,6 @@ TEST_F(FidoMakeCredentialHandlerTest, ReportTransportMetricWin) {
   auto request_handler = CreateMakeCredentialHandler();
   callback().WaitForCallback();
   EXPECT_EQ(MakeCredentialStatus::kSuccess, callback().status());
-  histograms.ExpectTotalCount(kRequestTransportHistogram, 0);
   histograms.ExpectUniqueSample(kResponseTransportHistogram,
                                 FidoTransportProtocol::kBluetoothLowEnergy, 1);
 }

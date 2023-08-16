@@ -321,13 +321,14 @@ using UserDecision =
             popupDelegate:
                 (const base::WeakPtr<autofill::AutofillPopupDelegate>&)
                     delegate {
-  // frontend_id is > 0 for Autofill suggestions, == 0 for Autocomplete
-  // suggestions, and < 0 for special suggestions such as clear form.
   // We only want Autofill suggestions.
   std::vector<autofill::Suggestion> filtered_suggestions;
   base::ranges::copy_if(suggestions, std::back_inserter(filtered_suggestions),
                         [](const autofill::Suggestion& suggestion) {
-                          return suggestion.frontend_id.as_int() > 0;
+                          return suggestion.popup_item_id ==
+                                     autofill::PopupItemId::kAddressEntry ||
+                                 suggestion.popup_item_id ==
+                                     autofill::PopupItemId::kCreditCardEntry;
                         });
   [_autofillAgent showAutofillPopup:filtered_suggestions
                       popupDelegate:delegate];

@@ -239,6 +239,7 @@ void DownloadBubbleUIController::ProcessDownloadButtonPress(
     case DownloadCommands::OPEN_WHEN_COMPLETE:
     case DownloadCommands::SHOW_IN_FOLDER:
     case DownloadCommands::ALWAYS_OPEN_TYPE:
+    case DownloadCommands::CANCEL_DEEP_SCAN:
       commands.ExecuteCommand(command);
       break;
     default:
@@ -293,6 +294,14 @@ void DownloadBubbleUIController::RetryDownload(
 
 void DownloadBubbleUIController::ScheduleCancelForEphemeralWarning(
     const std::string& guid) {
+  // Schedule hiding the item from the download bubble.
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&DownloadBubbleUpdateService::OnEphemeralWarningExpired,
+                     update_service_->GetWeakPtr(), guid),
+      DownloadItemModel::kEphemeralWarningLifetimeOnBubble);
+
+  // Schedule cancelling the download altogether.
   DownloadCoreService* download_core_service =
       DownloadCoreServiceFactory::GetForBrowserContext(profile_);
   if (!download_core_service) {

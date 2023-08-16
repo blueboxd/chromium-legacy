@@ -36,6 +36,11 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/progress_reporter.h"
 
+#if BUILDFLAG(IS_WIN)
+#include <d3d11.h>
+#include <wrl/client.h>
+#endif
+
 namespace gl {
 class GLContext;
 class GLDisplay;
@@ -44,7 +49,6 @@ class GLSurface;
 }  // namespace gl
 
 namespace viz {
-class DawnContextProvider;
 class MetalContextProvider;
 class VulkanContextProvider;
 }  // namespace viz
@@ -55,6 +59,7 @@ class Recorder;
 }  // namespace skgpu::graphite
 
 namespace gpu {
+class DawnContextProvider;
 class ExternalSemaphorePool;
 class GpuDriverBugWorkarounds;
 class GpuProcessActivityFlags;
@@ -76,7 +81,8 @@ class GPU_GLES2_EXPORT SharedContextState
       public base::RefCounted<SharedContextState>,
       public GrContextOptions::ShaderErrorHandler {
  public:
-  using ContextLostCallback = base::OnceCallback<void(bool)>;
+  using ContextLostCallback =
+      base::OnceCallback<void(bool, error::ContextLostReason)>;
 
   // TODO(vikassoni): Refactor code to have seperate constructor for GL and
   // Vulkan and not initialize/use GL related info for vulkan and vice-versa.
@@ -86,10 +92,10 @@ class GPU_GLES2_EXPORT SharedContextState
       scoped_refptr<gl::GLContext> context,
       bool use_virtualized_gl_contexts,
       ContextLostCallback context_lost_callback,
-      GrContextType gr_context_type = GrContextType::kGL,
+      GrContextType gr_context_type,
       viz::VulkanContextProvider* vulkan_context_provider = nullptr,
       viz::MetalContextProvider* metal_context_provider = nullptr,
-      viz::DawnContextProvider* dawn_context_provider = nullptr,
+      DawnContextProvider* dawn_context_provider = nullptr,
       base::WeakPtr<gpu::MemoryTracker::Observer> peak_memory_monitor = nullptr,
       bool created_on_compositor_gpu_thread = false);
 
@@ -131,23 +137,23 @@ class GPU_GLES2_EXPORT SharedContextState
       absl::optional<gpu::raster::GrShaderCache::ScopedCacheUse>& cache_use,
       int32_t client_id) const;
 
-  gl::GLShareGroup* share_group() { return share_group_.get(); }
-  gl::GLContext* context() { return context_.get(); }
-  gl::GLContext* real_context() { return real_context_.get(); }
-  gl::GLSurface* surface() { return surface_.get(); }
-  gl::GLDisplay* display();
-  viz::VulkanContextProvider* vk_context_provider() {
+  gl::GLShareGroup* share_group() const { return share_group_.get(); }
+  gl::GLContext* context() const { return context_.get(); }
+  gl::GLContext* real_context() const { return real_context_.get(); }
+  gl::GLSurface* surface() const { return surface_.get(); }
+  gl::GLDisplay* display();  // non const since it calls GLSurface::GetGLDisplay
+  viz::VulkanContextProvider* vk_context_provider() const {
     return vk_context_provider_;
   }
-  viz::MetalContextProvider* metal_context_provider() {
+  viz::MetalContextProvider* metal_context_provider() const {
     return metal_context_provider_;
   }
-  viz::DawnContextProvider* dawn_context_provider() {
+  DawnContextProvider* dawn_context_provider() const {
     return dawn_context_provider_;
   }
   gl::ProgressReporter* progress_reporter() const { return progress_reporter_; }
   // Ganesh/Graphite contexts may only be used on the GPU main thread.
-  GrDirectContext* gr_context() { return gr_context_; }
+  GrDirectContext* gr_context() const { return gr_context_; }
   skgpu::graphite::Context* graphite_context() const {
     return graphite_context_;
   }
@@ -248,6 +254,13 @@ class GPU_GLES2_EXPORT SharedContextState
 
   void ScheduleGrContextCleanup();
 
+  int32_t GetMaxTextureSize() const;
+
+#if BUILDFLAG(IS_WIN)
+  // Get the D3D11 device used for the compositing.
+  Microsoft::WRL::ComPtr<ID3D11Device> GetD3D11Device() const;
+#endif
+
  private:
   friend class base::RefCounted<SharedContextState>;
   friend class raster::RasterDecoderTestBase;
@@ -344,7 +357,7 @@ class GPU_GLES2_EXPORT SharedContextState
   gpu::MemoryTypeTracker memory_type_tracker_;
   const raw_ptr<viz::VulkanContextProvider> vk_context_provider_ = nullptr;
   const raw_ptr<viz::MetalContextProvider> metal_context_provider_ = nullptr;
-  const raw_ptr<viz::DawnContextProvider> dawn_context_provider_ = nullptr;
+  const raw_ptr<DawnContextProvider> dawn_context_provider_ = nullptr;
   bool created_on_compositor_gpu_thread_ = false;
   raw_ptr<GrDirectContext> gr_context_ = nullptr;
   raw_ptr<skgpu::graphite::Context> graphite_context_ = nullptr;

@@ -109,15 +109,20 @@ class SyncPrefs {
   void SetSelectedType(UserSelectableType type, bool is_type_on);
 
 #if BUILDFLAG(IS_IOS)
-  // Sets the transport bookmarks & reading list pref on opt in/out.
+  // Sets the opt-in for bookmarks & reading list in transport mode.
+  // Note that this only has an effect if `kEnableBookmarksAccountStorage`
+  // and/or `kReadingListEnableDualReadingListModel` are enabled, but
+  // `kReplaceSyncPromosWithSignInPromos` is NOT enabled. (It should still be
+  // called if `kReplaceSyncPromosWithSignInPromos` is enabled though, to better
+  // support rollbacks.)
   void SetBookmarksAndReadingListAccountStorageOptIn(bool value);
 
-  // Gets the transport bookmarks & reading list pref.
-  // This is only used for testing as GetSelectedTypes already checks for the
-  // opt-in pref.
-  bool IsOptedInForBookmarksAndReadingListAccountStorage();
+  // Gets the opt-in state for bookmarks & reading list in transport mode, for
+  // testing. Production code should use `GetSelectedTypes()` instead which
+  // already takes this into account.
+  bool IsOptedInForBookmarksAndReadingListAccountStorageForTesting();
 
-  // Clears the transport bookmarks & reading list pref on sign out.
+  // Clears the opt-in for bookmarks & reading list in transport mode.
   void ClearBookmarksAndReadingListAccountStorageOptIn();
 #endif  // BUILDFLAG(IS_IOS)
 
@@ -170,9 +175,13 @@ class SyncPrefs {
   void SetPassphrasePromptMutedProductVersion(int major_version);
   void ClearPassphrasePromptMutedProductVersion();
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-  static void MigrateSyncRequestedPrefPostMice(PrefService* pref_service);
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+  // Migrates any user settings for pre-existing signed-in users, for the
+  // feature `kReplaceSyncPromosWithSignInPromos`. For signed-out users or
+  // syncing users, no migration is necessary - this also covers new users (or
+  // more precisely, new profiles).
+  // This should be called early during browser startup.
+  void MaybeMigratePrefsForReplacingSyncWithSignin(
+      SyncAccountState account_state);
 
  private:
   static void RegisterTypeSelectedPref(PrefRegistrySimple* prefs,

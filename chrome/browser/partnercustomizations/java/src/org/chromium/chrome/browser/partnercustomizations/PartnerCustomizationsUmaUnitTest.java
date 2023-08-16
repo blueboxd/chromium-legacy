@@ -6,12 +6,16 @@ package org.chromium.chrome.browser.partnercustomizations;
 
 import android.os.SystemClock;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.FeatureList.TestValues;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.HistogramWatcher;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.partnercustomizations.PartnerCustomizationsUma.CustomizationProviderDelegateType;
 import org.chromium.chrome.browser.partnercustomizations.PartnerCustomizationsUma.DelegateUnusedReason;
 
@@ -21,6 +25,26 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerCustomizationsUm
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class PartnerCustomizationsUmaUnitTest {
+    private TestValues mEnabledTestValues;
+    private TestValues mDisabledTestValues;
+
+    private PartnerCustomizationsUma mPartnerCustomizationsUma;
+
+    private boolean mDidCall;
+
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        mEnabledTestValues = new TestValues();
+        mEnabledTestValues.addFeatureFlagOverride(
+                ChromeFeatureList.PARTNER_CUSTOMIZATIONS_UMA, true);
+        mDisabledTestValues = new TestValues();
+        mDisabledTestValues.addFeatureFlagOverride(
+                ChromeFeatureList.PARTNER_CUSTOMIZATIONS_UMA, false);
+        mPartnerCustomizationsUma = new PartnerCustomizationsUma();
+        mDidCall = false;
+    }
+
     @Test
     public void testLogPartnerCustomizationDelegate() {
         HistogramWatcher histogramWatcher =
@@ -38,10 +62,10 @@ public class PartnerCustomizationsUmaUnitTest {
         HistogramWatcher histogramWatcher =
                 HistogramWatcher.newBuilder()
                         .expectIntRecord("Android.PartnerCustomization.Usage",
-                                CustomizationProviderDelegateType.G_SERVICE)
+                                PartnerCustomizationsUma.CustomizationUsage.HOMEPAGE)
                         .build();
         PartnerCustomizationsUma.logPartnerCustomizationUsage(
-                CustomizationProviderDelegateType.G_SERVICE);
+                PartnerCustomizationsUma.CustomizationUsage.HOMEPAGE);
         histogramWatcher.assertExpected();
     }
 

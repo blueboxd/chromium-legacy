@@ -246,11 +246,13 @@ void ArcSupportHost::SetErrorDelegate(ErrorDelegate* delegate) {
 gfx::NativeWindow ArcSupportHost::GetNativeWindow() const {
   extensions::AppWindowRegistry* registry =
       extensions::AppWindowRegistry::Get(profile_);
-  if (!registry) return gfx::kNullNativeWindow;
+  if (!registry) {
+    return gfx::NativeWindow();
+  }
 
   extensions::AppWindow* window =
       registry->GetCurrentAppWindowForApp(arc::kPlayStoreAppId);
-  return window ? window->GetNativeWindow() : gfx::kNullNativeWindow;
+  return window ? window->GetNativeWindow() : gfx::NativeWindow();
 }
 
 bool ArcSupportHost::GetShouldShowRunNetworkTests() {
@@ -806,6 +808,14 @@ void ArcSupportHost::OnMessage(const base::Value::Dict& message) {
     }
 
     if (accepted) {
+      // tos_delegate_->OnTermsAgreed() will free tos_delegate_. But will update
+      // optin UI async to loading page. It is possible that user can click the
+      // accept button again before optin UI is updated. b/284000632
+      if (!tos_delegate_) {
+        LOG(ERROR) << "tos_delegate_ has been freed.";
+        return;
+      }
+
       tos_delegate_->OnTermsAgreed(is_metrics_enabled.value(),
                                    is_backup_restore_enabled.value(),
                                    is_location_service_enabled.value());

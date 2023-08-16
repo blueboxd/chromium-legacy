@@ -100,7 +100,6 @@
   self.viewController = [[SigninScreenViewController alloc] init];
   self.viewController.TOSHandler = TOSHandler;
   self.viewController.delegate = self;
-  self.viewController.modalInPresentation = YES;
 
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
   self.authenticationService =
@@ -124,6 +123,9 @@
                         accessPoint:_accessPoint
                         promoAction:_promoAction];
   self.mediator.consumer = self.viewController;
+  if (self.mediator.firstRun) {
+    self.viewController.modalInPresentation = YES;
+  }
   BOOL animated = self.baseNavigationController.topViewController != nil;
   [self.baseNavigationController setViewControllers:@[ self.viewController ]
                                            animated:animated];
@@ -137,6 +139,11 @@
   self.mediator = nil;
   self.accountManagerService = nil;
   self.authenticationService = nil;
+  [super stop];
+}
+
+- (void)dealloc {
+  CHECK(!self.authenticationService);
 }
 
 #pragma mark - Private

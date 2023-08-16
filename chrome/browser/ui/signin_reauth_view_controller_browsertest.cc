@@ -13,19 +13,17 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/signin/signin_features.h"
-#include "chrome/browser/sync/sync_encryption_keys_tab_helper.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
+#include "chrome/browser/sync/trusted_vault_encryption_keys_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/signin_reauth_view_controller.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -440,8 +438,8 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
   content::WebContents* target_contents =
       signin_reauth_view_controller()->GetModalDialogWebContentsForTesting();
 
-  SyncEncryptionKeysTabHelper* encryption_keys_tab_helper =
-      SyncEncryptionKeysTabHelper::FromWebContents(target_contents);
+  TrustedVaultEncryptionKeysTabHelper* encryption_keys_tab_helper =
+      TrustedVaultEncryptionKeysTabHelper::FromWebContents(target_contents);
   ASSERT_NE(encryption_keys_tab_helper, nullptr);
   EXPECT_TRUE(encryption_keys_tab_helper->HasEncryptionKeysApiForTesting(
       target_contents->GetPrimaryMainFrame()));
@@ -643,17 +641,10 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
 class SigninReauthViewControllerDarkModeBrowserTest
     : public SigninReauthViewControllerBrowserTest {
  public:
-  SigninReauthViewControllerDarkModeBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kWebUIDarkMode);
-  }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kForceDarkMode);
     SigninReauthViewControllerBrowserTest::SetUpCommandLine(command_line);
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests the light mode is enforced for the reauth confirmation dialog even if

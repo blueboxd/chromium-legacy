@@ -94,6 +94,7 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   void ResendBluetoothBattery() override;
   void WaitForServiceToBeAvailable(
       chromeos::WaitForServiceToBeAvailableCallback callback) override;
+  void SetForceRespectUiGains(bool force_respect_ui_gains_enabled) override;
 
   // Sets the number of non chrome audio streams in output mode.
   void SetNumberOfNonChromeOutputStreams(int32_t streams);
@@ -156,6 +157,14 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
     return noise_cancellation_enabled_;
   }
 
+  bool speak_on_mute_detection_enabled() const {
+    return speak_on_mute_detection_enabled_;
+  }
+
+  bool force_respect_ui_gains_enabled() const {
+    return force_respect_ui_gains_enabled_;
+  }
+
  private:
   // Finds a node in the list based on the id.
   AudioNodeList::iterator FindNode(uint64_t node_id);
@@ -173,6 +182,8 @@ class COMPONENT_EXPORT(DBUS_AUDIO) FakeCrasAudioClient
   uint32_t noise_cancellation_enabled_counter_ = 0;
   int32_t number_non_chrome_output_streams_ = 0;
   bool noise_cancellation_enabled_ = false;
+  bool speak_on_mute_detection_enabled_ = false;
+  bool force_respect_ui_gains_enabled_ = false;
   // Maps audio client type to the number of active input streams for clients
   // with the type specified
   ClientTypeToInputStreamCount active_input_streams_;

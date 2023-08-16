@@ -488,3 +488,31 @@ attach to the main browser process. To debug all of Chrome, install
 You will also need to run Visual Studio as administrator, or it will silently
 fail to attach to some of Chrome's child processes.
 
+### Improving performance of `git status`
+
+#### Configure git to use an untracked cache
+
+Try running
+
+```shell
+$ git update-index --test-untracked-cache
+```
+
+If the output ends with `OK`, then the following may also improve performance of
+`git status`:
+
+```shell
+$ git config core.untrackedCache true
+```
+
+#### Configure git to use fsmonitor
+
+You can significantly speed up git by using [fsmonitor.](https://github.blog/2022-06-29-improve-git-monorepo-performance-with-a-file-system-monitor/)
+You should enable fsmonitor in large repos, such as Chromium and v8. Enabling
+it globally will launch many processes and consume excess commit/memory and
+probably isn't worthwhile. The command to enable fsmonitor in the current repo
+is:
+
+```shell
+$ git config core.fsmonitor true
+```

@@ -21,6 +21,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -56,7 +57,9 @@ gfx::Size PowerTrayView::CalculatePreferredSize() const {
   gfx::Size standard_size = TrayItemView::CalculatePreferredSize();
   if (IsHorizontalAlignment())
     return gfx::Size(kUnifiedTrayBatteryWidth, standard_size.height());
-  return standard_size;
+
+  // Ensure battery isn't too tall in side shelf.
+  return gfx::Size(standard_size.width(), kUnifiedTrayIconSize);
 }
 
 void PowerTrayView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -87,6 +90,21 @@ void PowerTrayView::HandleLocaleChange() {
   UpdateStatus();
 }
 
+void PowerTrayView::UpdateLabelOrImageViewColor(bool active) {
+  if (!chromeos::features::IsJellyEnabled()) {
+    return;
+  }
+  TrayItemView::UpdateLabelOrImageViewColor(active);
+
+  const SkColor icon_fg_color = GetColorProvider()->GetColor(
+      active ? cros_tokens::kCrosSysSystemOnPrimaryContainer
+             : cros_tokens::kCrosSysOnSurface);
+  const PowerStatus::BatteryImageInfo& info =
+      PowerStatus::Get()->GetBatteryImageInfo();
+  image_view()->SetImage(PowerStatus::GetBatteryImage(
+      info, kUnifiedTrayBatteryIconSize, icon_fg_color));
+}
+
 void PowerTrayView::OnPowerStatusChanged() {
   UpdateStatus();
 }
@@ -110,11 +128,15 @@ void PowerTrayView::UpdateImage(bool icon_color_changed) {
     return;
   info_ = info;
 
-  // Note: The icon color changes when the UI is in OOBE mode.
-  const SkColor icon_fg_color =
-      GetColorProvider()->GetColor(kColorAshIconColorPrimary);
-  image_view()->SetImage(PowerStatus::GetBatteryImage(
-      info, kUnifiedTrayBatteryIconSize, icon_fg_color));
+  if (!chromeos::features::IsJellyEnabled()) {
+    // Note: The icon color changes when the UI is in OOBE mode.
+    const SkColor icon_fg_color =
+        GetColorProvider()->GetColor(kColorAshIconColorPrimary);
+    image_view()->SetImage(PowerStatus::GetBatteryImage(
+        info, kUnifiedTrayBatteryIconSize, icon_fg_color));
+    return;
+  }
+  UpdateLabelOrImageViewColor(is_active());
 }
 
 }  // namespace ash

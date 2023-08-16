@@ -59,10 +59,10 @@ The bundle installer allows installation of more than one application. The
 bundle installer is typically used in software distribution scenarios.
 
 ### Standalone Installer
-TODO(crbug.com/1281688): Implement standalone installers.
+TODO(crbug.com/1281688): Add scripts to build standalone installers.
 
-TODO(crbug.com/1035895): Document the standalone installer, including building
-a standalone installer for a given application.
+TODO(crbug.com/1035895): Document building a standalone installer for a given
+application.
 
 Standalone installers embed all data required to install the application,
 including the payload and various configuration data needed by the application
@@ -74,6 +74,18 @@ Standalone installers are used:
 deployments in an enterprise.
 2. when downloading the application payload is not desirable for any reason.
 3. during OEM installation.
+
+On Windows, a standalone installer can be created by embedding a manifest file
+and application installer inside of the metainstaller (UpdaterSetup). These
+files must be embedded in the metainstaller's `updater.7z` archive at the
+following paths:
+* `bin\Offline\{GUID}\OfflineManifest.gup`
+* `bin\Offline\{GUID}\{app_id}\installer.exe`
+
+Standalone installers may use any `{GUID}` value as long as it is a valid
+Windows GUID in the format `{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}`. See the
+"Offline installs" section below for more information on the manifest file and
+application installer.
 
 Applications on macOS frequently install via "drag-install", and then install
 the updater using a standalone installer on the application's first-run. The
@@ -557,7 +569,7 @@ server.
 By default, if enrollment fails, for example if the enrollment token is invalid
 or revoked, the updater will start in an unmanaged state. Instead, if you want
 to prevent the updater from starting if enrollment fails, set
-`EnrollmentMandatory` to `1`.
+`EnrollmentMandatory` to `1` (Windows only).
 
 After the updater sets itself up, the `FetchPolicies` RPC is invoked on the
 updater server to register with device management and fetch policies.
@@ -872,6 +884,18 @@ The updater also runs at user login. For system installs, this is done via a
 logon trigger on the scheduled task. For user installs, this is done via both
 the logon trigger on the scheduled task, as well as the "Run" registry entry in
 `HKCU` for redundancy.
+
+### Server Lifetime
+The updater's RPC server starts and waits for incoming RPCs. The server
+considers itself idle if it has not been processing any RPC in the last ten
+seconds. Every five minutes, the updater will check itself for idleness and
+shut down if idle.
+
+Additionally, on macOS, after answering at least one RPC, the server will shut
+itself down as soon as it becomes idle.
+
+Additionally, on Windows, the updater will shut itself down if all clients
+release their references to the server.
 
 ### On-Demand Updates
 The updater exposes an RPC interface for any user to trigger an update check.

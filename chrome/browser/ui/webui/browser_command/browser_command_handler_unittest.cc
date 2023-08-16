@@ -52,6 +52,7 @@ std::vector<Command> supported_commands = {
     Command::kNoOpCommand,
     Command::kOpenPerformanceSettings,
     Command::kOpenNTPAndStartCustomizeChromeTutorial,
+    Command::kStartPasswordManagerTutorial,
 };
 
 const ui::ElementContext kTestContext1(1);
@@ -72,6 +73,11 @@ class TestCommandHandler : public BrowserCommandHandler {
   void OpenFeedbackForm() override {
     // The functionality of opening the feedback form is removed, as it cannot
     // be executed in a unittest.
+  }
+
+  void OpenPasswordManager() override {
+    // The functionality of opening the password manager is removed, as it
+    // cannot be executed in a unittest.
   }
 
   user_education::TutorialService* GetTutorialService() override {
@@ -109,6 +115,10 @@ class TestCommandHandler : public BrowserCommandHandler {
     customize_chrome_side_panel_feature_supported_ = is_supported;
   }
 
+  void SetBrowserSupportsNewPasswordManager(bool is_supported) {
+    new_password_manager_feature_supported_ = is_supported;
+  }
+
   void SetDefaultSearchProviderToGoogle(bool is_google) {
     default_search_provider_is_google_ = is_google;
   }
@@ -124,6 +134,10 @@ class TestCommandHandler : public BrowserCommandHandler {
     return customize_chrome_side_panel_feature_supported_;
   }
 
+  bool BrowserSupportsNewPasswordManager() override {
+    return new_password_manager_feature_supported_;
+  }
+
   bool DefaultSearchProviderIsGoogle() override {
     return default_search_provider_is_google_;
   }
@@ -135,6 +149,7 @@ class TestCommandHandler : public BrowserCommandHandler {
   bool tab_groups_feature_supported_ = true;
   bool has_tab_groups_ = false;
   bool customize_chrome_side_panel_feature_supported_ = true;
+  bool new_password_manager_feature_supported_ = true;
   bool default_search_provider_is_google_ = true;
 };
 
@@ -192,6 +207,8 @@ class MockCommandHandler : public TestCommandHandler {
   MOCK_METHOD(void, NavigateToURL, (const GURL&, WindowOpenDisposition));
 
   MOCK_METHOD(void, OpenFeedbackForm, ());
+
+  MOCK_METHOD(void, OpenPasswordManager, ());
 };
 
 class MockCommandUpdater : public CommandUpdaterImpl {
@@ -524,10 +541,7 @@ TEST_F(BrowserCommandHandlerTest, OpenPasswordManagerCommand) {
   info->meta_key = true;
   // The OpenPassswordManager command opens a new settings window with the
   // password manager and the correct disposition.
-  EXPECT_CALL(*command_handler_,
-              NavigateToURL(
-                  GURL(chrome::GetSettingsUrl(chrome::kPasswordManagerSubPage)),
-                  DispositionFromClick(*info)));
+  EXPECT_CALL(*command_handler_, OpenPasswordManager());
   EXPECT_TRUE(ExecuteCommand(Command::kOpenPasswordManager, std::move(info)));
 }
 
@@ -595,4 +609,37 @@ TEST_F(BrowserCommandHandlerTest,
     EXPECT_TRUE(ExecuteCommand(Command::kOpenNTPAndStartCustomizeChromeTutorial,
                                std::move(info)));
   }
+}
+
+TEST_F(BrowserCommandHandlerTest, StartPasswordManagerTutorialCommand) {
+  // Command cannot be executed if the tutorial service doesn't exist.
+  command_handler_->SetTutorialService(nullptr);
+  EXPECT_FALSE(CanExecuteCommand(Command::kStartPasswordManagerTutorial));
+
+  // Create mock service so the command can be executed.
+  auto bubble_factory_registry =
+      std::make_unique<user_education::HelpBubbleFactoryRegistry>();
+  user_education::TutorialRegistry registry;
+  MockTutorialService service(&registry, bubble_factory_registry.get());
+  command_handler_->SetTutorialService(&service);
+
+  // If the browser does not support the new password manager,
+  // dont run the command.
+  command_handler_->SetBrowserSupportsNewPasswordManager(false);
+  EXPECT_FALSE(CanExecuteCommand(Command::kStartPasswordManagerTutorial));
+
+  // If the browser supports the new password manager and has a tutorial
+  // service it should allow running commands.
+  command_handler_->SetBrowserSupportsNewPasswordManager(true);
+  EXPECT_TRUE(CanExecuteCommand(Command::kStartPasswordManagerTutorial));
+
+  ClickInfoPtr info = ClickInfo::New();
+  EXPECT_CALL(service, StartTutorial(kPasswordManagerTutorialId, kTestContext1,
+                                     testing::_, testing::_))
+      .Times(1);
+  EXPECT_CALL(service, IsRunningTutorial).WillOnce(testing::Return(true));
+  EXPECT_CALL(service,
+              LogStartedFromWhatsNewPage(kPasswordManagerTutorialId, true));
+  EXPECT_TRUE(
+      ExecuteCommand(Command::kStartPasswordManagerTutorial, std::move(info)));
 }

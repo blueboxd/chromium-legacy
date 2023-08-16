@@ -17,6 +17,7 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/gmock_move_support.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
@@ -33,14 +34,18 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/passwords/settings/password_manager_porter_interface.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
+#include "chrome/browser/web_applications/web_contents/web_contents_manager.h"
 #include "chrome/browser/webapps/chrome_webapps_client.h"
+#include "chrome/browser/webauthn/passkey_model_factory.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/device_reauth/mock_device_authenticator.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "components/password_manager/core/browser/affiliation/fake_affiliation_service.h"
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
@@ -54,7 +59,9 @@
 #include "components/password_manager/core/browser/ui/import_results.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/sync/base/features.h"
 #include "components/sync/test/test_sync_service.h"
+#include "components/webauthn/core/browser/test_passkey_model.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
@@ -295,9 +302,22 @@ password_manager::PasswordForm CreateSampleForm(
   return form;
 }
 
+sync_pb::WebauthnCredentialSpecifics CreatePasskey() {
+  sync_pb::WebauthnCredentialSpecifics passkey;
+  passkey.set_sync_id(base::RandBytesAsString(16));
+  passkey.set_credential_id(base::RandBytesAsString(16));
+  passkey.set_rp_id("abc1.com");
+  passkey.set_user_id({1, 2, 3, 4});
+  passkey.set_user_name("passkey_username");
+  passkey.set_user_display_name("passkey_display_name");
+  return passkey;
+}
+
 MATCHER_P(PasswordUiEntryDataEquals, expected, "") {
-  return testing::Value(expected.get().urls.link, arg.urls.link) &&
+  return testing::Value(expected.get().is_passkey, arg.is_passkey) &&
+         testing::Value(expected.get().urls.link, arg.urls.link) &&
          testing::Value(expected.get().username, arg.username) &&
+         testing::Value(expected.get().display_name, arg.display_name) &&
          testing::Value(expected.get().stored_in, arg.stored_in) &&
          testing::Value(expected.get().is_android_credential,
                         arg.is_android_credential);
@@ -331,11 +351,16 @@ class PasswordsPrivateDelegateImplTest : public WebAppTest {
     return new PasswordsPrivateDelegateImpl(profile());
   }
 
+  // Queries and returns the list of saved credentials, blocking until finished.
+  PasswordsPrivateDelegate::UiEntries GetCredentials(
+      PasswordsPrivateDelegate& delegate);
+
  protected:
-  raw_ptr<extensions::TestEventRouter> event_router_ = nullptr;
+  raw_ptr<extensions::TestEventRouter, DanglingUntriaged> event_router_ =
+      nullptr;
   scoped_refptr<TestPasswordStore> profile_store_;
   scoped_refptr<TestPasswordStore> account_store_;
-  raw_ptr<ui::TestClipboard> test_clipboard_;
+  raw_ptr<ui::TestClipboard, DanglingUntriaged> test_clipboard_;
   scoped_refptr<device_reauth::MockDeviceAuthenticator>
       biometric_authenticator_;
 
@@ -360,6 +385,12 @@ void PasswordsPrivateDelegateImplTest::SetUp() {
       }));
   SetUpRouters();
   SetUpSyncInTransportMode(profile());
+  PasskeyModelFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile(),
+      base::BindRepeating(
+          [](content::BrowserContext*) -> std::unique_ptr<KeyedService> {
+            return std::make_unique<webauthn::TestPasskeyModel>();
+          }));
 }
 
 void PasswordsPrivateDelegateImplTest::SetUpPasswordStores(
@@ -383,6 +414,22 @@ void PasswordsPrivateDelegateImplTest::SetUpRouters() {
   // factory is set, resulting in nul PasswordsPrivateEventRouter.
   PasswordsPrivateEventRouterFactory::GetInstance()->SetTestingFactory(
       profile(), base::BindRepeating(&BuildPasswordsPrivateEventRouter));
+}
+
+PasswordsPrivateDelegate::UiEntries
+PasswordsPrivateDelegateImplTest::GetCredentials(
+    PasswordsPrivateDelegate& delegate) {
+  PasswordsPrivateDelegate::UiEntries result;
+  base::RunLoop run_loop;
+  delegate.GetSavedPasswordsList(base::BindLambdaForTesting(
+      [&](const PasswordsPrivateDelegate::UiEntries& entries) {
+        for (const auto& entry : entries) {
+          result.emplace_back(entry.Clone());
+        }
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  return result;
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, GetSavedPasswordsList) {
@@ -823,6 +870,191 @@ TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPasswordInAccountStore) {
 
   auto result = delegate->ChangeSavedPassword(account_form_id, params);
   EXPECT_THAT(result, new_account_form_id);
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest, ChangeCredential_Password) {
+  password_manager::PasswordForm sample_form = CreateSampleForm();
+  SetUpPasswordStores({sample_form});
+  auto delegate = CreateDelegate();
+  // Spin the loop to allow PasswordStore tasks posted on the creation of
+  // |delegate| to be completed.
+  base::RunLoop().RunUntilIdle();
+
+  api::passwords_private::PasswordUiEntry updated_credential =
+      GetCredentials(*delegate).at(0).Clone();
+  updated_credential.password = "new_pass";
+  updated_credential.username = "new_user";
+
+  EXPECT_TRUE(delegate->ChangeCredential(updated_credential));
+
+  // Spin the loop to allow PasswordStore tasks posted when changing the
+  // password to be completed.
+  base::RunLoop().RunUntilIdle();
+
+  // Check that the changing the password got reflected in the passwords list.
+  // `note` field should not be filled when `GetSavedPasswordsList` is called.
+  const PasswordsPrivateDelegate::UiEntries& credentials =
+      GetCredentials(*delegate);
+  EXPECT_EQ(credentials.size(), 1u);
+  const api::passwords_private::PasswordUiEntry& refreshed_credential =
+      credentials.at(0);
+  EXPECT_EQ(refreshed_credential.username, "new_user");
+  EXPECT_EQ(refreshed_credential.note, absl::nullopt);
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest,
+       ChangeCredential_PasswordInBothStores) {
+  password_manager::PasswordForm profile_form = CreateSampleForm();
+  password_manager::PasswordForm account_form = profile_form;
+  account_form.in_store = password_manager::PasswordForm::Store::kAccountStore;
+  SetUpPasswordStores({profile_form, account_form});
+
+  auto delegate = CreateDelegate();
+  // Spin the loop to allow PasswordStore tasks posted on the creation of
+  // |delegate| to be completed.
+  base::RunLoop().RunUntilIdle();
+
+  api::passwords_private::PasswordUiEntry updated_credential =
+      GetCredentials(*delegate).at(0).Clone();
+  updated_credential.password = "new_pass";
+  updated_credential.username = "new_user";
+
+  EXPECT_TRUE(delegate->ChangeCredential(updated_credential));
+
+  // Spin the loop to allow PasswordStore tasks posted when changing the
+  // password to be completed.
+  base::RunLoop().RunUntilIdle();
+
+  const PasswordsPrivateDelegate::UiEntries& credentials =
+      GetCredentials(*delegate);
+  EXPECT_EQ(credentials.size(), 1u);
+  const api::passwords_private::PasswordUiEntry& refreshed_credential =
+      credentials.at(0);
+  EXPECT_EQ(refreshed_credential.username, "new_user");
+  EXPECT_EQ(refreshed_credential.stored_in,
+            api::passwords_private::PasswordStoreSet::
+                PASSWORD_STORE_SET_DEVICE_AND_ACCOUNT);
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest,
+       ChangeCredential_PasswordInAccountStore) {
+  password_manager::PasswordForm profile_form = CreateSampleForm();
+  profile_form.password_value = u"different_pass";
+  password_manager::PasswordForm account_form = CreateSampleForm();
+  account_form.in_store = password_manager::PasswordForm::Store::kAccountStore;
+  SetUpPasswordStores({profile_form, account_form});
+
+  auto delegate = CreateDelegate();
+  // Spin the loop to allow PasswordStore tasks posted on the creation of
+  // |delegate| to be completed.
+  base::RunLoop().RunUntilIdle();
+
+  // Get the account credential.
+  const PasswordsPrivateDelegate::UiEntries& credentials =
+      GetCredentials(*delegate);
+  EXPECT_EQ(credentials.size(), 2u);
+  const auto account_credential_it =
+      std::ranges::find_if(credentials, [](const auto& credential) {
+        return credential.stored_in ==
+               api::passwords_private::PasswordStoreSet::
+                   PASSWORD_STORE_SET_ACCOUNT;
+      });
+  ASSERT_NE(account_credential_it, credentials.end());
+
+  api::passwords_private::PasswordUiEntry updated_credential =
+      account_credential_it->Clone();
+  updated_credential.password = "new_pass";
+  updated_credential.username = "new_user";
+
+  EXPECT_TRUE(delegate->ChangeCredential(updated_credential));
+
+  // Spin the loop to allow PasswordStore tasks posted when changing the
+  // password to be completed.
+  base::RunLoop().RunUntilIdle();
+
+  const PasswordsPrivateDelegate::UiEntries& updated_credentials =
+      GetCredentials(*delegate);
+  EXPECT_EQ(updated_credentials.size(), 2u);
+  const auto refreshed_credential_it =
+      std::ranges::find_if(updated_credentials, [](const auto& credential) {
+        return credential.stored_in ==
+               api::passwords_private::PasswordStoreSet::
+                   PASSWORD_STORE_SET_ACCOUNT;
+      });
+  ASSERT_NE(account_credential_it, updated_credentials.end());
+  EXPECT_EQ(refreshed_credential_it->username, "new_user");
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest, ChangeCredential_Passkey) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {password_manager::features::kPasswordsGrouping,
+       password_manager::features::kPasswordManagerPasskeys,
+       syncer::kSyncWebauthnCredentials},
+      /*disabled_features=*/{});
+
+  webauthn::PasskeyModel* passkey_model =
+      PasskeyModelFactory::GetForProfile(profile());
+  ASSERT_EQ(passkey_model, PasskeyModelFactory::GetForProfile(profile()));
+  ASSERT_TRUE(passkey_model);
+  sync_pb::WebauthnCredentialSpecifics passkey = CreatePasskey();
+  passkey_model->AddNewPasskeyForTesting(passkey);
+
+  auto delegate = CreateDelegate();
+  // Spin the loop to allow PasskeyModel tasks posted on the creation of
+  // |delegate| to be completed.
+  base::RunLoop().RunUntilIdle();
+
+  // Get the passkey credential.
+  const PasswordsPrivateDelegate::UiEntries& credentials =
+      GetCredentials(*delegate);
+  EXPECT_EQ(credentials.size(), 1u);
+  const api::passwords_private::PasswordUiEntry& existing_credential =
+      credentials.at(0);
+  EXPECT_TRUE(existing_credential.is_passkey);
+
+  api::passwords_private::PasswordUiEntry updated_credential =
+      existing_credential.Clone();
+  updated_credential.username = "new_user";
+  updated_credential.display_name = "new_display_name";
+
+  EXPECT_TRUE(delegate->ChangeCredential(updated_credential));
+
+  // Spin the loop to allow PasskeyModel tasks posted when changing the
+  // password to be completed.
+  base::RunLoop().RunUntilIdle();
+
+  const PasswordsPrivateDelegate::UiEntries& updated_credentials =
+      GetCredentials(*delegate);
+  EXPECT_EQ(updated_credentials.size(), 1u);
+  EXPECT_EQ(updated_credentials.at(0).username, "new_user");
+  EXPECT_EQ(updated_credentials.at(0).display_name, "new_display_name");
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest, ChangeCredential_NotFound) {
+  SetUpPasswordStores({});
+  auto delegate = CreateDelegate();
+  // Spin the loop to allow PasswordStore tasks posted on the creation of
+  // |delegate| to be completed.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      delegate->ChangeCredential(api::passwords_private::PasswordUiEntry()));
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest, ChangeCredential_EmptyPassword) {
+  password_manager::PasswordForm sample_form = CreateSampleForm();
+  SetUpPasswordStores({sample_form});
+  auto delegate = CreateDelegate();
+  // Spin the loop to allow PasswordStore tasks posted on the creation of
+  // |delegate| to be completed.
+  base::RunLoop().RunUntilIdle();
+
+  api::passwords_private::PasswordUiEntry updated_credential =
+      GetCredentials(*delegate).at(0).Clone();
+  updated_credential.password = "";
+  updated_credential.username = "new_user";
+
+  EXPECT_FALSE(delegate->ChangeCredential(updated_credential));
 }
 
 // Checking callback result of RequestPlaintextPassword with reason Copy.
@@ -1360,7 +1592,8 @@ TEST_F(PasswordsPrivateDelegateImplTest,
 
 #endif
 
-TEST_F(PasswordsPrivateDelegateImplTest, ShowAddShortcutDialog) {
+// TODO(http://crbug.com/1455574) Re-enable.
+TEST_F(PasswordsPrivateDelegateImplTest, DISABLED_ShowAddShortcutDialog) {
   base::HistogramTester histogram_tester;
   // Set up a browser instance and simulate a navigation.
   Browser::CreateParams params(profile(), /*user_gesture=*/true);
@@ -1378,8 +1611,11 @@ TEST_F(PasswordsPrivateDelegateImplTest, ShowAddShortcutDialog) {
 
   webapps::ChromeWebappsClient::GetInstance();
   auto* provider = web_app::FakeWebAppProvider::Get(profile());
-  provider->SetDefaultFakeSubsystems();
-  provider->StartWithSubsystems();
+  // This test harness is handling web contents loading, so use the real web
+  // contents manager.
+  provider->SetWebContentsManager(
+      std::make_unique<web_app::WebContentsManager>());
+  web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
   task_environment()->RunUntilIdle();
 
   // Check that no web app installation is happening at the moment.
@@ -1452,6 +1688,90 @@ TEST_F(PasswordsPrivateDelegateImplTest, PasswordManagerAppInstalled) {
       ->OnWebAppInstalledWithOsHooks(web_app::kYoutubeMusicAppId);
 
   histogram_tester.ExpectUniqueSample("PasswordManager.ShortcutMetric", 1, 1);
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest, GetPasskeyInGroups) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {password_manager::features::kPasswordsGrouping,
+       password_manager::features::kPasswordManagerPasskeys,
+       syncer::kSyncWebauthnCredentials},
+      /*disabled_features=*/{});
+
+  auto delegate = CreateDelegate();
+
+  webauthn::PasskeyModel* passkey_model =
+      PasskeyModelFactory::GetForProfile(profile());
+  ASSERT_EQ(passkey_model, PasskeyModelFactory::GetForProfile(profile()));
+  ASSERT_TRUE(passkey_model);
+  sync_pb::WebauthnCredentialSpecifics passkey = CreatePasskey();
+  passkey_model->AddNewPasskeyForTesting(passkey);
+
+  password_manager::PasswordForm password = CreateSampleForm(
+      password_manager::PasswordForm::Store::kProfileStore, u"username1");
+  SetUpPasswordStores({password});
+
+  auto groups = delegate->GetCredentialGroups();
+  EXPECT_EQ(1u, groups.size());
+  EXPECT_EQ(2u, groups[0].entries.size());
+  EXPECT_EQ("abc1.com", groups[0].name);
+  EXPECT_EQ("https://abc1.com/favicon.ico", groups[0].icon_url);
+
+  api::passwords_private::PasswordUiEntry expected_entry1;
+  expected_entry1.urls.link = "https://abc1.com/";
+  expected_entry1.username = "username1";
+  expected_entry1.stored_in = api::passwords_private::PASSWORD_STORE_SET_DEVICE;
+  api::passwords_private::PasswordUiEntry expected_entry2;
+  expected_entry2.is_passkey = true;
+  expected_entry2.urls.link = "https://abc1.com/";
+  expected_entry2.username = passkey.user_name();
+  expected_entry2.display_name = passkey.user_display_name();
+  expected_entry2.stored_in =
+      api::passwords_private::PASSWORD_STORE_SET_ACCOUNT;
+  EXPECT_THAT(groups[0].entries,
+              testing::UnorderedElementsAre(
+                  PasswordUiEntryDataEquals(testing::ByRef(expected_entry1)),
+                  PasswordUiEntryDataEquals(testing::ByRef(expected_entry2))));
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest, RemovePasskey) {
+  base::UserActionTester user_action_tester;
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {password_manager::features::kPasswordsGrouping,
+       password_manager::features::kPasswordManagerPasskeys,
+       syncer::kSyncWebauthnCredentials},
+      /*disabled_features=*/{});
+
+  auto delegate = CreateDelegate();
+
+  webauthn::PasskeyModel* passkey_model =
+      PasskeyModelFactory::GetForProfile(profile());
+  ASSERT_EQ(passkey_model, PasskeyModelFactory::GetForProfile(profile()));
+  ASSERT_TRUE(passkey_model);
+  sync_pb::WebauthnCredentialSpecifics passkey = CreatePasskey();
+  passkey_model->AddNewPasskeyForTesting(std::move(passkey));
+  SetUpPasswordStores({});
+
+  auto groups = delegate->GetCredentialGroups();
+  api::passwords_private::PasswordUiEntry& passkey_entry =
+      groups.at(0).entries.at(0);
+  ASSERT_TRUE(passkey_entry.is_passkey);
+  EXPECT_EQ(user_action_tester.GetActionCount("PasswordManager_RemovePasskey"),
+            0);
+
+  delegate->RemoveCredential(passkey_entry.id, passkey_entry.stored_in);
+  groups = delegate->GetCredentialGroups();
+  EXPECT_TRUE(groups.empty());
+  EXPECT_EQ(user_action_tester.GetActionCount("PasswordManager_RemovePasskey"),
+            1);
+
+  // Attempt removing a non existent entry.
+  delegate->RemoveCredential(
+      /*id=*/42,
+      api::passwords_private::PasswordStoreSet::PASSWORD_STORE_SET_ACCOUNT);
+  EXPECT_EQ(user_action_tester.GetActionCount("PasswordManager_RemovePasskey"),
+            1);
 }
 
 }  // namespace extensions

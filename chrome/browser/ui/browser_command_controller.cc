@@ -26,21 +26,28 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/commander/commander.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
+#include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/profile_view_utils.h"
+#include "chrome/browser/ui/side_panel/companion/companion_utils.h"
 #include "chrome/browser/ui/side_panel/side_panel_entry_id.h"
 #include "chrome/browser/ui/side_panel/side_panel_enums.h"
 #include "chrome/browser/ui/side_panel/side_panel_ui.h"
@@ -71,7 +78,10 @@
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -128,10 +138,6 @@
 #endif
 
 using WebExposedIsolationLevel = content::WebExposedIsolationLevel;
-
-using content::NavigationController;
-using content::NavigationEntry;
-using content::WebContents;
 
 namespace chrome {
 
@@ -236,10 +242,6 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
           &BrowserCommandController::UpdateCommandsForFullscreenMode,
           base::Unretained(this)));
 #endif
-  pref_signin_allowed_.Init(
-      prefs::kSigninAllowed, profile()->GetOriginalProfile()->GetPrefs(),
-      base::BindRepeating(&BrowserCommandController::OnSigninAllowedPrefChange,
-                          base::Unretained(this)));
 
   InitCommandState();
 
@@ -639,6 +641,18 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_SAVE_AUTOFILL_ADDRESS:
       SaveAutofillAddress(browser_);
       break;
+    case IDC_SHOW_SYNC_SETTINGS:
+      chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
+      break;
+    case IDC_TURN_ON_SYNC:
+      signin_ui_util::EnableSyncFromSingleAccountPromo(
+          browser_->profile(), GetAccountInfoFromProfile(browser_->profile()),
+          signin_metrics::AccessPoint::ACCESS_POINT_MENU);
+      break;
+    case IDC_SHOW_SIGNIN_WHEN_PAUSED:
+      signin_ui_util::ShowReauthForPrimaryAccountWithAuthError(
+          browser_->profile(), signin_metrics::AccessPoint::ACCESS_POINT_MENU);
+      break;
     case IDC_SHOW_PASSWORD_MANAGER:
       ShowPasswordManager(browser_);
       break;
@@ -654,8 +668,8 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_VIRTUAL_CARD_ENROLL:
       ShowVirtualCardEnrollBubble(browser_);
       break;
-    case IDC_TRANSLATE_PAGE:
-      Translate(browser_);
+    case IDC_SHOW_TRANSLATE:
+      ShowTranslateBubble(browser_);
       break;
     case IDC_MANAGE_PASSWORDS_FOR_PAGE:
       ManagePasswordsForPage(browser_);
@@ -814,6 +828,10 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_CARET_BROWSING_TOGGLE:
       ToggleCaretBrowsing(browser_);
       break;
+    case IDC_RECENT_TABS_LOGIN_FOR_DEVICE_TABS:
+      ShowSettingsSubPage(browser_->GetBrowserForOpeningWebUi(),
+                          chrome::kPeopleSubPage);
+      break;
     case IDC_SHOW_BOOKMARK_MANAGER:
       ShowBookmarkManager(browser_->GetBrowserForOpeningWebUi());
       break;
@@ -933,12 +951,6 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_TOGGLE_QUICK_COMMANDS:
       ToggleCommander(browser_);
       break;
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    case IDC_SHOW_SIGNIN:
-      ShowBrowserSigninOrSettings(
-          browser_, signin_metrics::AccessPoint::ACCESS_POINT_MENU);
-      break;
-#endif
     case IDC_DISTILL_PAGE:
       ToggleDistilledView(browser_);
       break;
@@ -961,7 +973,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       CloseOtherTabs(browser_);
       break;
     case IDC_SHOW_MANAGEMENT_PAGE: {
-      ShowSingletonTab(browser_, GetManagedUiMenuLinkUrl(profile()));
+      ShowSingletonTab(browser_, GetManagedUiUrl(profile()));
       break;
     }
     case IDC_MUTE_TARGET_SITE:
@@ -1032,6 +1044,46 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
           SidePanelEntryId::kReadingList, SidePanelOpenTrigger::kAppMenu);
       break;
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+    // Profile submenu commands
+    // This menu item is not enabled on ChromeOS and certain capabilities such
+    // as the profile picker are not available.
+    case IDC_CUSTOMIZE_CHROME:
+      chrome::ShowSettingsSubPage(browser_, chrome::kManageProfileSubPage);
+      break;
+    case IDC_CLOSE_PROFILE: {
+      if (browser_->profile()->IsIncognitoProfile()) {
+        BrowserList::CloseAllBrowsersWithIncognitoProfile(
+            browser_->profile(), base::DoNothing(), base::DoNothing(), true);
+      } else {
+        profiles::CloseProfileWindows(browser_->profile());
+      }
+      break;
+    }
+    case IDC_MANAGE_GOOGLE_ACCOUNT: {
+      Profile* profile = browser_->profile();
+      signin::IdentityManager* identity_manager =
+          IdentityManagerFactory::GetForProfile(profile);
+      DCHECK(
+          identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+      NavigateToGoogleAccountPage(
+          profile,
+          identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
+              .email);
+      break;
+    }
+    case IDC_OPEN_GUEST_PROFILE:
+      profiles::SwitchToGuestProfile();
+      break;
+    case IDC_ADD_NEW_PROFILE:
+      ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
+          ProfilePicker::EntryPoint::kAppMenuProfileSubMenuAddNewProfile));
+      break;
+    case IDC_MANAGE_CHROME_PROFILES:
+      ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
+          ProfilePicker::EntryPoint::kAppMenuProfileSubMenuManageProfiles));
+      break;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
       break;
@@ -1061,16 +1113,6 @@ bool BrowserCommandController::UpdateCommandEnabled(int id, bool state) {
     return false;
 
   return command_updater_.UpdateCommandEnabled(id, state);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserCommandController, SigninPrefObserver implementation:
-
-void BrowserCommandController::OnSigninAllowedPrefChange() {
-  // For unit tests, we don't have a window.
-  if (!window())
-    return;
-  UpdateShowSyncState(IsShowingMainUI());
 }
 
 // BrowserCommandController, TabStripModelObserver implementation:
@@ -1190,7 +1232,8 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_USE_SYSTEM_TITLE_BAR,
                                         use_system_title_bar);
 #endif
-  command_updater_.UpdateCommandEnabled(IDC_OPEN_IN_PWA_WINDOW, true);
+  command_updater_.UpdateCommandEnabled(IDC_OPEN_IN_PWA_WINDOW,
+                                        web_app::CanPopOutWebApp(profile()));
 
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_MANAGE_PASSWORDS_FOR_PAGE, true);
@@ -1209,16 +1252,23 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, CanOpenFile(browser_));
   UpdateCommandsForDevTools();
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, CanOpenTaskManager());
+  command_updater_.UpdateCommandEnabled(IDC_PROFILE_MENU_IN_APP_MENU, true);
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_HISTORY, (!guest_session && !profile()->IsSystemProfile()));
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   command_updater_.UpdateCommandEnabled(IDC_FIND_AND_EDIT_MENU, true);
+  command_updater_.UpdateCommandEnabled(IDC_SAVE_AND_SHARE_MENU, true);
+  command_updater_.UpdateCommandEnabled(IDC_SEND_TAB_TO_SELF, false);
+  command_updater_.UpdateCommandEnabled(IDC_QRCODE_GENERATOR, false);
   command_updater_.UpdateCommandEnabled(IDC_PASSWORDS_AND_AUTOFILL_MENU,
                                         !guest_session);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_PASSWORD_MANAGER,
                                         !guest_session);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_PAYMENT_METHODS,
                                         !guest_session);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_SYNC_SETTINGS, true);
+  command_updater_.UpdateCommandEnabled(IDC_TURN_ON_SYNC, true);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_SIGNIN_WHEN_PAUSED, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_ADDRESSES, !guest_session);
   command_updater_.UpdateCommandEnabled(IDC_HELP_MENU, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE_VIA_KEYBOARD, true);
@@ -1229,6 +1279,20 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(
       IDC_RECENT_TABS_MENU, (!guest_session && !profile()->IsSystemProfile() &&
                              !profile()->IsIncognitoProfile()));
+  command_updater_.UpdateCommandEnabled(
+      IDC_RECENT_TABS_LOGIN_FOR_DEVICE_TABS,
+      (!guest_session && !profile()->IsSystemProfile() &&
+       !profile()->IsIncognitoProfile()));
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  command_updater_.UpdateCommandEnabled(IDC_CUSTOMIZE_CHROME, true);
+  command_updater_.UpdateCommandEnabled(IDC_CLOSE_PROFILE, true);
+  command_updater_.UpdateCommandEnabled(
+      IDC_MANAGE_GOOGLE_ACCOUNT,
+      HasUnconstentedProfile(profile()) && !IsSyncPaused(profile()));
+  command_updater_.UpdateCommandEnabled(IDC_OPEN_GUEST_PROFILE, true);
+  command_updater_.UpdateCommandEnabled(IDC_ADD_NEW_PROFILE, true);
+  command_updater_.UpdateCommandEnabled(IDC_MANAGE_CHROME_PROFILES, true);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   if (profile()->IsIncognitoProfile()) {
     command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, true);
@@ -1254,8 +1318,6 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_CARET_BROWSING_TOGGLE, true);
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_QUICK_COMMANDS,
                                         commander::IsEnabled());
-  UpdateShowSyncState(true);
-
   // Navigation commands
   command_updater_.UpdateCommandEnabled(
       IDC_HOME, normal_window || browser_->is_type_app() ||
@@ -1265,7 +1327,7 @@ void BrowserCommandController::InitCommandState() {
   const bool is_web_app_or_custom_tab = IsWebAppOrCustomTab();
   const bool enable_copy_url =
       is_web_app_or_custom_tab ||
-      sharing_hub::SharingHubOmniboxEnabled(browser_->profile());
+      !sharing_hub::SharingIsDisabledByPolicy(browser_->profile());
   command_updater_.UpdateCommandEnabled(IDC_COPY_URL, enable_copy_url);
   command_updater_.UpdateCommandEnabled(IDC_WEB_APP_SETTINGS,
                                         is_web_app_or_custom_tab);
@@ -1329,12 +1391,16 @@ void BrowserCommandController::InitCommandState() {
   }
 #endif
 
+  if ((browser_->is_type_normal() && features::IsChromeRefresh2023()) ||
+      base::FeatureList::IsEnabled(features::kPowerBookmarksSidePanel)) {
+    command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_SIDE_PANEL, true);
+  }
+
   if (features::IsChromeRefresh2023()) {
     if (browser_->is_type_normal()) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       command_updater_.UpdateCommandEnabled(IDC_SHOW_SEARCH_COMPANION, true);
 #endif
-      command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_SIDE_PANEL, true);
       // Reading list commands.
       command_updater_.UpdateCommandEnabled(IDC_READING_LIST_MENU, true);
       command_updater_.UpdateCommandEnabled(IDC_READING_LIST_MENU_ADD_TAB,
@@ -1395,8 +1461,6 @@ void BrowserCommandController::UpdateSharedCommandsForIncognitoAvailability(
                                         !forced_incognito && !is_guest);
   command_updater->UpdateCommandEnabled(IDC_OPTIONS,
                                         !forced_incognito || is_guest);
-  command_updater->UpdateCommandEnabled(IDC_SHOW_SIGNIN,
-                                        !forced_incognito && !is_guest);
   command_updater->UpdateCommandEnabled(IDC_PERFORMANCE,
                                         !forced_incognito && !is_guest);
 }
@@ -1434,7 +1498,7 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   if (is_locked_fullscreen_)
     return;
 
-  WebContents* current_web_contents =
+  content::WebContents* current_web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
   if (!current_web_contents)  // May be NULL during tab restore.
     return;
@@ -1456,12 +1520,6 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_MUTE_SITE, !is_app);
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_PIN_TAB, is_normal);
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_GROUP_TAB, is_normal);
-  command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_TABS_TO_RIGHT,
-                                        CanCloseTabsToRight(browser_));
-  command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_OTHER_TABS,
-                                        CanCloseOtherTabs(browser_));
-  command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_TO_NEW_WINDOW,
-                                        CanMoveActiveTabToNewWindow(browser_));
 
   // Page-related commands
   window()->SetStarredState(
@@ -1476,10 +1534,20 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(IDC_INSTALL_PWA, can_create_web_app);
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUT,
                                         can_create_web_app);
-  // Note that additional logic in AppMenuModel::Build() controls the presence
-  // of this command.
-  command_updater_.UpdateCommandEnabled(IDC_OPEN_IN_PWA_WINDOW,
-                                        web_app::CanPopOutWebApp(profile()));
+
+  command_updater_.UpdateCommandEnabled(IDC_SEND_TAB_TO_SELF,
+                                        CanSendTabToSelf(browser_));
+  command_updater_.UpdateCommandEnabled(IDC_QRCODE_GENERATOR,
+                                        CanGenerateQrCode(browser_));
+
+  if (features::IsChromeRefresh2023()) {
+    ChromeTranslateClient* chrome_translate_client =
+        ChromeTranslateClient::FromWebContents(current_web_contents);
+    command_updater_.UpdateCommandEnabled(
+        IDC_SHOW_TRANSLATE, chrome_translate_client &&
+                                chrome_translate_client->GetTranslateManager()
+                                    ->CanManuallyTranslate());
+  }
 
   bool is_isolated_app = current_web_contents->GetPrimaryMainFrame()
                              ->GetWebExposedIsolationLevel() >=
@@ -1494,6 +1562,10 @@ void BrowserCommandController::UpdateCommandsForTabState() {
       IDC_TOGGLE_REQUEST_TABLET_SITE,
       CanRequestTabletSite(current_web_contents));
 
+  command_updater_.UpdateCommandEnabled(
+      IDC_SHOW_SEARCH_COMPANION,
+      companion::IsCompanionAvailableForCurrentActiveTab(browser_));
+
   UpdateCommandsForContentRestrictionState();
   UpdateCommandsForBookmarkEditing();
   UpdateCommandsForFind();
@@ -1504,7 +1576,8 @@ void BrowserCommandController::UpdateCommandsForTabState() {
 }
 
 void BrowserCommandController::UpdateCommandsForZoomState() {
-  WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
   if (!contents)
     return;
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_PLUS, CanZoomIn(contents));
@@ -1556,9 +1629,6 @@ void BrowserCommandController::UpdateCommandsForBookmarkEditing() {
                                         CanBookmarkCurrentTab(browser_));
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
                                         CanBookmarkAllTabs(browser_));
-#if BUILDFLAG(IS_WIN)
-  command_updater_.UpdateCommandEnabled(IDC_PIN_TO_START_SCREEN, true);
-#endif
 }
 
 void BrowserCommandController::UpdateCommandsForBookmarkBar() {
@@ -1629,7 +1699,6 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   command_updater_.UpdateCommandEnabled(
       IDC_FEEDBACK, show_main_ui || browser_->is_type_devtools());
 #endif
-  UpdateShowSyncState(show_main_ui);
 
   command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
@@ -1638,14 +1707,12 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   command_updater_.UpdateCommandEnabled(IDC_CHROME_TIPS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_CHROME_WHATS_NEW, show_main_ui);
 #endif
-  command_updater_.UpdateCommandEnabled(IDC_QRCODE_GENERATOR, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_CONTENT_CONTEXT_SHARING_SUBMENU,
                                         show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHARING_HUB, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHARING_HUB_SCREENSHOT,
                                         show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_APP_MENU, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_SEND_TAB_TO_SELF, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_MANAGEMENT_PAGE, true);
   command_updater_.UpdateCommandEnabled(IDC_FOLLOW, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_UNFOLLOW, show_main_ui);
@@ -1750,14 +1817,6 @@ void BrowserCommandController::UpdateSaveAsState() {
   command_updater_.UpdateCommandEnabled(IDC_SAVE_PAGE, CanSavePage(browser_));
 }
 
-void BrowserCommandController::UpdateShowSyncState(bool show_main_ui) {
-  if (is_locked_fullscreen_)
-    return;
-
-  command_updater_.UpdateCommandEnabled(
-      IDC_SHOW_SIGNIN, show_main_ui && pref_signin_allowed_.GetValue());
-}
-
 void BrowserCommandController::UpdateReloadStopState(bool is_loading,
                                                      bool force) {
   if (is_locked_fullscreen_)
@@ -1834,9 +1893,19 @@ void BrowserCommandController::UpdateCommandsForWebContentsFocus() {
 }
 
 void BrowserCommandController::UpdateCommandsForTabStripStateChanged() {
+  int tab_index = browser_->tab_strip_model()->active_index();
+  // No commands are updated if there is not yet any selected tab.
+  if (tab_index == TabStripModel::kNoTab) {
+    return;
+  }
   command_updater_.UpdateCommandEnabled(
-      IDC_CLOSE_TAB, browser_->tab_strip_model()->IsTabClosable(
-                         browser_->tab_strip_model()->active_index()));
+      IDC_CLOSE_TAB, browser_->tab_strip_model()->IsTabClosable(tab_index));
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_TABS_TO_RIGHT,
+                                        CanCloseTabsToRight(browser_));
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_OTHER_TABS,
+                                        CanCloseOtherTabs(browser_));
+  command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_TO_NEW_WINDOW,
+                                        CanMoveActiveTabToNewWindow(browser_));
 }
 
 BrowserWindow* BrowserCommandController::window() {

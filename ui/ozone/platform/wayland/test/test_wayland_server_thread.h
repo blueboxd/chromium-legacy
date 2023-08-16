@@ -58,7 +58,7 @@ enum class EnableAuraShellProtocol { kEnabled, kDisabled };
 
 struct ServerConfig {
   TestZcrTextInputExtensionV1::Version text_input_extension_version =
-      TestZcrTextInputExtensionV1::Version::kV10;
+      TestZcrTextInputExtensionV1::Version::kV12;
   TestCompositor::Version compositor_version = TestCompositor::Version::kV4;
   PrimarySelectionProtocol primary_selection_protocol =
       PrimarySelectionProtocol::kNone;
@@ -222,7 +222,7 @@ class TestWaylandServerThread : public base::Thread,
   TestServerListener client_destroy_listener_;
   raw_ptr<wl_client> client_ = nullptr;
   raw_ptr<wl_event_loop> event_loop_ = nullptr;
-  raw_ptr<wl_protocol_logger> protocol_logger_ = nullptr;
+  raw_ptr<wl_protocol_logger, DanglingUntriaged> protocol_logger_ = nullptr;
 
   ServerConfig config_;
 

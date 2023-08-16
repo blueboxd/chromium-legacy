@@ -18,13 +18,14 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
-#include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/web_contents/web_app_icon_downloader.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "content/public/browser/web_contents.h"
@@ -348,9 +349,8 @@ class ManifestUpdateCheckCommandTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
     test::AwaitStartWebAppProviderAndSubsystems(profile());
-    fake_web_contents_manager_ = std::make_unique<FakeWebContentsManager>();
 
-    fake_web_contents_manager_->SetUrlLoaded(web_contents(), app_url());
+    web_contents_manager().SetUrlLoaded(web_contents(), app_url());
   }
 
  protected:
@@ -364,12 +364,9 @@ class ManifestUpdateCheckCommandTest : public WebAppTest {
                            absl::optional<WebAppInstallInfo>>
         manifest_update_check_future;
     RunResult output_result;
-    provider().command_manager().ScheduleCommand(
-        std::make_unique<ManifestUpdateCheckCommand>(
-            url, app_id, base::Time::Now(), web_contents()->GetWeakPtr(),
-            manifest_update_check_future.GetCallback(),
-            web_contents_manager().CreateDataRetriever()));
-
+    provider().scheduler().ScheduleManifestUpdateCheck(
+        url, app_id, base::Time::Now(), web_contents()->GetWeakPtr(),
+        manifest_update_check_future.GetCallback());
     EXPECT_TRUE(manifest_update_check_future.Wait());
     auto [update_result, new_install_info] =
         manifest_update_check_future.Take();
@@ -394,7 +391,8 @@ class ManifestUpdateCheckCommandTest : public WebAppTest {
   WebAppProvider& provider() { return *WebAppProvider::GetForTest(profile()); }
 
   FakeWebContentsManager& web_contents_manager() {
-    return *fake_web_contents_manager_;
+    return static_cast<FakeWebContentsManager&>(
+        provider().web_contents_manager());
   }
 
   GURL app_url() { return app_url_; }
@@ -416,7 +414,6 @@ class ManifestUpdateCheckCommandTest : public WebAppTest {
 
   const GURL app_url_{"http://www.foo.bar/web_apps/basic.html"};
   base::AutoReset<absl::optional<AppIdentityUpdate>> update_dialog_scope_;
-  std::unique_ptr<FakeWebContentsManager> fake_web_contents_manager_;
 };
 
 TEST_F(ManifestUpdateCheckCommandTest, Verify) {
@@ -677,11 +674,9 @@ TEST_F(ManifestUpdateCheckCommandTest,
 
   auto& page_state = web_contents_manager().GetOrCreatePageState(app_url());
   page_state.on_manifest_fetch = manifest_fetch_future.GetCallback();
-  provider().command_manager().ScheduleCommand(
-      std::make_unique<ManifestUpdateCheckCommand>(
-          app_url(), app_id, base::Time::Now(), web_contents()->GetWeakPtr(),
-          manifest_update_check_future.GetCallback(),
-          web_contents_manager().CreateDataRetriever()));
+  provider().scheduler().ScheduleManifestUpdateCheck(
+      app_url(), app_id, base::Time::Now(), web_contents()->GetWeakPtr(),
+      manifest_update_check_future.GetCallback());
 
   EXPECT_TRUE(manifest_fetch_future.Wait());
   // Trigger a navigation once we reach the async installability check.
@@ -722,11 +717,9 @@ TEST_F(ManifestUpdateCheckCommandTest,
 
   auto& page_state = web_contents_manager().GetOrCreatePageState(app_url());
   page_state.on_manifest_fetch = manifest_fetch_future.GetCallback();
-  provider().command_manager().ScheduleCommand(
-      std::make_unique<ManifestUpdateCheckCommand>(
-          app_url(), app_id, base::Time::Now(), web_contents()->GetWeakPtr(),
-          manifest_update_check_future.GetCallback(),
-          web_contents_manager().CreateDataRetriever()));
+  provider().scheduler().ScheduleManifestUpdateCheck(
+      app_url(), app_id, base::Time::Now(), web_contents()->GetWeakPtr(),
+      manifest_update_check_future.GetCallback());
 
   EXPECT_TRUE(manifest_fetch_future.Wait());
   // Trigger a 2nd navigation once we reach the async installability check.

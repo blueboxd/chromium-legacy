@@ -197,6 +197,8 @@ const std::vector<SearchConcept>& GetOnStartupSearchConcepts() {
 void AddAppManagementStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"appManagementAppDetailsTitle", IDS_APP_MANAGEMENT_APP_DETAILS_TITLE},
+      {"appManagementAppDetailsTooltipSystem",
+       IDS_APP_MANAGEMENT_APP_DETAILS_TOOLTIP_SYSTEM},
       {"appManagementAppDetailsTypeAndroid",
        IDS_APP_MANAGEMENT_APP_DETAILS_TYPE_ANDROID},
       {"appManagementAppDetailsTypeChrome",
@@ -286,6 +288,8 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
       {"appManagementPrintingPermissionLabel", IDS_APP_MANAGEMENT_PRINTING},
       {"appManagementSearchPrompt", IDS_APP_MANAGEMENT_SEARCH_PROMPT},
       {"appManagementStoragePermissionLabel", IDS_APP_MANAGEMENT_STORAGE},
+      {"appManagementSubAppsListHeading",
+       IDS_APP_MANAGEMENT_SUB_APPS_LIST_HEADING},
       {"appManagementUninstallLabel", IDS_APP_MANAGEMENT_UNINSTALL_APP},
       {"close", IDS_CLOSE},
       {"fileHandlingOverflowDialogTitle",

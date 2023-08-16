@@ -81,7 +81,14 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "components/account_id/account_id.h"
+#include "components/user_manager/fake_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 #endif
 
 using extensions::Extension;
@@ -188,9 +195,7 @@ class RenderViewContextMenuTest : public testing::Test {
   // RenderViewHostTestEnabler which needs to use the MessageLoop.
   explicit RenderViewContextMenuTest(
       std::unique_ptr<extensions::TestExtensionEnvironment> env)
-      : environment_(std::move(env)) {
-    // TODO(mgiuca): Add tests with DesktopPWAs enabled.
-  }
+      : environment_(std::move(env)) {}
 
   RenderViewContextMenuTest(const RenderViewContextMenuTest&) = delete;
   RenderViewContextMenuTest& operator=(const RenderViewContextMenuTest&) =
@@ -461,6 +466,77 @@ TEST_F(RenderViewContextMenuExtensionsTest,
   ASSERT_EQ(2, num_items_found);
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+using RenderViewContextMenuDeveloperItemsTest = ChromeRenderViewHostTestHarness;
+
+// Verify that the "Inspect" item and the "View page source" item are not
+// present in the context menu if the lacros is the only browser and the
+// `kAllowDevtoolsInSystemUI` flag is not enabled.
+TEST_F(RenderViewContextMenuDeveloperItemsTest,
+       DeveloperItemsAreNotPresentByDefaultIfAshBrowserIsDisabled) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
+      {ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
+       ash::features::kLacrosOnly,
+       ash::features::kLacrosProfileMigrationForceOff},
+      {});
+
+  auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
+  auto* primary_user =
+      fake_user_manager->AddUser(AccountId::FromUserEmail("test@test"));
+  fake_user_manager->UserLoggedIn(primary_user->GetAccountId(),
+                                  primary_user->username_hash(),
+                                  /*browser_restart=*/false,
+                                  /*is_child=*/false);
+  auto scoped_user_manager = std::make_unique<user_manager::ScopedUserManager>(
+      std::move(fake_user_manager));
+
+  ASSERT_FALSE(crosapi::browser_util::IsAshDevToolEnabled());
+
+  content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+  menu->Init();
+
+  EXPECT_FALSE(menu->IsItemPresent(IDC_VIEW_SOURCE));
+  EXPECT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+}
+
+// Verify that the "Inspect" item and the "View page source" are present in the
+// context menu if the lacros is the only browser and the
+// `kAllowDevtoolsInSystemUI` flag is enabled.
+TEST_F(RenderViewContextMenuDeveloperItemsTest,
+       DeveloperItemsArePresentIfAshBrowserIsDisabledAndFlagIsEnabled) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeatures(
+      {ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
+       ash::features::kLacrosOnly,
+       ash::features::kLacrosProfileMigrationForceOff,
+       ash::features::kAllowDevtoolsInSystemUI},
+      {});
+
+  auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
+  auto* primary_user =
+      fake_user_manager->AddUser(AccountId::FromUserEmail("test@test"));
+  fake_user_manager->UserLoggedIn(primary_user->GetAccountId(),
+                                  primary_user->username_hash(),
+                                  /*browser_restart=*/false,
+                                  /*is_child=*/false);
+  auto scoped_user_manager = std::make_unique<user_manager::ScopedUserManager>(
+      std::move(fake_user_manager));
+
+  ASSERT_TRUE(crosapi::browser_util::IsAshDevToolEnabled());
+
+  content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
+  auto menu = std::make_unique<TestRenderViewContextMenu>(
+      *web_contents()->GetPrimaryMainFrame(), params);
+  menu->Init();
+
+  EXPECT_TRUE(menu->IsItemPresent(IDC_VIEW_SOURCE));
+  EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
  public:
   RenderViewContextMenuPrefsTest() = default;
@@ -537,6 +613,9 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
   }
 
   PrefService* local_state() { return testing_local_state_->Get(); }
+  ScopedTestingLocalState* testing_local_state() {
+    return testing_local_state_.get();
+  }
 
   Browser* GetBrowser() {
     if (!browser_) {
@@ -562,7 +641,7 @@ class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
  private:
   std::unique_ptr<custom_handlers::ProtocolHandlerRegistry> registry_;
   std::unique_ptr<ScopedTestingLocalState> testing_local_state_;
-  raw_ptr<TemplateURLService> template_url_service_;
+  raw_ptr<TemplateURLService, DanglingUntriaged> template_url_service_;
   std::unique_ptr<Browser> browser_;
 };
 
@@ -1174,14 +1253,28 @@ TEST_F(RenderViewContextMenuPrefsTest, LensImageSearchEnabled) {
 // Ash, if Lacros is the only browser.
 TEST_F(RenderViewContextMenuPrefsTest,
        LensImageSearchDisabledIfAshBrowserIsDisabled) {
-  auto scoped_lacros_primary =
-      crosapi::browser_util::SetLacrosPrimaryBrowserForTest(true);
   base::test::ScopedFeatureList features;
   features.InitWithFeatures(
       {lens::features::kLensStandalone, lens::features::kEnableImageTranslate,
-       ash::features::kLacrosOnly},
+       ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
+       ash::features::kLacrosOnly,
+       ash::features::kLacrosProfileMigrationForceOff},
       {});
+  auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
+  auto* primary_user =
+      fake_user_manager->AddUser(AccountId::FromUserEmail("test@test"));
+  fake_user_manager->UserLoggedIn(primary_user->GetAccountId(),
+                                  primary_user->username_hash(),
+                                  /*browser_restart=*/false,
+                                  /*is_child=*/false);
+  auto scoped_user_manager = std::make_unique<user_manager::ScopedUserManager>(
+      std::move(fake_user_manager));
   ASSERT_FALSE(crosapi::browser_util::IsAshWebBrowserEnabled());
+  ash::ProfileHelper::Get();
+
+  TestingProfileManager testing_profile_manager(
+      TestingBrowserProcess::GetGlobal(), testing_local_state());
+  ASSERT_TRUE(testing_profile_manager.SetUp());
 
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);
@@ -1380,12 +1473,27 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearch) {
 // feature is enabled if Lacros is the only browser.
 TEST_F(RenderViewContextMenuPrefsTest,
        LensRegionSearchDisabledIfAshBrowserIsDisabled) {
-  auto scoped_lacros_primary =
-      crosapi::browser_util::SetLacrosPrimaryBrowserForTest(true);
   base::test::ScopedFeatureList features;
   features.InitWithFeatures(
-      {lens::features::kLensStandalone, ash::features::kLacrosOnly}, {});
+      {lens::features::kLensStandalone, ash::features::kLacrosSupport,
+       ash::features::kLacrosPrimary, ash::features::kLacrosOnly,
+       ash::features::kLacrosProfileMigrationForceOff},
+      {});
+  auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
+  auto* primary_user =
+      fake_user_manager->AddUser(AccountId::FromUserEmail("test@test"));
+  fake_user_manager->UserLoggedIn(primary_user->GetAccountId(),
+                                  primary_user->username_hash(),
+                                  /*browser_restart=*/false,
+                                  /*is_child=*/false);
+  auto scoped_user_manager = std::make_unique<user_manager::ScopedUserManager>(
+      std::move(fake_user_manager));
   ASSERT_FALSE(crosapi::browser_util::IsAshWebBrowserEnabled());
+  ash::ProfileHelper::Get();
+
+  TestingProfileManager testing_profile_manager(
+      TestingBrowserProcess::GetGlobal(), testing_local_state());
+  ASSERT_TRUE(testing_profile_manager.SetUp());
 
   SetUserSelectedDefaultSearchProvider("https://www.google.com",
                                        /*supports_image_search=*/true);

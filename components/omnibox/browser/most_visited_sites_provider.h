@@ -30,8 +30,10 @@ class MostVisitedSitesProvider : public AutocompleteProvider {
                           size_t element) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ParameterizedMostVisitedSitesProviderTest,
+  FRIEND_TEST_ALL_PREFIXES(MostVisitedSitesProviderTest,
                            AllowMostVisitedSitesSuggestions);
+  FRIEND_TEST_ALL_PREFIXES(MostVisitedSitesProviderTest,
+                           SrpCoverageIsControlledWithFeatureFlag);
 
   ~MostVisitedSitesProvider() override;
 
@@ -46,7 +48,7 @@ class MostVisitedSitesProvider : public AutocompleteProvider {
 
   void BlockURL(const GURL& site_url);
 
-  const raw_ptr<AutocompleteProviderClient> client_;
+  const raw_ptr<AutocompleteProviderClient, DanglingUntriaged> client_;
   // Note: used to cancel requests - not a general purpose WeakPtr factory.
   base::WeakPtrFactory<MostVisitedSitesProvider> request_weak_ptr_factory_{
       this};

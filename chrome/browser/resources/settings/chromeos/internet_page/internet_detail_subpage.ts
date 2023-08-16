@@ -33,12 +33,13 @@ import '/shared/settings/controls/settings_toggle_button.js';
 import './cellular_roaming_toggle_button.js';
 import './internet_shared.css.js';
 import './network_proxy_section.js';
+import './passpoint_remove_dialog.js';
 import './settings_traffic_counters.js';
 import './tether_connection_dialog.js';
 
 import {MojoConnectivityProvider} from 'chrome://resources/ash/common/connectivity/mojo_connectivity_provider.js';
 import {PasspointServiceInterface, PasspointSubscription} from 'chrome://resources/ash/common/connectivity/passpoint.mojom-webui.js';
-import {isActiveSim, processDeviceState} from 'chrome://resources/ash/common/network/cellular_utils.js';
+import {getApnDisplayName, isActiveSim, processDeviceState} from 'chrome://resources/ash/common/network/cellular_utils.js';
 import {CrPolicyNetworkBehaviorMojo, CrPolicyNetworkBehaviorMojoInterface} from 'chrome://resources/ash/common/network/cr_policy_network_behavior_mojo.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/ash/common/network/network_listener_behavior.js';
@@ -59,12 +60,12 @@ import {recordSettingChange} from '../metrics_recorder.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {OsSyncBrowserProxy, OsSyncBrowserProxyImpl, OsSyncPrefs} from '../os_people_page/os_sync_browser_proxy.js';
 import {OsSettingsSubpageElement} from '../os_settings_page/os_settings_subpage.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin, RouteObserverMixinInterface} from '../route_observer_mixin.js';
-import {Route, Router} from '../router.js';
+import {Route, Router, routes} from '../router.js';
 
 import {getTemplate} from './internet_detail_subpage.html.js';
 import {InternetPageBrowserProxy, InternetPageBrowserProxyImpl} from './internet_page_browser_proxy.js';
+import {PasspointRemoveDialogElement} from './passpoint_remove_dialog.js';
 import {TetherConnectionDialogElement} from './tether_connection_dialog.js';
 
 const SettingsInternetDetailPageElementBase =
@@ -1509,9 +1510,10 @@ class SettingsInternetDetailPageElement extends
             '#tetherDialog'));
   }
 
-  private getPasspointRemovalDialog_(): HTMLDialogElement {
-    return castExists(this.shadowRoot!.querySelector<HTMLDialogElement>(
-        '#passpointRemovalDialog'));
+  private getPasspointRemovalDialog_(): PasspointRemoveDialogElement {
+    return castExists(
+        this.shadowRoot!.querySelector<PasspointRemoveDialogElement>(
+            '#passpointRemovalDialog'));
   }
 
   private handleConnectClick_(): void {
@@ -1607,7 +1609,7 @@ class SettingsInternetDetailPageElement extends
     if (this.isPasspointWifi_(this.managedProperties_)) {
       // Ask user confirmation before removing a Passpoint Wi-Fi and the
       // associated subscription.
-      this.getPasspointRemovalDialog_().showModal();
+      this.getPasspointRemovalDialog_().open();
       return;
     }
     return this.forgetNetwork_();
@@ -1726,8 +1728,8 @@ class SettingsInternetDetailPageElement extends
       return '';
     }
 
-    return this.managedProperties_!.typeProperties.cellular!.connectedApn
-        .accessPointName;
+    return getApnDisplayName(
+        this.managedProperties_!.typeProperties.cellular!.connectedApn);
   }
 
 
@@ -2191,12 +2193,16 @@ class SettingsInternetDetailPageElement extends
     this.dispatchEvent(showPasspointEvent);
   }
 
-  private onPasspointRemovalDialogCancel_(): void {
-    this.getPasspointRemovalDialog_().close();
-  }
-
   private onPasspointRemovalDialogConfirm_(): void {
     this.getPasspointRemovalDialog_().close();
+
+    if (this.isPasspointSettingsEnabled_) {
+      // When Passpoint settings page is enabled, the removal dialog leads the
+      // user to the subscription page.
+      this.onPasspointRowClicked_();
+      return;
+    }
+
     this.forgetNetwork_();
   }
 

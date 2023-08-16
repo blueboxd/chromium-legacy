@@ -117,7 +117,6 @@ partition_alloc::PartitionOptions PartitionOptionsFromFeatures() {
 
   return PartitionOptions{
       .quarantine = PartitionOptions::Quarantine::kAllowed,
-      .cookie = PartitionOptions::Cookie::kAllowed,
       .backup_ref_ptr = brp_setting,
       .memory_tagging = memory_tagging,
   };
@@ -186,14 +185,6 @@ bool Partitions::InitializeOnce() {
   }
 #endif  // BUILDFLAG(USE_STARSCAN)
 
-  if (!base::FeatureList::IsEnabled(
-          base::features::kPartitionAllocUseAlternateDistribution)) {
-#if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-    fast_malloc_root_->SwitchToDenserBucketDistribution();
-#endif
-    buffer_root_->SwitchToDenserBucketDistribution();
-  }
-
   initialized_ = true;
   return initialized_;
 }
@@ -210,7 +201,6 @@ void Partitions::InitializeArrayBufferPartition() {
   // aligned as required by ArrayBufferContents.
   array_buffer_allocator->init(partition_alloc::PartitionOptions{
       .quarantine = partition_alloc::PartitionOptions::Quarantine::kAllowed,
-      .cookie = partition_alloc::PartitionOptions::Cookie::kAllowed,
       .backup_ref_ptr =
           partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
       // When the V8 virtual memory cage is enabled, the ArrayBuffer partition
@@ -235,10 +225,6 @@ void Partitions::InitializeArrayBufferPartition() {
         array_buffer_root_);
   }
 #endif  // BUILDFLAG(USE_STARSCAN)
-  if (!base::FeatureList::IsEnabled(
-          base::features::kPartitionAllocUseAlternateDistribution)) {
-    array_buffer_root_->SwitchToDenserBucketDistribution();
-  }
 }
 
 // static

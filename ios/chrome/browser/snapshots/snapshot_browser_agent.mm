@@ -29,7 +29,8 @@ SnapshotBrowserAgent::SnapshotBrowserAgent(Browser* browser)
 
 SnapshotBrowserAgent::~SnapshotBrowserAgent() = default;
 
-// Browser Observer methods:
+#pragma mark - BrowserObserver
+
 void SnapshotBrowserAgent::BrowserDestroyed(Browser* browser) {
   DCHECK_EQ(browser, browser_);
   browser->GetWebStateList()->RemoveObserver(this);
@@ -38,41 +39,55 @@ void SnapshotBrowserAgent::BrowserDestroyed(Browser* browser) {
   [snapshot_cache_ shutdown];
 }
 
-void SnapshotBrowserAgent::WebStateInsertedAt(WebStateList* web_state_list,
-                                              web::WebState* web_state,
-                                              int index,
-                                              bool activating) {
-  SnapshotTabHelper::FromWebState(web_state)->SetSnapshotCache(snapshot_cache_);
-}
+#pragma mark - WebStateListObserver
 
-void SnapshotBrowserAgent::WebStateReplacedAt(WebStateList* web_state_list,
-                                              web::WebState* old_web_state,
-                                              web::WebState* new_web_state,
-                                              int index) {
-  SnapshotTabHelper::FromWebState(old_web_state)->SetSnapshotCache(nil);
-  SnapshotTabHelper::FromWebState(new_web_state)
-      ->SetSnapshotCache(snapshot_cache_);
+void SnapshotBrowserAgent::WebStateListChanged(
+    WebStateList* web_state_list,
+    const WebStateListChange& change,
+    const WebStateSelection& selection) {
+  switch (change.type()) {
+    case WebStateListChange::Type::kSelectionOnly:
+      // Do nothing when a WebState is selected and its status is updated.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // WebStateDetachedAt() to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace: {
+      const WebStateListChangeReplace& replace_change =
+          change.As<WebStateListChangeReplace>();
+      DetachWebState(replace_change.replaced_web_state());
+      InsertWebState(replace_change.inserted_web_state());
+      break;
+    }
+    case WebStateListChange::Type::kInsert: {
+      const WebStateListChangeInsert& insert_change =
+          change.As<WebStateListChangeInsert>();
+      InsertWebState(insert_change.inserted_web_state());
+      break;
+    }
+  }
 }
 
 void SnapshotBrowserAgent::WebStateDetachedAt(WebStateList* web_state_list,
                                               web::WebState* web_state,
                                               int index) {
-  SnapshotTabHelper::FromWebState(web_state)->SetSnapshotCache(nil);
+  DetachWebState(web_state);
 }
 
 void SnapshotBrowserAgent::WillBeginBatchOperation(
     WebStateList* web_state_list) {
   for (int i = 0; i < web_state_list->count(); ++i) {
-    web::WebState* web_state = web_state_list->GetWebStateAt(i);
-    SnapshotTabHelper::FromWebState(web_state)->SetSnapshotCache(nil);
+    DetachWebState(web_state_list->GetWebStateAt(i));
   }
 }
 
 void SnapshotBrowserAgent::BatchOperationEnded(WebStateList* web_state_list) {
   for (int i = 0; i < web_state_list->count(); ++i) {
-    web::WebState* web_state = web_state_list->GetWebStateAt(i);
-    SnapshotTabHelper::FromWebState(web_state)->SetSnapshotCache(
-        snapshot_cache_);
+    InsertWebState(web_state_list->GetWebStateAt(i));
   }
 }
 
@@ -94,6 +109,14 @@ void SnapshotBrowserAgent::RemoveAllSnapshots() {
   [snapshot_cache_ removeAllImages];
 }
 
+void SnapshotBrowserAgent::InsertWebState(web::WebState* web_state) {
+  SnapshotTabHelper::FromWebState(web_state)->SetSnapshotCache(snapshot_cache_);
+}
+
+void SnapshotBrowserAgent::DetachWebState(web::WebState* web_state) {
+  SnapshotTabHelper::FromWebState(web_state)->SetSnapshotCache(nil);
+}
+
 void SnapshotBrowserAgent::MigrateStorageIfNecessary() {
   DCHECK(snapshot_cache_);
 
@@ -103,39 +126,41 @@ void SnapshotBrowserAgent::MigrateStorageIfNecessary() {
     return;
   }
 
-  NSMutableArray<NSString*>* old_identifiers =
+  // Snapshots used to be identified by the web state stable identifier, but are
+  // now identified by a snapshot ID.
+  NSMutableArray<NSString*>* stable_identifiers =
       [NSMutableArray arrayWithCapacity:web_state_list_count];
-  NSMutableArray<NSString*>* new_identifiers =
+  NSMutableArray<NSString*>* snapshot_identifiers =
       [NSMutableArray arrayWithCapacity:web_state_list_count];
 
   for (int index = 0; index < web_state_list_count; ++index) {
     web::WebState* web_state = web_state_list->GetWebStateAt(index);
-    [old_identifiers addObject:web_state->GetStableIdentifier()];
-    [new_identifiers addObject:SnapshotTabHelper::FromWebState(web_state)
-                                   ->GetSnapshotIdentifier()];
+    [stable_identifiers addObject:web_state->GetStableIdentifier()];
+    [snapshot_identifiers
+        addObject:SnapshotTabHelper::FromWebState(web_state)->GetSnapshotID()];
   }
 
-  [snapshot_cache_ renameSnapshotWithIdentifiers:old_identifiers
-                                   toIdentifiers:new_identifiers];
+  [snapshot_cache_ renameSnapshotsWithIDs:stable_identifiers
+                                    toIDs:snapshot_identifiers];
 }
 
 void SnapshotBrowserAgent::PurgeUnusedSnapshots() {
   DCHECK(snapshot_cache_);
-  NSSet<NSString*>* snapshot_ids = GetTabIDs();
+  NSSet<NSString*>* snapshot_ids = GetSnapshotIDs();
   // Keep snapshots that are less than one minute old, to prevent a concurrency
   // issue if they are created while the purge is running.
   const base::Time one_minute_ago = base::Time::Now() - base::Minutes(1);
   [snapshot_cache_ purgeCacheOlderThan:one_minute_ago keeping:snapshot_ids];
 }
 
-NSSet<NSString*>* SnapshotBrowserAgent::GetTabIDs() {
+NSSet<NSString*>* SnapshotBrowserAgent::GetSnapshotIDs() {
   WebStateList* web_state_list = browser_->GetWebStateList();
-  NSMutableSet<NSString*>* tab_ids =
+  NSMutableSet<NSString*>* snapshot_ids =
       [NSMutableSet setWithCapacity:web_state_list->count()];
   for (int index = 0; index < web_state_list->count(); ++index) {
     web::WebState* web_state = web_state_list->GetWebStateAt(index);
-    [tab_ids addObject:SnapshotTabHelper::FromWebState(web_state)
-                           ->GetSnapshotIdentifier()];
+    [snapshot_ids
+        addObject:SnapshotTabHelper::FromWebState(web_state)->GetSnapshotID()];
   }
-  return tab_ids;
+  return snapshot_ids;
 }

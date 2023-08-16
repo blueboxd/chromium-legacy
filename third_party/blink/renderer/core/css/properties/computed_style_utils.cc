@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/svg_element_type_helpers.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 #include "third_party/blink/renderer/platform/fonts/font_optical_sizing.h"
+#include "third_party/blink/renderer/platform/fonts/font_palette.h"
 #include "third_party/blink/renderer/platform/fonts/opentype/font_settings.h"
 #include "third_party/blink/renderer/platform/transforms/matrix_3d_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/matrix_transform_operation.h"
@@ -68,6 +69,74 @@
 #include "third_party/blink/renderer/platform/transforms/skew_transform_operation.h"
 
 namespace blink {
+
+namespace {
+
+CSSValue* ConvertFontPaletteToCSSValue(const blink::FontPalette* palette) {
+  switch (palette->GetPaletteNameKind()) {
+    case blink::FontPalette::kNormalPalette:
+      return CSSIdentifierValue::Create(CSSValueID::kNormal);
+    case blink::FontPalette::kLightPalette:
+      return CSSIdentifierValue::Create(CSSValueID::kLight);
+    case blink::FontPalette::kDarkPalette:
+      return CSSIdentifierValue::Create(CSSValueID::kDark);
+    case blink::FontPalette::kCustomPalette:
+      return MakeGarbageCollected<CSSCustomIdentValue>(
+          palette->GetPaletteValuesName());
+    case blink::FontPalette::kInterpolablePalette: {
+      // TODO(crbug.com/1400620): Change the serialization of palette-mix()
+      // function to match color-mix(), i.e.: palette-mix() =
+      // palette-mix(<color-interpolation-method> , [ [normal | light | dark |
+      // <palette-identifier> | <palette-mix()> ] && <percentage [0,100]>?
+      // ]#{2})
+      DCHECK(RuntimeEnabledFeatures::FontPaletteAnimationEnabled());
+      CSSFunctionValue* result =
+          MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kPaletteMix);
+
+      CSSValueList* color_space_css_value_list =
+          CSSValueList::CreateSpaceSeparated();
+      color_space_css_value_list->Append(
+          *MakeGarbageCollected<CSSCustomIdentValue>(AtomicString("in")));
+      if (palette->GetHueInterpolationMethod().has_value()) {
+        color_space_css_value_list->Append(
+            *MakeGarbageCollected<CSSCustomIdentValue>(
+                AtomicString(Color::SerializeInterpolationSpace(
+                    palette->GetColorInterpolationSpace(),
+                    *palette->GetHueInterpolationMethod()))));
+      } else {
+        color_space_css_value_list->Append(
+            *MakeGarbageCollected<CSSCustomIdentValue>(
+                AtomicString(Color::SerializeInterpolationSpace(
+                    palette->GetColorInterpolationSpace()))));
+      }
+      result->Append(*color_space_css_value_list);
+
+      CSSValue* start = ConvertFontPaletteToCSSValue(palette->GetStart().get());
+      result->Append(*start);
+
+      CSSValueList* end_palette_with_percentage =
+          CSSValueList::CreateSpaceSeparated();
+      CSSValue* end = ConvertFontPaletteToCSSValue(palette->GetEnd().get());
+      if (*start == *end) {
+        return start;
+      }
+      end_palette_with_percentage->Append(*end);
+
+      CSSValue* param = CSSNumericLiteralValue::Create(
+          palette->GetPercentage() * 100,
+          CSSPrimitiveValue::UnitType::kPercentage);
+      end_palette_with_percentage->Append(*param);
+      result->Append(*end_palette_with_percentage);
+
+      return result;
+    }
+    default:
+      NOTREACHED();
+  }
+  return CSSIdentifierValue::Create(CSSValueID::kNormal);
+}
+
+}  // namespace
 
 static Length Negate(const Length& length) {
   if (length.IsCalculated()) {
@@ -92,9 +161,11 @@ CSSValue* ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
 
 CSSValue* ComputedStyleUtils::ValueForPosition(const LengthPoint& position,
                                                const ComputedStyle& style) {
-  DCHECK_EQ(position.X().IsAuto(), position.Y().IsAuto());
   if (position.X().IsAuto()) {
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
+  }
+  if (position.X().IsNone()) {
+    return CSSIdentifierValue::Create(CSSValueID::kNormal);
   }
 
   return MakeGarbageCollected<CSSValuePair>(
@@ -1291,6 +1362,16 @@ CSSValue* ComputedStyleUtils::ValueForFontVariationSettings(
   return list;
 }
 
+CSSValue* ComputedStyleUtils::ValueForFontPalette(const ComputedStyle& style) {
+  blink::FontPalette* palette = style.GetFontDescription().GetFontPalette();
+
+  if (!palette) {
+    return CSSIdentifierValue::Create(CSSValueID::kNormal);
+  }
+
+  return ConvertFontPaletteToCSSValue(palette);
+}
+
 CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
   auto AppendIfNotNormal = [](CSSValueList* list, const CSSValue& value) {
     auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
@@ -1661,24 +1742,14 @@ CSSValue* ComputedStyleUtils::ValueForGridAutoTrackList(
     GridTrackSizingDirection track_direction,
     const LayoutObject* layout_object,
     const ComputedStyle& style) {
-  const GridTrackList& grid_auto_track_list = track_direction == kForColumns
-                                                  ? style.GridAutoColumns()
-                                                  : style.GridAutoRows();
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-
-  if (layout_object && layout_object->IsLayoutNGGrid()) {
-    const NGGridTrackList& auto_track_list = grid_auto_track_list.NGTrackList();
-    if (auto_track_list.RepeaterCount() == 1) {
-      for (wtf_size_t i = 0; i < auto_track_list.RepeatSize(0); ++i) {
-        list->Append(*SpecifiedValueForGridTrackSize(
-            auto_track_list.RepeatTrackSize(0, i), style));
-      }
-    }
-  } else {
-    const Vector<GridTrackSize, 1>& auto_track_sizes =
-        grid_auto_track_list.LegacyTrackList();
-    for (auto& track_size : auto_track_sizes) {
-      list->Append(*SpecifiedValueForGridTrackSize(track_size, style));
+  const NGGridTrackList& auto_track_list = track_direction == kForColumns
+                                               ? style.GridAutoColumns()
+                                               : style.GridAutoRows();
+  if (auto_track_list.RepeaterCount() == 1) {
+    for (wtf_size_t i = 0; i < auto_track_list.RepeatSize(0); ++i) {
+      list->Append(*SpecifiedValueForGridTrackSize(
+          auto_track_list.RepeatTrackSize(0, i), style));
     }
   }
   return list;
@@ -1909,7 +1980,7 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
 
   // Handle the 'none' case.
   bool is_track_list_empty =
-      !computed_grid_track_list.TrackList().RepeaterCount();
+      !computed_grid_track_list.track_list.RepeaterCount();
   if (grid && is_track_list_empty) {
     // For grids we should consider every listed track, whether implicitly or
     // explicitly created. Empty grids have a sole grid line per axis.
@@ -1933,7 +2004,7 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
 
   wtf_size_t auto_repeat_insertion_point =
       computed_grid_track_list.auto_repeat_insertion_point;
-  const NGGridTrackList& ng_track_list = computed_grid_track_list.TrackList();
+  const NGGridTrackList& ng_track_list = computed_grid_track_list.track_list;
 
   if (grid) {
     // The number of auto repeat tracks. For 'repeat(auto-fill, [x][y])' this
@@ -1942,7 +2013,7 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
     // standalone grids, this will be the number of track sizes, as this can
     // can differ from the count on the track definition.
     wtf_size_t auto_repeat_track_list_length =
-        computed_grid_track_list.TrackList().AutoRepeatTrackCount();
+        ng_track_list.AutoRepeatTrackCount();
 
     // Standalone grids will report the track sizes in the computed style
     // string, so base the start and end indices on it.
@@ -3673,8 +3744,8 @@ CSSValueList* ComputedStyleUtils::ValuesForContainerShorthand(
 
   list->Append(*name);
 
-  if (!(IsA<CSSIdentifierValue>(type) &&
-        To<CSSIdentifierValue>(*type).GetValueID() == CSSValueID::kNormal)) {
+  if (const auto* ident_value = DynamicTo<CSSIdentifierValue>(*type);
+      !ident_value || ident_value->GetValueID() != CSSValueID::kNormal) {
     list->Append(*type);
   }
 

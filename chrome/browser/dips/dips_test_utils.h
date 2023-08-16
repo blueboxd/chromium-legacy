@@ -12,12 +12,14 @@
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/types/expected.h"
 #include "chrome/browser/dips/dips_redirect_info.h"
 #include "chrome/browser/dips/dips_service.h"
 #include "chrome/browser/dips/dips_utils.h"
 #include "chrome/browser/profiles/profile_test_util.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/cookie_access_details.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
@@ -88,6 +90,19 @@ constexpr char kStorageAccessScript[] = R"(
   )";
 
 using StateForURLCallback = base::OnceCallback<void(DIPSState)>;
+
+// Helper function to close (and waits for closure of) a `web_contents` tab.
+void CloseTab(content::WebContents* web_contents);
+
+// Helper function to open a link to the given URL in a new tab and return the
+// new tab's WebContents.
+base::expected<content::WebContents*, std::string> OpenInNewTab(
+    content::WebContents* original_tab,
+    const GURL& url);
+
+// Helper function for performing client side cookie access via JS.
+void AccessCookieViaJSIn(content::WebContents* web_contents,
+                         content::RenderFrameHost* frame);
 
 class URLCookieAccessObserver : public content::WebContentsObserver {
  public:
@@ -216,6 +231,31 @@ class ScopedInitDIPSFeature {
       override_profile_selections_for_dips_service_;
   profiles::testing::ScopedProfileSelectionsForFactoryTesting
       override_profile_selections_for_dips_cleanup_service_;
+};
+
+// Waits for a window to open.
+class OpenedWindowObserver : public content::WebContentsObserver {
+ public:
+  explicit OpenedWindowObserver(content::WebContents* web_contents,
+                                WindowOpenDisposition open_disposition);
+
+  void Wait() { run_loop_.Run(); }
+  content::WebContents* window() { return window_; }
+
+ private:
+  // WebContentsObserver overrides:
+  void DidOpenRequestedURL(content::WebContents* new_contents,
+                           content::RenderFrameHost* source_render_frame_host,
+                           const GURL& url,
+                           const content::Referrer& referrer,
+                           WindowOpenDisposition disposition,
+                           ui::PageTransition transition,
+                           bool started_from_context_menu,
+                           bool renderer_initiated) override;
+
+  const WindowOpenDisposition open_disposition_;
+  raw_ptr<content::WebContents> window_ = nullptr;
+  base::RunLoop run_loop_;
 };
 
 #endif  // CHROME_BROWSER_DIPS_DIPS_TEST_UTILS_H_

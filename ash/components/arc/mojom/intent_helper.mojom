@@ -178,8 +178,9 @@ enum ChromePage {
   PERDEVICEMOUSE = 86,
   PERDEVICETOUCHPAD = 87,
   PERDEVICEPOINTINGSTICK = 88,
+  GRAPHICSTABLET = 89,
 
-  // Next value to be used is 89.
+  // Next value to be used is 90.
 };
 
 // Describes an unique chrome app.
@@ -278,7 +279,9 @@ enum SupportedLinkChangeSource {
 [Extensible]
 enum AndroidSetting {
   [Default] kUnknown = 0,
-  kGeoLocation,
+  kGeoLocation,           // Deprecated, replaced with specific scenarios.
+  kGeoLocationAtBoot,
+  kGeoLocationUserTriggered,
 };
 
 // Interface to interact with a custom tab.

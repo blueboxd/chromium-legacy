@@ -6,7 +6,11 @@
 
 import collections
 import fnmatch
+import importlib
+import inspect
+import pkgutil
 import logging
+import os
 import re
 import sys
 import types
@@ -113,7 +117,8 @@ class GpuIntegrationTest(
         return False
     return name not in self._GetSerialTests()
 
-  def _SuiteSupportsParallelTests(self) -> bool:  # pylint: disable=no-self-use
+  @classmethod
+  def _SuiteSupportsParallelTests(cls) -> bool:
     """Returns whether the suite in general supports parallel tests."""
     return False
 
@@ -179,6 +184,14 @@ class GpuIntegrationTest(
     default_args = [
         '--disable-metal-test-shaders',
     ]
+    if cls._SuiteSupportsParallelTests():
+      # When running tests in parallel, windows can be treated as occluded if a
+      # newly opened window fully covers a previous one, which can cause issues
+      # in a few tests. This is practically only an issue on Windows since
+      # Linux/Mac stagger new windows, but pass in on all platforms since it
+      # could technically be hit on any platform.
+      default_args.append('--disable-backgrounding-occluded-windows')
+
     return default_args + additional_args
 
   @classmethod
@@ -491,11 +504,14 @@ class GpuIntegrationTest(
   # pylint: enable=no-self-use
 
   def _RunGpuTest(self, url: str, test_name: str, args: ct.TestArgs) -> None:
-    expected_results, should_retry_on_failure = (
-        self.GetExpectationsForTest()[:2])
-    should_retry_on_failure = (
-        should_retry_on_failure
-        or self._DetermineFirstTestRetryWorkaround(test_name))
+    def _GetExpectedResultsAndShouldRetry():
+      expected_results, should_retry_on_failure = (
+          self.GetExpectationsForTest()[:2])
+      should_retry_on_failure = (
+          should_retry_on_failure
+          or self._DetermineFirstTestRetryWorkaround(test_name))
+      return expected_results, should_retry_on_failure
+
     expected_crashes = {}
     try:
       expected_crashes = self.GetExpectedCrashes(args)
@@ -506,6 +522,12 @@ class GpuIntegrationTest(
       # pylint: enable=attribute-defined-outside-init
       raise
     except Exception as e:
+      # We get these values here instead of at the beginning of the function
+      # because it's possible that RunActualGpuTest() will restart the browser
+      # with new browser args, causing any expectation-related data from before
+      # then to become invalid due to different typ tags.
+      (expected_results,
+       should_retry_on_failure) = _GetExpectedResultsAndShouldRetry()
       if not should_retry_on_failure and self._DetermineRetryWorkaround(e):
         should_retry_on_failure = True
         # Notify typ that it should retry this test.
@@ -519,6 +541,8 @@ class GpuIntegrationTest(
         self._HandleUnexpectedFailure(test_name)
       raise
     else:
+      (expected_results,
+       should_retry_on_failure) = _GetExpectedResultsAndShouldRetry()
       self._HandlePass(test_name, expected_crashes, expected_results)
 
   def _HandleExpectedFailureOrFlake(self, test_name: str,
@@ -995,6 +1019,35 @@ def _ConsolidateBrowserArgs(browser_args: List[str]):
   for k, v in found_args.items():
     consolidated_args.append('%s=%s' % (k, ','.join(v)))
   return consolidated_args
+
+
+def GenerateTestNameMapping() -> Dict[str, Type[GpuIntegrationTest]]:
+  """Generates a mapping from suite name to class of all GPU integration tests.
+
+  Returns:
+    A dict mapping a suite's human-readable name to the class that implements
+    it.
+  """
+  mapping = {}
+  for p in pkgutil.iter_modules(
+      [os.path.join(gpu_path_util.GPU_DIR, 'gpu_tests')]):
+    if p.ispkg:
+      continue
+    module_name = 'gpu_tests.' + p.name
+    try:
+      module = importlib.import_module(module_name)
+    except ImportError:
+      logging.warning(
+          'Unable to import module %s. This is likely due to stale .pyc files '
+          'existing on disk.', module_name)
+      continue
+    for name, obj in inspect.getmembers(module):
+      # Look for cases of GpuIntegrationTest that have Name() overridden. The
+      # name check filters out base classes.
+      if (inspect.isclass(obj) and issubclass(obj, GpuIntegrationTest)
+          and obj.Name() != name):
+        mapping[obj.Name()] = obj
+  return mapping
 
 
 def LoadAllTestsInModule(module: types.ModuleType) -> unittest.TestSuite:

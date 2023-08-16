@@ -47,7 +47,6 @@ mojom("mojom_platform") {
     "content_index/content_index.mojom",
     "context_menu/context_menu.mojom",
     "conversions/attribution_data_host.mojom",
-    "conversions/attribution_reporting.mojom",
     "conversions/conversions.mojom",
     "cookie_manager/cookie_manager_automation.mojom",
     "cookie_store/cookie_store.mojom",
@@ -105,11 +104,13 @@ mojom("mojom_platform") {
     "interest_group/ad_display_size.mojom",
     "interest_group/interest_group_types.mojom",
     "keyboard_lock/keyboard_lock.mojom",
+    "lcp_critical_path_predictor/lcp_critical_path_predictor.mojom",
     "leak_detector/leak_detector.mojom",
     "link_to_text/link_to_text.mojom",
     "loader/code_cache.mojom",
     "loader/content_security_notifier.mojom",
     "loader/fetch_client_settings_object.mojom",
+    "loader/javascript_framework_detection.mojom",
     "loader/keep_alive_handle.mojom",
     "loader/keep_alive_handle_factory.mojom",
     "loader/mixed_content.mojom",
@@ -274,6 +275,7 @@ mojom("mojom_platform") {
     "//components/payments/mojom",
     "//components/schema_org/common:mojom",
     "//components/services/filesystem/public/mojom",
+    "//device/bluetooth/public/mojom",
     "//mojo/public/mojom/base",
     "//services/device/public/mojom",
     "//services/network/public/mojom",
@@ -533,6 +535,15 @@ mojom("mojom_platform") {
         },
       ]
       traits_headers = [ "//third_party/blink/public/common/frame/frame_owner_element_type_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.JavaScriptFrameworkDetectionResult"
+          cpp = "::blink::JavaScriptFrameworkDetectionResult"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/loader/javascript_framework_detection_mojom_traits.h" ]
     },
     {
       types = [
@@ -1250,6 +1261,7 @@ mojom("mojom_core") {
     "service_worker/service_worker_object.mojom",
     "service_worker/service_worker_provider.mojom",
     "service_worker/service_worker_registration.mojom",
+    "service_worker/service_worker_router_rule.mojom",
 
     # Similarly, shared_worker.mojom and shared_worker_connector.mojom have a
     # dependency on message_port_descriptor.mojom, so are put here rather than
@@ -1358,6 +1370,16 @@ mojom("mojom_core") {
         "//third_party/blink/public/common/page/browsing_context_group_info.h",
       ]
       traits_private_headers = [ "//third_party/blink/public/common/page/browsing_context_group_info_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.ServiceWorkerRouterRules"
+          cpp = "::blink::ServiceWorkerRouterRules"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/service_worker/service_worker_router_rule.h" ]
+      traits_private_headers = [ "//third_party/blink/public/common/service_worker/service_worker_router_rule_mojom_traits.h" ]
     },
   ]
 

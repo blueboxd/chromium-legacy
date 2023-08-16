@@ -130,7 +130,7 @@ class GeolocationProviderTest : public testing::Test {
   base::ThreadChecker thread_checker_;
 
   // Owned by the GeolocationProviderImpl class.
-  raw_ptr<FakeLocationProvider> arbitrator_;
+  raw_ptr<FakeLocationProvider, DanglingUntriaged> arbitrator_;
 
   // True if |arbitrator_| is started.
   bool is_started_;
@@ -152,7 +152,8 @@ bool GeolocationProviderTest::ProvidersStarted() {
 
 void GeolocationProviderTest::GetProvidersStarted() {
   DCHECK(provider()->task_runner()->BelongsToCurrentThread());
-  is_started_ = arbitrator()->state() != FakeLocationProvider::STOPPED;
+  is_started_ = arbitrator()->state() !=
+                mojom::GeolocationDiagnostics::ProviderState::kStopped;
 }
 
 void GeolocationProviderTest::SendMockLocation(

@@ -21,6 +21,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/shared_image_format.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -128,7 +129,9 @@ RoundedDisplayFrameFactory::CreateUiResource(const gfx::Size& size,
           ->context_factory()
           ->GetGpuMemoryBufferManager()
           ->CreateGpuMemoryBuffer(
-              size, viz::BufferFormat(kSharedImageFormat.resource_format()),
+              size,
+              viz::SinglePlaneSharedImageFormatToBufferFormat(
+                  kSharedImageFormat),
               gfx::BufferUsage::SCANOUT_CPU_READ_WRITE, gpu::kNullSurfaceHandle,
               nullptr);
 
@@ -156,12 +159,10 @@ RoundedDisplayFrameFactory::CreateUiResource(const gfx::Size& size,
     usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
   }
 
-  gpu::GpuMemoryBufferManager* gmb_manager =
-      aura::Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager();
   resource->mailbox = sii->CreateSharedImage(
-      gpu_memory_buffer.get(), gmb_manager, gfx::ColorSpace(),
-      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
-      "RoundedDisplayFrameUi");
+      format, size, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
+      kPremul_SkAlphaType, usage, "RoundedDisplayFrameUi",
+      gpu_memory_buffer->CloneHandle());
 
   resource->sync_token = sii->GenVerifiedSyncToken();
   resource->damaged = true;

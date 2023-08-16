@@ -2,62 +2,69 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @fileoverview
+ * Defines the class for navigable routes. Also exports a function which
+ * creates the set of routes available, based on loadTimeData, and is meant to
+ * be used when initializing the Router instance. Routes should be derived from
+ * the Router singleton instance, rather than imported from here.
+ */
+
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
 import {androidAppsVisible, isArcVmEnabled, isCrostiniSupported, isGuest, isKerberosEnabled, isPluginVmAvailable, isPowerwashAllowed} from './common/load_time_booleans.js';
 import * as routesMojom from './mojom-webui/routes.mojom-webui.js';
 
-/** Class for navigable routes. */
+/**
+ * Class for navigable routes. Routes are representing by a tree data structure.
+ */
 export class Route {
   depth: number;
+
+  /**
+   * Whether this route corresponds to a navigable dialog. Navigable dialog
+   * routes must belong to a |section|.
+   */
   isNavigableDialog: boolean;
-  section: string;
+
+  /**
+   * The top-level page/section that this route belongs to. Values are derived
+   * from the Section enum in routes.mojom.
+   */
+  section: routesMojom.Section|null;
+
+  /**
+   * The document title that should be displayed for this route.
+   */
   title: string|undefined;
   parent: Route|null;
   path: string;
 
   constructor(path: string, title?: string) {
+    assert(path.startsWith('/'));
+
     this.path = path;
     this.title = title;
     this.parent = null;
     this.depth = 0;
-
-    /**
-     * Whether this route corresponds to a navigable dialog. Those routes must
-     * belong to a "section".
-     */
     this.isNavigableDialog = false;
-
-    // Below are all legacy properties to provide compatibility with the old
-    // routing system.
-    this.section = '';
+    this.section = null;
   }
 
   /**
-   * Returns a new Route instance that's a child of this route.
+   * @returns A new Route instance that is a child of this route. If |path| does
+   * not have a leading slash, then it extends this route's path. Else, the
+   * given path is set.
    */
   createChild(path: string, title?: string): Route {
     assert(path);
 
-    // |path| extends this route's path if it doesn't have a leading slash.
-    // If it does have a leading slash, it's just set as the child route's path
-    const childPath = path[0] === '/' ? path : `${this.path}/${path}`;
-
+    const childPath = path.startsWith('/') ? path : `${this.path}/${path}`;
     const route = new Route(childPath, title);
     route.parent = this;
     route.section = this.section;
     route.depth = this.depth + 1;
-    return route;
-  }
-
-  /**
-   * Returns a new Route instance that's a child section of this route.
-   * TODO(tommycli): Remove once we've obsoleted the concept of sections.
-   */
-  createSection(path: string, section: string, title?: string): Route {
-    const route = this.createChild(path, title);
-    route.section = section;
     return route;
   }
 
@@ -85,7 +92,7 @@ export class Route {
    * Returns true if this route is a subpage of a section.
    */
   isSubpage(): boolean {
-    return !this.isNavigableDialog && !!this.parent && !!this.section &&
+    return !this.isNavigableDialog && !!this.parent && this.section !== null &&
         this.parent.section === this.section;
   }
 }
@@ -152,6 +159,7 @@ export interface OsSettingsRoutes extends MinimumRoutes {
   FILES: Route;
   GOOGLE_ASSISTANT: Route;
   GOOGLE_DRIVE: Route;
+  GRAPHICS_TABLET: Route;
   HOTSPOT_DETAIL: Route;
   INTERNET: Route;
   INTERNET_NETWORKS: Route;
@@ -169,6 +177,7 @@ export interface OsSettingsRoutes extends MinimumRoutes {
   NETWORK_DETAIL: Route;
   OFFICE: Route;
   ON_STARTUP: Route;
+  ONE_DRIVE: Route;
   OS_ACCESSIBILITY: Route;
   OS_LANGUAGES: Route;
   OS_LANGUAGES_EDIT_DICTIONARY: Route;
@@ -204,13 +213,15 @@ export interface OsSettingsRoutes extends MinimumRoutes {
   SYNC_ADVANCED: Route;
 }
 
-function createSection(
-    parent: Route, path: string, _section: routesMojom.Section): Route {
-  // TODO(khorimoto): Add |section| to the the Route object.
-  return parent.createSection(`/${path}`, /*section=*/ path);
+export function createSection(
+    parent: Route, path: string, section: routesMojom.Section,
+    title?: string): Route {
+  const route = parent.createChild(`/${path}`, title);
+  route.section = section;
+  return route;
 }
 
-function createSubpage(
+export function createSubpage(
     parent: Route, path: string, _subpage: routesMojom.Subpage): Route {
   // TODO(khorimoto): Add |subpage| to the Route object.
   return parent.createChild('/' + path);
@@ -219,7 +230,7 @@ function createSubpage(
 /**
  * Creates Route objects for each path corresponding to CrOS settings content.
  */
-function createOsSettingsRoutes(): OsSettingsRoutes {
+export function createRoutes(): OsSettingsRoutes {
   const r: Partial<OsSettingsRoutes> = {};
   const {Section, Subpage} = routesMojom;
 
@@ -236,16 +247,17 @@ function createOsSettingsRoutes(): OsSettingsRoutes {
   // Note: INTERNET_NETWORKS and NETWORK_DETAIL are special cases because they
   // includes several subpages, one per network type. Default to kWifiNetworks
   // and kWifiDetails subpages.
-  r.INTERNET_NETWORKS =
-      createSubpage(r.INTERNET, 'networks', Subpage.kWifiNetworks);
-  r.NETWORK_DETAIL =
-      createSubpage(r.INTERNET, 'networkDetail', Subpage.kWifiDetails);
+  r.INTERNET_NETWORKS = createSubpage(
+      r.INTERNET, routesMojom.NETWORKS_SUBPAGE_BASE_PATH,
+      Subpage.kWifiNetworks);
+  r.NETWORK_DETAIL = createSubpage(
+      r.INTERNET, routesMojom.WIFI_DETAILS_SUBPAGE_PATH, Subpage.kWifiDetails);
   r.KNOWN_NETWORKS = createSubpage(
       r.INTERNET, routesMojom.KNOWN_NETWORKS_SUBPAGE_PATH,
       Subpage.kKnownNetworks);
   if (loadTimeData.getBoolean('isHotspotEnabled')) {
-    r.HOTSPOT_DETAIL =
-        createSubpage(r.INTERNET, 'hotspotDetail', Subpage.kHotspotDetails);
+    r.HOTSPOT_DETAIL = createSubpage(
+        r.INTERNET, routesMojom.HOTSPOT_SUBPAGE_PATH, Subpage.kHotspotDetails);
   }
   if (loadTimeData.getBoolean('isApnRevampEnabled')) {
     r.APN =
@@ -318,10 +330,8 @@ function createOsSettingsRoutes(): OsSettingsRoutes {
       createSubpage(r.DEVICE, routesMojom.STYLUS_SUBPAGE_PATH, Subpage.kStylus);
   r.DISPLAY = createSubpage(
       r.DEVICE, routesMojom.DISPLAY_SUBPAGE_PATH, Subpage.kDisplay);
-  if (loadTimeData.getBoolean('enableAudioSettingsPage')) {
-    r.AUDIO =
-        createSubpage(r.DEVICE, routesMojom.AUDIO_SUBPAGE_PATH, Subpage.kAudio);
-  }
+  r.AUDIO =
+      createSubpage(r.DEVICE, routesMojom.AUDIO_SUBPAGE_PATH, Subpage.kAudio);
   if (loadTimeData.getBoolean('enableInputDeviceSettingsSplit')) {
     r.PER_DEVICE_KEYBOARD = createSubpage(
         r.DEVICE, routesMojom.PER_DEVICE_KEYBOARD_SUBPAGE_PATH,
@@ -339,6 +349,11 @@ function createOsSettingsRoutes(): OsSettingsRoutes {
         r.PER_DEVICE_KEYBOARD,
         routesMojom.PER_DEVICE_KEYBOARD_REMAP_KEYS_SUBPAGE_PATH,
         Subpage.kPerDeviceKeyboardRemapKeys);
+  }
+  if (loadTimeData.getBoolean('enablePeripheralCustomization')) {
+    r.GRAPHICS_TABLET = createSubpage(
+        r.DEVICE, routesMojom.GRAPHICS_TABLET_SUBPAGE_PATH,
+        Subpage.kGraphicsTablet);
   }
   r.STORAGE = createSubpage(
       r.DEVICE, routesMojom.STORAGE_SUBPAGE_PATH, Subpage.kStorage);
@@ -541,15 +556,19 @@ function createOsSettingsRoutes(): OsSettingsRoutes {
   if (!isGuest()) {
     r.FILES = createSection(
         r.ADVANCED, routesMojom.FILES_SECTION_PATH, Section.kFiles);
-    r.SMB_SHARES = createSubpage(
-        r.FILES, routesMojom.NETWORK_FILE_SHARES_SUBPAGE_PATH,
-        Subpage.kNetworkFileShares);
     if (loadTimeData.getBoolean('enableDriveFsBulkPinning')) {
       r.GOOGLE_DRIVE = createSubpage(
           r.FILES, routesMojom.GOOGLE_DRIVE_SUBPAGE_PATH, Subpage.kGoogleDrive);
     }
+    if (loadTimeData.getBoolean('showOfficeSettings')) {
+      r.ONE_DRIVE = createSubpage(
+          r.FILES, routesMojom.ONE_DRIVE_SUBPAGE_PATH, Subpage.kOneDrive);
+    }
     r.OFFICE = createSubpage(
         r.FILES, routesMojom.OFFICE_FILES_SUBPAGE_PATH, Subpage.kOfficeFiles);
+    r.SMB_SHARES = createSubpage(
+        r.FILES, routesMojom.NETWORK_FILE_SHARES_SUBPAGE_PATH,
+        Subpage.kNetworkFileShares);
   }
 
   // Printing section.
@@ -570,13 +589,12 @@ function createOsSettingsRoutes(): OsSettingsRoutes {
   // implemented using createSection().
   // TODO(khorimoto): Add Section.kAboutChromeOs to Route object.
   r.ABOUT = new Route('/' + routesMojom.ABOUT_CHROME_OS_SECTION_PATH);
-  r.ABOUT_ABOUT = r.ABOUT.createSection(
-      '/' + routesMojom.ABOUT_CHROME_OS_DETAILS_SUBPAGE_PATH, 'about');
+  r.ABOUT_ABOUT = createSection(
+      r.ABOUT, routesMojom.ABOUT_CHROME_OS_DETAILS_SUBPAGE_PATH,
+      Section.kAboutChromeOs);
   r.DETAILED_BUILD_INFO = createSubpage(
       r.ABOUT_ABOUT, routesMojom.DETAILED_BUILD_INFO_SUBPAGE_PATH,
       Subpage.kDetailedBuildInfo);
 
   return r as OsSettingsRoutes;
 }
-
-export const routes = createOsSettingsRoutes();

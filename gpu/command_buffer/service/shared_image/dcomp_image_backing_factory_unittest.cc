@@ -70,7 +70,8 @@ class DCompImageBackingFactoryTest : public testing::Test {
     scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
     context_state_ = base::MakeRefCounted<SharedContextState>(
         std::move(share_group), surface_, context_,
-        /*use_virtualized_gl_contexts=*/false, base::DoNothing());
+        /*use_virtualized_gl_contexts=*/false, base::DoNothing(),
+        GrContextType::kGL);
     context_state_->InitializeSkia(GpuPreferences(), workarounds);
     auto feature_info =
         base::MakeRefCounted<gles2::FeatureInfo>(workarounds, GpuFeatureInfo());
@@ -223,8 +224,10 @@ TEST_F(DCompImageBackingFactoryTest, CanReadDXGISwapChain) {
 
   EXPECT_EQ(0u, end_semaphores.size());
   GrFlushInfo flush_info;
-  EXPECT_EQ(GrSemaphoresSubmitted::kYes,
-            write_access->surface()->flush(flush_info, nullptr));
+  GrDirectContext* direct_context = context_state_->gr_context();
+  EXPECT_EQ(
+      GrSemaphoresSubmitted::kYes,
+      direct_context->flush(write_access->surface(), flush_info, nullptr));
   skia_representation->SetCleared();
 
   std::unique_ptr<const SkImage::AsyncReadResult> readback_result;
@@ -237,7 +240,7 @@ TEST_F(DCompImageBackingFactoryTest, CanReadDXGISwapChain) {
             context) = std::move(result);
       },
       &readback_result);
-  context_state_->gr_context()->submit(true);
+  direct_context->submit(true);
 
   ASSERT_NE(nullptr, readback_result);
   EXPECT_EQ(1, readback_result->count());
@@ -477,10 +480,12 @@ class DCompImageBackingFactoryVisualTreeTest
 
     EXPECT_EQ(0u, end_semaphores.size());
     GrFlushInfo flush_info;
-    EXPECT_EQ(GrSemaphoresSubmitted::kYes,
-              write_access->surface()->flush(flush_info, nullptr));
+    GrDirectContext* direct_context = context_state_->gr_context();
+    EXPECT_EQ(
+        GrSemaphoresSubmitted::kYes,
+        direct_context->flush(write_access->surface(), flush_info, nullptr));
 
-    context_state_->gr_context()->submit(true);
+    direct_context->submit(true);
   }
 
   // Create a backing, fill |draw_area| with |draw_color|, and schedule the

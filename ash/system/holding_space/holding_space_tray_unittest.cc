@@ -48,6 +48,7 @@
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/run_until.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/branding_buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -69,6 +70,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/test/views_test_utils.h"
+#include "ui/views/test/widget_test.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -77,6 +79,7 @@ namespace ash {
 
 namespace {
 
+using base::test::RunUntil;
 using testing::_;
 using testing::ElementsAre;
 
@@ -254,32 +257,6 @@ const views::MenuItemView* GetMenuItemByCommandId(HoldingSpaceCommandId id) {
   return nullptr;
 }
 
-// PredicateWaiter -------------------------------------------------------------
-
-// A class capable of waiting until a predicate returns true.
-class PredicateWaiter {
- public:
-  PredicateWaiter() = default;
-  PredicateWaiter(const PredicateWaiter&) = delete;
-  PredicateWaiter& operator=(const PredicateWaiter&) = delete;
-  ~PredicateWaiter() = default;
-
-  void WaitUntil(base::RepeatingCallback<bool()> predicate,
-                 base::TimeDelta polling_interval = base::Milliseconds(100)) {
-    DCHECK(polling_interval.is_positive());
-    if (predicate.Run())
-      return;
-    base::RunLoop run_loop;
-    base::RepeatingTimer scheduler;
-    scheduler.Start(FROM_HERE, polling_interval,
-                    base::BindLambdaForTesting([&]() {
-                      if (predicate.Run())
-                        run_loop.Quit();
-                    }));
-    run_loop.Run();
-  }
-};
-
 // ViewVisibilityChangedWaiter -------------------------------------------------
 
 // A class capable of waiting until a view's visibility is changed.
@@ -305,27 +282,6 @@ class ViewVisibilityChangedWaiter : public views::ViewObserver {
                                views::View* starting_view) override {
     wait_loop_->Quit();
   }
-
-  std::unique_ptr<base::RunLoop> wait_loop_;
-};
-
-// WidgetWaiter ----------------------------------------------------------------
-
-// A class capable of waiting until a widget is closing.
-class WidgetWaiter : public views::WidgetObserver {
- public:
-  void WaitForClose(views::Widget* widget) {
-    base::ScopedObservation<views::Widget, views::WidgetObserver>
-        widget_observation_{this};
-    widget_observation_.Observe(widget);
-    wait_loop_ = std::make_unique<base::RunLoop>();
-    wait_loop_->Run();
-    wait_loop_.reset();
-  }
-
- private:
-  // views::WidgetObserver:
-  void OnWidgetClosing(views::Widget* widget) override { wait_loop_->Quit(); }
 
   std::unique_ptr<base::RunLoop> wait_loop_;
 };
@@ -2007,8 +1963,9 @@ TEST_F(HoldingSpaceTrayTest, CloseTrayBubbleAfterDoubleClick) {
   ASSERT_EQ(pinned_file_chips.size(), 1u);
   DoubleClick(pinned_file_chips[0]);
 
-  // Monitor the tray bubble widget for an `OnWidgetClosing()` call.
-  WidgetWaiter().WaitForClose(test_api()->GetBubble()->GetWidget());
+  // Wait for the tray bubble widget to be destroyed.
+  views::test::WidgetDestroyedWaiter(test_api()->GetBubble()->GetWidget())
+      .Wait();
 
   // Expect holding space tray bubble to be closed.
   EXPECT_FALSE(test_api()->IsShowing());
@@ -3267,7 +3224,7 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest,
 
   // Wait until the `progress_indicator` is synced with the model, which happens
   // asynchronously in response to compositor scheduling.
-  PredicateWaiter().WaitUntil(base::BindLambdaForTesting([&]() {
+  ASSERT_TRUE(RunUntil([&]() {
     return progress_indicator->progress() ==
            ProgressIndicator::kProgressComplete;
   }));
@@ -3284,8 +3241,8 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest,
   // Wait until the `progress_indicator` is synced with the model. Note that
   // this happens asynchronously since the `progress_indicator` does so in
   // response to compositor scheduling.
-  PredicateWaiter().WaitUntil(base::BindLambdaForTesting(
-      [&]() { return progress_indicator->progress() == 0.f; }));
+  ASSERT_TRUE(
+      RunUntil([&]() { return progress_indicator->progress() == 0.f; }));
 
   // The `default_tray_icon` should not be visible so as to avoid overlap with
   // the `progress_indicator`'s inner icon while in progress.
@@ -3297,7 +3254,7 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest,
 
   // Wait until the `progress_indicator` is synced with the model, which happens
   // asynchronously in response to compositor scheduling.
-  PredicateWaiter().WaitUntil(base::BindLambdaForTesting([&]() {
+  ASSERT_TRUE(RunUntil([&]() {
     return progress_indicator->progress() ==
            ProgressIndicator::kProgressComplete;
   }));
@@ -3339,8 +3296,8 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest,
 
   // Wait until the `progress_indicator` is synced with the model, which happens
   // asynchronously in response to compositor scheduling.
-  PredicateWaiter().WaitUntil(base::BindLambdaForTesting(
-      [&]() { return progress_indicator->progress() == 0.f; }));
+  ASSERT_TRUE(
+      RunUntil([&]() { return progress_indicator->progress() == 0.f; }));
 
   // Verify image opacity/transform.
   EXPECT_EQ(image->GetTargetOpacity(), 0.f);
@@ -3353,7 +3310,7 @@ TEST_P(HoldingSpaceTrayDownloadsSectionTest,
 
   // Wait until the `progress_indicator` is synced with the model, which happens
   // asynchronously in response to compositor scheduling.
-  PredicateWaiter().WaitUntil(base::BindLambdaForTesting([&]() {
+  ASSERT_TRUE(RunUntil([&]() {
     return progress_indicator->progress() ==
            ProgressIndicator::kProgressComplete;
   }));
@@ -3562,17 +3519,11 @@ class HoldingSpaceTraySuggestionsFeatureTest
           /*suggestions_enabled=*/bool>> {
  public:
   HoldingSpaceTraySuggestionsFeatureTest() {
-    std::vector<base::test::FeatureRef> enabled_features;
-    std::vector<base::test::FeatureRef> disabled_features;
-
-    (IsHoldingSpacePredictabilityEnabled() ? enabled_features
-                                           : disabled_features)
-        .push_back(features::kHoldingSpacePredictability);
-
-    (IsHoldingSpaceSuggestionsEnabled() ? enabled_features : disabled_features)
-        .push_back(features::kHoldingSpaceSuggestions);
-
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+    scoped_feature_list_.InitWithFeatureStates(
+        {{features::kHoldingSpacePredictability,
+          IsHoldingSpacePredictabilityEnabled()},
+         {features::kHoldingSpaceSuggestions,
+          IsHoldingSpaceSuggestionsEnabled()}});
   }
 
   void SetDisableDrive(bool disable) {
@@ -4017,7 +3968,7 @@ TEST_P(HoldingSpaceTrayPrimaryAndSecondaryActionsTest, HasExpectedActions) {
   } else {
     // For screen capture items, the holding space image should always be shown.
     EXPECT_TRUE(IsShowingImage(item_views.front()));
-  };
+  }
 
   // Right click the item view to show the context menu.
   RightClick(item_views.front());
@@ -4115,17 +4066,11 @@ class HoldingSpaceTrayVisibilityTest
                      /*suggestions_enabled=*/bool>> {
  public:
   HoldingSpaceTrayVisibilityTest() {
-    std::vector<base::test::FeatureRef> enabled_features;
-    std::vector<base::test::FeatureRef> disabled_features;
-
-    (IsHoldingSpacePredictabilityEnabled() ? enabled_features
-                                           : disabled_features)
-        .push_back(features::kHoldingSpacePredictability);
-
-    (IsHoldingSpaceSuggestionsEnabled() ? enabled_features : disabled_features)
-        .push_back(features::kHoldingSpaceSuggestions);
-
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+    scoped_feature_list_.InitWithFeatureStates(
+        {{features::kHoldingSpacePredictability,
+          IsHoldingSpacePredictabilityEnabled()},
+         {features::kHoldingSpaceSuggestions,
+          IsHoldingSpaceSuggestionsEnabled()}});
   }
 
   void SetUp() override {

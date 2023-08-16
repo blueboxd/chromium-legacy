@@ -47,11 +47,7 @@ SVGCircleElement::SVGCircleElement(Document& document)
           svg_names::kRAttr,
           SVGLengthMode::kOther,
           SVGLength::Initial::kUnitlessZero,
-          CSSPropertyID::kR)) {
-  AddToPropertyMap(cx_);
-  AddToPropertyMap(cy_);
-  AddToPropertyMap(r_);
-}
+          CSSPropertyID::kR)) {}
 
 void SVGCircleElement::Trace(Visitor* visitor) const {
   visitor->Trace(cx_);
@@ -82,13 +78,13 @@ void SVGCircleElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   SVGAnimatedPropertyBase* property = PropertyFromAttribute(name);
   if (property == cx_) {
-    AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kCx,
                                             cx_->CssValue());
   } else if (property == cy_) {
-    AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kCy,
                                             cy_->CssValue());
   } else if (property == r_) {
-    AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kR,
                                             r_->CssValue());
   } else {
     SVGGeometryElement::CollectStyleForPresentationAttribute(name, value,
@@ -116,6 +112,38 @@ bool SVGCircleElement::SelfHasRelativeLengths() const {
 
 LayoutObject* SVGCircleElement::CreateLayoutObject(const ComputedStyle&) {
   return MakeGarbageCollected<LayoutSVGEllipse>(this);
+}
+
+SVGAnimatedPropertyBase* SVGCircleElement::PropertyFromAttribute(
+    const QualifiedName& attribute_name) const {
+  if (attribute_name == svg_names::kCxAttr) {
+    return cx_.Get();
+  } else if (attribute_name == svg_names::kCyAttr) {
+    return cy_.Get();
+  } else if (attribute_name == svg_names::kRAttr) {
+    return r_.Get();
+  } else {
+    return SVGGeometryElement::PropertyFromAttribute(attribute_name);
+  }
+}
+
+void SVGCircleElement::SynchronizeAllSVGAttributes() const {
+  SVGAnimatedPropertyBase* attrs[]{cx_.Get(), cy_.Get(), r_.Get()};
+  SynchronizeListOfSVGAttributes(attrs);
+  SVGGeometryElement::SynchronizeAllSVGAttributes();
+}
+
+void SVGCircleElement::CollectExtraStyleForPresentationAttribute(
+    MutableCSSPropertyValueSet* style) {
+  for (auto* property :
+       (SVGAnimatedPropertyBase*[]){cx_.Get(), cy_.Get(), r_.Get()}) {
+    DCHECK(property->HasPresentationAttributeMapping());
+    if (property->IsAnimating()) {
+      CollectStyleForPresentationAttribute(property->AttributeName(),
+                                           g_empty_atom, style);
+    }
+  }
+  SVGGeometryElement::CollectExtraStyleForPresentationAttribute(style);
 }
 
 }  // namespace blink

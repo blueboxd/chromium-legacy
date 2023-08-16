@@ -58,26 +58,44 @@ void FullscreenWebStateListObserver::Disconnect() {
   SetWebStateList(nullptr);
 }
 
-void FullscreenWebStateListObserver::WebStateInsertedAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index,
-    bool activating) {
-  DCHECK_EQ(web_state_list_, web_state_list);
-  if (activating)
-    controller_->ExitFullscreen();
-}
+#pragma mark - WebStateListObserver
 
-void FullscreenWebStateListObserver::WebStateReplacedAt(
+void FullscreenWebStateListObserver::WebStateListChanged(
     WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int index) {
-  WebStateWasRemoved(old_web_state);
-  if (new_web_state == web_state_list->GetActiveWebState()) {
-    // Reset the model if the active WebState is replaced.
-    model_->ResetForNavigation();
-    WebStateWasActivated(new_web_state);
+    const WebStateListChange& change,
+    const WebStateSelection& selection) {
+  switch (change.type()) {
+    case WebStateListChange::Type::kSelectionOnly:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // WebStateActivatedAt() to here. Note that here is reachable only when
+      // `reason` == ActiveWebStateChangeReason::Activated.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // WebStateDetachedAt() to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace: {
+      const WebStateListChangeReplace& replace_change =
+          change.As<WebStateListChangeReplace>();
+      WebStateWasRemoved(replace_change.replaced_web_state());
+      web::WebState* inserted_web_state = replace_change.inserted_web_state();
+      if (inserted_web_state == web_state_list->GetActiveWebState()) {
+        // Reset the model if the active WebState is replaced.
+        model_->ResetForNavigation();
+        WebStateWasActivated(inserted_web_state);
+      }
+      break;
+    }
+    case WebStateListChange::Type::kInsert: {
+      DCHECK_EQ(web_state_list_, web_state_list);
+      if (selection.activating) {
+        controller_->ExitFullscreen();
+      }
+      break;
+    }
   }
 }
 

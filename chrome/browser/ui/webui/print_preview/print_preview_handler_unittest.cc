@@ -50,13 +50,13 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
-#include "chrome/browser/enterprise/connectors/analysis/fake_content_analysis_delegate.h"
 #include "chrome/browser/enterprise/connectors/common.h"
+#include "chrome/browser/enterprise/connectors/test/deep_scanning_test_utils.h"
+#include "chrome/browser/enterprise/connectors/test/fake_content_analysis_delegate.h"
 #include "chrome/browser/policy/dm_token_utils.h"
-#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-#include "chrome/browser/enterprise/connectors/analysis/fake_content_analysis_sdk_manager.h"  //nogncheck
+#include "chrome/browser/enterprise/connectors/analysis/fake_content_analysis_sdk_manager.h"  // nogncheck
 #endif
 #endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 
@@ -412,7 +412,7 @@ class TestPrintPreviewHandler : public PrintPreviewHandler {
   int bad_messages_;
   base::flat_set<mojom::PrinterType> called_for_type_;
   std::unique_ptr<PrinterHandler> test_printer_handler_;
-  const raw_ptr<content::WebContents> initiator_;
+  const raw_ptr<content::WebContents, DanglingUntriaged> initiator_;
 };
 
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
@@ -1401,7 +1401,8 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   layout.Set(kSettingPrintableAreaWidth, 578);
   layout.Set(kSettingPrintableAreaHeight, 734);
   handler()->SendPageLayoutReady(std::move(layout),
-                                 /*has_custom_page_size_style,=*/false,
+                                 /*all_pages_have_custom_size,=*/false,
+                                 /*all_pages_have_custom_orientation,=*/false,
                                  preview_request_id);
 
   // Verify that page-layout-ready webUI event was fired.
@@ -1426,7 +1427,8 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   // Check that there are no new web UI messages sent.
   size_t message_count = web_ui()->call_data().size();
   handler()->SendPageLayoutReady(base::Value::Dict(),
-                                 /*has_custom_page_size_style,=*/false,
+                                 /*all_pages_have_custom_size,=*/false,
+                                 /*all_pages_have_custom_orientation,=*/false,
                                  preview_request_id);
   EXPECT_EQ(message_count, web_ui()->call_data().size());
   handler()->SendPageCountReady(1, -1, 0);
@@ -1549,13 +1551,13 @@ class ContentAnalysisPrintPreviewHandlerTest
       public testing::WithParamInterface<bool> {
  public:
   ContentAnalysisPrintPreviewHandlerTest() {
-    feature_list_.InitAndEnableFeature(features::kEnablePrintScanAfterPreview);
+    feature_list_.InitAndEnableFeature(features::kEnableLocalScanAfterPreview);
   }
 
   void SetUp() override {
     enterprise_connectors::ContentAnalysisDelegate::SetFactoryForTesting(
         base::BindRepeating(
-            &enterprise_connectors::FakeContentAnalysisDelegate::Create,
+            &enterprise_connectors::test::FakeContentAnalysisDelegate::Create,
             run_loop_.QuitClosure(),
             base::BindRepeating(
                 &ContentAnalysisPrintPreviewHandlerTest::ScanningResponse,
@@ -1566,7 +1568,7 @@ class ContentAnalysisPrintPreviewHandlerTest
     PrintPreviewHandlerTest::SetUp();
 
     // Set the policy that enables local content analysis for print.
-    safe_browsing::SetAnalysisConnector(
+    enterprise_connectors::test::SetAnalysisConnector(
         profile()->GetPrefs(), enterprise_connectors::AnalysisConnector::PRINT,
         R"({
           "service_provider": "local_system_agent",

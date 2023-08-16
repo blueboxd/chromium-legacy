@@ -103,6 +103,7 @@ class BuildConfigGenerator extends DefaultTask {
       'androidx_documentfile',
       'androidx_legacy',
       'androidx_localbroadcastmanager_localbroadcastmanager',
+      'androidx_media3_media3',
       'androidx_multidex_multidex',
       'androidx_print',
       'androidx_test',
@@ -642,10 +643,17 @@ class BuildConfigGenerator extends DefaultTask {
         }
 
         switch (dependencyId) {
+            case 'androidx_privacysandbox_ads_ads_adservices':
+                sb.append('  # https://crbug.com/1448095\n')
+                sb.append('  mergeable_android_manifests = [ "0_privacysandbox_AndroidManifest.xml" ]\n')
+                break
             case 'androidx_annotation_annotation_jvm':
                 sb.append('  # https://crbug.com/989505\n')
                 sb.append('  jar_excluded_patterns = [ "META-INF/proguard/*" ]\n')
                 sb.append('  proguard_configs = [ "androidx_annotations.flags" ]\n')
+                break
+            case 'androidx_benchmark_benchmark_common':
+                sb.append('  ignore_native_libraries = true\n')
                 break
             case 'androidx_benchmark_benchmark_macro':
                 // Manually add dep onto DISALLOWED_DEP androidx.profileinstaller.
@@ -851,12 +859,6 @@ class BuildConfigGenerator extends DefaultTask {
                     append('    "com/google/protobuf/Timestamp*",\n')
                     append('  ]')
                 }
-                break
-            case 'androidx_credentials_credentials':
-                sb.append('\n')
-                // We are overriding 1.0.0-SNAPSHOT to 1.2.0-alpha03 which has different deps.
-                // TODO(1433052): remove after 1.2.0 becomes part of the normal release structure.
-                sb.append('  deps += [":androidx_core_core_java"]\n')
                 break
             case 'androidx_startup_startup_runtime':
                 sb.append('  # Keeps emoji2 code. See http://crbug.com/1205141\n')

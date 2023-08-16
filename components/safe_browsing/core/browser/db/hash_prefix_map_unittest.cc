@@ -11,7 +11,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/task_environment.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
@@ -49,7 +48,6 @@ class HashPrefixMapTest : public PlatformTest {
 
   base::Time time_ = base::Time::Now();
   base::ScopedTempDir temp_dir_;
-  base::test::SingleThreadTaskEnvironment task_env_;
 };
 
 TEST_F(HashPrefixMapTest, WriteFile) {
@@ -108,9 +106,7 @@ TEST_F(HashPrefixMapTest, WriteMultipleFiles) {
 }
 
 TEST_F(HashPrefixMapTest, BuffersWrites) {
-  MmapHashPrefixMap map(GetBasePath(),
-                        base::SequencedTaskRunner::GetCurrentDefault(),
-                        /*buffer_size=*/4);
+  MmapHashPrefixMap map(GetBasePath(), /*buffer_size=*/4);
 
   map.Append(4, "fooo");
   EXPECT_EQ(GetContents(map.GetExtensionForTesting(4)), "");
@@ -146,19 +142,6 @@ TEST_F(HashPrefixMapTest, ReadFile) {
   HashPrefixMapView view = map.view();
   EXPECT_EQ(view.size(), 1u);
   EXPECT_EQ(view[4], "foo");
-}
-
-TEST_F(HashPrefixMapTest, ReadFileNotSorted) {
-  base::WriteFile(GetPath("foo"), "zzzzaaaa");
-
-  V4StoreFileFormat file_format;
-  auto* hash_file = file_format.add_hash_files();
-  hash_file->set_prefix_size(4);
-  hash_file->set_extension("foo");
-  hash_file->set_file_size(8);
-
-  MmapHashPrefixMap map(GetBasePath());
-  EXPECT_EQ(map.ReadFromDisk(file_format), MMAP_FAILURE);
 }
 
 TEST_F(HashPrefixMapTest, ReadMultipleFiles) {
@@ -230,15 +213,13 @@ TEST_F(HashPrefixMapTest, WriteAndReadFile) {
 }
 
 TEST_F(HashPrefixMapTest, ClearingMapBeforeWriteDeletesFile) {
-  MmapHashPrefixMap map(GetBasePath(),
-                        base::SequencedTaskRunner::GetCurrentDefault(),
-                        /*buffer_size=*/1);
+  MmapHashPrefixMap map(GetBasePath(), /*buffer_size=*/1);
   map.Append(4, "foo");
 
   std::string extension = map.GetExtensionForTesting(4);
   EXPECT_EQ(GetContents(extension), "foo");
 
-  map.ClearAndWaitForTesting();
+  map.Clear();
   EXPECT_FALSE(base::PathExists(GetPath(extension)));
 }
 
@@ -331,7 +312,7 @@ TEST_F(HashPrefixMapTest, UsesFileOffsets) {
   V4StoreFileFormat file_format;
   EXPECT_TRUE(map.WriteToDisk(&file_format));
   EXPECT_EQ(map.IsValid(), APPLY_UPDATE_SUCCESS);
-  map.ClearAndWaitForTesting();
+  map.Clear();
 
   EXPECT_EQ(file_format.hash_files().size(), 1);
   const auto& hash_file = file_format.hash_files(0);
@@ -343,12 +324,8 @@ TEST_F(HashPrefixMapTest, UsesFileOffsets) {
   uint32_t keep_end = hash_file.offsets()[2] * 4;
   // Null out all data outside of the two offsets.
   for (size_t i = 0; i < contents.size(); i++) {
-    if (i < keep_start) {
+    if (i < keep_start || i >= keep_end)
       contents[i] = '\0';
-    }
-    if (i >= keep_end) {
-      contents[i] = '\xff';
-    }
   }
 
   // Rewrite the hash file with only a partial set of hashes.
@@ -448,7 +425,6 @@ class HashPrefixMapTypedTest : public ::testing::Test {
 
   absl::optional<base::ScopedTempDir> temp_dir_;
   std::unique_ptr<HashPrefixMap> hash_prefix_map_;
-  base::test::SingleThreadTaskEnvironment task_env_;
 };
 
 template <>

@@ -9,20 +9,21 @@ import './components/api_keys_notice.js';
 // clang-format on
 
 
+
 import {assert} from '//resources/ash/common/assert.js';
 import {$} from '//resources/ash/common/util.js';
-import {refreshColorCss, startColorChangeUpdater} from '//resources/cr_components/color_change_listener/colors_css_updater.js';
+import {ColorChangeUpdater} from '//resources/cr_components/color_change_listener/colors_css_updater.js';
 import {getTrustedScriptURL} from '//resources/js/static_types.js';
 
 import {Oobe} from './cr_ui.js';
 import * as OobeDebugger from './debug/debug.js';
 import * as QuickStartDebugger from './debug/quick_start_debugger.js';
-import * as OobeTestApi from './test_api/test_api.js';
 import {loadTimeData} from './i18n_setup.js';
 import {addScreensToMainContainer} from './login_ui_tools.js';
 import {MultiTapDetector} from './multi_tap_detector.js';
 import {TraceEvent, traceExecution} from './oobe_trace.js';
 import {priorityOobeScreenList} from './priority_screens_oobe_flow.js';
+import * as OobeTestApi from './test_api/test_api.js';
 
 // Everything has been imported at this point.
 traceExecution(TraceEvent.FIRST_LINE_AFTER_IMPORTS);
@@ -61,15 +62,6 @@ function initializeOobe() {
   }
   document.removeEventListener('DOMContentLoaded', initializeOobe);
   traceExecution(TraceEvent.DOM_CONTENT_LOADED);
-
-  const isOobeJellyEnabled = loadTimeData.getBoolean('isOobeJellyEnabled');
-  if (isOobeJellyEnabled) {
-    // Start listening for color changes in 'chrome://theme/colors.css'. Force
-    // reload it once to account for any missed color change events between
-    // loading oobe.html and here.
-    startColorChangeUpdater();
-    refreshColorCss();
-  }
 
   // Initialize the on-screen debugger if present.
   if (OobeDebugger.DebuggerUI) {
@@ -144,6 +136,34 @@ function startOobe() {
   Oobe.updateDocumentLocalizedStrings();
 
   prepareGlobalValues();
+
+  const isOobeJellyEnabled = loadTimeData.getBoolean('isOobeJellyEnabled');
+  if (isOobeJellyEnabled) {
+    // Required on body to apply cros_color_overrides
+    document.body.classList.add('jelly-enabled');
+
+    // Start listening for color changes in 'chrome://theme/colors.css'. Force
+    // reload it once to account for any missed color change events between
+    // loading oobe.html and here.
+    const updater = ColorChangeUpdater.forDocument();
+    updater.start();
+    updater.refreshColorsCss();
+
+    // TODO(b/268463435): Move include directly to the oobe.html after Jelly
+    // flag will be enabled by default.
+    const fontLink = document.createElement('link');
+    fontLink.rel = 'stylesheet';
+    fontLink.href = 'chrome://theme/typography.css';
+    document.head.appendChild(fontLink);
+  } else {
+    // Add refresh color if D/L mode updated for the dynamic illustrations
+    const lightDarkMQL = window.matchMedia('(prefers-color-scheme: light)');
+    lightDarkMQL.addEventListener('change', async () => {
+      const updater = ColorChangeUpdater.forDocument();
+      updater.refreshColorsCss();
+    });
+  }
+
 
   // Add OOBE or LOGIN screens to the document.
   const isOobeFlow = loadTimeData.getBoolean('isOobeFlow');

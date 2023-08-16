@@ -27,6 +27,7 @@
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/notreached.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/wm/features.h"
 #include "chromeos/ui/wm/window_util.h"
@@ -295,9 +296,10 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
       }
       break;
     case WM_EVENT_PIP:
-      if (!window_state->IsPip()) {
-        UpdateWindow(window_state, WindowStateType::kPip, /*animate=*/true);
-      }
+      // PIP windows are not managed by TabletModeWindowManager even if the
+      // window is in tablet mode. PIP window uses DefaultState instead, not
+      // TabletModeWindowState.
+      NOTREACHED();
       break;
     case WM_EVENT_TRUSTED_PIN:
       if (!Shell::Get()->screen_pinning_controller()->IsPinned()) {
@@ -402,8 +404,8 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
     }
     case WM_EVENT_ADDED_TO_WORKSPACE:
       // Update the window to maximized or centered if it cannot maximize.
-      // If an already snapped window or pinned window gets added to the
-      // workspace, the window should not be forced maximized, rather retain
+      // If an already snapped window or floated or pinned window gets added to
+      // the workspace, the window should not be forced maximized, rather retain
       // its previous state.
       UpdateWindow(window_state,
                    AdjustStateForTabletMode(window_state, current_state_type_),
@@ -536,7 +538,8 @@ WindowStateType TabletModeWindowState::AdjustStateForTabletMode(
     WindowState* window_state,
     WindowStateType current_state_type) {
   if (chromeos::IsSnappedWindowStateType(current_state_type) ||
-      chromeos::IsPinnedWindowStateType(current_state_type)) {
+      chromeos::IsPinnedWindowStateType(current_state_type) ||
+      current_state_type == chromeos::WindowStateType::kFloated) {
     return window_state->GetStateType();
   }
 

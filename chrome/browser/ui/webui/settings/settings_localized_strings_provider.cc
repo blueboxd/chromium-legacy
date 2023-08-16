@@ -36,6 +36,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager_factory.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/management/management_ui.h"
@@ -75,6 +76,7 @@
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/performance_manager/public/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -83,6 +85,7 @@
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/supervised_user/core/common/features.h"
 #include "components/sync/base/features.h"
 #include "components/sync/service/sync_service.h"
 #include "components/sync/service/sync_service_utils.h"
@@ -240,9 +243,6 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #endif
 
   html_source->AddBoolean("isChildAccount", profile->IsChild());
-  html_source->AddBoolean(
-      "allowDeletingBrowserHistory",
-      profile->GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory));
 #if BUILDFLAG(IS_LINUX)
   bool allow_qt_theme = base::FeatureList::IsEnabled(ui::kAllowQt);
 #else
@@ -319,8 +319,16 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
-  html_source->AddString("managementPage",
-                         ManagementUI::GetManagementPageSubtitle(profile));
+  html_source->AddString(
+      "managementPage",
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+      base::FeatureList::IsEnabled(supervised_user::kEnableManagedByParentUi)
+          ? chrome::GetDeviceManagedUiHelpLabel(profile)
+          : ManagementUI::GetManagementPageSubtitle(profile)
+#else
+      ManagementUI::GetManagementPageSubtitle(profile)
+#endif
+  );
   html_source->AddString(
       "aboutUpgradeUpToDate",
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -371,6 +379,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
     {"chromeColors", IDS_SETTINGS_CHROME_COLORS},
     {"showHomeButton", IDS_SETTINGS_SHOW_HOME_BUTTON},
     {"showBookmarksBar", IDS_SETTINGS_SHOW_BOOKMARKS_BAR},
+    {"showHoverCardImages", IDS_SETTINGS_SHOW_HOVER_CARD_IMAGES},
     {"sidePanel", IDS_SETTINGS_SIDE_PANEL},
     {"homePageNtp", IDS_SETTINGS_HOME_PAGE_NTP},
     {"changeHomePage", IDS_SETTINGS_CHANGE_HOME_PAGE},
@@ -418,6 +427,9 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean("showReaderModeOption",
                           dom_distiller::OfferReaderModeInSettings());
   html_source->AddBoolean("showSidePanelOptions", true);
+  html_source->AddBoolean(
+      "showHoverCardImagesOption",
+      base::FeatureList::IsEnabled(features::kTabHoverCardImageSettings));
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
@@ -654,10 +666,14 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_SETTING_DESCRIPTION},
       {"highEfficiencyModeHeuristicsLabel",
        IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_HEURISTICS_LABEL},
+      {"highEfficiencyModeRecommendedBadge",
+       IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_RECOMMENDED_BADGE},
       {"highEfficiencyModeOnTimerLabel",
        IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_ON_TIMER_LABEL},
       {"highEfficiencyModeRadioGroupAriaLabel",
        IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_RADIO_GROUP_ARIA_LABEL},
+      {"highEfficiencyChooseDiscardTimeAriaLabel",
+       IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_CHOOSE_DISCARD_TIME_ARIA_LABEL},
       {"batteryPageTitle", IDS_SETTINGS_BATTERY_PAGE_TITLE},
       {"batterySaverModeLabel",
        IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_SETTING},
@@ -675,8 +691,18 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_HEADER},
       {"tabDiscardingExceptionsAdditionalSites",
        IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_ADDITIONAL_SITES},
+      {"tabDiscardingExceptionsAddDialogCurrentTabs",
+       IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_ADD_DIALOG_CURRENT_TABS},
+      {"tabDiscardingExceptionsAddDialogManual",
+       IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_ADD_DIALOG_MANUAL},
+      {"tabDiscardingExceptionsActiveSiteAriaDescription",
+       IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_ACTIVE_SITE_ARIA_DESCRIPTION},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
+
+  html_source->AddBoolean(
+      "highEfficiencyDefaultHeuristicMode",
+      performance_manager::features::kHighEfficiencyDefaultHeuristicMode.Get());
 
   html_source->AddString(
       "tabDiscardTimerFiveMinutes",
@@ -722,6 +748,11 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
           base::NumberToString16(
               performance_manager::user_tuning::UserPerformanceTuningManager::
                   kLowBatteryThresholdPercent)));
+  html_source->AddString(
+      "tabDiscardingExceptionsAddDialogHelp",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_ADD_DIALOG_HELP,
+          base::ASCIIToUTF16(chrome::kHighEfficiencyModeTabDiscardingHelpUrl)));
 
   html_source->AddString("highEfficiencyLearnMoreUrl",
                          chrome::kHighEfficiencyModeLearnMoreUrl);
@@ -1546,6 +1577,17 @@ void AddBrowserSyncPageStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "osSyncSetupSettingsUrl",
       BuildOSSettingsUrl(chromeos::settings::mojom::kSyncSetupSubpagePath));
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  html_source->AddString(
+      "osPrivacySettingsUrl",
+      BuildOSSettingsUrl(
+          chromeos::settings::mojom::kPrivacyAndSecuritySectionPath));
+
+  html_source->AddBoolean(
+      "osDeprecateSyncMetricsToggle",
+      ash::features::IsOsSettingsDeprecateSyncMetricsToggleEnabled());
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -3276,6 +3318,22 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddString("addSiteExceptionPlaceholder", "[*.]example.com");
 }
 
+void AddStorageAccessStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"siteSettingsStorageAccess", IDS_SITE_SETTINGS_TYPE_STORAGE_ACCESS},
+      {"siteSettingsStorageAccessMidSentence",
+       IDS_SITE_SETTINGS_TYPE_STORAGE_ACCESS_MID_SENTENCE},
+      {"storageAccessDescription", IDS_SETTINGS_STORAGE_ACCESS_DESCRIPTION},
+      {"storageAccessAllowed", IDS_SETTINGS_STORAGE_ACCESS_ALLOWED},
+      {"storageAccessBlocked", IDS_SETTINGS_STORAGE_ACCESS_BLOCKED},
+      {"storageAccessAllowedExceptions",
+       IDS_SETTINGS_STORAGE_ACCESS_ALLOWED_EXCEPTIONS},
+      {"storageAccessBlockedExceptions",
+       IDS_SETTINGS_STORAGE_ACCESS_BLOCKED_EXCEPTIONS},
+  };
+  html_source->AddLocalizedStrings(kLocalizedStrings);
+}
+
 void AddSiteDataPageStrings(content::WebUIDataSource* html_source,
                             Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
@@ -3529,6 +3587,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddSearchStrings(html_source);
   AddSiteSettingsStrings(html_source, profile);
   AddSiteDataPageStrings(html_source, profile);
+  AddStorageAccessStrings(html_source);
 
 #if !BUILDFLAG(IS_CHROMEOS)
   AddDefaultBrowserStrings(html_source);

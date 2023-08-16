@@ -6,8 +6,6 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreVideo/CoreVideo.h>
-#include <OpenGL/CGLIOSurface.h>
-#include <OpenGL/gl.h>
 #include <stddef.h>
 
 #include <algorithm>
@@ -50,7 +48,6 @@
 #include "media/base/mac/color_space_util_mac.h"
 #include "media/base/media_switches.h"
 #include "media/filters/vp9_parser.h"
-#include "media/gpu/mac/gl_image_io_surface.h"
 #include "media/gpu/mac/vp9_super_frame_bitstream_filter.h"
 #include "media/gpu/mac/vt_config_util.h"
 #include "media/video/h264_level_limits.h"
@@ -80,9 +77,6 @@ using ParameterSets = std::vector<base::span<const uint8_t>>;
 
 // A sequence of ids for memory tracing.
 base::AtomicSequenceNumber g_memory_dump_ids;
-
-// A sequence of shared memory ids for CVPixelBufferRefs.
-base::AtomicSequenceNumber g_cv_pixel_buffer_ids;
 
 // The video codec profiles that are supported.
 constexpr VideoCodecProfile kSupportedProfiles[] = {
@@ -274,9 +268,8 @@ base::ScopedCFTypeRef<CMFormatDescriptionRef> CreateVideoFormatVP9(
     media::VideoCodecProfile profile,
     absl::optional<gfx::HDRMetadata> hdr_metadata,
     const gfx::Size& coded_size) {
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> format_config(
-      CreateFormatExtensions(kCMVideoCodecType_VP9, profile, color_space,
-                             hdr_metadata));
+  base::ScopedCFTypeRef<CFDictionaryRef> format_config = CreateFormatExtensions(
+      kCMVideoCodecType_VP9, profile, color_space, hdr_metadata);
 
   base::ScopedCFTypeRef<CMFormatDescriptionRef> format;
   if (!format_config) {
@@ -313,6 +306,9 @@ bool CreateVideoToolboxSession(
     return false;
   }
 
+#if BUILDFLAG(IS_MAC)
+  // iOS is always hardware-accelerate while on mac, decoder configuration
+  // handling is necessary.
   CFDictionarySetValue(
       decoder_config,
       kVTVideoDecoderSpecification_EnableHardwareAcceleratedVideoDecoder,
@@ -321,6 +317,7 @@ bool CreateVideoToolboxSession(
       decoder_config,
       kVTVideoDecoderSpecification_RequireHardwareAcceleratedVideoDecoder,
       require_hardware ? kCFBooleanTrue : kCFBooleanFalse);
+#endif
 
   // VideoToolbox scales the visible rect to the output size, so we set the
   // output size for a 1:1 ratio. (Note though that VideoToolbox does not handle
@@ -368,9 +365,12 @@ bool InitializeVideoToolboxInternal() {
   if (base::FeatureList::IsEnabled(kSkipVideoToolboxPreload)) {
     // When skipping preload we still need to register vp9, otherwise it won't
     // work at all.
+#if BUILDFLAG(IS_MAC)
+    // TODO: Enable VP9 for a iOS platform(https://crbug.com/1449877)
     if (__builtin_available(macOS 11.0, *)) {
       VTRegisterSupplementalVideoDecoderIfAvailable(kCMVideoCodecType_VP9);
     }
+#endif
     return true;
   }
 
@@ -412,6 +412,7 @@ bool InitializeVideoToolboxInternal() {
 
   session.reset();
 
+#if BUILDFLAG(IS_MAC)
   typedef void (*VTRegisterSupplementalVideoDecoderIfAvailablePtr)(CMVideoCodecType);
   static const VTRegisterSupplementalVideoDecoderIfAvailablePtr VTRegisterSupplementalVideoDecoderIfAvailableFuncPtr =
       reinterpret_cast<VTRegisterSupplementalVideoDecoderIfAvailablePtr>(dlsym(((void *) -2), "VTRegisterSupplementalVideoDecoderIfAvailable"));
@@ -429,6 +430,7 @@ bool InitializeVideoToolboxInternal() {
       // We don't return false here since VP9 support is optional.
     }
   }
+#endif
 
 #if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
   if (base::FeatureList::IsEnabled(media::kPlatformHEVCDecoderSupport)) {
@@ -643,14 +645,7 @@ VTVideoDecodeAccelerator::Frame::Frame(int32_t bitstream_id)
 
 VTVideoDecodeAccelerator::Frame::~Frame() {}
 
-VTVideoDecodeAccelerator::PictureInfo::PictureInfo()
-    : uses_shared_images(true) {}
-
-VTVideoDecodeAccelerator::PictureInfo::PictureInfo(uint32_t client_texture_id,
-                                                   uint32_t service_texture_id)
-    : uses_shared_images(false),
-      client_texture_id(client_texture_id),
-      service_texture_id(service_texture_id) {}
+VTVideoDecodeAccelerator::PictureInfo::PictureInfo() = default;
 
 VTVideoDecodeAccelerator::PictureInfo::~PictureInfo() {}
 
@@ -678,8 +673,6 @@ VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
           {base::TaskPriority::USER_VISIBLE})),
       decoder_weak_this_factory_(this),
       weak_this_factory_(this) {
-  DCHECK(gl_client_.bind_image);
-
   callback_.decompressionOutputCallback = OutputThunk;
   callback_.decompressionOutputRefCon = this;
   decoder_weak_this_ = decoder_weak_this_factory_.GetWeakPtr();
@@ -703,17 +696,8 @@ bool VTVideoDecodeAccelerator::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
-  // Dump output pictures (decoded frames for which PictureReady() has been
-  // called already).
-  // TODO(sandersd): Dump SharedImages also.
-  for (const auto& [texture_id, picture_info] : picture_info_map_) {
-    for (const auto& gl_image : picture_info->gl_images) {
-      std::string dump_name =
-          base::StringPrintf("media/vt_video_decode_accelerator_%d/picture_%d",
-                             memory_dump_id_, picture_info->bitstream_id);
-      gl_image->OnMemoryDump(pmd, 0, dump_name);
-    }
-  }
+  // TODO(sandersd): Dump SharedImages for output pictures (decoded frames for
+  // which PictureReady() has been called already).
 
   // Dump the output queue (decoded frames for which
   // NotifyEndOfBitstreamBuffer() has not been called yet).
@@ -1116,15 +1100,15 @@ void VTVideoDecodeAccelerator::DecodeTaskH264(
               if (!config_.hdr_metadata) {
                 config_.hdr_metadata = gfx::HDRMetadata();
               }
-              sei_msg.mastering_display_info.PopulateColorVolumeMetadata(
-                  config_.hdr_metadata->smpte_st_2086);
+              config_.hdr_metadata->smpte_st_2086 =
+                  sei_msg.mastering_display_info.ToGfx();
               break;
             case H264SEIMessage::kSEIContentLightLevelInfo:
               if (!config_.hdr_metadata) {
                 config_.hdr_metadata = gfx::HDRMetadata();
               }
-              sei_msg.content_light_level_info.PopulateHDRMetadata(
-                  config_.hdr_metadata.value());
+              config_.hdr_metadata->cta_861_3 =
+                  sei_msg.content_light_level_info.ToGfx();
               break;
             default:
               break;
@@ -1510,16 +1494,18 @@ void VTVideoDecodeAccelerator::DecodeTaskHEVC(
                   sei_msg.alpha_channel_info.alpha_channel_cancel_flag == 0;
               break;
             case H265SEIMessage::kSEIMasteringDisplayInfo:
-              if (!config_.hdr_metadata)
-                config_.hdr_metadata = gfx::HDRMetadata();
-              sei_msg.mastering_display_info.PopulateColorVolumeMetadata(
-                  config_.hdr_metadata->smpte_st_2086);
+              if (!config_.hdr_metadata.has_value()) {
+                config_.hdr_metadata.emplace();
+              }
+              config_.hdr_metadata->smpte_st_2086 =
+                  sei_msg.mastering_display_info.ToGfx();
               break;
             case H265SEIMessage::kSEIContentLightLevelInfo:
-              if (!config_.hdr_metadata)
-                config_.hdr_metadata = gfx::HDRMetadata();
-              sei_msg.content_light_level_info.PopulateHDRMetadata(
-                  config_.hdr_metadata.value());
+              if (!config_.hdr_metadata.has_value()) {
+                config_.hdr_metadata.emplace();
+              }
+              config_.hdr_metadata->cta_861_3 =
+                  sei_msg.content_light_level_info.ToGfx();
               break;
             default:
               break;
@@ -1983,18 +1969,15 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK(!picture_info_map_.contains(picture.id()));
     assigned_picture_ids_.insert(picture.id());
     available_picture_ids_.push_back(picture.id());
-    if (picture.client_texture_ids().empty() &&
-        picture.service_texture_ids().empty()) {
-      picture_info_map_.insert(
-          std::make_pair(picture.id(), std::make_unique<PictureInfo>()));
-    } else {
-      DCHECK_LE(1u, picture.client_texture_ids().size());
-      DCHECK_LE(1u, picture.service_texture_ids().size());
-      picture_info_map_.insert(std::make_pair(
-          picture.id(),
-          std::make_unique<PictureInfo>(picture.client_texture_ids()[0],
-                                        picture.service_texture_ids()[0])));
-    }
+
+    // PictureBufferManager::CreatePictureBuffers() never creates
+    // PictureBuffer instances with texture IDs on Apple platforms: it does so
+    // only when requested to allocate GL textures, which is neither supported
+    // nor ever requested on these platforms.
+    CHECK(picture.client_texture_ids().empty() &&
+          picture.service_texture_ids().empty());
+    picture_info_map_.insert(
+        std::make_pair(picture.id(), std::make_unique<PictureInfo>()));
   }
 
   // Pictures are not marked as uncleared until after this method returns, and
@@ -2018,13 +2001,7 @@ void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
 
   // Drop references to allow the underlying buffer to be released.
   PictureInfo* picture_info = it->second.get();
-  if (picture_info->uses_shared_images) {
-    picture_info->scoped_shared_images.clear();
-  } else {
-    gl_client_.bind_image.Run(picture_info->client_texture_id,
-                              gpu::GetPlatformSpecificTextureTarget(), nullptr);
-  }
-  picture_info->gl_images.clear();
+  picture_info->scoped_shared_images.clear();
   picture_info->bitstream_id = 0;
 
   // Mark the picture as available and try to complete pending output work.
@@ -2252,7 +2229,6 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   auto it = picture_info_map_.find(picture_id);
   DCHECK(it != picture_info_map_.end());
   PictureInfo* picture_info = it->second.get();
-  DCHECK(picture_info->gl_images.empty());
 
   gfx::ColorSpace color_space;
   if (codec_ == VideoCodec::kVP9) {
@@ -2291,96 +2267,67 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     }
   }
   for (size_t plane = 0; plane < planes.size(); ++plane) {
-    if (picture_info->uses_shared_images) {
-      gpu::SharedImageStub* shared_image_stub = client_->GetSharedImageStub();
-      if (!shared_image_stub) {
-        DLOG(ERROR) << "Failed to get SharedImageStub";
-        NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
-        return false;
-      }
-
-      const gfx::Size frame_size(CVPixelBufferGetWidth(frame.image.get()),
-                                 CVPixelBufferGetHeight(frame.image.get()));
-      const uint32_t shared_image_usage =
-          gpu::SHARED_IMAGE_USAGE_DISPLAY_READ |
-          gpu::SHARED_IMAGE_USAGE_SCANOUT |
-          gpu::SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX |
-          gpu::SHARED_IMAGE_USAGE_RASTER | gpu::SHARED_IMAGE_USAGE_GLES2;
-      GLenum target = gl_client_.supports_arb_texture_rectangle
-                          ? GL_TEXTURE_RECTANGLE_ARB
-                          : GL_TEXTURE_2D;
-
-      gfx::GpuMemoryBufferHandle handle;
-      handle.id = gfx::GpuMemoryBufferHandle::kInvalidId;
-      handle.type = gfx::GpuMemoryBufferType::IO_SURFACE_BUFFER;
-      handle.io_surface.reset(CVPixelBufferGetIOSurface(frame.image),
-                              base::scoped_policy::RETAIN);
-
-      gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
-      bool success;
-      constexpr char kDebugLabel[] = "VTVideoDecodeAccelerator";
-      if (IsMultiPlaneFormatForHardwareVideoEnabled()) {
-        success = shared_image_stub->CreateSharedImage(
-            mailbox, std::move(handle), si_format_, frame_size, color_space,
-            kTopLeft_GrSurfaceOrigin, kOpaque_SkAlphaType, shared_image_usage,
-            kDebugLabel);
-      } else {
-        success = shared_image_stub->CreateSharedImage(
-            mailbox, std::move(handle), ToBufferFormat(si_format_),
-            planes[plane], frame_size, color_space, kTopLeft_GrSurfaceOrigin,
-            kOpaque_SkAlphaType, shared_image_usage, kDebugLabel);
-      }
-      if (!success) {
-        DLOG(ERROR) << "Failed to create shared image";
-        NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
-        return false;
-      }
-
-      // Wrap the destroy callback in a lambda that ensures that it be called on
-      // the appropriate thread. Retain the image buffer so that VideoToolbox
-      // will not reuse the IOSurface as long as the SharedImage is alive.
-      auto destroy_shared_image_lambda =
-          [](gpu::SharedImageStub::SharedImageDestructionCallback callback,
-             base::ScopedCFTypeRef<CVImageBufferRef> image,
-             scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-            task_runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback),
-                                                            gpu::SyncToken()));
-          };
-      auto destroy_shared_image_callback = base::BindOnce(
-          destroy_shared_image_lambda,
-          shared_image_stub->GetSharedImageDestructionCallback(mailbox),
-          frame.image, gpu_task_runner_);
-      picture_info->scoped_shared_images.push_back(
-          scoped_refptr<Picture::ScopedSharedImage>(
-              new Picture::ScopedSharedImage(
-                  mailbox, target, std::move(destroy_shared_image_callback))));
-    } else {
-      const gfx::Size plane_size(
-          CVPixelBufferGetWidthOfPlane(frame.image.get(), plane),
-          CVPixelBufferGetHeightOfPlane(frame.image.get(), plane));
-      gfx::BufferFormat plane_buffer_format =
-          gpu::GetPlaneBufferFormat(planes[plane], ToBufferFormat(si_format_));
-
-      scoped_refptr<GLImageIOSurface> gl_image(
-          GLImageIOSurface::Create(plane_size));
-      if (!gl_image->InitializeWithCVPixelBuffer(
-              frame.image.get(), plane,
-              gfx::GenericSharedMemoryId(g_cv_pixel_buffer_ids.GetNext()),
-              plane_buffer_format)) {
-        NOTIFY_STATUS("Failed to initialize GLImageIOSurface", PLATFORM_FAILURE,
-                      SFT_PLATFORM_ERROR);
-      }
-
-      if (!gl_client_.bind_image.Run(picture_info->client_texture_id,
-                                     gpu::GetPlatformSpecificTextureTarget(),
-                                     gl_image)) {
-        DLOG(ERROR) << "Failed to bind image";
-        NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
-        return false;
-      }
-
-      picture_info->gl_images.push_back(gl_image);
+    gpu::SharedImageStub* shared_image_stub = client_->GetSharedImageStub();
+    if (!shared_image_stub) {
+      DLOG(ERROR) << "Failed to get SharedImageStub";
+      NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
+      return false;
     }
+
+    const gfx::Size frame_size(CVPixelBufferGetWidth(frame.image.get()),
+                               CVPixelBufferGetHeight(frame.image.get()));
+    const uint32_t shared_image_usage =
+        gpu::SHARED_IMAGE_USAGE_DISPLAY_READ | gpu::SHARED_IMAGE_USAGE_SCANOUT |
+        gpu::SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX |
+        gpu::SHARED_IMAGE_USAGE_RASTER | gpu::SHARED_IMAGE_USAGE_GLES2;
+    GLenum target = gl_client_.supports_arb_texture_rectangle
+                        ? GL_TEXTURE_RECTANGLE_ARB
+                        : GL_TEXTURE_2D;
+
+    gfx::GpuMemoryBufferHandle handle;
+    handle.id = gfx::GpuMemoryBufferHandle::kInvalidId;
+    handle.type = gfx::GpuMemoryBufferType::IO_SURFACE_BUFFER;
+    handle.io_surface.reset(CVPixelBufferGetIOSurface(frame.image),
+                            base::scoped_policy::RETAIN);
+
+    gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
+    bool success;
+    constexpr char kDebugLabel[] = "VTVideoDecodeAccelerator";
+    if (IsMultiPlaneFormatForHardwareVideoEnabled()) {
+      success = shared_image_stub->CreateSharedImage(
+          mailbox, std::move(handle), si_format_, frame_size, color_space,
+          kTopLeft_GrSurfaceOrigin, kOpaque_SkAlphaType, shared_image_usage,
+          kDebugLabel);
+    } else {
+      success = shared_image_stub->CreateSharedImage(
+          mailbox, std::move(handle), ToBufferFormat(si_format_), planes[plane],
+          frame_size, color_space, kTopLeft_GrSurfaceOrigin,
+          kOpaque_SkAlphaType, shared_image_usage, kDebugLabel);
+    }
+    if (!success) {
+      DLOG(ERROR) << "Failed to create shared image";
+      NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
+      return false;
+    }
+
+    // Wrap the destroy callback in a lambda that ensures that it be called on
+    // the appropriate thread. Retain the image buffer so that VideoToolbox
+    // will not reuse the IOSurface as long as the SharedImage is alive.
+    auto destroy_shared_image_lambda =
+        [](gpu::SharedImageStub::SharedImageDestructionCallback callback,
+           base::ScopedCFTypeRef<CVImageBufferRef> image,
+           scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+          task_runner->PostTask(
+              FROM_HERE, base::BindOnce(std::move(callback), gpu::SyncToken()));
+        };
+    auto destroy_shared_image_callback = base::BindOnce(
+        destroy_shared_image_lambda,
+        shared_image_stub->GetSharedImageDestructionCallback(mailbox),
+        frame.image, gpu_task_runner_);
+    picture_info->scoped_shared_images.push_back(
+        scoped_refptr<Picture::ScopedSharedImage>(
+            new Picture::ScopedSharedImage(
+                mailbox, target, std::move(destroy_shared_image_callback))));
   }
   picture_info->bitstream_id = frame.bitstream_id;
   available_picture_ids_.pop_back();
@@ -2389,13 +2336,14 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
            << "bitstream_id=" << frame.bitstream_id << ")";
   Picture picture(picture_id, frame.bitstream_id, gfx::Rect(frame.image_size),
                   color_space, true);
-  // Bound textures can outlive the GLImageBacking if they are deleted in the
-  // command buffer before they are used by the platform GL implementation
-  // (https://crbug.com/930479#c69). Thus a fence is required whenever a GLImage
-  // is bound, but we can't know in advance whether that will happen.
-  //
-  // TODO(sandersd): Can GLImageBacking be responsible for fences, so that
-  // we don't need to use them when the image is never bound? Bindings are
+  // We release the CVImageBuffer when the VideoFrame is destroyed. This happens
+  // after commands referencing the SharedImages have been submitted to the
+  // platform, but can be before they are actually executed. When this release
+  // happens, the SharedImage contents can change immediately. Therefore we must
+  // wait for the commands to finish executing before releasing (cf.
+  // https://crbug.com/930479#c69). We do this via a read lock fence.
+  // TODO(sandersd): Can IOSurfaceImageBacking be responsible for fences, so
+  // that we don't need to use them when the image is never bound? Bindings are
   // typically only created when WebGL is in use.
   picture.set_read_lock_fences_enabled(true);
   if (frame.hdr_metadata)
@@ -2404,14 +2352,13 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     picture.set_shared_image_format_type(
         SharedImageFormatType::kSharedImageFormat);
   }
-  if (picture_info->uses_shared_images) {
-    // For multiplanar shared images, planes.size() is 1.
-    for (size_t plane = 0; plane < planes.size(); ++plane) {
-      picture.set_scoped_shared_image(picture_info->scoped_shared_images[plane],
-                                      plane);
-    }
-    if (picture_format_ == PIXEL_FORMAT_NV12)
-      picture.set_is_webgpu_compatible(true);
+  // For multiplanar shared images, planes.size() is 1.
+  for (size_t plane = 0; plane < planes.size(); ++plane) {
+    picture.set_scoped_shared_image(picture_info->scoped_shared_images[plane],
+                                    plane);
+  }
+  if (picture_format_ == PIXEL_FORMAT_NV12) {
+    picture.set_is_webgpu_compatible(true);
   }
 
   client_->PictureReady(std::move(picture));
@@ -2495,12 +2442,6 @@ bool VTVideoDecodeAccelerator::TryToSetupDecodeOnSeparateSequence(
 
 bool VTVideoDecodeAccelerator::SupportsSharedImagePictureBuffers() const {
   return true;
-}
-
-VideoDecodeAccelerator::TextureAllocationMode
-VTVideoDecodeAccelerator::GetSharedImageTextureAllocationMode() const {
-  return VideoDecodeAccelerator::TextureAllocationMode::
-      kDoNotAllocateGLTextures;
 }
 
 // static

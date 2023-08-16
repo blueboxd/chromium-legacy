@@ -7,18 +7,17 @@ import 'chrome://bookmarks-side-panel.top-chrome/power_bookmarks_list.js';
 
 import {SortOrder, ViewType} from 'chrome://bookmarks-side-panel.top-chrome/bookmarks.mojom-webui.js';
 import {BookmarksApiProxyImpl} from 'chrome://bookmarks-side-panel.top-chrome/bookmarks_api_proxy.js';
-import {ShoppingListApiProxyImpl} from 'chrome://bookmarks-side-panel.top-chrome/commerce/shopping_list_api_proxy.js';
 import {PowerBookmarkRowElement} from 'chrome://bookmarks-side-panel.top-chrome/power_bookmark_row.js';
 import {PowerBookmarksListElement} from 'chrome://bookmarks-side-panel.top-chrome/power_bookmarks_list.js';
+import {ShoppingListApiProxyImpl} from 'chrome://bookmarks-side-panel.top-chrome/shared/commerce/shopping_list_api_proxy.js';
+import {SpEmptyStateElement} from 'chrome://bookmarks-side-panel.top-chrome/shared/sp_empty_state.js';
 import {PageImageServiceBrowserProxy} from 'chrome://resources/cr_components/page_image_service/browser_proxy.js';
 import {PageImageServiceHandlerRemote} from 'chrome://resources/cr_components/page_image_service/page_image_service.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {assertEquals, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {TestMock} from 'chrome://webui-test/test_mock.js';
-import {TestPluralStringProxy} from 'chrome://webui-test/test_plural_string_proxy.js';
 
 import {TestShoppingListApiProxy} from './commerce/test_shopping_list_api_proxy.js';
 import {TestBookmarksApiProxy} from './test_bookmarks_api_proxy.js';
@@ -75,7 +74,7 @@ suite('SidePanelPowerBookmarksListTest', () => {
     },
   ];
 
-  function getBookmarkElements(root: HTMLElement): HTMLElement[] {
+  function getBookmarkElements(root: HTMLElement): PowerBookmarkRowElement[] {
     return Array.from(root.shadowRoot!.querySelectorAll('power-bookmark-row'));
   }
 
@@ -89,9 +88,6 @@ suite('SidePanelPowerBookmarksListTest', () => {
     shoppingListApi = new TestShoppingListApiProxy();
     ShoppingListApiProxyImpl.setInstance(shoppingListApi);
 
-    const pluralString = new TestPluralStringProxy();
-    PluralStringProxyImpl.setInstance(pluralString);
-
     imageServiceHandler = TestMock.fromClass(PageImageServiceHandlerRemote);
     PageImageServiceBrowserProxy.setInstance(
         new PageImageServiceBrowserProxy(imageServiceHandler));
@@ -104,6 +100,10 @@ suite('SidePanelPowerBookmarksListTest', () => {
       viewType: ViewType.kCompact,
       emptyTitle: 'empty title base',
       emptyTitleSearch: 'empty title search',
+      emptyTitleFolder: 'folder is empty',
+      emptyBodyFolder: 'folder body',
+      emptyTitleGuest: 'guest title',
+      emptyBodyGuest: 'guest body',
     });
 
     powerBookmarksList = document.createElement('power-bookmarks-list');
@@ -249,9 +249,8 @@ suite('SidePanelPowerBookmarksListTest', () => {
 
     const urlListItemElement =
         folderElement.shadowRoot!.querySelector('cr-url-list-item');
-    const pluralString =
-        await PluralStringProxyImpl.getInstance().getPluralString('foo', 1);
-    assertTrue(urlListItemElement!.description!.includes(pluralString));
+    const compactDescription = '(1)';
+    assertTrue(urlListItemElement!.description!.includes(compactDescription));
   });
 
   test('SetsExpandedDescription', () => {
@@ -325,13 +324,28 @@ suite('SidePanelPowerBookmarksListTest', () => {
   });
 
   test('ShowsCorrectEmptyState', () => {
-    const emptyStateElement =
-        powerBookmarksList.shadowRoot!.querySelector('sp-empty-state');
-    assertTrue(!!emptyStateElement);
+    function emptyStateIsHidden(emptyState: SpEmptyStateElement): boolean {
+      return emptyState.matches('[hidden], [hidden] *');
+    }
 
+    const folderEmptyState = powerBookmarksList.$.folderEmptyState;
+    const topLevelEmptyState = powerBookmarksList.$.topLevelEmptyState;
     assertEquals(
-        loadTimeData.getString('emptyTitle'), emptyStateElement.heading);
+        loadTimeData.getString('emptyTitle'), topLevelEmptyState.heading);
+    assertEquals(loadTimeData.getString('emptyBody'), topLevelEmptyState.body);
 
+    // Has bookmarks so both empty states should be hidden.
+    assertTrue(emptyStateIsHidden(folderEmptyState));
+    assertTrue(emptyStateIsHidden(topLevelEmptyState));
+
+    // Opening an empty folder should show the folder empty state.
+    getBookmarkElements(powerBookmarksList)[0]!.$.crUrlListItem.click();
+    flush();
+    assertFalse(emptyStateIsHidden(folderEmptyState));
+    assertTrue(emptyStateIsHidden(topLevelEmptyState));
+
+    // A search with no results should show the top level empty state with
+    // text specific to search.
     const searchField =
         powerBookmarksList.shadowRoot!.querySelector('cr-toolbar-search-field');
     assertTrue(!!searchField);
@@ -339,6 +353,8 @@ suite('SidePanelPowerBookmarksListTest', () => {
     searchField.onSearchTermSearch();
     flush();
     assertEquals(
-        loadTimeData.getString('emptyTitleSearch'), emptyStateElement.heading);
+        loadTimeData.getString('emptyTitleSearch'), topLevelEmptyState.heading);
+    assertTrue(emptyStateIsHidden(folderEmptyState));
+    assertFalse(emptyStateIsHidden(topLevelEmptyState));
   });
 });

@@ -21,7 +21,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/types/expected.h"
-#include "base/values.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_hglobal.h"
@@ -137,8 +136,8 @@ gfx::Rect LoadPaperPrintableAreaUm(const wchar_t* printer, DEVMODE* devmode) {
   gfx::Rect printable_area_device_units =
       GetPrintableAreaDeviceUnits(hdc.get());
 
-  // Device units can be non-square, so scale for non-square DPIs and convert to
-  // microns.
+  // Device units can be non-square, so scale for non-square pixels and convert
+  // to microns.
   gfx::Rect printable_area_um =
       gfx::Rect(ConvertUnit(printable_area_device_units.x(),
                             default_dpi.width(), kMicronsPerInch),
@@ -605,7 +604,6 @@ bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {
 
 // static
 scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
-    const base::Value::Dict* print_backend_settings,
     const std::string& /*locale*/) {
   return base::MakeRefCounted<PrintBackendWin>();
 }

@@ -127,7 +127,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   bool IsPrimaryUser(const User* user) const override;
   bool IsEphemeralUser(const User* user) const override;
   bool IsCurrentUserOwner() const override;
-  bool IsCurrentUserNew() const override;
+  bool IsCurrentUserNew() const final;
   bool IsCurrentUserNonCryptohomeDataEphemeral() const override;
   bool IsCurrentUserCryptohomeDataEphemeral() const override;
   bool CanCurrentUserLock() const override;
@@ -145,6 +145,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
       const AccountId& account_id) const override;
   bool IsUserCryptohomeDataEphemeral(
       const AccountId& account_id) const override;
+  bool IsEphemeralAccountId(const AccountId& account_id) const final;
   void AddObserver(UserManager::Observer* obs) override;
   void RemoveObserver(UserManager::Observer* obs) override;
   void AddSessionStateObserver(
@@ -166,11 +167,14 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void NotifyUserRemoved(const AccountId& account_id,
                          UserRemovalReason reason) override;
   PrefService* GetLocalState() const final;
+  bool IsFirstExecAfterBoot() const final;
+  bool HasBrowserRestarted() const final;
+
   void Initialize() override;
 
   // This method updates "User was added to the device in this session nad is
   // not full initialized yet" flag.
-  virtual void SetIsCurrentUserNew(bool is_new);
+  void SetIsCurrentUserNew(bool is_new);
 
   // Helper function that converts users from |users_list| to |users_vector| and
   // |users_set|. Duplicates and users already present in |existing_users| are
@@ -283,6 +287,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   virtual void UpdateLoginState(const User* active_user,
                                 const User* primary_user,
                                 bool is_current_user_owner) const = 0;
+
+  virtual bool IsEphemeralAccountIdByPolicy(
+      const AccountId& account_id) const = 0;
 
   // Getters/setters for private members.
 

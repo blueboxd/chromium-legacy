@@ -46,6 +46,7 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
     PAGE_ACCESS_ALL_EXTENSIONS_BLOCKED,
     PAGE_ACCESS_PERMISSIONS_PAGE,
     VIEW_WEB_PERMISSIONS,
+    POLICY_INSTALLED,
     // NOTE: If you update this, you probably need to update the
     // ContextMenuAction enum below.
   };
@@ -72,26 +73,12 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
     kPageAccessLearnMore = 11,
     kPageAccessPermissionsPage = 12,
     kViewWebPermissions = 13,
-    kMaxValue = kViewWebPermissions,
+    kPolicyInstalled = 14,
+    kMaxValue = kPolicyInstalled,
   };
 
   // Location where the context menu is open from.
   enum class ContextMenuSource { kToolbarAction = 0, kMenuItem = 1 };
-
-  // The current visibility of the extension; this affects the "pin" / "unpin"
-  // strings in the menu.
-  // TODO(crbug.com/1416359): Rename this "PinState" when we finish removing the
-  // old UI bits and move outside this class (pin state is not tied to the
-  // context menu).
-  enum ButtonVisibility {
-    // The extension is pinned on the toolbar.
-    PINNED,
-    // The extension is temporarily visible on the toolbar, as for showing a
-    // popup.
-    TRANSITIVELY_VISIBLE,
-    // The extension is not pinned (and is shown in the extensions menu).
-    UNPINNED,
-  };
 
   // Delegate to handle showing an ExtensionAction popup.
   class PopupDelegate {
@@ -111,7 +98,7 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
   // ShowPopupForDevToolsWindow() to be called on |delegate|.
   ExtensionContextMenuModel(const Extension* extension,
                             Browser* browser,
-                            ButtonVisibility visibility,
+                            bool is_pinned,
                             PopupDelegate* delegate,
                             bool can_show_icon_in_toolbar,
                             ContextMenuSource source);
@@ -136,6 +123,10 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
 
  private:
   void InitMenu(const Extension* extension, bool can_show_icon_in_toolbar);
+
+  // Constructs the menu when `kExtensionsMenuAccessControl` is enabled.
+  void InitMenuWithFeature(const Extension* extension,
+                           bool can_show_icon_in_toolbar);
 
   // Adds the page access items based on the current site setting pointed by
   // `web_contents`.
@@ -167,7 +158,7 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
 
   // The extension action of the extension we are displaying the menu for (if
   // it has one, otherwise NULL).
-  raw_ptr<ExtensionAction> extension_action_;
+  raw_ptr<ExtensionAction, DanglingUntriaged> extension_action_;
 
   const raw_ptr<Browser> browser_;
 
@@ -176,8 +167,8 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
   // The delegate which handles the 'inspect popup' menu command (or NULL).
   raw_ptr<PopupDelegate> delegate_;
 
-  // The visibility of the button at the time the menu opened.
-  ButtonVisibility button_visibility_;
+  // Whether the extension icon is pinned at the time the menu opened.
+  bool is_pinned_;
 
   // Menu matcher for context menu items specified by the extension.
   std::unique_ptr<ContextMenuMatcher> extension_items_;

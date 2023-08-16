@@ -20,7 +20,7 @@
 #include "components/power_scheduler/power_mode_voter.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_timing_details_map.h"
-#include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "gpu/ipc/client/client_shared_image_interface.h"
@@ -76,6 +76,7 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
     UnboundMessagePipes pipes;
     bool wants_animate_only_begin_frames = false;
     base::PlatformThreadId io_thread_id = base::kInvalidThreadId;
+    base::PlatformThreadId main_thread_id = base::kInvalidThreadId;
 
     // If `true`, the CompositorFrameSinkClient receiver will receive IPC
     // directly to the thread on which the AsyncLayerTreeFrameSink lives, rather
@@ -85,7 +86,7 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   };
 
   AsyncLayerTreeFrameSink(
-      scoped_refptr<viz::ContextProvider> context_provider,
+      scoped_refptr<viz::RasterContextProvider> context_provider,
       scoped_refptr<RasterContextProviderWrapper>
           worker_context_provider_wrapper,
       std::unique_ptr<gpu::ClientSharedImageInterface> shared_image_interface,
@@ -142,6 +143,7 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
 #if BUILDFLAG(IS_ANDROID)
   base::PlatformThreadId io_thread_id_;
+  base::PlatformThreadId main_thread_id_;
 #endif
 
   // Message pipes that will be bound when BindToClient() is called.

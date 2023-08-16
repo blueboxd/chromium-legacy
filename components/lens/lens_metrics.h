@@ -39,7 +39,8 @@ enum class CameraOpenEntryPoint {
   WIDGET = 2,
   TASKS_SURFACE = 3,
   KEYBOARD = 4,
-  kMaxValue = KEYBOARD
+  SPOTLIGHT = 5,
+  kMaxValue = SPOTLIGHT
 };
 
 // Needs to be kept in sync with CameraResult enum in
@@ -64,7 +65,11 @@ enum class AmbientSearchEntryPoint {
   NEW_TAB_PAGE = 6,
   QUICK_ACTION_SEARCH_WIDGET = 7,
   KEYBOARD = 8,
-  kMaxValue = KEYBOARD
+  APP_ICON_LONG_PRESS = 9,
+  SPOTLIGHT = 10,
+  PLUS_BUTTON = 11,
+  WEB_SEARCH_BAR = 12,
+  kMaxValue = WEB_SEARCH_BAR
 };
 
 // This should be kept in sync with the LensRegionSearchAspectRatio enum

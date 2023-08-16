@@ -280,13 +280,13 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
   // Mimics a user clicking a link to `url` in search companion and waits for
   // the page to load.
   void ClickUrlInCompanion(const GURL& url, bool wait_for_navigation = true) {
+    content::TestNavigationObserver nav_observer(web_contents());
     std::string script =
         "const link = document.createElement('a');link.target = "
         "\"blank_\";link.href=\"" +
         url.spec() + "\";document.body.appendChild(link);link.click();";
     ExecJs(script);
     if (wait_for_navigation) {
-      content::TestNavigationObserver nav_observer(web_contents());
       nav_observer.Wait();
     }
   }
@@ -378,15 +378,6 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
     std::string companion_proto_encoded = eval_js_result.ExtractString();
     proto = DeserializeCompanionRequest(companion_proto_encoded);
     return proto;
-  }
-
-  absl::optional<GURL> GetLastLinkOpenedUrlFromPostMessage() {
-    content::EvalJsResult eval_js_result =
-        EvalJs("getLastReceivedLinkOpenedUrl()");
-    if (!eval_js_result.error.empty() || !eval_js_result.value.is_string()) {
-      return absl::nullopt;
-    }
-    return GURL(eval_js_result.ExtractString());
   }
 
   void EnableMsbb(bool enable_msbb) {
@@ -588,11 +579,9 @@ IN_PROC_BROWSER_TEST_F(CompanionPageSameTabBrowserTest,
 
   // Click a link on the companion page. It should open in the same tab and
   // refresh the companion.
-  content::TestNavigationObserver nav_observer(web_contents());
   std::string script =
       "document.getElementById('some_link').click(); waitForMessage();";
   EvalJs(script);
-  nav_observer.Wait();
 
   // Close side panel and verify UKM of the second companion entry.
   side_panel_coordinator()->Close();
@@ -748,30 +737,6 @@ IN_PROC_BROWSER_TEST_F(CompanionPageSameTabBrowserTest,
   EXPECT_NE(clicked_url, web_contents()->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(CompanionPageSameTabBrowserTest,
-                       LinkClickOnCompanionPageNotifiesViaPostMessage) {
-  const GURL clicked_url = CreateUrl(kHost, "/clicked.html");
-  // EnableSignInMsbbExps(/*signed_in=*/true, /*msbb=*/true, /*exps=*/true);
-
-  // Load a page on the active tab.
-  ASSERT_TRUE(
-      ui_test_utils::NavigateToURL(browser(), CreateUrl(kHost, kRelativeUrl1)));
-  ASSERT_EQ(side_panel_coordinator()->GetCurrentEntryId(), absl::nullopt);
-
-  // Open companion companion via toolbar entry point.
-  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
-  EXPECT_TRUE(side_panel_coordinator()->IsSidePanelShowing());
-
-  WaitForCompanionToBeLoaded();
-  EXPECT_EQ(side_panel_coordinator()->GetCurrentEntryId(),
-            SidePanelEntry::Id::kSearchCompanion);
-
-  ClickUrlInCompanion(clicked_url);
-
-  // Ensure browser sent post message
-  EXPECT_EQ(clicked_url, GetLastLinkOpenedUrlFromPostMessage());
-}
-
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, LinkClickOnCompanionPage) {
   EnableSignInMsbbExps(/*signed_in=*/true, /*msbb=*/true, /*exps=*/true);
   ukm::TestAutoSetUkmRecorder ukm_recorder;
@@ -802,31 +767,6 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, LinkClickOnCompanionPage) {
   ExpectUkmEntryAt(
       &ukm_recorder, 0, ukm::builders::Companion_PageView::kOpenTriggerName,
       static_cast<int>(SidePanelOpenTrigger::kOpenedInNewTabFromSidePanel));
-}
-
-IN_PROC_BROWSER_TEST_F(
-    CompanionPageBrowserTest,
-    LinkClickOnCompanionPageNotifiesNewTabSidePanelViaPostMessage) {
-  const GURL clicked_url = CreateUrl(kHost, "/clicked.html");
-  // EnableSignInMsbbExps(/*signed_in=*/true, /*msbb=*/true, /*exps=*/true);
-
-  // Load a page on the active tab.
-  ASSERT_TRUE(
-      ui_test_utils::NavigateToURL(browser(), CreateUrl(kHost, kRelativeUrl1)));
-  ASSERT_EQ(side_panel_coordinator()->GetCurrentEntryId(), absl::nullopt);
-
-  // Open companion companion via toolbar entry point.
-  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
-  EXPECT_TRUE(side_panel_coordinator()->IsSidePanelShowing());
-
-  WaitForCompanionToBeLoaded();
-  EXPECT_EQ(side_panel_coordinator()->GetCurrentEntryId(),
-            SidePanelEntry::Id::kSearchCompanion);
-
-  ClickUrlInCompanion(clicked_url);
-
-  // Ensure browser sent post message
-  EXPECT_EQ(clicked_url, GetLastLinkOpenedUrlFromPostMessage());
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, AutoRefreshOnMsbb) {
@@ -921,15 +861,6 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, ReloadWillRefreshCompanion) {
   EXPECT_TRUE(proto.has_value());
   EXPECT_EQ(proto->page_url(), CreateUrl(kHost, kRelativeUrl1));
 
-  // Post message so that shown events are flushed.
-  CompanionScriptBuilder builder(MethodType::kRecordUiSurfaceShown);
-  builder.ui_surface = UiSurface::kCQ;
-  builder.ui_surface_position = 3;
-  builder.child_element_available_count = 8;
-  builder.child_element_shown_count = 5;
-  EXPECT_TRUE(ExecJs(builder.Build()));
-  WaitForHistogram("Companion.CQ.Shown");
-
   // Reload the page. It should refresh the companion via postmessage.
   content::TestNavigationObserver nav_observer(web_contents(), 1);
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
@@ -938,16 +869,6 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, ReloadWillRefreshCompanion) {
   proto = GetLastCompanionProtoFromPostMessage();
   EXPECT_TRUE(proto.has_value());
   EXPECT_EQ(proto->page_url(), CreateUrl(kHost, kRelativeUrl1));
-
-  CompanionScriptBuilder builder2(MethodType::kRecordUiSurfaceShown);
-  builder2.ui_surface = UiSurface::kRelQr;
-  builder.ui_surface_position = 3;
-  builder.child_element_available_count = 8;
-  builder.child_element_shown_count = 5;
-  EXPECT_TRUE(ExecJs(builder2.Build()));
-  WaitForHistogram("Companion.RelQr.Shown");
-  histogram_tester_->ExpectTotalCount("Companion.FullLoad.Latency", 1);
-  histogram_tester_->ExpectTotalCount("Companion.NavigationLoad.Latency", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
@@ -978,8 +899,6 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
   WaitForHistogram("Companion.CQ.Shown");
   histogram_tester_->ExpectBucketCount("Companion.CQ.Shown",
                                        /*sample=*/true, /*expected_count=*/1);
-  histogram_tester_->ExpectTotalCount("Companion.FullLoad.Latency", 1);
-  histogram_tester_->ExpectTotalCount("Companion.NavigationLoad.Latency", 0);
 
   // Post message for click metrics. Verify histograms.
   CompanionScriptBuilder builder2(MethodType::kRecordUiSurfaceClicked);
@@ -1040,8 +959,6 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
   WaitForHistogram("Companion.PH.Shown");
   histogram_tester_->ExpectBucketCount("Companion.PH.Shown",
                                        /*sample=*/true, /*expected_count=*/1);
-  histogram_tester_->ExpectTotalCount("Companion.FullLoad.Latency", 1);
-  histogram_tester_->ExpectTotalCount("Companion.NavigationLoad.Latency", 0);
 
   // Post message for click metrics. Verify histograms.
   CompanionScriptBuilder builder2(MethodType::kRecordUiSurfaceClicked);
@@ -1178,10 +1095,6 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, RegionSearch) {
   // Start region search. Verify histograms.
   CompanionScriptBuilder builder(MethodType::kOnRegionSearchClicked);
   EXPECT_TRUE(ExecJs(builder.Build()));
-
-  CompanionScriptBuilder builder2(MethodType::kRecordUiSurfaceClicked);
-  builder2.ui_surface = UiSurface::kRegionSearch;
-  EXPECT_TRUE(ExecJs(builder2.Build()));
   WaitForHistogram("Companion.RegionSearch.Clicked");
   histogram_tester_->ExpectBucketCount("Companion.RegionSearch.Clicked",
                                        /*sample=*/true,

@@ -99,13 +99,13 @@ class CORE_EXPORT CSSParserImpl {
   static MutableCSSPropertyValueSet::SetResult ParseValue(
       MutableCSSPropertyValueSet*,
       CSSPropertyID,
-      const String&,
+      StringView,
       bool important,
       const CSSParserContext*);
   static MutableCSSPropertyValueSet::SetResult ParseVariableValue(
       MutableCSSPropertyValueSet*,
       const AtomicString& property_name,
-      const String&,
+      StringView,
       bool important,
       const CSSParserContext*,
       bool is_animation_tainted);
@@ -141,6 +141,7 @@ class CORE_EXPORT CSSParserImpl {
       const String&);
 
   bool ConsumeSupportsDeclaration(CSSParserTokenStream&);
+  void ConsumeErroneousAtRule(CSSParserTokenStream& stream, CSSAtRuleID id);
   const CSSParserContext* GetContext() const { return context_; }
 
   static void ParseDeclarationListForInspector(const String&,

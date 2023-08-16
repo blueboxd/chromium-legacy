@@ -25,6 +25,7 @@
 #include "chrome/browser/ash/borealis/borealis_util.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/views/borealis/borealis_beta_badge.h"
 #include "chrome/browser/ui/views/borealis/borealis_installer_disallowed_dialog.h"
 #include "chrome/browser/ui/views/borealis/borealis_installer_error_dialog.h"
 #include "chrome/browser/ui/views/borealis/borealis_splash_screen_view.h"
@@ -60,6 +61,11 @@ BorealisInstallerView* g_borealis_installer_view = nullptr;
 
 constexpr auto kButtonRowInsets = gfx::Insets::TLBR(0, 64, 32, 64);
 
+// The left column should be ~1/phi-th the width of the right column.
+//
+//  456 * ( 2 / (1 + sqrt(5)) )
+constexpr int kLeftPannelWidth = 282;
+
 void ShowBorealisInstallerViewIfAllowed(
     Profile* profile,
     borealis::BorealisFeatures::AllowStatus status) {
@@ -90,7 +96,7 @@ std::u16string GetInstallationPredictionText(const base::Time& start_time,
   // We have no confidence in the prediction for the first second or for
   // too-small proportions.
   if (completion_proportion < 0.001 || duration < base::Seconds(1)) {
-    return l10n_util::GetStringUTF16(IDS_BOREALIS_INSTALLER_ONGOING_INACTIVE);
+    return l10n_util::GetStringUTF16(IDS_BOREALIS_INSTALLER_ONGOING_INITIAL);
   }
   // Linear-interpolation to predict remaining time.
   base::TimeDelta remaining = (duration / completion_proportion) - duration;
@@ -126,9 +132,7 @@ BEGIN_METADATA(BorealisInstallerView, TitleLabel, views::Label)
 END_METADATA
 
 BorealisInstallerView::BorealisInstallerView(Profile* profile)
-    : app_name_(l10n_util::GetStringUTF16(IDS_BOREALIS_APP_NAME)),
-      profile_(profile),
-      observation_(this) {
+    : profile_(profile), observation_(this) {
   SetCanMinimize(true);
   set_draggable(true);
   set_margins(gfx::Insets::TLBR(80, 40, 40, 40));
@@ -143,7 +147,6 @@ BorealisInstallerView::BorealisInstallerView(Profile* profile)
       left_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical, gfx::Insets()));
   left_layout->set_inside_border_insets(gfx::Insets::TLBR(0, 0, 0, 80));
-  AddChildView(left_container_view);
 
   views::ImageView* flair =
       left_container_view->AddChildView(std::make_unique<views::ImageView>());
@@ -154,23 +157,28 @@ BorealisInstallerView::BorealisInstallerView(Profile* profile)
   flair->SetImage(s);
 
   primary_message_label_ =
-      new TitleLabel(GetPrimaryMessage(), ash::CONTEXT_HEADLINE_OVERSIZED,
-                     views::style::STYLE_PRIMARY);
+      left_container_view->AddChildView(std::make_unique<TitleLabel>(
+          GetPrimaryMessage(), ash::CONTEXT_HEADLINE_OVERSIZED,
+          views::style::STYLE_PRIMARY));
   primary_message_label_->SetProperty(views::kMarginsKey,
                                       gfx::Insets::TLBR(40, 0, 0, 0));
   primary_message_label_->SetMultiLine(true);
   primary_message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  primary_message_label_->SetMaximumWidth(264);
-  left_container_view->AddChildView(primary_message_label_.get());
+  primary_message_label_->SetMaximumWidth(kLeftPannelWidth);
 
-  secondary_message_label_ = new views::Label(
-      GetSecondaryMessage(), views::style::CONTEXT_DIALOG_BODY_TEXT,
-      views::style::STYLE_SECONDARY);
+  beta_badge_ = left_container_view->AddChildView(
+      std::make_unique<views::BorealisBetaBadge>());
+  beta_badge_->SetProperty(views::kMarginsKey, gfx::Insets::TLBR(16, 0, 0, 0));
+
+  secondary_message_label_ =
+      left_container_view->AddChildView(std::make_unique<views::Label>(
+          GetSecondaryMessage(), views::style::CONTEXT_DIALOG_BODY_TEXT,
+          views::style::STYLE_SECONDARY));
   secondary_message_label_->SetProperty(views::kMarginsKey,
                                         gfx::Insets::TLBR(16, 0, 0, 0));
   secondary_message_label_->SetMultiLine(true);
   secondary_message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  left_container_view->AddChildView(secondary_message_label_.get());
+  secondary_message_label_->SetMaximumWidth(kLeftPannelWidth);
 
   views::View* progress_container =
       left_container_view->AddChildView(std::make_unique<views::View>());
@@ -186,6 +194,7 @@ BorealisInstallerView::BorealisInstallerView(Profile* profile)
           std::u16string(), views::style::CONTEXT_DIALOG_BODY_TEXT,
           views::style::STYLE_SECONDARY));
   installation_progress_separator_->SetText(u"|");
+  installation_progress_separator_->SetAccessibleRole(ax::mojom::Role::kNone);
   installation_progress_separator_->SetProperty(views::kMarginsKey,
                                                 gfx::Insets::TLBR(0, 8, 0, 8));
   installation_progress_eta_label_ =
@@ -205,7 +214,6 @@ BorealisInstallerView::BorealisInstallerView(Profile* profile)
           views::BoxLayout::Orientation::kVertical));
   right_container_layout_->set_inside_border_insets(
       gfx::Insets::TLBR(64, 0, 64, 0));
-  AddChildView(right_container_view);
 
   big_image_ = new views::ImageView();
   big_image_->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
@@ -377,7 +385,7 @@ std::u16string BorealisInstallerView::GetCurrentDialogButtonLabel(
     case State::kCompleted: {
       return l10n_util::GetStringUTF16(
           button == ui::DIALOG_BUTTON_OK ? IDS_BOREALIS_INSTALLER_LAUNCH_BUTTON
-                                         : IDS_APP_CLOSE);
+                                         : IDS_APP_CANCEL);
     }
   }
 }
@@ -417,6 +425,9 @@ void BorealisInstallerView::OnStateUpdated() {
 
   const bool progress_bar_visible = state_ == State::kInstalling;
   progress_bar_->SetVisible(progress_bar_visible);
+
+  const bool beta_badge_visible = state_ != State::kCompleted;
+  beta_badge_->SetVisible(beta_badge_visible);
 
   DialogModelChanged();
   primary_message_label_->NotifyAccessibilityEvent(

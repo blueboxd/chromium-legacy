@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.notifications.chime.ChimeFeatures;
 import org.chromium.chrome.browser.omaha.VersionNumberGetter;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.optimization_guide.OptimizationGuidePushNotificationManager;
+import org.chromium.chrome.browser.recent_tabs.RestoreTabsFeatureHelper;
 import org.chromium.chrome.browser.tab.state.FilePersistedTabDataStorage;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementFieldTrial;
@@ -90,6 +91,7 @@ public class ChromeCachedFlags {
                 CustomTabIntentDataProvider.DENYLIST_ENTRIES,
                 CustomTabIntentDataProvider.ALLOWLIST_ENTRIES,
                 WarmupManager.SPARE_TAB_INITIALIZE_RENDERER,
+                RestoreTabsFeatureHelper.RESTORE_TABS_PROMO_SKIP_FEATURE_ENGAGEMENT,
                 StartSurfaceConfiguration.IS_DOODLE_SUPPORTED,
                 StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS,
                 StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_ON_TABLET_SECONDS,
@@ -102,6 +104,9 @@ public class ChromeCachedFlags {
                 StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY,
                 StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START,
                 StartSurfaceConfiguration.START_SURFACE_OPEN_START_AS_HOMEPAGE,
+                StartSurfaceConfiguration.SURFACE_POLISH_OMNIBOX_COLOR,
+                StartSurfaceConfiguration.SURFACE_POLISH_OMNIBOX_SIZE,
+                StartSurfaceConfiguration.SURFACE_POLISH_USE_MAGIC_SPACE,
                 TabPersistentStore.CRITICAL_PERSISTED_TAB_DATA_SAVE_ONLY_PARAM,
                 TabUiFeatureUtilities.ENABLE_TAB_GROUP_AUTO_CREATION,
                 TabUiFeatureUtilities.GTS_ACCESSIBILITY_LIST_MODE,

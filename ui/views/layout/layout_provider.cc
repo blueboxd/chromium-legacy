@@ -187,11 +187,14 @@ ShapeSysTokens GetShapeSysToken(ShapeContextTokens id) {
           {ShapeContextTokens::kButtonRadius, ShapeSysTokens::kFull},
           {ShapeContextTokens::kComboboxRadius, ShapeSysTokens::kSmall},
           {ShapeContextTokens::kDialogRadius, ShapeSysTokens::kMediumSmall},
+          {ShapeContextTokens::kFindBarViewRadius, ShapeSysTokens::kSmall},
           {ShapeContextTokens::kMenuRadius, ShapeSysTokens::kSmall},
           {ShapeContextTokens::kMenuAuxRadius, ShapeSysTokens::kSmall},
           {ShapeContextTokens::kMenuTouchRadius, ShapeSysTokens::kSmall},
           {ShapeContextTokens::kOmniboxExpandedRadius, ShapeSysTokens::kMedium},
           {ShapeContextTokens::kTextfieldRadius, ShapeSysTokens::kSmall},
+          {ShapeContextTokens::kSidePanelContentRadius,
+           ShapeSysTokens::kMedium},
       });
   const auto* it = shape_token_map.find(id);
   return it == shape_token_map.end() ? ShapeSysTokens::kDefault : it->second;
@@ -207,6 +210,7 @@ int LayoutProvider::GetCornerRadiusMetric(ShapeContextTokens id,
         return GetCornerRadiusMetric(Emphasis::kMedium, size);
       case ShapeContextTokens::kComboboxRadius:
       case ShapeContextTokens::kDialogRadius:
+      case ShapeContextTokens::kFindBarViewRadius:
         return GetCornerRadiusMetric(Emphasis::kMedium, size);
       case ShapeContextTokens::kMenuRadius:
       case ShapeContextTokens::kMenuAuxRadius:
@@ -217,6 +221,8 @@ int LayoutProvider::GetCornerRadiusMetric(ShapeContextTokens id,
         return 16;
       case ShapeContextTokens::kTextfieldRadius:
         return FocusRing::kDefaultCornerRadiusDp;
+      case ShapeContextTokens::kSidePanelContentRadius:
+        return GetCornerRadiusMetric(Emphasis::kMedium);
       default:
         return 0;
     }

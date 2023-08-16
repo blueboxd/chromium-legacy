@@ -25,6 +25,7 @@ import {recordSettingChange} from '../metrics_recorder.js';
 
 import {matchesSearchTerm, sortPrinters} from './cups_printer_dialog_util.js';
 import {PrinterListEntry} from './cups_printer_types.js';
+import {PrinterSettingsUserAction, recordPrinterSettingsUserAction} from './cups_printers.js';
 import {CupsPrinterInfo, CupsPrintersBrowserProxy, CupsPrintersBrowserProxyImpl} from './cups_printers_browser_proxy.js';
 import {CupsPrintersEntryListMixin} from './cups_printers_entry_list_mixin.js';
 import {getTemplate} from './cups_saved_printers.html.js';
@@ -35,6 +36,26 @@ import {getStatusReasonFromPrinterStatus, PrinterStatus, PrinterStatusReason} fr
  * is 3.
  */
 const MIN_VISIBLE_PRINTERS: number = 3;
+
+/**
+ * The amount of time Printer settings is open until it switches to a longer
+ * delay between each printer status query.
+ */
+const PRINTER_STATUS_QUERY_SHORT_DELAY_DURATION_MS: number = 120000;
+
+/**
+ * The inclusive range for the delay between printer status queries. This
+ * shorter interval is used when Printer settings initially opens. This will
+ * capture changes when the user will most likely be interacting with the
+ * printer.
+ */
+export const PRINTER_STATUS_QUERY_SHORT_DELAY_RANGE_MS: number[] =
+    [15000, 25000];
+
+/**
+ * The inclusive range of the delay between printer status queries.
+ */
+const PRINTER_STATUS_QUERY_LONG_DELAY_RANGE_MS: number[] = [60000, 80000];
 
 /**
  * Move a printer's position in |printerArr| from |fromIndex| to |toIndex|.
@@ -134,6 +155,15 @@ export class SettingsCupsSavedPrintersElement extends
       },
 
       /**
+       * Determines whether to use the short or long delay between printer
+       * status queries.
+       */
+      useShortDelayInterval_: {
+        type: Boolean,
+        value: true,
+      },
+
+      /**
        * True when the "printer-settings-printer-status" feature flag is
        * enabled.
        */
@@ -169,6 +199,7 @@ export class SettingsCupsSavedPrintersElement extends
   private newPrinters_: PrinterListEntry[];
   private visiblePrinterCounter_: number;
   private printerStatusReasonCache_: Map<string, PrinterStatusReason>;
+  private useShortDelayInterval_: boolean;
   private isPrinterSettingsPrinterStatusEnabled_: boolean;
 
   constructor() {
@@ -190,6 +221,16 @@ export class SettingsCupsSavedPrintersElement extends
         (event: CustomEvent<{target: HTMLElement, item: PrinterListEntry}>) => {
           this.onOpenActionMenu_(event);
         });
+
+    if (this.isPrinterSettingsPrinterStatusEnabled_) {
+      this.startPrinterStatusQueryTimer_();
+
+      // After Printer settings is open for a set amount of time, switch to the
+      // longer printer status delay.
+      setTimeout(
+          () => this.useShortDelayInterval_ = false,
+          PRINTER_STATUS_QUERY_SHORT_DELAY_DURATION_MS);
+    }
   }
 
   /**
@@ -231,15 +272,20 @@ export class SettingsCupsSavedPrintersElement extends
         });
     this.dispatchEvent(editCupsPrinterDetailsEvent);
     this.closeActionMenu_();
+    recordPrinterSettingsUserAction(PrinterSettingsUserAction.EDIT_PRINTER);
   }
 
   private onRemoveClick_(): void {
+    // Remove this printer's current status reason from the cache so a stale
+    // status isn't shown if the printer is added back.
+    this.printerStatusReasonCache_.delete(this.activePrinter!.printerId);
     this.browserProxy_.removeCupsPrinter(
         this.activePrinter!.printerId, this.activePrinter!.printerName);
     recordSettingChange();
     this.activePrinter = null;
     this.activePrinterListEntryIndex_ = -1;
     this.closeActionMenu_();
+    recordPrinterSettingsUserAction(PrinterSettingsUserAction.REMOVE_PRINTER);
   }
 
   private onShowMoreClick_(): void {
@@ -366,7 +412,7 @@ export class SettingsCupsSavedPrintersElement extends
   }
 
   /** Query each saved printer for its printer status. */
-  private fetchPrinterStatuses_() {
+  private fetchPrinterStatuses_(): void {
     if (!this.isPrinterSettingsPrinterStatusEnabled_) {
       return;
     }
@@ -382,7 +428,7 @@ export class SettingsCupsSavedPrintersElement extends
    * For each printer status received, add it to the printer status cache then
    * notify its respective printer entry to update its status.
    */
-  private onPrinterStatusReceived_(printerStatus: PrinterStatus) {
+  private onPrinterStatusReceived_(printerStatus: PrinterStatus): void {
     assert(this.isPrinterSettingsPrinterStatusEnabled_);
     if (!printerStatus) {
       return;
@@ -401,6 +447,47 @@ export class SettingsCupsSavedPrintersElement extends
     }
 
     this.notifyPath(`filteredPrinters_.${filteredIndex}.printerInfo.printerId`);
+  }
+
+  /**
+   * Starts the printer status query timer which continually resets itself
+   * until the page is closed.
+   */
+  private startPrinterStatusQueryTimer_(): void {
+    assert(this.isPrinterSettingsPrinterStatusEnabled_);
+
+    // Chooses a random number between the delay interval.
+    const minDelay = this.useShortDelayInterval_ ?
+        PRINTER_STATUS_QUERY_SHORT_DELAY_RANGE_MS[0] :
+        PRINTER_STATUS_QUERY_LONG_DELAY_RANGE_MS[0];
+    const maxDelay = this.useShortDelayInterval_ ?
+        PRINTER_STATUS_QUERY_SHORT_DELAY_RANGE_MS[1] :
+        PRINTER_STATUS_QUERY_LONG_DELAY_RANGE_MS[1];
+    const randomizedDelayMs =
+        (Math.random() * (maxDelay - minDelay)) + minDelay;
+    setTimeout(
+        () => this.onPrinterStatusQueryTimerComplete_(), randomizedDelayMs);
+  }
+
+  /**
+   * Invoked once the timer is elapsed. Starts the printer status queries then
+   * resets the timer.
+   */
+  private onPrinterStatusQueryTimerComplete_(): void {
+    assert(this.isPrinterSettingsPrinterStatusEnabled_);
+
+    this.fetchPrinterStatuses_();
+
+    // Restart the printer status query timer.
+    this.startPrinterStatusQueryTimer_();
+  }
+
+  startPrinterStatusQueryTimerForTesting(): void {
+    this.startPrinterStatusQueryTimer_();
+  }
+
+  getPrinterStatusReasonCacheForTesting(): Map<string, PrinterStatusReason> {
+    return this.printerStatusReasonCache_;
   }
 }
 

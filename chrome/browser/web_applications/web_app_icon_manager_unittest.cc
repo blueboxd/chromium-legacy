@@ -41,7 +41,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_scale_factor.h"
 #include "ui/gfx/favicon_size.h"
 
@@ -51,6 +50,15 @@ namespace {
 
 using IconSizeAndPurpose = WebAppIconManager::IconSizeAndPurpose;
 const int kMinimumHomeTabIconSizeInPx = 16;
+
+std::vector<WebAppShortcutsMenuItemInfo> CreateEmptyShortcutsMenuItemInfos(
+    int num_menu_items) {
+  std::vector<WebAppShortcutsMenuItemInfo> result;
+  for (int i = 0; i < num_menu_items; ++i) {
+    result.emplace_back();
+  }
+  return result;
+}
 
 }  // namespace
 
@@ -278,9 +286,9 @@ class WebAppIconManagerTest : public WebAppTest {
   }
 
  private:
-  raw_ptr<FakeWebAppProvider> provider_;
-  raw_ptr<WebAppInstallManager> install_manager_;
-  raw_ptr<WebAppIconManager> icon_manager_;
+  raw_ptr<FakeWebAppProvider, DanglingUntriaged> provider_;
+  raw_ptr<WebAppInstallManager, DanglingUntriaged> install_manager_;
+  raw_ptr<WebAppIconManager, DanglingUntriaged> icon_manager_;
 
   scoped_refptr<TestFileUtils> file_utils_;
 };
@@ -703,7 +711,8 @@ TEST_F(WebAppIconManagerTest, ReadAllShortcutMenuIconsWithTimestamp) {
                                     {IconPurpose::MASKABLE, sizes, colors},
                                     {IconPurpose::MONOCHROME, sizes, colors}},
                                    num_menu_items);
-  web_app->SetDownloadedShortcutsMenuIconsSizes(
+  web_app->SetShortcutsMenuInfo(
+      CreateEmptyShortcutsMenuItemInfos(num_menu_items),
       CreateDownloadedShortcutsMenuIconsSizes(sizes, sizes, sizes,
                                               num_menu_items));
 
@@ -802,13 +811,15 @@ TEST_F(WebAppIconManagerTest, ReadShortcutsMenuIconsFailed) {
   const AppId app_id = web_app->app_id();
 
   const std::vector<SquareSizePx> sizes_px_any{icon_size::k96, icon_size::k256};
+  const int num_menu_items = 10;
 
   // Set shortcuts menu icons meta-info but don't write bitmaps to disk.
-  web_app->SetDownloadedShortcutsMenuIconsSizes(
+  web_app->SetShortcutsMenuInfo(
+      CreateEmptyShortcutsMenuItemInfos(num_menu_items),
       CreateDownloadedShortcutsMenuIconsSizes(sizes_px_any,
                                               /*sizes_maskable=*/{},
                                               /*sizes_monochrome=*/{},
-                                              /*num_menu_items=*/10));
+                                              num_menu_items));
 
   AddAppToRegistry(std::move(web_app));
 
@@ -849,7 +860,8 @@ TEST_F(WebAppIconManagerTest, WriteAndReadAllShortcutsMenuIcons) {
        {IconPurpose::MONOCHROME, sizes_monochrome, colors_monochrome}},
       num_menu_items);
 
-  web_app->SetDownloadedShortcutsMenuIconsSizes(
+  web_app->SetShortcutsMenuInfo(
+      CreateEmptyShortcutsMenuItemInfos(num_menu_items),
       CreateDownloadedShortcutsMenuIconsSizes(
           sizes_any, sizes_maskable, sizes_monochrome, num_menu_items));
 
@@ -902,7 +914,7 @@ TEST_F(WebAppIconManagerTest, WriteNonProductIconsEmptyMaps) {
   auto web_app = test::CreateWebApp();
   const AppId app_id = web_app->app_id();
 
-  web_app->SetDownloadedShortcutsMenuIconsSizes(std::vector<IconSizes>{});
+  web_app->SetShortcutsMenuInfo({}, {});
 
   AddAppToRegistry(std::move(web_app));
 

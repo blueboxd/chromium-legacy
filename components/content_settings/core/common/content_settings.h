@@ -52,7 +52,8 @@ struct ContentSettingPatternSource {
                               base::Value setting_value,
                               const std::string& source,
                               bool incognito,
-                              content_settings::RuleMetaData metadata = {});
+                              content_settings::RuleMetaData metadata =
+                                  content_settings::RuleMetaData());
   ContentSettingPatternSource(const ContentSettingPatternSource& other);
   ContentSettingPatternSource();
   ContentSettingPatternSource& operator=(
@@ -60,6 +61,8 @@ struct ContentSettingPatternSource {
   ~ContentSettingPatternSource();
   ContentSetting GetContentSetting() const;
   bool IsExpired() const;
+
+  bool operator==(const ContentSettingPatternSource& other) const;
 
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
@@ -89,6 +92,8 @@ struct RendererContentSettingRules {
   RendererContentSettingRules& operator=(
       const RendererContentSettingRules& rules);
   RendererContentSettingRules& operator=(RendererContentSettingRules&& rules);
+
+  bool operator==(const RendererContentSettingRules& other) const;
 
   ContentSettingsForOneType image_rules;
   ContentSettingsForOneType script_rules;

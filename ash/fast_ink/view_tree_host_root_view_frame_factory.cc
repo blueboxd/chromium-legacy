@@ -15,6 +15,7 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_id.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -74,10 +75,10 @@ ViewTreeHostRootViewFrameFactory::CreateUiResource(
       aura::Env::GetInstance()
           ->context_factory()
           ->GetGpuMemoryBufferManager()
-          ->CreateGpuMemoryBuffer(size,
-                                  viz::BufferFormat(format.resource_format()),
-                                  gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-                                  gpu::kNullSurfaceHandle, nullptr);
+          ->CreateGpuMemoryBuffer(
+              size, viz::SinglePlaneSharedImageFormatToBufferFormat(format),
+              gfx::BufferUsage::SCANOUT_CPU_READ_WRITE, gpu::kNullSurfaceHandle,
+              nullptr);
 
   if (!resource->gpu_memory_buffer) {
     LOG(ERROR) << "Failed to create GPU memory buffer";
@@ -101,12 +102,10 @@ ViewTreeHostRootViewFrameFactory::CreateUiResource(
     usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
   }
 
-  gpu::GpuMemoryBufferManager* gmb_manager =
-      aura::Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager();
   resource->mailbox = sii->CreateSharedImage(
-      resource->gpu_memory_buffer.get(), gmb_manager, gfx::ColorSpace(),
-      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
-      "FastInkRootViewFrame");
+      format, size, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
+      kPremul_SkAlphaType, usage, "FastInkRootViewFrame",
+      resource->gpu_memory_buffer->CloneHandle());
 
   resource->sync_token = sii->GenVerifiedSyncToken();
   resource->damaged = true;

@@ -7,13 +7,14 @@
 
 #include "ash/public/cpp/notification_utils.h"
 #include "base/functional/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/io_task_controller.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
-#include "chrome/browser/chromeos/policy/dlp/dialogs/files_policy_dialog.h"
+#include "chrome/browser/ash/policy/dlp/dialogs/files_policy_dialog.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
@@ -94,7 +95,9 @@ std::unique_ptr<message_center::Notification> CreateSystemNotification(
     const std::string& notification_id,
     const std::u16string& title,
     const std::u16string& message,
-    scoped_refptr<message_center::NotificationDelegate> delegate);
+    scoped_refptr<message_center::NotificationDelegate> delegate,
+    message_center::RichNotificationData optional_fields =
+        message_center::RichNotificationData());
 
 // Returns an instance of an 'ash' Notification with title and message specified
 // by string ID values (for 110n) with a bound click delegate.
@@ -194,6 +197,9 @@ class SystemNotificationManager {
       file_manager::io_task::IOTaskController* io_task_controller);
 
  private:
+  // Handles clicks on the DriveFS bulk-pinning error notification.
+  void HandleBulkPinningNotificationClick(absl::optional<int> button_index);
+
   // Make notification for DriveFS bulk-pinning error.
   NotificationPtr MakeBulkPinningErrorNotification(const Event& event);
 
@@ -240,11 +246,6 @@ class SystemNotificationManager {
       file_manager_private::MountCompletedEvent& event,
       const Volume& volume);
 
-  // Makes a notification instance Data Protection errors and warnings.
-  NotificationPtr MakeDataProtectionPolicyNotification(
-      const std::string& notification_id,
-      const file_manager::io_task::ProgressStatus& status);
-
   // Makes a notification instance for Data Protection progress notifications.
   NotificationPtr MakeDataProtectionPolicyProgressNotification(
       const std::string& notification_id,
@@ -252,8 +253,7 @@ class SystemNotificationManager {
 
   // Helper function to show a data protection policy dialog.
   void ShowDataProtectionPolicyDialog(file_manager::io_task::IOTaskId task_id,
-                                      policy::FilesDialogType type,
-                                      absl::optional<policy::Policy> policy);
+                                      policy::FilesDialogType type);
 
   // Helper function bound to notification instances that hides notifications.
   void Dismiss(const std::string& notification_id);
@@ -292,8 +292,15 @@ class SystemNotificationManager {
   using BulkPinStage = file_manager_private::BulkPinStage;
   BulkPinStage bulk_pin_stage_ = BulkPinStage::BULK_PIN_STAGE_NONE;
 
+  // Number of times the Google Drive settings page was opened from a system
+  // notification. Used in tests.
+  int drive_settings_open_count_ = 0;
+
   // base::WeakPtr{this} factory.
   base::WeakPtrFactory<SystemNotificationManager> weak_ptr_factory_{this};
+
+  FRIEND_TEST_ALL_PREFIXES(SystemNotificationManagerTest,
+                           BulkPinningNotification);
 };
 
 }  // namespace file_manager

@@ -30,7 +30,8 @@ class IntegrationTestCommands
  public:
   virtual void EnterTestMode(const GURL& update_url,
                              const GURL& crash_upload_url,
-                             const GURL& device_management_url) const = 0;
+                             const GURL& device_management_url,
+                             const base::TimeDelta& idle_timeout) const = 0;
   virtual void ExitTestMode() const = 0;
   virtual void SetGroupPolicies(const base::Value::Dict& values) const = 0;
   virtual void Clean() const = 0;
@@ -84,11 +85,14 @@ class IntegrationTestCommands
   virtual void RunWakeAll() const = 0;
   virtual void RunWakeActive(int exit_code) const = 0;
   virtual void RunCrashMe() const = 0;
+  virtual void RunServer(int exit_code, bool internal) const = 0;
 
   virtual void CheckForUpdate(const std::string& app_id) const = 0;
   virtual void Update(const std::string& app_id,
                       const std::string& install_data_index) const = 0;
   virtual void UpdateAll() const = 0;
+  virtual void GetAppStates(
+      const base::Value::Dict& expected_app_states) const = 0;
   virtual void DeleteUpdaterDirectory() const = 0;
   virtual void DeleteFile(const base::FilePath& path) const = 0;
   virtual void PrintLog() const = 0;
@@ -110,8 +114,6 @@ class IntegrationTestCommands
       int expected_exit_code) const = 0;
   virtual void ExpectLegacyPolicyStatusSucceeds() const = 0;
   virtual void RunUninstallCmdLine() const = 0;
-  virtual void SetUpTestService() const = 0;
-  virtual void TearDownTestService() const = 0;
   virtual void RunHandoff(const std::string& app_id) const = 0;
 #endif  // BUILDFLAG(IS_WIN)
   virtual void StressUpdateService() const = 0;
@@ -130,10 +132,10 @@ class IntegrationTestCommands
   virtual void ExpectLastChecked() const = 0;
   virtual void ExpectLastStarted() const = 0;
   virtual void UninstallApp(const std::string& app_id) const = 0;
-
   virtual void RunOfflineInstall(bool is_legacy_install,
                                  bool is_silent_install) = 0;
-
+  virtual void RunOfflineInstallOsNotSupported(bool is_legacy_install,
+                                               bool is_silent_install) = 0;
   virtual void DMDeregisterDevice() = 0;
   virtual void DMCleanup() = 0;
 

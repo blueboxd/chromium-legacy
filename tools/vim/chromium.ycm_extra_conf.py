@@ -197,6 +197,7 @@ def GetClangCommandLineForNinjaOutput(out_dir, build_target):
   """
   p = subprocess.Popen(
       ['ninja', '-v', '-C', out_dir, '-t', 'commands', build_target],
+      encoding='unicode_escape',
       stdout=subprocess.PIPE,
       universal_newlines=True)
   stdout, stderr = p.communicate()
@@ -236,7 +237,8 @@ def GetClangCommandLineFromNinjaForSource(out_dir, filename):
       return command_line
   return None
 
-def ProcessIndividualFlag(flag, out_dir):
+
+def ProcessIndividualFlag(flag, next_token, out_dir):
   def abspath(path):
     return os.path.normpath(os.path.join(out_dir, path))
 
@@ -260,8 +262,8 @@ def ProcessIndividualFlag(flag, out_dir):
       return None
     return flag
   elif flag == '-isysroot' or flag == '-isystem' or flag == '-I':
-    if flag_index + 1 < len(clang_tokens):
-      return flag.append(abspath(clang_tokens[flag_index + 1]))
+    if next_token:
+      return flag + abspath(next_token)
   elif flag.startswith('--sysroot='):
     # On Linux we use a sysroot image.
     sysroot_path = flag.lstrip('--sysroot=')
@@ -290,7 +292,10 @@ def GetClangOptionsFromCommandLine(clang_commandline, out_dir,
   # Parse flags that are important for YCM's purposes.
   clang_tokens = shlex.split(clang_commandline)
   for flag_index, flag in enumerate(clang_tokens):
-      clang_flags.append(ProcessIndividualFlag(flag, out_dir))
+    next_token = clang_tokens[flag_index + 1] \
+        if flag_index + 1 < len(clang_tokens) \
+        else None
+    clang_flags.append(ProcessIndividualFlag(flag, next_token, out_dir))
   return clang_flags
 
 def FileCompilationCandidates(filename):
@@ -378,11 +383,11 @@ def GetClangOptionsFromDBForFilename(chrome_root, filename):
   for candidate in FileCompilationCandidates(filename):
     compilation_info = database.GetCompilationInfoForFile(candidate)
     if compilation_info:
-        # ycm_core returns a StringVector we need to convert it.
-        flags = [] + additional_flags
-        for flag in compilation_info.compiler_flags_:
-            flags.append(ProcessIndividualFlag(flag, compilation_database_folder))
-        return flags
+      # ycm_core returns a StringVector we need to convert it.
+      flags = [] + additional_flags
+      for flag in compilation_info.compiler_flags_:
+        flags.append(ProcessIndividualFlag(flag, None, compilation_database_folder))
+      return flags
   return None
 
 # FlagsForFile entrypoint is deprecated in YCM and has replaced by

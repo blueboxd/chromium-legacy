@@ -22,21 +22,39 @@ typedef NS_ENUM(NSUInteger, DefaultPromoType) {
   DefaultPromoTypeGeneral = 0,
   DefaultPromoTypeStaySafe = 1,
   DefaultPromoTypeMadeForIOS = 2,
-  DefaultPromoTypeAllTabs = 3
+  DefaultPromoTypeAllTabs = 3,
+  DefaultPromoTypeVideo = 4,
 };
 
-namespace {
-
-// Enum actions for the IOS.DefaultBrowserFullscreenPromo* UMA metrics. Entries
-// should not be renumbered and numeric values should never be reused.
-enum class IOSDefaultBrowserFullscreenPromoAction {
+// Enum actions for default browser promo UMA metrics. Entries should not be
+// renumbered and numeric values should never be reused.
+enum class IOSDefaultBrowserPromoAction {
   kActionButton = 0,
   kCancel = 1,
   kRemindMeLater = 2,
-  kMaxValue = kRemindMeLater,
+  kDismiss = 3,
+  kMaxValue = kDismiss,
 };
 
-}  // namespace
+// Enum for the default browser promo UMA histograms. These values are persisted
+// to logs. Entries should not be renumbered and numeric values should never be
+// reused.
+enum class DefaultPromoTypeForUMA {
+  kGeneral = 0,
+  kMadeForIOS = 1,
+  kStaySafe = 2,
+  kAllTabs = 3,
+  kMaxValue = kAllTabs,
+};
+
+// Enum actions for the IOS.DefaultBrowserVideoPromo.(Fullscreen || Halfscreen)*
+// UMA metrics.
+enum class IOSDefaultBrowserVideoPromoAction {
+  kPrimaryActionTapped = 0,
+  kSecondaryActionTapped = 1,
+  kSwipeDown = 2,
+  kMaxValue = kSwipeDown,
+};
 
 // The feature parameter to activate the remind me later button.
 extern const char kDefaultBrowserFullscreenPromoExperimentRemindMeGroupParam[];
@@ -96,8 +114,16 @@ bool IsDefaultBrowserInPromoManagerEnabled();
 // Returns true if the default browser video promo is enabled.
 bool IsDefaultBrowserVideoPromoEnabled();
 
-// Returns true if the default browser video promo full screen enabled.
-bool IsDefaultBrowserVideoPromoFullscreenEnabled();
+// Returns true if the default browser video promo half screen enabled.
+bool IsDefaultBrowserVideoPromoHalfscreenEnabled();
+
+// Returns true if the default browser promo triggering criteria should be
+// skipped.
+bool ShouldForceDefaultPromoType();
+
+// Returns the promo type (DefaultPromoType) of the default browser promo after
+// skipping the triggering criteria.
+DefaultPromoType ForceDefaultPromoType();
 
 // Returns true if the user is in the CTA experiment in the open links group.
 bool IsInCTAOpenLinksGroup();
@@ -116,6 +142,9 @@ bool HasUserInteractedWithTailoredFullscreenPromoBefore();
 // Returns the number of times the user has seen and interacted with the
 // non-modal promo before.
 NSInteger UserInteractionWithNonModalPromoCount();
+
+// Logs that one of default browser promos was displayed.
+void LogDefaultBrowserPromoDisplayed();
 
 // Logs that the user has interacted with the Fullscreen Promo.
 void LogUserInteractionWithFullscreenPromo();
@@ -175,7 +204,8 @@ bool HasAppLaunchedOnColdStartAndRecordsLaunch();
 
 // Return true if the default browser promo should be registered with the promo
 // manager to display a default browser promo.
-bool ShouldRegisterPromoWithPromoManager(bool is_signed_in);
+bool ShouldRegisterPromoWithPromoManager(bool is_signed_in,
+                                         feature_engagement::Tracker* tracker);
 
 // Returns true if it was determined that the user is eligible for a
 // tailored promo.
@@ -192,5 +222,15 @@ bool IsVideoPromoEligibleUser(feature_engagement::Tracker* tracker);
 // Removes unused data from NSUserDefaults. This method should be periodically
 // pruned of cleanups that have been present for multiple milestones.
 void CleanupUnusedStorage();
+
+// Converts Default browser promo type NSEnum to an enum that can be used by
+// UMA.
+DefaultPromoTypeForUMA GetDefaultPromoTypeForUMA(DefaultPromoType type);
+
+// Log given default browser promo action to the UMA histogram coorespnding to
+// the given promo type.
+void LogDefaultBrowserPromoHistogramForAction(
+    DefaultPromoType type,
+    IOSDefaultBrowserPromoAction action);
 
 #endif  // IOS_CHROME_BROWSER_DEFAULT_BROWSER_UTILS_H_

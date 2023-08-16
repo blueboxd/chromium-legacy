@@ -60,8 +60,8 @@ from update import (CHROMIUM_DIR, DownloadAndUnpack, EnsureDirExists,
                     GetDefaultHostOs, RmTree, UpdatePackage)
 
 from update_rust import (RUST_REVISION, RUST_TOOLCHAIN_OUT_DIR,
-                         STAGE0_JSON_SHA256, THIRD_PARTY_DIR, THIS_DIR,
-                         VERSION_STAMP_PATH, GetLatestRevision)
+                         STAGE0_JSON_SHA256, THIRD_PARTY_DIR,
+                         VERSION_STAMP_PATH, GetRustClangRevision)
 
 EXCLUDED_TESTS = [
     # https://github.com/rust-lang/rust/issues/45222 which appears to have
@@ -89,7 +89,7 @@ EXCLUDED_TESTS_WINDOWS = [
     os.path.join('tests', 'codegen', 'vec-shrink-panik.rs'),
 ]
 
-CLANG_SCRIPTS_DIR = os.path.join(THIS_DIR, '..', 'clang', 'scripts')
+CLANG_SCRIPTS_DIR = os.path.join(CHROMIUM_DIR, 'tools', 'clang', 'scripts')
 
 RUST_GIT_URL = ('https://chromium.googlesource.com/external/' +
                 'github.com/rust-lang/rust')
@@ -225,7 +225,7 @@ def FetchBetaPackage(name, rust_git_hash, triple=None):
 
     Unpacks the package and returns the path to root of the package.
     '''
-    triple = triple if triple else RustTargetTriple(False)
+    triple = triple if triple else RustTargetTriple()
     filename = f'{name}-beta-{triple}'
 
     # Pull the stage0 JSON to find the package intended to be used to
@@ -248,10 +248,14 @@ def FetchBetaPackage(name, rust_git_hash, triple=None):
 
 
 def InstallBetaPackage(package_dir, install_dir):
-    RunCommand([
-        os.path.join(package_dir, 'install.sh'), f'--destdir={install_dir}',
-        f'--prefix='
-    ])
+    args = [
+        f'--destdir={install_dir}',
+        f'--prefix=',
+    ]
+    if sys.platform.startswith('linux'):
+        # Avoid warnings due to not running as root.
+        args += ['--disable-ldconfig']
+    RunCommand([os.path.join(package_dir, 'install.sh')] + args)
 
 
 def CargoVendor(cargo_bin):
@@ -309,6 +313,13 @@ def CargoVendor(cargo_bin):
         else:
             sys.exit(1)
 
+        vendor_env = os.environ
+        # The Cargo.toml files in the Rust toolchain may use nightly Cargo
+        # features, but the cargo binary is beta. This env var enables the
+        # beta cargo binary to allow nightly features anyway.
+        # https://github.com/rust-lang/rust/commit/2e52f4deb0544480b6aefe2c0cc1e6f3c893b081
+        vendor_env['RUSTC_BOOTSTRAP'] = '1'
+
         vendor_cmd = [
             cargo_bin,
             'vendor',
@@ -317,12 +328,19 @@ def CargoVendor(cargo_bin):
         ]
         for s in SYNC_TARGETS:
             vendor_cmd.extend(['--sync', s])
-        if RunCommand(vendor_cmd, fail_hard=False):
+        if RunCommand(vendor_cmd, fail_hard=False, env=vendor_env):
             break  # Success, break out of the retry loop.
         elif i < 2:
             print('Failed cargo vendor, retrying...')
             continue
         else:
+            print(
+                'NOTE: Our cargo vendor step mimics the behaviour of upstream '
+                'bootstrap/dist.rs which is used to build the nightly tarball. '
+                'Any changes to that file may need to be reflected in '
+                'build_rust.py in order for our vendor step to succeed. See '
+                'the link in the roll CL description to quickly see changes to '
+                'the bootstrap/dist.rs file.')
             sys.exit(1)
 
     # Make a `.cargo/config.toml` the points to the `vendor` directory for all
@@ -431,7 +449,9 @@ class XPy:
                 f' -Clink-arg={gcc_toolchain_flag}')
             self._env['RUSTFLAGS_BOOTSTRAP'] += (
                 f' -L native={gcc_toolchain_path}/lib64')
-            self._env['RUSTFLAGS_NOT_BOOTSTRAP'] += (
+            self._env['CARGO_TARGET_I686_UNKNOWN_LINUX_GNU_RUSTFLAGS'] += (
+                f' -L native={gcc_toolchain_path}/lib32')
+            self._env['CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS'] += (
                 f' -L native={gcc_toolchain_path}/lib64')
 
         # TODO(danakj): On windows we point the to lld-link in config.toml so
@@ -480,7 +500,7 @@ class XPy:
         subs = {}
         subs['INSTALL_DIR'] = quote_string(str(RUST_TOOLCHAIN_OUT_DIR))
         subs['LLVM_BIN'] = quote_string(str(self._llvm_bins_path))
-        subs['PACKAGE_VERSION'] = GetLatestRevision()
+        subs['PACKAGE_VERSION'] = GetRustClangRevision()
 
         subs["LLVM_CONFIG_WINDOWS_x86_64"] = quote_string(
             str(x86_64_llvm_config))
@@ -501,7 +521,7 @@ class XPy:
         cmd = [sys.executable, 'x.py', sub]
         if self._verbose and self._verbose > 0:
             cmd.append('-' + self._verbose * 'v')
-        RunCommand(cmd + args, msvc_arch='x64', env=self._env)
+        RunCommand(cmd + args, setenv=True, env=self._env)
         os.chdir(CHROMIUM_DIR)
 
 
@@ -528,7 +548,7 @@ def MakeVersionStamp(git_hash):
     with open(RUST_SRC_VERSION_FILE_PATH) as version_file:
         rust_version = version_file.readline().rstrip()
     return (f'rustc {rust_version} {git_hash}'
-            f' ({GetLatestRevision()} chromium)\n')
+            f' ({GetRustClangRevision()} chromium)\n')
 
 
 def GetLatestRustCommit():
@@ -542,16 +562,23 @@ def GetLatestRustCommit():
     return main['commit']
 
 
-def RustTargetTriple(build_mac_arm):
+def RustTargetTriple(build_mac_arm=False, target_x86=False):
     if sys.platform == 'darwin':
+        assert not target_x86  # No cross-compile to x86 on MacOS.
         if platform.machine() == 'arm64' or build_mac_arm:
             return 'aarch64-apple-darwin'
         else:
             return 'x86_64-apple-darwin'
     elif sys.platform == 'win32':
-        return 'x86_64-pc-windows-msvc'
+        if target_x86:
+            return 'i686-pc-windows-msvc'
+        else:
+            return 'x86_64-pc-windows-msvc'
     else:
-        return 'x86_64-unknown-linux-gnu'
+        if target_x86:
+            return 'i686-unknown-linux-gnu'
+        else:
+            return 'x86_64-unknown-linux-gnu'
 
 
 # Fetch or build the LLVM libraries, for the host machine and when
@@ -568,50 +595,50 @@ def BuildLLVMLibraries(skip_build, build_mac_arm, gcc_toolchain):
         target_llvm_build_dir = RUST_HOST_LLVM_BUILD_DIR
         target_llvm_install_dir = RUST_HOST_LLVM_INSTALL_DIR
 
-    print(f'Building the host LLVM in {RUST_HOST_LLVM_BUILD_DIR}...')
-    build_cmd = [
-        sys.executable,
-        os.path.join(CLANG_SCRIPTS_DIR, 'build.py'),
-        '--disable-asserts',
-        '--no-tools',
-        # PIC needed for Rust build (links LLVM into shared object)
-        '--pic',
-        '--with-ml-inliner-model=',
-    ]
-    if sys.platform.startswith('linux'):
-        build_cmd.append('--without-android')
-        build_cmd.append('--without-fuchsia')
-    if sys.platform == 'darwin':
-        build_cmd.append('--without-fuchsia')
-    if gcc_toolchain:
-        build_cmd.extend(['--gcc-toolchain', gcc_toolchain])
     if not skip_build:
+        print(f'Building the host LLVM in {RUST_HOST_LLVM_BUILD_DIR}...')
+        build_cmd = [
+            sys.executable,
+            os.path.join(CLANG_SCRIPTS_DIR, 'build.py'),
+            '--disable-asserts',
+            '--no-tools',
+            # PIC needed for Rust build (links LLVM into shared object)
+            '--pic',
+            '--with-ml-inliner-model=',
+        ]
+        if sys.platform.startswith('linux'):
+            build_cmd.append('--without-android')
+            build_cmd.append('--without-fuchsia')
+        if sys.platform == 'darwin':
+            build_cmd.append('--without-fuchsia')
+        if gcc_toolchain:
+            build_cmd.extend(['--gcc-toolchain', gcc_toolchain])
         RunCommand(build_cmd + [
             '--build-dir', RUST_HOST_LLVM_BUILD_DIR, '--install-dir',
             RUST_HOST_LLVM_INSTALL_DIR
         ])
 
-    # Build target compiler.
-    if build_mac_arm:
-        print(f'Building the target cross-compile LLVM in '
-              f'{target_llvm_build_dir}...')
-        build_cmd.append('--build-mac-arm')
-        if not skip_build:
-            RunCommand(build_cmd + [
-                '--build-dir', target_llvm_build_dir, '--install-dir',
-                target_llvm_install_dir
-            ])
+        # Build target compiler.
+        if build_mac_arm:
+            print(f'Building the target cross-compile LLVM in '
+                  f'{target_llvm_build_dir}...')
+            build_cmd.append('--build-mac-arm')
+            if not skip_build:
+                RunCommand(build_cmd + [
+                    '--build-dir', target_llvm_build_dir, '--install-dir',
+                    target_llvm_install_dir
+                ])
 
-        print(
-            f'Copying the target-but-native llvm-config to LLVM install dir...'
-        )
-        shutil.copy(
-            os.path.join(target_llvm_install_dir, 'bin', 'llvm-config'),
-            os.path.join(target_llvm_install_dir, 'bin', 'llvm-config.bak'))
-        shutil.copy(
-            os.path.join(target_llvm_build_dir, 'NATIVE', 'bin',
-                         'llvm-config'),
-            os.path.join(target_llvm_install_dir, 'bin', 'llvm-config'))
+            print(f'Copying the target-but-native llvm-config to LLVM '
+                  f'install dir...')
+            shutil.copy(
+                os.path.join(target_llvm_install_dir, 'bin', 'llvm-config'),
+                os.path.join(target_llvm_install_dir, 'bin',
+                             'llvm-config.bak'))
+            shutil.copy(
+                os.path.join(target_llvm_build_dir, 'NATIVE', 'bin',
+                             'llvm-config'),
+                os.path.join(target_llvm_install_dir, 'bin', 'llvm-config'))
 
     # Default to pointing all architectures at the host machine on the
     # assumption we are not cross-compiling.
@@ -650,6 +677,9 @@ def main():
     parser.add_argument('--skip-checkout',
                         action='store_true',
                         help='do not create or update any checkouts')
+    parser.add_argument('--update-deps',
+                        action='store_true',
+                        help='update dependencies and exit.')
     parser.add_argument('--skip-clean',
                         action='store_true',
                         help='skip x.py clean step')
@@ -683,16 +713,22 @@ def main():
         print('--build-mac-arm only valid on intel to cross-build arm')
         return 1
 
+    if args.update_deps:
+        args.skip_checkout = True
+        args.skip_llvm_build = True
+
+    if sys.platform == 'win32':
+        # Use curl to prime Windows's root cert store (crbug.com/1448442).
+        RunCommand(['curl', '-I', 'https://static.rust-lang.org'])
+
     if args.rust_force_head_revision:
+        assert not args.skip_checkout
         checkout_revision = GetLatestRustCommit()
     else:
         checkout_revision = RUST_REVISION
 
-    building_on_host_triple = RustTargetTriple(False)
-    building_for_host_triple = RustTargetTriple(args.build_mac_arm)
-
     args.gcc_toolchain = None
-    if sys.platform.startswith('linux'):
+    if sys.platform.startswith('linux') and not args.update_deps:
         # Fetch GCC package here and pass it to build.py to avoid it doing the
         # same again. Used for the LLVM build and for any C/C++ targets inside
         # the Rust toolchain build.
@@ -701,12 +737,13 @@ def main():
     if not args.skip_checkout:
         CheckoutGitRepo('Rust', RUST_GIT_URL, checkout_revision, RUST_SRC_DIR)
 
-    VerifyStage0JsonHash()
-    if args.verify_stage0_hash:
-        # The above function exits and prints the actual hash if verification
-        # failed so we just quit here; if we reach this point, the hash is
-        # valid.
-        return 0
+    if not args.update_deps:
+        VerifyStage0JsonHash()
+        if args.verify_stage0_hash:
+            # The above function exits and prints the actual hash if
+            # verification failed so we just quit here; if we reach this point,
+            # the hash is valid.
+            return 0
 
     (x86_64_llvm_config, aarch64_llvm_config,
      target_llvm_dir) = BuildLLVMLibraries(args.skip_llvm_build,
@@ -730,8 +767,9 @@ def main():
     # TODO(crbug.com/1271215): OpenSSL is somehow already present on the Windows
     # builder, but we should change to using a package from 3pp when it is
     # available.
-    if sys.platform != 'win32' and not args.build_mac_arm:
-        # Cargo depends on OpenSSL.
+    if (sys.platform != 'win32' and not args.build_mac_arm
+            and not args.update_deps):
+        # Building cargo depends on OpenSSL.
         AddOpenSSLToEnv(args.build_mac_arm)
 
     xpy = XPy(zlib_path, libxml2_dirs, args.build_mac_arm, args.gcc_toolchain,
@@ -740,13 +778,16 @@ def main():
     # Set up config.toml in Rust source tree.
     xpy.configure(args.build_mac_arm, x86_64_llvm_config, aarch64_llvm_config)
 
-    if not args.skip_checkout or True:
-        path = FetchBetaPackage('cargo', checkout_revision)
-        if sys.platform == 'win32':
-            cargo_bin = os.path.join(path, 'cargo', 'bin', 'cargo.exe')
-        else:
-            cargo_bin = os.path.join(path, 'cargo', 'bin', 'cargo')
-        CargoVendor(cargo_bin)
+    path = FetchBetaPackage('cargo', checkout_revision)
+    if sys.platform == 'win32':
+        cargo_bin = os.path.join(path, 'cargo', 'bin', 'cargo.exe')
+    else:
+        cargo_bin = os.path.join(path, 'cargo', 'bin', 'cargo')
+    CargoVendor(cargo_bin)
+
+    # Deps are updated, so we're done now.
+    if args.update_deps:
+        return 0
 
     if args.run_xpy:
         if rest[0] == '--':
@@ -756,11 +797,31 @@ def main():
     else:
         assert not rest
 
+    building_on_host_triple = RustTargetTriple()
     xpy_args = ['--build', building_on_host_triple]
     if args.build_mac_arm:
+        building_for_host_triple = RustTargetTriple(build_mac_arm=True)
         xpy_args.extend([
-            '--host', building_for_host_triple, '--target',
+            # The compiler will run on ARM.
+            '--host',
+            building_for_host_triple,
+            # The compiler will build stuff for ARM.
+            '--target',
             building_for_host_triple
+        ])
+    elif sys.platform.startswith('linux'):
+        # We have Linux x86 machines, and they need the prebuilt stdlib to be
+        # available for them in the same package.
+        #
+        # TODO(crbug.com/1448334): or sys.platform == 'win32':
+        # Windows x64 targeting x86 uses x86 as the host toolchain too in our
+        # GN rules, so we need the stdlib to be available for x86.
+        x86_target_triple = RustTargetTriple(target_x86=True)
+        xpy_args.extend([
+            # The compiler will build stuff for the host, and
+            # the compiler can also build stuff for x86 targets.
+            '--target',
+            f'{building_on_host_triple},{x86_target_triple}'
         ])
 
     if not args.skip_clean:

@@ -19,7 +19,7 @@
 @protocol TabCollectionDragDropHandler;
 @protocol GridEmptyView;
 @protocol GridShareableItemsProvider;
-@class GridTransitionLayout;
+@class LegacyGridTransitionLayout;
 @class GridViewController;
 @protocol IncognitoReauthCommands;
 @protocol PriceCardDataSource;
@@ -164,7 +164,7 @@
 @property(nonatomic, assign) CGFloat notSelectedTabCellOpacity;
 
 // Returns the layout of the grid for use in an animated transition.
-- (GridTransitionLayout*)transitionLayout;
+- (LegacyGridTransitionLayout*)transitionLayout;
 
 // Notifies the ViewController that its content might soon be displayed.
 - (void)prepareForAppearance;
@@ -184,6 +184,18 @@
 // Deselects all items in the grid for editing. No-op if `mode` is not
 // TabGridModeSelection.
 - (void)deselectAllItemsForEditing;
+
+// Notifies the grid that all items will be closed.
+- (void)willCloseAll;
+
+// Notifies the grid that all items have been closed.
+- (void)didCloseAll;
+
+// Notifies the grid that all closed items will be restored.
+- (void)willUndoCloseAll;
+
+// Notifies the grid that all closed items have been restored.
+- (void)didUndoCloseAll;
 
 @end
 

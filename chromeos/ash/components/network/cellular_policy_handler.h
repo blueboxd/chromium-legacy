@@ -33,6 +33,7 @@ class ManagedCellularPrefHandler;
 class ManagedNetworkConfigurationHandler;
 enum class HermesResponseStatus;
 
+// TODO(b/281904820): Remove this old description.
 // Handles provisioning eSIM profiles via policy.
 //
 // When installing policy eSIM profiles, the activation code is constructed from
@@ -40,6 +41,10 @@ enum class HermesResponseStatus;
 // and installation is performed one by one. Install attempts are retried for
 // fixed number of tries and the request queue doesn't get blocked by the
 // requests that are waiting for retry attempt.
+
+// This class encapsulates the logic for installing eSIM profiles configured by
+// policy. Installation requests are added to a queue, and each request will be
+// retried a fixed number of times with a retry delay between each attempt.
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularPolicyHandler
     : public HermesManagerClient::Observer,
       public CellularESimProfileHandler::Observer,
@@ -67,6 +72,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularPolicyHandler
   void InstallESim(const std::string& smdp_address,
                    const base::Value::Dict& onc_config);
 
+  // Installs the policy eSIM profile defined in |onc_config|. The Shill service
+  // configuration will be updated to match the GUID provided by |onc_config|
+  // and to include the ICCID of the installed profile. Installations are
+  // performed using a queue, and each installation will be retried a fix number
+  // of times.
+  void InstallESim(const base::Value::Dict& onc_config);
+
  private:
   // This enum allows us to treat a retry differently depending on what the
   // reason for retrying is.
@@ -74,7 +86,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularPolicyHandler
     kMissingNonCellularConnectivity = 0,
     kInternalError = 1,
     kUserError = 2,
-    kOther
+    kOther = 3,
   };
 
   // HermesUserErrorCodes indicate errors made by the user. These can be due
@@ -113,7 +125,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularPolicyHandler
         delete;
     ~InstallPolicyESimRequest();
 
-    policy_util::SmdxActivationCode activation_code;
+    const policy_util::SmdxActivationCode activation_code;
     base::Value::Dict onc_config;
     net::BackoffEntry retry_backoff;
   };
@@ -128,13 +140,28 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularPolicyHandler
   void DeviceListChanged() override;
   void OnShuttingDown() override;
 
+  // These functions implement the functionality necessary to interact with the
+  // queue of policy eSIM installation requests.
   void ResumeInstallIfNeeded();
   void ProcessRequests();
+  void ScheduleRetry(std::unique_ptr<InstallPolicyESimRequest> request,
+                     InstallRetryReason reason);
+  void PushRequestAndProcess(std::unique_ptr<InstallPolicyESimRequest> request);
+  void PopRequest();
+
+  // Attempts to install the first request in the queue. This function is
+  // responsible for ensuring that both a cellular device and Hermes are
+  // available. Further, this function will also refresh the list of installed
+  // eSIM profiles so that we can properly determine whether an eSIM profile has
+  // already been installed for the request.
   void AttemptInstallESim();
-  void SetupESim(const dbus::ObjectPath& euicc_path);
-  base::Value::Dict GetNewShillProperties();
-  const std::string& GetCurrentSmdpAddress() const;
-  std::string GetCurrentPolicyGuid() const;
+
+  // Actually responsible for kicking off the installation process. This
+  // function will configure the Shill service that corresponds to the profile
+  // that will be installed, and will ensure that we have non-cellular internet
+  // connectivity.
+  void PerformInstallESim(const dbus::ObjectPath& euicc_path);
+
   void OnRefreshProfileList(
       const dbus::ObjectPath& euicc_path,
       std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock);
@@ -143,12 +170,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularPolicyHandler
       HermesResponseStatus hermes_status,
       absl::optional<dbus::ObjectPath> profile_path,
       absl::optional<std::string> service_path);
-  void ScheduleRetry(std::unique_ptr<InstallPolicyESimRequest> request,
-                     InstallRetryReason reason);
-  void PushRequestAndProcess(std::unique_ptr<InstallPolicyESimRequest> request);
-  void PopRequest();
-  absl::optional<dbus::ObjectPath> FindExistingMatchingESimProfile();
   void OnWaitTimeout();
+
+  base::Value::Dict GetNewShillProperties();
+  const policy_util::SmdxActivationCode& GetCurrentActivationCode() const;
+  absl::optional<dbus::ObjectPath> FindExistingMatchingESimProfile();
   bool HasNonCellularInternetConnectivity();
 
   raw_ptr<CellularESimProfileHandler, ExperimentalAsh>
@@ -167,6 +193,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularPolicyHandler
       managed_network_configuration_handler_ = nullptr;
 
   bool is_installing_ = false;
+
+  // While Hermes is the source of truth for the EUICC state, Chrome maintains a
+  // cache of the installed eSIM profiles. To ensure we properly detect when a
+  // profile has already been installed for a particular request we force a
+  // refresh of the profile cache before each installation.
   bool need_refresh_profile_list_ = true;
   base::circular_deque<std::unique_ptr<InstallPolicyESimRequest>>
       remaining_install_requests_;

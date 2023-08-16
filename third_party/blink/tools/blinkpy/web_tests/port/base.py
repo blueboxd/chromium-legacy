@@ -129,7 +129,6 @@ ARCHIVED_RESULTS_LIMIT = 25
 
 ENABLE_THREADED_COMPOSITING_FLAG = '--enable-threaded-compositing'
 
-
 class Port(object):
     """Abstract class for Port-specific hooks for the web_test package."""
 
@@ -415,7 +414,7 @@ class Port(object):
 
     @memoized
     def _build_args_gn_content(self):
-        args_gn_file = self._build_path('args.gn')
+        args_gn_file = self.build_path('args.gn')
         if not self._filesystem.exists(args_gn_file):
             _log.error('Unable to find %s', args_gn_file)
             return ''
@@ -942,8 +941,15 @@ class Port(object):
         path_in_wpt = match.group(2)
         for expectation, ref_path_in_wpt in self.wpt_manifest(
                 wpt_path).extract_reference_list(path_in_wpt):
-            ref_absolute_path = self._filesystem.join(
-                self.web_tests_dir(), wpt_path + ref_path_in_wpt)
+            if 'external/wpt' in wpt_path:
+                ref_path_in_web_tests = wpt_path + ref_path_in_wpt
+            else:
+                # References in this manifest are already generated with
+                # `/wpt_internal` in the URL. Remove the leading '/' for
+                # joining.
+                ref_path_in_web_tests = ref_path_in_wpt[1:]
+            ref_absolute_path = self._filesystem.join(self.web_tests_dir(),
+                                                      ref_path_in_web_tests)
             reftest_list.append((expectation, ref_absolute_path))
         return reftest_list
 
@@ -1579,6 +1585,11 @@ class Port(object):
     @memoized
     def args_for_test(self, test_name):
         args = self._lookup_virtual_test_args(test_name)
+
+        if self._is_in_allowlist_for_threaded_compositing(test_name):
+            if (ENABLE_THREADED_COMPOSITING_FLAG not in args):
+                args.append(ENABLE_THREADED_COMPOSITING_FLAG)
+
         pac_url = self.extract_wpt_pac(test_name)
         if pac_url is not None:
             args.append("--proxy-pac-url=" + pac_url)
@@ -1596,10 +1607,6 @@ class Port(object):
                 self._filesystem.sanitize_filename(test_name), current_time)
             args.append('--trace-startup-file=' + file_name)
 
-        if self._is_in_allowlist_for_threaded_compositing(test_name):
-            if (ENABLE_THREADED_COMPOSITING_FLAG not in args):
-                args.append(ENABLE_THREADED_COMPOSITING_FLAG)
-
         return args
 
     @memoized
@@ -1615,7 +1622,7 @@ class Port(object):
         # an exception is raised when merging the bot times json files. This happens  whenever they
         # are outputted into the results directory. Temporarily we will return the bot times json
         # file relative to the target directory.
-        return self._build_path('webkit_test_times', 'bot_times_ms.json')
+        return self.build_path('webkit_test_times', 'bot_times_ms.json')
 
     def results_directory(self):
         """Returns the absolute path directory which will store all web tests outputted
@@ -1641,21 +1648,21 @@ class Port(object):
 
     def inspector_build_directory(self):
         if self._build_is_chrome_branded():
-            return self._build_path('gen', 'third_party',
-                                    'devtools-frontend-internal',
-                                    'devtools-frontend', 'front_end')
-        return self._build_path('gen', 'third_party', 'devtools-frontend',
-                                'src', 'front_end')
+            return self.build_path('gen', 'third_party',
+                                   'devtools-frontend-internal',
+                                   'devtools-frontend', 'front_end')
+        return self.build_path('gen', 'third_party', 'devtools-frontend',
+                               'src', 'front_end')
 
     def generated_sources_directory(self):
-        return self._build_path('gen')
+        return self.build_path('gen')
 
     def apache_config_directory(self):
         return self._path_finder.path_from_blink_tools('apache_config')
 
     def default_results_directory(self):
         """Returns the absolute path to the build directory."""
-        return self._build_path()
+        return self.build_path()
 
     @memoized
     def typ_host(self):
@@ -2210,14 +2217,14 @@ class Port(object):
 
     def _path_to_driver(self, target=None):
         """Returns the full path to the test driver."""
-        return self._build_path(target, self.driver_name())
+        return self.build_path(target, self.driver_name())
 
     def _path_to_image_diff(self):
         """Returns the full path to the image_diff binary, or None if it is not available.
 
         This is likely used only by diff_image()
         """
-        return self._build_path('image_diff')
+        return self.build_path('image_diff')
 
     def _absolute_baseline_path(self, platform_dir):
         """Return the absolute path to the top of the baseline tree for a
@@ -2546,16 +2553,37 @@ class Port(object):
         normalized_test_name = self.normalize_test_name(test_name)
         for suite in self.virtual_test_suites():
             if normalized_test_name.startswith(suite.full_prefix):
-                return suite.args
+                return suite.args.copy()
         return []
 
-    def _is_in_allowlist_for_threaded_compositing(self, test_name):
-        # We start with a very simple and small subset of the tests to create
-        # the infrastructure for an allowlist and plan to move to an external
-        # file soon.
-        return test_name.startswith("vibration")
+    @memoized
+    def _get_blocked_tests_for_threaded_compositing_testing(self):
+        path = self._filesystem.join(self.web_tests_dir(),
+                                     'SmokeTests/SingleThreadedTests')
+        return set(self._filesystem.read_text_file(path).split('\n'))
 
-    def _build_path(self, *comps):
+    def _is_in_allowlist_for_threaded_compositing(self, test_name):
+        # We currently only turn on threaded compositing tests for Linux
+        if not self.host.platform.is_linux():
+            return False
+        # We currently only turn on threaded compositing for web_tests
+        if self.is_wpt_test(test_name):
+            return False
+
+        block_list = self._get_blocked_tests_for_threaded_compositing_testing()
+
+        if test_name in block_list:
+            return False
+
+        # We apply the setting of a base test to all of its virtual versions
+        base_name = self.lookup_virtual_test_base(test_name)
+        if base_name:
+            if base_name in block_list:
+                return False
+
+        return True
+
+    def build_path(self, *comps):
         """Returns a path from the build directory."""
         return self._build_path_with_target(self._options.target, *comps)
 
@@ -2605,7 +2633,7 @@ class Port(object):
             for font_dir in font_dirs:
                 font_path = self._filesystem.join(font_dir, font_file)
                 if not self._filesystem.isabs(font_path):
-                    font_path = self._build_path(font_path)
+                    font_path = self.build_path(font_path)
                 if self._check_file_exists(font_path, '', more_logging=False):
                     result.append(font_path)
                     exists = True
@@ -2699,7 +2727,13 @@ class VirtualTestSuite(object):
         self.platforms = [x.lower() for x in platforms]
         self.bases = bases
         self.exclusive_tests = exclusive_tests
-        self.args = args
+        self.args = sorted(args)
+        # always put --enable-threaded-compositing at the end of list, so that after appending
+        # this parameter due to crrev.com/c/4599846, we do not need to restart content shell
+        # if the parameter set is same.
+        if ENABLE_THREADED_COMPOSITING_FLAG in self.args:
+            self.args.remove(ENABLE_THREADED_COMPOSITING_FLAG)
+            self.args.append(ENABLE_THREADED_COMPOSITING_FLAG)
 
     def __repr__(self):
         return "VirtualTestSuite('%s', %s, %s, %s)" % (self.full_prefix,

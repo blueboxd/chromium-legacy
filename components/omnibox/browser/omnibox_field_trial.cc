@@ -165,6 +165,10 @@ OmniboxFieldTrial::MLConfig& GetMLConfigInternal() {
   return s_config;
 }
 
+bool IsKoreanLocale(const std::string& locale) {
+  return locale == "ko" || locale == "ko-KR";
+}
+
 }  // namespace
 
 HUPScoringParams::ScoreBuckets::ScoreBuckets()
@@ -538,21 +542,6 @@ bool OmniboxFieldTrial::HUPSearchDatabase() {
   return value.empty() || (value == "true");
 }
 
-int OmniboxFieldTrial::KeywordScoreForSufficientlyCompleteMatch() {
-  std::string value_str = base::GetFieldTrialParamValue(
-      kBundledExperimentFieldTrialName,
-      kKeywordScoreForSufficientlyCompleteMatchRule);
-  if (value_str.empty()) {
-    return -1;
-  }
-  // This is a best-effort conversion; we trust the hand-crafted parameters
-  // downloaded from the server to be perfect.  There's no need for handle
-  // errors smartly.
-  int value;
-  base::StringToInt(value_str, &value);
-  return value;
-}
-
 bool OmniboxFieldTrial::IsFuzzyUrlSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxFuzzyUrlSuggestions);
 }
@@ -633,6 +622,15 @@ bool OmniboxFieldTrial::ShouldEncodeLeadingSpaceForOnDeviceTailSuggest() {
                                                  /*default_value=*/false);
 }
 
+bool OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForLocale(
+    const std::string& locale) {
+  if (IsKoreanLocale(locale) &&
+      !base::FeatureList::IsEnabled(omnibox::kOnDeviceHeadProviderKorean)) {
+    return false;
+  }
+  return IsOnDeviceHeadSuggestEnabledForAnyMode();
+}
+
 std::string OmniboxFieldTrial::OnDeviceHeadModelLocaleConstraint(
     bool is_incognito) {
   const base::Feature* feature =
@@ -646,14 +644,6 @@ std::string OmniboxFieldTrial::OnDeviceHeadModelLocaleConstraint(
   }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   return constraint;
-}
-
-bool OmniboxFieldTrial::ShouldDisableCGIParamMatching() {
-  return base::FeatureList::IsEnabled(omnibox::kDisableCGIParamMatching);
-}
-
-bool OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kSiteSearchStarterPack);
 }
 
 // Omnibox UI simplification - Uniform Suggestion Row Heights
@@ -682,7 +672,7 @@ bool OmniboxFieldTrial::IsUniformRowHeightEnabled() {
 const base::FeatureParam<int> OmniboxFieldTrial::kRichSuggestionVerticalMargin(
     &omnibox::kUniformRowHeight,
     "OmniboxRichSuggestionVerticalMargin",
-    4);
+    6);
 
 bool OmniboxFieldTrial::IsChromeRefreshIconsEnabled() {
   static bool enabled =
@@ -698,10 +688,20 @@ bool OmniboxFieldTrial::IsChromeRefreshSuggestIconsEnabled() {
          base::FeatureList::IsEnabled(omnibox::kExpandedStateSuggestIcons);
 }
 
-bool OmniboxFieldTrial::IsGM3TextStyleEnabled() {
+bool OmniboxFieldTrial::IsChromeRefreshActionChipIconsEnabled() {
   return features::GetChromeRefresh2023Level() ==
              features::ChromeRefresh2023Level::kLevel2 ||
-         base::FeatureList::IsEnabled(omnibox::kOmniboxSteadyStateTextStyle);
+         base::FeatureList::IsEnabled(omnibox::kCr2023ActionChipsIcons);
+}
+
+bool OmniboxFieldTrial::IsChromeRefreshSuggestHoverFillShapeEnabled() {
+  return features::GetChromeRefresh2023Level() ==
+             features::ChromeRefresh2023Level::kLevel2 ||
+         base::FeatureList::IsEnabled(omnibox::kSuggestionHoverFillShape);
+}
+
+bool OmniboxFieldTrial::IsGM3TextStyleEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxSteadyStateTextStyle);
 }
 
 // In order to control the value of this "font size" param via Finch, the
@@ -762,11 +762,6 @@ const char OmniboxFieldTrial::kHQPNumTitleWordsRule[] = "HQPNumTitleWords";
 const char OmniboxFieldTrial::kHQPAlsoDoHUPLikeScoringRule[] =
     "HQPAlsoDoHUPLikeScoring";
 const char OmniboxFieldTrial::kHUPSearchDatabaseRule[] = "HUPSearchDatabase";
-const char OmniboxFieldTrial::kKeywordRequiresRegistryRule[] =
-    "KeywordRequiresRegistry";
-const char OmniboxFieldTrial::kKeywordScoreForSufficientlyCompleteMatchRule[] =
-    "KeywordScoreForSufficientlyCompleteMatch";
-
 const char OmniboxFieldTrial::kHUPNewScoringTypedCountRelevanceCapParam[] =
     "TypedCountRelevanceCap";
 const char OmniboxFieldTrial::kHUPNewScoringTypedCountHalfLifeTimeParam[] =
@@ -867,20 +862,6 @@ bool IsZeroSuggestPrefetchingEnabledInContext(
   }
 }
 
-// Shortcut boost
-const base::FeatureParam<int> kShortcutBoostSearchScore(
-    &omnibox::kShortcutBoost,
-    "ShortcutBoostSearchScore",
-    0);
-const base::FeatureParam<int> kShortcutBoostUrlScore(&omnibox::kShortcutBoost,
-                                                     "ShortcutBoostUrlScore",
-                                                     0);
-
-const base::FeatureParam<bool> kShortcutBoostCounterfactual(
-    &omnibox::kShortcutBoost,
-    "ShortcutBoostCounterfactual",
-    false);
-
 // Rich autocompletion.
 
 bool IsRichAutocompletionEnabled() {
@@ -955,11 +936,6 @@ const base::FeatureParam<bool>
         &omnibox::kRichAutocompletion,
         "RichAutocompletionAutocompletePreferUrlsOverPrefixes",
         false);
-
-const base::FeatureParam<int> kSiteSearchStarterPackRelevanceScore(
-    &omnibox::kSiteSearchStarterPack,
-    "SiteSearchStarterPackRelevanceScore",
-    1350);
 
 const base::FeatureParam<bool> kDomainSuggestionsCounterfactual(
     &omnibox::kDomainSuggestions,
@@ -1143,20 +1119,6 @@ const base::FeatureParam<bool> kRealboxSecondaryZeroSuggestCounterfactual(
     false);
 
 // <- Two-column realbox
-// ---------------------------------------------------------
-// Inspire Me ->
-
-const base::FeatureParam<int> kInspireMeAdditionalRelatedQueries(
-    &omnibox::kInspireMe,
-    "AdditionalRelatedQueries",
-    0);
-
-const base::FeatureParam<int> kInspireMeAdditionalTrendingQueries(
-    &omnibox::kInspireMe,
-    "AdditionalTrendingQueries",
-    0);
-
-// <- Inspire Me
 // ---------------------------------------------------------
 // Android UI Revamp ->
 const base::FeatureParam<bool> kOmniboxModernizeVisualUpdateMergeClipboardOnNTP(

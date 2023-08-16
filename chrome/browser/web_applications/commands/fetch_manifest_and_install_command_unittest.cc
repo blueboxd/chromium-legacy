@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/web_applications/commands/fetch_manifest_and_install_command.h"
+
 #include <memory>
 #include <vector>
 
@@ -9,7 +11,6 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_future.h"
-#include "chrome/browser/web_applications/commands/fetch_manifest_and_install_command.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/fake_web_app_ui_manager.h"
@@ -78,9 +79,8 @@ class FetchManifestAndInstallCommandTest : public WebAppTest {
     provider->SetWebAppUiManager(std::move(ui_manager));
 
     test::AwaitStartWebAppProviderAndSubsystems(profile());
-    fake_web_contents_manager_ = std::make_unique<FakeWebContentsManager>();
 
-    fake_web_contents_manager_->SetUrlLoaded(web_contents(), kWebAppUrl);
+    web_contents_manager().SetUrlLoaded(web_contents(), kWebAppUrl);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     arc_test_.SetUp(profile());
@@ -150,7 +150,8 @@ class FetchManifestAndInstallCommandTest : public WebAppTest {
   }
 
   FakeWebContentsManager& web_contents_manager() {
-    return *fake_web_contents_manager_;
+    return static_cast<FakeWebContentsManager&>(
+        provider()->web_contents_manager());
   }
 
   void SetupPageState(
@@ -184,12 +185,10 @@ class FetchManifestAndInstallCommandTest : public WebAppTest {
       bool use_fallback = false) {
     base::test::TestFuture<const AppId&, webapps::InstallResultCode>
         install_future;
-    provider()->command_manager().ScheduleCommand(
-        std::make_unique<FetchManifestAndInstallCommand>(
-            install_surface, web_contents()->GetWeakPtr(),
-            /*bypass_service_worker_check=*/false, std::move(dialog_callback),
-            install_future.GetCallback(), use_fallback,
-            web_contents_manager().CreateDataRetriever()));
+    provider()->scheduler().FetchManifestAndInstall(
+        install_surface, web_contents()->GetWeakPtr(),
+        /*bypass_service_worker_check=*/false, std::move(dialog_callback),
+        install_future.GetCallback(), use_fallback);
     EXPECT_TRUE(install_future.Wait());
     return install_future.Get<webapps::InstallResultCode>();
   }
@@ -197,8 +196,7 @@ class FetchManifestAndInstallCommandTest : public WebAppTest {
  private:
   base::HistogramTester histogram_tester_;
   scoped_refptr<TestFileUtils> file_utils_;
-  raw_ptr<FakeWebAppUiManager> fake_ui_manager_ = nullptr;
-  std::unique_ptr<FakeWebContentsManager> fake_web_contents_manager_;
+  raw_ptr<FakeWebAppUiManager, DanglingUntriaged> fake_ui_manager_ = nullptr;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ArcAppTest arc_test_;
@@ -301,18 +299,16 @@ TEST_F(FetchManifestAndInstallCommandTest, Shutdown) {
         dialog_runloop.Quit();
       });
 
-  provider()->command_manager().ScheduleCommand(
-      std::make_unique<FetchManifestAndInstallCommand>(
-          webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
-          web_contents()->GetWeakPtr(),
-          /*bypass_service_worker_check=*/false, std::move(dialog_callback),
-          base::BindLambdaForTesting(
-              [&](const AppId& id, webapps::InstallResultCode code) {
-                result_populated = true;
-                result = code;
-              }),
-          /*use_fallback=*/false,
-          web_contents_manager().CreateDataRetriever()));
+  provider()->scheduler().FetchManifestAndInstall(
+      webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
+      web_contents()->GetWeakPtr(),
+      /*bypass_service_worker_check=*/false, std::move(dialog_callback),
+      base::BindLambdaForTesting(
+          [&](const AppId& id, webapps::InstallResultCode code) {
+            result_populated = true;
+            result = code;
+          }),
+      /*use_fallback=*/false);
 
   dialog_runloop.Run();
   provider()->command_manager().Shutdown();
@@ -327,14 +323,11 @@ TEST_F(FetchManifestAndInstallCommandTest, WebContentsDestroyed) {
 
   base::test::TestFuture<const AppId&, webapps::InstallResultCode>
       install_future;
-
-  provider()->command_manager().ScheduleCommand(
-      std::make_unique<FetchManifestAndInstallCommand>(
-          webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
-          web_contents()->GetWeakPtr(),
-          /*bypass_service_worker_check=*/false, CreateDialogCallback(),
-          install_future.GetCallback(), /*use_fallback=*/false,
-          web_contents_manager().CreateDataRetriever()));
+  provider()->scheduler().FetchManifestAndInstall(
+      webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
+      web_contents()->GetWeakPtr(),
+      /*bypass_service_worker_check=*/false, CreateDialogCallback(),
+      install_future.GetCallback(), /*use_fallback=*/false);
 
   DeleteContents();
   ASSERT_TRUE(install_future.Wait());
@@ -354,13 +347,12 @@ TEST_F(FetchManifestAndInstallCommandTest,
   auto& page_state = web_contents_manager().GetOrCreatePageState(kWebAppUrl);
   page_state.on_manifest_fetch = manifest_fetch_future.GetCallback();
 
-  provider()->command_manager().ScheduleCommand(
-      std::make_unique<FetchManifestAndInstallCommand>(
-          webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
-          web_contents()->GetWeakPtr(),
-          /*bypass_service_worker_check=*/false, CreateDialogCallback(),
-          install_future.GetCallback(), /*use_fallback=*/false,
-          web_contents_manager().CreateDataRetriever()));
+  provider()->scheduler().FetchManifestAndInstall(
+      webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
+      web_contents()->GetWeakPtr(),
+      /*bypass_service_worker_check=*/false, CreateDialogCallback(),
+      install_future.GetCallback(),
+      /*use_fallback=*/false);
 
   // Wait till we reach an async process, like manifest fetching.
   EXPECT_TRUE(manifest_fetch_future.Wait());
@@ -387,13 +379,11 @@ TEST_F(FetchManifestAndInstallCommandTest,
   auto& page_state = web_contents_manager().GetOrCreatePageState(kWebAppUrl);
   page_state.on_manifest_fetch = manifest_fetch_future.GetCallback();
 
-  provider()->command_manager().ScheduleCommand(
-      std::make_unique<FetchManifestAndInstallCommand>(
-          webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
-          web_contents()->GetWeakPtr(),
-          /*bypass_service_worker_check=*/false, CreateDialogCallback(),
-          install_future.GetCallback(), /*use_fallback=*/false,
-          web_contents_manager().CreateDataRetriever()));
+  provider()->scheduler().FetchManifestAndInstall(
+      webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
+      web_contents()->GetWeakPtr(),
+      /*bypass_service_worker_check=*/false, CreateDialogCallback(),
+      install_future.GetCallback(), /*use_fallback=*/false);
 
   // Wait till we reach an async process, then trigger navigation to another url
   // with the same origin.

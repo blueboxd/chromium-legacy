@@ -278,18 +278,12 @@ class TestBrowserWindow : public BrowserWindow {
  private:
   class TestLocationBar : public LocationBar {
    public:
-    TestLocationBar() = default;
+    TestLocationBar() : LocationBar(/*command_updater=*/nullptr) {}
     TestLocationBar(const TestLocationBar&) = delete;
     TestLocationBar& operator=(const TestLocationBar&) = delete;
     ~TestLocationBar() override = default;
 
     // LocationBar:
-    GURL GetDestinationURL() const override;
-    bool IsInputTypedUrlWithoutScheme() const override;
-    bool IsInputTypedUrlWithHttpScheme() const override;
-    WindowOpenDisposition GetWindowOpenDisposition() const override;
-    ui::PageTransition GetPageTransition() const override;
-    base::TimeTicks GetMatchSelectionTimestamp() const override;
     void FocusLocation(bool select_all) override {}
     void FocusSearch() override {}
     void UpdateContentSettingsIcons() override {}
@@ -298,12 +292,17 @@ class TestBrowserWindow : public BrowserWindow {
     const OmniboxView* GetOmniboxView() const override;
     OmniboxView* GetOmniboxView() override;
     LocationBarTesting* GetLocationBarForTesting() override;
+    LocationBarModel* GetLocationBarModel() override;
+    content::WebContents* GetWebContents() override;
+    void OnChanged() override {}
+    void OnPopupVisibilityChanged() override {}
+    void UpdateWithoutTabRestore() override {}
   };
 
   autofill::TestAutofillBubbleHandler autofill_bubble_handler_;
   TestDownloadShelf download_shelf_{nullptr};
   TestLocationBar location_bar_;
-  gfx::NativeWindow native_window_ = nullptr;
+  gfx::NativeWindow native_window_ = gfx::NativeWindow();
 
   std::string workspace_;
   bool visible_on_all_workspaces_ = false;

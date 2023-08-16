@@ -10,8 +10,6 @@ source_set("chromeos") {
     "ash_mojom_video_consumer.h",
     "ash_proxy.cc",
     "ash_proxy.h",
-    "aura_desktop_capturer.cc",
-    "aura_desktop_capturer.h",
     "clipboard_aura.cc",
     "clipboard_aura.h",
     "frame_sink_desktop_capturer.cc",
@@ -60,6 +58,20 @@ source_set("enterprise_support") {
   sources = [ "chromeos_enterprise_params.h" ]
 }
 
+source_set("browser_interop") {
+  sources = [
+    "browser_interop.cc",
+    "browser_interop.h",
+  ]
+
+  deps = [
+    "//chrome/browser:browser_process",
+    "//content/public/browser:browser",
+    "//remoting/base:base",
+    "//remoting/host",
+  ]
+}
+
 source_set("remoting_service") {
   sources = [
     "remote_support_host_ash.cc",
@@ -76,8 +88,7 @@ source_set("remoting_service") {
   configs += [ "//remoting/build/config:version" ]
 
   deps = [
-    "//chrome/browser:browser_process",
-    "//content/public/browser:browser",
+    ":browser_interop",
     "//mojo/public/cpp/bindings",
     "//remoting/base:base",
     "//remoting/host",
@@ -119,7 +130,6 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "aura_desktop_capturer_unittest.cc",
     "clipboard_aura_unittest.cc",
     "frame_sink_desktop_capturer_unittest.cc",
     "scoped_fake_ash_proxy.cc",

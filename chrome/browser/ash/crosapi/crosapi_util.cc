@@ -158,6 +158,7 @@
 #include "services/device/public/mojom/hid.mojom.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/switches.h"
 
 using MojoOptionalBool = crosapi::mojom::DeviceSettings::OptionalBool;
@@ -175,6 +176,8 @@ constexpr char kSharedStoragePrefsCapability[] = "b/231890240";
 // Capability to register observers for extension controlled prefs via the
 // prefs api.
 constexpr char kExtensionControlledPrefObserversCapability[] = "crbug/1334985";
+// Capability to always use ConfirmComposition for input methods.
+constexpr char kAlwaysConfirmCompositionCapability[] = "b/265853952";
 
 // Returns the vector containing policy data of the device account. In case of
 // an error, returns nullopt.
@@ -208,6 +211,13 @@ absl::optional<policy::ComponentPolicyMap> GetDeviceAccountComponentPolicy(
 
 bool GetIsCurrentUserOwner() {
   return user_manager::UserManager::Get()->IsCurrentUserOwner();
+}
+
+bool IsCurrentUserEphemeral() {
+  const user_manager::UserManager* const user_manager =
+      user_manager::UserManager::Get();
+  const user_manager::User* const user = user_manager->GetPrimaryUser();
+  return user_manager->IsEphemeralUser(user);
 }
 
 bool GetUseCupsForPrinting() {
@@ -562,9 +572,17 @@ void InjectBrowserInitParams(
       ash::features::
           IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled();
 
-  params->ash_capabilities = {{kBrowserManagerReloadBrowserCapability,
-                               kSharedStoragePrefsCapability,
-                               kExtensionControlledPrefObserversCapability}};
+  std::vector<std::string> ash_capabilities = {
+      kBrowserManagerReloadBrowserCapability,
+      kSharedStoragePrefsCapability,
+      kExtensionControlledPrefObserversCapability,
+  };
+  // TODO(b/265853952): Remove this once kAlwaysConfirmComposition is enabled by
+  // default.
+  if (base::FeatureList::IsEnabled(features::kAlwaysConfirmComposition)) {
+    ash_capabilities.push_back(kAlwaysConfirmCompositionCapability);
+  }
+  params->ash_capabilities = {std::move(ash_capabilities)};
 
   params->lacros_selection = GetLacrosSelection(lacros_selection);
 
@@ -613,6 +631,9 @@ void InjectBrowserInitParams(
 
   params->enable_clipboard_history_refresh =
       chromeos::features::IsClipboardHistoryRefreshEnabled();
+
+  params->is_variable_refresh_rate_enabled =
+      ::features::IsVariableRefreshRateEnabled();
 }
 
 template <typename BrowserParams>
@@ -650,6 +671,7 @@ void InjectBrowserPostLoginParams(BrowserParams* params,
       GetDeviceAccountComponentPolicy(environment_provider);
 
   params->is_current_user_device_owner = GetIsCurrentUserOwner();
+  params->is_current_user_ephemeral = IsCurrentUserEphemeral();
   params->do_not_mux_extension_app_ids = !apps::ShouldMuxExtensionIds();
   params->enable_lacros_tts_support =
       tts_crosapi_util::ShouldEnableLacrosTtsSupport();
@@ -733,7 +755,7 @@ mojom::DeviceSettingsPtr GetDeviceSettings() {
   mojom::DeviceSettingsPtr result = mojom::DeviceSettings::New();
 
   result->attestation_for_content_protection_enabled = MojoOptionalBool::kUnset;
-  result->device_ephemeral_users_enabled = MojoOptionalBool::kUnset;
+  result->deprecated_device_ephemeral_users_enabled = MojoOptionalBool::kUnset;
   result->device_restricted_managed_guest_session_enabled =
       MojoOptionalBool::kUnset;
   if (ash::CrosSettings::IsInitialized()) {
@@ -780,9 +802,9 @@ mojom::DeviceSettingsPtr GetDeviceSettings() {
       bool ephemeral_users_enabled = false;
       if (cros_settings->GetBoolean(ash::kAccountsPrefEphemeralUsersEnabled,
                                     &ephemeral_users_enabled)) {
-        result->device_ephemeral_users_enabled = ephemeral_users_enabled
-                                                     ? MojoOptionalBool::kTrue
-                                                     : MojoOptionalBool::kFalse;
+        result->deprecated_device_ephemeral_users_enabled =
+            ephemeral_users_enabled ? MojoOptionalBool::kTrue
+                                    : MojoOptionalBool::kFalse;
       }
 
       bool device_restricted_managed_guest_session_enabled = false;

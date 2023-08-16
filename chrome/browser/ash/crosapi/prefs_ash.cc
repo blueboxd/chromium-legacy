@@ -14,10 +14,12 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/lifetime/termination_notification.h"
+#include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/crosapi/mojom/prefs.mojom.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -58,6 +60,10 @@ const std::string& GetProfilePrefNameForPref(mojom::PrefPath path) {
            ash::prefs::kMultitaskMenuNudgeClamshellShownCount},
           {mojom::PrefPath::kMultitaskMenuNudgeClamshellLastShown,
            ash::prefs::kMultitaskMenuNudgeClamshellLastShown},
+          {mojom::PrefPath::kAccessCodeCastDevices,
+           media_router::prefs::kAccessCodeCastDevices},
+          {mojom::PrefPath::kAccessCodeCastDeviceAdditionTime,
+           media_router::prefs::kAccessCodeCastDeviceAdditionTime},
       });
   auto pref_name = profile_prefpath_to_name->find(path);
   DCHECK(pref_name != profile_prefpath_to_name->end());
@@ -275,7 +281,9 @@ absl::optional<PrefsAsh::State> PrefsAsh::GetState(mojom::PrefPath path) {
     case mojom::PrefPath::kApplicationLocale:
     case mojom::PrefPath::kSharedStorage:
     case mojom::PrefPath::kMultitaskMenuNudgeClamshellShownCount:
-    case mojom::PrefPath::kMultitaskMenuNudgeClamshellLastShown: {
+    case mojom::PrefPath::kMultitaskMenuNudgeClamshellLastShown:
+    case mojom::PrefPath::kAccessCodeCastDevices:
+    case mojom::PrefPath::kAccessCodeCastDeviceAdditionTime: {
       if (!profile_prefs_registrar_) {
         LOG(WARNING) << "Primary profile is not yet initialized";
         return absl::nullopt;
@@ -331,6 +339,17 @@ absl::optional<PrefsAsh::State> PrefsAsh::GetState(mojom::PrefPath path) {
       return State{nullptr, nullptr, AshPrefSource::kCrosSettings,
                    ash::kAttestationForContentProtectionEnabled};
     }
+    case mojom::PrefPath::kAccessToGetAllScreensMediaInSessionAllowedForUrls:
+      if (!profile_prefs_registrar_) {
+        LOG(WARNING) << "Primary profile is not yet initialized";
+        return absl::nullopt;
+      }
+      return State{
+          .pref_service = profile_prefs_registrar_->prefs(),
+          .registrar = profile_prefs_registrar_.get(),
+          .pref_source = AshPrefSource::kNormal,
+          .path =
+              prefs::kManagedAccessToGetAllScreensMediaInSessionAllowedForUrls};
   }
 }
 

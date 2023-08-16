@@ -208,18 +208,7 @@ TEST_F(FormCacheBrowserTest, ExtractFormAfterDynamicFieldChange) {
   EXPECT_TRUE(forms.removed_forms.empty());
 }
 
-class FormCacheIframeBrowserTest : public FormCacheBrowserTest {
- public:
-  FormCacheIframeBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kAutofillAcrossIframes);
-  }
-  ~FormCacheIframeBrowserTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(FormCacheIframeBrowserTest, ExtractFrames) {
+TEST_F(FormCacheBrowserTest, ExtractFrames) {
   LoadHTML(R"(
     <form id="form1">
       <iframe id="frame1"></iframe>
@@ -276,7 +265,7 @@ TEST_F(FormCacheBrowserTest, ExtractFormsTwice) {
   EXPECT_TRUE(forms.removed_forms.empty());
 }
 
-TEST_F(FormCacheIframeBrowserTest, ExtractFramesTwice) {
+TEST_F(FormCacheBrowserTest, ExtractFramesTwice) {
   LoadHTML(R"(
     <form id="form1">
       <iframe></iframe>
@@ -299,7 +288,7 @@ TEST_F(FormCacheIframeBrowserTest, ExtractFramesTwice) {
 }
 
 // TODO(crbug.com/1117028) Adjust expectations when we omit invisible iframes.
-TEST_F(FormCacheIframeBrowserTest, ExtractFramesAfterVisibilityChange) {
+TEST_F(FormCacheBrowserTest, ExtractFramesAfterVisibilityChange) {
   LoadHTML(R"(
     <form id="form1">
       <iframe id="frame1" style="display: none;"></iframe>
@@ -593,86 +582,6 @@ TEST_F(FormCacheBrowserTest, FreeDataOnElementRemoval) {
   EXPECT_EQ(0u, FormCacheTestApi(&form_cache).initial_checked_state_size());
 }
 
-// Test that the select element's user edited field state is set
-// to false after clearing the form.
-TEST_F(FormCacheBrowserTest, ClearFormSelectElementEditedStateReset) {
-  // TODO(crbug.com/1422114): Make test work without explicit <selectmenu>
-  // tabindex.
-  LoadHTML(R"(
-    <input type="text" name="text" id="text">
-    <select name="date" id="date">
-      <option value="first">first</option>
-      <option value="second" selected>second</option>
-      <option value="third">third</option>
-    </select>
-    <select name="month" id="month">
-      <option value="january">january</option>
-      <option value="february">february</option>
-      <option value="march" selected>march</option>
-    </select>
-    <selectmenu name="time" id="time" tabindex=0>
-      <option value="sunrise">sunrise</option>
-      <option value="noon" selected>noon</option>
-      <option value="sunset">sunset</option>
-    </selectmenu>
-    <selectmenu name="location" id="location" tabindex=1>
-      <option value="churchill">Churchill</option>
-      <option value="dawson">Dawson City</option>
-      <option value="whitehorse" selected>Whitehorse</option>
-    </selectmenu>
-  )");
-
-  FormCache form_cache(GetMainFrame());
-  FormCache::UpdateFormCacheResult forms =
-      form_cache.UpdateFormCache(/*field_data_manager=*/nullptr);
-
-  WebDocument doc = GetMainFrame()->GetDocument();
-  auto text = GetFormControlElementById(doc, "text");
-  auto select_date = GetFormControlElementById(doc, "date");
-  auto select_month = GetFormControlElementById(doc, "month");
-  auto selectmenu_time = GetFormControlElementById(doc, "time");
-  auto selectmenu_location = GetFormControlElementById(doc, "location");
-
-  EXPECT_THAT(forms.updated_forms, ElementsAre(HasId(FormRendererId())));
-  EXPECT_TRUE(forms.removed_forms.empty());
-  FillAndCheckState(forms.updated_forms[0], text,
-                    {{text, u"test"},
-                     {select_date, u"first"},
-                     {select_month, u"january"},
-                     {selectmenu_time, u"sunrise"},
-                     {selectmenu_location, u"churchill"}});
-
-  // Expect that the 'user has edited field' state is set
-  EXPECT_TRUE(select_date.UserHasEditedTheField());
-  EXPECT_TRUE(select_month.UserHasEditedTheField());
-  EXPECT_TRUE(selectmenu_time.UserHasEditedTheField());
-  EXPECT_TRUE(selectmenu_location.UserHasEditedTheField());
-
-  // Clear form
-  form_cache.ClearSectionWithElement(text);
-
-  // Expect that the state is now cleared
-  EXPECT_FALSE(select_date.UserHasEditedTheField());
-  EXPECT_FALSE(select_month.UserHasEditedTheField());
-  EXPECT_FALSE(selectmenu_time.UserHasEditedTheField());
-  EXPECT_FALSE(selectmenu_location.UserHasEditedTheField());
-
-  // Fill the form again, this time the select elements are being filled
-  // with different values just for additional check.
-  FillAndCheckState(forms.updated_forms[0], text,
-                    {{text, u"test"},
-                     {select_date, u"third"},
-                     {select_month, u"february"},
-                     {selectmenu_time, u"sunset"},
-                     {selectmenu_location, u"dawson"}});
-
-  // Expect that the state is set again
-  EXPECT_TRUE(select_date.UserHasEditedTheField());
-  EXPECT_TRUE(select_month.UserHasEditedTheField());
-  EXPECT_TRUE(selectmenu_time.UserHasEditedTheField());
-  EXPECT_TRUE(selectmenu_location.UserHasEditedTheField());
-}
-
 TEST_F(FormCacheBrowserTest, IsFormElementEligibleForManualFilling) {
   // Load a form.
   LoadHTML(
@@ -726,16 +635,16 @@ TEST_F(FormCacheBrowserTest, DoNotStoreEmptyForms) {
   EXPECT_TRUE(forms.removed_forms.empty());
 
   EXPECT_EQ(1u, GetMainFrame()->GetDocument().Forms().size());
-  EXPECT_EQ(0u, FormCacheTestApi(&form_cache).parsed_forms_size());
+  EXPECT_EQ(0u, FormCacheTestApi(&form_cache).extracted_forms_size());
 }
 
-// Test that the FormCache never contains more than |kMaxParseableFields|
-// non-empty parsed forms.
+// Test that the FormCache never contains more than |kMaxExtractableFields|
+// non-empty extracted forms.
 TEST_F(FormCacheBrowserTest, FormCacheSizeUpperBound) {
-  // Create a HTML page that contains `kMaxParseableFields + 1` non-empty
+  // Create a HTML page that contains `kMaxExtractableFields + 1` non-empty
   // forms.
   std::string html;
-  for (unsigned int i = 0; i < kMaxParseableFields + 1; i++) {
+  for (unsigned int i = 0; i < kMaxExtractableFields + 1; i++) {
     html += "<form><input></form>";
   }
   LoadHTML(html.c_str());
@@ -744,89 +653,93 @@ TEST_F(FormCacheBrowserTest, FormCacheSizeUpperBound) {
   FormCache::UpdateFormCacheResult forms =
       form_cache.UpdateFormCache(/*field_data_manager=*/nullptr);
 
-  EXPECT_EQ(forms.updated_forms.size(), kMaxParseableFields);
+  EXPECT_EQ(forms.updated_forms.size(), kMaxExtractableFields);
   EXPECT_TRUE(forms.removed_forms.empty());
 
-  EXPECT_EQ(kMaxParseableFields + 1,
+  EXPECT_EQ(kMaxExtractableFields + 1,
             GetMainFrame()->GetDocument().Forms().size());
-  EXPECT_EQ(kMaxParseableFields,
-            FormCacheTestApi(&form_cache).parsed_forms_size());
+  EXPECT_EQ(kMaxExtractableFields,
+            FormCacheTestApi(&form_cache).extracted_forms_size());
 }
 
 // Test that FormCache::UpdateFormCache() limits the number of total fields by
 // skipping any additional forms.
 TEST_F(FormCacheBrowserTest, FieldLimit) {
   std::string html;
-  for (unsigned int i = 0; i < kMaxParseableFields + 1; i++)
+  for (unsigned int i = 0; i < kMaxExtractableFields + 1; i++) {
     html += "<form><input></form>";
+  }
   LoadHTML(html.c_str());
 
-  ASSERT_EQ(kMaxParseableFields + 1,
+  ASSERT_EQ(kMaxExtractableFields + 1,
             GetMainFrame()->GetDocument().Forms().size());
 
   FormCache form_cache(GetMainFrame());
   FormCache::UpdateFormCacheResult forms =
       form_cache.UpdateFormCache(/*field_data_manager=*/nullptr);
 
-  EXPECT_EQ(kMaxParseableFields, forms.updated_forms.size());
+  EXPECT_EQ(kMaxExtractableFields, forms.updated_forms.size());
   EXPECT_TRUE(forms.removed_forms.empty());
 }
 
 // Test that FormCache::UpdateFormCache() limits the number of total frames by
 // clearing their frames and skipping the then-empty forms.
-TEST_F(FormCacheIframeBrowserTest, FrameLimit) {
+TEST_F(FormCacheBrowserTest, FrameLimit) {
   std::string html;
-  for (unsigned int i = 0; i < kMaxParseableChildFrames + 1; i++)
+  for (unsigned int i = 0; i < kMaxExtractableChildFrames + 1; i++) {
     html += "<form><iframe></iframe></form>";
+  }
   LoadHTML(html.c_str());
 
-  ASSERT_EQ(kMaxParseableChildFrames + 1,
+  ASSERT_EQ(kMaxExtractableChildFrames + 1,
             GetMainFrame()->GetDocument().Forms().size());
 
   FormCache form_cache(GetMainFrame());
   FormCache::UpdateFormCacheResult forms =
       form_cache.UpdateFormCache(/*field_data_manager=*/nullptr);
 
-  EXPECT_EQ(kMaxParseableChildFrames, forms.updated_forms.size());
+  EXPECT_EQ(kMaxExtractableChildFrames, forms.updated_forms.size());
   EXPECT_TRUE(forms.removed_forms.empty());
 }
 
 // Test that FormCache::UpdateFormCache() limits the number of total fields and
 // total frames:
-// - the forms [0, kMaxParseableChildFrames) should be unchanged,
-// - the forms [kMaxParseableChildFrames, kMaxParseableFields) should have
+// - the forms [0, kMaxExtractableChildFrames) should be unchanged,
+// - the forms [kMaxExtractableChildFrames, kMaxExtractableFields) should have
 //   empty FormData::child_frames,
-// - the forms [kMaxParseableFields, end) should be skipped.
+// - the forms [kMaxExtractableFields, end) should be skipped.
 // TODO(https://crbug.com/1287782): Flaky on android.
 #if BUILDFLAG(IS_ANDROID)
 #define MAYBE_FieldAndFrameLimit DISABLED_FieldAndFrameLimit
 #else
 #define MAYBE_FieldAndFrameLimit FieldAndFrameLimit
 #endif
-TEST_F(FormCacheIframeBrowserTest, MAYBE_FieldAndFrameLimit) {
-  ASSERT_LE(kMaxParseableChildFrames, kMaxParseableFields);
+TEST_F(FormCacheBrowserTest, MAYBE_FieldAndFrameLimit) {
+  ASSERT_LE(kMaxExtractableChildFrames, kMaxExtractableFields);
 
   std::string html;
-  for (unsigned int i = 0; i < kMaxParseableFields + 1; i++)
+  for (unsigned int i = 0; i < kMaxExtractableFields + 1; i++) {
     html += "<form><input><iframe></iframe></form>";
+  }
   LoadHTML(html.c_str());
 
-  ASSERT_EQ(kMaxParseableFields + 1,
+  ASSERT_EQ(kMaxExtractableFields + 1,
             GetMainFrame()->GetDocument().Forms().size());
 
   FormCache form_cache(GetMainFrame());
   FormCache::UpdateFormCacheResult forms =
       form_cache.UpdateFormCache(/*field_data_manager=*/nullptr);
 
-  EXPECT_EQ(forms.updated_forms.size(), kMaxParseableFields);
+  EXPECT_EQ(forms.updated_forms.size(), kMaxExtractableFields);
   EXPECT_TRUE(base::ranges::none_of(forms.updated_forms,
                                     &std::vector<FormFieldData>::empty,
                                     &FormData::fields));
   EXPECT_TRUE(base::ranges::none_of(
-      base::make_span(forms.updated_forms).subspan(0, kMaxParseableChildFrames),
+      base::make_span(forms.updated_forms)
+          .subspan(0, kMaxExtractableChildFrames),
       &std::vector<FrameTokenWithPredecessor>::empty, &FormData::child_frames));
   EXPECT_TRUE(base::ranges::all_of(
-      base::make_span(forms.updated_forms).subspan(kMaxParseableChildFrames),
+      base::make_span(forms.updated_forms).subspan(kMaxExtractableChildFrames),
       &std::vector<FrameTokenWithPredecessor>::empty, &FormData::child_frames));
 
   EXPECT_TRUE(forms.removed_forms.empty());

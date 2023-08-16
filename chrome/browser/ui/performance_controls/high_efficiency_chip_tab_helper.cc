@@ -5,7 +5,10 @@
 #include "chrome/browser/ui/performance_controls/high_efficiency_chip_tab_helper.h"
 
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/performance_controls/high_efficiency_utils.h"
+#include "content/public/browser/visibility.h"
 #include "content/public/common/url_constants.h"
 
 namespace {
@@ -14,11 +17,6 @@ constexpr size_t kKiloByte = 1024;
 }  // namespace
 
 HighEfficiencyChipTabHelper::~HighEfficiencyChipTabHelper() = default;
-
-HighEfficiencyChipTabHelper::HighEfficiencyChipTabHelper(
-    content::WebContents* contents)
-    : content::WebContentsObserver(contents),
-      content::WebContentsUserData<HighEfficiencyChipTabHelper>(*contents) {}
 
 bool HighEfficiencyChipTabHelper::ShouldChipBeVisible() const {
   return was_discarded_ && is_site_supported_ && IsProactiveDiscard();
@@ -30,10 +28,6 @@ bool HighEfficiencyChipTabHelper::ShouldIconAnimate() const {
 
 void HighEfficiencyChipTabHelper::SetWasAnimated() {
   was_animated_ = true;
-}
-
-void HighEfficiencyChipTabHelper::SetChipHasBeenHidden() {
-  was_chip_hidden_ = true;
 }
 
 bool HighEfficiencyChipTabHelper::HasChipBeenHidden() {
@@ -48,14 +42,6 @@ uint64_t HighEfficiencyChipTabHelper::GetMemorySavingsInBytes() const {
              ? 0
              : pre_discard_resource_usage->memory_footprint_estimate_kb() *
                    kKiloByte;
-}
-
-void HighEfficiencyChipTabHelper::SetSiteWasAddedToExclusionList() {
-  was_site_added_to_exclusion_list_ = true;
-}
-
-bool HighEfficiencyChipTabHelper::GetWasSiteAddedToExclusionList() const {
-  return was_site_added_to_exclusion_list_;
 }
 
 void HighEfficiencyChipTabHelper::DidStartNavigation(
@@ -77,10 +63,21 @@ void HighEfficiencyChipTabHelper::DidStartNavigation(
   was_discarded_ = navigation_handle->ExistingDocumentWasDiscarded();
   was_animated_ = false;
   was_chip_hidden_ = false;
-  was_site_added_to_exclusion_list_ = false;
   is_site_supported_ =
       high_efficiency::IsURLSupported(navigation_handle->GetURL());
 }
+
+void HighEfficiencyChipTabHelper::OnVisibilityChanged(
+    content::Visibility visibility) {
+  if (visibility == content::Visibility::HIDDEN) {
+    was_chip_hidden_ = true;
+  }
+}
+
+HighEfficiencyChipTabHelper::HighEfficiencyChipTabHelper(
+    content::WebContents* contents)
+    : content::WebContentsObserver(contents),
+      content::WebContentsUserData<HighEfficiencyChipTabHelper>(*contents) {}
 
 bool HighEfficiencyChipTabHelper::IsProactiveDiscard() const {
   return discard_reason_.has_value() &&

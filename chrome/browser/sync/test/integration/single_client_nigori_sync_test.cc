@@ -36,15 +36,16 @@
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/sync/base/command_line_switches.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/loopback_server/loopback_server_entity.h"
 #include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/engine/nigori/nigori.h"
+#include "components/sync/engine/nigori/public_private_key_pair.h"
 #include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/test/fake_server_nigori_helper.h"
 #include "components/sync/test/nigori_test_utils.h"
+#include "components/trusted_vault/command_line_switches.h"
 #include "components/trusted_vault/securebox.h"
 #include "components/trusted_vault/test/fake_security_domains_server.h"
 #include "components/trusted_vault/trusted_vault_connection.h"
@@ -314,10 +315,28 @@ class SingleClientNigoriSyncTestWithNotAwaitQuiescence
 
   bool TestUsesSelfNotifications() override {
     // This test fixture is used with tests, which expect SetupSync() to be
-    // waiting for completion, but not for quiescense, because it can't be
+    // waiting for completion, but not for quiescence, because it can't be
     // achieved and isn't needed.
     return false;
   }
+};
+
+class SingleClientNigoriKeyPairSyncTest : public SingleClientNigoriSyncTest {
+ public:
+  SingleClientNigoriKeyPairSyncTest() {
+    override_features_.InitAndEnableFeature(
+        syncer::kSharingOfferKeyPairBootstrap);
+  }
+
+  SingleClientNigoriKeyPairSyncTest(const SingleClientNigoriKeyPairSyncTest&) =
+      delete;
+  SingleClientNigoriKeyPairSyncTest& operator=(
+      const SingleClientNigoriKeyPairSyncTest&) = delete;
+
+  ~SingleClientNigoriKeyPairSyncTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList override_features_;
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
@@ -686,6 +705,117 @@ IN_PROC_BROWSER_TEST_F(
                   .Wait());
 }
 
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriKeyPairSyncTest,
+                       ShouldBootstrapKeyPairWhenReceivedDefault) {
+  ASSERT_TRUE(SetupSync());
+  sync_pb::NigoriSpecifics specifics;
+
+  // Commit of specifics with key pair happens during SetupSync().
+  ASSERT_TRUE(GetServerNigori(GetFakeServer(), &specifics));
+
+  EXPECT_TRUE(specifics.has_public_key());
+  EXPECT_TRUE(specifics.public_key().has_x25519_public_key());
+  EXPECT_TRUE(specifics.public_key().has_version());
+  EXPECT_EQ(specifics.public_key().version(), 0);
+  EXPECT_THAT(specifics.public_key().x25519_public_key(),
+              SizeIs(X25519_PUBLIC_VALUE_LEN));
+
+  const std::vector<std::vector<uint8_t>>& keystore_keys =
+      GetFakeServer()->GetKeystoreKeys();
+  EXPECT_THAT(
+      specifics.encryption_keybag(),
+      IsDataEncryptedWith(KeystoreKeyParamsForTesting(keystore_keys.back())));
+  const KeyParamsForTesting kKeystoreKeyParams =
+      KeystoreKeyParamsForTesting(keystore_keys.back());
+  std::unique_ptr<syncer::CryptographerImpl> cryptographer =
+      syncer::CryptographerImpl::FromSingleKeyForTesting(
+          kKeystoreKeyParams.password, kKeystoreKeyParams.derivation_params);
+
+  std::string decrypted_keys_str;
+  EXPECT_TRUE(cryptographer->DecryptToString(specifics.encryption_keybag(),
+                                             &decrypted_keys_str));
+  sync_pb::NigoriKeyBag decrypted_keys;
+
+  EXPECT_TRUE(decrypted_keys.ParseFromString(decrypted_keys_str));
+  ASSERT_THAT(decrypted_keys.private_key(), SizeIs(1));
+  auto private_key_proto =
+      decrypted_keys.private_key().at(0).x25519_private_key();
+  EXPECT_THAT(private_key_proto, SizeIs(X25519_PRIVATE_KEY_LEN));
+  EXPECT_EQ(decrypted_keys.private_key().at(0).version(), 0);
+  std::vector<uint8_t> raw_private_key(private_key_proto.begin(),
+                                       private_key_proto.end());
+  absl::optional<syncer::PublicPrivateKeyPair> private_key =
+      syncer::PublicPrivateKeyPair::CreateByImport(raw_private_key);
+  EXPECT_TRUE(private_key.has_value());
+  EXPECT_THAT(specifics.public_key().x25519_public_key(),
+              testing::ElementsAreArray(private_key->GetRawPublicKey()));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriKeyPairSyncTest,
+                       PRE_ShouldSyncPublicPrivateKeyPair) {
+  const std::vector<std::vector<uint8_t>>& keystore_keys =
+      GetFakeServer()->GetKeystoreKeys();
+  ASSERT_THAT(keystore_keys, SizeIs(1));
+  const KeyParamsForTesting kKeystoreKeyParams =
+      KeystoreKeyParamsForTesting(keystore_keys.back());
+  const KeyParamsForTesting kDefaultKeyParams =
+      Pbkdf2PassphraseKeyParamsForTesting("password");
+  SetNigoriInFakeServer(
+      BuildKeystoreNigoriSpecifics(
+          /*keybag_keys_params=*/{kDefaultKeyParams, kKeystoreKeyParams},
+          /*keystore_decryptor_params*/ {kDefaultKeyParams},
+          /*keystore_key_params=*/kKeystoreKeyParams),
+      GetFakeServer());
+
+  ASSERT_TRUE(SetupSync());
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriKeyPairSyncTest,
+                       ShouldSyncPublicPrivateKeyPair) {
+  ASSERT_TRUE(SetupSync());
+  sync_pb::NigoriSpecifics specifics;
+
+  // Commit of specifics with key pair happens during SetupSync().
+  ASSERT_TRUE(GetServerNigori(GetFakeServer(), &specifics));
+
+  EXPECT_TRUE(specifics.has_public_key());
+  EXPECT_TRUE(specifics.public_key().has_x25519_public_key());
+  EXPECT_TRUE(specifics.public_key().has_version());
+  EXPECT_EQ(specifics.public_key().version(), 0);
+  EXPECT_THAT(specifics.public_key().x25519_public_key(),
+              SizeIs(X25519_PUBLIC_VALUE_LEN));
+
+  const std::vector<std::vector<uint8_t>>& keystore_keys =
+      GetFakeServer()->GetKeystoreKeys();
+  EXPECT_THAT(
+      specifics.encryption_keybag(),
+      IsDataEncryptedWith(KeystoreKeyParamsForTesting(keystore_keys.back())));
+
+  const KeyParamsForTesting kKeystoreKeyParams =
+      KeystoreKeyParamsForTesting(keystore_keys.back());
+  std::unique_ptr<syncer::CryptographerImpl> cryptographer =
+      syncer::CryptographerImpl::FromSingleKeyForTesting(
+          kKeystoreKeyParams.password, kKeystoreKeyParams.derivation_params);
+
+  std::string decrypted_keys_str;
+  EXPECT_TRUE(cryptographer->DecryptToString(specifics.encryption_keybag(),
+                                             &decrypted_keys_str));
+  sync_pb::NigoriKeyBag decrypted_keys;
+  EXPECT_TRUE(decrypted_keys.ParseFromString(decrypted_keys_str));
+  ASSERT_THAT(decrypted_keys.private_key(), SizeIs(1));
+  auto private_key_proto =
+      decrypted_keys.private_key().at(0).x25519_private_key();
+  EXPECT_THAT(private_key_proto, SizeIs(X25519_PRIVATE_KEY_LEN));
+  EXPECT_EQ(decrypted_keys.private_key().at(0).version(), 0);
+  std::vector<uint8_t> raw_private_key(private_key_proto.begin(),
+                                       private_key_proto.end());
+  absl::optional<syncer::PublicPrivateKeyPair> private_key =
+      syncer::PublicPrivateKeyPair::CreateByImport(raw_private_key);
+  EXPECT_TRUE(private_key.has_value());
+  EXPECT_THAT(specifics.public_key().x25519_public_key(),
+              testing::ElementsAreArray(private_key->GetRawPublicKey()));
+}
+
 // Performs initial sync for Nigori, but doesn't allow initialized Nigori to be
 // committed.
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
@@ -732,7 +862,7 @@ class SingleClientNigoriWithWebApiTest : public SyncTest {
     const GURL& base_url = embedded_test_server()->base_url();
     command_line->AppendSwitchASCII(switches::kGaiaUrl, base_url.spec());
     command_line->AppendSwitchASCII(
-        syncer::kTrustedVaultServiceURL,
+        trusted_vault::kTrustedVaultServiceURLSwitch,
         trusted_vault::FakeSecurityDomainsServer::GetServerURL(
             embedded_test_server()->base_url())
             .spec());
@@ -1261,17 +1391,9 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(PasswordFormsChecker(0, {password_form1, password_form2}).Wait());
 }
 
-// Flakily failing on Mac: https://crbug.com/1447428
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_ShoudRecordTrustedVaultErrorShownOnStartupWhenErrorShown \
-  DISABLED_ShoudRecordTrustedVaultErrorShownOnStartupWhenErrorShown
-#else
-#define MAYBE_ShoudRecordTrustedVaultErrorShownOnStartupWhenErrorShown \
-  ShoudRecordTrustedVaultErrorShownOnStartupWhenErrorShown
-#endif
 IN_PROC_BROWSER_TEST_F(
     SingleClientNigoriWithWebApiTest,
-    MAYBE_ShoudRecordTrustedVaultErrorShownOnStartupWhenErrorShown) {
+    ShouldRecordTrustedVaultErrorShownOnStartupWhenErrorShown) {
   // 4 days is an arbitrary value between 3 days and 7 days to allow testing
   // histogram suffixes.
   const base::Time migration_time = base::Time::Now() - base::Days(4);
@@ -1292,7 +1414,12 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
   ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-  ASSERT_TRUE(SetupSync());
+  // TODO(crbug.com/1448448): SetupSync(WAIT_FOR_COMMITS_TO_COMPLETE) (e.g. with
+  // default argument) causes test flakiness here due to unrelated issue in
+  // SharingService. From this test perspective it doesn't matter whether to use
+  // WAIT_FOR_COMMITS_TO_COMPLETE or WAIT_FOR_SYNC_SETUP_TO_COMPLETE, but it
+  // would be nice to use default argument once the issue is resolved.
+  ASSERT_TRUE(SetupSync(WAIT_FOR_SYNC_SETUP_TO_COMPLETE));
 
   ASSERT_TRUE(GetSyncService(0)
                   ->GetUserSettings()
@@ -1326,7 +1453,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     SingleClientNigoriWithWebApiTest,
-    PRE_ShoudRecordTrustedVaultErrorShownOnStartupWhenErrorNotShown) {
+    PRE_ShouldRecordTrustedVaultErrorShownOnStartupWhenErrorNotShown) {
   ASSERT_TRUE(SetupClients());
 
   // There needs to be an existing tab for the second tab (the retrieval flow)
@@ -1351,7 +1478,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     SingleClientNigoriWithWebApiTest,
-    ShoudRecordTrustedVaultErrorShownOnStartupWhenErrorNotShown) {
+    ShouldRecordTrustedVaultErrorShownOnStartupWhenErrorNotShown) {
   // Mimic the account being already using a trusted vault passphrase.
   SetNigoriInFakeServer(BuildTrustedVaultNigoriSpecifics({kTestEncryptionKey}),
                         GetFakeServer());

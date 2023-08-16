@@ -66,6 +66,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/ash/components/login/auth/auth_events_recorder.h"
 #include "chromeos/ash/components/proximity_auth/public/mojom/auth_type.mojom.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "components/user_manager/known_user.h"
@@ -78,6 +79,7 @@
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/chromeos/devicetype_utils.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -652,6 +654,7 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
     LOG(WARNING)
         << "LockContentsView::OnUsersChanged called during Authentication.";
   }
+  AuthEventsRecorder::Get()->OnLockContentsViewUpdate();
   // The debug view will potentially call this method many times. Make sure to
   // invalidate any child references.
   primary_big_view_ = nullptr;
@@ -2449,20 +2452,38 @@ void LockContentsView::UpdateSystemInfoColors() {
 }
 
 void LockContentsView::UpdateBottomStatusIndicatorColors() {
+  const bool jelly_style = chromeos::features::IsJellyrollEnabled();
   switch (bottom_status_indicator_state_) {
     case BottomIndicatorState::kNone:
       return;
     case BottomIndicatorState::kManagedDevice: {
-      bottom_status_indicator_->SetIcon(chromeos::kEnterpriseIcon,
-                                        kColorAshIconColorPrimary);
-      bottom_status_indicator_->SetEnabledTextColorIds(
-          kColorAshTextColorPrimary);
+      if (jelly_style) {
+        bottom_status_indicator_->SetIcon(chromeos::kEnterpriseIcon,
+                                          cros_tokens::kCrosSysOnSurface, 20);
+        bottom_status_indicator_->SetEnabledTextColorIds(
+            cros_tokens::kCrosSysOnSurface);
+        bottom_status_indicator_->SetImageLabelSpacing(16);
+      } else {
+        bottom_status_indicator_->SetIcon(chromeos::kEnterpriseIcon,
+                                          kColorAshIconColorPrimary);
+        bottom_status_indicator_->SetEnabledTextColorIds(
+            kColorAshTextColorPrimary);
+      }
       break;
     }
     case BottomIndicatorState::kAdbSideLoadingEnabled: {
-      bottom_status_indicator_->SetIcon(kLockScreenAlertIcon,
-                                        kColorAshIconColorAlert);
-      bottom_status_indicator_->SetEnabledTextColorIds(kColorAshTextColorAlert);
+      if (jelly_style) {
+        bottom_status_indicator_->SetIcon(kLockScreenAlertIcon,
+                                          cros_tokens::kCrosSysError, 20);
+        bottom_status_indicator_->SetEnabledTextColorIds(
+            cros_tokens::kCrosSysError);
+        bottom_status_indicator_->SetImageLabelSpacing(16);
+      } else {
+        bottom_status_indicator_->SetIcon(kLockScreenAlertIcon,
+                                          kColorAshIconColorAlert);
+        bottom_status_indicator_->SetEnabledTextColorIds(
+            kColorAshTextColorAlert);
+      }
       break;
     }
   }
@@ -2515,7 +2536,7 @@ void LockContentsView::SetKioskLicenseModeForTesting(
 void LockContentsView::RecordAndResetPasswordAttempts(
     AuthEventsRecorder::AuthenticationOutcome outcome,
     AccountId account_id) {
-  AuthEventsRecorder::Get()->OnExistingUserLoginExit(
+  AuthEventsRecorder::Get()->OnExistingUserLoginScreenExit(
       outcome, unlock_attempt_by_user_[account_id]);
   unlock_attempt_by_user_[account_id] = 0;
 }

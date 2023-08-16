@@ -62,6 +62,7 @@ extern DEVICE_BLUETOOTH_EXPORT const char kRemoveBond[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetRemoteType[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetRemoteClass[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetRemoteAppearance[];
+extern DEVICE_BLUETOOTH_EXPORT const char kGetRemoteVendorProductInfo[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetConnectionState[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetRemoteUuids[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetBondState[];
@@ -92,6 +93,7 @@ extern DEVICE_BLUETOOTH_EXPORT const char kOnNameChanged[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnDiscoverableChanged[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnDeviceFound[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnDeviceCleared[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnDevicePropertiesChanged[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnDiscoveringChanged[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnSspRequest[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnPinDisplay[];
@@ -799,7 +801,7 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
     object_proxy->CallMethodWithErrorResponse(
         &method_call, kDBusTimeoutMs,
         base::BindOnce(&FlossDBusClient::DefaultResponseWithCallback<R>,
-                       base::Unretained(this), std::move(callback)));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   FlossDBusClient(const FlossDBusClient&) = delete;
@@ -855,6 +857,9 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
   void DefaultResponse(const std::string& caller,
                        dbus::Response* response,
                        dbus::ErrorResponse* error_response);
+
+ private:
+  base::WeakPtrFactory<FlossDBusClient> weak_ptr_factory_{this};
 };
 
 // Utility to keep a property that takes care of getting the initial value,
@@ -897,7 +902,7 @@ class FlossProperty {
   // |update_callback| - Caller can provide this to be notified when there are
   //                     updates.
   void Init(FlossDBusClient* client,
-            raw_ptr<dbus::Bus> bus,
+            dbus::Bus* bus,
             const std::string& service_name,
             const dbus::ObjectPath& path,
             const dbus::ObjectPath& callback_path,

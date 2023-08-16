@@ -48,14 +48,9 @@ class SyncedWindowDelegateBrowserAgent
   sync_sessions::SyncedTabDelegate* GetTabAt(int index) const override;
 
   // WebStateListObserver:
-  void WebStateInsertedAt(WebStateList* web_state_list,
-                          web::WebState* web_state,
-                          int index,
-                          bool activating) override;
-  void WebStateReplacedAt(WebStateList* web_state_list,
-                          web::WebState* old_web_state,
-                          web::WebState* new_web_state,
-                          int index) override;
+  void WebStateListChanged(WebStateList* web_state_list,
+                           const WebStateListChange& change,
+                           const WebStateSelection& selection) override;
 
  private:
   friend class BrowserUserData<SyncedWindowDelegateBrowserAgent>;

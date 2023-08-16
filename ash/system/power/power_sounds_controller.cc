@@ -4,12 +4,15 @@
 
 #include "ash/system/power/power_sounds_controller.h"
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_status.h"
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "chromeos/ash/components/audio/sounds.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "ui/message_center/message_center.h"
 
 namespace ash {
@@ -32,6 +35,20 @@ Sound GetSoundKeyForBatteryLevel(int level) {
 
   return level >= kMidPercentageForCharging ? Sound::kChargeMediumBattery
                                             : Sound::kChargeLowBattery;
+}
+
+PrefService* GetActivePrefService() {
+  return Shell::Get()->session_controller()->GetActivePrefService();
+}
+
+bool GetChargingSoundsEnabled() {
+  PrefService* prefs = GetActivePrefService();
+  return prefs && prefs->GetBoolean(prefs::kChargingSoundsEnabled);
+}
+
+bool GetLowBatterySoundEnabled() {
+  PrefService* prefs = GetActivePrefService();
+  return prefs && prefs->GetBoolean(prefs::kLowBatterySoundEnabled);
 }
 
 }  // namespace
@@ -64,6 +81,13 @@ PowerSoundsController::PowerSoundsController() {
 PowerSoundsController::~PowerSoundsController() {
   PowerStatus::Get()->RemoveObserver(this);
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);
+}
+
+void PowerSoundsController::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kChargingSoundsEnabled,
+                                /*default_value=*/false);
+  registry->RegisterBooleanPref(prefs::kLowBatterySoundEnabled,
+                                /*default_value=*/true);
 }
 
 void PowerSoundsController::OnPowerStatusChanged() {
@@ -119,6 +143,12 @@ void PowerSoundsController::SetPowerStatus(int battery_level,
 
 void PowerSoundsController::MaybePlaySoundsForCharging(
     bool old_line_power_connected) {
+  // Don't play the charging sound if the toggle button is disabled by user in
+  // the Settings UI.
+  if (!GetChargingSoundsEnabled()) {
+    return;
+  }
+
   // Returns when it isn't a plug in event.
   bool is_plugging_in = !old_line_power_connected && is_line_power_connected_;
   if (!is_plugging_in)
@@ -131,6 +161,12 @@ void PowerSoundsController::MaybePlaySoundsForCharging(
 void PowerSoundsController::MaybePlaySoundsForLowBattery(
     int old_battery_level,
     bool is_battery_charging) {
+  // Don't play the low battery sound if the user turns off the toggle button in
+  // the Settings UI.
+  if (!GetLowBatterySoundEnabled()) {
+    return;
+  }
+
   // Don't play the warning sound if the battery is charging.
   if (is_battery_charging)
     return;

@@ -26,6 +26,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/uuid.h"
 #include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
 #include "content/browser/renderer_host/policy_container_host.h"
@@ -38,6 +39,7 @@
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/browser/service_worker/service_worker_update_checker.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_router_evaluator.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_routing_id.h"
@@ -266,6 +268,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
     fetch_handler_bypass_option_ = fetch_handler_bypass_option;
   }
 
+  // Returns true on setup success.
+  // Otherwise, setup error, and subsequent `router_evaluator()` will return
+  // `absl::nullopt`.
+  bool SetupRouterEvaluator(const blink::ServiceWorkerRouterRules& rules);
+  const ServiceWorkerRouterEvaluator* router_evaluator() const {
+    return router_evaluator_.get();
+  }
+
   base::TimeDelta TimeSinceNoControllees() const {
     return GetTickDuration(no_controllees_time_);
   }
@@ -372,7 +382,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // |timeout_type| is to specfiy request timeout behaviour of the worker.
   // Returns true if the request was successfully scheduled to starrt.
   ServiceWorkerExternalRequestResult StartExternalRequest(
-      const std::string& request_uuid,
+      const base::Uuid& request_uuid,
       ServiceWorkerExternalRequestTimeoutType timeout_type);
 
   // Informs ServiceWorkerVersion that an event has finished being dispatched.
@@ -391,7 +401,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Finishes an external request that was started by StartExternalRequest().
   ServiceWorkerExternalRequestResult FinishExternalRequest(
-      const std::string& request_uuid);
+      const base::Uuid& request_uuid);
 
   // Creates a callback that is to be used for marking simple events dispatched
   // through blink::mojom::ServiceWorker as finished for the |request_id|.
@@ -905,6 +915,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
                       const GURL& url,
                       NavigateClientCallback callback) override;
   void SkipWaiting(SkipWaitingCallback callback) override;
+  void RegisterRouter(const blink::ServiceWorkerRouterRules& rules,
+                      RegisterRouterCallback callback) override;
 
   void OnSetCachedMetadataFinished(int64_t callback_id,
                                    size_t size,
@@ -979,8 +991,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Fires and clears all start callbacks.
   void FinishStartWorker(blink::ServiceWorkerStatusCode status);
 
-  // Removes any pending external request that has GUID of |request_uuid|.
-  void CleanUpExternalRequest(const std::string& request_uuid,
+  // Removes any pending external request that has Uuid of |request_uuid|.
+  void CleanUpExternalRequest(const base::Uuid& request_uuid,
                               blink::ServiceWorkerStatusCode status);
 
   // Called if no inflight events exist on the browser process. Triggers
@@ -1082,12 +1094,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Container for pending external requests for this service worker.
   // (key, value): (request uuid, request id).
-  using RequestUUIDToRequestIDMap = std::map<std::string, int>;
+  using RequestUUIDToRequestIDMap = std::map<base::Uuid, int>;
   RequestUUIDToRequestIDMap external_request_uuid_to_request_id_;
 
   // External request infos that were issued before this worker reached RUNNING.
   // Info contains UUID and timeout type.
-  std::map<std::string, ServiceWorkerExternalRequestTimeoutType>
+  std::map<base::Uuid, ServiceWorkerExternalRequestTimeoutType>
       pending_external_requests_;
 
   // Connected to ServiceWorkerContextClient while the worker is running.
@@ -1254,6 +1266,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // after the worker has started when there is a change in the script and new
   // version is created.
   absl::optional<std::string> sha256_script_checksum_;
+
+  std::unique_ptr<content::ServiceWorkerRouterEvaluator> router_evaluator_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_{this};
 };

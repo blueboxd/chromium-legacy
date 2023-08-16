@@ -176,14 +176,14 @@ TEST_F(FocusManagerTest, WidgetFocusChangeListener) {
   gfx::NativeView native_view1 = widget1->GetNativeView();
   test::WidgetTest::SimulateNativeActivate(widget1.get());
   ASSERT_EQ(2u, widget_listener.focus_changes().size());
-  EXPECT_EQ(gfx::kNullNativeView, widget_listener.focus_changes()[0]);
+  EXPECT_EQ(gfx::NativeView(), widget_listener.focus_changes()[0]);
   EXPECT_EQ(native_view1, widget_listener.focus_changes()[1]);
 
   widget_listener.ClearFocusChanges();
   gfx::NativeView native_view2 = widget2->GetNativeView();
   test::WidgetTest::SimulateNativeActivate(widget2.get());
   ASSERT_EQ(2u, widget_listener.focus_changes().size());
-  EXPECT_EQ(gfx::kNullNativeView, widget_listener.focus_changes()[0]);
+  EXPECT_EQ(gfx::NativeView(), widget_listener.focus_changes()[0]);
   EXPECT_EQ(native_view2, widget_listener.focus_changes()[1]);
 }
 
@@ -454,7 +454,7 @@ class FocusInAboutToRequestFocusFromTabTraversalView : public View {
   }
 
  private:
-  raw_ptr<views::View> view_to_focus_ = nullptr;
+  raw_ptr<views::View, DanglingUntriaged> view_to_focus_ = nullptr;
 };
 }  // namespace
 
@@ -482,7 +482,7 @@ TEST_F(FocusManagerTest, FocusInAboutToRequestFocusFromTabTraversal) {
   EXPECT_TRUE(v1->HasFocus());
 }
 
-TEST_F(FocusManagerTest, RotatePaneFocus) {
+TEST_F(FocusManagerTest, RotateFocus) {
   views::AccessiblePaneView* pane1 = new AccessiblePaneView();
   GetContentsView()->AddChildView(pane1);
 
@@ -529,30 +529,6 @@ TEST_F(FocusManagerTest, RotatePaneFocus) {
   focus_manager->AdvanceFocus(false);
   EXPECT_EQ(v4, focus_manager->GetFocusedView());
   focus_manager->AdvanceFocus(false);
-  EXPECT_EQ(v3, focus_manager->GetFocusedView());
-
-  EXPECT_TRUE(focus_manager->RotatePaneFocus(Direction::kForward,
-                                             FocusCycleWrapping::kEnabled));
-  EXPECT_EQ(v1, focus_manager->GetFocusedView());
-
-  // Advance backwards.
-  EXPECT_TRUE(focus_manager->RotatePaneFocus(Direction::kBackward,
-                                             FocusCycleWrapping::kEnabled));
-  EXPECT_EQ(v3, focus_manager->GetFocusedView());
-
-  EXPECT_TRUE(focus_manager->RotatePaneFocus(Direction::kBackward,
-                                             FocusCycleWrapping::kEnabled));
-  EXPECT_EQ(v1, focus_manager->GetFocusedView());
-
-  // Advance without wrap. When it gets to the end of the list of
-  // panes, RotatePaneFocus should return false but the current
-  // focused view shouldn't change.
-  EXPECT_TRUE(focus_manager->RotatePaneFocus(Direction::kForward,
-                                             FocusCycleWrapping::kDisabled));
-  EXPECT_EQ(v3, focus_manager->GetFocusedView());
-
-  EXPECT_FALSE(focus_manager->RotatePaneFocus(Direction::kForward,
-                                              FocusCycleWrapping::kDisabled));
   EXPECT_EQ(v3, focus_manager->GetFocusedView());
 }
 
@@ -1219,10 +1195,10 @@ class RedirectToParentFocusManagerTest : public FocusManagerTest {
   }
 
  protected:
-  raw_ptr<FocusManager> parent_focus_manager_ = nullptr;
-  raw_ptr<FocusManager> bubble_focus_manager_ = nullptr;
+  raw_ptr<FocusManager, DanglingUntriaged> parent_focus_manager_ = nullptr;
+  raw_ptr<FocusManager, DanglingUntriaged> bubble_focus_manager_ = nullptr;
 
-  raw_ptr<BubbleDialogDelegateView> bubble_ = nullptr;
+  raw_ptr<BubbleDialogDelegateView, DanglingUntriaged> bubble_ = nullptr;
 };
 
 // Test that when an accelerator is sent to a bubble that isn't registered,

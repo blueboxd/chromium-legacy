@@ -23,7 +23,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/ahardwarebuffer_utils.h"
@@ -42,7 +42,7 @@
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/vulkan/vulkan_image.h"
-#include "third_party/skia/include/core/SkPromiseImageTexture.h"
+#include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
 #include "ui/gfx/android/android_surface_control_compat.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
@@ -270,7 +270,7 @@ class SkiaVkAHBImageRepresentation : public SkiaVkAndroidImageRepresentation {
     vulkan_image_ = std::move(vulkan_image);
     // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
     // if the vk_info stays the same on subsequent calls.
-    promise_texture_ = SkPromiseImageTexture::Make(
+    promise_texture_ = GrPromiseImageTexture::Make(
         GrBackendTexture(size().width(), size().height(),
                          CreateGrVkImageInfo(vulkan_image_.get())));
     DCHECK(promise_texture_);
@@ -771,13 +771,19 @@ AHardwareBufferImageBackingFactory::MakeBacking(
       return nullptr;
     }
 
-    int bytes_per_pixel = BitsPerPixel(format) / 8;
+    int bytes_per_pixel = format.BitsPerPixel() / 8;
 
     // NOTE: hwb_info.stride is in pixels
-    int dst_stride = bytes_per_pixel * hwb_info.stride;
-    int src_stride = bytes_per_pixel * size.width();
+    const size_t dst_stride = bytes_per_pixel * hwb_info.stride;
+    const size_t src_stride = bytes_per_pixel * size.width();
+    const size_t height = size.height();
 
-    for (int y = 0; y < size.height(); y++) {
+    if (pixel_data.size() != src_stride * height) {
+      DLOG(ERROR) << "Invalid initial pixel data size";
+      return nullptr;
+    }
+
+    for (size_t y = 0; y < height; y++) {
       void* dst = reinterpret_cast<uint8_t*>(address) + dst_stride * y;
       const void* src = pixel_data.data() + src_stride * y;
 
@@ -867,6 +873,37 @@ AHardwareBufferImageBackingFactory::FormatInfo::~FormatInfo() = default;
 std::unique_ptr<SharedImageBacking>
 AHardwareBufferImageBackingFactory::CreateSharedImage(
     const Mailbox& mailbox,
+    viz::SharedImageFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
+    uint32_t usage,
+    std::string debug_label,
+    gfx::GpuMemoryBufferHandle handle) {
+  CHECK_EQ(handle.type, gfx::ANDROID_HARDWARE_BUFFER);
+  if (!ValidateUsage(usage, size, format)) {
+    return nullptr;
+  }
+
+  auto estimated_size = format.MaybeEstimatedSizeInBytes(size);
+  if (!estimated_size) {
+    LOG(ERROR) << "Failed to calculate SharedImage size";
+    return nullptr;
+  }
+
+  auto backing = std::make_unique<AHardwareBufferImageBacking>(
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      std::move(handle.android_hardware_buffer), estimated_size.value(), false,
+      base::ScopedFD(), dawn_procs_, use_passthrough_);
+
+  backing->SetCleared();
+  return backing;
+}
+
+std::unique_ptr<SharedImageBacking>
+AHardwareBufferImageBackingFactory::CreateSharedImage(
+    const Mailbox& mailbox,
     gfx::GpuMemoryBufferHandle handle,
     gfx::BufferFormat buffer_format,
     gfx::BufferPlane plane,
@@ -876,34 +913,14 @@ AHardwareBufferImageBackingFactory::CreateSharedImage(
     SkAlphaType alpha_type,
     uint32_t usage,
     std::string debug_label) {
-  // TODO(vasilyt): support SHARED_MEMORY_BUFFER?
-  if (handle.type != gfx::ANDROID_HARDWARE_BUFFER) {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
   if (plane != gfx::BufferPlane::DEFAULT) {
     LOG(ERROR) << "Invalid plane " << gfx::BufferPlaneToString(plane);
     return nullptr;
   }
 
-  auto si_format = viz::GetSharedImageFormat(buffer_format);
-  if (!ValidateUsage(usage, size, si_format)) {
-    return nullptr;
-  }
-
-  auto estimated_size = si_format.MaybeEstimatedSizeInBytes(size);
-  if (!estimated_size) {
-    LOG(ERROR) << "Failed to calculate SharedImage size";
-    return nullptr;
-  }
-
-  auto backing = std::make_unique<AHardwareBufferImageBacking>(
-      mailbox, si_format, size, color_space, surface_origin, alpha_type, usage,
-      std::move(handle.android_hardware_buffer), estimated_size.value(), false,
-      base::ScopedFD(), dawn_procs_, use_passthrough_);
-
-  backing->SetCleared();
-  return backing;
+  return CreateSharedImage(mailbox, viz::GetSharedImageFormat(buffer_format),
+                           size, color_space, surface_origin, alpha_type, usage,
+                           debug_label, std::move(handle));
 }
 
 }  // namespace gpu

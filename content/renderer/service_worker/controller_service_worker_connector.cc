@@ -7,6 +7,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/observer_list.h"
+#include "content/common/service_worker/service_worker_router_evaluator.h"
 
 namespace content {
 
@@ -17,13 +18,19 @@ ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
         remote_controller,
     const std::string& client_id,
     blink::mojom::ServiceWorkerFetchHandlerBypassOption
-        fetch_handler_bypass_option)
+        fetch_handler_bypass_option,
+    absl::optional<blink::ServiceWorkerRouterRules> router_rules)
     : client_id_(client_id),
       fetch_handler_bypass_option_(fetch_handler_bypass_option) {
   container_host_.Bind(std::move(remote_container_host));
   container_host_.set_disconnect_handler(base::BindOnce(
       &ControllerServiceWorkerConnector::OnContainerHostConnectionClosed,
       base::Unretained(this)));
+  if (router_rules) {
+    router_evaluator_ =
+        absl::make_unique<content::ServiceWorkerRouterEvaluator>(*router_rules);
+    CHECK(router_evaluator_->IsValid());
+  }
   SetControllerServiceWorker(std::move(remote_controller));
 }
 

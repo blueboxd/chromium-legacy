@@ -35,8 +35,6 @@ SVGStopElement::SVGStopElement(Document& document)
           this,
           svg_names::kOffsetAttr,
           MakeGarbageCollected<SVGNumberAcceptPercentage>())) {
-  AddToPropertyMap(offset_);
-
   // Since stop elements don't have corresponding layout objects, we rely on
   // style recalc callbacks for invalidation.
   DCHECK(HasCustomStyleCallbacks());
@@ -88,6 +86,21 @@ Color SVGStopElement::StopColorIncludingOpacity() const {
   Color base_color = style->VisitedDependentColor(GetCSSPropertyStopColor());
   base_color.SetAlpha(style->StopOpacity() * base_color.Alpha());
   return base_color;
+}
+
+SVGAnimatedPropertyBase* SVGStopElement::PropertyFromAttribute(
+    const QualifiedName& attribute_name) const {
+  if (attribute_name == svg_names::kOffsetAttr) {
+    return offset_.Get();
+  } else {
+    return SVGElement::PropertyFromAttribute(attribute_name);
+  }
+}
+
+void SVGStopElement::SynchronizeAllSVGAttributes() const {
+  SVGAnimatedPropertyBase* attrs[]{offset_.Get()};
+  SynchronizeListOfSVGAttributes(attrs);
+  SVGElement::SynchronizeAllSVGAttributes();
 }
 
 }  // namespace blink

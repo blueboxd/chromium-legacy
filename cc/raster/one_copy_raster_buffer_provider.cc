@@ -21,11 +21,11 @@
 #include "build/chromeos_buildflags.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
-#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/shared_image_format.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -82,7 +82,7 @@ class OneCopyRasterBufferProvider::OneCopyGpuBacking
     pmd->AddOwnershipEdge(buffer_dump_guid, tracing_guid, importance);
   }
 
-  // The ContextProvider used to clean up the mailbox
+  // The context used to clean up the mailbox
   raw_ptr<viz::RasterContextProvider> worker_context_provider = nullptr;
 };
 
@@ -147,7 +147,7 @@ bool OneCopyRasterBufferProvider::RasterBufferImpl::
 
 OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    viz::ContextProvider* compositor_context_provider,
+    viz::RasterContextProvider* compositor_context_provider,
     viz::RasterContextProvider* worker_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     int max_copy_texture_chromium_size,
@@ -325,7 +325,8 @@ void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
   if (!staging_buffer->gpu_memory_buffer) {
     staging_buffer->gpu_memory_buffer =
         gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
-            staging_buffer->size, BufferFormat(format.resource_format()),
+            staging_buffer->size,
+            viz::SinglePlaneSharedImageFormatToBufferFormat(format),
             gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gpu::kNullSurfaceHandle,
             shutdown_event_);
   }
@@ -417,9 +418,9 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
   if (staging_buffer->mailbox.IsZero()) {
     const uint32_t usage = gpu::SHARED_IMAGE_USAGE_CPU_WRITE;
     staging_buffer->mailbox = sii->CreateSharedImage(
-        staging_buffer->gpu_memory_buffer.get(), gpu_memory_buffer_manager_,
-        color_space, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
-        "OneCopyRasterStaging");
+        format, resource_size, color_space, kTopLeft_GrSurfaceOrigin,
+        kPremul_SkAlphaType, usage, "OneCopyRasterStaging",
+        staging_buffer->gpu_memory_buffer.get()->CloneHandle());
   } else {
     sii->UpdateSharedImage(staging_buffer->sync_token, staging_buffer->mailbox);
   }
@@ -466,7 +467,7 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
   // Clear to ensure the resource is fully initialized and BeginAccess succeeds.
   if (needs_clear) {
     int clear_bytes_per_row = viz::ResourceSizes::UncheckedWidthInBytes<int>(
-        resource_size.width(), format.resource_format());
+        resource_size.width(), format);
     SkImageInfo dst_info = SkImageInfo::MakeN32Premul(resource_size.width(),
                                                       resource_size.height());
     SkBitmap bitmap;
@@ -481,7 +482,7 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
   }
 
   int bytes_per_row = viz::ResourceSizes::UncheckedWidthInBytes<int>(
-      rect_to_copy.width(), staging_buffer->format.resource_format());
+      rect_to_copy.width(), staging_buffer->format);
   int chunk_size_in_rows =
       std::max(1, max_bytes_per_copy_operation_ / bytes_per_row);
   // Align chunk size to 4. Required to support compressed texture formats.

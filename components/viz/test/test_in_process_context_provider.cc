@@ -12,6 +12,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/types/optional_util.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -63,14 +64,6 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentSequence() {
   auto* holder = TestGpuServiceHolder::GetInstance();
 
   gpu::ContextCreationAttribs attribs;
-  attribs.alpha_size = 8;
-  attribs.blue_size = 8;
-  attribs.green_size = 8;
-  attribs.red_size = 8;
-  attribs.depth_size = 0;
-  attribs.stencil_size = 8;
-  attribs.samples = 0;
-  attribs.sample_buffers = 0;
   attribs.bind_generates_resource = false;
 
   if (type_ == TestContextType::kGLES2 ||
@@ -218,6 +211,12 @@ void TestInProcessContextProvider::CheckValidThreadOrLockAcquired() const {
     DCHECK(context_thread_checker_.CalledOnValidThread());
   }
 #endif
+}
+
+unsigned int TestInProcessContextProvider::GetGrGLTextureFormat(
+    SharedImageFormat format) const {
+  return TextureStorageFormat(format.resource_format(),
+                              ContextCapabilities().angle_rgbx_internal_format);
 }
 
 }  // namespace viz

@@ -434,7 +434,8 @@ void CanvasRenderingContext2DOverdrawTest::SetUp() {
 INSTANTIATE_PAINT_TEST_SUITE_P(CanvasRenderingContext2DOverdrawTest);
 
 void CanvasRenderingContext2DOverdrawTest::TearDown() {
-  Context2D()->restore();
+  NonThrowableExceptionState exception_state;
+  Context2D()->restore(exception_state);
 
   histogram_tester_.reset();
   surface_ptr_ = nullptr;
@@ -536,7 +537,8 @@ TEST_P(CanvasRenderingContext2DOverdrawTest, ClearRect_Filter) {
   });
   V8UnionCanvasFilterOrString* filter =
       MakeGarbageCollected<V8UnionCanvasFilterOrString>("blur(4px)");
-  Context2D()->setFilter(GetExecutionContext(), filter);
+  Context2D()->setFilter(ToScriptStateForMainWorld(GetDocument().GetFrame()),
+                         filter);
   Context2D()->clearRect(0, 0, 10, 10);
   VerifyExpectations();
 }
@@ -627,7 +629,8 @@ TEST_P(CanvasRenderingContext2DOverdrawTest, DrawImage_Filter) {
   NonThrowableExceptionState exception_state;
   V8UnionCanvasFilterOrString* filter =
       MakeGarbageCollected<V8UnionCanvasFilterOrString>("blur(4px)");
-  Context2D()->setFilter(GetExecutionContext(), filter);
+  Context2D()->setFilter(ToScriptStateForMainWorld(GetDocument().GetFrame()),
+                         filter);
   Context2D()->drawImage(&opaque_bitmap_, 0, 0, 10, 10, 0, 0, 10, 10,
                          exception_state);
   EXPECT_FALSE(exception_state.HadException());
@@ -1429,6 +1432,7 @@ TEST_P(CanvasRenderingContext2DTest, AutoFlushSameImage) {
 }
 
 TEST_P(CanvasRenderingContext2DTest, AutoFlushDelayedByLayer) {
+  ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   CreateContext(kNonOpaque);
   gfx::Size size(10, 10);
   auto fake_accelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(
@@ -1436,8 +1440,8 @@ TEST_P(CanvasRenderingContext2DTest, AutoFlushDelayedByLayer) {
   CanvasElement().SetResourceProviderForTesting(
       nullptr, std::move(fake_accelerate_surface), size);
   NonThrowableExceptionState exception_state;
-  Context2D()->beginLayer(GetExecutionContext(), /*filter_init=*/nullptr,
-                          exception_state);
+  Context2D()->beginLayer(ToScriptStateForMainWorld(GetDocument().GetFrame()),
+                          /*filter_init=*/nullptr, exception_state);
   const size_t initial_op_count =
       CanvasElement().ResourceProvider()->TotalOpCount();
   while (CanvasElement().ResourceProvider()->TotalOpBytesUsed() <=
@@ -1447,7 +1451,7 @@ TEST_P(CanvasRenderingContext2DTest, AutoFlushDelayedByLayer) {
               initial_op_count);
   }
   // Closing the layer means next op can trigger auto flush
-  Context2D()->endLayer();
+  Context2D()->endLayer(exception_state);
   Context2D()->fillRect(0, 0, 1, 1);
   ASSERT_EQ(CanvasElement().ResourceProvider()->TotalOpCount(),
             initial_op_count);

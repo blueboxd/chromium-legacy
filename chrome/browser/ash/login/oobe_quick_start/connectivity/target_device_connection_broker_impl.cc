@@ -10,7 +10,6 @@
 #include "base/base64.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,9 +17,9 @@
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fast_pair_advertiser.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
-#include "chrome/browser/ash/login/oobe_quick_start/logging/logging.h"
 #include "chrome/browser/ash/login/oobe_quick_start/oobe_quick_start_pref_names.h"
 #include "chrome/browser/browser_process.h"
+#include "chromeos/ash/components/quick_start/logging.h"
 #include "components/prefs/pref_service.h"
 #include "crypto/random.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -68,6 +67,9 @@ constexpr char kBase64PaddingChar = '=';
 constexpr char kPrepareForUpdateRandomSessionIdKey[] = "random_session_id";
 constexpr char kPrepareForUpdateSecondarySharedSecretKey[] =
     "secondary_shared_secret";
+
+constexpr base::TimeDelta kNearbyConnectionsAdvertisementAfterUpdateTimeout =
+    base::Seconds(30);
 
 // The display name must:
 // - Be a variable-length string of utf-8 bytes
@@ -300,6 +302,10 @@ base::Value::Dict TargetDeviceConnectionBrokerImpl::GetPrepareForUpdateInfo() {
   return prepare_for_update_info;
 }
 
+std::string TargetDeviceConnectionBrokerImpl::GetSessionIdDisplayCode() {
+  return random_session_id_.GetDisplayCode();
+}
+
 void TargetDeviceConnectionBrokerImpl::FetchPersistedSessionContext() {
   PrefService* prefs = g_browser_process->local_state();
   CHECK(prefs->GetBoolean(prefs::kShouldResumeQuickStartAfterReboot));
@@ -458,6 +464,15 @@ void TargetDeviceConnectionBrokerImpl::OnStartNearbyConnectionsAdvertising(
                << status;
   bool success =
       status == NearbyConnectionsManager::ConnectionsStatus::kSuccess;
+
+  if (success && is_resume_after_update_) {
+    nearby_connections_advertisement_after_update_timeout_timer_.Start(
+        FROM_HERE, kNearbyConnectionsAdvertisementAfterUpdateTimeout,
+        base::BindOnce(&TargetDeviceConnectionBrokerImpl::
+                           OnNearbyConnectionsAdvertisementAfterUpdateTimeout,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
   std::move(callback).Run(success);
 }
 
@@ -504,13 +519,19 @@ void TargetDeviceConnectionBrokerImpl::OnIncomingConnectionAccepted(
     const std::string& endpoint_id,
     const std::vector<uint8_t>& endpoint_info,
     NearbyConnection* nearby_connection) {
+  // Nearby Connections advertisement succeeded when connection is accepted so
+  // stop timer when running.
+  if (nearby_connections_advertisement_after_update_timeout_timer_
+          .IsRunning()) {
+    nearby_connections_advertisement_after_update_timeout_timer_.Stop();
+  }
+
   QS_LOG(INFO) << "Incoming Nearby Connection Accepted: endpoint_id="
                << endpoint_id;
 
   // TODO(b/234655072): Handle Connection Closed in the Connection Broker
   connection_ = connection_factory_->Create(
-      nearby_connection, BuildConnectionSessionContext(),
-      std::move(quick_start_decoder_),
+      nearby_connection, BuildConnectionSessionContext(), quick_start_decoder_,
       base::BindOnce(&TargetDeviceConnectionBrokerImpl::OnConnectionClosed,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(
@@ -525,10 +546,23 @@ void TargetDeviceConnectionBrokerImpl::OnIncomingConnectionAccepted(
     absl::optional<std::string> auth_token =
         nearby_connections_manager_->GetAuthenticationToken(endpoint_id);
     CHECK(auth_token);
-    // TODO(b/234655072): Handle the handshake callback once the handshake is
-    // fully implemented.
-    connection_->InitiateHandshake(*auth_token, base::DoNothing());
+    connection_->InitiateHandshake(
+        *auth_token,
+        base::BindOnce(&TargetDeviceConnectionBrokerImpl::OnHandshakeCompleted,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void TargetDeviceConnectionBrokerImpl::OnHandshakeCompleted(bool success) {
+  CHECK(connection_);
+  if (!success) {
+    QS_LOG(ERROR) << "Handshake failed! Dropping the connection.";
+    connection_->Close(ConnectionClosedReason::kAuthenticationFailed);
+    return;
+  }
+
+  QS_LOG(INFO) << "Handshake succeeded!";
+  connection_->MarkConnectionAuthenticated();
 }
 
 const Connection::SessionContext
@@ -541,4 +575,16 @@ TargetDeviceConnectionBrokerImpl::BuildConnectionSessionContext() const {
   return context;
 }
 
+void TargetDeviceConnectionBrokerImpl::
+    OnNearbyConnectionsAdvertisementAfterUpdateTimeout() {
+  is_resume_after_update_ = false;
+  QS_LOG(ERROR) << "The Nearby Connections advertisement timed out during "
+                   "attempt to automatically resume after an update. Will now "
+                   "attempt to stop Nearby Connections advertising and "
+                   "fallback to Fast Pair advertising.";
+  auto start_fast_pair_advertising = base::BindOnce(
+      &TargetDeviceConnectionBrokerImpl::StartFastPairAdvertising,
+      weak_ptr_factory_.GetWeakPtr(), base::DoNothing());
+  StopNearbyConnectionsAdvertising(std::move(start_fast_pair_advertising));
+}
 }  // namespace ash::quick_start

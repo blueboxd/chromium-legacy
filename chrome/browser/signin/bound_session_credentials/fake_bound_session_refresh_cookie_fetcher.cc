@@ -7,6 +7,8 @@
 #include "base/functional/callback.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "base/types/expected.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher.h"
 #include "components/signin/public/base/signin_client.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/net_errors.h"
@@ -40,18 +42,21 @@ void FakeBoundSessionRefreshCookieFetcher::Start(
         base::BindOnce(&FakeBoundSessionRefreshCookieFetcher::
                            SimulateCompleteRefreshRequest,
                        weak_ptr_factory_.GetWeakPtr(),
+                       BoundSessionRefreshCookieFetcher::Result::kSuccess,
                        base::Time::Now() + kMaxAge),
         unlock_automatically_in_.value());
   }
 }
 
 void FakeBoundSessionRefreshCookieFetcher::SimulateCompleteRefreshRequest(
+    BoundSessionRefreshCookieFetcher::Result result,
     absl::optional<base::Time> cookie_expiration) {
-  if (cookie_expiration.has_value()) {
+  if (result == BoundSessionRefreshCookieFetcher::Result::kSuccess &&
+      cookie_expiration) {
     // Synchronous since tests use `BoundSessionTestCookieManager`.
     OnRefreshCookieCompleted(CreateFakeCookie(cookie_expiration.value()));
   } else {
-    std::move(callback_).Run(Result(net::Error::OK, net::HTTP_FORBIDDEN));
+    std::move(callback_).Run(result);
   }
 }
 
@@ -83,9 +88,11 @@ void FakeBoundSessionRefreshCookieFetcher::OnCookieSet(
     net::CookieAccessResult access_result) {
   bool success = access_result.status.IsInclude();
   if (!success) {
-    std::move(callback_).Run(Result(net::Error::OK, net::HTTP_FORBIDDEN));
+    std::move(callback_).Run(
+        BoundSessionRefreshCookieFetcher::Result::kServerPersistentError);
   } else {
-    std::move(callback_).Run(Result(net::Error::OK, net::HTTP_OK));
+    std::move(callback_).Run(
+        BoundSessionRefreshCookieFetcher::Result::kSuccess);
   }
   // |This| may be destroyed
 }

@@ -913,6 +913,10 @@ void FeedApiTest::SetUp() {
   image_fetcher_ =
       std::make_unique<TestImageFetcher>(shared_url_loader_factory_);
 
+  // Test initialization of TemplateURLService that defaults to Google as
+  // the default search engine.
+  template_url_service_ = std::make_unique<TemplateURLService>(nullptr, 0);
+
   CreateStream();
 }
 
@@ -966,9 +970,6 @@ DisplayMetrics FeedApiTest::GetDisplayMetrics() {
 std::string FeedApiTest::GetLanguageTag() {
   return "en-US";
 }
-bool FeedApiTest::IsAutoplayEnabled() {
-  return false;
-}
 TabGroupEnabledState FeedApiTest::GetTabGroupEnabledState() {
   return TabGroupEnabledState::kNone;
 }
@@ -990,7 +991,8 @@ void FeedApiTest::CreateStream(bool wait_for_initialization,
   stream_ = std::make_unique<FeedStream>(
       &refresh_scheduler_, metrics_reporter_.get(), this, &profile_prefs_,
       &network_, image_fetcher_.get(), store_.get(),
-      persistent_key_value_store_.get(), chrome_info);
+      persistent_key_value_store_.get(), template_url_service_.get(),
+      chrome_info);
   stream_->SetWireResponseTranslatorForTesting(&response_translator_);
 
   if (wait_for_initialization)

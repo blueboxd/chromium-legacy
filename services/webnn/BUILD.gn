@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/fuzzers/mojolpm.gni")
+
 source_set("webnn") {
   sources = [
     "webnn_context_impl.cc",
@@ -22,6 +24,7 @@ source_set("webnn") {
       "dml/command_queue.h",
       "dml/command_recorder.cc",
       "dml/command_recorder.h",
+      "dml/error.h",
       "dml/platform_functions.cc",
       "dml/platform_functions.h",
     ]
@@ -29,6 +32,7 @@ source_set("webnn") {
 
   deps = [
     "//base",
+    "//components/ml/webnn",
     "//mojo/public/cpp/bindings",
     "//services/webnn/public/mojom",
   ]
@@ -37,7 +41,10 @@ source_set("webnn") {
 source_set("tests") {
   testonly = true
 
-  sources = [ "webnn_context_impl_unittest.cc" ]
+  sources = [
+    "webnn_context_impl_unittest.cc",
+    "webnn_graph_impl_unittest.cc",
+  ]
 
   if (is_win) {
     sources += [
@@ -66,4 +73,21 @@ source_set("tests") {
       "//ui/gl/init",
     ]
   }
+}
+
+mojolpm_fuzzer_test("webnn_graph_mojolpm_fuzzer") {
+  sources = [ "webnn_graph_mojolpm_fuzzer.cc" ]
+
+  proto_source = "webnn_graph_mojolpm_fuzzer.proto"
+
+  proto_deps = [ "//services/webnn/public/mojom:mojom_mojolpm" ]
+
+  deps = [
+    ":webnn",
+    "//base",
+    "//base/test:test_support",
+    "//content/test/fuzzer:mojolpm_fuzzer_support",
+    "//services/webnn/public/mojom",
+    "//third_party/libprotobuf-mutator",
+  ]
 }

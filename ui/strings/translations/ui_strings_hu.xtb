@@ -115,6 +115,7 @@
 <translation id="4746179598275229723">Bővítmény kitűzése feloldva</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{hátralévő idő: 1 hónap}other{hátralévő idő: # hónap}}</translation>
 <translation id="4888938634149558681">Hívás indítása</translation>
+<translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> és <ph name="TYPE_3" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 másodperc}other{# másodperc}}</translation>
 <translation id="4971687151119236543">Előző szám</translation>
 <translation id="5046499563572181734">Koppintson ide</translation>
@@ -147,6 +148,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6237461503717005873"><ph name="ROW_NAME" /> kiválasztva.</translation>
 <translation id="6264365405983206840">Össz&amp;es kiválasztása</translation>
+<translation id="6346952829206698721">Beillesztés a vágólapról</translation>
 <translation id="6364916375976753737">Görgetés balra</translation>
 <translation id="6394627529324717982">Vessző</translation>
 <translation id="6397363302884558537">Beszéd leállítása</translation>

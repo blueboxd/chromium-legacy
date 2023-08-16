@@ -234,21 +234,18 @@ bool CustomInputProcessor::AddFromInputContext(
     return false;
   }
   const auto& input_context = feature_processor_state->input_context();
-  if (!input_context) {
-    feature_processor_state->SetError(
-        stats::FeatureProcessingError::kCustomInputError,
-        "input context missing");
-    return false;
-  }
-
   auto input_name = custom_input.name();
   auto custom_input_iter = custom_input.additional_args().find("name");
   if (custom_input_iter != custom_input.additional_args().end()) {
     input_name = custom_input_iter->second;
   }
 
-  auto input_context_iter = input_context->metadata_args.find(input_name);
-  if (input_context_iter == input_context->metadata_args.end()) {
+  absl::optional<processing::ProcessedValue> input_context_value;
+  if (input_context) {
+    input_context_value = input_context->GetMetadataArgument(input_name);
+  }
+
+  if (!input_context || !input_context_value.has_value()) {
     feature_processor_state->SetError(
         stats::FeatureProcessingError::kCustomInputError,
         "The model expects an input '" + input_name +
@@ -256,7 +253,7 @@ bool CustomInputProcessor::AddFromInputContext(
     return false;
   }
 
-  out_tensor.emplace_back(input_context_iter->second);
+  out_tensor.emplace_back(input_context_value.value());
   return true;
 }
 

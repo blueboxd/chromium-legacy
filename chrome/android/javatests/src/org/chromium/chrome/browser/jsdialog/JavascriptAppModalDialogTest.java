@@ -12,6 +12,8 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
+
 import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matchers;
@@ -65,7 +67,6 @@ public class JavascriptAppModalDialogTest {
     public BlankCTATabInitialStateRule mBlankCTATabInitialStateRule =
             new BlankCTATabInitialStateRule(sActivityTestRule, true);
 
-    private static final String TAG = "JSAppModalDialogTest";
     private static final String EMPTY_PAGE = UrlUtils.encodeHtmlDataUri(
             "<html><title>Modal Dialog Test</title><p>Testcase.</p></title></html>");
     private static final String BEFORE_UNLOAD_URL = UrlUtils.encodeHtmlDataUri("<html>"
@@ -95,7 +96,7 @@ public class JavascriptAppModalDialogTest {
         // Click cancel and verify that the url is the same.
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
         Assert.assertNotNull("No dialog showing.", jsDialog);
-        onView(withText(R.string.cancel)).perform(click());
+        onViewWaiting(withText(R.string.cancel)).perform(click());
 
         Assert.assertEquals(BEFORE_UNLOAD_URL,
                 sActivityTestRule.getActivity()
@@ -111,7 +112,7 @@ public class JavascriptAppModalDialogTest {
         final TestCallbackHelperContainer.OnPageFinishedHelper onPageLoaded =
                 getActiveTabTestCallbackHelperContainer().getOnPageFinishedHelper();
         int callCount = onPageLoaded.getCallCount();
-        onView(withText(R.string.leave)).perform(click());
+        onViewWaiting(withText(R.string.leave)).perform(click());
         onPageLoaded.waitForCallback(callCount);
         Assert.assertEquals(EMPTY_PAGE,
                 sActivityTestRule.getActivity()
@@ -164,8 +165,8 @@ public class JavascriptAppModalDialogTest {
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
         Assert.assertNotNull("No dialog showing.", jsDialog);
 
-        onView(withText(R.string.cancel)).check(matches(isDisplayed()));
-        onView(withText(R.string.reload)).check(matches(isDisplayed()));
+        onViewWaiting(withText(R.string.cancel)).check(matches(isDisplayed()));
+        onViewWaiting(withText(R.string.reload)).check(matches(isDisplayed()));
     }
 
     /**

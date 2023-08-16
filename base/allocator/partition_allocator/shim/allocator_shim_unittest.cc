@@ -15,8 +15,8 @@
 #include <vector>
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/memory/page_size.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
-#include "base/memory/page_size.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -30,7 +30,7 @@
 #include <malloc/malloc.h>
 
 #include "base/allocator/partition_allocator/shim/allocator_interception_mac.h"
-#include "third_party/apple_apsl/malloc.h"
+#include "base/allocator/partition_allocator/third_party/apple_apsl/malloc.h"
 #else
 #include <malloc.h>
 #endif
@@ -386,7 +386,7 @@ TEST_F(AllocatorShimTest, InterceptLibcSymbols) {
   // (p)valloc() are not defined on Android. pvalloc() is a GNU extension,
   // valloc() is not in POSIX.
 #if !BUILDFLAG(IS_ANDROID)
-  const size_t kPageSize = base::GetPageSize();
+  const size_t kPageSize = partition_alloc::internal::base::GetPageSize();
   void* valloc_ptr = valloc(61);
   ASSERT_NE(nullptr, valloc_ptr);
   ASSERT_EQ(0u, reinterpret_cast<uintptr_t>(valloc_ptr) % kPageSize);
@@ -538,9 +538,9 @@ TEST_F(AllocatorShimTest, InterceptUcrtAlignedAllocationSymbols) {
 
 TEST_F(AllocatorShimTest, AlignedReallocSizeZeroFrees) {
   void* alloc_ptr = _aligned_malloc(123, 16);
-  CHECK(alloc_ptr);
+  ASSERT_TRUE(alloc_ptr);
   alloc_ptr = _aligned_realloc(alloc_ptr, 0, 16);
-  CHECK(!alloc_ptr);
+  ASSERT_TRUE(!alloc_ptr);
 }
 #endif  // BUILDFLAG(IS_WIN)
 

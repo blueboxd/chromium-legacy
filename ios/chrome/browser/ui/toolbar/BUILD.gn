@@ -7,15 +7,15 @@ source_set("toolbar") {
     "adaptive_toolbar_coordinator+subclassing.h",
     "adaptive_toolbar_coordinator.h",
     "adaptive_toolbar_coordinator.mm",
+    "adaptive_toolbar_mediator.h",
+    "adaptive_toolbar_mediator.mm",
     "primary_toolbar_coordinator.h",
     "primary_toolbar_coordinator.mm",
-    "primary_toolbar_mediator.h",
-    "primary_toolbar_mediator.mm",
     "secondary_toolbar_coordinator.h",
     "secondary_toolbar_coordinator.mm",
     "toolbar_coordinatee.h",
-    "toolbar_coordinator_adaptor.h",
-    "toolbar_coordinator_adaptor.mm",
+    "toolbar_coordinator.h",
+    "toolbar_coordinator.mm",
     "toolbar_mediator.h",
     "toolbar_mediator.mm",
   ]
@@ -50,6 +50,7 @@ source_set("toolbar") {
     "//ios/chrome/browser/shared/coordinator/layout_guide",
     "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
     "//ios/chrome/browser/shared/model/browser_state",
+    "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/model/url:constants",
     "//ios/chrome/browser/shared/model/web_state_list",
     "//ios/chrome/browser/shared/public/commands",
@@ -69,8 +70,10 @@ source_set("toolbar") {
     "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/orchestrator",
     "//ios/chrome/browser/ui/popup_menu/public",
+    "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
+    "//ios/chrome/browser/ui/toolbar/public:constants",
     "//ios/chrome/browser/ui/voice",
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/browser/url_loading:url_loading_params_header",
@@ -93,6 +96,7 @@ source_set("toolbar_ui") {
     "adaptive_toolbar_view_controller+subclassing.h",
     "adaptive_toolbar_view_controller.h",
     "adaptive_toolbar_view_controller.mm",
+    "adaptive_toolbar_view_controller_delegate.h",
     "primary_toolbar_view.h",
     "primary_toolbar_view.mm",
     "primary_toolbar_view_controller.h",
@@ -138,7 +142,7 @@ source_set("toolbar_ui") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [ "toolbar_mediator_unittest.mm" ]
+  sources = [ "adaptive_toolbar_mediator_unittest.mm" ]
   deps = [
     ":toolbar",
     ":toolbar_ui",

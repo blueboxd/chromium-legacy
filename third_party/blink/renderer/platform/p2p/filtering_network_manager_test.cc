@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
@@ -110,8 +111,8 @@ class MockNetworkManager : public rtc::NetworkManagerBase {
 
 class MockMediaPermission : public media::MediaPermission {
  public:
-  MockMediaPermission() {}
-  ~MockMediaPermission() override {}
+  MockMediaPermission() = default;
+  ~MockMediaPermission() override = default;
 
   void RequestPermission(Type type,
                          PermissionStatusCB permission_status_cb) override {
@@ -131,6 +132,13 @@ class MockMediaPermission : public media::MediaPermission {
   }
 
   bool IsEncryptedMediaEnabled() override { return true; }
+
+#if BUILDFLAG(IS_WIN)
+  void IsHardwareSecureDecryptionAllowed(
+      IsHardwareSecureDecryptionAllowedCB cb) override {
+    std::move(cb).Run(true);
+  }
+#endif  // BUILDFLAG(IS_WIN)
 
   void SetMicPermission(bool granted) {
     if (!mic_callback_)
@@ -260,7 +268,9 @@ class FilteringNetworkManagerTest : public testing::Test,
   std::vector<rtc::Network> networks_;
   int next_new_network_id_ = 0;
 
-  std::vector<const rtc::Network*> network_list_;
+  // This field is not vector<raw_ptr<...>> due to interaction with third_party
+  // api.
+  RAW_PTR_EXCLUSION std::vector<const rtc::Network*> network_list_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::SingleThreadTaskRunner::CurrentDefaultHandle
       task_runner_current_default_handle_;

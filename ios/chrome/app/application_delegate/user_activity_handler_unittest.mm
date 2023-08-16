@@ -93,10 +93,6 @@ class UserActivityHandlerTest : public PlatformTest {
     handle_startup_parameters_has_been_called_ = NO;
   }
 
-  NSString* GetTabIdForWebState(web::WebState* web_state) {
-    return web_state->GetStableIdentifier();
-  }
-
   // Mock & stub a NSUserActivity object with an arbitrary `interaction`
   // property. The object is mock'ed otherwise the same as the `base` parameter
   id CreateMockNSUserActivity(NSUserActivity* base,
@@ -787,7 +783,12 @@ TEST_F(UserActivityHandlerTest,
     @[ @"OpenNewSearch", @NO, @(FOCUS_OMNIBOX) ],
     @[ @"OpenIncognitoSearch", @YES, @(FOCUS_OMNIBOX) ],
     @[ @"OpenVoiceSearch", @NO, @(START_VOICE_SEARCH) ],
-    @[ @"OpenQRScanner", @NO, @(START_QR_CODE_SCANNER) ]
+    @[ @"OpenQRScanner", @NO, @(START_QR_CODE_SCANNER) ],
+    @[
+      @"OpenLensFromAppIconLongPress", @NO,
+      @(START_LENS_FROM_APP_ICON_LONG_PRESS)
+    ],
+    @[ @"OpenLensFromSpotlight", @NO, @(START_LENS_FROM_SPOTLIGHT) ]
   ];
 
   swizzleHandleStartupParameters();

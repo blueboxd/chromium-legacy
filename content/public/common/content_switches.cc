@@ -22,6 +22,9 @@ const char kAllowInsecureLocalhost[] = "allow-insecure-localhost";
 const char kAllowLoopbackInPeerConnection[] =
     "allow-loopback-in-peer-connection";
 
+// Allows plugins to be loaded in the command line for testing.
+const char kAllowCommandLinePlugins[] = "allow-command-line-plugins";
+
 // Causes the Attribution Report API to run without delays or noise.
 const char kAttributionReportingDebugMode[] =
     "attribution-reporting-debug-mode";
@@ -100,6 +103,11 @@ const char kDisableBackgroundTimerThrottling[] =
 
 // Disables the BackForwardCache feature.
 const char kDisableBackForwardCache[] = "disable-back-forward-cache";
+
+// Disables BackForwardCache for the pages with "Cache-Control: no-store"
+// header.
+const char kDisableBackForwardCacheForCacheControlNoStorePage[] =
+    "disable-back-forward-cache-for-cache-control-no-store-page";
 
 // Disable one or more Blink runtime-enabled features.
 // Use names from runtime_enabled_features.json5, separated by commas.
@@ -210,9 +218,6 @@ const char kDisablePepper3d[]               = "disable-pepper-3d";
 
 // Disables the Permissions API.
 const char kDisablePermissionsAPI[]         = "disable-permissions-api";
-
-// Disable Image Chromium for Pepper 3d.
-const char kDisablePepper3DImageChromium[] = "disable-pepper-3d-image-chromium";
 
 // Disables compositor-accelerated touch-screen pinch gestures.
 const char kDisablePinch[]                  = "disable-pinch";
@@ -838,6 +843,9 @@ const char kUtilitySubType[] = "utility-sub-type";
 
 // In debug builds, asserts that the stream of input events is valid.
 const char kValidateInputEventStream[] = "validate-input-event-stream";
+
+// Causes tests to attempt to verify pixel output.
+const char kVerifyPixels[] = "browser-ui-tests-verify-pixels";
 
 // Will add kWaitForDebugger to every child processes. If a value is passed, it
 // will be used as a filter to determine if the child process should have the

@@ -9,10 +9,12 @@
 
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ref.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
+#include "base/test/test_future.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/fake_video_capture_provider.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"  // nogncheck
@@ -22,6 +24,7 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"  // nogncheck
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/fuzzer/mojolpm_fuzzer_support.h"
@@ -176,7 +179,8 @@ class VideoCaptureHostTestcase {
                                                 uint32_t device_index);
 
   // The proto message describing the test actions to perform.
-  const content::fuzzing::video_capture_host::proto::Testcase& testcase_;
+  const raw_ref<const content::fuzzing::video_capture_host::proto::Testcase>
+      testcase_;
 
   // Apply a reasonable upper-bound on testcase complexity to avoid timeouts.
   const int max_action_count_ = 512;
@@ -240,21 +244,21 @@ VideoCaptureHostTestcase::~VideoCaptureHostTestcase() {
 
 bool VideoCaptureHostTestcase::IsFinished() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return next_sequence_idx_ >= testcase_.sequence_indexes_size();
+  return next_sequence_idx_ >= testcase_->sequence_indexes_size();
 }
 
 void VideoCaptureHostTestcase::NextAction() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (next_sequence_idx_ < testcase_.sequence_indexes_size()) {
-    auto sequence_idx = testcase_.sequence_indexes(next_sequence_idx_++);
+  if (next_sequence_idx_ < testcase_->sequence_indexes_size()) {
+    auto sequence_idx = testcase_->sequence_indexes(next_sequence_idx_++);
     const auto& sequence =
-        testcase_.sequences(sequence_idx % testcase_.sequences_size());
+        testcase_->sequences(sequence_idx % testcase_->sequences_size());
     for (auto action_idx : sequence.action_indexes()) {
-      if (!testcase_.actions_size() || ++action_count_ > max_action_count_) {
+      if (!testcase_->actions_size() || ++action_count_ > max_action_count_) {
         return;
       }
       const auto& action =
-          testcase_.actions(action_idx % testcase_.actions_size());
+          testcase_->actions(action_idx % testcase_->actions_size());
       if (action.ByteSizeLong() > max_action_size_) {
         return;
       }
@@ -402,8 +406,11 @@ void VideoCaptureHostTestcase::OpenSessionOnUIThread(
     int render_process_id,
     int render_frame_id,
     content::MediaDeviceSaltAndOrigin* out_salt_and_origin) {
-  *out_salt_and_origin =
-      content::GetMediaDeviceSaltAndOrigin(render_process_id, render_frame_id);
+  base::test::TestFuture<const content::MediaDeviceSaltAndOrigin&> future;
+  content::GetMediaDeviceSaltAndOrigin(
+      content::GlobalRenderFrameHostId(render_process_id, render_frame_id),
+      future.GetCallback());
+  *out_salt_and_origin = future.Get();
 }
 
 void VideoCaptureHostTestcase::OpenSessionOnIOThread(

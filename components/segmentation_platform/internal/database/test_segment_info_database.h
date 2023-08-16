@@ -19,6 +19,8 @@
 namespace segmentation_platform::test {
 
 // A fake database with sample entries that can be used for tests.
+// TODO(b/285912101) : Remove this class and migrate its callers to used mock
+// version of SegmentInfoDatabase.
 class TestSegmentInfoDatabase : public SegmentInfoDatabase {
  public:
   TestSegmentInfoDatabase();
@@ -29,19 +31,25 @@ class TestSegmentInfoDatabase : public SegmentInfoDatabase {
   void GetSegmentInfoForSegments(const base::flat_set<SegmentId>& segment_ids,
                                  MultipleSegmentInfoCallback callback) override;
   void GetSegmentInfo(SegmentId segment_id,
+                      ModelSource model_source,
                       SegmentInfoCallback callback) override;
   absl::optional<SegmentInfo> GetCachedSegmentInfo(
-      SegmentId segment_id) override;
+      SegmentId segment_id,
+      ModelSource model_source) override;
   void UpdateSegment(SegmentId segment_id,
+                     ModelSource model_score,
                      absl::optional<proto::SegmentInfo> segment_info,
                      SuccessCallback callback) override;
   void SaveSegmentResult(SegmentId segment_id,
+                         ModelSource model_source,
                          absl::optional<proto::PredictionResult> result,
                          SuccessCallback callback) override;
   void SaveTrainingData(SegmentId segment_id,
+                        ModelSource model_source,
                         const proto::TrainingData& data,
                         SuccessCallback callback) override;
   void GetTrainingData(SegmentId segment_id,
+                       ModelSource model_source,
                        TrainingRequestId request_id,
                        bool delete_from_db,
                        TrainingDataCallback callback) override;
@@ -76,8 +84,12 @@ class TestSegmentInfoDatabase : public SegmentInfoDatabase {
                          uint64_t bucket_duration,
                          proto::TimeUnit time_unit);
 
-  // Finds a segment with given |segment_id|. Creates one if it doesn't exist.
-  proto::SegmentInfo* FindOrCreateSegment(SegmentId segment_id);
+  // Finds a segment with given |segment_id| and |model_source|. Creates one if
+  // it doesn't exists. By default the |model_source| corresponds to server
+  // model.
+  proto::SegmentInfo* FindOrCreateSegment(
+      SegmentId segment_id,
+      ModelSource model_source = ModelSource::SERVER_MODEL_SOURCE);
 
  private:
   std::vector<std::pair<SegmentId, proto::SegmentInfo>> segment_infos_;

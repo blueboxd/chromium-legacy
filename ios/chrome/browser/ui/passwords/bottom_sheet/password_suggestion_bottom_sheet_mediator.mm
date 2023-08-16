@@ -10,9 +10,9 @@
 #import "components/password_manager/core/browser/password_store_interface.h"
 #import "components/password_manager/core/browser/password_ui_utils.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
-#import "components/password_manager/ios/password_manager_java_script_feature.h"
 #import "components/password_manager/ios/shared_password_controller.h"
 #import "components/prefs/pref_service.h"
+#import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_java_script_feature.h"
 #import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
@@ -84,6 +84,9 @@ using ReauthenticationEvent::kSuccess;
   // the bottom sheet is dismissed. Default is true.
   bool _needsRefocus;
 
+  // Whether to disable the bottom sheet on exit. Default is false.
+  bool _disableBottomSheetOnExit;
+
   // Web Frame associated with this bottom sheet.
   std::string _frameId;
 
@@ -114,6 +117,7 @@ using ReauthenticationEvent::kSuccess;
                         accountPasswordStore {
   if (self = [super init]) {
     _needsRefocus = true;
+    _disableBottomSheetOnExit = false;
     _frameId = params.frame_id;
     _faviconLoader = faviconLoader;
     _prefService = prefService;
@@ -205,6 +209,11 @@ using ReauthenticationEvent::kSuccess;
                                 exitReason);
 }
 
+- (void)setCredentialsForTesting:
+    (std::vector<password_manager::CredentialUIEntry>)credentials {
+  _credentials = credentials;
+}
+
 #pragma mark - Accessors
 
 - (void)setConsumer:(id<PasswordSuggestionBottomSheetConsumer>)consumer {
@@ -254,28 +263,50 @@ using ReauthenticationEvent::kSuccess;
   }
 }
 
-- (void)refocus {
-  if (_needsRefocus && _webStateList) {
+- (void)dismiss {
+  if ((_needsRefocus || _disableBottomSheetOnExit) && _webStateList) {
     [self logExitReason:kDismissal];
     [self incrementDismissCount];
 
     web::WebState* activeWebState = _webStateList->GetActiveWebState();
-    password_manager::PasswordManagerJavaScriptFeature* feature =
-        password_manager::PasswordManagerJavaScriptFeature::GetInstance();
+    AutofillBottomSheetJavaScriptFeature* feature =
+        AutofillBottomSheetJavaScriptFeature::GetInstance();
     web::WebFramesManager* framesManager =
         feature->GetWebFramesManager(activeWebState);
     if (framesManager) {
       web::WebFrame* frame = framesManager->GetFrameWithId(_frameId);
       AutofillBottomSheetTabHelper::FromWebState(activeWebState)
-          ->DetachListenersAndRefocus(frame);
+          ->DetachPasswordListeners(frame, _needsRefocus);
       [self disconnect];
     }
   }
 }
 
-// Disables future refocus requests.
 - (void)disableRefocus {
   _needsRefocus = false;
+}
+
+- (void)willSelectSuggestion:(NSInteger)row {
+  if ([[self usernameAtRow:row] length] == 0) {
+    // If the currently selected row has no username, the bottom sheet will
+    // disable itself on exit to allow the user to open the keyboard to fill in
+    // the username field.
+    _disableBottomSheetOnExit = true;
+  }
+  [self disableRefocus];
+}
+
+- (NSString*)usernameAtRow:(NSInteger)row {
+  FormSuggestion* suggestion = [self.suggestions objectAtIndex:row];
+
+  // Removing suffix ' ••••••••' appended to the username in the suggestion.
+  NSString* username = suggestion.value;
+  if ([username containsString:kPasswordFormSuggestionSuffix]) {
+    username = [username
+        stringByReplacingOccurrencesOfString:kPasswordFormSuggestionSuffix
+                                  withString:@""];
+  }
+  return username;
 }
 
 - (void)loadFaviconWithBlockHandler:
@@ -292,14 +323,32 @@ using ReauthenticationEvent::kSuccess;
 
 #pragma mark - WebStateListObserving
 
-- (void)webStateList:(WebStateList*)webStateList
-    didReplaceWebState:(web::WebState*)oldWebState
-          withWebState:(web::WebState*)newWebState
-               atIndex:(int)atIndex {
+- (void)didChangeWebStateList:(WebStateList*)webStateList
+                       change:(const WebStateListChange&)change
+                    selection:(const WebStateSelection&)selection {
   DCHECK_EQ(_webStateList, webStateList);
-  if (atIndex == webStateList->active_index()) {
-    [self disableRefocus];
-    [self.consumer dismiss];
+  switch (change.type()) {
+    case WebStateListChange::Type::kSelectionOnly:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
+      // here. Note that here is reachable only when `reason` ==
+      // ActiveWebStateChangeReason::Activated.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // Do nothing when a WebState is detached.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace: {
+      if (selection.index == webStateList->active_index()) {
+        [self onWebStateLost];
+      }
+      break;
+    }
+    case WebStateListChange::Type::kInsert:
+      // Do nothing when a new WebState is inserted.
+      break;
   }
 }
 
@@ -309,8 +358,7 @@ using ReauthenticationEvent::kSuccess;
                     atIndex:(int)atIndex
                      reason:(ActiveWebStateChangeReason)reason {
   DCHECK_EQ(_webStateList, webStateList);
-  [self disableRefocus];
-  [self.consumer dismiss];
+  [self onWebStateLost];
 }
 
 - (void)webStateListDestroyed:(WebStateList*)webStateList {
@@ -318,26 +366,22 @@ using ReauthenticationEvent::kSuccess;
   _forwarder = nullptr;
   _observer = nullptr;
   _webStateList = nullptr;
-  [self disableRefocus];
-  [self.consumer dismiss];
+  [self onWebStateLost];
 }
 
 #pragma mark - CRWWebStateObserver
 
 - (void)webStateDestroyed:(web::WebState*)webState {
-  [self disableRefocus];
-  [self.consumer dismiss];
+  [self onWebStateLost];
 }
 
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
-  [self disableRefocus];
-  [self.consumer dismiss];
+  [self onWebStateLost];
 }
 
 - (void)renderProcessGoneForWebState:(web::WebState*)webState {
-  [self disableRefocus];
-  [self.consumer dismiss];
+  [self onWebStateLost];
 }
 
 #pragma mark - PasswordFetcherDelegate
@@ -354,6 +398,12 @@ using ReauthenticationEvent::kSuccess;
 }
 
 #pragma mark - Private
+
+- (void)onWebStateLost {
+  _needsRefocus = false;
+  _disableBottomSheetOnExit = false;
+  [self.consumer dismiss];
+}
 
 // Perform suggestion selection
 - (void)selectSuggestion:(FormSuggestion*)suggestion {

@@ -72,17 +72,37 @@ ResponseAction PasswordsPrivateChangeSavedPasswordFunction::Run() {
       "id."));
 }
 
-// PasswordsPrivateRemoveSavedPasswordFunction
-ResponseAction PasswordsPrivateRemoveSavedPasswordFunction::Run() {
+// PasswordsPrivateChangeCredentialFunction
+ResponseAction PasswordsPrivateChangeCredentialFunction::Run() {
   if (!GetDelegate(browser_context())) {
     return RespondNow(Error(kNoDelegateError));
   }
 
   auto parameters =
-      api::passwords_private::RemoveSavedPassword::Params::Create(args());
+      api::passwords_private::ChangeCredential::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+
+  bool success =
+      GetDelegate(browser_context())->ChangeCredential(parameters->credential);
+  if (success) {
+    return RespondNow(NoArguments());
+  }
+  return RespondNow(Error(
+      "Could not change the credential. Either the arguments are not valid or "
+      "the credential does not exist"));
+}
+
+// PasswordsPrivateRemoveCredentialFunction
+ResponseAction PasswordsPrivateRemoveCredentialFunction::Run() {
+  if (!GetDelegate(browser_context())) {
+    return RespondNow(Error(kNoDelegateError));
+  }
+
+  auto parameters =
+      api::passwords_private::RemoveCredential::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(parameters);
   GetDelegate(browser_context())
-      ->RemoveSavedPassword(parameters->id, parameters->from_stores);
+      ->RemoveCredential(parameters->id, parameters->from_stores);
   return RespondNow(NoArguments());
 }
 

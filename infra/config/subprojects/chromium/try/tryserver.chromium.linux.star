@@ -43,27 +43,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "linux-1mbu-compile-fyi-rel",
-    mirrors = [
-        "ci/Linux Builder",
-    ],
-    try_settings = builder_config.try_settings(
-        include_all_triggered_testers = True,
-        is_compile_only = True,
-    ),
-    builderless = False,
-    properties = {
-        "bot_update_experiments": [
-            "no_sync",
-        ],
-    },
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-    tryjob = try_.job(
-        experiment_percentage = 5,
-    ),
-)
-
-try_.builder(
     name = "linux-afl-asan-rel",
     branch_selector = branches.selector.LINUX_BRANCHES,
     executable = "recipe:chromium/fuzz",
@@ -112,6 +91,36 @@ try_.builder(
 try_.builder(
     name = "linux-dcheck-off-rel",
     mirrors = builder_config.copy_from("linux-rel"),
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+# TODO(crbug.com/1442587): Remove this builder after burning down failures
+# found when we now post-process stdout.
+try_.builder(
+    name = "linux-exp-asan-lsan-fyi-rel",
+    mirrors = [
+        "ci/linux-exp-asan-lsan-fyi-rel",
+    ],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+# TODO(crbug.com/1442587): Remove this builder after burning down failures
+# found when we now post-process stdout.
+try_.builder(
+    name = "linux-exp-msan-fyi-rel",
+    mirrors = [
+        "ci/linux-exp-msan-fyi-rel",
+    ],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+# TODO(crbug.com/1442587): Remove this builder after burning down failures
+# found when we now post-process stdout.
+try_.builder(
+    name = "linux-exp-tsan-fyi-rel",
+    mirrors = [
+        "ci/linux-exp-tsan-fyi-rel",
+    ],
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -279,11 +288,13 @@ try_.orchestrator_builder(
         ),
     ),
     compilator = "linux-wayland-rel-compilator",
+    coverage_test_types = ["unit", "overall"],
     experiments = {
         "chromium_rts.inverted_rts": 100,
     },
     main_list_view = "try",
     tryjob = try_.job(),
+    use_clang_coverage = True,
 )
 
 try_.compilator_builder(
@@ -315,7 +326,9 @@ try_.builder(
     mirrors = [
         "ci/linux-wpt-content-shell-fyi-rel",
     ],
+    coverage_test_types = ["unit", "overall"],
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    use_clang_coverage = True,
 )
 
 try_.builder(
@@ -618,22 +631,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "linux_vr",
-    branch_selector = branches.selector.LINUX_BRANCHES,
-    mirrors = [
-        "ci/VR Linux",
-    ],
-    main_list_view = "try",
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-    tryjob = try_.job(
-        location_filters = [
-            "chrome/browser/vr/.+",
-            "content/browser/xr/.+",
-        ],
-    ),
-)
-
-try_.builder(
     name = "network_service_linux",
     mirrors = [
         "ci/Network Service Linux",
@@ -708,6 +705,45 @@ try_.gpu.optional_tests_builder(
     ),
 )
 
+# This builder is different from try/linux-js-code-coverage builder below as
+# this is a try builder meant to provide javascript coverage for webui related
+# CLs, where as try/linux-js-code-coverage builder is there to test changes in
+# ci/linux-js-code-coverage builder and would mostly be used by coverage devs
+# only.
+try_.builder(
+    name = "linux-js-coverage-rel",
+    mirrors = ["ci/linux-js-code-coverage"],
+    coverage_test_types = ["unit", "overall"],
+    main_list_view = "try",
+    tryjob = try_.job(
+        experiment_percentage = 10,
+        location_filters = [
+            cq.location_filter(path_regexp = r".*\.(js|ts)"),
+        ],
+    ),
+    use_javascript_coverage = True,
+)
+
+# This builder is different from try/chromeos-js-code-coverage builder below as
+# this is a try builder meant to provide javascript coverage for webui related
+# CLs, where as try/chromeos-js-code-coverage builder is there to test changes
+# in ci/chromeos-js-code-coverage builder and would mostly be used by coverage
+# devs only.
+try_.builder(
+    name = "chromeos-js-coverage-rel",
+    mirrors = ["ci/chromeos-js-code-coverage"],
+    coverage_test_types = ["unit", "overall"],
+    main_list_view = "try",
+    tryjob = try_.job(
+        experiment_percentage = 10,
+        location_filters = [
+            cq.location_filter(path_regexp = r".*\.(js|ts)"),
+        ],
+    ),
+    use_javascript_coverage = True,
+)
+
+# Coverage builders set up mainly to test changes in CI builders
 try_.builder(
     name = "linux-code-coverage",
     mirrors = ["ci/linux-code-coverage"],
@@ -726,6 +762,8 @@ try_.builder(
     execution_timeout = 20 * time.hour,
 )
 
+# This builder serves a different purpose than try/linux-js-coverage-rel
+# See the note on linux-js-coverage-rel builder above to understand more.
 try_.builder(
     name = "linux-js-code-coverage",
     mirrors = ["ci/linux-js-code-coverage"],
@@ -739,6 +777,7 @@ try_.builder(
     execution_timeout = 20 * time.hour,
     use_javascript_coverage = True,
 )
+############### Coverage Builders End ##################
 
 # ML experimental builder, modifies RTS itself to use a ml model
 try_.builder(

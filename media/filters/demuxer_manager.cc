@@ -114,7 +114,7 @@ HlsFallbackImplementation SelectHlsFallbackImplementation() {
   if (base::FeatureList::IsEnabled(kHlsPlayer)) {
     return HlsFallbackImplementation::kMediaPlayer;
   }
-  return kNone;
+  return HlsFallbackImplementation::kNone;
 #endif
 }
 
@@ -365,6 +365,10 @@ void DemuxerManager::RespondToDemuxerMemoryUsageReport(
           std::move(cb));
       break;
   }
+}
+
+void DemuxerManager::DisableDemuxerCanChangeType() {
+  demuxer_->DisableCanChangeType();
 }
 
 PipelineStatus DemuxerManager::CreateDemuxer(

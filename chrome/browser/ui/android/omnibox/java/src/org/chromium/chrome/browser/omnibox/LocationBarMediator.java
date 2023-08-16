@@ -72,7 +72,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.interpolators.BakedBezierInterpolator;
+import org.chromium.ui.interpolators.Interpolators;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -316,7 +316,7 @@ class LocationBarMediator
                 (templateUrlService) -> { templateUrlService.addObserver(this); });
 
         mLocationBarLayout.onFinishNativeInitialization();
-        setProfile(mProfileSupplier.get());
+        if (mProfileSupplier.hasValue()) setProfile(mProfileSupplier.get());
         onPrimaryColorChanged();
 
         for (Runnable deferredRunnable : mDeferredNativeRunnables) {
@@ -717,7 +717,7 @@ class LocationBarMediator
             button.setAlpha(0.f);
         }
         ObjectAnimator buttonAnimator = ObjectAnimator.ofFloat(button, View.ALPHA, 1.f);
-        buttonAnimator.setInterpolator(BakedBezierInterpolator.FADE_IN_CURVE);
+        buttonAnimator.setInterpolator(Interpolators.LINEAR_OUT_SLOW_IN_INTERPOLATOR);
         buttonAnimator.setStartDelay(ICON_FADE_ANIMATION_DELAY_MS);
         buttonAnimator.setDuration(ICON_FADE_ANIMATION_DURATION_MS);
         return buttonAnimator;
@@ -731,7 +731,7 @@ class LocationBarMediator
     /* package */ ObjectAnimator createHideButtonAnimatorForTablet(View button) {
         assert mIsTablet;
         ObjectAnimator buttonAnimator = ObjectAnimator.ofFloat(button, View.ALPHA, 0.f);
-        buttonAnimator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
+        buttonAnimator.setInterpolator(Interpolators.FAST_OUT_LINEAR_IN_INTERPOLATOR);
         buttonAnimator.setDuration(ICON_FADE_ANIMATION_DURATION_MS);
         return buttonAnimator;
     }
@@ -755,7 +755,7 @@ class LocationBarMediator
         Animator widthChangeAnimator =
                 ObjectAnimator.ofFloat(this, mWidthChangeFractionPropertyTablet, 0f);
         widthChangeAnimator.setDuration(WIDTH_CHANGE_ANIMATION_DURATION_MS);
-        widthChangeAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+        widthChangeAnimator.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
         widthChangeAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
@@ -824,7 +824,7 @@ class LocationBarMediator
                 ObjectAnimator.ofFloat(this, mWidthChangeFractionPropertyTablet, 1f);
         widthChangeAnimator.setStartDelay(WIDTH_CHANGE_ANIMATION_DELAY_MS);
         widthChangeAnimator.setDuration(WIDTH_CHANGE_ANIMATION_DURATION_MS);
-        widthChangeAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+        widthChangeAnimator.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
         widthChangeAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {
@@ -1107,9 +1107,8 @@ class LocationBarMediator
     private void updateOmniboxPrerender() {
         if (mOmniboxPrerender == null) return;
         // Profile may be null if switching to a tab that has not yet been initialized.
-        Profile profile = mProfileSupplier.get();
-        if (profile == null) return;
-        mOmniboxPrerender.clear(profile);
+        if (!mProfileSupplier.hasValue()) return;
+        mOmniboxPrerender.clear(mProfileSupplier.get());
     }
 
     @SuppressLint("GestureBackNavigation")

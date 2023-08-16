@@ -9,6 +9,7 @@
 #include "content/browser/preloading/prefetcher.h"
 #include "content/browser/preloading/prerenderer.h"
 #include "content/public/browser/document_user_data.h"
+#include "third_party/blink/public/mojom/preloading/anchor_element_interaction_host.mojom-forward.h"
 
 namespace content {
 
@@ -38,7 +39,8 @@ class CONTENT_EXPORT PreloadingDecider
   void OnPointerDown(const GURL& url);
 
   // Receives and processes on pointer hover event for 'url' target link.
-  void OnPointerHover(const GURL& url);
+  void OnPointerHover(const GURL& url,
+                      blink::mojom::AnchorElementPointerDataPtr mouse_data);
 
   // Sets the new preloading decider observer for testing and returns the old
   // one.
@@ -56,6 +58,9 @@ class CONTENT_EXPORT PreloadingDecider
   // Returns true if the |url|, |action| pair is in the on-standby list.
   bool IsOnStandByForTesting(const GURL& url,
                              blink::mojom::SpeculationAction action);
+
+  // Called by PrefetchService when a prefetch is evicted.
+  virtual void OnPrefetchEvicted(const GURL& url);
 
  private:
   explicit PreloadingDecider(RenderFrameHost* rfh);
@@ -119,10 +124,13 @@ class CONTENT_EXPORT PreloadingDecider
       no_vary_search_hint_on_standby_candidates_;
 
   // |processed_candidates_| stores all target URL, action pairs that are
-  // already processed by prefetcher or prerenderer. Right now it is needed to
-  // avoid adding such candidates back to |on_standby_candidates_| whenever
-  // there is an update in speculation rules.
-  std::set<SpeculationCandidateKey> processed_candidates_;
+  // already processed by prefetcher or prerenderer, and maps them to all
+  // candidates with the same URL, action pair. Right now it is needed to avoid
+  // adding such candidates back to |on_standby_candidates_| whenever there is
+  // an update in speculation rules.
+  std::map<SpeculationCandidateKey,
+           std::vector<blink::mojom::SpeculationCandidatePtr>>
+      processed_candidates_;
 
   // Behavior determined dynamically. Stored on this object rather than globally
   // so that it does not span unit tests.

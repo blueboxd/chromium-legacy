@@ -161,6 +161,7 @@
 #if BUILDFLAG(IS_MAC)
 #include <ImageIO/ImageIO.h>
 
+#include "base/mac/mac_util.h"
 #include "base/process/launch.h"
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "chrome/browser/apps/app_shim/web_app_shim_manager_delegate_mac.h"
@@ -169,6 +170,8 @@
 #include "chrome/browser/web_applications/app_shim_registry_mac.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
+#include "chrome/common/mac/app_mode_common.h"
+#include "chrome/test/base/launchservices_utils_mac.h"
 #include "net/base/filename_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #endif
@@ -811,10 +814,7 @@ std::ostream& operator<<(std::ostream& os, const StateSnapshot& snapshot) {
 WebAppIntegrationTestDriver::WebAppIntegrationTestDriver(TestDelegate* delegate)
     : delegate_(delegate),
       update_dialog_scope_(web_app::SetIdentityUpdateDialogActionForTesting(
-          web_app::AppIdentityUpdate::kSkipped)) {
-  scoped_feature_list_.InitAndEnableFeature(
-      webapps::features::kDesktopPWAsDetailedInstallDialog);
-}
+          web_app::AppIdentityUpdate::kSkipped)) {}
 
 WebAppIntegrationTestDriver::~WebAppIntegrationTestDriver() = default;
 
@@ -1908,6 +1908,27 @@ std::vector<base::FilePath> WebAppIntegrationTestDriver::GetTestFilePaths(
   return file_paths;
 }
 
+void WebAppIntegrationTestDriver::NavigateAppHome() {
+  if (!BeforeStateChangeAction(__FUNCTION__)) {
+    return;
+  }
+  GURL app_home_url = GURL(chrome::kChromeUIAppsURL);
+  WindowOpenDisposition win_disposition;
+  content::TestNavigationObserver url_observer(app_home_url);
+  if (BrowserList::IsOffTheRecordBrowserInUse(browser()->profile())) {
+    win_disposition = WindowOpenDisposition::OFF_THE_RECORD;
+    url_observer.StartWatchingNewWebContents();
+  } else {
+    win_disposition = WindowOpenDisposition::CURRENT_TAB;
+    url_observer.WatchExistingWebContents();
+  }
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), app_home_url, win_disposition,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  url_observer.Wait();
+  AfterStateChangeAction();
+}
+
 void WebAppIntegrationTestDriver::NavigateBrowser(Site site) {
   if (!BeforeStateChangeAction(__FUNCTION__)) {
     return;
@@ -2332,7 +2353,7 @@ void WebAppIntegrationTestDriver::UninstallPolicyApp(Site site) {
       }));
   // If there are still install sources, the app might not be fully uninstalled,
   // so this will listen for the removal of the policy install source.
-  provider()->install_finalizer().SetRemoveManagementTypeCallbackForTesting(
+  observer.SetWebAppSourceRemovedDelegate(
       base::BindLambdaForTesting([&](const AppId& app_id) {
         if (policy_app->id == app_id) {
           run_loop.Quit();
@@ -2387,7 +2408,8 @@ void WebAppIntegrationTestDriver::UninstallFromOs(Site site) {
 }
 
 #if BUILDFLAG(IS_MAC)
-void WebAppIntegrationTestDriver::CorruptAppShim(Site site) {
+void WebAppIntegrationTestDriver::CorruptAppShim(Site site,
+                                                 AppShimCorruption corruption) {
   if (!BeforeStateChangeAction(__FUNCTION__)) {
     return;
   }
@@ -2400,7 +2422,35 @@ void WebAppIntegrationTestDriver::CorruptAppShim(Site site) {
   base::FilePath bin_path = app_path.AppendASCII("Contents")
                                 .AppendASCII("MacOS")
                                 .AppendASCII("app_mode_loader");
-  EXPECT_TRUE(base::DeleteFile(bin_path));
+
+  switch (corruption) {
+    case AppShimCorruption::kNoExecutable:
+      EXPECT_TRUE(base::DeleteFile(bin_path));
+      break;
+    case AppShimCorruption::kIncompatibleVersion: {
+      // Find and replace the entry point symbol in the app shim executable with
+      // something that definitely doesn't exist in the Chrome framework.
+      std::string bin_contents;
+      EXPECT_TRUE(base::ReadFileToString(bin_path, &bin_contents));
+      auto pos = bin_contents.find(APP_SHIM_ENTRY_POINT_NAME_STRING);
+      ASSERT_NE(pos, std::string::npos);
+      bin_contents[pos] = 'D';
+      EXPECT_TRUE(base::WriteFile(bin_path, bin_contents));
+
+      // Since we modified the binary, we need to re-sign it.
+      if (base::mac::IsAtLeastOS12()) {
+        std::string codesign_output;
+        std::vector<std::string> codesign_argv = {
+            "codesign", "--force", "--sign", "-", bin_path.value()};
+        EXPECT_TRUE(base::GetAppOutputAndError(base::CommandLine(codesign_argv),
+                                               &codesign_output))
+            << "Failed to sign executable at " << bin_path << ": "
+            << codesign_output;
+      }
+      break;
+    }
+  }
+
   AfterStateChangeAction();
 }
 
@@ -2627,6 +2677,16 @@ void WebAppIntegrationTestDriver::CheckBrowserNavigationIsAppSettings(
   EXPECT_EQ(url, GURL(chrome::kChromeUIWebAppSettingsURL + app_id));
   AfterStateCheckAction();
 #endif
+}
+
+void WebAppIntegrationTestDriver::CheckBrowserNotAtAppHome() {
+  if (!BeforeStateCheckAction(__FUNCTION__)) {
+    return;
+  }
+  GURL current_url =
+      browser()->tab_strip_model()->GetWebContentsAt(0)->GetURL();
+  EXPECT_NE(current_url, GURL(chrome::kChromeUIAppsURL));
+  AfterStateCheckAction();
 }
 
 void WebAppIntegrationTestDriver::CheckAppNotInList(Site site) {
@@ -3865,14 +3925,14 @@ void WebAppIntegrationTestDriver::UninstallPolicyAppById(Profile* profile,
       }));
   // If there are still install sources, the app might not be fully uninstalled,
   // so this will listen for the removal of the policy install source.
-  WebAppProvider* provider = WebAppProvider::GetForTest(profile);
-  provider->install_finalizer().SetRemoveManagementTypeCallbackForTesting(
+  observer.SetWebAppSourceRemovedDelegate(
       base::BindLambdaForTesting([&](const AppId& app_id) {
         if (id == app_id) {
           run_loop.Quit();
         }
       }));
 
+  WebAppProvider* provider = WebAppProvider::GetForTest(profile);
   const WebApp* web_app = provider->registrar_unsafe().GetAppById(id);
   ASSERT_TRUE(web_app);
 
@@ -4184,14 +4244,20 @@ bool WebAppIntegrationTestDriver::LaunchFromAppShim(
       override_registration_->test_override->chrome_apps_folder(), app_name,
       app_id);
 
+  base::FilePath chrome_path = ::test::GuessAppBundlePath();
+  chrome_path =
+      chrome_path.Append("Contents")
+          .Append("MacOS")
+          .Append(chrome_path.BaseName().RemoveFinalExtension().value());
+
   AppShimLaunchWaiter launch_waiter(wait_for_complete_launch);
   apps::AppShimManager::Get()->SetAppShimObserverForTesting(&launch_waiter);
-
   LaunchShimForTesting(app_path, urls,
                        base::BindOnce(&AppShimLaunchWaiter::OnLaunchStarted,
                                       launch_waiter.AsWeakPtr()),
                        base::BindOnce(&AppShimLaunchWaiter::OnShimTerminated,
-                                      launch_waiter.AsWeakPtr()));
+                                      launch_waiter.AsWeakPtr()),
+                       chrome_path);
   launch_waiter.Wait();
 
   apps::AppShimManager::Get()->SetAppShimObserverForTesting(nullptr);
@@ -4268,7 +4334,6 @@ WebAppIntegrationTest::WebAppIntegrationTest() : helper_(this) {
   std::vector<base::test::FeatureRef> enabled_features;
   std::vector<base::test::FeatureRef> disabled_features;
   enabled_features.push_back(features::kPwaUpdateDialogForIcon);
-  enabled_features.push_back(features::kPwaUpdateDialogForName);
   enabled_features.push_back(features::kDesktopPWAsEnforceWebAppSettingsPolicy);
   enabled_features.push_back(features::kRecordWebAppDebugInfo);
   enabled_features.push_back(blink::features::kDesktopPWAsSubApps);

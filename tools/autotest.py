@@ -4,8 +4,8 @@
 # found in the LICENSE file.
 """Builds and runs a test by filename.
 
-This script finds the appropriate test suites for the specified test file or
-directory, builds it, then runs it with the (optionally) specified filter,
+This script finds the appropriate test suites for the specified test files or
+directories, builds it, then runs it with the (optionally) specified filter,
 passing any extra args on to the test runner.
 
 Examples:
@@ -17,8 +17,11 @@ autotest.py -C out/Desktop bit_cast_unittest.cc --gtest_filter=BitCastTest*
 # the test binary.
 autotest.py -C out/Android UrlUtilitiesUnitTest --fast-local-dev -v
 
-# Run all tests under base/strings
+# Run all tests under base/strings.
 autotest.py -C out/foo --run-all base/strings
+
+# Run tests in multiple files or directories.
+autotest.py -C out/foo base/strings base/pickle_unittest.cc
 
 # Run only the test on line 11. Useful when running autotest.py from your text
 # editor.
@@ -130,10 +133,14 @@ def RunCommand(cmd, **kwargs):
     raise CommandError(e.cmd, e.returncode, e.output) from None
 
 
-def BuildTestTargetsWithNinja(out_dir, targets, dry_run):
+def BuildTestTargets(out_dir, targets, dry_run, use_siso):
   """Builds the specified targets with ninja"""
   # Use autoninja from PATH to match version used for manual builds.
-  ninja_path = 'autoninja'
+  if use_siso:
+    ninja_path = 'autosiso'
+  else:
+    ninja_path = 'autoninja'
+
   if sys.platform.startswith('win32'):
     ninja_path += '.bat'
   cmd = [ninja_path, '-C', out_dir] + targets
@@ -450,8 +457,13 @@ def main():
   parser.add_argument('--no-fast-local-dev',
                       action='store_true',
                       help='Do not add --fast-local-dev for Android tests.')
-  parser.add_argument('file',
+  parser.add_argument('--siso',
+                      '-s',
+                      action='store_true',
+                      help='Use siso to build instead of ninja.')
+  parser.add_argument('files',
                       metavar='FILE_NAME',
+                      nargs="+",
                       help='test suite file (eg. FooTest.java)')
 
   args, _extras = parser.parse_known_args()
@@ -464,7 +476,9 @@ def main():
   if not os.path.isdir(out_dir):
     parser.error(f'OUT_DIR "{out_dir}" does not exist.')
   target_cache = TargetCache(out_dir)
-  filenames = FindMatchingTestFiles(args.file)
+  filenames = []
+  for file in args.files:
+    filenames.extend(FindMatchingTestFiles(file))
 
   targets, used_cache = FindTestTargets(target_cache, out_dir, filenames,
                                         args.run_all)
@@ -477,7 +491,7 @@ def main():
     ExitWithMessage('Failed to derive a gtest filter')
 
   assert targets
-  build_ok = BuildTestTargetsWithNinja(out_dir, targets, args.dry_run)
+  build_ok = BuildTestTargets(out_dir, targets, args.dry_run, args.siso)
 
   # If we used the target cache, it's possible we chose the wrong target because
   # a gn file was changed. The build step above will check for gn modifications
@@ -491,7 +505,7 @@ def main():
       # Note that this can happen, for example, if you rename a test target.
       print('gn config was changed, trying to build again', file=sys.stderr)
       targets = new_targets
-      build_ok = BuildTestTargetsWithNinja(out_dir, targets, args.dry_run)
+      build_ok = BuildTestTargets(out_dir, targets, args.dry_run, args.siso)
 
   if not build_ok: sys.exit(1)
 

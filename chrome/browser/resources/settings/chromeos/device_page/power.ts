@@ -15,6 +15,7 @@ import '/shared/settings/controls/settings_toggle_button.js';
 import '../settings_shared.css.js';
 
 import {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
+import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
@@ -24,9 +25,8 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
-import {Route} from '../router.js';
+import {Route, routes} from '../router.js';
 
 import {BatteryStatus, DevicePageBrowserProxy, DevicePageBrowserProxyImpl, IdleBehavior, LidClosedBehavior, PowerManagementSettings, PowerSource} from './device_page_browser_proxy.js';
 import {getTemplate} from './power.html.js';
@@ -40,13 +40,14 @@ interface IdleOption {
 interface SettingsPowerElement {
   $: {
     adaptiveChargingToggle: SettingsToggleButtonElement,
+    batterySaverToggle: SettingsToggleButtonElement,
     lidClosedToggle: SettingsToggleButtonElement,
     powerSource: HTMLSelectElement,
   };
 }
 
-const SettingsPowerElementBase = DeepLinkingMixin(
-    RouteObserverMixin(WebUiListenerMixin(I18nMixin(PolymerElement))));
+const SettingsPowerElementBase = DeepLinkingMixin(RouteObserverMixin(
+    PrefsMixin(WebUiListenerMixin(I18nMixin(PolymerElement)))));
 
 class SettingsPowerElement extends SettingsPowerElementBase {
   static get is() {
@@ -164,6 +165,20 @@ class SettingsPowerElement extends SettingsPowerElementBase {
         },
       },
 
+      batterySaverFeatureEnabled_: Boolean,
+
+      batterySaverHidden_: {
+        type: Boolean,
+        computed:
+            'computeBatterySaverHidden_(batteryStatus_, batterySaverFeatureEnabled_)',
+      },
+
+      batterySaverToggleDisabled_: {
+        type: Boolean,
+        computed:
+            'computeBatterySaverToggleDisabled_(powerSources_, lowPowerCharger_)',
+      },
+
       /**
        * Used by DeepLinkingMixin to focus this page's deep links.
        */
@@ -175,6 +190,7 @@ class SettingsPowerElement extends SettingsPowerElementBase {
           Setting.kSleepWhenLaptopLidClosed,
           Setting.kPowerIdleBehaviorWhileOnBattery,
           Setting.kAdaptiveCharging,
+          Setting.kBatterySaver,
         ]),
       },
 
@@ -196,6 +212,7 @@ class SettingsPowerElement extends SettingsPowerElementBase {
   private lowPowerCharger_: boolean;
   private powerSources_: PowerSource[]|undefined;
   private selectedPowerSourceId_: string;
+  private batterySaverFeatureEnabled_: boolean;
 
   constructor() {
     super();
@@ -274,6 +291,24 @@ class SettingsPowerElement extends SettingsPowerElementBase {
       return this.i18n('powerSourceAcAdapter');
     }
     return '';
+  }
+
+  private computeBatterySaverHidden_(
+      batteryStatus: BatteryStatus|undefined,
+      featureEnabled: boolean): boolean {
+    if (batteryStatus === undefined) {
+      return true;
+    }
+    return !featureEnabled || !batteryStatus.present;
+  }
+
+  private computeBatterySaverToggleDisabled_(
+      powerSources: PowerSource[]|undefined,
+      lowPowerCharger: boolean): boolean {
+    if (powerSources === undefined) {
+      return true;
+    }
+    return powerSources.length > 0 && !lowPowerCharger;
   }
 
   private onPowerSourceChange_(): void {
@@ -453,6 +488,8 @@ class SettingsPowerElement extends SettingsPowerElementBase {
           chrome.settingsPrivate.ControlledBy.DEVICE_POLICY;
     }
     this.adaptiveChargingPref_ = adaptiveChargingPref;
+    this.batterySaverFeatureEnabled_ =
+        powerManagementSettings.batterySaverFeatureEnabled;
   }
 
   /**

@@ -383,22 +383,21 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         // cannot be spoofed by CCT client apps.
         IntentUtils.safeRemoveExtra(mIntent, IntentHandler.EXTRA_CALLING_ACTIVITY_PACKAGE);
 
-        Intent intent = new Intent(mIntent);
+        // Create and fire a launch intent.
+        Intent launchIntent = createCustomTabActivityIntent(mActivity, mIntent);
+        Uri extraReferrer = mActivity.getReferrer();
+        if (extraReferrer != null) {
+            launchIntent.putExtra(IntentHandler.EXTRA_ACTIVITY_REFERRER, extraReferrer.toString());
+        }
         ComponentName callingActivity = mActivity.getCallingActivity();
         if (callingActivity != null) {
-            intent.putExtra(
+            launchIntent.putExtra(
                     IntentHandler.EXTRA_CALLING_ACTIVITY_PACKAGE, callingActivity.getPackageName());
         } else {
             String packageName = getClientPackageNameFromIdentitySharing();
             if (packageName != null) {
-                intent.putExtra(IntentHandler.EXTRA_CALLING_ACTIVITY_PACKAGE, packageName);
+                launchIntent.putExtra(IntentHandler.EXTRA_CALLING_ACTIVITY_PACKAGE, packageName);
             }
-        }
-        // Create and fire a launch intent.
-        Intent launchIntent = createCustomTabActivityIntent(mActivity, intent);
-        Uri extraReferrer = mActivity.getReferrer();
-        if (extraReferrer != null) {
-            launchIntent.putExtra(IntentHandler.EXTRA_ACTIVITY_REFERRER, extraReferrer.toString());
         }
 
         // Allow disk writes during startActivity() to avoid strict mode violations on some

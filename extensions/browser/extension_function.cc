@@ -34,6 +34,7 @@
 #include "extensions/browser/bad_message.h"
 #include "extensions/browser/browser_frame_context_data.h"
 #include "extensions/browser/browser_process_context_data.h"
+#include "extensions/browser/extension_function_crash_keys.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
@@ -363,8 +364,16 @@ ExtensionFunction::~ExtensionFunction() {
         name());
   }
   if (dispatcher() && (render_frame_host() || is_from_service_worker())) {
-    dispatcher()->OnExtensionFunctionCompleted(
-        extension(), is_from_service_worker(), name());
+    dispatcher()->OnExtensionFunctionCompleted(*this);
+  }
+  // Delete the WebContentsObserver before updating the extension function
+  // crash keys so we capture the extension ID if this call hangs or crashes.
+  // http://crbug.com/1435545
+  tracker_.reset();
+  // The function may not have run due to quota limits.
+  if (extension() && did_run_) {
+    extensions::extension_function_crash_keys::EndExtensionFunctionCall(
+        extension_id());
   }
 
 // The extension function should always respond to avoid leaks in the
@@ -461,10 +470,13 @@ bool ExtensionFunction::PreRunValidation(std::string* error) {
 }
 
 ExtensionFunction::ResponseAction ExtensionFunction::RunWithValidation() {
-#if DCHECK_IS_ON()
   DCHECK(!did_run_);
   did_run_ = true;
-#endif
+
+  if (extension()) {
+    extensions::extension_function_crash_keys::StartExtensionFunctionCall(
+        extension_id());
+  }
 
   std::string error;
   if (!PreRunValidation(&error)) {
@@ -583,6 +595,10 @@ content::WebContents* ExtensionFunction::GetSenderWebContents() {
   return render_frame_host_
              ? content::WebContents::FromRenderFrameHost(render_frame_host_)
              : nullptr;
+}
+
+bool ExtensionFunction::ShouldKeepWorkerAliveIndefinitely() {
+  return false;
 }
 
 void ExtensionFunction::OnServiceWorkerAck() {

@@ -24,6 +24,10 @@
 #include "content/public/browser/native_event_processor_observer_mac.h"
 #include "ui/base/cocoa/accessibility_focus_overrider.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace chrome_browser_application_mac {
 
 void RegisterBrowserCrApp() {
@@ -38,7 +42,7 @@ void RegisterBrowserCrApp() {
 void InitializeHeadlessMode() {
   // In headless mode the browser window exists but is always hidden, so there
   // is no point in showing dock icon and menu bar.
-  [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
+  NSApp.activationPolicy = NSApplicationActivationPolicyAccessory;
 }
 
 void Terminate() {
@@ -117,13 +121,14 @@ std::string DescriptionForNSEvent(NSEvent* event) {
 
 }  // namespace
 
-@interface BrowserCrApplication ()<NativeEventProcessor> {
-  base::ObserverList<content::NativeEventProcessorObserver>::Unchecked
-      _observers;
-}
+@interface BrowserCrApplication () <NativeEventProcessor>
 @end
 
-@implementation BrowserCrApplication
+@implementation BrowserCrApplication {
+  base::ObserverList<content::NativeEventProcessorObserver>::Unchecked
+      _observers;
+  BOOL _handlingSendEvent;
+}
 
 + (void)initialize {
   // Turn all deallocated Objective-C objects into zombies, keeping
@@ -152,8 +157,8 @@ std::string DescriptionForNSEvent(NSEvent* event) {
   // If the message loop was initialized before NSApp is setup, the
   // message pump will be setup incorrectly.  Failing this implies
   // that RegisterBrowserCrApp() should be called earlier.
-  CHECK(base::MessagePumpMac::UsingCrApp())
-      << "MessagePumpMac::Create() is using the wrong pump implementation"
+  CHECK(base::message_pump_mac::UsingCrApp())
+      << "message_pump_mac::Create() is using the wrong pump implementation"
       << " for " << [[self className] UTF8String];
 
   return app;
@@ -226,14 +231,12 @@ std::string DescriptionForNSEvent(NSEvent* event) {
 // NSApplication event loop, so final post- MessageLoop::Run() work is done
 // before exiting.
 - (void)terminate:(id)sender {
-  AppController* appController = static_cast<AppController*>([NSApp delegate]);
-  [appController tryToTerminateApplication:self];
+  [AppController.sharedController tryToTerminateApplication:self];
   // Return, don't exit. The application is responsible for exiting on its own.
 }
 
 - (void)cancelTerminate:(id)sender {
-  AppController* appController = static_cast<AppController*>([NSApp delegate]);
-  [appController stopTryingToTerminateApplication:self];
+  [AppController.sharedController stopTryingToTerminateApplication:self];
 }
 
 - (NSEvent*)nextEventMatchingMask:(NSEventMask)mask
@@ -340,13 +343,13 @@ std::string DescriptionForNSEvent(NSEvent* event) {
     }
     base::mac::ScopedSendingEvent sendingEventScoper;
     content::ScopedNotifyNativeEventProcessorObserver scopedObserverNotifier(
-        &_observers, event);
+        &self->_observers, event);
     // Mac Eisu and Kana keydown events are by default swallowed by sendEvent
     // and sent directly to IME, which prevents ui keydown events from firing.
     // These events need to be sent to [NSApp keyWindow] for handling.
-    if ([event type] == NSEventTypeKeyDown &&
-        ([event keyCode] == kVK_JIS_Eisu || [event keyCode] == kVK_JIS_Kana)) {
-      [[NSApp keyWindow] sendEvent:event];
+    if (event.type == NSEventTypeKeyDown &&
+        (event.keyCode == kVK_JIS_Eisu || event.keyCode == kVK_JIS_Kana)) {
+      [NSApp.keyWindow sendEvent:event];
     } else {
       [super sendEvent:event];
     }
@@ -354,7 +357,8 @@ std::string DescriptionForNSEvent(NSEvent* event) {
 }
 
 - (void)accessibilitySetValue:(id)value forAttribute:(NSString*)attribute {
-  // This is an undocument attribute that's set when VoiceOver is turned on/off.
+  // This is an undocumented attribute that's set when VoiceOver is turned
+  // on/off.
   if ([attribute isEqualToString:@"AXEnhancedUserInterface"]) {
     content::BrowserAccessibilityState* accessibility_state =
         content::BrowserAccessibilityState::GetInstance();

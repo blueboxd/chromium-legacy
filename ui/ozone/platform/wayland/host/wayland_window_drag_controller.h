@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
+#include <ostream>
 #include <string>
 
 #include "base/functional/callback_forward.h"
@@ -90,6 +91,8 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   // This is true if the `data_source_` exists (the session ends when this is
   // destroyed).
   bool IsActiveDragAndDropSession() const;
+
+  void DumpState(std::ostream& out) const;
 
   // Makes IsExtendedDragAvailable() always return true.
   void set_extended_drag_available_for_testing(bool available) {
@@ -200,7 +203,7 @@ class WaylandWindowDragController : public WaylandDataDevice::DragDelegate,
   // pointer focus when the session was initiated.
   raw_ptr<WaylandWindow> origin_window_ = nullptr;
 
-  raw_ptr<WaylandWindow> drag_target_window_ = nullptr;
+  raw_ptr<WaylandWindow, DanglingUntriaged> drag_target_window_ = nullptr;
 
   // The |origin_window_| can be destroyed during the DND session. If this
   // happens, |origin_surface_| takes ownership of its surface and ensure it

@@ -21,6 +21,7 @@
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/transaction_impl.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
@@ -521,23 +522,24 @@ void DatabaseImpl::Count(
       std::move(callbacks)));
 }
 
-void DatabaseImpl::DeleteRange(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    const IndexedDBKeyRange& key_range,
-    mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
-        pending_callbacks) {
+void DatabaseImpl::DeleteRange(int64_t transaction_id,
+                               int64_t object_store_id,
+                               const IndexedDBKeyRange& key_range,
+                               DeleteRangeCallback success_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto callbacks = base::MakeRefCounted<IndexedDBCallbacks>(
-      dispatcher_host_->AsWeakPtr(), bucket_info_, std::move(pending_callbacks),
-      idb_runner_);
-  if (!connection_->IsConnected())
+
+  auto wrapped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      std::move(success_callback), /*success=*/false);
+
+  if (!connection_->IsConnected()) {
     return;
+  }
 
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
-  if (!transaction)
+  if (!transaction) {
     return;
+  }
 
   if (!transaction->IsAcceptingRequests()) {
     // TODO(https://crbug.com/1249908): If the transaction was already committed
@@ -548,10 +550,11 @@ void DatabaseImpl::DeleteRange(
     return;
   }
 
-  transaction->ScheduleTask(BindWeakOperation(
-      &IndexedDBDatabase::DeleteRangeOperation,
-      connection_->database()->AsWeakPtr(), object_store_id,
-      std::make_unique<IndexedDBKeyRange>(key_range), std::move(callbacks)));
+  transaction->ScheduleTask(
+      BindWeakOperation(&IndexedDBDatabase::DeleteRangeOperation,
+                        connection_->database()->AsWeakPtr(), object_store_id,
+                        std::make_unique<IndexedDBKeyRange>(key_range),
+                        std::move(wrapped_callback)));
 }
 
 void DatabaseImpl::GetKeyGeneratorCurrentNumber(
@@ -586,24 +589,21 @@ void DatabaseImpl::GetKeyGeneratorCurrentNumber(
       std::move(callbacks)));
 }
 
-void DatabaseImpl::Clear(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
-        pending_callbacks) {
+void DatabaseImpl::Clear(int64_t transaction_id,
+                         int64_t object_store_id,
+                         ClearCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto callbacks = base::MakeRefCounted<IndexedDBCallbacks>(
-      dispatcher_host_->AsWeakPtr(), bucket_info_, std::move(pending_callbacks),
-      idb_runner_);
-  if (!connection_->IsConnected())
+
+  auto wrapped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      std::move(callback), /*success=*/false);
+
+  if (!connection_->IsConnected()) {
     return;
+  }
 
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
-  if (!transaction)
-    return;
-
-  if (!transaction->IsAcceptingRequests()) {
+  if (!transaction || !transaction->IsAcceptingRequests()) {
     // TODO(https://crbug.com/1249908): If the transaction was already committed
     // (or is in the process of being committed) we should kill the renderer.
     // This branch however also includes cases where the browser process aborted
@@ -614,7 +614,7 @@ void DatabaseImpl::Clear(
 
   transaction->ScheduleTask(BindWeakOperation(
       &IndexedDBDatabase::ClearOperation, connection_->database()->AsWeakPtr(),
-      object_store_id, std::move(callbacks)));
+      object_store_id, std::move(wrapped_callback)));
 }
 
 void DatabaseImpl::CreateIndex(int64_t transaction_id,

@@ -30,13 +30,14 @@
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/strings/grit/components_strings.h"
+#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
-#import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/language/language_model_manager_factory.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
@@ -47,6 +48,7 @@
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/settings/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/settings/sync/utils/sync_state.h"
+#import "ios/chrome/browser/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -57,6 +59,7 @@
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/symbols/buildflags.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
@@ -99,6 +102,7 @@
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
+#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_table_view_controller.h"
@@ -112,7 +116,6 @@
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_utils.h"
 #import "ios/chrome/browser/ui/settings/search_engine_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
-#import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 #import "ios/chrome/browser/ui/settings/tabs/tabs_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
@@ -660,7 +663,8 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   }
 
   // Sync item.
-  if (authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
+  if (authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin) &&
+      ![self shouldReplaceSyncSettingsWithAccountSettings]) {
     [model addItem:[self syncItem]
         toSectionWithIdentifier:SettingsSectionIdentifierAccount];
   }
@@ -681,13 +685,18 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       SyncServiceFactory::GetForBrowserState(_browserState);
   AuthenticationService* authenticationService =
       AuthenticationServiceFactory::GetForBrowserState(_browserState);
-  return [SigninPromoViewMediator
-             shouldDisplaySigninPromoViewWithAccessPoint:
-                 signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-                                   authenticationService:authenticationService
-                                             prefService:_browserState
-                                                             ->GetPrefs()] &&
-         !syncService->GetUserSettings()->IsInitialSyncFeatureSetupComplete();
+  const BOOL shouldDisplay =
+      [SigninPromoViewMediator
+          shouldDisplaySigninPromoViewWithAccessPoint:
+              signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
+                                authenticationService:authenticationService
+                                          prefService:_browserState
+                                                          ->GetPrefs()] &&
+      !syncService->GetUserSettings()->IsInitialSyncFeatureSetupComplete();
+  return shouldDisplay &&
+         !base::FeatureList::IsEnabled(kHideSettingsSyncPromo) &&
+         !base::FeatureList::IsEnabled(
+             syncer::kReplaceSyncPromosWithSignInPromos);
 }
 
 #pragma mark - Model Items
@@ -1296,6 +1305,13 @@ UIImage* GetBrandedGoogleServicesSymbol() {
                         completion:nil];
       break;
     case SettingsItemTypeAccount: {
+      if ([self shouldReplaceSyncSettingsWithAccountSettings]) {
+        // Redirect to Account Settings page if the user is signed-in and
+        // not-syncing.
+        base::RecordAction(base::UserMetricsAction("Settings.Sync"));
+        [self showGoogleSync];
+        break;
+      }
       base::RecordAction(base::UserMetricsAction("Settings.MyAccount"));
       AccountsTableViewController* accountsTableViewController =
           [[AccountsTableViewController alloc] initWithBrowser:_browser
@@ -1394,8 +1410,11 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       break;
     case SettingsItemTypeLanguageSettings: {
       base::RecordAction(base::UserMetricsAction("Settings.Language"));
-      LanguageSettingsMediator* mediator =
-          [[LanguageSettingsMediator alloc] initWithBrowserState:_browserState];
+      language::LanguageModelManager* languageModelManager =
+          LanguageModelManagerFactory::GetForBrowserState(_browserState);
+      LanguageSettingsMediator* mediator = [[LanguageSettingsMediator alloc]
+          initWithLanguageModelManager:languageModelManager
+                           prefService:_browserState->GetPrefs()];
       LanguageSettingsTableViewController* languageSettingsTableViewController =
           [[LanguageSettingsTableViewController alloc]
               initWithDataSource:mediator
@@ -1593,11 +1612,23 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   [_tabsCoordinator start];
 }
 
+- (BOOL)shouldReplaceSyncSettingsWithAccountSettings {
+  return base::FeatureList::IsEnabled(
+             syncer::kReplaceSyncPromosWithSignInPromos) &&
+         !SyncServiceFactory::GetForBrowserState(_browserState)
+              ->HasSyncConsent();
+}
+
 - (void)showGoogleSync {
   DCHECK(!_manageSyncSettingsCoordinator);
+  SyncSettingsAccountState accountState =
+      SyncServiceFactory::GetForBrowserState(_browserState)->HasSyncConsent()
+          ? SyncSettingsAccountState::kSyncing
+          : SyncSettingsAccountState::kSignedIn;
   _manageSyncSettingsCoordinator = [[ManageSyncSettingsCoordinator alloc]
       initWithBaseNavigationController:self.navigationController
-                               browser:_browser];
+                               browser:_browser
+                          accountState:accountState];
   _manageSyncSettingsCoordinator.delegate = self;
   [_manageSyncSettingsCoordinator start];
 }
@@ -1624,15 +1655,16 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 // Checks if there are any remaining password issues that are not muted from the
 // last time password check was run.
 - (BOOL)hasPasswordIssuesRemaining {
-  CHECK(!_settingsAreDismissed);
-  CHECK(_passwordCheckManager);
+  if (!_passwordCheckManager) {
+    return NO;
+  }
   return !_passwordCheckManager->GetInsecureCredentials().empty();
 }
 
 // Displays a warning icon in the `_safetyCheckItem` if there is a reamining
 // issue for any of the safety checks.
 - (void)updateSafetyCheckItemTrailingIcon {
-  if (!_safetyCheckItem) {
+  if (!_safetyCheckItem || !_passwordCheckManager) {
     return;
   }
 
@@ -2136,19 +2168,11 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 #pragma mark - PasswordCheckObserver
 
 - (void)passwordCheckStateDidChange:(PasswordCheckState)state {
-  // Settings may have been dismissed in the meantime as the callback is
-  // asynchronous. There is no UI to update in that case.
-  if (!_settingsAreDismissed) {
-    [self updateSafetyCheckItemTrailingIcon];
-  }
+  [self updateSafetyCheckItemTrailingIcon];
 }
 
 - (void)insecureCredentialsDidChange {
-  // Settings may have been dismissed in the meantime as the callback is
-  // asynchronous. There is no UI to update in that case.
-  if (!_settingsAreDismissed) {
-    [self updateSafetyCheckItemTrailingIcon];
-  }
+  [self updateSafetyCheckItemTrailingIcon];
 }
 
 #pragma mark - PrefObserverDelegate
@@ -2338,6 +2362,16 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
 - (NSString*)manageSyncSettingsCoordinatorTitle {
   return l10n_util::GetNSString(IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE);
+}
+
+- (void)showSignOutToast {
+  [self.snackbarCommandsHandler
+      showSnackbarWithMessage:
+          l10n_util::GetNSString(
+              IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_SNACKBAR_MESSAGE)
+                   buttonText:nil
+                messageAction:nil
+             completionAction:nil];
 }
 
 #pragma mark - NotificationsSettingsObserverDelegate

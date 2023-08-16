@@ -79,7 +79,7 @@ bool WaitForUpdaterExit(UpdaterScope scope) {
           },
           scope),
       base::BindLambdaForTesting(
-          []() { VLOG(0) << "Still waiting for updater to exit..."; }));
+          [] { VLOG(0) << "Still waiting for updater to exit..."; }));
 }
 
 void Uninstall(UpdaterScope scope) {
@@ -140,7 +140,8 @@ void ExpectClean(UpdaterScope scope) {
 
 void EnterTestMode(const GURL& update_url,
                    const GURL& crash_upload_url,
-                   const GURL& device_management_url) {
+                   const GURL& device_management_url,
+                   const base::TimeDelta& idle_timeout) {
   ASSERT_TRUE(ExternalConstantsBuilder()
                   .SetUpdateURL({update_url.spec()})
                   .SetCrashUploadURL(crash_upload_url.spec())
@@ -150,6 +151,7 @@ void EnterTestMode(const GURL& update_url,
                   .SetServerKeepAliveTime(base::Seconds(1))
                   .SetCrxVerifierFormat(crx_file::VerifierFormat::CRX3)
                   .SetOverinstallTimeout(TestTimeouts::action_timeout())
+                  .SetIdleCheckPeriod(idle_timeout)
                   .Modify());
 }
 
@@ -225,12 +227,6 @@ void UninstallApp(UpdaterScope scope, const std::string& app_id) {
   // This can probably be combined with mac into integration_tests_posix.cc.
   SetExistenceCheckerPath(scope, app_id,
                           base::FilePath(FILE_PATH_LITERAL("NONE")));
-}
-
-void RunOfflineInstall(UpdaterScope scope,
-                       bool is_legacy_install,
-                       bool is_silent_install) {
-  // TODO(crbug.com/1286574).
 }
 
 base::CommandLine MakeElevated(base::CommandLine command_line) {

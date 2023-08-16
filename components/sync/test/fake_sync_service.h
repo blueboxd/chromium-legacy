@@ -9,9 +9,14 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
 #include "components/sync/service/sync_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
 
 namespace syncer {
 
@@ -25,6 +30,9 @@ class FakeSyncService : public SyncService {
 
   // Dummy methods.
   // SyncService implementation.
+#if BUILDFLAG(IS_ANDROID)
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
+#endif  // BUILDFLAG(IS_ANDROID)
   void SetSyncFeatureRequested() override;
   syncer::SyncUserSettings* GetUserSettings() override;
   const syncer::SyncUserSettings* GetUserSettings() const override;
@@ -49,7 +57,9 @@ class FakeSyncService : public SyncService {
   GoogleServiceAuthError GetAuthError() const override;
   base::Time GetAuthErrorTime() const override;
   bool RequiresClientUpgrade() const override;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool IsSyncFeatureDisabledViaDashboard() const override;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   void DataTypePreconditionChanged(syncer::ModelType type) override;
   SyncTokenStatus GetSyncTokenStatusForDebugging() const override;
   bool QueryDetailedSyncStatusForDebugging(SyncStatus* result) const override;

@@ -85,9 +85,9 @@ void ResetLastUsedBookmarkFolder(PrefService* prefs) {
 void SetLastUsedBookmarkFolder(PrefService* prefs,
                                const bookmarks::BookmarkNode* folder,
                                bookmarks::StorageType type) {
-  DCHECK(folder);
-  DCHECK(folder->is_folder()) << "node type: " << folder->type()
-                              << ", storage type: " << static_cast<int>(type);
+  CHECK(folder);
+  CHECK(folder->is_folder()) << "node type: " << folder->type()
+                             << ", storage type: " << static_cast<int>(type);
   prefs->SetInt64(prefs::kIosBookmarkLastUsedFolderReceivingBookmarks,
                   folder->id());
   prefs->SetInteger(prefs::kIosBookmarkLastUsedStorageReceivingBookmarks,
@@ -111,6 +111,7 @@ const bookmarks::BookmarkNode* GetDefaultBookmarkFolder(
     const BookmarkNode* result =
         bookmarks::GetBookmarkNodeByID(bookmark_model, node_id);
     if (result && result->is_folder()) {
+      // Make sure the bookmark node is a folder. See crbug.com/1450146.
       return result;
     }
   }

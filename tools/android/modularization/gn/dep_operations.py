@@ -13,7 +13,7 @@ import os
 import pathlib
 import subprocess
 import sys
-from typing import List, Optional, Set, Tuple
+from typing import List, Optional, Set
 
 import json_gn_editor
 import utils
@@ -28,6 +28,8 @@ sys.path.append(str(_SRC_PATH / 'build' / 'android'))
 from pylib import constants
 
 _GIT_IGNORE_STR = '(git ignored file) '
+
+NO_VALID_GN_STR = 'No valid GN files found after filtering.'
 
 
 @dataclasses.dataclass
@@ -44,6 +46,11 @@ class OperationResult:
         ignore = _GIT_IGNORE_STR if self.git_ignored else ''
         skip = f' ({self.skip_reason})' if self.skipped else ''
         return f'{dryrun}{msg}{ignore}{self.path}{skip}'
+
+
+def _add_deps(target: str, deps: List[str], root: pathlib.Path, path: str):
+    with json_gn_editor.BuildFile(path, root) as build_file:
+        build_file.add_deps(target, deps)
 
 
 def _search_deps(name_query: Optional[str], path_query: Optional[str],
@@ -75,6 +82,17 @@ def _remove_deps(
                                        root, path),
                                    dryrun=dryrun)
     return None
+
+
+def _add(args: argparse.Namespace, build_filepaths: List[str],
+         root: pathlib.Path):
+    deps = args.deps
+    target = args.target
+    with multiprocessing.Pool() as pool:
+        pool.map(
+            functools.partial(_add_deps, target, deps, root),
+            build_filepaths,
+        )
 
 
 def _search(args: argparse.Namespace, build_filepaths: List[str],
@@ -262,14 +280,26 @@ def main():
                                     '--quiet',
                                     action='store_true',
                                     help='Used to print less logging.')
-    common_args_parser.add_argument(
-        '--file', help='Run on a specific build file (debugging).')
+    common_args_parser.add_argument('--file',
+                                    help='Run on a specific build file.')
     common_args_parser.add_argument(
         '--resume-from',
         help='Skip files before this build file path (debugging).')
 
     subparsers = parser.add_subparsers(
         help='Use subcommand -h to see full usage.')
+
+    add_parser = subparsers.add_parser(
+        'add',
+        parents=[common_args_parser],
+        help='Add one or more deps to a specific target (pass the path to the '
+        'BUILD.gn via --file for faster results). The target **must** '
+        'have a deps variable defined, even if it is an empty [].')
+    add_parser.add_argument('--target', help='The name of the target.')
+    add_parser.add_argument('--deps',
+                            nargs='+',
+                            help='The name(s) of the new dep(s).')
+    add_parser.set_defaults(command=_add)
 
     search_parser = subparsers.add_parser(
         'search',
@@ -374,7 +404,9 @@ def main():
         p for p in build_filepaths if not utils.is_bad_gn_file(p, root)
     ]
     num_total = len(filtered_build_filepaths)
-    assert num_total > 0, 'No valid GN files found.'
+    if num_total == 0:
+        logging.error(NO_VALID_GN_STR)
+        sys.exit(1)
     logging.info('Running on %d valid build files.', num_total)
 
     operation_results: List[OperationResult] = args.command(

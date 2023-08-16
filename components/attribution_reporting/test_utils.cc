@@ -125,7 +125,8 @@ bool operator==(const TriggerRegistration& a, const TriggerRegistration& b) {
                            reg.aggregatable_dedup_keys, reg.event_triggers,
                            reg.aggregatable_trigger_data,
                            reg.aggregatable_values, reg.debug_reporting,
-                           reg.aggregation_coordinator);
+                           reg.aggregation_coordinator_origin,
+                           reg.source_registration_time_config);
   };
   return tie(a) == tie(b);
 }

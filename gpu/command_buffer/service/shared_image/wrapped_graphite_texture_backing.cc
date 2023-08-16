@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
@@ -125,13 +125,13 @@ WrappedGraphiteTextureBacking::~WrappedGraphiteTextureBacking() {
 
 bool WrappedGraphiteTextureBacking::Initialize() {
   CHECK(!format().IsCompressed());
-
-  int num_planes = format().NumberOfPlanes();
+  const bool mipmapped = usage() & SHARED_IMAGE_USAGE_MIPMAP;
+  const int num_planes = format().NumberOfPlanes();
   graphite_textures_.resize(num_planes);
   for (int plane = 0; plane < num_planes; ++plane) {
-    skgpu::graphite::TextureInfo texture_info =
-        gpu::GetGraphiteTextureInfo(context_state_->gr_context_type(), format(),
-                                    plane, usage() & SHARED_IMAGE_USAGE_MIPMAP);
+    skgpu::graphite::TextureInfo texture_info = gpu::GetGraphiteTextureInfo(
+        context_state_->gr_context_type(), format(), plane,
+        /*is_yuv_plane=*/false, mipmapped);
     auto sk_size = gfx::SizeToSkISize(format().GetPlaneSize(plane, size()));
     auto texture = recorder()->createBackendTexture(sk_size, texture_info);
     if (!texture.isValid()) {
@@ -142,7 +142,6 @@ bool WrappedGraphiteTextureBacking::Initialize() {
     }
     graphite_textures_[plane] = std::move(texture);
   }
-
   return true;
 }
 
@@ -159,6 +158,10 @@ bool WrappedGraphiteTextureBacking::InitializeWithData(
 
   graphite_textures_.resize(1);
   auto image_info = AsSkImageInfo();
+  if (pixels.size() != image_info.computeMinByteSize()) {
+    DLOG(ERROR) << "Invalid initial pixel data size";
+    return false;
+  }
   SkPixmap pixmap(image_info, pixels.data(), image_info.minRowBytes());
 
   auto& texture = graphite_textures_[0];

@@ -147,6 +147,7 @@ group("make_platform_generated") {
     ":character_data",
     ":color_data",
     ":font_family_names",
+    ":fontations_buildflags",
     ":runtime_enabled_features",
     ":runtime_feature_state_override_context",
     "//third_party/blink/renderer/platform/network:make_generated",
@@ -199,7 +200,6 @@ group("blink_platform_public_deps") {
     "//third_party/blink/renderer/platform/network:make_generated",
     "//third_party/blink/renderer/platform/wtf",
     "//third_party/boringssl",
-    "//third_party/iccjpeg",
     "//third_party/libpng",
     "//third_party/libwebp",
     "//third_party/ots",
@@ -238,6 +238,12 @@ config("blink_platform_implementation") {
   visibility = [ "./*" ]
 
   defines = [ "BLINK_PLATFORM_IMPLEMENTATION=1" ]
+}
+
+buildflag_header("fontations_buildflags") {
+  header = "fontations_buildflags.h"
+  header_dir = "third_party/blink/renderer/platform/fonts/"
+  flags = [ "USE_FONTATIONS_BACKEND=$use_typeface_fontations" ]
 }
 
 config("blink_platform_pch") {
@@ -676,6 +682,8 @@ component("platform") {
     "fonts/opentype/variable_axes_names.h",
     "fonts/orientation_iterator.cc",
     "fonts/orientation_iterator.h",
+    "fonts/palette_interpolation.cc",
+    "fonts/palette_interpolation.h",
     "fonts/resolved_font_features.h",
     "fonts/script_run_iterator.cc",
     "fonts/script_run_iterator.h",
@@ -1630,8 +1638,6 @@ component("platform") {
     sources += [
       "fonts/win/dwrite_font_format_support.cc",
       "fonts/win/dwrite_font_format_support.h",
-      "fonts/win/fallback_family_style_cache_win.cc",
-      "fonts/win/fallback_family_style_cache_win.h",
       "fonts/win/font_cache_skia_win.cc",
       "fonts/win/font_fallback_win.cc",
       "fonts/win/font_fallback_win.h",
@@ -1739,7 +1745,7 @@ component("platform") {
   ]
 
   if (is_android) {
-    deps += [ "//third_party/android_ndk:cpu_features" ]
+    deps += [ "//third_party/cpu_features:ndk_compat" ]
     sources += [
       "theme/web_theme_engine_android.cc",
       "theme/web_theme_engine_android.h",
@@ -2042,6 +2048,7 @@ source_set("blink_platform_unittests_sources") {
     "fonts/font_palette_test.cc",
     "fonts/font_platform_data_test.cc",
     "fonts/font_selection_types_test.cc",
+    "fonts/font_size_adjust_test.cc",
     "fonts/font_test.cc",
     "fonts/font_test_utilities.cc",
     "fonts/generic_font_family_settings_test.cc",
@@ -2052,6 +2059,7 @@ source_set("blink_platform_unittests_sources") {
     "fonts/opentype/open_type_vertical_data_test.cc",
     "fonts/opentype/variable_axes_names_test.cc",
     "fonts/orientation_iterator_test.cc",
+    "fonts/palette_interpolation_test.cc",
     "fonts/script_run_iterator_test.cc",
     "fonts/shaping/caching_word_shaper_test.cc",
     "fonts/shaping/font_features_test.cc",
@@ -2172,7 +2180,6 @@ source_set("blink_platform_unittests_sources") {
     "peerconnection/rtc_encoded_audio_stream_transformer_test.cc",
     "peerconnection/rtc_encoded_video_stream_transformer_test.cc",
     "peerconnection/rtc_rtp_source_test.cc",
-    "peerconnection/rtc_stats_test.cc",
     "peerconnection/rtc_video_decoder_adapter_test.cc",
     "peerconnection/rtc_video_decoder_factory_test.cc",
     "peerconnection/rtc_video_decoder_stream_adapter_test.cc",
@@ -2245,10 +2252,7 @@ source_set("blink_platform_unittests_sources") {
   if (is_android) {
     sources += [ "fonts/android/font_cache_android_test.cc" ]
   } else if (is_win) {
-    sources += [
-      "fonts/win/fallback_lru_cache_win_test.cc",
-      "text/locale_win_test.cc",
-    ]
+    sources += [ "text/locale_win_test.cc" ]
   } else if (is_mac) {
     sources += [
       "fonts/mac/font_matcher_mac_test.mm",
@@ -2326,7 +2330,10 @@ source_set("blink_platform_unittests_sources") {
 
   data_deps = [ ":blink_platform_unittests_data" ]
 
-  defines = [ "INSIDE_BLINK" ]
+  defines = [
+    "INSIDE_BLINK",
+    "ALLOW_IMPLICIT_ATOMIC_STRING_CONVERSIONS",
+  ]
   if (use_minikin_hyphenation) {
     defines += [ "USE_MINIKIN_HYPHENATION" ]
   }
@@ -2414,6 +2421,7 @@ test("blink_platform_perftests") {
     "//third_party/blink/renderer/platform/wtf:wtf_config",
     "//third_party/blink/renderer:config",
   ]
+  defines = [ "ALLOW_IMPLICIT_ATOMIC_STRING_CONVERSIONS" ]
 
   deps = [
     ":platform",
@@ -2553,6 +2561,7 @@ fuzzer_test("open_type_math_support_fuzzer") {
     "//third_party/blink/web_tests/external/wpt/fonts/math",
     "//testing/libfuzzer/fuzzers/woff2_corpus",
   ]
+  defines = [ "ALLOW_IMPLICIT_ATOMIC_STRING_CONVERSIONS" ]
 }
 
 # Fuzzer for blink::StretchyOperatorShaper
@@ -2566,6 +2575,7 @@ fuzzer_test("stretchy_operator_shaper_fuzzer") {
     "//third_party/blink/web_tests/external/wpt/fonts/math",
     "//testing/libfuzzer/fuzzers/woff2_corpus",
   ]
+  defines = [ "ALLOW_IMPLICIT_ATOMIC_STRING_CONVERSIONS" ]
 }
 
 # Fuzzer for blink::MHTMLParser.
@@ -2657,6 +2667,7 @@ fuzzer_test("blink_http_parsers_fuzzer") {
     ":platform",
   ]
   dict = "network/HTTPParsersFuzzer.dict"
+  defines = [ "ALLOW_IMPLICIT_ATOMIC_STRING_CONVERSIONS" ]
 }
 
 fuzzer_test("blink_storage_key_fuzzer") {

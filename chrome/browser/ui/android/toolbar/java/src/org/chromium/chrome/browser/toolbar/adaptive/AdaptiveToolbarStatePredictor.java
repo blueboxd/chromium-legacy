@@ -25,7 +25,6 @@ public class AdaptiveToolbarStatePredictor {
      * Key used to lookup segmentation results for adaptive toolbar. Must be kept in sync with
      * components/segmentation_platform/internal/constants.cc.
      */
-    private static final String ADAPTIVE_TOOLBAR_SEGMENTATION_KEY = "adaptive_toolbar";
 
     private static Pair<Boolean, Integer> sSegmentationResultsForTesting;
     private static Integer sToolbarStateForTesting;
@@ -206,8 +205,8 @@ public class AdaptiveToolbarStatePredictor {
      * Returns the default segment if {@code variant} is not available on this system. Otherwise
      * returns {@code variant} unchanged.
      */
-    @AdaptiveToolbarButtonVariant
-    private int replaceVariantIfDisabled(@AdaptiveToolbarButtonVariant int variant) {
+    private @AdaptiveToolbarButtonVariant int replaceVariantIfDisabled(
+            @AdaptiveToolbarButtonVariant int variant) {
         if (isVariantEnabled(variant)) return variant;
         variant = AdaptiveToolbarFeatures.getSegmentationDefault();
         if (isVariantEnabled(variant)) return variant;

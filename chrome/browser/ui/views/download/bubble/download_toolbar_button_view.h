@@ -11,6 +11,7 @@
 #include "chrome/browser/download/bubble/download_icon_state.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -23,9 +24,9 @@ class RenderText;
 class Browser;
 class BrowserView;
 class DownloadDisplayController;
+class DownloadBubbleContentsView;
 class DownloadBubbleUIController;
 class DownloadBubbleRowView;
-class DownloadBubbleSecurityView;
 
 class DownloadBubbleNavigationHandler {
  public:
@@ -34,12 +35,15 @@ class DownloadBubbleNavigationHandler {
   virtual void OpenSecurityDialog(DownloadBubbleRowView* download_row_view) = 0;
   virtual void CloseDialog(views::Widget::ClosedReason reason) = 0;
   virtual void ResizeDialog() = 0;
+  // Callback invoked when the dialog has been interacted with by hovering over
+  // or by focusing (on the partial view).
+  virtual void OnDialogInteracted() = 0;
   virtual base::WeakPtr<DownloadBubbleNavigationHandler> GetWeakPtr() = 0;
 };
 
 // Download icon shown in the trusted area of the toolbar. Its lifetime is tied
 // to that of its parent ToolbarView. The icon is made visible when downloads
-// are in progress or when a download was initiated in the past 24 hours.
+// are in progress or when a download was initiated in the past 1 hour.
 // When there are multiple downloads, a circular badge in the corner of the icon
 // displays the number of ongoing downloads.
 class DownloadToolbarButtonView : public ToolbarButton,
@@ -54,7 +58,7 @@ class DownloadToolbarButtonView : public ToolbarButton,
       delete;
   ~DownloadToolbarButtonView() override;
 
-  // DownloadsDisplay implementation.
+  // DownloadDisplay implementation.
   void Show() override;
   void Hide() override;
   bool IsShowing() override;
@@ -65,6 +69,7 @@ class DownloadToolbarButtonView : public ToolbarButton,
   void HideDetails() override;
   bool IsShowingDetails() override;
   bool IsFullscreenWithParentViewHidden() override;
+  bool ShouldShowExclusiveAccessBubble() override;
 
   // ToolbarButton:
   void UpdateIcon() override;
@@ -77,6 +82,7 @@ class DownloadToolbarButtonView : public ToolbarButton,
   void OpenSecurityDialog(DownloadBubbleRowView* download_row_view) override;
   void CloseDialog(views::Widget::ClosedReason reason) override;
   void ResizeDialog() override;
+  void OnDialogInteracted() override;
   base::WeakPtr<DownloadBubbleNavigationHandler> GetWeakPtr() override;
 
   // BrowserListObserver
@@ -93,6 +99,9 @@ class DownloadToolbarButtonView : public ToolbarButton,
 
   SkColor GetIconColor() const;
   void SetIconColor(SkColor color);
+
+  void DisableAutoCloseTimerForTesting();
+  void DisableDownloadStartedAnimationForTesting();
 
  private:
   // Max download count to show in the badge. Any higher number of downloads
@@ -113,8 +122,8 @@ class DownloadToolbarButtonView : public ToolbarButton,
                                 SkColor badge_text_color);
 
   void ButtonPressed();
-  void CreateBubbleDialogDelegate(std::unique_ptr<View> bubble_contents_view);
-  void OnBubbleDelegateDeleted();
+  void CreateBubbleDialogDelegate();
+  void OnBubbleClosing();
 
   // Callback invoked when the partial view is closed.
   void OnPartialViewClosed();
@@ -126,8 +135,9 @@ class DownloadToolbarButtonView : public ToolbarButton,
   // been deactivated.
   void AutoClosePartialView();
 
-  // Get the primary view, which may be the full or the partial view.
-  std::unique_ptr<View> GetPrimaryView();
+  // Get the models for the primary view, which may be the full or the partial
+  // view.
+  std::vector<DownloadUIModel::DownloadUIModelPtr> GetPrimaryViewModels();
 
   // If |has_pending_download_started_animation_| is true, shows an animation of
   // a download icon moving upwards towards the toolbar icon.
@@ -142,18 +152,22 @@ class DownloadToolbarButtonView : public ToolbarButton,
   // Controller for keeping track of items for both main view and partial view.
   std::unique_ptr<DownloadBubbleUIController> bubble_controller_;
   raw_ptr<views::BubbleDialogDelegate> bubble_delegate_ = nullptr;
-  raw_ptr<View> primary_view_ = nullptr;
-  raw_ptr<DownloadBubbleSecurityView> security_view_ = nullptr;
+  raw_ptr<DownloadBubbleContentsView> bubble_contents_ = nullptr;
 
   // Marks whether there is a pending download started animation. This is needed
   // because the animation should only be triggered after the view has been
   // laid out properly, so this provides a way to remember to show the animation
   // if needed, when calling Layout().
   bool has_pending_download_started_animation_ = false;
+  // Overrides whether we are allowed to show the download started animation,
+  // may be false in tests.
+  bool show_download_started_animation_ = true;
 
   // Tracks the task to automatically close the partial view after some amount
   // of time open, to minimize disruption to the user.
   std::unique_ptr<base::RetainingOneShotTimer> auto_close_bubble_timer_;
+  // Whether we are allowed to create the above timer, may be false in tests.
+  bool create_auto_close_timer_ = true;
 
   // RenderTexts used for the number in the badge. Stores the text for "n" at
   // index n - 1, and stores the text for the placeholder ("9+") at index 0.
@@ -176,6 +190,10 @@ class DownloadToolbarButtonView : public ToolbarButton,
   absl::optional<SkColor> icon_color_;
 
   gfx::SlideAnimation scanning_animation_{this};
+
+  // Used for holding the top views visible while the download bubble is showing
+  // in immersive mode on ChromeOS and Mac.
+  std::unique_ptr<ImmersiveRevealedLock> immersive_revealed_lock_;
 
   base::WeakPtrFactory<DownloadToolbarButtonView> weak_factory_{this};
 };

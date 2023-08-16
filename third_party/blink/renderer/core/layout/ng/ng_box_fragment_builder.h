@@ -184,13 +184,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
     return To<NGBlockNode>(node_);
   }
 
-  // Be sure to use the layout result that's relevant for propagation and block
-  // fragmentation considerations. This will normally just be the layout result
-  // that's passed to the function, but if this is a line box with a block
-  // inside (aka. block-in-inline), it will return the layout result for the
-  // block instead.
-  const NGLayoutResult& LayoutResultForPropagation(const NGLayoutResult&) const;
-
   // Add a break token for a child that doesn't yet have any fragments, because
   // its first fragment is to be produced in the next fragmentainer. This will
   // add a break token for the child, but no fragment. Break appeal should
@@ -229,10 +222,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
   // Manually add a break token to the builder. Note that we're assuming that
   // this break token is for content in the same flow as this parent.
   void AddBreakToken(const NGBreakToken*, bool is_in_parallel_flow = false);
-
-  void AddOutOfFlowLegacyCandidate(NGBlockNode,
-                                   const NGLogicalStaticPosition&,
-                                   const LayoutInline* inline_container);
 
   // Before layout we'll determine whether we can tell for sure that the node
   // (or what's left of it to lay out, in case we've already broken) will fit in
@@ -444,8 +433,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
 
   void SetIsAtBlockEnd() { is_at_block_end_ = true; }
   bool IsAtBlockEnd() const { return is_at_block_end_; }
-
-  void SetDisableSimplifiedLayout() { disable_simplified_layout = true; }
 
   void SetIsTruncatedByFragmentationLine() {
     is_truncated_by_fragmentation_line = true;
@@ -707,7 +694,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final : public NGFragmentBuilder {
   bool is_math_fraction_ = false;
   bool is_math_operator_ = false;
   bool is_at_block_end_ = false;
-  bool disable_simplified_layout = false;
   bool is_truncated_by_fragmentation_line = false;
   bool use_last_baseline_for_inline_baseline_ = false;
   LayoutUnit block_offset_for_additional_columns_;

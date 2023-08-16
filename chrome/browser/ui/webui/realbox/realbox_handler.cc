@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/omnibox/omnibox_pedal_implementations.h"
 #include "chrome/browser/ui/search/omnibox_utils.h"
 #include "chrome/browser/ui/webui/metrics_reporter/metrics_reporter.h"
@@ -36,6 +37,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/navigation_metrics/navigation_metrics.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
+#include "components/omnibox/browser/autocomplete_controller_emitter.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
@@ -46,6 +48,7 @@
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
+#include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/browser/search_suggestion_parser.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -386,8 +389,9 @@ std::string GetBase64UrlVariations(Profile* profile) {
 //  to avoid reimplementation of methods like `OnBookmarkLaunched`.
 class RealboxOmniboxClient : public OmniboxClient {
  public:
-  explicit RealboxOmniboxClient(Profile* profile,
-                                content::WebContents* web_contents);
+  RealboxOmniboxClient(LocationBarModel* location_bar_model,
+                       Profile* profile,
+                       content::WebContents* web_contents);
   ~RealboxOmniboxClient() override;
 
   // OmniboxClient:
@@ -410,16 +414,33 @@ class RealboxOmniboxClient : public OmniboxClient {
       FaviconFetchedCallback on_favicon_fetched) override;
   void OnBookmarkLaunched() override;
   void OnURLOpenedFromOmnibox(OmniboxLog* log) override;
+  void OnAutocompleteAccept(
+      const GURL& destination_url,
+      TemplateURLRef::PostContent* post_content,
+      WindowOpenDisposition disposition,
+      ui::PageTransition transition,
+      AutocompleteMatchType::Type match_type,
+      base::TimeTicks match_selection_timestamp,
+      bool destination_url_entered_without_scheme,
+      bool destination_url_entered_with_http_scheme,
+      const std::u16string& text,
+      const AutocompleteMatch& match,
+      const AutocompleteMatch& alternative_nav_match,
+      IDNA2008DeviationCharacter deviation_char_in_hostname) override;
+  LocationBarModel* GetLocationBarModel() override;
 
  private:
+  raw_ptr<LocationBarModel> location_bar_model_;
   raw_ptr<Profile> profile_;
   raw_ptr<content::WebContents> web_contents_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
 };
 
-RealboxOmniboxClient::RealboxOmniboxClient(Profile* profile,
+RealboxOmniboxClient::RealboxOmniboxClient(LocationBarModel* location_bar_model,
+                                           Profile* profile,
                                            content::WebContents* web_contents)
-    : profile_(profile),
+    : location_bar_model_(location_bar_model),
+      profile_(profile),
       web_contents_(web_contents),
       scheme_classifier_(ChromeAutocompleteSchemeClassifier(profile)) {}
 
@@ -496,6 +517,27 @@ void RealboxOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
   }
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)
       ->OnOmniboxOpenedUrl(*log);
+}
+
+void RealboxOmniboxClient::OnAutocompleteAccept(
+    const GURL& destination_url,
+    TemplateURLRef::PostContent* post_content,
+    WindowOpenDisposition disposition,
+    ui::PageTransition transition,
+    AutocompleteMatchType::Type match_type,
+    base::TimeTicks match_selection_timestamp,
+    bool destination_url_entered_without_scheme,
+    bool destination_url_entered_with_http_scheme,
+    const std::u16string& text,
+    const AutocompleteMatch& match,
+    const AutocompleteMatch& alternative_nav_match,
+    IDNA2008DeviationCharacter deviation_char_in_hostname) {
+  web_contents_->OpenURL(content::OpenURLParams(
+      destination_url, content::Referrer(), disposition, transition, false));
+}
+
+LocationBarModel* RealboxOmniboxClient::GetLocationBarModel() {
+  return location_bar_model_;
 }
 
 }  // namespace
@@ -610,8 +652,6 @@ std::string RealboxHandler::AutocompleteMatchVectorIconToResourceName(
   } else if (icon.name == omnibox::kPageIcon.name ||
              icon.name == omnibox::kPageChromeRefreshIcon.name) {
     return kPageIconResourceName;
-  } else if (icon.name == omnibox::kPedalIcon.name) {
-    return kPedalsIconResourceName;
   } else if (icon.name == omnibox::kProductIcon.name ||
              icon.name == omnibox::kProductChromeRefreshIcon.name) {
     return kChromeProductIconResourceName;
@@ -634,12 +674,17 @@ std::string RealboxHandler::AutocompleteMatchVectorIconToResourceName(
 }
 
 // static
+//
+// TODO(jdonnelly): Rename this to ActionVectorIconToResourceName, since this
+// logic is not limited to Pedals but also includes tab switch and Journeys.
 std::string RealboxHandler::PedalVectorIconToResourceName(
     const gfx::VectorIcon& icon) {
-  if (icon.name == omnibox::kSwitchIcon.name) {
+  if (icon.name == omnibox::kSwitchIcon.name ||
+      icon.name == omnibox::kSwitchCr2023Icon.name) {
     return kTabIconResourceName;
   }
-  if (icon.name == omnibox::kDinoIcon.name) {
+  if (icon.name == omnibox::kDinoIcon.name ||
+      icon.name == omnibox::kDinoCr2023Icon.name) {
     return kDinoIconResourceName;
   }
   if (icon.name == omnibox::kDriveFormsIcon.name) {
@@ -668,14 +713,16 @@ std::string RealboxHandler::PedalVectorIconToResourceName(
     return kGoogleGIconResourceName;
   }
 #endif
-  if (icon.name == omnibox::kIncognitoIcon.name) {
+  if (icon.name == omnibox::kIncognitoIcon.name ||
+      icon.name == omnibox::kIncognitoCr2023Icon.name) {
     return kIncognitoIconResourceName;
   }
   if (icon.name == omnibox::kJourneysIcon.name ||
       icon.name == omnibox::kJourneysChromeRefreshIcon.name) {
     return kJourneysIconResourceName;
   }
-  if (icon.name == omnibox::kPedalIcon.name) {
+  if (icon.name == omnibox::kPedalIcon.name ||
+      icon.name == omnibox::kProductChromeRefreshIcon.name) {
     return kPedalsIconResourceName;
   }
 #if BUILDFLAG(IS_MAC)
@@ -710,29 +757,49 @@ RealboxHandler::RealboxHandler(
     mojo::PendingReceiver<omnibox::mojom::PageHandler> pending_page_handler,
     Profile* profile,
     content::WebContents* web_contents,
-    MetricsReporter* metrics_reporter)
+    MetricsReporter* metrics_reporter,
+    bool is_omnibox_popup_handler)
     : profile_(profile),
       web_contents_(web_contents),
       metrics_reporter_(metrics_reporter),
       page_handler_(this, std::move(pending_page_handler)) {
-  // Indirectly observe all the `AutocompleteController` instances registered
-  // with the `AutocompleteControllerEmitter`. In addition to observing the
-  // instance associated with this handler, `RealboxHandler` also observes
-  // omnibox's instance for when it is used in the context of the WebUI omnibox.
-  controller_emitter_observation_.Observe(
-      AutocompleteControllerEmitter::GetForBrowserContext(profile_));
+  // Keep a reference to the OmniboxController instance owned by the OmniboxView
+  // when the handler is being used in the context of the omnibox popup.
+  // Otherwise, create own instance of OmniboxController. Either way, observe
+  // the AutocompleteController instance owned by the OmniboxController.
+  if (is_omnibox_popup_handler) {
+    // TODO(crbug.com/1396174): This seems hacky. But currently there is no API
+    //  for getting the browser instance from the web contents in top chrome.
+    Browser* active_browser = chrome::FindLastActive();
+    controller_ = search::GetOmniboxView(active_browser)->controller();
+  } else {
+    owned_controller_ = std::make_unique<OmniboxController>(
+        /*view=*/nullptr,
+        std::make_unique<RealboxOmniboxClient>(/*location_bar_model=*/this,
+                                               profile_, web_contents_));
+    controller_ = owned_controller_.get();
+  }
 
-  controller_ = std::make_unique<OmniboxController>(
-      /*view=*/nullptr,
-      /*edit_model_delegate=*/this,
-      std::make_unique<RealboxOmniboxClient>(profile_, web_contents_));
+  autocomplete_controller_observation_.Observe(autocomplete_controller());
 }
 
-RealboxHandler::~RealboxHandler() = default;
+RealboxHandler::~RealboxHandler() {
+  // Avoids dangling pointer warning when `controller_` is not owned.
+  controller_ = nullptr;
+}
 
 void RealboxHandler::SetPage(
     mojo::PendingRemote<omnibox::mojom::Page> pending_page) {
   page_.Bind(std::move(pending_page));
+}
+
+void RealboxHandler::OnFocusChanged(bool focused) {
+  if (focused) {
+    edit_model()->OnSetFocus(false);
+  } else {
+    edit_model()->OnWillKillFocus();
+    edit_model()->OnKillFocus();
+  }
 }
 
 void RealboxHandler::QueryAutocomplete(const std::u16string& input,
@@ -746,8 +813,9 @@ void RealboxHandler::QueryAutocomplete(const std::u16string& input,
     return;
   }
 
-  if (time_user_first_modified_realbox_.is_null() && !is_on_focus)
-    time_user_first_modified_realbox_ = base::TimeTicks::Now();
+  // This will SetInputInProgress and consequently mark the input timer so that
+  // Omnibox.TypingDuration will be logged correctly.
+  edit_model()->SetUserText(input);
 
   AutocompleteInput autocomplete_input(
       input, metrics::OmniboxEventProto::NTP_REALBOX,
@@ -768,21 +836,16 @@ void RealboxHandler::QueryAutocomplete(const std::u16string& input,
 
 void RealboxHandler::StopAutocomplete(bool clear_result) {
   autocomplete_controller()->Stop(clear_result);
-
-  if (clear_result)
-    time_user_first_modified_realbox_ = base::TimeTicks();
 }
 
-void RealboxHandler::OpenAutocompleteMatch(
-    uint8_t line,
-    const GURL& url,
-    bool are_matches_showing,
-    base::TimeDelta time_elapsed_since_last_focus,
-    uint8_t mouse_button,
-    bool alt_key,
-    bool ctrl_key,
-    bool meta_key,
-    bool shift_key) {
+void RealboxHandler::OpenAutocompleteMatch(uint8_t line,
+                                           const GURL& url,
+                                           bool are_matches_showing,
+                                           uint8_t mouse_button,
+                                           bool alt_key,
+                                           bool ctrl_key,
+                                           bool meta_key,
+                                           bool shift_key) {
   const AutocompleteMatch* match = GetMatchWithUrl(line, url);
   if (!match) {
     // This can happen due to asynchronous updates changing the result while
@@ -870,29 +933,23 @@ void RealboxHandler::OnResultChanged(AutocompleteController* controller,
     metrics_reporter_->Mark("ResultChanged");
   }
 
-  // Update the omnibox if the controller does not belong to the realbox.
-  if (controller != autocomplete_controller()) {
-    if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup)) {
-      page_->OmniboxAutocompleteResultChanged(CreateAutocompleteResult(
-          controller->input().text(), controller->result(),
-          BookmarkModelFactory::GetForBrowserContext(profile_),
-          profile_->GetPrefs()));
-    }
-    return;
-  }
-
-  // Update the realbox only if the controller belongs to the realbox.
   page_->AutocompleteResultChanged(CreateAutocompleteResult(
       autocomplete_controller()->input().text(),
       autocomplete_controller()->result(),
       BookmarkModelFactory::GetForBrowserContext(profile_),
       profile_->GetPrefs()));
 
-  if (autocomplete_controller()->done()) {
-    if (SearchPrefetchService* search_prefetch_service =
-            SearchPrefetchServiceFactory::GetForProfile(profile_)) {
-      search_prefetch_service->OnResultChanged(
-          web_contents_, autocomplete_controller()->result());
+  // The owned OmniboxController does not observe the AutocompleteController.
+  // Notify the prerender here to start preloading if the results are ready.
+  // TODO(crbug.com/1396174): Make the owned OmniboxController observe the
+  //  AutocompleteController and move this logic to the RealboxOmniboxClient.
+  if (owned_controller_) {
+    if (autocomplete_controller()->done()) {
+      if (SearchPrefetchService* search_prefetch_service =
+              SearchPrefetchServiceFactory::GetForProfile(profile_)) {
+        search_prefetch_service->OnResultChanged(
+            web_contents_, autocomplete_controller()->result());
+      }
     }
   }
 }
@@ -901,52 +958,9 @@ void RealboxHandler::SelectMatchAtLine(size_t old_line, size_t new_line) {
   page_->SelectMatchAtLine(new_line);
 }
 
-// OmniboxEditModelDelegate:
-void RealboxHandler::OnAutocompleteAccept(
-    const GURL& destination_url,
-    TemplateURLRef::PostContent* post_content,
-    WindowOpenDisposition disposition,
-    ui::PageTransition transition,
-    AutocompleteMatchType::Type match_type,
-    base::TimeTicks match_selection_timestamp,
-    bool destination_url_entered_without_scheme,
-    bool destination_url_entered_with_http_scheme,
-    const std::u16string& text,
-    const AutocompleteMatch& match,
-    const AutocompleteMatch& alternative_nav_match,
-    IDNA2008DeviationCharacter deviation_char_in_hostname) {
-  destination_url_ = destination_url;
-  post_content_ = post_content;
-  disposition_ = disposition;
-  transition_ = transition;
-  match_selection_timestamp_ = match_selection_timestamp;
-  destination_url_entered_without_scheme_ =
-      destination_url_entered_without_scheme;
-  destination_url_entered_with_http_scheme_ =
-      destination_url_entered_with_http_scheme;
-
-  web_contents_->OpenURL(content::OpenURLParams(
-      destination_url_, content::Referrer(), disposition_, transition_, false));
-}
-
-void RealboxHandler::OnInputInProgress(bool in_progress) {}
-
-void RealboxHandler::OnChanged() {}
-
-void RealboxHandler::OnPopupVisibilityChanged() {}
-
-LocationBarModel* RealboxHandler::GetLocationBarModel() {
-  return this;
-}
-
-const LocationBarModel* RealboxHandler::GetLocationBarModel() const {
-  return this;
-}
-
 // LocationBarModel:
-// Note, the implementation here is mostly not needed but the
-// `OmniboxEditModelDelegate` implementation currently needs to
-// provide a full working instance and some parts are used.
+// Note, the implementation here is mostly not needed but the `OmniboxEditModel`
+// currently needs a full working instance and some parts are used.
 std::u16string RealboxHandler::GetFormattedFullURL() const {
   return u"";
 }

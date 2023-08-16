@@ -480,6 +480,8 @@ bool TabUsageRecorderBrowserAgent::ShouldRecordPageLoadStartForNavigation(
   return false;
 }
 
+#pragma mark - WebStateObserver
+
 void TabUsageRecorderBrowserAgent::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
@@ -521,26 +523,44 @@ void TabUsageRecorderBrowserAgent::WebStateDestroyed(web::WebState* web_state) {
   NOTREACHED();
 }
 
-void TabUsageRecorderBrowserAgent::WebStateInsertedAt(
+#pragma mark - WebStateListObserver
+
+void TabUsageRecorderBrowserAgent::WebStateListChanged(
     WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index,
-    bool activating) {
-  if (activating)
-    web_state_created_selected_ = web_state;
+    const WebStateListChange& change,
+    const WebStateSelection& selection) {
+  switch (change.type()) {
+    case WebStateListChange::Type::kSelectionOnly:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // WebStateActivatedAt() to here. Note that here is reachable only when
+      // `reason` == ActiveWebStateChangeReason::Activated.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // WebStateDetachedAt() to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace: {
+      const WebStateListChangeReplace& replace_change =
+          change.As<WebStateListChangeReplace>();
+      OnWebStateDestroyed(replace_change.replaced_web_state());
+      replace_change.inserted_web_state()->AddObserver(this);
+      break;
+    }
+    case WebStateListChange::Type::kInsert: {
+      const WebStateListChangeInsert& insert_change =
+          change.As<WebStateListChangeInsert>();
+      web::WebState* inserted_web_state = insert_change.inserted_web_state();
+      if (selection.activating) {
+        web_state_created_selected_ = inserted_web_state;
+      }
 
-  web_state->AddObserver(this);
-}
-
-void TabUsageRecorderBrowserAgent::WebStateReplacedAt(
-    WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int index) {
-  OnWebStateDestroyed(old_web_state);
-
-  if (new_web_state)
-    new_web_state->AddObserver(this);
+      inserted_web_state->AddObserver(this);
+      break;
+    }
+  }
 }
 
 void TabUsageRecorderBrowserAgent::WebStateDetachedAt(

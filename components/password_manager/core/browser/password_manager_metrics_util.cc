@@ -156,14 +156,9 @@ void LogUIDisplayDisposition(UIDisplayDisposition disposition) {
                                 disposition, NUM_DISPLAY_DISPOSITIONS);
 }
 
-void LogFormDataDeserializationStatus(FormDeserializationStatus status) {
-  base::UmaHistogramEnumeration("PasswordManager.FormDataDeserializationStatus",
-                                status, NUM_DESERIALIZATION_STATUSES);
-}
-
-void LogFilledCredentialIsFromAndroidApp(bool from_android) {
-  base::UmaHistogramBoolean("PasswordManager.FilledCredentialWasFromAndroidApp",
-                            from_android);
+void LogFilledPasswordFromAndroidApp(bool from_android) {
+  base::UmaHistogramBoolean(
+      "PasswordManager.FilledCredentialWasFromAndroidApp2", from_android);
 }
 
 void LogPasswordSyncState(PasswordSyncState state) {

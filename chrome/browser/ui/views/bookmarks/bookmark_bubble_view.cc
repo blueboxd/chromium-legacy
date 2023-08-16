@@ -50,6 +50,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/base/models/image_model.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -302,6 +303,9 @@ void BookmarkBubbleView::ShowBubble(
           ui::DialogModelButton::Params()
               .SetLabel(l10n_util::GetStringUTF16(
                   IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK))
+              .SetStyle(features::IsChromeRefresh2023()
+                            ? ui::ButtonStyle::kTonal
+                            : ui::ButtonStyle::kDefault)
               .AddAccelerator(ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN)))
       .AddTextfield(
           kBookmarkName,
@@ -330,7 +334,8 @@ void BookmarkBubbleView::ShowBubble(
     dialog_model_builder.AddCustomField(
         std::make_unique<views::BubbleDialogModelHost::CustomView>(
             std::make_unique<PriceTrackingView>(
-                profile, url, *product_image.ToImageSkia(), is_price_tracked),
+                profile, url, *product_image.ToImageSkia(), is_price_tracked,
+                product_info.value()),
             views::BubbleDialogModelHost::FieldType::kControl),
         kPriceTrackingBookmarkViewElementId);
   }

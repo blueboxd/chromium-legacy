@@ -397,7 +397,7 @@ V4L2VideoDecoderDelegateH265::SubmitFrameMetadata(
     v4l2_scaling_matrix.scaling_list_dc_coef_32x32[0] =
         scaling_list.scaling_list_dc_coef_32x32[0];
     v4l2_scaling_matrix.scaling_list_dc_coef_32x32[1] =
-        scaling_list.scaling_list_dc_coef_32x32[1];
+        scaling_list.scaling_list_dc_coef_32x32[3];
   }
 
   memset(&ctrl, 0, sizeof(ctrl));
@@ -414,6 +414,8 @@ V4L2VideoDecoderDelegateH265::SubmitFrameMetadata(
       .pic_order_cnt_val = pic->pic_order_cnt_val_,
       .short_term_ref_pic_set_size = static_cast<__u16>(slice_hdr->st_rps_bits),
       .long_term_ref_pic_set_size = static_cast<__u16>(slice_hdr->lt_rps_bits),
+      .num_delta_pocs_of_ref_rps_idx =
+          static_cast<__u8>(slice_hdr->st_ref_pic_set.rps_idx_num_delta_pocs),
       .flags = static_cast<__u64>(
           (pic->irap_pic_ ? V4L2_HEVC_DECODE_PARAM_FLAG_IRAP_PIC : 0) |
           ((pic->nal_unit_type_ >= H265NALU::IDR_W_RADL &&

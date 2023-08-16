@@ -85,10 +85,10 @@ public class AwSettingsTest {
             new AwActivityTestRule() {
                 @Override
                 public TestDependencyFactory createTestDependencyFactory() {
-                    if (mOverridenFactory == null) {
+                    if (mOverriddenFactory == null) {
                         return new TestDependencyFactory();
                     } else {
-                        return mOverridenFactory;
+                        return mOverriddenFactory;
                     }
                 }
             };
@@ -3358,8 +3358,7 @@ public class AwSettingsTest {
             Assert.assertEquals(1, httpServer.getRequestCount(imageUrl));
 
             awSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
-            if (AwFeatureMap.getInstance().isEnabled(
-                        AwFeatures.WEBVIEW_MIXED_CONTENT_AUTOUPGRADES)) {
+            if (AwFeatureMap.isEnabled(AwFeatures.WEBVIEW_MIXED_CONTENT_AUTOUPGRADES)) {
                 // COMPATIBILITY_MODE enables autoupgrades for passive mixed content (including
                 // images), so we set the image url to the HTTP version of the HTTPS server, and
                 // check it was autoupgraded by expecting the HTTPS server to be hit.
@@ -3428,11 +3427,11 @@ public class AwSettingsTest {
         }
     }
 
-    private TestDependencyFactory mOverridenFactory;
+    private TestDependencyFactory mOverriddenFactory;
 
     @After
     public void tearDown() {
-        mOverridenFactory = null;
+        mOverriddenFactory = null;
     }
 
     private static class EmptyDocumentPersistenceTestDependencyFactory
@@ -3451,7 +3450,7 @@ public class AwSettingsTest {
     }
 
     private void doAllowEmptyDocumentPersistenceTest(boolean allow) throws Throwable {
-        mOverridenFactory = new EmptyDocumentPersistenceTestDependencyFactory(allow);
+        mOverriddenFactory = new EmptyDocumentPersistenceTestDependencyFactory(allow);
 
         final TestAwContentsClient client = new TestAwContentsClient();
         final AwTestContainerView mContainerView =
@@ -3524,7 +3523,7 @@ public class AwSettingsTest {
     }
 
     private void selectionUpdateOnMutatingSelectionRangeTest(boolean doNotUpdate) throws Throwable {
-        mOverridenFactory = new SelectionRangeTestDependencyFactory(doNotUpdate);
+        mOverriddenFactory = new SelectionRangeTestDependencyFactory(doNotUpdate);
 
         final TestAwContentsClient client = new TestAwContentsClient();
         final AwTestContainerView mContainerView =

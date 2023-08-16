@@ -375,6 +375,8 @@ void PasswordFormManager::OnUpdateUsernameFromPrompt(
     const std::u16string& new_username) {
   DCHECK(parsed_submitted_form_);
   parsed_submitted_form_->username_value = new_username;
+  parsed_submitted_form_->username_element_renderer_id =
+      autofill::FieldRendererId();
   parsed_submitted_form_->username_element.clear();
 
   password_save_manager_->UsernameUpdatedInBubble();
@@ -392,6 +394,8 @@ void PasswordFormManager::OnUpdateUsernameFromPrompt(
 
     if (alternative_username_it != alternative_usernames.end()) {
       parsed_submitted_form_->username_element = alternative_username_it->name;
+      parsed_submitted_form_->username_element_renderer_id =
+          alternative_username_it->field_renderer_id;
       votes_uploader_.set_username_change_state(
           VotesUploader::UsernameChangeState::kChangedToKnownValue);
     } else {
@@ -420,6 +424,8 @@ void PasswordFormManager::OnUpdatePasswordFromPrompt(
       alternative_passwords, new_password, &AlternativeElement::value);
   if (alternative_password_it != alternative_passwords.end()) {
     parsed_submitted_form_->password_element = alternative_password_it->name;
+    parsed_submitted_form_->password_element_renderer_id =
+        alternative_password_it->field_renderer_id;
   }
 
   CreatePendingCredentials();
@@ -586,8 +592,11 @@ void PasswordFormManager::UpdateStateOnUserInput(
   // modified, the user might have modified the username.
   std::u16string generated_password =
       password_save_manager_->GetGeneratedPassword();
-  if (votes_uploader_.get_generation_element() == field_id)
+  CHECK(!generated_password.empty());
+  if (votes_uploader_.get_generation_element() == field_id) {
     generated_password = field_value;
+    CHECK(!generated_password.empty());
+  }
   PresaveGeneratedPasswordInternal(*observed_form(), generated_password);
 }
 
@@ -743,8 +752,8 @@ void PasswordFormManager::OnTimeout() {
 
 bool PasswordFormManager::WebAuthnCredentialsAvailable() const {
 #if BUILDFLAG(IS_ANDROID)
-  if (WebAuthnCredManDelegate::IsCredManEnabled()) {
-    WebAuthnCredManDelegate* delegate =
+  if (webauthn::WebAuthnCredManDelegate::IsCredManEnabled()) {
+    webauthn::WebAuthnCredManDelegate* delegate =
         client_->GetWebAuthnCredManDelegateForDriver(driver_.get());
     return delegate ? delegate->HasResults() : false;
   }

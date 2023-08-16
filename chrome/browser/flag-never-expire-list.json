@@ -14,6 +14,7 @@
 // test (AboutFlagsTest.OnlyPermittedFlagsNeverExpire).
 [
   "allow-all-sites-to-initiate-mirroring",
+  "allow-devtools-in-system-ui",
   "allow-previews",
   "always-enable-hdcp",
   "arc-native-bridge-toggle",
@@ -123,6 +124,7 @@
   "ui-slow-animations",
   "unsafely-treat-insecure-origin-as-secure",
   "update-menu-item-custom-summary",
+  "use-android-staging-smds",
   "use-angle",
   "use-custom-messages-domain",
   "use-fake-device-for-media-stream",

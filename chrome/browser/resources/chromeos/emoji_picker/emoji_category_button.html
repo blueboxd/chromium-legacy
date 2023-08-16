@@ -39,6 +39,7 @@
   class$="[[calculateClassName(active, searchActive)]]"
   iron-icon="[[icon]]"
   on-click="handleClick"
-  aria-label="[[name]]"
+  aria-label$="[[getAriaLabel(name, gifSupport)]]"
+  aria-pressed$="[[getAriaPressedState(gifSupport)]]"
 >
 </cr-icon-button>

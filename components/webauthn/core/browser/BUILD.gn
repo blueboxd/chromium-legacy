@@ -37,8 +37,15 @@ static_library("test_support") {
   deps = [
     ":browser",
     "//base/test:test_support",
+    "//components/sync",
     "//content/public/browser",
     "//testing/gmock",
     "//testing/gtest",
   ]
+  if (!is_ios && !is_android) {
+    sources += [
+      "test_passkey_model.cc",
+      "test_passkey_model.h",
+    ]
+  }
 }

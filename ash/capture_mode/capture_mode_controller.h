@@ -143,15 +143,13 @@ class ASH_EXPORT CaptureModeController
   // recordings (cannot be set mid recording), or to a future capture mode
   // session when Start() is called. The effective enabled state takes into
   // account the `AudioCaptureAllowed` policy.
-  void SetAudioRecordingMode(AudioRecordingMode mode) {
-    audio_recording_mode_ = mode;
-  }
+  void SetAudioRecordingMode(AudioRecordingMode mode);
 
   // Sets the flag to enable the demo tools feature, which will be applied to
   // any future recordings (cannot be set mid recording), or to a future capture
   // mode session when Start() is called. Currently the demo tools feature is
   // behind the feature flag.
-  void EnableDemoTools(bool enable) { enable_demo_tools_ = enable; }
+  void EnableDemoTools(bool enable);
 
   // Starts a new capture session with the most-recently used `type_` and
   // `source_`. Also records what `entry_type` that started capture mode. The
@@ -212,12 +210,12 @@ class ASH_EXPORT CaptureModeController
   // individual file. Note: this won't start a capture mode session.
   void CaptureScreenshotsOfAllDisplays();
 
-  // Performs the instantscreen capture for the `given_window` which bypasses
+  // Performs the instant screen capture for the `given_window` which bypasses
   // the capture mode session.
   void CaptureScreenshotOfGivenWindow(aura::Window* given_window);
 
   // Called only while a capture session is in progress to perform the actual
-  // capture depending on the current selected |source_| and |type_|, and ends
+  // capture depending on the current selected `source_` and `type_`, and ends
   // the capture session.
   void PerformCapture();
 
@@ -301,12 +299,6 @@ class ASH_EXPORT CaptureModeController
   // Skips the 3-second count down, and IsCaptureAllowed() checks, and starts
   // video recording right away for testing purposes.
   void StartVideoRecordingImmediatelyForTesting();
-
-  // Called when the "Share to YouTube" button is pressed to
-  // open the YouTube share video page.
-  // TODO(b/276982457): Hook this function with the "Share to YouTube" button to
-  // be shown in the notification area once implemented.
-  void OnShareToYouTubeButtonPressed();
 
   void AddObserver(CaptureModeObserver* observer);
   void RemoveObserver(CaptureModeObserver* observer);
@@ -399,16 +391,17 @@ class ASH_EXPORT CaptureModeController
   // capture parameters they need. They will end the sessions themselves.
   // They should never be called if IsCaptureAllowed() returns false.
   void CaptureImage(const CaptureParams& capture_params,
-                    const base::FilePath& path);
+                    const base::FilePath& path,
+                    const CaptureModeBehavior* behavior);
   void CaptureVideo(const CaptureParams& capture_params);
 
   // Called back when an image has been captured to trigger an attempt to save
-  // the image as a file. |timestamp| is the time at which the capture was
-  // triggered. |was_cursor_originally_blocked| is whether the cursor was
-  // blocked at the time the screenshot capture request was made. |png_bytes| is
-  // the buffer containing the captured image in a PNG format.
+  // the image as a file. `was_cursor_originally_blocked` is whether the cursor
+  // was blocked at the time the screenshot capture request was made.
+  // `png_bytes` is the buffer containing the captured image in a PNG format.
   void OnImageCaptured(const base::FilePath& path,
                        bool was_cursor_originally_blocked,
+                       const CaptureModeBehavior* behavior,
                        scoped_refptr<base::RefCountedMemory> png_bytes);
 
   // Called back when an attempt to save the image file has been completed, with
@@ -419,6 +412,7 @@ class ASH_EXPORT CaptureModeController
   // clipboard. If saving was successful, then the image was saved in
   // `file_saved_path`.
   void OnImageFileSaved(scoped_refptr<base::RefCountedMemory> png_bytes,
+                        const CaptureModeBehavior* behavior,
                         const base::FilePath& file_saved_path);
 
   // Called back when the check for custom folder's availability is done in
@@ -437,12 +431,15 @@ class ASH_EXPORT CaptureModeController
                         const CaptureModeBehavior* behavior);
 
   // Shows a preview notification of the newly taken screenshot or screen
-  // recording.
+  // recording. Customized notification view will be decided based on the
+  // `behavior`.
   void ShowPreviewNotification(const base::FilePath& screen_capture_path,
                                const gfx::Image& preview_image,
-                               const CaptureModeType type);
+                               const CaptureModeType type,
+                               const CaptureModeBehavior* behavior);
   void HandleNotificationClicked(const base::FilePath& screen_capture_path,
                                  const CaptureModeType type,
+                                 const BehaviorType behavior_type,
                                  absl::optional<int> button_index);
 
   // Builds a path for a file of an image screenshot, or a video screen

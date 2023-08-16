@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/debug/crash_logging.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
@@ -25,7 +24,6 @@
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/input/browser_controls_offset_manager.h"
 #include "cc/metrics/compositor_timing_history.h"
-#include "cc/metrics/jank_injector.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/layer_tree_frame_sink.h"
@@ -38,8 +36,7 @@
 #include "components/power_scheduler/power_mode_arbiter.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/frame_timing_details.h"
-#include "components/viz/common/gpu/context_provider.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace cc {
@@ -49,9 +46,6 @@ namespace {
 // Measured in seconds.
 constexpr auto kSmoothnessTakesPriorityExpirationDelay =
     base::Milliseconds(250);
-
-// Make this less than kHungRendererDelay (15 sec).
-constexpr base::TimeDelta kHungCommitTimeout = base::Seconds(14);
 
 }  // namespace
 
@@ -286,10 +280,11 @@ void ProxyImpl::FinishGLOnImpl(CompletionEvent* completion) {
   TRACE_EVENT0("cc", "ProxyImpl::FinishGLOnImplThread");
   DCHECK(IsImplThread());
   if (host_impl_->layer_tree_frame_sink()) {
-    viz::ContextProvider* context_provider =
+    auto* context_provider =
         host_impl_->layer_tree_frame_sink()->context_provider();
-    if (context_provider)
-      context_provider->ContextGL()->Finish();
+    if (context_provider) {
+      context_provider->RasterInterface()->Finish();
+    }
   }
   completion->Signal();
 }
@@ -379,9 +374,6 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
           completion_event, start_time, MainThreadTaskRunner(),
           proxy_main_weak_ptr_),
       std::move(commit_state), unsafe_state, commit_timestamps);
-  hung_commit_timer_.Start(
-      FROM_HERE, kHungCommitTimeout,
-      base::BindOnce(&ProxyImpl::OnHungCommit, base::Unretained(this)));
 
   // Extract metrics data from the layer tree host and send them to the
   // scheduler to pass them to the compositor_timing_history object.
@@ -391,17 +383,6 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
   // frame to sync them.
   if (!scroll_and_viewport_changes_synced)
     scheduler_->SetNeedsBeginMainFrame();
-}
-
-void ProxyImpl::OnHungCommit() {
-  UMA_HISTOGRAM_BOOLEAN("Compositing.Renderer.CommitHung", true);
-  static auto* hung_commit_data = base::debug::AllocateCrashKeyString(
-      "hung_commit", base::debug::CrashKeySize::Size1024);
-  std::string debug_info = host_impl_->GetHungCommitDebugInfo() +
-                           scheduler_->GetHungCommitDebugInfo();
-  LOG(ERROR) << "commit hung: " << debug_info;
-  base::debug::SetCrashKeyString(hung_commit_data, debug_info);
-  scheduler_->TraceHungCommitDebugInfo();
 }
 
 void ProxyImpl::DidLoseLayerTreeFrameSinkOnImplThread() {
@@ -494,10 +475,6 @@ void ProxyImpl::SetVideoNeedsBeginFrames(bool needs_begin_frames) {
   // In tests the layer tree is destroyed after the scheduler is.
   if (scheduler_)
     scheduler_->SetVideoNeedsBeginFrames(needs_begin_frames);
-}
-
-bool ProxyImpl::HasInvalidationAnimation() const {
-  return host_impl_->mutator_host()->HasInvalidationAnimation();
 }
 
 bool ProxyImpl::IsInsideDraw() {
@@ -731,10 +708,6 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(
     const viz::BeginFrameArgs& args) {
   DCHECK(IsImplThread());
 
-  if (is_jank_injection_enabled_ && host_impl_->CanInjectJankOnMain()) {
-    jank_injector_.ScheduleJankIfNeeded(args, MainThreadTaskRunner());
-  }
-
   benchmark_instrumentation::ScopedBeginFrameTask begin_frame_task(
       benchmark_instrumentation::kSendBeginFrame,
       args.frame_id.sequence_number);
@@ -825,7 +798,6 @@ void ProxyImpl::ScheduledActionCommit() {
   }
 
   data_for_commit_.reset();
-  hung_commit_timer_.Stop();
 }
 
 void ProxyImpl::ScheduledActionPostCommit() {
@@ -982,7 +954,6 @@ base::SingleThreadTaskRunner* ProxyImpl::MainThreadTaskRunner() {
 
 void ProxyImpl::SetSourceURL(ukm::SourceId source_id, const GURL& url) {
   DCHECK(IsImplThread());
-  is_jank_injection_enabled_ = JankInjector::IsEnabled(url);
   host_impl_->SetActiveURL(url, source_id);
 }
 

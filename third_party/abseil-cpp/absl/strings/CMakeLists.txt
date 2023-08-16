@@ -317,7 +317,7 @@ absl_cc_test(
     absl::core_headers
     absl::pow10_helper
     absl::config
-    absl::raw_logging_internal
+    absl::log
     absl::random_random
     absl::random_distributions
     absl::strings_internal
@@ -372,9 +372,9 @@ absl_cc_test(
   COPTS
     ${ABSL_TEST_COPTS}
   DEPS
-    absl::strings
+    absl::check
     absl::config
-    absl::raw_logging_internal
+    absl::strings
     GTest::gmock_main
 )
 
@@ -432,6 +432,7 @@ absl_cc_library(
     absl::strings
     absl::config
     absl::core_headers
+    absl::inlined_vector
     absl::numeric_representation
     absl::type_traits
     absl::utility
@@ -516,6 +517,7 @@ absl_cc_test(
     absl::strings
     absl::str_format_internal
     absl::core_headers
+    absl::log
     absl::raw_logging_internal
     absl::int128
     GTest::gmock_main
@@ -544,6 +546,20 @@ absl_cc_test(
   DEPS
     absl::str_format_internal
     absl::core_headers
+    GTest::gmock_main
+)
+
+absl_cc_test(
+  NAME
+    char_formatting_test
+  SRCS
+    "char_formatting_test.cc"
+  COPTS
+    ${ABSL_TEST_COPTS}
+  DEPS
+    absl::base
+    absl::str_format
+    absl::strings
     GTest::gmock_main
 )
 
@@ -960,19 +976,20 @@ absl_cc_test(
   COPTS
     ${ABSL_TEST_COPTS}
   DEPS
-    absl::cord
-    absl::str_format
-    absl::strings
     absl::base
+    absl::check
     absl::config
+    absl::cord
     absl::cord_test_helpers
     absl::cordz_test_helpers
     absl::core_headers
     absl::endian
-    absl::hash
-    absl::random_random
-    absl::raw_logging_internal
     absl::fixed_array
+    absl::hash
+    absl::log
+    absl::random_random
+    absl::str_format
+    absl::strings
     GTest::gmock_main
 )
 

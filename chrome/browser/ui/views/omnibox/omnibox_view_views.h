@@ -70,10 +70,9 @@ class OmniboxViewViews
   // Max width of the gradient mask used to smooth ElideAnimation edges.
   static const int kSmoothingGradientMaxWidth = 15;
 
-  OmniboxViewViews(OmniboxEditModelDelegate* edit_model_delegate,
-                   std::unique_ptr<OmniboxClient> client,
+  OmniboxViewViews(std::unique_ptr<OmniboxClient> client,
                    bool popup_window_mode,
-                   LocationBarView* location_bar,
+                   LocationBarView* location_bar_view,
                    const gfx::FontList& font_list);
   OmniboxViewViews(const OmniboxViewViews&) = delete;
   OmniboxViewViews& operator=(const OmniboxViewViews&) = delete;
@@ -330,7 +329,7 @@ class OmniboxViewViews
   std::unique_ptr<OmniboxPopupView> popup_view_;
 
   // Selection persisted across temporary text changes, like popup suggestions.
-  std::vector<gfx::Range> saved_temporary_selection_;
+  std::vector<gfx::Range> saved_temporary_selection_ = {{}};
 
   // Holds the user's selection across focus changes.  There is only a saved
   // selection if this range IsValid().

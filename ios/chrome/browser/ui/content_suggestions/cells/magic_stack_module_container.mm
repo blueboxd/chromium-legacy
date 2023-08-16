@@ -5,11 +5,14 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/magic_stack_module_container.h"
 
 #import "base/notreached.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/magic_stack_module_container_delegate.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -20,16 +23,17 @@
 namespace {
 
 // The horizontal inset for the content within this container.
-const CGFloat kContentHorizontalInset = 16.0f;
+const CGFloat kContentHorizontalInset = 20.0f;
 
 // The top inset for the content within this container.
-const CGFloat kContentTopInset = 14.0f;
+const CGFloat kContentTopInset = 16.0f;
 
 // The bottom inset for the content within this container.
-const CGFloat kContentBottomInset = 10.0f;
+const CGFloat kContentBottomInset = 24.0f;
+const CGFloat kReducedContentBottomInset = 10.0f;
 
 // Vertical spacing between the content views.
-const float kContentVerticalSpacing = 12.0f;
+const float kContentVerticalSpacing = 20.0f;
 
 // The corner radius of this container.
 const float kCornerRadius = 24;
@@ -37,6 +41,12 @@ const float kCornerRadius = 24;
 // The width of the modules.
 const int kModuleWidthCompact = 343;
 const int kModuleWidthRegular = 382;
+
+const CGFloat kSeparatorHeight = 0.5;
+
+// The margin spacing between the top horizontal StackView (containing the title
+// and "See More" button) and the module's overall vertical container StackView.
+const CGFloat kTitleStackViewTrailingMargin = 16.0f;
 
 }  // namespace
 
@@ -70,13 +80,41 @@ const int kModuleWidthRegular = 382;
     self.layer.cornerRadius = kCornerRadius;
     self.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
+    UIStackView* titleStackView = [[UIStackView alloc] init];
+    titleStackView.alignment = UIStackViewAlignmentCenter;
+    titleStackView.axis = UILayoutConstraintAxisHorizontal;
+    titleStackView.distribution = UIStackViewDistributionFill;
+    // Resist Vertical expansion so all titles are the same height, allowing
+    // content view to fill the rest of the module space.
+    [titleStackView setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                      forAxis:UILayoutConstraintAxisVertical];
+
     UILabel* title = [[UILabel alloc] init];
     title.text = [MagicStackModuleContainer titleStringForModule:type];
-    title.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    title.font =
+        CreateDynamicFont(UIFontTextStyleFootnote, UIFontWeightSemibold);
+    title.adjustsFontForContentSizeCategory = YES;
     title.textColor = [UIColor colorNamed:kTextPrimaryColor];
     title.accessibilityTraits |= UIAccessibilityTraitHeader;
     title.accessibilityIdentifier =
         [MagicStackModuleContainer titleStringForModule:type];
+    [titleStackView addArrangedSubview:title];
+
+    if ([self shouldShowSeeMore]) {
+      UIButton* showMoreButton = [[UIButton alloc] init];
+      [showMoreButton
+          setTitle:l10n_util::GetNSString(IDS_IOS_MAGIC_STACK_SEE_MORE)
+          forState:UIControlStateNormal];
+      [showMoreButton setTitleColor:[UIColor colorNamed:kBlueColor]
+                           forState:UIControlStateNormal];
+      [showMoreButton.titleLabel
+          setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]];
+      showMoreButton.titleLabel.adjustsFontForContentSizeCategory = YES;
+      [showMoreButton addTarget:self
+                         action:@selector(seeMoreButtonWasTapped:)
+               forControlEvents:UIControlEventTouchUpInside];
+      [titleStackView addArrangedSubview:showMoreButton];
+    }
 
     UIStackView* stackView = [[UIStackView alloc] init];
     stackView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -84,7 +122,31 @@ const int kModuleWidthRegular = 382;
     stackView.axis = UILayoutConstraintAxisVertical;
     stackView.spacing = kContentVerticalSpacing;
     stackView.distribution = UIStackViewDistributionFill;
-    [stackView addArrangedSubview:title];
+    if ([title.text length] > 0) {
+      [stackView addArrangedSubview:titleStackView];
+      [NSLayoutConstraint activateConstraints:@[
+        [titleStackView.leadingAnchor
+            constraintEqualToAnchor:stackView.leadingAnchor],
+        [titleStackView.trailingAnchor
+            constraintEqualToAnchor:stackView.trailingAnchor
+                           constant:-kTitleStackViewTrailingMargin],
+      ]];
+    }
+    if ([self shouldShowSeparator]) {
+      UIView* separator = [[UIView alloc] init];
+      [separator setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                   forAxis:UILayoutConstraintAxisVertical];
+      separator.backgroundColor = [UIColor colorNamed:kSeparatorColor];
+      [stackView addArrangedSubview:separator];
+      [NSLayoutConstraint activateConstraints:@[
+        [separator.heightAnchor
+            constraintEqualToConstant:AlignValueToPixel(kSeparatorHeight)],
+        [separator.leadingAnchor
+            constraintEqualToAnchor:stackView.leadingAnchor],
+        [separator.trailingAnchor
+            constraintEqualToAnchor:stackView.trailingAnchor],
+      ]];
+    }
     [stackView addArrangedSubview:contentView];
 
     self.accessibilityElements = @[ title, contentView ];
@@ -133,8 +195,16 @@ const int kModuleWidthRegular = 382;
   NSDirectionalEdgeInsets contentMargins =
       NSDirectionalEdgeInsetsMake(kContentTopInset, kContentHorizontalInset,
                                   kContentBottomInset, kContentHorizontalInset);
-  if (_type == ContentSuggestionsModuleType::kCompactedSetUpList) {
-    contentMargins.trailing = 0;
+  switch (_type) {
+    case ContentSuggestionsModuleType::kCompactedSetUpList:
+      contentMargins.trailing = 0;
+      break;
+    case ContentSuggestionsModuleType::kMostVisited:
+    case ContentSuggestionsModuleType::kShortcuts:
+      contentMargins.bottom = kReducedContentBottomInset;
+      break;
+    default:
+      break;
   }
   return contentMargins;
 }
@@ -146,8 +216,8 @@ const int kModuleWidthRegular = 382;
   BOOL MVTModuleShouldUseWideWidth =
       (_type == ContentSuggestionsModuleType::kMostVisited &&
        !ShouldPutMostVisitedSitesInMagicStack() &&
-       self.traitCollection.horizontalSizeClass ==
-           UIUserInterfaceSizeClassRegular);
+       content_suggestions::ShouldShowWiderMagicStackLayer(self.traitCollection,
+                                                           self.window));
   BOOL moduleShouldUseWideWidth =
       self.traitCollection.horizontalSizeClass ==
           UIUserInterfaceSizeClassRegular &&
@@ -165,15 +235,37 @@ const int kModuleWidthRegular = 382;
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  if (previousTraitCollection.horizontalSizeClass !=
-          self.traitCollection.horizontalSizeClass &&
-      _type == ContentSuggestionsModuleType::kMostVisited &&
+  if (_type == ContentSuggestionsModuleType::kMostVisited &&
       !ShouldPutMostVisitedSitesInMagicStack()) {
     _contentViewWidthAnchor.constant = [self contentViewWidth];
   }
 }
 
 #pragma mark - Helpers
+
+- (void)seeMoreButtonWasTapped:(UIButton*)button {
+  [_delegate seeMoreWasTappedForModuleType:_type];
+}
+
+- (BOOL)shouldShowSeeMore {
+  switch (_type) {
+    case ContentSuggestionsModuleType::kCompactedSetUpList:
+      return YES;
+    default:
+      return NO;
+  }
+}
+
+- (BOOL)shouldShowSeparator {
+  switch (_type) {
+    case ContentSuggestionsModuleType::kSetUpListSync:
+    case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
+    case ContentSuggestionsModuleType::kSetUpListAutofill:
+      return YES;
+    default:
+      return NO;
+  }
+}
 
 // Returns the expected width of the contentView subview.
 - (CGFloat)contentViewWidth {

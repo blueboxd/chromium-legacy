@@ -20,6 +20,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chromeos/crosapi/cpp/lacros_startup_state.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -197,8 +198,7 @@ class AcceleratorConfigurationProvider
   base::flat_map<std::string, AcceleratorLayoutDetails>
       accelerator_layout_lookup_;
 
-  std::map<AcceleratorActionId, std::vector<mojom::AcceleratorInfoPtr>>
-      id_to_accelerator_info_;
+  AcceleratorConfigurationMap cached_configuration_;
 
   AcceleratorSourceMap accelerators_mapping_;
 

@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">DNS'i həll etmək olmur</translation>
 <translation id="1018656279737460067">Ləğv edilib</translation>
 <translation id="1020274983236703756">Eksklüziv <ph name="PRODUCT_NAME" /> aktivləri əlçatandır</translation>
-<translation id="1022433422498218992">Ümumi nizamlayıcılar</translation>
 <translation id="1022628058306505708">Aşağıya axın</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> mövzu, <ph name="CPU_MAX_CLOCK_SPEED" /> GHs)</translation>
 <translation id="1047773237499189053">Yeni funksiya əlçatandır, ətraflı məlumat üçün Yuxarı ox düyməsini istifadə edin.</translation>
@@ -21,6 +20,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">"Proqramı xarici cihazlar üçün güncəlləyin" pəncərəsi açıqdır. <ph name="NUM_UPDATES" /> güncəlləmə əlçatandır.</translation>
 <translation id="1145516343487477149">Ümumi Chromebook suallarına yardım məqalələri və cavablar tapın</translation>
+<translation id="1164939766849482256">"Sübhdən axşama" ekran qoruyucusu</translation>
 <translation id="1167755866710282443">Düymələri fərdiləşdirmək üçün menyunu açın. Hərəkət etdirmək üçün menyunu sürüşdürün.</translation>
 <translation id="1175697296044146566">Bu <ph name="DEVICE_TYPE" /> <ph name="MANAGER" /> tərəfindən idarə olunur.</translation>
 <translation id="1175951029573070619">Orta (<ph name="SIGNAL_STRENGTH" />)</translation>
@@ -59,6 +59,7 @@
 <translation id="1423591390236870726"><ph name="KEY_NAME" /> düyməsi basılmayıb</translation>
 <translation id="1435763214710588005">Hər ay seçilmiş gündə data istifadəsini avtomatik sıfırlayır</translation>
 <translation id="1442433966118452622">Şəkil mənbəyi</translation>
+<translation id="1449035143498573192">Google Axtarışda açın</translation>
 <translation id="1451536289672181509">Cihaz klaviaturadır.</translation>
 <translation id="1459693405370120464">Hava</translation>
 <translation id="1468664791493211953">Təkliflər</translation>
@@ -114,7 +115,6 @@
 <translation id="1768959921651994223">Doğrulama növü</translation>
 <translation id="1776228893584526149">Divar kağızı çaları</translation>
 <translation id="1782199038061388045">tərcümə</translation>
-<translation id="1790209694022261219">Pəncərə və masalar</translation>
 <translation id="1792647875738159689">Skanlama ləğv edilir</translation>
 <translation id="1801418420130173017">Qaranlıq temanı deaktiv edin</translation>
 <translation id="1807246157184219062">Yüngül</translation>
@@ -240,12 +240,12 @@
 <translation id="2873483161362553159">Brauzer naviqasiyası</translation>
 <translation id="2874939134665556319">Öncəki trek</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> saniyədə <ph name="RATE" /> deşarj edilib.</translation>
+<translation id="2880569433548999039">"Bulud axını" ekran qoruyucusu</translation>
 <translation id="2926057806159140518">İstifadəçi adınızı və parolunuzu daxil edin və ya QR kodunuzu skan edin</translation>
 <translation id="2940811910881150316">Cihazı test etmək mümkün deyil. Test etmək üçün qapağı yenidən açın.</translation>
 <translation id="3008341117444806826">YENİLƏYİN</translation>
 <translation id="3009958530611748826">Yadda saxlamaq üçün qovluq seçin</translation>
 <translation id="3017079585324758401">Arxa fon</translation>
-<translation id="3020183492814296499">Qısayollar</translation>
 <translation id="3027578600144895987">Kameranı bağlayın</translation>
 <translation id="3031560714565892478">Cihaz video kameradır.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -263,6 +263,7 @@
 <translation id="315738237743207937">Avtorizasiya portalı aşkarlanıb</translation>
 <translation id="3160172848211257835"><ph name="BEGIN_LINK1" />Sistem və tətbiq məlumatı<ph name="END_LINK1" /> və <ph name="BEGIN_LINK2" />göstəriciləri<ph name="END_LINK2" /> göndərin</translation>
 <translation id="3170673040743561620">Sənədinizi skanerə yerləşdirin</translation>
+<translation id="3174321110679064523">"Sübhdən axşama" divar kağızı</translation>
 <translation id="3188257591659621405">Fayllarım</translation>
 <translation id="319101249942218879">Avatar şəkli dəyişib</translation>
 <translation id="3192947282887913208">Audio Fayllar</translation>
@@ -289,6 +290,7 @@
 <translation id="3360306038446926262">Windows</translation>
 <translation id="3368922792935385530">Qoşuludur</translation>
 <translation id="3369013195428705271">Bütün çap tarixçəsini silmək istədiyinizə əminsiniz? Davam edən çap işləriniz silinməyəcək.</translation>
+<translation id="3373141842870501561">"Torpaq axını" divar kağızı</translation>
 <translation id="3404249063913988450">Ekran qoruyucusunu aktiv edin</translation>
 <translation id="3413935475507503304">Güncəlləməyə keçmək üçün "Növbəti" seçiminə toxunun.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -326,6 +328,7 @@
 <translation id="3639846061339007994">üst</translation>
 <translation id="3651050199673793219">Temperatur vahidi seçin</translation>
 <translation id="3663574643422533538"><ph name="PRODUCT_NAME" /> üçün eksklüziv illüstrasiya seçin</translation>
+<translation id="3668449597372804501">"Bulud axını" divar kağızı</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> testi</translation>
 <translation id="370665806235115550">Yüklənir...</translation>
 <translation id="3708186454126126312">Öncə qoşulmuş cihazlar</translation>
@@ -337,6 +340,7 @@
 <translation id="380097101658023925">rgb nizamlayıcıları</translation>
 <translation id="38114475217616659">Bütün tarixçəni silin</translation>
 <translation id="3820172043799983114">Yanlış PIN.</translation>
+<translation id="382043424867370667">"Gün batımı" divar kağızı</translation>
 <translation id="3824259034819781947">Fayllar əlavə edin</translation>
 <translation id="3838338534323494292">Yeni parol</translation>
 <translation id="3845880861638660475">Dialoqu bağlamaq üçün <ph name="ALT_SHORTCUT_START" />alt<ph name="ALT_SHORTCUT_END" /> + <ph name="ESC_SHORTCUT_START" />esc<ph name="ESC_SHORTCUT_END" /> düyməsini basın.</translation>
@@ -422,6 +426,7 @@
 <translation id="445059817448385655">Köhnə parol</translation>
 <translation id="4453205916657964690">Alt şəbəkə maskası</translation>
 <translation id="4454245904991689773">Skanı burada saxlayın</translation>
+<translation id="4469288414739283461">"Torpaq axını" ekran qoruyucusu</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Qeyri-defolt şəbəkə girişini yoxlamaq alınmadı</translation>
 <translation id="4500966230243561393">İnterfeys rəngi</translation>
@@ -533,8 +538,10 @@
 <translation id="5275828089655680674">Rejimləri yenidən işə salın</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5286263799730375393">arxa işıq rəngi</translation>
+<translation id="5292579816060236070">"Gün çıxımı" divar kağızı</translation>
 <translation id="5294769550414936029">versiya <ph name="MILESTONE_VERSION" /></translation>
 <translation id="5300814202279832142">Pəncərəni masaya keçirin</translation>
+<translation id="5303837385540978511"><ph name="PRODUCT_NAME" /> üçün eksklüziv divar kağızı</translation>
 <translation id="5304899856529773394">EVDO</translation>
 <translation id="5315873049536339193">İdentiklik</translation>
 <translation id="5317780077021120954">Yadda saxlayın</translation>
@@ -615,6 +622,7 @@
 <translation id="5972388717451707488">Güncəlləmə Mexanizmi</translation>
 <translation id="5984145644188835034">Defolt Divar Kağızı</translation>
 <translation id="6017514345406065928">Yaşıl</translation>
+<translation id="6019566113895157499">Düymə qısayolları</translation>
 <translation id="6034694447310538551">Avtomatik aylıq sıfırlamanı aktivləşdirin</translation>
 <translation id="6037291330010597344">Skanerin sənəd ötürücüsü boşdur. Sənəd əlavə edib yenidən sınayın.</translation>
 <translation id="6040143037577758943">Qapat</translation>
@@ -683,6 +691,7 @@
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Səhifə yenidən skanlansın?}=1{{PAGE_NUMBER} saylı səhifə yenidən skanlansın?}other{{PAGE_NUMBER} saylı səhifə yenidən skanlansın?}}</translation>
 <translation id="6472207088655375767">Birdəfəlik parol (OTP)</translation>
 <translation id="6480327114083866287"><ph name="MANAGER" /> tərəfindən idarə edilir</translation>
+<translation id="6488559935020624631"><ph name="PRODUCT_NAME" /> üçün eksklüziv ekran qoruyucusu</translation>
 <translation id="649050271426829538">Dayanıb - Kağız ilişib</translation>
 <translation id="6494974875566443634">Fərdiləşdirmə</translation>
 <translation id="6500818810472529210">Google Axtarışda nəticəyə baxın</translation>
@@ -861,6 +870,7 @@
 <translation id="7953669802889559161">Daxiletmələr</translation>
 <translation id="7955587717700691983">Bluetooth klaviatura</translation>
 <translation id="7960831585769876809">Temperatur</translation>
+<translation id="7971535376154084247">Ümumi nizamlayıcılar</translation>
 <translation id="7977800524392185497"><ph name="NETWORK_NAME" /> şəbəkəsinə qoşulmaq üçün Ayarlara keçin</translation>
 <translation id="7978412674231730200">Şəxsi açar</translation>
 <translation id="7994702968232966508">EAP üsulu</translation>
@@ -924,6 +934,7 @@
 <translation id="8461329675984532579">Əsas səhifə provayder adı</translation>
 <translation id="8475690821716466388">WiFi şəbəkəsi zəif protokol WEP PSK ilə qorunur</translation>
 <translation id="8476242415522716722">klaviaturanın altdan parlaqlaşdırılması</translation>
+<translation id="8476942730579767658">Pəncərə və masalar</translation>
 <translation id="8477551185774834963">DNS gecikməsi icazə verilən həddən azca yuxarıdır</translation>
 <translation id="8483248364096924578">IP ünvanı</translation>
 <translation id="8491311378305535241">Alov divarı aktiv olduqda Android tətbiqlərindən HTTPS vebsaytlarına qoşulmaq olmur</translation>
@@ -966,6 +977,7 @@
 <translation id="8820817407110198400">Əlfəcinlər</translation>
 <translation id="8834539327799336565">Hazırda qoşulub</translation>
 <translation id="8845001906332463065">Yardım alın</translation>
+<translation id="8851859208664803097">Dayandı - Printer əlçatan deyil</translation>
 <translation id="8855781559874488009">Alov divarı aktiv olduqda HTTP vebsaytlarına qoşulmaq olmur</translation>
 <translation id="885701979325669005">Yaddaş</translation>
 <translation id="885704831271383379">daha tünd klaviatura</translation>

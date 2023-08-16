@@ -60,6 +60,7 @@ source_set("common") {
 
   if (is_mac) {
     sources += [ "it2me_confirmation_dialog_mac.mm" ]
+    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_win) {
@@ -164,6 +165,7 @@ if (is_chromeos) {
         "//extensions/browser/api/messaging:native_messaging",
         "//remoting/base:base",
         "//remoting/host:common",
+        "//remoting/host/chromeos:browser_interop",
         "//remoting/host/chromeos:enterprise_support",
         "//remoting/host/chromeos:features",
         "//remoting/host/mojom:mojom",

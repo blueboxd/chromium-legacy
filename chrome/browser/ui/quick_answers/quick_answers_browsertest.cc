@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_browsertest_base.h"
@@ -45,7 +46,7 @@ namespace quick_answers {
 namespace {
 
 constexpr char kTestQuery[] = "test";
-constexpr int kCursorXToOverlapWithANotification = 600;
+constexpr int kCursorXToOverlapWithANotification = 630;
 constexpr int kCursorYToOverlapWithANotification = 400;
 
 constexpr char kTestNotificationId[] = "id";

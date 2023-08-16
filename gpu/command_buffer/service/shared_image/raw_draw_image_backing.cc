@@ -8,14 +8,16 @@
 #include "base/types/optional_util.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "components/viz/common/resources/resource_sizes.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
-#include "third_party/skia/include/core/SkPromiseImageTexture.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
+#include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
 
 namespace gpu {
 
@@ -78,7 +80,7 @@ class RawDrawImageBacking::SkiaRawDrawImageRepresentation
     return {};
   }
 
-  std::vector<sk_sp<SkPromiseImageTexture>> BeginWriteAccess(
+  std::vector<sk_sp<GrPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
@@ -88,7 +90,7 @@ class RawDrawImageBacking::SkiaRawDrawImageRepresentation
 
   void EndWriteAccess() override { NOTIMPLEMENTED(); }
 
-  std::vector<sk_sp<SkPromiseImageTexture>> BeginReadAccess(
+  std::vector<sk_sp<GrPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
       std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
@@ -189,7 +191,9 @@ bool RawDrawImageBacking::CreateBackendTextureAndFlushPaintOps(bool flush) {
       /*gpu_compositing=*/true, format());
   const std::string label =
       "RawDrawImageBacking" + CreateLabelForSharedImageUsage(usage());
-  backend_texture_ = context_state_->gr_context()->createBackendTexture(
+  GrDirectContext* direct_context = context_state_->gr_context();
+  CHECK(direct_context);
+  backend_texture_ = direct_context->createBackendTexture(
       size().width(), size().height(), sk_color, GrMipMapped::kNo,
       GrRenderable::kYes, GrProtected::kNo, label);
   if (!backend_texture_.isValid()) {
@@ -197,12 +201,11 @@ bool RawDrawImageBacking::CreateBackendTextureAndFlushPaintOps(bool flush) {
                 << sk_color;
     return false;
   }
-  promise_texture_ = SkPromiseImageTexture::Make(backend_texture_);
+  promise_texture_ = GrPromiseImageTexture::Make(backend_texture_);
 
   auto surface = SkSurfaces::WrapBackendTexture(
-      context_state_->gr_context(), backend_texture_, surface_origin(),
-      final_msaa_count_, sk_color, color_space().ToSkColorSpace(),
-      &surface_props_);
+      direct_context, backend_texture_, surface_origin(), final_msaa_count_,
+      sk_color, color_space().ToSkColorSpace(), &surface_props_);
   if (!surface) {
     DLOG(ERROR) << "SkSurfaces::WrapBackendTexture() failed! SkColorType:"
                 << sk_color;
@@ -219,14 +222,14 @@ bool RawDrawImageBacking::CreateBackendTextureAndFlushPaintOps(bool flush) {
   }
 
   if (flush) {
-    surface->flush();
+    direct_context->flush(surface);
   } else {
     // For a MSAA SkSurface, if gr_context->flush() is called, all draws on the
     // SkSurface will be flush into a temp MSAA buffer, but the it will not
     // resolved the temp MSAA buffer to the wrapped backend texture.
     // So call resolveMSAA() to insert resolve op in surface's command stream,
     // and when gr_context->flush() is call, the surface will be resolved.
-    surface->resolveMSAA();
+    SkSurfaces::ResolveMSAA(surface);
   }
 
   UpdateEstimatedSize(format().EstimatedSizeInBytes(size()));
@@ -349,7 +352,7 @@ cc::PaintOpBuffer* RawDrawImageBacking::BeginRasterReadAccess(
   return base::OptionalToPtr(paint_op_buffer_);
 }
 
-sk_sp<SkPromiseImageTexture> RawDrawImageBacking::BeginSkiaReadAccess() {
+sk_sp<GrPromiseImageTexture> RawDrawImageBacking::BeginSkiaReadAccess() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   AutoLock auto_lock(this);
   if (!backend_texture_.isValid() &&

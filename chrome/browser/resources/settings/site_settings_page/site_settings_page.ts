@@ -305,6 +305,17 @@ function getCategoryItemMap(): Map<ContentSettingsTypes, CategoryListItem> {
       disabledLabel: 'siteSettingsSoundBlocked',
     },
     {
+      route: routes.SITE_SETTINGS_STORAGE_ACCESS,
+      id: Id.STORAGE_ACCESS,
+      label: 'siteSettingsStorageAccess',
+      // TODO(b/276716832): Change icon to the final SAA.
+      icon: 'settings:cookie',
+      enabledLabel: 'storageAccessAllowed',
+      disabledLabel: 'storageAccessBlocked',
+      shouldShow: () =>
+          loadTimeData.getBoolean('enablePermissionStorageAccessApi'),
+    },
+    {
       route: routes.SITE_SETTINGS_USB_DEVICES,
       id: Id.USB_DEVICES,
       label: 'siteSettingsUsbDevices',
@@ -391,6 +402,7 @@ export class SettingsSiteSettingsPageElement extends
               Id.MIC,
               Id.NOTIFICATIONS,
               Id.BACKGROUND_SYNC,
+              Id.STORAGE_ACCESS,
             ]),
             permissionsAdvanced: buildItemListFromIds([
               Id.SENSORS,
@@ -464,11 +476,9 @@ export class SettingsSiteSettingsPageElement extends
         (sites: UnusedSitePermissions[]) =>
             this.onUnusedSitePermissionListChanged_(sites));
 
-    this.siteSettingsPermissionsBrowserProxy_
-        .getRevokedUnusedSitePermissionsList()
-        .then(
-            (sites: UnusedSitePermissions[]) =>
-                this.onUnusedSitePermissionListChanged_(sites));
+    this.safetyHubBrowserProxy_.getRevokedUnusedSitePermissionsList().then(
+        (sites: UnusedSitePermissions[]) =>
+            this.onUnusedSitePermissionListChanged_(sites));
   }
 
   prefs: Object;
@@ -478,7 +488,7 @@ export class SettingsSiteSettingsPageElement extends
   private noRecentSitePermissions_: boolean;
   private showUnusedSitePermissions_: boolean;
   private unusedSitePermissionsEnabled_: boolean;
-  private siteSettingsPermissionsBrowserProxy_: SafetyHubBrowserProxy =
+  private safetyHubBrowserProxy_: SafetyHubBrowserProxy =
       SafetyHubBrowserProxyImpl.getInstance();
 
   private lists_: {

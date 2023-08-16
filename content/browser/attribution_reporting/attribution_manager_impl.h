@@ -26,7 +26,6 @@
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_report_sender.h"
 #include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
-#include "content/browser/attribution_reporting/destination_throttler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/storage_partition.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -176,6 +175,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void MaybeEnqueueEvent(SourceOrTrigger);
   void ProcessEvents();
   void ProcessNextEvent(bool is_debug_cookie_set);
+  void StoreSource(StorableSource source, bool is_debug_cookie_set);
   void StoreTrigger(AttributionTrigger trigger, bool is_debug_cookie_set);
 
   void GetReportsToSend();
@@ -234,17 +234,15 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void AddPendingAggregatableReportTiming(const AttributionReport&);
   void RecordPendingAggregatableReportsTimings();
 
+  void OnUserVisibleTaskStarted();
+  void OnUserVisibleTaskComplete();
+
   void OnClearDataComplete();
 
   void ProcessNextOsEvent();
-  void OnOsRegistration(const OsRegistration&,
-                        bool is_debug_key_allowed,
+  void OnOsRegistration(bool is_debug_key_allowed,
+                        const OsRegistration&,
                         bool success);
-
-  void CheckDestinationThrottlerAndStoreSource(StorableSource source,
-                                               bool is_debug_cookie_set);
-
-  DestinationThrottler throttler_;
 
   // Never null.
   const raw_ptr<StoragePartitionImpl> storage_partition_;
@@ -262,13 +260,13 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
 
   // The task runner for all attribution reporting storage operations.
   // Updateable to allow for priority to be temporarily increased to
-  // `USER_VISIBLE` when a clear data task is queued or running. Otherwise
-  // `BEST_EFFORT` is used.
+  // `USER_VISIBLE` when a user-visible storage task is queued or running.
+  // Otherwise `BEST_EFFORT` is used.
   scoped_refptr<base::UpdateableSequencedTaskRunner> storage_task_runner_;
 
-  // How many clear data storage tasks are queued or running currently, i.e.
-  // have been posted but the reply has not been run.
-  int num_pending_clear_data_tasks_ = 0;
+  // How many user-visible storage tasks are queued or running currently,
+  // i.e. have been posted but the reply has not been run.
+  int num_pending_user_visible_tasks_ = 0;
 
   base::SequenceBound<AttributionStorage> attribution_storage_;
 

@@ -39,6 +39,10 @@ BASE_DECLARE_FEATURE(kExtensionsMenuInAppMenu);
 BASE_DECLARE_FEATURE(kAccessCodeCastUI);
 #endif
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+BASE_DECLARE_FEATURE(kCameraMicPreview);
+#endif
+
 BASE_DECLARE_FEATURE(kDisplayOpenLinkAsProfile);
 
 BASE_DECLARE_FEATURE(kEvDetailsInPageInfo);
@@ -106,7 +110,8 @@ extern const base::FeatureParam<int> kSideSearchAutoTriggeringReturnCount;
 BASE_DECLARE_FEATURE(kTabGroupsCollapseFreezing);
 
 BASE_DECLARE_FEATURE(kTabGroupsSave);
-BASE_DECLARE_FEATURE(kTabGroupsSaveSyncIntegration);
+
+BASE_DECLARE_FEATURE(kTabHoverCardImageSettings);
 
 BASE_DECLARE_FEATURE(kTabHoverCardImages);
 
@@ -131,11 +136,6 @@ extern const char kTabHoverCardImagesCrossfadePreviewAtParameterName[];
 // Adds an amount of time (in ms) to the show delay when tabs are max width -
 // typically when there are less than 5 or 6 tabs in a browser window.
 extern const char kTabHoverCardAdditionalMaxWidthDelay[];
-
-// When set to 1, reverses the order of elements in the hover card, so that
-// the title and site are on bottom and the tab status and preview image are
-// on top. 0 is the default layout.
-extern const char kTabHoverCardAlternateFormat[];
 
 BASE_DECLARE_FEATURE(kTabSearchChevronIcon);
 

@@ -27,18 +27,15 @@
 #include <algorithm>
 #include <new>
 
+#include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/bits.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/logging.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/mac/mach_logging.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/shim/malloc_zone_functions_mac.h"
-#include "base/functional/bind.h"
-#include "base/logging.h"
-#include "base/mac/mach_logging.h"
-#include "base/process/memory.h"
-#import "base/task/sequenced_task_runner.h"
-#include "base/task/sequenced_task_runner.h"
-#include "base/time/time.h"
+#include "base/allocator/partition_allocator/third_party/apple_apsl/CFBase.h"
 #include "build/build_config.h"
-#include "third_party/apple_apsl/CFBase.h"
 
 #if BUILDFLAG(IS_IOS)
 #include "base/allocator/partition_allocator/partition_alloc_base/ios/ios_util.h"
@@ -82,7 +79,7 @@ bool DeprotectMallocZone(ChromeMallocZone* default_zone,
                    VM_REGION_BASIC_INFO_64,
                    reinterpret_cast<vm_region_info_t>(&info), &count, &unused);
   if (result != KERN_SUCCESS) {
-    MACH_LOG(ERROR, result) << "vm_region_64";
+    PA_MACH_LOG(ERROR, result) << "vm_region_64";
     return false;
   }
 
@@ -93,17 +90,18 @@ bool DeprotectMallocZone(ChromeMallocZone* default_zone,
   mach_port_deallocate(mach_task_self(), unused);
 
   if (!(info.max_protection & VM_PROT_WRITE)) {
-    LOG(ERROR) << "Invalid max_protection " << info.max_protection;
+    PA_LOG(ERROR) << "Invalid max_protection " << info.max_protection;
     return false;
   }
 
   // Does the region fully enclose the zone pointers? Possibly unwarranted
   // simplification used: using the size of a full version 10 malloc zone rather
   // than the actual smaller size if the passed-in zone is not version 10.
-  DCHECK(*reprotection_start <= reinterpret_cast<vm_address_t>(default_zone));
+  PA_DCHECK(*reprotection_start <=
+            reinterpret_cast<vm_address_t>(default_zone));
   vm_size_t zone_offset = reinterpret_cast<vm_address_t>(default_zone) -
                           reinterpret_cast<vm_address_t>(*reprotection_start);
-  DCHECK(zone_offset + sizeof(ChromeMallocZone) <= *reprotection_length);
+  PA_DCHECK(zone_offset + sizeof(ChromeMallocZone) <= *reprotection_length);
 
   if (info.protection & VM_PROT_WRITE) {
     // No change needed; the zone is already writable.
@@ -116,7 +114,7 @@ bool DeprotectMallocZone(ChromeMallocZone* default_zone,
         vm_protect(mach_task_self(), *reprotection_start, *reprotection_length,
                    false, info.protection | VM_PROT_WRITE);
     if (result != KERN_SUCCESS) {
-      MACH_LOG(ERROR, result) << "vm_protect";
+      PA_MACH_LOG(ERROR, result) << "vm_protect";
       return false;
     }
   }
@@ -248,7 +246,9 @@ bool CanGetContextForCFAllocator() {
 #if BUILDFLAG(IS_IOS)
   return !partition_alloc::internal::base::ios::IsRunningOnOrLater(17, 0, 0);
 #else
-  return !partition_alloc::internal::base::mac::IsOSLaterThan13_DontCallThis();
+  // As of macOS 14, the allocators seem to be in read-only memory? See
+  // https://crbug.com/1454013.
+  return partition_alloc::internal::base::mac::IsAtMostOS13();
 #endif
 }
 
@@ -478,8 +478,8 @@ void InterceptAllocationsMac() {
   // This will not catch allocation done by custom allocators, but will catch
   // all allocation done by system-provided ones.
 
-  CHECK(!g_old_cfallocator_system_default && !g_old_cfallocator_malloc &&
-        !g_old_cfallocator_malloc_zone)
+  PA_CHECK(!g_old_cfallocator_system_default && !g_old_cfallocator_malloc &&
+           !g_old_cfallocator_malloc_zone)
       << "Old allocators unexpectedly non-null";
 
   bool cf_allocator_internals_known = CanGetContextForCFAllocator();
@@ -487,29 +487,30 @@ void InterceptAllocationsMac() {
   if (cf_allocator_internals_known) {
     CFAllocatorContext* context =
         ContextForCFAllocator(kCFAllocatorSystemDefault);
-    CHECK(context) << "Failed to get context for kCFAllocatorSystemDefault.";
+    PA_CHECK(context) << "Failed to get context for kCFAllocatorSystemDefault.";
     g_old_cfallocator_system_default = context->allocate;
-    CHECK(g_old_cfallocator_system_default)
+    PA_CHECK(g_old_cfallocator_system_default)
         << "Failed to get kCFAllocatorSystemDefault allocation function.";
     context->allocate = oom_killer_cfallocator_system_default;
 
     context = ContextForCFAllocator(kCFAllocatorMalloc);
-    CHECK(context) << "Failed to get context for kCFAllocatorMalloc.";
+    PA_CHECK(context) << "Failed to get context for kCFAllocatorMalloc.";
     g_old_cfallocator_malloc = context->allocate;
-    CHECK(g_old_cfallocator_malloc)
+    PA_CHECK(g_old_cfallocator_malloc)
         << "Failed to get kCFAllocatorMalloc allocation function.";
     context->allocate = oom_killer_cfallocator_malloc;
 
     context = ContextForCFAllocator(kCFAllocatorMallocZone);
-    CHECK(context) << "Failed to get context for kCFAllocatorMallocZone.";
+    PA_CHECK(context) << "Failed to get context for kCFAllocatorMallocZone.";
     g_old_cfallocator_malloc_zone = context->allocate;
-    CHECK(g_old_cfallocator_malloc_zone)
+    PA_CHECK(g_old_cfallocator_malloc_zone)
         << "Failed to get kCFAllocatorMallocZone allocation function.";
     context->allocate = oom_killer_cfallocator_malloc_zone;
   } else {
-    DLOG(WARNING) << "Internals of CFAllocator not known; out-of-memory "
-                     "failures via CFAllocator will not result in termination. "
-                     "http://crbug.com/45650";
+    PA_DLOG(WARNING) << "Internals of CFAllocator not known; out-of-memory "
+                        "failures via CFAllocator will not result in "
+                        "termination. "
+                        "http://crbug.com/45650";
   }
 #endif
 
@@ -518,14 +519,14 @@ void InterceptAllocationsMac() {
   // Note that both +[NSObject new] and +[NSObject alloc] call through to
   // +[NSObject allocWithZone:].
 
-  CHECK(!g_old_allocWithZone) << "Old allocator unexpectedly non-null";
+  PA_CHECK(!g_old_allocWithZone) << "Old allocator unexpectedly non-null";
 
   Class nsobject_class = [NSObject class];
   Method orig_method =
       class_getClassMethod(nsobject_class, @selector(allocWithZone:));
   g_old_allocWithZone =
       reinterpret_cast<allocWithZone_t>(method_getImplementation(orig_method));
-  CHECK(g_old_allocWithZone)
+  PA_CHECK(g_old_allocWithZone)
       << "Failed to get allocWithZone allocation function.";
   method_setImplementation(orig_method,
                            reinterpret_cast<IMP>(oom_killer_allocWithZone));
@@ -536,7 +537,7 @@ void UninterceptMallocZonesForTesting() {
   vm_address_t* zones;
   unsigned int count;
   kern_return_t kr = malloc_get_all_zones(mach_task_self(), 0, &zones, &count);
-  CHECK(kr == KERN_SUCCESS);
+  PA_CHECK(kr == KERN_SUCCESS);
   for (unsigned int i = 0; i < count; ++i) {
     UninterceptMallocZoneForTesting(  // IN-TEST
         reinterpret_cast<struct _malloc_zone_t*>(zones[i]));
@@ -549,31 +550,6 @@ bool AreMallocZonesIntercepted() {
   return !g_allocator_shims_failed_to_install;
 }
 
-namespace {
-
-void ShimNewMallocZonesAndReschedule(base::Time end_time,
-                                     base::TimeDelta delay) {
-  ShimNewMallocZones();
-
-  if (base::Time::Now() > end_time) {
-    return;
-  }
-
-  base::TimeDelta next_delay = delay * 2;
-  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&ShimNewMallocZonesAndReschedule, end_time, next_delay),
-      delay);
-}
-
-}  // namespace
-
-void PeriodicallyShimNewMallocZones() {
-  base::Time end_time = base::Time::Now() + base::Minutes(1);
-  base::TimeDelta initial_delay = base::Seconds(1);
-  ShimNewMallocZonesAndReschedule(end_time, initial_delay);
-}
-
 void ShimNewMallocZones() {
   StoreFunctionsForAllZones();
 
@@ -581,7 +557,7 @@ void ShimNewMallocZones() {
   // new zones.
   ChromeMallocZone* default_zone =
       reinterpret_cast<ChromeMallocZone*>(malloc_default_zone());
-  DCHECK(IsMallocZoneAlreadyStored(default_zone));
+  PA_DCHECK(IsMallocZoneAlreadyStored(default_zone));
 
   MallocZoneFunctions new_functions;
   StoreZoneFunctions(default_zone, &new_functions);
@@ -601,8 +577,8 @@ void ReplaceZoneFunctions(ChromeMallocZone* zone,
     return;
   }
 
-  CHECK(functions->malloc && functions->calloc && functions->valloc &&
-        functions->free && functions->realloc);
+  PA_CHECK(functions->malloc && functions->calloc && functions->valloc &&
+           functions->free && functions->realloc);
   zone->malloc = functions->malloc;
   zone->calloc = functions->calloc;
   zone->valloc = functions->valloc;
@@ -644,7 +620,7 @@ void ReplaceZoneFunctions(ChromeMallocZone* zone,
     kern_return_t result =
         vm_protect(mach_task_self(), reprotection_start, reprotection_length,
                    false, reprotection_value);
-    MACH_DCHECK(result == KERN_SUCCESS, result) << "vm_protect";
+    PA_MACH_DCHECK(result == KERN_SUCCESS, result) << "vm_protect";
   }
 }
 

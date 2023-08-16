@@ -19,6 +19,10 @@
 #include "device/fido/mac/touch_id_context.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 DeviceAuthenticatorMac::DeviceAuthenticatorMac(
     std::unique_ptr<AuthenticatorMacInterface> authenticator)
     : authenticator_(std::move(authenticator)) {}
@@ -46,6 +50,20 @@ bool DeviceAuthenticatorMac::CanAuthenticateWithBiometrics() {
         password_manager::prefs::kHadBiometricsAvailable, /*value=*/true);
   }
   return is_available;
+}
+
+bool DeviceAuthenticatorMac::CanAuthenticateWithBiometricOrScreenLock() {
+  // We check if we can authenticate strictly with biometrics first as this
+  // function has important side effects such as logging metrics related to how
+  // often users have biometrics available, and setting a pref that denotes that
+  // at one point biometrics was available on this device.
+  if (CanAuthenticateWithBiometrics()) {
+    return true;
+  }
+
+  // TODO(crbug.com/4555994): Add metrics logging for the only screen lock
+  // available case.
+  return authenticator_->CheckIfBiometricsOrScreenLockAvailable();
 }
 
 void DeviceAuthenticatorMac::Authenticate(

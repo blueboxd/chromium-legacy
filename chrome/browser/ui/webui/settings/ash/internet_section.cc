@@ -15,6 +15,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/webui/ash/cellular_setup/cellular_setup_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/extension_control_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
@@ -826,6 +827,14 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_NETWORK_SECTION_PASSPOINT_REMOVAL_DESCRIPTION},
       {"networkSectionPasspointRemovalInformation",
        IDS_SETTINGS_INTERNET_NETWORK_SECTION_PASSPOINT_REMOVAL_INFORMATION},
+      {"networkSectionPasspointGoToSubscriptionTitle",
+       IDS_SETTINGS_INTERNET_NETWORK_SECTION_PASSPOINT_GO_TO_SUBSCRIPTION_TITLE},
+      {"networkSectionPasspointGoToSubscriptionInformation",
+       IDS_SETTINGS_INTERNET_NETWORK_SECTION_PASSPOINT_GO_TO_SUBSCRIPTION_INFORMATION},
+      {"networkSectionPasspointGoToSubscriptionButtonLabel",
+       IDS_SETTINGS_INTERNET_NETWORK_SECTION_PASSPOINT_GO_TO_SUBSCRIPTION_BUTTON},
+      {"passpointRemoveGoToSubscriptionButtonA11yLabel",
+       IDS_SETTINGS_INTERNET_NETWORK_SECTION_PASSPOINT_GO_TO_SUBSCRIPTION_BUTTON_A11Y_LABEL},
       {"networkSectionProxy", IDS_SETTINGS_INTERNET_NETWORK_SECTION_PROXY},
       {"networkSectionProxyExpandA11yLabel",
        IDS_SETTINGS_INTERNET_NETWORK_SECTION_PROXY_ACCESSIBILITY_LABEL},
@@ -1008,6 +1017,8 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"passpointSourceLabel", IDS_SETTINGS_INTERNET_PASSPOINT_SOURCE},
       {"passpointTrustedCALabel", IDS_SETTINGS_INTERNET_PASSPOINT_TRUSTED_CA},
       {"passpointSystemCALabel", IDS_SETTINGS_INTERNET_PASSPOINT_SYSTEM_CA},
+      {"passpointAssociatedWifiNetworks",
+       IDS_SETTINGS_INTERNET_PASSPOINT_ASSOCIATED_WIFI_NETWORKS},
       {"passpointDomainsLabel", IDS_SETTINGS_INTERNET_PASSPOINT_DOMAINS},
       {"passpointDomainsA11yLabel",
        IDS_SETTINGS_INTERNET_PASSPOINT_DOMAINS_A11Y_LABEL},
@@ -1045,6 +1056,8 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "showHiddenToggle",
       base::FeatureList::IsEnabled(::features::kShowHiddenNetworkToggle));
+  html_source->AddBoolean("isSmdsSupportEnabled",
+                          ash::features::IsSmdsSupportEnabled());
   html_source->AddBoolean("isHotspotEnabled",
                           ash::features::IsHotspotEnabled());
   html_source->AddBoolean("isPasspointEnabled",
@@ -1114,6 +1127,7 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
 void InternetSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(std::make_unique<InternetHandler>(profile()));
+  web_ui->AddMessageHandler(std::make_unique<ExtensionControlHandler>());
 }
 
 int InternetSection::GetSectionNameMessageId() const {

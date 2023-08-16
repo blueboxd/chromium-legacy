@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "try",
               "builder": "win10.20h2-blink-rel",
-              "project": "chromium-m115"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-fyi-archive",
@@ -32,7 +32,7 @@
         {
           "bucket": "try",
           "builder": "win10.20h2-blink-rel",
-          "project": "chromium-m115"
+          "project": "chromium"
         }
       ],
       "retry_failed_shards": false

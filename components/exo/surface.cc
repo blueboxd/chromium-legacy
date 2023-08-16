@@ -75,6 +75,9 @@
 DEFINE_UI_CLASS_PROPERTY_TYPE(exo::Surface*)
 
 namespace exo {
+
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasAugmentedSurfaceKey, false)
+
 namespace {
 
 // A property key containing the surface that is associated with
@@ -228,8 +231,10 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   void OnWindowDestroyed(aura::Window* window) override { delete this; }
   void OnWindowTargetVisibilityChanged(bool visible) override {}
   void OnWindowOcclusionChanged(
-      aura::Window::OcclusionState GetOcclusionState) override {
-    surface_->OnWindowOcclusionChanged();
+      aura::Window::OcclusionState old_occlusion_state,
+      aura::Window::OcclusionState new_occlusion_state) override {
+    surface_->OnWindowOcclusionChanged(old_occlusion_state,
+                                       new_occlusion_state);
   }
   bool HasHitTestMask() const override { return true; }
   void GetHitTestMask(SkPath* mask) const override {
@@ -449,7 +454,12 @@ void Surface::AddSubSurface(Surface* sub_surface) {
   DCHECK(!sub_surface->window()->parent());
   sub_surface->window()->SetBounds(
       gfx::Rect(sub_surface->window()->bounds().size()));
-  window_->AddChild(sub_surface->window());
+
+  // As an optimization, don't add augmented subsurfaces's aura::Window to the
+  // tree.
+  if (!GetProperty(kSurfaceHasAugmentedSurfaceKey)) {
+    window_->AddChild(sub_surface->window());
+  }
 
   DCHECK(!ListContainsEntry(pending_sub_surfaces_, sub_surface));
   pending_sub_surfaces_.push_back(std::make_pair(sub_surface, gfx::PointF()));
@@ -479,7 +489,9 @@ void Surface::RemoveSubSurface(Surface* sub_surface) {
 
   if (sub_surface->window()->IsVisible())
     sub_surface->window()->Hide();
-  window_->RemoveChild(sub_surface->window());
+  if (sub_surface->window()->parent() == window_.get()) {
+    window_->RemoveChild(sub_surface->window());
+  }
 
   DCHECK(ListContainsEntry(pending_sub_surfaces_, sub_surface));
   pending_sub_surfaces_.erase(
@@ -1062,8 +1074,9 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
         sub_surface->SetTrustedDamage(trusted_damage_);
         sub_surfaces_.push_back(sub_surface_entry);
         // Move sub-surface to its new position in the stack.
-        if (stacking_target)
+        if (stacking_target && sub_surface->window()->parent()) {
           window_->StackChildAbove(sub_surface->window(), stacking_target);
+        }
 
         // Stack next sub-surface above this sub-surface.
         stacking_target = sub_surface->window();
@@ -1137,6 +1150,7 @@ void Surface::AppendSurfaceHierarchyContentsToFrame(
     const gfx::PointF& origin,
     float device_scale_factor,
     bool client_submits_in_pixel_coords,
+    bool needs_full_damage,
     FrameSinkResourceManager* resource_manager,
     viz::CompositorFrame* frame) {
   // The top most sub-surface is at the front of the RenderPass's quad_list,
@@ -1148,8 +1162,8 @@ void Surface::AppendSurfaceHierarchyContentsToFrame(
     sub_surface->AppendSurfaceHierarchyContentsToFrame(
         origin + sub_surface_entry.second.OffsetFromOrigin(),
 
-        device_scale_factor, client_submits_in_pixel_coords, resource_manager,
-        frame);
+        device_scale_factor, client_submits_in_pixel_coords, needs_full_damage,
+        resource_manager, frame);
   }
 
   // Update the resource, or if not required, ensure we call the buffer release
@@ -1162,7 +1176,8 @@ void Surface::AppendSurfaceHierarchyContentsToFrame(
   }
 
   AppendContentsToFrame(origin, device_scale_factor,
-                        client_submits_in_pixel_coords, frame);
+                        client_submits_in_pixel_coords, needs_full_damage,
+                        frame);
 }
 
 bool Surface::IsSynchronized() const {
@@ -1419,7 +1434,8 @@ static viz::SharedQuadState* AppendOrCreateSharedQuadState(
       quad_to_target_transform == quad_state->quad_to_target_transform &&
       opacity == quad_state->opacity &&
       quad_clip_rect == quad_state->clip_rect &&
-      are_contents_opaque == quad_state->are_contents_opaque && msk == msk) {
+      are_contents_opaque == quad_state->are_contents_opaque &&
+      msk == quad_state->mask_filter_info) {
     // Expland the layer portion of the sqs.
     quad_state->quad_layer_rect = test_union;
     quad_state->visible_quad_layer_rect = test_union;
@@ -1435,6 +1451,7 @@ static viz::SharedQuadState* AppendOrCreateSharedQuadState(
 void Surface::AppendContentsToFrame(const gfx::PointF& origin,
                                     float device_scale_factor,
                                     bool client_submits_in_pixel_coords,
+                                    bool needs_full_damage,
                                     viz::CompositorFrame* frame) {
   const std::unique_ptr<viz::CompositorRenderPass>& render_pass =
       frame->render_pass_list.back();
@@ -1443,7 +1460,9 @@ void Surface::AppendContentsToFrame(const gfx::PointF& origin,
 
   // Surface bounds are in DIPs, but |damage_rect| and |output_rect| are in
   // pixels, so we need to scale by the |device_scale_factor|.
-  gfx::RectF damage_rect = gfx::RectF(state_.damage.bounds());
+  gfx::RectF damage_rect = needs_full_damage
+                               ? gfx::RectF(content_size_)
+                               : gfx::RectF(state_.damage.bounds());
   if (!damage_rect.IsEmpty()) {
     // Outset damage by 1 DIP to as damage is in surface coordinate space and
     // client might not be aware of |device_scale_factor| and the
@@ -1721,7 +1740,12 @@ void Surface::UpdateContentSize() {
           1.0f / state_.basic_state.buffer_scale);
     }
 
-    window_->Show();
+    // Check that a window has a parent before showing it.
+    // For example, aura::Window associated with augmented subsurfaces don't
+    // have parents, because they are not part of the tree.
+    if (window_->parent()) {
+      window_->Show();
+    }
   } else {
     window_->Hide();
   }
@@ -1748,9 +1772,20 @@ void Surface::SetFrameLocked(bool lock) {
     observer.OnFrameLockingChanged(this, lock);
 }
 
-void Surface::OnWindowOcclusionChanged() {
+void Surface::OnWindowOcclusionChanged(
+    aura::Window::OcclusionState old_occlusion_state,
+    aura::Window::OcclusionState new_occlusion_state) {
   if (!state_.basic_state.is_tracking_occlusion)
     return;
+
+  // The first occlusion calculation happens without a buffer yet attached to
+  // the surface so ignore this change. This avoids `OcclusionState::HIDDEN`
+  // being sent , which will be immediately followed by
+  // `OcclusionState::VISIBLE` anyway once buffer is attached.
+  if (old_occlusion_state == aura::Window::OcclusionState::UNKNOWN &&
+      new_occlusion_state == aura::Window::OcclusionState::HIDDEN) {
+    return;
+  }
 
   for (SurfaceObserver& observer : observers_)
     observer.OnWindowOcclusionChanged(this);
@@ -1829,6 +1864,12 @@ void Surface::SetClientAccessibilityId(int id) {
     exo::SetShellClientAccessibilityId(window_.get(), id);
   } else {
     exo::SetShellClientAccessibilityId(window_.get(), absl::nullopt);
+  }
+}
+
+void Surface::SetTopInset(int height) {
+  if (delegate_) {
+    delegate_->SetTopInset(height);
   }
 }
 

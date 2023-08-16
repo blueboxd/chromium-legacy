@@ -233,8 +233,7 @@ class AutofillAcrossIframesTest : public InProcessBrowserTest {
   AutofillAcrossIframesTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kAutofillAcrossIframes,
-                              features::kAutofillSharedAutofill},
+        /*enabled_features=*/{features::kAutofillSharedAutofill},
         /*disabled_features=*/{});
   }
 
@@ -304,7 +303,7 @@ class AutofillAcrossIframesTest : public InProcessBrowserTest {
   // Navigates on https://`kMainHostname`:some_port/`relative_url` and returns a
   // form, if one exists, that has `num_fields` fields.
   //
-  // If `click_to_reparse`, it additionally clicks into the first field of each
+  // If `click_to_extract`, it additionally clicks into the first field of each
   // frame (if such a field exists). See GetOrWaitForFormWithFocusableFields()
   // for details why.
   //
@@ -312,18 +311,18 @@ class AutofillAcrossIframesTest : public InProcessBrowserTest {
   // advance.
   const FormStructure* NavigateToUrl(base::StringPiece relative_url,
                                      size_t num_fields,
-                                     bool click_to_reparse = false) {
+                                     bool click_to_extract = false) {
     NavigateParams params(browser(),
                           https_server_.GetURL(kMainHostname, relative_url),
                           ui::PAGE_TRANSITION_LINK);
     params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     ui_test_utils::NavigateToURL(&params);
     return GetOrWaitForFormWithFocusableFields(
-        /*num_fields=*/num_fields, /*click_to_reparse=*/click_to_reparse);
+        /*num_fields=*/num_fields, /*click_to_extract=*/click_to_extract);
   }
 
   // Returns a form with `num_fields` fields. If no such form exists and no such
-  // form appears within a timeout, returns nullptr. If `click_to_reparse` is
+  // form appears within a timeout, returns nullptr. If `click_to_extract` is
   // true, simulates a click in one field of each frame, which causes
   // re-extraction of the form.
   //
@@ -332,16 +331,17 @@ class AutofillAcrossIframesTest : public InProcessBrowserTest {
   // (a) receives a child form before the parent form, and
   // (b) the received parent form doesn't contain to the child form's
   //     FrameToken (but instead an outdated FrameToken),
-  // then no reparse is triggered. This is because FormForest hasn't seen the
-  // parent frame yet and therefore doesn't know its ContentAutofillDriver.
-  // We could fix this using ContentAutofillDriver::GetForRenderFrameHost()
-  // in FormForest::UpdateTreeOfRendererForm().
+  // then no form re-extraction is triggered. This is because FormForest hasn't
+  // seen the parent frame yet and therefore doesn't know its
+  // ContentAutofillDriver.
+  // TODO(crbug.com/1007974): Try to remove the click.
   //
   // Clicking into field of the iframe re-extracts the iframe's form and sends
-  // it to the browser. If necessary, FormForest would then trigger a reparse in
-  // the parent frame. We choose this workaround rather than triggering reparses
-  // more directly (by calling ContentAutofillDriver::TriggerReparse()) because
-  // clicking is typical real-world behaviour.
+  // it to the browser. If necessary, FormForest would then trigger a
+  // re-extraction in the parent frame. We choose this workaround rather than
+  // triggering form re-extraction more directly (by calling
+  // ContentAutofillDriver::TriggerFormExtraction()) because clicking is typical
+  // real-world behaviour.
   //
   // Another, unrelated issue is focusability: sometimes fields are unfocusable
   // (FormFieldData::is_focusable is false) when they are extracted on page
@@ -360,8 +360,8 @@ class AutofillAcrossIframesTest : public InProcessBrowserTest {
   // fixed.
   const FormStructure* GetOrWaitForFormWithFocusableFields(
       size_t num_fields,
-      bool click_to_reparse) {
-    if (click_to_reparse) {
+      bool click_to_extract) {
+    if (click_to_extract) {
       size_t num_clicked = 0;
       main_frame()->ForEachRenderFrameHost([&](content::RenderFrameHost* rfh) {
         num_clicked += ClickFirstField(web_contents(), rfh);
@@ -590,9 +590,9 @@ class AutofillAcrossIframesTest_Dynamic : public AutofillAcrossIframesTest {
     FillCard(main_frame(), form, trigger_field);
     // Now, after FillCard(), the form gets filled in the renderer (which
     // triggers three OnDidFillAutofillFormData() events) and then changes.
-    // The change triggers an OnFormsSeen() event, followed by a re-parse and
-    // re-fill, which then triggers another four OnDidFillAutofillFormData()
-    // events.
+    // The change triggers an OnFormsSeen() event, followed by a form
+    // re-extraction and re-fill, which then triggers another four
+    // OnDidFillAutofillFormData() events.
     EXPECT_TRUE(manager->WaitForAutofill(3 + 4));
     form =
         manager->form_structures().find(form.global_id())->second->ToFormData();
@@ -679,8 +679,14 @@ class AutofillAcrossIframesTest_NestedAndLargeForm
 };
 
 // Tests that a large and deeply nested form is extracted and filled correctly.
+// The test makes heavy use of abbreviations to make it easier to spot the
+// pattern in the form.
 IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_NestedAndLargeForm,
                        FillAllFieldsOnTriggeredOrigin) {
+  // The `n` in `n.html` is the height of the frame sub-tree, i.e., a frame that
+  // loads `1.html` is a leaf frame, `2.html` has child frames but no
+  // grandchildren, and so on.
+  // The origins are picked arbitrarily.
   SetUrlContent("/", MakeCss(3) +
                          R"(<iframe src="$4/3.html"></iframe>
                             <iframe src="$3/3.html"></iframe>
@@ -698,7 +704,7 @@ IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_NestedAndLargeForm,
                                R"(<form>
                                   <input autocomplete=cc-number>
                                   <input>
-                                  <iframe src="$1/1.html"></iframe>
+                                  <iframe src="$5/1.html"></iframe>
                                   <input>
                                   <input autocomplete=cc-exp>
                                   </form>)");
@@ -710,11 +716,11 @@ IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_NestedAndLargeForm,
                                   <input autocomplete=cc-csc>
                                   </form>)");
   const FormStructure* form =
-      NavigateToUrl("/", /*num_fields=*/48, /*click_to_reparse=*/true);
+      NavigateToUrl("/", /*num_fields=*/48, /*click_to_extract=*/true);
   ASSERT_TRUE(form);
   ASSERT_THAT(*form, IsWithinAutofillLimits());
   {
-    // Test that the parsed form reflects the structure of the above <iframe>
+    // Test that the extracted form reflects the structure of the above <iframe>
     // and <form> elements.
     auto name = HtmlFieldType::kCreditCardNameFull;
     auto num = HtmlFieldType::kCreditCardNumber;
@@ -730,54 +736,54 @@ IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_NestedAndLargeForm,
     // clang-format off
     EXPECT_THAT(form->fields(),
                 ElementsAre(
-                    // $3/3.html
+                    // $4/3.html
                     m("d.com", name),
                     m("d.com", unspecified),
                       m("b.com", num),
                       m("b.com", unspecified),
-                        m("a.com", name),
-                        m("a.com", num),
-                        m("a.com", exp),
-                        m("a.com", cvc),
+                        m("e.com", name),
+                        m("e.com", num),
+                        m("e.com", exp),
+                        m("e.com", cvc),
                       m("b.com", unspecified),
                       m("b.com", exp),
                     m("d.com", unspecified),
                     m("d.com", cvc),
-                    // $4/3.html
+                    // $3/3.html
                     m("c.com", name),
                     m("c.com", unspecified),
                       m("b.com", num),
                       m("b.com", unspecified),
-                        m("a.com", name),
-                        m("a.com", num),
-                        m("a.com", exp),
-                        m("a.com", cvc),
+                        m("e.com", name),
+                        m("e.com", num),
+                        m("e.com", exp),
+                        m("e.com", cvc),
                       m("b.com", unspecified),
                       m("b.com", exp),
                     m("c.com", unspecified),
                     m("c.com", cvc),
-                    // $5/3.html
+                    // $2/3.html
                     m("b.com", name),
                     m("b.com", unspecified),
                       m("b.com", num),
                       m("b.com", unspecified),
-                        m("a.com", name),
-                        m("a.com", num),
-                        m("a.com", exp),
-                        m("a.com", cvc),
+                        m("e.com", name),
+                        m("e.com", num),
+                        m("e.com", exp),
+                        m("e.com", cvc),
                       m("b.com", unspecified),
                       m("b.com", exp),
                     m("b.com", unspecified),
                     m("b.com", cvc),
-                    // $6/3.html
+                    // $1/3.html
                     m("a.com", name),
                     m("a.com", unspecified),
                       m("b.com", num),
                       m("b.com", unspecified),
-                        m("a.com", name),
-                        m("a.com", num),
-                        m("a.com", exp),
-                        m("a.com", cvc),
+                        m("e.com", name),
+                        m("e.com", num),
+                        m("e.com", exp),
+                        m("e.com", cvc),
                       m("b.com", unspecified),
                       m("b.com", exp),
                     m("a.com", unspecified),
@@ -786,22 +792,24 @@ IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_NestedAndLargeForm,
     // clang-format on
   }
   const FormData& form_data = form->ToFormData();
-  ASSERT_EQ("a.com", form_data.fields[4].origin.host());
+  ASSERT_EQ("e.com", form_data.fields[4].origin.host());
   ASSERT_EQ("cc-name", form_data.fields[4].autocomplete_attribute);
   FillCard(main_frame(), form_data, form_data.fields[4]);
   EXPECT_TRUE(main_autofill_manager()->WaitForAutofill(5));
   {
-    const auto* name = kNameFull;
-    const auto* num = kNumber;
-    const auto* exp = kExp;
-    const auto* cvc = kCvc;
+    // `rat` represents a value that is not filled only due to rationalization.
+    constexpr const char* rat = "";
+    constexpr const char* name = kNameFull;
+    constexpr const char* num = kNumber;
+    constexpr const char* exp = kExp;
+    constexpr const char* cvc = kCvc;
     std::vector<std::string> values = AllFieldValues(web_contents(), form_data);
     EXPECT_THAT(
         values,
         ElementsAre("", "", "", "", name, num, exp, cvc, "", "", "", "",  //
                     "", "", "", "", name, num, exp, cvc, "", "", "", "",  //
                     "", "", "", "", name, num, exp, cvc, "", "", "", "",  //
-                    name, "", "", "", name, num, exp, cvc, "", "", "", cvc));
+                    name, "", "", "", name, num, exp, cvc, "", "", "", rat));
   }
 }
 
@@ -825,11 +833,11 @@ IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_NestedAndLargeForm,
                                   <form><input autocomplete=cc-exp></form>
                                   <form><input autocomplete=cc-csc></form>)");
   const FormStructure* form =
-      NavigateToUrl("/", /*num_fields=*/16, /*click_to_reparse=*/true);
+      NavigateToUrl("/", /*num_fields=*/16, /*click_to_extract=*/true);
   ASSERT_TRUE(form);
   ASSERT_THAT(*form, IsWithinAutofillLimits());
   {
-    // Test that the parsed form reflects the structure of the above <iframe>
+    // Test that the extracted form reflects the structure of the above <iframe>
     // and <form> elements.
     auto name = HtmlFieldType::kCreditCardNameFull;
     auto num = HtmlFieldType::kCreditCardNumber;
@@ -1008,7 +1016,7 @@ class AutofillAcrossIframesTest_FullIframes
     }
     return GetOrWaitForFormWithFocusableFields(
         /*num_fields=*/4,
-        /*click_to_reparse=*/false);
+        /*click_to_extract=*/false);
   }
 
  private:
@@ -1053,7 +1061,7 @@ IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_FullIframes,
   // As a consequence only 3 forms of 4 fields remain.
   EXPECT_TRUE(GetOrWaitForFormWithFocusableFields(
       /*num_fields=*/3 * 4,
-      /*click_to_reparse=*/false));
+      /*click_to_extract=*/false));
 }
 
 // Tests that the Autofill Manager notices if the parent containing a <form> is
@@ -1073,7 +1081,7 @@ IN_PROC_BROWSER_TEST_F(AutofillAcrossIframesTest_FullIframes,
   // As a consequence only 3 forms of 4 fields remain.
   EXPECT_TRUE(GetOrWaitForFormWithFocusableFields(
       /*num_fields=*/3 * 4,
-      /*click_to_reparse=*/false));
+      /*click_to_extract=*/false));
 }
 
 }  // namespace autofill

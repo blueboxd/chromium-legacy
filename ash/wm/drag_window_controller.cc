@@ -127,7 +127,7 @@ class DragWindowController::DragWindowDetails {
     // be modified so that it can optionally be clipped to the main window's
     // bounds.
     widget_->SetContentsView(std::make_unique<WindowMirrorView>(
-        original_window, /*show_non_client_view=*/true));
+        original_window, /*show_non_client_view=*/true, /*sync_bounds=*/true));
 
     aura::Window* window = widget_->GetNativeWindow();
     window->SetId(kShellWindowId_PhantomWindow);
@@ -166,7 +166,7 @@ DragWindowController::DragWindowController(
     : window_(window),
       is_touch_dragging_(is_touch_dragging),
       shadow_bounds_(shadow_bounds),
-      old_opacity_(window->layer()->opacity()) {
+      old_opacity_(window->layer()->GetTargetOpacity()) {
   window->layer()->SetOpacity(1.f);
 
   DCHECK(drag_windows_.empty());
@@ -180,6 +180,9 @@ DragWindowController::DragWindowController(
 }
 
 DragWindowController::~DragWindowController() {
+  LOG_IF(ERROR, old_opacity_ < 1.0f)
+      << "Ended drag and restored window to opacity < 1.0f, which is likely "
+         "not intended.";
   window_->layer()->SetOpacity(old_opacity_);
 }
 

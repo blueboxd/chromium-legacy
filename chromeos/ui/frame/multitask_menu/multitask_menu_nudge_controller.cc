@@ -25,6 +25,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
+#include "base/command_line.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -169,6 +171,13 @@ void MultitaskMenuNudgeController::MaybeShowNudge(aura::Window* window,
     return;
   }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshNoNudges)) {
+    return;
+  }
+#endif
+
   // If the window is not visible, do not show the nudge.
   if (!window->IsVisible()) {
     return;
@@ -289,7 +298,7 @@ void MultitaskMenuNudgeController::OnDisplayTabletStateChanged(
       DismissNudge();
       break;
     case display::TabletState::kInTabletMode:
-      // Entering tablet mode will call the `TabletModeMultitaskCue`
+      // Entering tablet mode will call the `TabletModeMultitaskCueController`
       // constructor so no work needed.
       // TODO(b/267648014): Combine cue and nudge logic so both are activated in
       // the same place when switching modes.

@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon_view.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/gradient_view.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
@@ -52,9 +53,6 @@ const CGFloat kTrailingButtonPointSize = 17.0f;
 /// `kOmniboxMultilineSearchSuggest` is enabled.
 const NSInteger kSearchSuggestNumberOfLines = 2;
 
-NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
-    @"OmniboxPopupRowSwitchTabAccessibilityIdentifier";
-
 /// Name of the histogram recording the number of lines in search suggestions.
 const char kOmniboxSearchSuggestionNumberOfLines[] =
     "IOS.Omnibox.SearchSuggestionNumberOfLines";
@@ -65,6 +63,9 @@ BOOL IsMultilineSearchSuggestionEnabled() {
 }
 
 }  // namespace
+
+NSString* const OmniboxPopupRowCellReuseIdentifier = @"OmniboxPopupRowCell";
+const CGFloat kOmniboxPopupCellMinimumHeight = 58;
 
 @interface OmniboxPopupRowCell ()
 
@@ -585,10 +586,11 @@ BOOL IsMultilineSearchSuggestionEnabled() {
   [self.trailingButton setImage:trailingButtonImage
                        forState:UIControlStateNormal];
   self.trailingButton.tintColor = [UIColor colorNamed:kBlueColor];
-  if (self.suggestion.isTabMatch) {
-    self.trailingButton.accessibilityIdentifier =
-        kOmniboxPopupRowSwitchTabAccessibilityIdentifier;
-  }
+
+  self.trailingButton.accessibilityIdentifier =
+      self.suggestion.isTabMatch
+          ? kOmniboxPopupRowSwitchTabAccessibilityIdentifier
+          : kOmniboxPopupRowAppendAccessibilityIdentifier;
 }
 
 - (NSString*)accessibilityLabel {

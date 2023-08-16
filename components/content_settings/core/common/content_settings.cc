@@ -122,8 +122,9 @@ constexpr auto kHistogramValue = base::MakeFixedFlatMap<ContentSettingsType,
     {ContentSettingsType::HTTPS_ENFORCED, 98},
     {ContentSettingsType::USB_CHOOSER_DATA, 99},
     // The value 100 is assigned to COOKIES!
-    {ContentSettingsType::GET_DISPLAY_MEDIA_SET_SELECT_ALL_SCREENS, 101},
+    // Removed GET_DISPLAY_MEDIA_SET_SELECT_ALL_SCREENS in M116.
     {ContentSettingsType::MIDI, 102},
+    {ContentSettingsType::ALL_SCREEN_CAPTURE, 103},
 
     // As mentioned at the top, please don't forget to update ContentType in
     // enums.xml when you add entries here!
@@ -214,8 +215,17 @@ ContentSetting ContentSettingPatternSource::GetContentSetting() const {
 }
 
 bool ContentSettingPatternSource::IsExpired() const {
-  return !metadata.expiration.is_null() &&
-         metadata.expiration < base::Time::Now();
+  return !metadata.expiration().is_null() &&
+         metadata.expiration() < base::Time::Now();
+}
+
+bool ContentSettingPatternSource::operator==(
+    const ContentSettingPatternSource& other) const {
+  return std::tie(primary_pattern, secondary_pattern, setting_value, metadata,
+                  source, incognito) ==
+         std::tie(other.primary_pattern, other.secondary_pattern,
+                  other.setting_value, other.metadata, other.source,
+                  other.incognito);
 }
 
 // static
@@ -252,3 +262,12 @@ RendererContentSettingRules& RendererContentSettingRules::operator=(
 
 RendererContentSettingRules& RendererContentSettingRules::operator=(
     RendererContentSettingRules&& rules) = default;
+
+bool RendererContentSettingRules::operator==(
+    const RendererContentSettingRules& other) const {
+  return std::tie(image_rules, script_rules, popup_redirect_rules,
+                  mixed_content_rules, auto_dark_content_rules) ==
+         std::tie(other.image_rules, other.script_rules,
+                  other.popup_redirect_rules, other.mixed_content_rules,
+                  other.auto_dark_content_rules);
+}

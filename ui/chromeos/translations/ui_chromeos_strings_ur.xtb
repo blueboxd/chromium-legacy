@@ -59,7 +59,6 @@
 <translation id="1499943022354839699">ڈوراک کی بورڈ کے ساتھ انگریزی (امریکہ)</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - میزبان</translation>
 <translation id="1521655867290435174">Google Sheets</translation>
-<translation id="1538729222189715449">‏Linux فائلز کھل رہی ہیں…</translation>
 <translation id="1547964879613821194">کینیڈین انگریزی</translation>
 <translation id="1556189134700913550">سبھی پر لاگو کریں</translation>
 <translation id="1561842594491319104">‏Chrome آلات</translation>
@@ -333,7 +332,6 @@
 <translation id="3727148787322499904">اس ترتیب کو تبدیل کرنے سے سبھی اشتراک کردہ نیٹ ورکس پر اثر پڑے گا</translation>
 <translation id="3737576078404241332">سائیڈ بار سے ہٹائیں</translation>
 <translation id="3749289110408117711">فائل کا نام</translation>
-<translation id="3780536599611287598">آپ کو فائلوں کو '<ph name="FOLDER_NAME" />' میں منتقل کرنے کی اجازت نہیں ہے۔</translation>
 <translation id="3786301125658655746">آپ آف لائن ہیں</translation>
 <translation id="3789841737615482174">انسٹال کریں</translation>
 <translation id="3793469551756281394">تقریباً <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> باقی</translation>
@@ -472,7 +470,6 @@
 <translation id="4804827417948292437">مَگَر ناشپاتی</translation>
 <translation id="4805966553127040832"><ph name="COUNT" /> آئٹمز بحال ہو رہے ہیں</translation>
 <translation id="4816695657735045067">{COUNT,plural, =1{پوشیدگی وضع استعمال کرنے کیلئے، آپ کی تنظیم کو ایک ایکسٹینشن درکار ہے}other{پوشیدگی وضع استعمال کرنے کیلئے، آپ کی تنظیم کو کچھ ایکسٹینشنز درکار ہے}}</translation>
-<translation id="4823651846660089135">آلہ صرف پڑھنے کیلئے ہے</translation>
 <translation id="4826849268470072925">‏تمل ITRANS</translation>
 <translation id="482932175346970750">‏اپنے براؤزر میں <ph name="BEGIN_BOLD" />chrome://extensions<ph name="END_BOLD" /> ٹائپ کریں</translation>
 <translation id="4843566743023903107">Chromebases</translation>
@@ -681,7 +678,6 @@
 <translation id="6327785803543103246">ویب پراکسی کی خودکار دریافت</translation>
 <translation id="6337014272874260727">فوری فائلز سے پن ہٹائیں</translation>
 <translation id="6339145975392024142">‏امریکی بین الاقوامی (PC)</translation>
-<translation id="6346310558342052870">رسائی روک دی گئی</translation>
 <translation id="6356685157277930264">فائلوں کے تاثرات کی ونڈو</translation>
 <translation id="6358884629796491903">ڈریگن</translation>
 <translation id="636254897931573416">ڈومین لاحقہ سے مماثل قدر غلط ہے</translation>
@@ -1015,6 +1011,7 @@
 <translation id="8919081441417203123">ڈينش</translation>
 <translation id="8949925099261528566">منسلک، انٹرنیٹ نہیں ہے</translation>
 <translation id="8965697826696209160">اس میں کافی جگہ نہیں ہے۔</translation>
+<translation id="8971742885766657349">سِنک ہو رہا ہے - <ph name="PERCENT" />فیصد</translation>
 <translation id="8997962250644902079">‏چینی (روایتی) Pinyin</translation>
 <translation id="8998871447376656508">‏اپ لوڈ مکمل کرنے کے لیے آپ کی Google Drive میں کافی خالی اسپیس نہیں ہے۔</translation>
 <translation id="9003940392834790328"><ph name="NETWORK_COUNT" /> میں سے <ph name="NETWORK_INDEX" /> نیٹ ورک، <ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" />%، آپ کے منتظم کے زیر انتظام ہے، تفصیلات</translation>

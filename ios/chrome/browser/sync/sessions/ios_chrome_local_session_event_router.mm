@@ -14,8 +14,7 @@
 #import "components/sync_sessions/synced_tab_delegate.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/all_web_state_list_observation_registrar.h"
-#import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
-#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/browser/browser_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/sync/glue/sync_start_util.h"
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
@@ -37,11 +36,11 @@ sync_sessions::SyncedTabDelegate* GetSyncedTabDelegateFromWebState(
 }  // namespace
 
 IOSChromeLocalSessionEventRouter::IOSChromeLocalSessionEventRouter(
-    ChromeBrowserState* browser_state,
+    BrowserList* browser_list,
     sync_sessions::SyncSessionsClient* sessions_client,
     const syncer::SyncableService::StartSyncFlare& flare)
     : registrar_(std::make_unique<AllWebStateListObservationRegistrar>(
-          BrowserListFactory::GetForBrowserState(browser_state),
+          browser_list,
           std::make_unique<Observer>(this),
           AllWebStateListObservationRegistrar::Mode::REGULAR)),
       sessions_client_(sessions_client),
@@ -62,23 +61,39 @@ IOSChromeLocalSessionEventRouter::Observer::Observer(
 
 IOSChromeLocalSessionEventRouter::Observer::~Observer() {}
 
-void IOSChromeLocalSessionEventRouter::Observer::WebStateInsertedAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index,
-    bool activating) {
-  web_state->AddObserver(this);
-}
+#pragma mark - WebStateListObserver
 
-void IOSChromeLocalSessionEventRouter::Observer::WebStateReplacedAt(
+void IOSChromeLocalSessionEventRouter::Observer::WebStateListChanged(
     WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int index) {
-  router_->OnWebStateChange(old_web_state);
-  old_web_state->RemoveObserver(this);
-  DCHECK(new_web_state);
-  new_web_state->AddObserver(this);
+    const WebStateListChange& change,
+    const WebStateSelection& selection) {
+  switch (change.type()) {
+    case WebStateListChange::Type::kSelectionOnly:
+      // Do nothing when a WebState is selected and its status is updated.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // WebStateDetachedAt() to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace: {
+      const WebStateListChangeReplace& replace_change =
+          change.As<WebStateListChangeReplace>();
+      web::WebState* replaced_web_state = replace_change.replaced_web_state();
+      router_->OnWebStateChange(replaced_web_state);
+      replaced_web_state->RemoveObserver(this);
+      replace_change.inserted_web_state()->AddObserver(this);
+      break;
+    }
+    case WebStateListChange::Type::kInsert: {
+      const WebStateListChangeInsert& insert_change =
+          change.As<WebStateListChangeInsert>();
+      insert_change.inserted_web_state()->AddObserver(this);
+      break;
+    }
+  }
 }
 
 void IOSChromeLocalSessionEventRouter::Observer::WebStateDetachedAt(
@@ -88,6 +103,8 @@ void IOSChromeLocalSessionEventRouter::Observer::WebStateDetachedAt(
   router_->OnWebStateChange(web_state);
   web_state->RemoveObserver(this);
 }
+
+#pragma mark - WebStateObserver
 
 void IOSChromeLocalSessionEventRouter::Observer::TitleWasSet(
     web::WebState* web_state) {

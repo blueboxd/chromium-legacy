@@ -227,7 +227,8 @@ class DeleteForeignVisitsDBTask : public HistoryDBTask {
       return true;
     }
 
-    backend->RemoveVisits(visits);
+    backend->RemoveVisits(visits,
+                          DeletionInfo::Reason::kDeleteAllForeignVisits);
 
     bool done = visits.size() < static_cast<size_t>(max_count);
     if (done) {
@@ -1876,11 +1877,12 @@ void HistoryBackend::DeleteAllForeignVisitsAndResetIsKnownToSync() {
   }
 }
 
-bool HistoryBackend::RemoveVisits(const VisitVector& visits) {
+bool HistoryBackend::RemoveVisits(const VisitVector& visits,
+                                  DeletionInfo::Reason deletion_reason) {
   if (!db_)
     return false;
 
-  expirer_.ExpireVisits(visits);
+  expirer_.ExpireVisits(visits, deletion_reason);
   ScheduleCommit();
   return true;
 }
@@ -2028,6 +2030,16 @@ HistoryBackend::GetDomainDiversity(
   }
 
   return std::make_pair(local_result, all_result);
+}
+
+DomainsVisitedResult HistoryBackend::GetUniqueDomainsVisited(
+    base::Time begin_time,
+    base::Time end_time) {
+  if (!db_) {
+    return {};
+  }
+
+  return db_->GetUniqueDomainsVisited(begin_time, end_time);
 }
 
 HistoryLastVisitResult HistoryBackend::GetLastVisitToHost(

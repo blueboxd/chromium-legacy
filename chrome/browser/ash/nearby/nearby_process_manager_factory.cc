@@ -52,7 +52,8 @@ bool NearbyProcessManagerFactory::CanBeLaunchedForProfile(Profile* profile) {
 
 // static
 NearbyProcessManagerFactory* NearbyProcessManagerFactory::GetInstance() {
-  return base::Singleton<NearbyProcessManagerFactory>::get();
+  static base::NoDestructor<NearbyProcessManagerFactory> instance;
+  return instance.get();
 }
 
 // static

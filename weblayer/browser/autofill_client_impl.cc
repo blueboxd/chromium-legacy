@@ -10,6 +10,7 @@
 #include "components/android_autofill/browser/android_autofill_manager.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
@@ -359,10 +360,6 @@ void AutofillClientImpl::DidFillOrPreviewField(
 bool AutofillClientImpl::IsContextSecure() const {
   NOTREACHED();
   return false;
-}
-
-void AutofillClientImpl::ExecuteCommand(autofill::Suggestion::FrontendId id) {
-  NOTREACHED();
 }
 
 void AutofillClientImpl::OpenPromoCodeOfferDetailsURL(const GURL& url) {

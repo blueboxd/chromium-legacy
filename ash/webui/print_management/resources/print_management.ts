@@ -18,7 +18,7 @@ import './strings.m.js';
 
 import {IronIconElement} from '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
-import {startColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
+import {ColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
@@ -194,7 +194,7 @@ export class PrintManagementElement extends PrintManagementElementBase
       typographyLink.rel = 'stylesheet';
       document.head.appendChild(typographyLink);
       document.body.classList.add('jelly-enabled');
-      startColorChangeUpdater();
+      ColorChangeUpdater.forDocument().start();
     }
   }
 
@@ -347,6 +347,24 @@ export class PrintManagementElement extends PrintManagementElementBase
         'delete-enabled', !this.shouldDisableClearAllButton);
     this.$.deleteIcon.classList.toggle(
         'delete-disabled', this.shouldDisableClearAllButton);
+  }
+
+  /** Determine if printer setup UI should be shown. */
+  private shouldShowSetupAssistance(): boolean {
+    return this.showSetupAssistance && this.ongoingPrintJobs.length === 0 &&
+        this.printJobs.length === 0;
+  }
+
+  /** Determine if ongoing jobs empty messaging should be shown. */
+  private shouldShowOngoingEmptyState(): boolean {
+    return !this.shouldShowSetupAssistance() &&
+        this.ongoingPrintJobs.length === 0;
+  }
+
+  /** Determine if manage printer button in header should be shown. */
+  private shouldShowManagePrinterButton(): boolean {
+    return this.showSetupAssistance &&
+        (this.ongoingPrintJobs.length > 0 || this.printJobs.length > 0);
   }
 }
 

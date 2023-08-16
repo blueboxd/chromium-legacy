@@ -46,23 +46,11 @@ class CompanionTabHelper
     virtual void OnCompanionSidePanelClosed() = 0;
     // Retrieves the web contents for testing purposes.
     virtual content::WebContents* GetCompanionWebContentsForTesting() = 0;
-    // Add a callback to be called when Companion is fully loaded in the side
-    // panel, i.e. the spinner of the tab would stop spinning, Javascript is
-    // loaded and the onload event was dispatched.
-    virtual void AddCompanionFinishedLoadingCallback(
-        base::OnceCallback<void()> callback) = 0;
   };
-
-  using CompanionLoadedCallback = base::OnceCallback<void()>;
 
   CompanionTabHelper(const CompanionTabHelper&) = delete;
   CompanionTabHelper& operator=(const CompanionTabHelper&) = delete;
   ~CompanionTabHelper() override;
-
-  // Add a callback to be called when Companion is fully loaded in the side
-  // panel, i.e. the spinner of the tab would stop spinning, Javascript is
-  // loaded and the onload event was dispatched.
-  void AddCompanionFinishedLoadingCallback(CompanionLoadedCallback callback);
 
   // Shows the companion side panel with query provided by the |search_url|.
   void ShowCompanionSidePanelForSearchURL(const GURL& search_url);
@@ -81,6 +69,8 @@ class CompanionTabHelper
   // Returns the latest text query set by the client or an empty string if none.
   // Clears the last previous query after returning a copy.
   std::string GetTextQuery();
+  // Sets the latest text query and shows the side panel with that query.
+  void SetTextQuery(const std::string& text_query);
   // Starts the region search controller with the specified parameters.
   void StartRegionSearch(content::WebContents* web_contents,
                          bool use_fullscreen_capture);
@@ -123,9 +113,6 @@ class CompanionTabHelper
   explicit CompanionTabHelper(content::WebContents* web_contents);
 
   friend class content::WebContentsUserData<CompanionTabHelper>;
-
-  // Sets the latest text query and shows the side panel with that query.
-  void SetTextQuery(const std::string& text_query);
 
   // Sets appropriate source and target language parameters and translate
   // filter.

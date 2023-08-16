@@ -69,7 +69,7 @@ bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
   DCHECK(event.os_event);
 
   // Do not fire shortcuts on key up.
-  return [event.os_event type] == NSEventTypeKeyDown;
+  return event.os_event.Get().type == NSEventTypeKeyDown;
 }
 
 }  // namespace
@@ -474,12 +474,15 @@ content::KeyboardEventProcessingResult BrowserFrameMac::PreHandleKeyboardEvent(
   // -[CommandDispatcher performKeyEquivalent:]. If this logic is being hit,
   // it means that the event was not handled, so we must return either
   // NOT_HANDLED or NOT_HANDLED_IS_SHORTCUT.
-  if (EventUsesPerformKeyEquivalent(event.os_event)) {
-    int command_id = CommandForKeyEvent(event.os_event).chrome_command;
-    if (command_id == -1)
-      command_id = DelayedWebContentsCommandForKeyEvent(event.os_event);
-    if (command_id != -1)
+  NSEvent* ns_event = event.os_event.Get();
+  if (EventUsesPerformKeyEquivalent(ns_event)) {
+    int command_id = CommandForKeyEvent(ns_event).chrome_command;
+    if (command_id == -1) {
+      command_id = DelayedWebContentsCommandForKeyEvent(ns_event);
+    }
+    if (command_id != -1) {
       return content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT;
+    }
   }
 
   return content::KeyboardEventProcessingResult::NOT_HANDLED;
@@ -487,12 +490,13 @@ content::KeyboardEventProcessingResult BrowserFrameMac::PreHandleKeyboardEvent(
 
 bool BrowserFrameMac::HandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
-  if (!ShouldHandleKeyboardEvent(event))
+  if (!ShouldHandleKeyboardEvent(event)) {
     return false;
+  }
 
   // Redispatch the event. If it's a keyEquivalent:, this gives
   // CommandDispatcher the opportunity to finish passing the event to consumers.
-  return GetNSWindowHost()->RedispatchKeyEvent(event.os_event);
+  return GetNSWindowHost()->RedispatchKeyEvent(event.os_event.Get());
 }
 
 bool BrowserFrameMac::ShouldRestorePreviousBrowserWidgetState() const {

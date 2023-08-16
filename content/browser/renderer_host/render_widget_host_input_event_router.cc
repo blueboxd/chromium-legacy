@@ -28,7 +28,6 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/layout.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/dip_util.h"
 
@@ -848,16 +847,6 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
 
   bool is_sequence_start = !touch_target_ && target;
   if (is_sequence_start) {
-    // TODO(wjmaclean): Remove this once investigation for
-    // https://crbug.com/1197154 is complete.
-    if (RenderWidgetHostViewBase::IsValidRWHVBPointer(target) != 1 &&
-        !has_dumped_) {
-      has_dumped_ = true;
-      SCOPED_CRASH_KEY_NUMBER(
-          "DispatchTouchEvent", "ptr_status",
-          RenderWidgetHostViewBase::IsValidRWHVBPointer(target));
-      base::debug::DumpWithoutCrashing();
-    }
     touch_target_ = target;
     DCHECK(touchscreen_gesture_target_map_.find(
                touch_event.unique_touch_event_id) ==

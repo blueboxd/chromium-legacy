@@ -222,6 +222,11 @@ class FakeNavigation : public DIPSNavigationHandle {
   const GURL& GetPreviousPrimaryMainFrameURL() const override {
     return previous_url_;
   }
+  // TODO (crbug.com/1442658): Add support for simulating opening a link in a
+  // new tab.
+  const GURL GetInitiator() const override {
+    return previous_url_.is_empty() ? GURL("about:blank") : previous_url_;
+  }
   const std::vector<GURL>& GetRedirectChain() const override { return chain_; }
 
   raw_ptr<DIPSBounceDetector> detector_;
@@ -259,6 +264,9 @@ class DIPSBounceDetectorTest : public ::testing::Test {
   }
 
   void ActivatePage() { detector_.OnUserActivation(); }
+  void TriggerWebAuthnAssertionRequestSucceeded() {
+    detector_.WebAuthnAssertionRequestSucceeded();
+  }
 
   void AdvanceDIPSTime(base::TimeDelta delta) {
     task_environment_.AdvanceClock(delta);
@@ -448,6 +456,37 @@ TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Server) {
   EXPECT_EQ(stateful_bounce_count(), 2);
 }
 
+TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Server_OnStartUp) {
+  StartNavigation("http://b.test", kWithUserGesture)
+      .AccessCookie(CookieOperation::kRead)
+      .RedirectTo("http://c.test")
+      .AccessCookie(CookieOperation::kChange)
+      .RedirectTo("http://d.test")
+      .AccessCookie(CookieOperation::kRead)
+      .AccessCookie(CookieOperation::kChange)
+      .RedirectTo("http://e.test")
+      .Finish(true);
+
+  auto mocked_bounce_time = GetCurrentTime();
+
+  EndPendingRedirectChain();
+
+  EXPECT_THAT(
+      redirects(),
+      testing::ElementsAre(("[1/3] blank -> b.test/ (Read) -> e.test/"),
+                           ("[2/3] blank -> c.test/ (Write) -> e.test/"),
+                           ("[3/3] blank -> d.test/ (ReadWrite) -> e.test/")));
+
+  EXPECT_THAT(GetRecordedBounces(),
+              testing::UnorderedElementsAre(
+                  MakeBounceTuple("http://b.test", mocked_bounce_time,
+                                  /*stateful=*/false),
+                  MakeBounceTuple("http://c.test", mocked_bounce_time,
+                                  /*stateful=*/true),
+                  MakeBounceTuple("http://d.test", mocked_bounce_time,
+                                  /*stateful=*/true)));
+}
+
 TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Server_LateNotification) {
   NavigateTo("http://a.test", kWithUserGesture);
   StartNavigation("http://b.test", kWithUserGesture)
@@ -500,6 +539,25 @@ TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Client) {
               testing::UnorderedElementsAre(MakeBounceTuple(
                   "http://b.test", mocked_bounce_time, /*stateful=*/false)));
   EXPECT_EQ(stateful_bounce_count(), 0);
+}
+
+TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Client_OnStartUp) {
+  NavigateTo("http://a.test", kWithUserGesture);
+  AccessClientCookie(CookieOperation::kRead);
+  AccessClientCookie(CookieOperation::kChange);
+  AdvanceDIPSTime(dips::kClientBounceDetectionTimeout.Get() - base::Seconds(1));
+  NavigateTo("http://b.test", kNoUserGesture);
+
+  auto mocked_bounce_time = GetCurrentTime();
+
+  EndPendingRedirectChain();
+
+  EXPECT_THAT(
+      redirects(),
+      testing::ElementsAre(("[1/1] blank -> a.test/ (ReadWrite) -> b.test/")));
+  EXPECT_THAT(GetRecordedBounces(),
+              testing::UnorderedElementsAre(MakeBounceTuple(
+                  "http://a.test", mocked_bounce_time, /*stateful=*/true)));
 }
 
 TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Client_MergeCookies) {
@@ -854,6 +912,57 @@ TEST_F(DIPSBounceDetectorTest, InteractionRecording_NotThrottled_AfterRefresh) {
                                  /*event=*/DIPSRecordedEvent::kInteraction)));
 }
 
+TEST_F(DIPSBounceDetectorTest, successfulWebAuthnAssertionRecording_Throttled) {
+  base::Time first_time = GetCurrentTime();
+  NavigateTo("http://a.test", kNoUserGesture);
+  TriggerWebAuthnAssertionRequestSucceeded();
+
+  AdvanceDIPSTime(DIPSBounceDetector::kTimestampUpdateInterval / 2);
+  TriggerWebAuthnAssertionRequestSucceeded();
+
+  AdvanceDIPSTime(DIPSBounceDetector::kTimestampUpdateInterval / 2);
+  base::Time last_time = GetCurrentTime();
+  TriggerWebAuthnAssertionRequestSucceeded();
+
+  // Verify only the first and last web authn assertions were recorded. The
+  // second assertion happened less than |kTimestampUpdateInterval| after the
+  // first, so it should be ignored.
+  EXPECT_THAT(GetRecordedEvents(), testing::SizeIs(2));
+  EXPECT_THAT(
+      GetRecordedEvents(),
+      testing::UnorderedElementsAre(
+          MakeEventTuple("http://a.test", first_time,
+                         /*event=*/DIPSRecordedEvent::kWebAuthnAssertion),
+          MakeEventTuple("http://a.test", last_time,
+                         /*event=*/DIPSRecordedEvent::kWebAuthnAssertion)));
+}
+
+TEST_F(DIPSBounceDetectorTest,
+       successfulWebAuthnAssertionRecording_NotThrottled_AfterRefresh) {
+  base::Time first_time = GetCurrentTime();
+  NavigateTo("http://a.test", kNoUserGesture);
+  TriggerWebAuthnAssertionRequestSucceeded();
+
+  AdvanceDIPSTime(DIPSBounceDetector::kTimestampUpdateInterval / 4);
+  NavigateTo("http://a.test", kWithUserGesture);
+
+  AdvanceDIPSTime(DIPSBounceDetector::kTimestampUpdateInterval / 4);
+  base::Time last_time = GetCurrentTime();
+  TriggerWebAuthnAssertionRequestSucceeded();
+
+  // Verify the first and last web authn assertions were both recorded. Despite
+  // the last assertion happening less than |kTimestampUpdateInterval| after the
+  // first, it happened after the page was refreshed, so it should be recorded.
+  EXPECT_THAT(GetRecordedEvents(), testing::SizeIs(2));
+  EXPECT_THAT(
+      GetRecordedEvents(),
+      testing::UnorderedElementsAre(
+          MakeEventTuple("http://a.test", first_time,
+                         /*event=*/DIPSRecordedEvent::kWebAuthnAssertion),
+          MakeEventTuple("http://a.test", last_time,
+                         /*event=*/DIPSRecordedEvent::kWebAuthnAssertion)));
+}
+
 TEST_F(DIPSBounceDetectorTest, StorageRecording_Throttled) {
   base::Time first_time = GetCurrentTime();
 
@@ -915,6 +1024,7 @@ TEST_F(DIPSBounceDetectorTest, StorageRecording_NotThrottled_AfterRefresh) {
 
 const std::vector<std::string>& GetAllRedirectMetrics() {
   static const std::vector<std::string> kAllRedirectMetrics = {
+      // clang-format off
       "ClientBounceDelay",
       "CookieAccessType",
       "HasStickyActivation",
@@ -925,6 +1035,8 @@ const std::vector<std::string>& GetAllRedirectMetrics() {
       "RedirectChainLength",
       "RedirectType",
       "SiteEngagementLevel",
+      "WebAuthnAssertionRequestSucceeded",
+      // clang-format on
   };
   return kAllRedirectMetrics;
 }
@@ -979,6 +1091,7 @@ TEST_F(DIPSBounceDetectorTest, Histograms_UKM) {
   NavigateTo("http://b.test", kWithUserGesture);
   AdvanceDIPSTime(base::Seconds(2));
   AccessClientCookie(CookieOperation::kRead);
+  TriggerWebAuthnAssertionRequestSucceeded();
   StartNavigation("http://c.test", kNoUserGesture)
       .AccessCookie(CookieOperation::kChange)
       .RedirectTo("http://d.test")
@@ -1002,7 +1115,8 @@ TEST_F(DIPSBounceDetectorTest, Histograms_UKM) {
                   Pair("RedirectAndInitialSiteSame", false),
                   Pair("RedirectChainIndex", 0), Pair("RedirectChainLength", 2),
                   Pair("RedirectType", (int)DIPSRedirectType::kClient),
-                  Pair("SiteEngagementLevel", 0)));
+                  Pair("SiteEngagementLevel", 0),
+                  Pair("WebAuthnAssertionRequestSucceeded", true)));
 
   EXPECT_THAT(URLForRedirectSourceId(&ukm_recorder, ukm_entries[1].source_id),
               Eq("c.test/"));
@@ -1016,7 +1130,8 @@ TEST_F(DIPSBounceDetectorTest, Histograms_UKM) {
                   Pair("RedirectAndInitialSiteSame", false),
                   Pair("RedirectChainIndex", 1), Pair("RedirectChainLength", 2),
                   Pair("RedirectType", (int)DIPSRedirectType::kServer),
-                  Pair("SiteEngagementLevel", 1)));
+                  Pair("SiteEngagementLevel", 1),
+                  Pair("WebAuthnAssertionRequestSucceeded", false)));
 }
 
 using ChainPair =
@@ -1053,7 +1168,8 @@ DIPSRedirectInfoPtr MakeClientRedirect(
       /*source_id=*/ukm::SourceId(),
       /*time=*/base::Time::Now(),
       /*client_bounce_delay=*/base::Seconds(1),
-      /*has_sticky[[_activation=*/false);
+      /*has_sticky_activation=*/false,
+      /*web_authn_assertion_request_succeeded*/ false);
 }
 
 MATCHER_P(HasUrl, url, "") {

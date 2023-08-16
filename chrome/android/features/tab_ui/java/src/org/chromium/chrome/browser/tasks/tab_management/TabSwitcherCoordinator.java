@@ -553,8 +553,7 @@ public class TabSwitcherCoordinator
     }
 
     @Override
-    @NonNull
-    public Rect getThumbnailLocationOfCurrentTab() {
+    public @NonNull Rect getThumbnailLocationOfCurrentTab() {
         if (mTabGridDialogCoordinator != null && mTabGridDialogCoordinator.isVisible()) {
             Rect thumbnail = mTabGridDialogCoordinator.getGlobalLocationOfCurrentThumbnail();
             // Adjust to the relative coordinate.
@@ -587,6 +586,12 @@ public class TabSwitcherCoordinator
     @VisibleForTesting
     public int getBitmapFetchCountForTesting() {
         return TabListMediator.ThumbnailFetcher.sFetchCountForTesting;
+    }
+
+    @Override
+    @VisibleForTesting
+    public void resetBitmapFetchCountForTesting() {
+        TabListMediator.ThumbnailFetcher.sFetchCountForTesting = 0;
     }
 
     @Override

@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
-#include "third_party/blink/renderer/core/dom/parent_node.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -56,21 +55,23 @@ class ContainerQueryEvaluatorTest : public PageTestBase {
     return &style_rule->GetContainerQuery();
   }
 
+  ContainerQueryEvaluator* CreateEvaluatorForType(unsigned container_type) {
+    ComputedStyleBuilder builder(
+        *GetDocument().GetStyleResolver().InitialStyleForElement());
+    builder.SetContainerType(container_type);
+    ContainerElement().SetComputedStyle(builder.TakeStyle());
+    return MakeGarbageCollected<ContainerQueryEvaluator>(ContainerElement());
+  }
+
   bool Eval(String query,
             double width,
             double height,
             unsigned container_type,
             PhysicalAxes contained_axes) {
-    ComputedStyleBuilder builder(
-        *GetDocument().GetStyleResolver().InitialStyleForElement());
-    builder.SetContainerType(container_type);
-    ContainerElement().SetComputedStyle(builder.TakeStyle());
-
     ContainerQuery* container_query = ParseContainer(query);
     DCHECK(container_query);
-    auto* evaluator = MakeGarbageCollected<ContainerQueryEvaluator>();
+    ContainerQueryEvaluator* evaluator = CreateEvaluatorForType(container_type);
     evaluator->SizeContainerChanged(
-        GetDocument(), ContainerElement(),
         PhysicalSize(LayoutUnit(width), LayoutUnit(height)), contained_axes);
     return evaluator->Eval(*container_query).value;
   }
@@ -94,9 +95,9 @@ class ContainerQueryEvaluatorTest : public PageTestBase {
                             false);
     ContainerElement().SetComputedStyle(builder.TakeStyle());
 
-    auto* evaluator = MakeGarbageCollected<ContainerQueryEvaluator>();
+    auto* evaluator =
+        MakeGarbageCollected<ContainerQueryEvaluator>(ContainerElement());
     evaluator->SizeContainerChanged(
-        GetDocument(), ContainerElement(),
         PhysicalSize(LayoutUnit(100), LayoutUnit(100)),
         PhysicalAxes{kPhysicalAxisNone});
 
@@ -114,8 +115,18 @@ class ContainerQueryEvaluatorTest : public PageTestBase {
         *GetDocument().GetStyleResolver().InitialStyleForElement());
     builder.SetContainerType(container_type);
     ContainerElement().SetComputedStyle(builder.TakeStyle());
-    return evaluator->SizeContainerChanged(GetDocument(), ContainerElement(),
-                                           size, axes);
+    return evaluator->SizeContainerChanged(size, axes);
+  }
+
+  Change StickyContainerChanged(ContainerQueryEvaluator* evaluator,
+                                ContainerStuckPhysical stuck_horizontal,
+                                ContainerStuckPhysical stuck_vertical,
+                                unsigned container_type) {
+    ComputedStyleBuilder builder(
+        *GetDocument().GetStyleResolver().InitialStyleForElement());
+    builder.SetContainerType(container_type);
+    ContainerElement().SetComputedStyle(builder.TakeStyle());
+    return evaluator->StickyContainerChanged(stuck_horizontal, stuck_vertical);
   }
 
   bool EvalAndAdd(ContainerQueryEvaluator* evaluator,
@@ -155,6 +166,7 @@ class ContainerQueryEvaluatorTest : public PageTestBase {
   const unsigned type_normal = kContainerTypeNormal;
   const unsigned type_size = kContainerTypeSize;
   const unsigned type_inline_size = kContainerTypeInlineSize;
+  const unsigned type_sticky = kContainerTypeSticky;
 };
 
 TEST_F(ContainerQueryEvaluatorTest, ContainmentMatch) {
@@ -206,7 +218,7 @@ TEST_F(ContainerQueryEvaluatorTest, SizeContainerChanged) {
   ASSERT_TRUE(container_query_100);
   ASSERT_TRUE(container_query_200);
 
-  auto* evaluator = MakeGarbageCollected<ContainerQueryEvaluator>();
+  ContainerQueryEvaluator* evaluator = CreateEvaluatorForType(type_inline_size);
   SizeContainerChanged(evaluator, size_100, type_size, horizontal);
 
   EXPECT_TRUE(EvalAndAdd(evaluator, *container_query_100));
@@ -288,10 +300,9 @@ TEST_F(ContainerQueryEvaluatorTest, StyleContainerChanged) {
   scoped_refptr<const ComputedStyle> style = builder.TakeStyle();
   container_element.SetComputedStyle(style);
 
-  auto* evaluator = MakeGarbageCollected<ContainerQueryEvaluator>();
+  ContainerQueryEvaluator* evaluator = CreateEvaluatorForType(type_inline_size);
   EXPECT_EQ(Change::kNone,
-            evaluator->SizeContainerChanged(GetDocument(), container_element,
-                                            size_100, horizontal));
+            evaluator->SizeContainerChanged(size_100, horizontal));
 
   ContainerQuery* foo_bar_query = ParseContainer("style(--foo: bar)");
   ContainerQuery* size_bar_foo_query =
@@ -347,6 +358,46 @@ TEST_F(ContainerQueryEvaluatorTest, StyleContainerChanged) {
   EXPECT_EQ(0u, GetResults(evaluator).size());
 }
 
+TEST_F(ContainerQueryEvaluatorTest, StickyContainerChanged) {
+  ContainerQuery* container_query_left = ParseContainer("state(stuck: left)");
+  ContainerQuery* container_query_bottom =
+      ParseContainer("state(stuck: bottom)");
+  ASSERT_TRUE(container_query_left);
+  ASSERT_TRUE(container_query_bottom);
+
+  ContainerQueryEvaluator* evaluator = CreateEvaluatorForType(type_sticky);
+  StickyContainerChanged(evaluator, ContainerStuckPhysical::kLeft,
+                         ContainerStuckPhysical::kNo, type_sticky);
+
+  EXPECT_TRUE(EvalAndAdd(evaluator, *container_query_left));
+  EXPECT_FALSE(EvalAndAdd(evaluator, *container_query_bottom));
+  EXPECT_EQ(2u, GetResults(evaluator).size());
+
+  // Calling StickyContainerChanged the values we already have should not
+  // produce a Change.
+  EXPECT_EQ(Change::kNone,
+            StickyContainerChanged(evaluator, ContainerStuckPhysical::kLeft,
+                                   ContainerStuckPhysical::kNo, type_sticky));
+  EXPECT_EQ(2u, GetResults(evaluator).size());
+
+  // EvalAndAdding the same queries again is allowed.
+  EXPECT_TRUE(EvalAndAdd(evaluator, *container_query_left));
+  EXPECT_FALSE(EvalAndAdd(evaluator, *container_query_bottom));
+  EXPECT_EQ(2u, GetResults(evaluator).size());
+
+  // Set vertically stuck to bottom.
+  EXPECT_EQ(
+      Change::kNearestContainer,
+      StickyContainerChanged(evaluator, ContainerStuckPhysical::kLeft,
+                             ContainerStuckPhysical::kBottom, type_sticky));
+  EXPECT_EQ(0u, GetResults(evaluator).size());
+
+  // Now both left and bottom queries should return true.
+  EXPECT_TRUE(EvalAndAdd(evaluator, *container_query_left));
+  EXPECT_TRUE(EvalAndAdd(evaluator, *container_query_bottom));
+  EXPECT_EQ(2u, GetResults(evaluator).size());
+}
+
 TEST_F(ContainerQueryEvaluatorTest, ClearResults) {
   PhysicalSize size_100(LayoutUnit(100), LayoutUnit(100));
 
@@ -364,7 +415,7 @@ TEST_F(ContainerQueryEvaluatorTest, ClearResults) {
   ASSERT_TRUE(container_query_style);
   ASSERT_TRUE(container_query_size_and_style);
 
-  auto* evaluator = MakeGarbageCollected<ContainerQueryEvaluator>();
+  ContainerQueryEvaluator* evaluator = CreateEvaluatorForType(type_inline_size);
   SizeContainerChanged(evaluator, size_100, type_size, horizontal);
 
   EXPECT_EQ(0u, GetResults(evaluator).size());
@@ -545,7 +596,7 @@ TEST_F(ContainerQueryEvaluatorTest, DependentQueries) {
   ContainerQuery* query_max_300px = ParseContainer("(max-width: 300px)");
   ASSERT_TRUE(query_min_200px);
 
-  auto* evaluator = MakeGarbageCollected<ContainerQueryEvaluator>();
+  ContainerQueryEvaluator* evaluator = CreateEvaluatorForType(type_inline_size);
   SizeContainerChanged(evaluator, size_100, type_size, horizontal);
 
   EvalAndAdd(evaluator, *query_min_200px);
@@ -696,10 +747,10 @@ TEST_F(ContainerQueryEvaluatorTest, FindContainer) {
 
   UpdateAllLifecyclePhasesForTest();
 
-  Element* outer_size = ParentNode::firstElementChild(*GetDocument().body());
-  Element* outer = ParentNode::firstElementChild(*outer_size);
-  Element* inner_size = ParentNode::firstElementChild(*outer);
-  Element* inner = ParentNode::firstElementChild(*inner_size);
+  Element* outer_size = GetDocument().body()->firstElementChild();
+  Element* outer = outer_size->firstElementChild();
+  Element* inner_size = outer->firstElementChild();
+  Element* inner = inner_size->firstElementChild();
 
   EXPECT_EQ(ContainerQueryEvaluator::FindContainer(
                 inner, ParseContainer("style(--foo: bar)")->Selector(),
@@ -721,6 +772,49 @@ TEST_F(ContainerQueryEvaluatorTest, FindContainer) {
                     ->Selector(),
                 &GetDocument()),
             outer_size);
+}
+
+TEST_F(ContainerQueryEvaluatorTest, FindStickyContainer) {
+  SetBodyInnerHTML(R"HTML(
+    <div style="container-type: sticky size">
+      <div style="container-name:outer;container-type: sticky">
+        <div style="container-name:outer">
+          <div style="container-type: sticky">
+            <div>
+              <div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* sticky_size = GetDocument().body()->firstElementChild();
+  Element* outer_sticky = sticky_size->firstElementChild();
+  Element* outer = outer_sticky->firstElementChild();
+  Element* inner_sticky = outer->firstElementChild();
+  Element* inner = inner_sticky->firstElementChild();
+
+  EXPECT_EQ(
+      ContainerQueryEvaluator::FindContainer(
+          inner,
+          ParseContainer("state(stuck: top) and style(--foo: bar)")->Selector(),
+          &GetDocument()),
+      inner_sticky);
+  EXPECT_EQ(ContainerQueryEvaluator::FindContainer(
+                inner,
+                ParseContainer("outer state(stuck: top) and style(--foo: bar)")
+                    ->Selector(),
+                &GetDocument()),
+            outer_sticky);
+  EXPECT_EQ(
+      ContainerQueryEvaluator::FindContainer(
+          inner,
+          ParseContainer("state(stuck: top) and (width > 0px)")->Selector(),
+          &GetDocument()),
+      sticky_size);
 }
 
 TEST_F(ContainerQueryEvaluatorTest, ScopedCaching) {

@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/input_method/assistive_input_denylist.h"
 #include "chrome/browser/ash/input_method/assistive_prefs.h"
 #include "chrome/browser/ash/input_method/assistive_window_properties.h"
@@ -1045,12 +1046,19 @@ void AutocorrectManager::UndoAutocorrect() {
         surrounding_text.selection_range.start() - autocorrect_range.start();
     const uint32_t after =
         autocorrect_range.end() - surrounding_text.selection_range.end();
-    input_context->DeleteSurroundingText(before, after);
 
-    // Replace with the original text.
-    input_context->CommitText(
-        pending_autocorrect_->original_text,
-        ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+    if (base::FeatureList::IsEnabled(
+            features::kAutocorrectUseReplaceSurroundingText) &&
+        !crosapi::browser_util::IsLacrosEnabled()) {
+      input_context->ReplaceSurroundingText(
+          before, after, pending_autocorrect_->original_text);
+    } else {
+      input_context->DeleteSurroundingText(before, after);
+      // Replace with the original text.
+      input_context->CommitText(
+          pending_autocorrect_->original_text,
+          ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
+    }
   }
 
   MeasureAndLogAssistiveAutocorrectQualityBreakdown(

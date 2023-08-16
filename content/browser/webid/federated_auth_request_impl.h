@@ -261,6 +261,7 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
       bool should_delay_callback);
   void CompleteLogoutRequest(blink::mojom::LogoutRpsStatus);
   void CompleteUserInfoRequest(
+      FederatedAuthUserInfoRequest* request,
       RequestUserInfoCallback callback,
       blink::mojom::RequestUserInfoStatus status,
       absl::optional<std::vector<blink::mojom::IdentityUserInfoPtr>> user_info);
@@ -280,7 +281,7 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
 
   // Creates an inspector issue related to a federated authentication request to
   // the Issues panel in DevTools.
-  void AddInspectorIssue(blink::mojom::FederatedAuthRequestResult result);
+  void AddDevToolsIssue(blink::mojom::FederatedAuthRequestResult result);
 
   // Adds a console error message related to a federated authentication request
   // issue. The Issues panel is preferred, but for now we also surface console
@@ -374,9 +375,9 @@ class CONTENT_EXPORT FederatedAuthRequestImpl
 
   std::unique_ptr<FederatedProviderFetcher> provider_fetcher_;
 
-  // Only one user info request allowed at a time per frame. Can be done in
-  // parallel with token requests.
-  std::unique_ptr<FederatedAuthUserInfoRequest> user_info_request_;
+  // Set of pending user info requests.
+  base::flat_set<std::unique_ptr<FederatedAuthUserInfoRequest>>
+      user_info_requests_;
 
   base::queue<blink::mojom::LogoutRpsRequestPtr> logout_requests_;
   LogoutRpsCallback logout_callback_;

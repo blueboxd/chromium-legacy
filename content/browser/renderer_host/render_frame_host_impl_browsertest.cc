@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 
+#include <initializer_list>
 #include <memory>
 #include <set>
 #include <string>
@@ -106,6 +107,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/origin_trials/origin_trial_feature.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-test-utils.h"
@@ -325,7 +327,7 @@ using BlocklistedFeatures = blink::scheduler::WebSchedulerTrackedFeatures;
 // Helper function to create a vector which contains the mojom feature
 // information.
 BackForwardCacheBlockingDetails CreateBlockingDetails(
-    BlocklistedFeatures features) {
+    std::initializer_list<BlocklistedFeature> features) {
   BackForwardCacheBlockingDetails feature_vector;
   for (auto feature : features) {
     auto feature_info = BlockingDetails::New();
@@ -1116,9 +1118,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
   OriginTrialsControllerDelegate* delegate = GetOriginTrialsDelegate();
 
   url::Origin trial_origin = url::Origin::Create(GURL(kOriginTrialUrl));
-  EXPECT_TRUE(delegate->IsTrialPersistedForOrigin(
+  EXPECT_TRUE(delegate->IsFeaturePersistedForOrigin(
       /*origin=*/trial_origin, /*partition_origin=*/trial_origin,
-      "FrobulatePersistent", validTime));
+      blink::OriginTrialFeature::kOriginTrialsSampleAPIPersistentFeature,
+      validTime));
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
@@ -1170,9 +1173,11 @@ IN_PROC_BROWSER_TEST_F(
   // The Trial should be enabled in the context where it was set.
   url::Origin main_origin = url::Origin::Create(GURL(kOriginTrialUrl));
   url::Origin trial_origin = url::Origin::Create(GURL(kThirdPartyScriptUrl));
-  EXPECT_TRUE(delegate->IsTrialPersistedForOrigin(
+  EXPECT_TRUE(delegate->IsFeaturePersistedForOrigin(
       /*origin=*/trial_origin, /*partition_origin=*/main_origin,
-      "FrobulatePersistentThirdPartyDeprecation", validTime));
+      blink::OriginTrialFeature::
+          kOriginTrialsSampleAPIPersistentThirdPartyDeprecationFeature,
+      validTime));
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
@@ -6052,16 +6057,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   }
 }
 
-class RenderFrameHostImplSubframeReuseBrowserTest
-    : public RenderFrameHostImplBrowserTest {
- public:
-  RenderFrameHostImplSubframeReuseBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kSubframeShutdownDelay);
-  }
-
- protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
+using RenderFrameHostImplSubframeReuseBrowserTest =
+    RenderFrameHostImplBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSubframeReuseBrowserTest,
                        SubframeShutdownDelay) {
@@ -6095,9 +6092,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSubframeReuseBrowserTest,
 
   // The process hosting the subframe should have its shutdown delayed and be
   // tracked in the pending-delete tracker.
-  ASSERT_TRUE(static_cast<RenderProcessHostImpl*>(
-                  content::RenderProcessHost::FromID(subframe_process_id))
-                  ->IsProcessShutdownDelayedForTesting());
+  auto* subframe_process_host = static_cast<RenderProcessHostImpl*>(
+      content::RenderProcessHost::FromID(subframe_process_id));
+  if (RenderProcessHostImpl::ShouldDelayProcessShutdown()) {
+    ASSERT_TRUE(subframe_process_host->IsProcessShutdownDelayedForTesting());
+  } else {
+    ASSERT_EQ(nullptr, subframe_process_host);
+  }
 
   // Wait for |url_2| to fully load so that its subframe loads.
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
@@ -6106,13 +6107,16 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSubframeReuseBrowserTest,
   // subframe, because they share the same site.
   RenderFrameHostImpl* new_rfh_b =
       root_frame_host()->child_at(0)->current_frame_host();
-  ASSERT_EQ(subframe_process_id, new_rfh_b->GetProcess()->GetID());
+  ASSERT_EQ(RenderProcessHostImpl::ShouldDelayProcessShutdown(),
+            subframe_process_id == new_rfh_b->GetProcess()->GetID());
 
   // The process should no longer be in the pending-delete tracker, as it has
   // been reused.
-  ASSERT_FALSE(static_cast<RenderProcessHostImpl*>(
-                   content::RenderProcessHost::FromID(subframe_process_id))
-                   ->IsProcessShutdownDelayedForTesting());
+  if (RenderProcessHostImpl::ShouldDelayProcessShutdown()) {
+    ASSERT_FALSE(static_cast<RenderProcessHostImpl*>(
+                     content::RenderProcessHost::FromID(subframe_process_id))
+                     ->IsProcessShutdownDelayedForTesting());
+  }
 }
 
 // Test that multiple subframe-shutdown delays from the same source can be in
@@ -6137,13 +6141,16 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplSubframeReuseBrowserTest,
   const SiteInfo site_info = rfh->GetSiteInstance()->GetSiteInfo();
   const base::TimeDelta delay = base::Seconds(5);
   process->DelayProcessShutdown(delay, base::TimeDelta(), site_info);
-  EXPECT_TRUE(process->IsProcessShutdownDelayedForTesting());
+  EXPECT_EQ(RenderProcessHostImpl::ShouldDelayProcessShutdown(),
+            process->IsProcessShutdownDelayedForTesting());
   process->DelayProcessShutdown(delay, base::TimeDelta(), site_info);
-  EXPECT_TRUE(process->IsProcessShutdownDelayedForTesting());
+  EXPECT_EQ(RenderProcessHostImpl::ShouldDelayProcessShutdown(),
+            process->IsProcessShutdownDelayedForTesting());
 
   // When one delay is cancelled, the other should remain in effect.
   process->CancelProcessShutdownDelay(site_info);
-  EXPECT_TRUE(process->IsProcessShutdownDelayedForTesting());
+  EXPECT_EQ(RenderProcessHostImpl::ShouldDelayProcessShutdown(),
+            process->IsProcessShutdownDelayedForTesting());
   process->CancelProcessShutdownDelay(site_info);
   EXPECT_FALSE(process->IsProcessShutdownDelayedForTesting());
 }

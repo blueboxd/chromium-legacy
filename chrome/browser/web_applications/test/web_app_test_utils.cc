@@ -38,7 +38,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
@@ -210,8 +209,7 @@ blink::ParsedPermissionsPolicy CreateRandomPermissionsPolicy(
       const auto origin =
           url::Origin::Create(GURL("https://app-" + suffix_str + ".com/"));
       permissions_policy[i].allowed_origins.emplace_back(
-          origin,
-          /*has_subdomain_wildcard=*/false);
+          *blink::OriginWithPossibleWildcards::FromOrigin(origin));
     }
   }
   return permissions_policy;
@@ -521,20 +519,6 @@ proto::WebAppOsIntegrationState GenerateRandomWebAppOsIntegrationState(
 
 }  // namespace
 
-std::string GetExternalPrefMigrationTestName(
-    const ::testing::TestParamInfo<ExternalPrefMigrationTestCases>& info) {
-  switch (info.param) {
-    case ExternalPrefMigrationTestCases::kDisableMigrationReadPref:
-      return "DisableMigration_ReadFromPrefs";
-    case ExternalPrefMigrationTestCases::kDisableMigrationReadDB:
-      return "DisableMigration_ReadFromDB";
-    case ExternalPrefMigrationTestCases::kEnableMigrationReadPref:
-      return "EnableMigration_ReadFromPrefs";
-    case ExternalPrefMigrationTestCases::kEnableMigrationReadDB:
-      return "EnableMigration_ReadFromDB";
-  }
-}
-
 std::string GetOsIntegrationSubManagersTestName(
     const ::testing::TestParamInfo<OsIntegrationSubManagersState>& info) {
   switch (info.param) {
@@ -765,13 +749,12 @@ std::unique_ptr<WebApp> CreateRandomWebApp(CreateRandomWebAppParams params) {
   app->SetAdditionalSearchTerms(std::move(additional_search_terms));
 
   int num_shortcut_menus = static_cast<int>(random.next_uint(4)) + 1;
-  app->SetShortcutsMenuItemInfos(
-      CreateRandomShortcutsMenuItemInfos(scope, num_shortcut_menus, random));
-  app->SetDownloadedShortcutsMenuIconsSizes(
-      CreateRandomDownloadedShortcutsMenuIconsSizes(num_shortcut_menus,
-                                                    random));
-  CHECK_EQ(app->shortcuts_menu_item_infos().size(),
-           app->downloaded_shortcuts_menu_icons_sizes().size());
+  auto item_infos =
+      CreateRandomShortcutsMenuItemInfos(scope, num_shortcut_menus, random);
+  auto icons_sizes =
+      CreateRandomDownloadedShortcutsMenuIconsSizes(num_shortcut_menus, random);
+  app->SetShortcutsMenuInfo(std::move(item_infos), std::move(icons_sizes));
+
   app->SetManifestUrl(
       params.base_url.Resolve("/manifest" + seed_str + ".json"));
 
@@ -918,10 +901,27 @@ std::unique_ptr<WebApp> CreateRandomWebApp(CreateRandomWebAppParams params) {
     };
     static_assert(std::size(location_types) == kNumLocationTypes);
 
-    WebApp::IsolationData isolation_data(
-        location_types[random.next_uint(kNumLocationTypes)]);
+    IsolatedWebAppLocation location_type =
+        location_types[random.next_uint(kNumLocationTypes)];
+    base::Version version = base::Version({
+        random.next_uint(),
+        random.next_uint(),
+        random.next_uint(),
+    });
+
+    WebApp::IsolationData isolation_data(location_type, version);
     if (random.next_bool()) {
       isolation_data.controlled_frame_partitions.insert("partition_name");
+    }
+    if (random.next_bool()) {
+      base::Version pending_version = base::Version({
+          random.next_uint(),
+          random.next_uint(),
+          random.next_uint(),
+      });
+      WebApp::IsolationData::PendingUpdateInfo pending_update_info(
+          location_type, pending_version);
+      isolation_data.SetPendingUpdateInfo(pending_update_info);
     }
     app->SetIsolationData(isolation_data);
   }
@@ -996,11 +996,6 @@ void AddInstallUrlData(PrefService* pref_service,
   // Adding external app data (source and URL) to web_app DB.
   app_to_update->AddInstallURLToManagementExternalConfigMap(
       ConvertExternalInstallSourceToSource(source), url);
-
-  // Add to legacy external pref storage.
-  // TODO(crbug.com/1339965): Clean up after external pref migration is
-  // complete.
-  ExternallyInstalledWebAppPrefs(pref_service).Insert(url, app_id, source);
 }
 
 void AddInstallUrlAndPlaceholderData(PrefService* pref_service,
@@ -1010,19 +1005,12 @@ void AddInstallUrlAndPlaceholderData(PrefService* pref_service,
                                      const ExternalInstallSource& source,
                                      bool is_placeholder) {
   ScopedRegistryUpdate update(sync_bridge);
-  ExternallyInstalledWebAppPrefs prefs(pref_service);
   WebApp* app_to_update = update->UpdateApp(app_id);
   DCHECK(app_to_update);
 
   // Adding install_url, source and placeholder information to the web_app DB.
   app_to_update->AddExternalSourceInformation(
       ConvertExternalInstallSourceToSource(source), url, is_placeholder);
-
-  // Add to legacy external pref storage.
-  // TODO(crbug.com/1339965): Clean up after external pref migration is
-  // complete.
-  prefs.Insert(url, app_id, source);
-  prefs.SetIsPlaceholder(url, is_placeholder);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

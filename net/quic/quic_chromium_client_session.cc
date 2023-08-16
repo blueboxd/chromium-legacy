@@ -1699,15 +1699,8 @@ void QuicChromiumClientSession::OnConfigNegotiated() {
   if (!stream_factory_ || !stream_factory_->allow_server_migration()) {
     return;
   }
-  if (connection()->connection_migration_use_new_cid()) {
-    if (!config()->HasReceivedPreferredAddressConnectionIdAndToken()) {
-      return;
-    }
-  } else {
-    if (!config()->HasReceivedIPv6AlternateServerAddress() &&
-        !config()->HasReceivedIPv4AlternateServerAddress()) {
-      return;
-    }
+  if (!config()->HasReceivedPreferredAddressConnectionIdAndToken()) {
+    return;
   }
 
   // Server has sent an alternate address to connect to.
@@ -2129,9 +2122,22 @@ void QuicChromiumClientSession::OnConnectionClosed(
   }
 
   CHECK_EQ(sockets_.size(), packet_readers_.size());
+  // Packet readers must not outlive sockets. Clear them before deleting sockets
+  // below.
+  packet_readers_.clear();
+
+  bool socket_found_in_writer = false;
   for (auto& socket : sockets_) {
     socket->Close();
+    // If a writer exists that was not destroyed when the connection migrated,
+    // then that writer may not be notified that its socket has been closed.
+    // We know that the writer is a QuicChromiumPacketWriter since the packet
+    // writer is set with the same type originally.
+    socket_found_in_writer |=
+        static_cast<QuicChromiumPacketWriter*>(connection()->writer())
+            ->OnSocketClosed(std::move(socket));
   }
+  CHECK(socket_found_in_writer);
   DCHECK(!HasActiveRequestStreams());
   CloseAllHandles(ERR_UNEXPECTED);
   CancelAllRequests(ERR_CONNECTION_CLOSED);
@@ -2190,13 +2196,6 @@ int QuicChromiumClientSession::HandleWriteError(
                      weak_factory_.GetWeakPtr(), error_code,
                      connection()->writer()));
 
-  // Only save packet from the old path for retransmission on the new path when
-  // the connection ID does not change.
-  if (!connection()->connection_migration_use_new_cid()) {
-    // Store packet in the session since the actual migration and packet rewrite
-    // can happen via this posted task or via an async network notification.
-    packet_ = std::move(packet);
-  }
   ignore_read_error_ = true;
 
   // Cause the packet writer to return ERR_IO_PENDING and block so
@@ -2533,7 +2532,6 @@ void QuicChromiumClientSession::OnServerPreferredAddressProbeSucceeded(
 void QuicChromiumClientSession::OnProbeFailed(
     handles::NetworkHandle network,
     const quic::QuicSocketAddress& peer_address) {
-  DCHECK(connection()->connection_migration_use_new_cid());
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CONNECTIVITY_PROBING_FINISHED,
                     [&] {
                       return NetLogProbingResultParams(network, &peer_address,
@@ -2613,13 +2611,11 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
       "disconnected_network", disconnected_network);
 
   // Stop probing the disconnected network if there is one.
-  if (connection()->connection_migration_use_new_cid()) {
-    auto* context = static_cast<QuicChromiumPathValidationContext*>(
-        connection()->GetPathValidationContext());
-    if (context && context->network() == disconnected_network &&
-        context->peer_address() == peer_address()) {
-      connection()->CancelPathValidation();
-    }
+  auto* context = static_cast<QuicChromiumPathValidationContext*>(
+      connection()->GetPathValidationContext());
+  if (context && context->network() == disconnected_network &&
+      context->peer_address() == peer_address()) {
+    connection()->CancelPathValidation();
   }
 
   if (disconnected_network == default_network_) {
@@ -2741,13 +2737,11 @@ void QuicChromiumClientSession::MigrateNetworkImmediately(
   }
 
   // Cancel probing on |network| if there is any.
-  if (connection()->connection_migration_use_new_cid()) {
-    auto* context = static_cast<QuicChromiumPathValidationContext*>(
-        connection()->GetPathValidationContext());
-    if (context && context->network() == network &&
-        context->peer_address() == peer_address()) {
-      connection()->CancelPathValidation();
-    }
+  auto* context = static_cast<QuicChromiumPathValidationContext*>(
+      connection()->GetPathValidationContext());
+  if (context && context->network() == network &&
+      context->peer_address() == peer_address()) {
+    connection()->CancelPathValidation();
   }
   pending_migrate_network_immediately_ = true;
   Migrate(network, ToIPEndPoint(connection()->peer_address()),
@@ -3083,17 +3077,6 @@ void QuicChromiumClientSession::MaybeStartProbing(
     return;
   }
 
-  // Abort probing if connection migration is disabled by config.
-  if (!connection()->connection_migration_use_new_cid()) {
-    DVLOG(1) << "Client IETF connection migration is not enabled.";
-    HistogramAndLogMigrationFailure(MIGRATION_STATUS_NOT_ENABLED,
-                                    connection_id(),
-                                    "IETF migration flag is false");
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(std::move(probing_callback),
-                                          ProbingResult::DISABLED_BY_CONFIG));
-    return;
-  }
   if (config()->DisableConnectionMigration()) {
     DVLOG(1) << "Client disables probing network with connection migration "
              << "disabled by config";
@@ -3111,19 +3094,27 @@ void QuicChromiumClientSession::MaybeStartProbing(
 
 void QuicChromiumClientSession::CreateContextForMultiPortPath(
     std::unique_ptr<quic::MultiPortPathContextObserver> context_observer) {
-  if (!connection()->connection_migration_use_new_cid()) {
-    return;
-  }
-
   // Create and configure socket on default network
   std::unique_ptr<DatagramClientSocket> probing_socket =
       stream_factory_->CreateSocket(net_log_.net_log(), net_log_.source());
-  if (stream_factory_->ConfigureSocket(
-          probing_socket.get(), ToIPEndPoint(peer_address()), default_network_,
-          session_key_.socket_tag()) != OK) {
-    return;
-  }
+  DatagramClientSocket* probing_socket_ptr = probing_socket.get();
+  CompletionOnceCallback configure_callback = base::BindOnce(
+      &QuicChromiumClientSession::FinishCreateContextForMultiPortPath,
+      weak_factory_.GetWeakPtr(), std::move(context_observer),
+      std::move(probing_socket));
+  stream_factory_->ConnectAndConfigureSocket(
+      std::move(configure_callback), probing_socket_ptr,
+      ToIPEndPoint(peer_address()), default_network_,
+      session_key_.socket_tag());
+}
 
+void QuicChromiumClientSession::FinishCreateContextForMultiPortPath(
+    std::unique_ptr<quic::MultiPortPathContextObserver> context_observer,
+    std::unique_ptr<DatagramClientSocket> probing_socket,
+    int rv) {
+  if (rv != OK) {
+    context_observer->OnMultiPortPathContextAvailable(nullptr);
+  }
   // Create new packet writer and reader on the probing socket.
   auto probing_writer = std::make_unique<QuicChromiumPacketWriter>(
       probing_socket.get(), task_runner_);
@@ -3174,13 +3165,6 @@ void QuicChromiumClientSession::StartProbing(
     ProbingCallback probing_callback,
     handles::NetworkHandle network,
     const quic::QuicSocketAddress& peer_address) {
-  if (!connection()->connection_migration_use_new_cid()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(std::move(probing_callback),
-                                          ProbingResult::DISABLED_BY_CONFIG));
-    return;
-  }
-
   // Check if probing manager is probing the same path.
   auto* existing_context = static_cast<QuicChromiumPathValidationContext*>(
       connection()->GetPathValidationContext());
@@ -3942,7 +3926,6 @@ void QuicChromiumClientSession::OnPushStreamTimedOut(
 
 void QuicChromiumClientSession::OnServerPreferredAddressAvailable(
     const quic::QuicSocketAddress& server_preferred_address) {
-  DCHECK(connection()->connection_migration_use_new_cid());
   current_migration_cause_ = ON_SERVER_PREFERRED_ADDRESS_AVAILABLE;
 
   net_log_.BeginEvent(

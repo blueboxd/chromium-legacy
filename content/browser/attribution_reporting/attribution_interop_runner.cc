@@ -103,7 +103,7 @@ struct AttributionReportJsonConverter {
               report_body.Remove("aggregation_service_payloads");
 
               // The aggregation coordinator may be platform specific.
-              report_body.Remove("aggregation_coordinator_identifier");
+              report_body.Remove("aggregation_coordinator_origin");
 
               base::Value::List list;
               for (const auto& contribution : aggregatable_data.contributions) {
@@ -161,7 +161,7 @@ struct AttributionReportJsonConverter {
 
     base::Value::Dict value;
     value.Set("payload", std::move(report_body));
-    value.Set("report_url", report.report_url().spec());
+    value.Set("report_url", report.ReportUrl().spec());
     value.Set("report_time", FormatTime(time));
     return value;
   }

@@ -914,21 +914,20 @@ public class AppBannerManagerTest {
                         mTestServer, WEB_APP_MANIFEST_FOR_BOTTOM_SHEET_INSTALL),
                 /*click=*/false);
 
-        View toolbar = mBottomSheetController.getCurrentSheetContent().getToolbarView();
         View content = mBottomSheetController.getCurrentSheetContent().getContentView();
 
         // Expand the bottom sheet via drag handle.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ImageView dragHandle = toolbar.findViewById(R.id.drag_handlebar);
+            ImageView dragHandle = content.findViewById(R.id.drag_handlebar);
             TouchCommon.singleClickView(dragHandle);
         });
 
         waitUntilBottomSheetStatus(mTabbedActivityTestRule, BottomSheetController.SheetState.FULL);
 
         TextView appName =
-                toolbar.findViewById(PwaInstallBottomSheetView.getAppNameViewIdForTesting());
+                content.findViewById(PwaInstallBottomSheetView.getAppNameViewIdForTesting());
         TextView appOrigin =
-                toolbar.findViewById(PwaInstallBottomSheetView.getAppOriginViewIdForTesting());
+                content.findViewById(PwaInstallBottomSheetView.getAppOriginViewIdForTesting());
         TextView description =
                 content.findViewById(PwaInstallBottomSheetView.getDescViewIdForTesting());
 
@@ -940,7 +939,7 @@ public class AppBannerManagerTest {
 
         // Collapse the bottom sheet.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ImageView dragHandle = toolbar.findViewById(R.id.drag_handlebar);
+            ImageView dragHandle = content.findViewById(R.id.drag_handlebar);
             TouchCommon.singleClickView(dragHandle);
         });
 
@@ -970,11 +969,11 @@ public class AppBannerManagerTest {
                         "call_stashed_prompt_on_click_verify_appinstalled"),
                 /*click=*/true);
 
-        View toolbar = mBottomSheetController.getCurrentSheetContent().getToolbarView();
+        View content = mBottomSheetController.getCurrentSheetContent().getContentView();
 
         // Install app from the bottom sheet.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ButtonCompat buttonInstall = toolbar.findViewById(
+            ButtonCompat buttonInstall = content.findViewById(
                     PwaInstallBottomSheetView.getButtonInstallViewIdForTesting());
             TouchCommon.singleClickView(buttonInstall);
         });
@@ -1210,29 +1209,6 @@ public class AppBannerManagerTest {
     @Test
     @MediumTest
     @Feature({"AppBanners"})
-    @Features.EnableFeatures({ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR,
-            ChromeFeatureList.SKIP_SERVICE_WORKER_FOR_INSTALL_PROMPT})
-    public void
-    testAmbientBadgeDoesNotAppearWhenNoServiceWorker() throws Exception {
-        String webBannerUrl = WebappTestPage.getNonServiceWorkerUrlWithAction(
-                mTestServer, "call_stashed_prompt_on_click");
-        resetEngagementForUrl(webBannerUrl, 10);
-        navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, webBannerUrl);
-
-        // As the page doesn't have service worker, we do not expect to
-        // see an ambient badge.
-        Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
-        waitForBadgeStatus(tab, AmbientBadgeState.PENDING_WORKER);
-        checkAmbientBadgePromptNotExist(mTabbedActivityTestRule);
-
-        // Tap to trigger beforeinstallprompt.prompt, we expect to see the modal banner.
-        tapAndWaitForModalBanner(tab);
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"AppBanners"})
-    @Features.EnableFeatures({ChromeFeatureList.SKIP_SERVICE_WORKER_FOR_INSTALL_PROMPT})
     public void testAmbientBadgeAppearWithServiceWorkerPage() throws Exception {
         String webBannerUrl = WebappTestPage.getServiceWorkerUrlWithAction(
                 mTestServer, "call_stashed_prompt_on_click");

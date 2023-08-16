@@ -38,7 +38,8 @@ IpczResult ParcelWrapper::Get(IpczGetFlags flags,
                               void* data,
                               size_t* num_bytes,
                               IpczHandle* handles,
-                              size_t* num_handles) {
+                              size_t* num_handles,
+                              IpczHandle* parcel) {
   if (in_two_phase_get_) {
     return IPCZ_RESULT_ALREADY_EXISTS;
   }
@@ -70,13 +71,31 @@ IpczResult ParcelWrapper::Get(IpczGetFlags flags,
   }
 
   memcpy(data, parcel_.data_view().data(), data_size);
-  parcel_.Consume(data_size, absl::MakeSpan(handles, handles_size));
+  parcel_.Consume(0, absl::MakeSpan(handles, handles_size));
+
+  if (parcel) {
+    // Allow the caller to acquire another handle to this wrapper. Not
+    // particularly useful, but consistent with Portal::Get().
+    *parcel = APIObject::ReleaseAsHandle(WrapRefCounted(this));
+  }
+
   return IPCZ_RESULT_OK;
 }
 
-IpczResult ParcelWrapper::BeginGet(const void** data,
+IpczResult ParcelWrapper::BeginGet(IpczBeginGetFlags flags,
+                                   const volatile void** data,
                                    size_t* num_data_bytes,
-                                   size_t* num_handles) {
+                                   IpczHandle* handles,
+                                   size_t* num_handles,
+                                   IpczTransaction* transaction) {
+  if (flags & IPCZ_BEGIN_GET_OVERLAPPED) {
+    return IPCZ_RESULT_INVALID_ARGUMENT;
+  }
+
+  if (num_handles && *num_handles && !handles) {
+    return IPCZ_RESULT_INVALID_ARGUMENT;
+  }
+
   if (in_two_phase_get_) {
     return IPCZ_RESULT_ALREADY_EXISTS;
   }
@@ -87,40 +106,41 @@ IpczResult ParcelWrapper::BeginGet(const void** data,
   if (num_data_bytes) {
     *num_data_bytes = parcel_.data_size();
   }
-  if (num_handles) {
-    *num_handles = parcel_.num_objects();
-  }
-  if ((parcel_.data_size() && (!data || !num_data_bytes)) ||
-      (parcel_.num_objects() && !num_handles)) {
+
+  const bool allow_partial = flags & IPCZ_BEGIN_GET_PARTIAL;
+  const size_t handle_capacity = num_handles ? *num_handles : 0;
+  const size_t num_objects = parcel_.num_objects();
+  const size_t num_handles_to_consume = std::min(num_objects, handle_capacity);
+  if (num_handles_to_consume < num_objects && !allow_partial) {
+    if (num_handles) {
+      *num_handles = num_objects;
+    }
     return IPCZ_RESULT_RESOURCE_EXHAUSTED;
   }
 
+  if (num_handles) {
+    *num_handles = num_handles_to_consume;
+  }
+  parcel_.Consume(0, absl::MakeSpan(handles, num_handles_to_consume));
+
+  *transaction = reinterpret_cast<IpczTransaction>(&parcel_);
   in_two_phase_get_ = true;
   return IPCZ_RESULT_OK;
 }
 
-IpczResult ParcelWrapper::CommitGet(size_t num_data_bytes_consumed,
-                                    absl::Span<IpczHandle> handles) {
-  if (!in_two_phase_get_) {
-    return IPCZ_RESULT_FAILED_PRECONDITION;
-  }
-
-  if (num_data_bytes_consumed > parcel_.data_size() ||
-      handles.size() > parcel_.num_objects()) {
-    return IPCZ_RESULT_OUT_OF_RANGE;
-  }
-
-  parcel_.Consume(num_data_bytes_consumed, handles);
-  in_two_phase_get_ = false;
-  return IPCZ_RESULT_OK;
-}
-
-IpczResult ParcelWrapper::AbortGet() {
-  if (!in_two_phase_get_) {
-    return IPCZ_RESULT_FAILED_PRECONDITION;
+IpczResult ParcelWrapper::EndGet(IpczTransaction transaction,
+                                 IpczEndGetFlags flags,
+                                 IpczHandle* parcel) {
+  if (reinterpret_cast<IpczTransaction>(&parcel_) != transaction ||
+      !in_two_phase_get_) {
+    return IPCZ_RESULT_INVALID_ARGUMENT;
   }
 
   in_two_phase_get_ = false;
+
+  if (parcel) {
+    *parcel = APIObject::ReleaseAsHandle(WrapRefCounted(this));
+  }
   return IPCZ_RESULT_OK;
 }
 

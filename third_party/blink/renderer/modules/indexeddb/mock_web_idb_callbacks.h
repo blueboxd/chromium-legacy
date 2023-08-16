@@ -27,36 +27,9 @@ class MockWebIDBCallbacks : public WebIDBCallbacks {
   MockWebIDBCallbacks(const MockWebIDBCallbacks&) = delete;
   MockWebIDBCallbacks& operator=(const MockWebIDBCallbacks&) = delete;
 
-  void SetState(base::WeakPtr<WebIDBCursor>, int64_t) override;
+  void SetState(int64_t) override;
 
   MOCK_METHOD2(Error, void(mojom::blink::IDBException, const String&));
-
-  void SuccessCursorContinue(
-      std::unique_ptr<IDBKey>,
-      std::unique_ptr<IDBKey> primaryKey,
-      absl::optional<std::unique_ptr<IDBValue>>) override;
-  MOCK_METHOD3(DoSuccessCursorContinue,
-               void(const std::unique_ptr<IDBKey>& key,
-                    const std::unique_ptr<IDBKey>& primaryKey,
-                    const absl::optional<std::unique_ptr<IDBValue>>& value));
-
-  void SuccessCursor(
-      mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> cursor_info,
-      std::unique_ptr<IDBKey> key,
-      std::unique_ptr<IDBKey> primary_key,
-      absl::optional<std::unique_ptr<IDBValue>> optional_value) override;
-  MOCK_METHOD4(
-      DoSuccessCursor,
-      void(const mojo::PendingAssociatedRemote<mojom::blink::IDBCursor>&
-               cursor_info,
-           const std::unique_ptr<IDBKey>& key,
-           const std::unique_ptr<IDBKey>& primary_key,
-           const absl::optional<std::unique_ptr<IDBValue>>& optional_value));
-
-  MOCK_METHOD3(SuccessCursorPrefetch,
-               void(Vector<std::unique_ptr<IDBKey>> keys,
-                    Vector<std::unique_ptr<IDBKey>> primary_keys,
-                    Vector<std::unique_ptr<IDBValue>> values));
 
   MOCK_METHOD2(SuccessDatabase,
                void(mojo::PendingAssociatedRemote<mojom::blink::IDBDatabase>,

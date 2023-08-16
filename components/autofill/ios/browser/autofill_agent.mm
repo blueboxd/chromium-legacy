@@ -21,6 +21,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/time/time.h"
+#import "base/types/cxx23_to_underlying.h"
 #import "base/uuid.h"
 #import "base/values.h"
 #import "components/autofill/core/browser/autofill_field.h"
@@ -54,7 +55,6 @@
 #import "components/prefs/pref_service.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
 #import "ios/web/common/url_scheme_util.h"
-#import "ios/web/public/deprecated/url_verification_constants.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/js_messaging/web_frames_manager_observer_bridge.h"
@@ -348,9 +348,10 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
   // Query the BrowserAutofillManager for suggestions. Results will arrive in
   // -showAutofillPopup:popupDelegate:.
   _lastQueriedFieldID = field.global_id();
+  // TODO(crbug.com/1448447): Distinguish between different trigger sources.
   autofillManager->OnAskForValuesToFill(
-      form, field, gfx::RectF(), autofill::AutoselectFirstSuggestion(false),
-      autofill::FormElementWasClicked(false));
+      form, field, gfx::RectF(),
+      autofill::AutofillSuggestionTriggerSource::kFormControlElementClicked);
 }
 
 - (void)checkIfSuggestionsAvailableForForm:
@@ -436,9 +437,6 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
   DCHECK(completion);
   _suggestionHandledCompletion = [completion copy];
 
-  // TODO(crbug.com/1394920): Make `suggestion.identifier` a `FrontendId`.
-  autofill::Suggestion::FrontendId frontend_id(suggestion.identifier);
-
   if (suggestion.acceptanceA11yAnnouncement != nil) {
     __weak AutofillAgent* weakSelf = self;
     // The announcement is done asyncronously with certain delay to make sure
@@ -467,14 +465,15 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
         });
   }
 
-  if (frontend_id.as_int() > 0) {
+  if (suggestion.popupItemId == autofill::PopupItemId::kAddressEntry ||
+      suggestion.popupItemId == autofill::PopupItemId::kCreditCardEntry) {
     _pendingAutocompleteFieldID = uniqueFieldID;
     if (_popupDelegate) {
       // TODO(966411): Replace 0 with the index of the selected suggestion.
       autofill::Suggestion autofill_suggestion;
       autofill_suggestion.main_text.value =
           SysNSStringToUTF16(suggestion.value);
-      autofill_suggestion.frontend_id = frontend_id;
+      autofill_suggestion.popup_item_id = suggestion.popupItemId;
       if (!suggestion.backendIdentifier.length) {
         autofill_suggestion.payload = autofill::Suggestion::BackendId();
       } else {
@@ -502,16 +501,14 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
     return;
   }
 
-  if (frontend_id.as_popup_item_id() ==
-      autofill::PopupItemId::kAutocompleteEntry) {
+  if (suggestion.popupItemId == autofill::PopupItemId::kAutocompleteEntry) {
     // FormSuggestion is a simple, single value that can be filled out now.
     [self fillField:SysNSStringToUTF8(fieldIdentifier)
         uniqueFieldID:uniqueFieldID
              formName:SysNSStringToUTF8(formName)
                 value:SysNSStringToUTF16(suggestion.value)
               inFrame:frame];
-  } else if (frontend_id.as_popup_item_id() ==
-             autofill::PopupItemId::kClearForm) {
+  } else if (suggestion.popupItemId == autofill::PopupItemId::kClearForm) {
     __weak AutofillAgent* weakSelf = self;
     SuggestionHandledCompletion suggestionHandledCompletionCopy =
         [_suggestionHandledCompletion copy];
@@ -527,7 +524,7 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
           suggestionHandledCompletionCopy();
         }));
 
-  } else if (frontend_id.as_popup_item_id() ==
+  } else if (suggestion.popupItemId ==
              autofill::PopupItemId::kShowAccountCards) {
     autofill::BrowserAutofillManager* autofillManager =
         [self autofillManagerFromWebState:_webState webFrame:frame];
@@ -535,7 +532,8 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
       autofillManager->OnUserAcceptedCardsFromAccountOption();
     }
   } else {
-    NOTREACHED() << "unknown identifier " << frontend_id;
+    NOTREACHED() << "unknown identifier "
+                 << base::to_underlying(suggestion.popupItemId);
   }
 }
 
@@ -637,9 +635,14 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
     NSString* value = nil;
     NSString* displayDescription = nil;
     UIImage* icon = nil;
-    if (popup_suggestion.frontend_id.as_int() >= 0) {
+    if (popup_suggestion.popup_item_id ==
+            autofill::PopupItemId::kAutocompleteEntry ||
+        popup_suggestion.popup_item_id ==
+            autofill::PopupItemId::kAddressEntry ||
+        popup_suggestion.popup_item_id ==
+            autofill::PopupItemId::kCreditCardEntry) {
       // Filter out any key/value suggestions if the user hasn't typed yet.
-      if (popup_suggestion.frontend_id ==
+      if (popup_suggestion.popup_item_id ==
               autofill::PopupItemId::kAutocompleteEntry &&
           [_typedValue length] == 0) {
         continue;
@@ -671,11 +674,11 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
                      .ToUIImage();
         }
       }
-    } else if (popup_suggestion.frontend_id ==
+    } else if (popup_suggestion.popup_item_id ==
                autofill::PopupItemId::kClearForm) {
       // Show the "clear form" button.
       value = SysUTF16ToNSString(popup_suggestion.main_text.value);
-    } else if (popup_suggestion.frontend_id ==
+    } else if (popup_suggestion.popup_item_id ==
                autofill::PopupItemId::kShowAccountCards) {
       // Show opt-in for showing cards from account.
       value = SysUTF16ToNSString(popup_suggestion.main_text.value);
@@ -693,7 +696,7 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
                suggestionWithValue:value
                 displayDescription:displayDescription
                               icon:icon
-                        identifier:popup_suggestion.frontend_id.as_int()
+                       popupItemId:popup_suggestion.popup_item_id
                  backendIdentifier:
                      SysUTF8ToNSString(
                          popup_suggestion
@@ -708,7 +711,7 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
     }
 
     // Put "clear form" entry at the front of the suggestions.
-    if (popup_suggestion.frontend_id == autofill::PopupItemId::kClearForm) {
+    if (popup_suggestion.popup_item_id == autofill::PopupItemId::kClearForm) {
       [suggestions insertObject:suggestion atIndex:0];
     } else {
       [suggestions addObject:suggestion];
@@ -904,8 +907,8 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
     return;
 
   // If the event is a form_changed, then the event concerns the whole page and
-  // not a particular form. The whole page need to be reparsed to find the new
-  // forms.
+  // not a particular form. The whole document's forms need to be extracted to
+  // find the new forms.
   if (params.type == "form_changed") {
     [self scanFormsInWebState:webState inFrame:frame];
     return;

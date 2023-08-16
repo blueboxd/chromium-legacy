@@ -697,7 +697,6 @@ fast/canvas/canvas-transform-nan.html
 fast/canvas/canvas-transform-skewed.html
 fast/canvas/canvas-transforms-fillRect-shadow.html
 fast/canvas/canvas-unbalanced-save.html
-fast/canvas/canvas-zero-length-lineCap.html
 fast/canvas/color-space/ImageData-fidelity.html
 fast/canvas/color-space/canvas-getImageData-rec2020.html
 fast/canvas/color-space/transferFromImageBitmap.html
@@ -780,7 +779,7 @@ media/track/track-cue-rendering-horizontal.html
 media/track/track-language-preference.html
 media/video-controls-attribute-fullscreen.html
 media/video-controls-fullscreen-not-supported.html
-media/video-controls-with-mutation-event-handler.html
+dom/mutation-event-tests/media/video-controls-with-mutation-event-handler.html
 media/video-currentTime-before-have-metadata.html
 media/video-currentTime-delay.html
 media/video-move-to-new-document-srcobject.html

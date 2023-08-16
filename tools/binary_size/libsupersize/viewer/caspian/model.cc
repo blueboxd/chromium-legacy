@@ -308,7 +308,9 @@ DiffStatus DeltaSymbol::GetDiffStatus() const {
   return DiffStatus::kUnchanged;
 }
 
-TreeNode::TreeNode() = default;
+TreeNode::TreeNode(ArtifactType artifact_type_in, int32_t id_in)
+    : artifact_type(artifact_type_in), id(id_in) {}
+
 TreeNode::~TreeNode() {
   // TODO(jaspercb): Could use custom allocator to delete all nodes in one go.
   for (TreeNode* child : children) {
@@ -372,8 +374,14 @@ bool SizeInfo::IsSparse() const {
   return is_sparse;
 }
 
-DeltaSizeInfo::DeltaSizeInfo(const SizeInfo* before, const SizeInfo* after)
-    : before(before), after(after) {}
+DeltaSizeInfo::DeltaSizeInfo(const SizeInfo* before_in,
+                             const SizeInfo* after_in,
+                             const std::vector<std::string>* removed_sources_in,
+                             const std::vector<std::string>* added_sources_in)
+    : before(before_in),
+      after(after_in),
+      removed_sources(removed_sources_in),
+      added_sources(added_sources_in) {}
 
 DeltaSizeInfo::~DeltaSizeInfo() = default;
 DeltaSizeInfo::DeltaSizeInfo(const DeltaSizeInfo&) = default;
@@ -389,6 +397,7 @@ void TreeNode::WriteIntoJson(
         compare_func,
     int depth,
     Json::Value* out) {
+  (*out)["id"] = id;
   if (symbol) {
     (*out)["container"] = std::string(symbol->ContainerName());
     (*out)["helpme"] = std::string(symbol->Name());
@@ -411,7 +420,12 @@ void TreeNode::WriteIntoJson(
     }
   } else {
     (*out)["idPath"] = id_path.ToString();
-    if (!opts.is_sparse && !children.empty()) {
+    if (opts.is_sparse) {
+      if (node_stats.imposed_diff_status != DiffStatus::kUnchanged) {
+        (*out)["diffStatus"] =
+            static_cast<uint8_t>(node_stats.imposed_diff_status);
+      }
+    } else if (!children.empty()) {
       // Add tag to containers in which all child symbols were added/removed.
       DiffStatus diff_status = node_stats.GetGlobalDiffStatus();
       if (diff_status != DiffStatus::kUnchanged) {
@@ -554,4 +568,12 @@ DiffStatus NodeStats::GetGlobalDiffStatus() const {
   }
   return DiffStatus::kUnchanged;
 }
+
+TreeNodeFactory::TreeNodeFactory() = default;
+TreeNodeFactory::~TreeNodeFactory() = default;
+
+TreeNode* TreeNodeFactory::Make(ArtifactType artifact_type) {
+  return new TreeNode(artifact_type, next_id++);
+}
+
 }  // namespace caspian

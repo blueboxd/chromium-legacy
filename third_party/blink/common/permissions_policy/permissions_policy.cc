@@ -187,9 +187,7 @@ bool PermissionsPolicy::IsFeatureEnabledForSubresourceRequest(
 
   if (request.ad_auction_headers) {
     DCHECK(
-        base::FeatureList::IsEnabled(blink::features::kInterestGroupStorage) &&
-        base::FeatureList::IsEnabled(
-            blink::features::kFledgeBiddingAndAuctionServer));
+        base::FeatureList::IsEnabled(blink::features::kInterestGroupStorage));
 
     opt_in_features.insert(mojom::PermissionsPolicyFeature::kRunAdAuction);
   }
@@ -254,9 +252,12 @@ const PermissionsPolicy::Allowlist PermissionsPolicy::GetAllowlistForFeature(
   if (default_policy == PermissionsPolicyFeatureDefault::EnableForAll) {
     default_allowlist.AddAll();
   } else if (default_policy == PermissionsPolicyFeatureDefault::EnableForSelf) {
-    default_allowlist.Add(
-        blink::OriginWithPossibleWildcards(origin_,
-                                           /*has_subdomain_wildcard=*/false));
+    absl::optional<blink::OriginWithPossibleWildcards>
+        origin_with_possible_wildcards =
+            blink::OriginWithPossibleWildcards::FromOrigin(origin_);
+    if (origin_with_possible_wildcards.has_value()) {
+      default_allowlist.Add(*origin_with_possible_wildcards);
+    }
   }
 
   return default_allowlist;
@@ -368,16 +369,16 @@ PermissionsPolicy::~PermissionsPolicy() = default;
 std::unique_ptr<PermissionsPolicy> PermissionsPolicy::CreateForFencedFrame(
     const url::Origin& origin,
     base::span<const blink::mojom::PermissionsPolicyFeature>
-        required_permissions_to_load) {
+        effective_enabled_permissions) {
   return CreateForFencedFrame(origin, GetPermissionsPolicyFeatureList(),
-                              required_permissions_to_load);
+                              effective_enabled_permissions);
 }
 
 std::unique_ptr<PermissionsPolicy> PermissionsPolicy::CreateForFencedFrame(
     const url::Origin& origin,
     const PermissionsPolicyFeatureList& features,
     base::span<const blink::mojom::PermissionsPolicyFeature>
-        required_permissions_to_load) {
+        effective_enabled_permissions) {
   std::unique_ptr<PermissionsPolicy> new_policy =
       base::WrapUnique(new PermissionsPolicy(origin, features));
 
@@ -385,7 +386,7 @@ std::unique_ptr<PermissionsPolicy> PermissionsPolicy::CreateForFencedFrame(
     new_policy->inherited_policies_[feature.first] = false;
   }
   for (const blink::mojom::PermissionsPolicyFeature feature :
-       required_permissions_to_load) {
+       effective_enabled_permissions) {
     new_policy->inherited_policies_[feature] = true;
   }
 
@@ -408,7 +409,8 @@ std::unique_ptr<PermissionsPolicy> PermissionsPolicy::CreateFromParentPolicy(
   return new_policy;
 }
 
-// Implements Permissions Policy 9.9: Is feature enabled in document for origin?
+// Implements Permissions Policy 9.8: Is feature enabled in document for origin?
+// Version https://www.w3.org/TR/2023/WD-permissions-policy-1-20230322/
 bool PermissionsPolicy::IsFeatureEnabledForOriginImpl(
     mojom::PermissionsPolicyFeature feature,
     const url::Origin& origin,
@@ -418,13 +420,13 @@ bool PermissionsPolicy::IsFeatureEnabledForOriginImpl(
 
   auto inherited_value = inherited_policies_.at(feature);
 
-  // 9.9.2: If policy’s inherited policy for feature is Disabled, return
+  // 9.8.2: If policy’s inherited policy for feature is Disabled, return
   // "Disabled".
   if (!inherited_value) {
     return false;
   }
 
-  // 9.9.3: If feature is present in policy’s declared policy:
+  // 9.8.3: If feature is present in policy’s declared policy:
   //    1. If the allowlist for feature in policy’s declared policy matches
   //       origin, then return "Enabled".
   //    2. Otherwise return "Disabled".
@@ -444,14 +446,14 @@ bool PermissionsPolicy::IsFeatureEnabledForOriginImpl(
   const PermissionsPolicyFeatureDefault default_policy =
       feature_list_->at(feature);
 
-  // 9.9.4: If feature’s default allowlist is *, return "Enabled".
+  // 9.8.4: If feature’s default allowlist is *, return "Enabled".
   if (default_policy == PermissionsPolicyFeatureDefault::EnableForAll) {
     return true;
   }
 
-  // 9.9.5: If feature’s default allowlist is 'self', and origin is same origin
+  // 9.8.5: If feature’s default allowlist is 'self', and origin is same origin
   // with document’s origin, return "Enabled".
-  // 9.9.6: Return "Disabled".
+  // 9.8.6: Return "Disabled".
   DCHECK_EQ(default_policy, PermissionsPolicyFeatureDefault::EnableForSelf);
   return origin_.IsSameOriginWith(origin);
 }
@@ -468,45 +470,45 @@ bool PermissionsPolicy::IsFeatureEnabledForSubresourceRequestAssumingOptIn(
   return IsFeatureEnabledForOriginImpl(feature, origin, opt_in_features);
 }
 
-// Implements Permissions Policy 9.7: Define an inherited policy for feature in
-// browsing context and 9.8: Define an inherited policy for feature in container
-// at origin.
+// Implements Permissions Policy 9.7: Define an inherited policy for
+// feature in container at origin.
+// Version https://www.w3.org/TR/2023/WD-permissions-policy-1-20230322/
 bool PermissionsPolicy::InheritedValueForFeature(
     const PermissionsPolicy* parent_policy,
     std::pair<mojom::PermissionsPolicyFeature, PermissionsPolicyFeatureDefault>
         feature,
     const ParsedPermissionsPolicy& container_policy) const {
-  // 9.7 2: Otherwise [If context is not a nested browsing context,] return
-  // "Enabled".
+  // 9.7 1: If container is null, return "Enabled".
   if (!parent_policy)
     return true;
 
-  // 9.8 2: If feature was inherited and (if declared) the allowlist for the
-  // feature does not match the parent's origin, then return "Disabled".
+  // 9.7 2: If the result of executing Is feature enabled in document for origin
+  // on feature, container’s node document, and container’s node document's
+  // origin is "Disabled", return "Disabled".
   if (!parent_policy->GetFeatureValueForOrigin(feature.first,
                                                parent_policy->origin_))
     return false;
 
-  // 9.8 3: If feature was inherited and (if declared) the allowlist for the
+  // 9.7 3: If feature was inherited and (if declared) the allowlist for the
   // feature does not match origin, then return "Disabled".
   if (!parent_policy->GetFeatureValueForOrigin(feature.first, origin_))
     return false;
 
   for (const auto& decl : container_policy) {
     if (decl.feature == feature.first) {
-      // 9.8 5.1: If the allowlist for feature in container policy matches
+      // 9.7 5.1: If the allowlist for feature in container policy matches
       // origin, return "Enabled".
-      // 9.8 5.2: Otherwise return "Disabled".
+      // 9.7 5.2: Otherwise return "Disabled".
       return AllowlistFromDeclaration(decl).Contains(origin_);
     }
   }
-  // 9.8 6: If feature’s default allowlist is *, return "Enabled".
+  // 9.7 6: If feature’s default allowlist is *, return "Enabled".
   if (feature.second == PermissionsPolicyFeatureDefault::EnableForAll)
     return true;
 
-  // 9.8 7: If feature’s default allowlist is 'self', and origin is same origin
+  // 9.7 7: If feature’s default allowlist is 'self', and origin is same origin
   // with container’s node document’s origin, return "Enabled".
-  // 9.8 8: Otherwise return "Disabled".
+  // 9.7 8: Otherwise return "Disabled".
   return origin_.IsSameOriginWith(parent_policy->origin_);
 }
 

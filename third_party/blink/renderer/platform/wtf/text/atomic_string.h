@@ -41,7 +41,7 @@
 #endif
 
 // TODO(crbug.com/1444094): AtomicString constructors should be explicit.
-#if BLINK_PLATFORM_IMPLEMENTATION || BLINK_MODULES_IMPLEMENTATION
+#if !defined(ALLOW_IMPLICIT_ATOMIC_STRING_CONVERSIONS)
 #define MAYBE_EXPLICIT explicit
 #else
 #define MAYBE_EXPLICIT
@@ -158,9 +158,6 @@ class WTF_EXPORT AtomicString {
       const StringView& prefix,
       TextCaseSensitivity case_sensitivity = kTextCaseSensitive) const {
     return string_.StartsWith(prefix, case_sensitivity);
-  }
-  bool StartsWithIgnoringCase(const StringView& prefix) const {
-    return string_.StartsWithIgnoringCase(prefix);
   }
   bool StartsWithIgnoringASCIICase(const StringView& prefix) const {
     return string_.StartsWithIgnoringASCIICase(prefix);

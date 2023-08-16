@@ -8,11 +8,12 @@ import 'chrome://resources/cr_components/managed_dialog/managed_dialog.js';
 import './strings.m.js'; // Required by <managed-dialog>.
 
 import {hexColorToSkColor, skColorToRgba} from 'chrome://resources/js/color_utils.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {SkColor} from 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
 import {DomRepeat, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ColorElement} from './color.js';
-import {Color, ColorType, DARK_DEFAULT_COLOR, LIGHT_DEFAULT_COLOR, SelectedColor} from './color_utils.js';
+import {Color, ColorType, DARK_BASELINE_BLUE_COLOR, DARK_DEFAULT_COLOR, LIGHT_BASELINE_BLUE_COLOR, LIGHT_DEFAULT_COLOR, SelectedColor} from './color_utils.js';
 import {getTemplate} from './colors.html.js';
 import {ChromeColor, Theme} from './customize_chrome.mojom-webui.js';
 import {CustomizeChromeApiProxy} from './customize_chrome_api_proxy.js';
@@ -78,6 +79,7 @@ export class ColorsElement extends PolymerElement {
   static get observers() {
     return [
       'updateCustomColor_(colors_, theme_, isCustomColorSelected_)',
+      'updateColors_(theme_)',
     ];
   }
 
@@ -88,15 +90,6 @@ export class ColorsElement extends PolymerElement {
   private customColor_: Color;
   private setThemeListenerId_: number|null = null;
   private showManagedDialog_: boolean;
-
-  constructor() {
-    super();
-    CustomizeChromeApiProxy.getInstance()
-        .handler.getOverviewChromeColors()
-        .then(({colors}) => {
-          this.colors_ = colors;
-        });
-  }
 
   override connectedCallback() {
     super.connectedCallback();
@@ -115,8 +108,11 @@ export class ColorsElement extends PolymerElement {
   }
 
   private computeDefaultColor_(): Color {
-    return this.theme_.systemDarkMode ? DARK_DEFAULT_COLOR :
-                                        LIGHT_DEFAULT_COLOR;
+    if (loadTimeData.getString('chromeRefresh2023Attribute')) {
+      return this.theme_.isDarkMode ? DARK_BASELINE_BLUE_COLOR :
+                                      LIGHT_BASELINE_BLUE_COLOR;
+    }
+    return this.theme_.isDarkMode ? DARK_DEFAULT_COLOR : LIGHT_DEFAULT_COLOR;
   }
 
   private computeMainColor_(): SkColor|undefined {
@@ -240,6 +236,14 @@ export class ColorsElement extends PolymerElement {
     };
     this.$.colorPickerIcon.style.setProperty(
         'background-color', skColorToRgba(this.theme_.colorPickerIconColor));
+  }
+
+  private updateColors_() {
+    CustomizeChromeApiProxy.getInstance()
+        .handler.getOverviewChromeColors(this.theme_.isDarkMode)
+        .then(({colors}) => {
+          this.colors_ = colors;
+        });
   }
 
   private onManagedDialogClosed_() {

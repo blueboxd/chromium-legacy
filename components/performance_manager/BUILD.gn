@@ -23,6 +23,8 @@ static_library("performance_manager") {
     "decorators/process_hosted_content_types_aggregator.cc",
     "decorators/process_hosted_content_types_aggregator.h",
     "decorators/process_metrics_decorator.cc",
+    "decorators/process_priority_aggregator.cc",
+    "decorators/process_priority_aggregator.h",
     "embedder/binders.h",
     "embedder/graph_features.h",
     "embedder/performance_manager_lifetime.h",
@@ -67,6 +69,8 @@ static_library("performance_manager") {
     "graph/graph_impl_util.h",
     "graph/graph_operations.cc",
     "graph/graph_registered.cc",
+    "graph/initializing_frame_node_observer.cc",
+    "graph/initializing_frame_node_observer.h",
     "graph/node.cc",
     "graph/node_attached_data.cc",
     "graph/node_attached_data.h",
@@ -153,6 +157,7 @@ static_library("performance_manager") {
     "public/render_frame_host_proxy.h",
     "public/render_process_host_id.h",
     "public/render_process_host_proxy.h",
+    "public/resource_attribution/attribution_helpers.h",
     "public/user_tuning/prefs.h",
     "public/v8_memory/v8_detailed_memory.h",
     "public/v8_memory/v8_detailed_memory_any_seq.h",
@@ -164,6 +169,7 @@ static_library("performance_manager") {
     "render_process_host_proxy.cc",
     "render_process_user_data.cc",
     "render_process_user_data.h",
+    "resource_attribution/attribution_impl_helpers.h",
     "service_worker_client.cc",
     "service_worker_client.h",
     "service_worker_context_adapter.cc",
@@ -273,6 +279,7 @@ source_set("unit_tests") {
     "decorators/page_load_tracker_decorator_unittest.cc",
     "decorators/process_hosted_content_types_aggregator_unittest.cc",
     "decorators/process_metrics_decorator_unittest.cc",
+    "decorators/process_priority_aggregator_unittest.cc",
     "execution_context/execution_context_attached_data_unittest.cc",
     "execution_context/execution_context_registry_impl_unittest.cc",
     "execution_context_priority/ad_frame_voter_unittest.cc",
@@ -389,4 +396,8 @@ source_set("browser_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (is_ios) {
+    deps += [ "//components/test:performance_manager_test_bundle_data" ]
+  }
 }

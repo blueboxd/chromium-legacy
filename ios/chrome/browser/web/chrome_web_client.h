@@ -27,7 +27,6 @@ class ChromeWebClient : public web::WebClient {
   void AddAdditionalSchemes(Schemes* schemes) const override;
   std::string GetApplicationLocale() const override;
   bool IsAppSpecificURL(const GURL& url) const override;
-  std::u16string GetPluginNotSupportedText() const override;
   std::string GetUserAgent(web::UserAgentType type) const override;
   std::u16string GetLocalizedString(int message_id) const override;
   base::StringPiece GetDataResource(
@@ -68,6 +67,8 @@ class ChromeWebClient : public web::WebClient {
   bool IsMixedContentAutoupgradeEnabled(
       web::BrowserState* browser_state) const override;
   bool IsBrowserLockdownModeEnabled(web::BrowserState* browser_state) override;
+  void SetOSLockdownModeEnabled(web::BrowserState* browser_state,
+                                bool enabled) override;
 
  private:
   // Reference to a view that is attached to a window.

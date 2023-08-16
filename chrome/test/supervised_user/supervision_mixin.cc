@@ -20,11 +20,13 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/tribool.h"
+#include "components/supervised_user/core/browser/supervised_user_preferences.h"
 #include "components/supervised_user/core/common/pref_names.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace supervised_user {
 
@@ -52,21 +54,13 @@ bool IdentityManagerAlreadyHasPrimaryAccount(
 
 void SetIsSupervisedProfile(Profile* profile, bool is_supervised_profile) {
   if (is_supervised_profile) {
-    profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
-                                   supervised_user::kChildAccountSUID);
+    EnableParentalControls(*profile->GetPrefs());
   } else {
-    profile->GetPrefs()->ClearPref(prefs::kSupervisedUserId);
+    DisableParentalControls(*profile->GetPrefs());
   }
 }
 
 }  // namespace
-
-SupervisionMixin::SupervisionMixin(
-    InProcessBrowserTestMixinHost& test_mixin_host,
-    InProcessBrowserTest* test_base)
-    : SupervisionMixin(test_mixin_host,
-                       test_base,
-                       SupervisionMixin::Options()) {}
 
 SupervisionMixin::SupervisionMixin(
     InProcessBrowserTestMixinHost& test_mixin_host,
@@ -75,6 +69,22 @@ SupervisionMixin::SupervisionMixin(
     : InProcessBrowserTestMixin(&test_mixin_host),
       test_base_(test_base),
       fake_gaia_mixin_(&test_mixin_host),
+      consent_level_(options.consent_level),
+      email_(options.email),
+      account_type_(options.account_type) {}
+
+SupervisionMixin::SupervisionMixin(
+    InProcessBrowserTestMixinHost& test_mixin_host,
+    InProcessBrowserTest* test_base,
+    base::raw_ptr<net::EmbeddedTestServer> embedded_test_server,
+    const Options& options)
+    : InProcessBrowserTestMixin(&test_mixin_host),
+      test_base_(test_base),
+      fake_gaia_mixin_(&test_mixin_host),
+      embedded_test_server_setup_mixin_(absl::in_place,
+                                        test_mixin_host,
+                                        embedded_test_server,
+                                        options.embedded_test_server_options),
       consent_level_(options.consent_level),
       email_(options.email),
       account_type_(options.account_type) {}
@@ -102,8 +112,8 @@ void SupervisionMixin::SetUpTestServer() {
 }
 
 void SupervisionMixin::SetUpIdentityTestEnvironment() {
-  adaptor_ = std::make_unique<IdentityTestEnvironmentProfileAdaptor>(
-      test_base_->browser()->profile());
+  adaptor_ =
+      std::make_unique<IdentityTestEnvironmentProfileAdaptor>(GetProfile());
 }
 
 void SupervisionMixin::LogInUser() {
@@ -122,12 +132,16 @@ void SupervisionMixin::LogInUser() {
   GetIdentityTestEnvironment()->SetAutomaticIssueOfAccessTokens(true);
 
   SetIsSupervisedProfile(
-      test_base_->browser()->profile(),
+      GetProfile(),
       /*is_supervised_profile=*/account_type_ == AccountType::kSupervised);
 }
 
-signin::IdentityTestEnvironment*
-SupervisionMixin::GetIdentityTestEnvironment() {
+Profile* SupervisionMixin::GetProfile() const {
+  return test_base_->browser()->profile();
+}
+
+signin::IdentityTestEnvironment* SupervisionMixin::GetIdentityTestEnvironment()
+    const {
   CHECK(adaptor_->identity_test_env())
       << "Do not use before the environment is set up.";
   return adaptor_->identity_test_env();

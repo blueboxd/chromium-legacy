@@ -19,6 +19,18 @@ var CrComponentsMojoBrowserTest = class extends PolymerTest {
   }
 };
 
+var CrComponentsCustomizeColorSchemeModeTest =
+    class extends CrComponentsMojoBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://customize-chrome-side-panel.top-chrome/test_loader.html?module=cr_components/customize_color_scheme_mode_test.js';
+  }
+};
+
+TEST_F('CrComponentsCustomizeColorSchemeModeTest', 'All', function() {
+  mocha.run();
+});
+
 var CrComponentsCustomizeThemesTest =
     class extends CrComponentsMojoBrowserTest {
   /** @override */

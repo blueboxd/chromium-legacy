@@ -25,7 +25,11 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
@@ -33,11 +37,14 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/profile_view_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/user_education/scoped_new_badge_tracker.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
@@ -55,9 +62,9 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/accelerators/menu_label_accelerator_util.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
@@ -74,6 +81,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
@@ -88,6 +96,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
@@ -121,14 +130,27 @@ const int kZoomLabelHorizontalPadding = 2;
 
 // Returns true if |command_id| identifies a bookmark menu item.
 bool IsBookmarkCommand(int command_id) {
-  return command_id >= IDC_FIRST_UNBOUNDED_MENU &&
-         (command_id % AppMenuModel::kNumUnboundedMenuTypes == 0);
+  return command_id == IDC_SHOW_BOOKMARK_SIDE_PANEL ||
+         (command_id >= IDC_FIRST_UNBOUNDED_MENU &&
+          ((command_id - IDC_FIRST_UNBOUNDED_MENU) %
+               AppMenuModel::kNumUnboundedMenuTypes ==
+           0));
 }
 
 // Returns true if |command_id| identifies a recent tabs menu item.
 bool IsRecentTabsCommand(int command_id) {
   return command_id >= IDC_FIRST_UNBOUNDED_MENU &&
-         (command_id % AppMenuModel::kNumUnboundedMenuTypes == 1);
+         ((command_id - IDC_FIRST_UNBOUNDED_MENU) %
+              AppMenuModel::kNumUnboundedMenuTypes ==
+          1);
+}
+
+// Returns true if |command_id| identifies an other profile menu item.
+bool IsOtherProfileCommand(int command_id) {
+  return command_id >= IDC_FIRST_UNBOUNDED_MENU &&
+         ((command_id - IDC_FIRST_UNBOUNDED_MENU) %
+              AppMenuModel::kNumUnboundedMenuTypes ==
+          2);
 }
 
 // Combination border/background for the buttons contained in the menu. The
@@ -320,6 +342,74 @@ class InMenuImageButton : public ImageButton {
 
 BEGIN_METADATA(InMenuImageButton, ImageButton)
 END_METADATA
+
+// Helper method that adds a bespoke chip to the profile related menu items.
+void AddChipToProfileMenuItem(Browser* browser,
+                              views::MenuItemView* item,
+                              const std::u16string& chip_label,
+                              const int horizontal_padding,
+                              std::vector<base::CallbackListSubscription>&
+                                  profile_menu_subscription_list) {
+  constexpr int profile_chip_corner_radii = 100;
+  raw_ptr<views::Label> profile_chip_label;
+  const MenuConfig& config = MenuConfig::instance();
+  // Truncate in the same way that app_menu_model does for the menu
+  // title.
+  if (!chip_label.empty() && !browser->profile()->IsIncognitoProfile()) {
+    std::u16string local_name =
+        ui::EscapeMenuLabelAmpersands(gfx::TruncateString(
+            chip_label, GetLayoutConstant(APP_MENU_MAXIMUM_CHARACTER_LENGTH),
+            gfx::CHARACTER_BREAK));
+    // We need to have the label of the profile chip within a
+    // BoxLayoutView and inside border insets because MenuItemView will
+    // layout the child items to the full height of the menu item in
+    // MenuItemView::Layout().
+    auto profile_chip =
+        views::Builder<views::BoxLayoutView>()
+            .SetInsideBorderInsets(gfx::Insets::VH(config.item_top_margin, 0))
+            .AddChildren(
+                views::Builder<views::Label>()
+                    .SetText(local_name)
+                    .CopyAddressTo(&profile_chip_label)
+                    .SetBackground(views::CreateThemedRoundedRectBackground(
+                        item->IsSelected()
+                            ? ui::kColorAppMenuProfileRowChipHovered
+                            : ui::kColorAppMenuProfileRowChipBackground,
+                        profile_chip_corner_radii))
+                    // Add additional horizontal padding. Vertical
+                    // padding depends on menu margins to get alignment
+                    // with other items in the menu.
+                    .SetBorder(views::CreateEmptyBorder(gfx::Insets::VH(
+                        0, views::LayoutProvider::Get()
+                               ->GetInsetsMetric(views::INSETS_LABEL_BUTTON)
+                               .left()))))
+            .Build();
+
+    // MenuItemView has specific layout logic for child views in
+    // MenuItemView::Layout() which does not work very well with more
+    // custom menu items. We use this view to add the correct spacing
+    // between the profile chip and the edge of the menu.
+    auto profile_chip_edge_spacing_view =
+        views::Builder<views::View>()
+            .SetPreferredSize(gfx::Size(horizontal_padding, 0))
+            .Build();
+    profile_menu_subscription_list.push_back(
+        item->AddSelectedChangedCallback(base::BindRepeating(
+            [](MenuItemView* menu_item_view, View* child_view,
+               int corner_radius) {
+              child_view->SetBackground(
+                  views::CreateThemedRoundedRectBackground(
+                      menu_item_view->IsSelected()
+                          ? ui::kColorAppMenuProfileRowChipHovered
+                          : ui::kColorAppMenuProfileRowChipBackground,
+                      corner_radius));
+            },
+            item, profile_chip_label, profile_chip_corner_radii)));
+    item->AddChildView(std::move(profile_chip));
+    item->AddChildView(std::move(profile_chip_edge_spacing_view));
+    item->SetHighlightWhenSelectedWithChildViews(true);
+  }
+}
 
 // AppMenuView is a view that can contain label buttons.
 class AppMenuView : public views::View {
@@ -784,13 +874,6 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
     model_->SetMenuModelDelegate(nullptr);
   }
 
-  const gfx::FontList* GetLabelFontListForCommandId(int command_id) const {
-    ui::MenuModel* model = model_;
-    size_t index = 0;
-    AppMenuModel::GetModelAndIndexForCommandId(command_id, &model, &index);
-    return model->GetLabelFontListAt(index);
-  }
-
   // ui::MenuModelDelegate implementation:
 
   void OnIconChanged(int command_id) override {
@@ -870,24 +953,13 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
 
 // AppMenu ------------------------------------------------------------------
 
-AppMenu::AppMenu(Browser* browser, int run_types)
-    : browser_(browser), run_types_(run_types) {
+AppMenu::AppMenu(Browser* browser, ui::MenuModel* model, int run_types)
+    : browser_(browser), model_(model), run_types_(run_types) {
   global_error_observation_.Observe(
       GlobalErrorServiceFactory::GetForProfile(browser->profile()));
   new_badge_tracker_ =
       std::make_unique<ScopedNewBadgeTracker>(browser_->profile());
-}
 
-AppMenu::~AppMenu() {
-  if (bookmark_menu_delegate_.get()) {
-    BookmarkModel* model =
-        BookmarkModelFactory::GetForBrowserContext(browser_->profile());
-    if (model)
-      model->RemoveObserver(this);
-  }
-}
-
-void AppMenu::Init(ui::MenuModel* model) {
   DCHECK(!root_);
   root_ = new MenuItemView(this);
   root_->set_has_icons(true);  // We have checks, radios and icons, set this
@@ -901,10 +973,21 @@ void AppMenu::Init(ui::MenuModel* model) {
     // BrowserActionsContainer view.
     types |= views::MenuRunner::FOR_DROP | views::MenuRunner::NESTED_DRAG;
   }
-  if (run_types_ & views::MenuRunner::SHOULD_SHOW_MNEMONICS)
+  if (run_types_ & views::MenuRunner::SHOULD_SHOW_MNEMONICS) {
     types |= views::MenuRunner::SHOULD_SHOW_MNEMONICS;
+  }
 
   menu_runner_ = std::make_unique<views::MenuRunner>(root_, types);
+}
+
+AppMenu::~AppMenu() {
+  if (bookmark_menu_delegate_.get()) {
+    BookmarkModel* model =
+        BookmarkModelFactory::GetForBrowserContext(browser_->profile());
+    if (model) {
+      model->RemoveObserver(this);
+    }
+  }
 }
 
 void AppMenu::RunMenu(views::MenuButtonController* host) {
@@ -928,17 +1011,10 @@ bool AppMenu::IsShowing() const {
 }
 
 const gfx::FontList* AppMenu::GetLabelFontList(int command_id) const {
-  if (IsRecentTabsCommand(command_id)) {
-    return recent_tabs_menu_model_delegate_->GetLabelFontListForCommandId(
-        command_id);
-  }
-
-  if (command_id == IDC_BOOKMARKS_LIST_TITLE) {
-    return &ui::ResourceBundle::GetSharedInstance().GetFontList(
-        ui::ResourceBundle::BoldFont);
-  }
-
-  return nullptr;
+  ui::MenuModel* model = model_;
+  size_t index = 0;
+  ui::MenuModel::GetModelAndIndexForCommandId(command_id, &model, &index);
+  return model->GetLabelFontListAt(index);
 }
 
 absl::optional<SkColor> AppMenu::GetLabelColor(int command_id) const {
@@ -1054,18 +1130,17 @@ bool AppMenu::IsItemChecked(int command_id) const {
 }
 
 bool AppMenu::IsCommandEnabled(int command_id) const {
-  if (command_id == IDC_BOOKMARKS_LIST_TITLE) {
-    return false;
+  if (command_id <= 0) {
+    return false;  // The root item, a separator, or a title.
   }
 
-  if (IsBookmarkCommand(command_id))
+  if (IsBookmarkCommand(command_id)) {
     return true;
+  }
 
-  if (command_id == 0)
-    return false;  // The root item.
-
-  if (command_id == IDC_MORE_TOOLS_MENU)
+  if (command_id == IDC_MORE_TOOLS_MENU) {
     return true;
+  }
 
   if ((base::FeatureList::IsEnabled(features::kExtensionsMenuInAppMenu) ||
        features::IsChromeRefresh2023()) &&
@@ -1114,11 +1189,12 @@ void AppMenu::ExecuteCommand(int command_id, int mouse_event_flags) {
 
 bool AppMenu::GetAccelerator(int command_id,
                              ui::Accelerator* accelerator) const {
-  if (IsBookmarkCommand(command_id))
-    return false;
-
-  if (command_id == IDC_BOOKMARKS_LIST_TITLE) {
+  if (command_id < 0) {
     // This is a non-interactive title.
+    return false;
+  }
+
+  if (IsBookmarkCommand(command_id)) {
     return false;
   }
 
@@ -1205,7 +1281,14 @@ bool AppMenu::ShouldExecuteCommandWithoutClosingMenu(int command_id,
            WindowOpenDisposition::NEW_BACKGROUND_TAB)) ||
          (IsBookmarkCommand(command_id) &&
           bookmark_menu_delegate_->ShouldExecuteCommandWithoutClosingMenu(
-              command_id, event));
+              command_id, event)) ||
+         // TODO(https://crbug.com/1454311) Currently the UI for
+         // OtherProfileCommand has bespoke child views which will block
+         // activation in ui/views/controls/menu/menu_controller.cc. The correct
+         // fix will be to have the child view as part of
+         // ui/views/controls/menu/menu_item_view.cc but we will currently
+         // bypass this by using this method to allow the command to trigger.
+         (IsOtherProfileCommand(command_id) && event.IsMouseEvent());
 }
 
 void AppMenu::BookmarkModelChanged() {
@@ -1242,11 +1325,37 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
       item->SetMargins(top_margin, bottom_margin);
     }
 #endif
-
-    if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU)
+    if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU) {
       PopulateMenu(item, model->GetSubmenuModelAt(i));
-
+    }
     switch (model->GetCommandIdAt(i)) {
+      case IDC_PROFILE_MENU_IN_APP_MENU: {
+        if (features::IsChromeRefresh2023()) {
+          constexpr int background_horizontal_margin = 12;
+          constexpr int background_corner_radii = 12;
+          // Profile row margins are different from the menu config item
+          // margins.
+          int vertical_margin = ChromeLayoutProvider::Get()->GetDistanceMetric(
+              DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
+          item->SetMargins(vertical_margin, vertical_margin);
+          item->SetMenuItemBackground(MenuItemView::MenuItemBackground(
+              0, background_horizontal_margin,
+              ui::kColorAppMenuProfileRowBackground, background_corner_radii));
+          item->SetSelectedColorId(
+              ui::kColorAppMenuProfileRowBackgroundHovered);
+          ProfileAttributesEntry* profile_attributes =
+              GetProfileAttributesFromProfile(browser_->profile());
+          if (profile_attributes &&
+              !profile_attributes->GetLocalProfileName().empty()) {
+            const MenuConfig& config = MenuConfig::instance();
+            AddChipToProfileMenuItem(
+                browser_, item, profile_attributes->GetLocalProfileName(),
+                config.arrow_to_edge_padding + config.arrow_width,
+                profile_menu_item_selected_subscription_list_);
+          }
+        }
+        break;
+      }
       case IDC_EDIT_MENU: {
         ui::ButtonMenuItemModel* submodel = model->GetButtonMenuItemAt(i);
         DCHECK_EQ(IDC_CUT, submodel->GetCommandIdAt(0));
@@ -1255,6 +1364,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
         item->SetTitle(l10n_util::GetStringUTF16(IDS_EDIT2));
         item->AddChildView(
             std::make_unique<CutCopyPasteView>(this, submodel, 0, 1, 2));
+        item->set_children_use_full_width(true);
         break;
       }
 
@@ -1265,6 +1375,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
         DCHECK_EQ(IDC_FULLSCREEN, submodel->GetCommandIdAt(2));
         item->SetTitle(l10n_util::GetStringUTF16(IDS_ZOOM_MENU2));
         item->AddChildView(std::make_unique<ZoomView>(this, submodel, 0, 1, 2));
+        item->set_children_use_full_width(true);
         break;
       }
 
@@ -1294,8 +1405,34 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
                 this, model->GetSubmenuModelAt(i), item);
         break;
 
-      default:
+      default: {
+        if (features::IsChromeRefresh2023() &&
+            IsOtherProfileCommand(model->GetCommandIdAt(i))) {
+          // Other profile command ids are dynamic and can change depending on
+          // the number of profiles in the browser. Because it's dynamic, check
+          // in the default section by verifying if the command matches what was
+          // assigned during initialization and whether the profile entry has
+          // a matching name.
+          std::u16string chip_label;
+          std::u16string gaia_name = model->GetLabelAt(i);
+          auto all_profile_entries =
+              g_browser_process->profile_manager()
+                  ->GetProfileAttributesStorage()
+                  .GetAllProfilesAttributesSortedByLocalProfileName();
+          for (ProfileAttributesEntry* profile_entry : all_profile_entries) {
+            if (GetProfileMenuDisplayName(profile_entry) == gaia_name) {
+              chip_label = profile_entry->GetLocalProfileName();
+              break;
+            }
+          }
+          if (!chip_label.empty()) {
+            AddChipToProfileMenuItem(
+                browser_, item, chip_label, 0 /*horizontal_padding*/,
+                profile_menu_item_selected_subscription_list_);
+          }
+        }
         break;
+      }
     }
   }
 }
@@ -1305,12 +1442,8 @@ MenuItemView* AppMenu::AddMenuItem(MenuItemView* parent,
                                    MenuModel* model,
                                    size_t model_index,
                                    MenuModel::ItemType menu_type) {
-  int command_id = model->GetCommandIdAt(model_index);
-  DCHECK(command_id > -1 ||
-         (command_id == -1 &&
-          model->GetTypeAt(model_index) == MenuModel::TYPE_SEPARATOR));
-
-  if (command_id > -1) {  // Don't add separators to |command_id_to_entry_|.
+  const int command_id = model->GetCommandIdAt(model_index);
+  if (command_id >= 0) {  // Don't add separators to |command_id_to_entry_|.
     // All command ID's should be unique except for IDC_SHOW_HISTORY which is
     // in both app menu and RecentTabs submenu,
     if (command_id != IDC_SHOW_HISTORY) {
@@ -1326,8 +1459,6 @@ MenuItemView* AppMenu::AddMenuItem(MenuItemView* parent,
       model, model_index, parent, menu_index, command_id);
 
   if (menu_item) {
-    // Flush all buttons to the right side of the menu for the new menu type.
-    menu_item->set_use_right_margin(false);
     menu_item->SetVisible(model->IsVisibleAt(model_index));
 
     if (menu_type == MenuModel::TYPE_COMMAND && model->HasIcons()) {

@@ -123,6 +123,7 @@ android_resources("autofill_java_resources") {
   ]
   deps = [
     ":autofill_strings_grd",
+    "//components/browser_ui/widget/android/shared_with_webview:java_resources",
     "//ui/android:ui_java_resources",
   ]
 }
@@ -133,6 +134,7 @@ java_cpp_enum("autofill_core_browser_java_enums") {
     "../core/browser/metrics/payments/virtual_card_enrollment_metrics.h",
     "../core/browser/payments/card_unmask_challenge_option.h",
     "../core/browser/ui/accessory_sheet_enums.h",
+    "../core/browser/ui/payments/payments_bubble_closed_reasons.h",
     "../core/browser/ui/popup_item_ids.h",
   ]
 }
@@ -167,28 +169,6 @@ android_library("main_autofill_java") {
     "java/src/org/chromium/components/autofill/AutofillSuggestion.java",
   ]
   srcjar_deps = [ ":autofill_core_browser_java_enums" ]
-  resources_package = "org.chromium.components.autofill"
-}
-
-android_library("prefeditor_autofill_java") {
-  deps = [
-    ":autofill_java_resources",
-    "//base:base_java",
-    "//components/browser_ui/widget/android:java",
-    "//components/payments/content/android:java_resources",
-    "//third_party/android_deps:material_design_java",
-    "//third_party/androidx:androidx_annotation_annotation_java",
-    "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
-    "//third_party/androidx:androidx_core_core_java",
-    "//ui/android:ui_no_recycler_view_java",
-  ]
-  sources = [
-    "java/src/org/chromium/components/autofill/prefeditor/EditorFieldModel.java",
-    "java/src/org/chromium/components/autofill/prefeditor/EditorFieldView.java",
-    "java/src/org/chromium/components/autofill/prefeditor/EditorObserverForTest.java",
-    "java/src/org/chromium/components/autofill/prefeditor/EditorTextField.java",
-  ]
-
   resources_package = "org.chromium.components.autofill"
 }
 

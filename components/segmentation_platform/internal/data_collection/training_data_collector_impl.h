@@ -27,6 +27,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace segmentation_platform {
+using proto::ModelSource;
 using proto::SegmentId;
 
 class SegmentationResultPrefs;
@@ -141,25 +142,26 @@ class TrainingDataCollectorImpl : public TrainingDataCollector,
                         const proto::SegmentInfo& segment_info,
                         proto::TrainingData& training_data);
 
-  const raw_ptr<SegmentInfoDatabase> segment_info_database_;
+  const raw_ptr<SegmentInfoDatabase, DanglingUntriaged> segment_info_database_;
   const raw_ptr<processing::FeatureListQueryProcessor>
       feature_list_query_processor_;
   const raw_ptr<HistogramSignalHandler> histogram_signal_handler_;
   const raw_ptr<UserActionSignalHandler> user_action_signal_handler_;
-  const raw_ptr<SignalStorageConfig> signal_storage_config_;
-  const raw_ptr<const ConfigHolder> config_holder_;
+  const raw_ptr<SignalStorageConfig, DanglingUntriaged> signal_storage_config_;
+  const raw_ptr<const ConfigHolder, DanglingUntriaged> config_holder_;
   const raw_ptr<base::Clock> clock_;
 
   // Helper class to read/write results to the prefs.
   std::unique_ptr<SegmentationResultPrefs> result_prefs_;
 
-  const raw_ptr<CachedResultProvider> cached_result_provider_;
+  const raw_ptr<CachedResultProvider, DanglingUntriaged>
+      cached_result_provider_;
 
   // Cache class to temporarily store training data in the observation period.
   std::unique_ptr<TrainingDataCache> training_cache_;
 
   // Class to get segment info from default models.
-  const raw_ptr<DefaultModelManager> default_model_manager_;
+  const raw_ptr<DefaultModelManager, DanglingUntriaged> default_model_manager_;
 
   // Hash of histograms for immediate training data collection. When any
   // histogram hash contained in the map is recorded, a UKM message is reported
@@ -167,8 +169,10 @@ class TrainingDataCollectorImpl : public TrainingDataCollector,
   base::flat_map<uint64_t, base::flat_set<proto::SegmentId>>
       immediate_collection_histograms_;
 
-  // Hash of histograms for trigger based training data collection.
-  base::flat_map<uint64_t, base::flat_set<proto::SegmentId>>
+  // Hash of histograms and their corresponding accepted enum ids for trigger
+  // based training data collection.
+  base::flat_map<uint64_t,
+                 base::flat_set<std::pair<proto::SegmentId, std::vector<int>>>>
       immediate_trigger_histograms_;
 
   // Hash of user actions for trigger based training data collection.

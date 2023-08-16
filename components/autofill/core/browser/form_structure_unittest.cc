@@ -170,10 +170,6 @@ class FormStructureTestImpl : public test::FormStructureTest {
   test::AutofillUnitTestEnvironment autofill_test_environment_;
 };
 
-class ParameterizedFormStructureTest
-    : public FormStructureTestImpl,
-      public testing::WithParamInterface<bool> {};
-
 class FormStructureTest_ForPatternSource
     : public FormStructureTestImpl,
       public testing::WithParamInterface<PatternSource> {
@@ -2177,15 +2173,7 @@ TEST_F(FormStructureTestImpl, HeuristicsInferCCNames_NamesFirst) {
             form_structure->field(5)->heuristic_type());
 }
 
-TEST_P(ParameterizedFormStructureTest, EncodeQueryRequest) {
-  bool autofill_across_iframes = GetParam();
-  base::test::ScopedFeatureList scoped_features;
-  std::vector<base::test::FeatureRef> enabled;
-  std::vector<base::test::FeatureRef> disabled;
-  (autofill_across_iframes ? &enabled : &disabled)
-      ->push_back(features::kAutofillAcrossIframes);
-  scoped_features.InitWithFeatures(enabled, disabled);
-
+TEST_F(FormStructureTestImpl, EncodeQueryRequest) {
   FormSignature form_signature(16692857476255362434UL);
 
   FormData form;
@@ -2241,10 +2229,8 @@ TEST_P(ParameterizedFormStructureTest, EncodeQueryRequest) {
 
   std::vector<FormSignature> expected_signatures;
   expected_signatures.emplace_back(form_signature.value());
-  if (autofill_across_iframes) {
-    expected_signatures.emplace_back(12345UL);
-    expected_signatures.emplace_back(67890UL);
-  }
+  expected_signatures.emplace_back(12345UL);
+  expected_signatures.emplace_back(67890UL);
 
   // Prepare the expected proto string.
   AutofillPageQueryRequest query;
@@ -2257,17 +2243,16 @@ TEST_P(ParameterizedFormStructureTest, EncodeQueryRequest) {
     query_form->add_fields()->set_signature(2226358947U);
     query_form->add_fields()->set_signature(747221617U);
     query_form->add_fields()->set_signature(4108155786U);
-    if (autofill_across_iframes) {
-      query_form = query.add_forms();
-      query_form->set_signature(12345UL);
-      query_form->add_fields()->set_signature(1917667676U);
-      query_form->add_fields()->set_signature(747221617U);
-      query_form->add_fields()->set_signature(4108155786U);
 
-      query_form = query.add_forms();
-      query_form->set_signature(67890UL);
-      query_form->add_fields()->set_signature(2226358947U);
-    }
+    query_form = query.add_forms();
+    query_form->set_signature(12345UL);
+    query_form->add_fields()->set_signature(1917667676U);
+    query_form->add_fields()->set_signature(747221617U);
+    query_form->add_fields()->set_signature(4108155786U);
+
+    query_form = query.add_forms();
+    query_form->set_signature(67890UL);
+    query_form->add_fields()->set_signature(2226358947U);
   }
 
   AutofillPageQueryRequest encoded_query;
@@ -3858,7 +3843,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithSubForms) {
   std::vector<ServerFieldTypeSet> possible_field_types;
   std::vector<ServerFieldTypeValidityStatesMap> possible_field_types_validities;
   FormData form;
-  form.host_frame = test::MakeLocalFrameToken(test::RandomizeFrame(true));
+  form.host_frame = test::MakeLocalFrameToken();
   form.url = GURL("http://www.foo.com/");
   form.is_form_tag = true;
 
@@ -3880,7 +3865,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithSubForms) {
   test::InitializePossibleTypesAndValidities(possible_field_types,
                                              possible_field_types_validities,
                                              {CREDIT_CARD_NUMBER});
-  field.host_frame = test::MakeLocalFrameToken(test::RandomizeFrame(true));
+  field.host_frame = test::MakeLocalFrameToken();
   field.unique_renderer_id = test::MakeFieldRendererId();
   field.host_form_signature = FormSignature(456);
   form.fields.push_back(field);
@@ -3900,7 +3885,7 @@ TEST_F(FormStructureTestImpl, EncodeUploadRequest_WithSubForms) {
   test::InitializePossibleTypesAndValidities(possible_field_types,
                                              possible_field_types_validities,
                                              {CREDIT_CARD_VERIFICATION_CODE});
-  field.host_frame = test::MakeLocalFrameToken(test::RandomizeFrame(true));
+  field.host_frame = test::MakeLocalFrameToken();
   field.unique_renderer_id = test::MakeFieldRendererId();
   field.host_form_signature = FormSignature(456);
   form.fields.push_back(field);
@@ -5348,9 +5333,6 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_UnknownType) {
 // crowdsourcing
 TEST_F(FormStructureTestImpl,
        ParseApiQueryResponse_PrecedenceRulesBetweenMainFrameAndIframe) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(features::kAutofillAcrossIframes);
-
   struct TestCase {
     bool main_frame_has_override;
     bool iframe_has_override;
@@ -5435,9 +5417,6 @@ TEST_F(FormStructureTestImpl,
 // predictions.
 TEST_F(FormStructureTestImpl,
        ParseApiQueryResponse_FallbackToHostFormSignature) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(features::kAutofillAcrossIframes);
-
   std::vector<ServerFieldType> expected_types;
 
   // Create a form whose fields have FormFieldData::host_form_signature either
@@ -5762,10 +5741,6 @@ TEST_F(FormStructureTestImpl, ParseQueryResponse_AuthorDefinedTypes) {
   // UNKNOWN_TYPE.
   EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(1)->Type().GetStorableType());
 }
-
-INSTANTIATE_TEST_SUITE_P(FormStructureTest,
-                         ParameterizedFormStructureTest,
-                         testing::Bool());
 
 // Tests that, when the flag is off, we will not set the predicted type to
 // unknown for fields that have no server data and autocomplete off, and when
@@ -6358,7 +6333,7 @@ TEST_F(FormStructureTestImpl, SplitByRecurringFieldType) {
   EXPECT_EQ("blue-shipping", form_structure.field(0)->section.ToString());
   EXPECT_EQ("blue-shipping", form_structure.field(1)->section.ToString());
   EXPECT_EQ("blue-shipping", form_structure.field(2)->section.ToString());
-  EXPECT_EQ("country_0_14", form_structure.field(3)->section.ToString());
+  EXPECT_EQ("country_2_14", form_structure.field(3)->section.ToString());
 }
 
 // Tests if a new logical form is started with the second appearance of a field
@@ -6409,7 +6384,7 @@ TEST_F(FormStructureTestImpl,
   EXPECT_EQ("blue-shipping", form_structure.field(0)->section.ToString());
   EXPECT_EQ("blue-billing", form_structure.field(1)->section.ToString());
   EXPECT_EQ("blue-billing", form_structure.field(2)->section.ToString());
-  EXPECT_EQ("country_0_14", form_structure.field(3)->section.ToString());
+  EXPECT_EQ("country_2_14", form_structure.field(3)->section.ToString());
 }
 
 // Tests if a new logical form is started with the second appearance of a field

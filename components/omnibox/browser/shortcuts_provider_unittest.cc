@@ -32,6 +32,7 @@
 #include "components/omnibox/browser/autocomplete_scoring_signals_annotator.h"
 #include "components/omnibox/browser/fake_autocomplete_provider_client.h"
 #include "components/omnibox/browser/in_memory_url_index.h"
+#include "components/omnibox/browser/omnibox_feature_configs.h"
 #include "components/omnibox/browser/omnibox_triggered_feature_service.h"
 #include "components/omnibox/browser/shortcuts_backend.h"
 #include "components/omnibox/browser/shortcuts_provider_test_util.h"
@@ -257,7 +258,7 @@ class ShortcutsProviderTest : public testing::Test {
   // Passthrough to the private `CreateScoredShortcutMatch` function in
   // provider_.
   int CalculateAggregateScore(
-      const std::string& terms,
+      size_t input_length,
       const std::vector<const ShortcutsDatabase::Shortcut*>& shortcuts);
 
   // Passthrough to the private `GetMatches`. Enables populating scoring
@@ -314,12 +315,12 @@ void ShortcutsProviderTest::TearDown() {
 }
 
 int ShortcutsProviderTest::CalculateAggregateScore(
-    const std::string& terms,
+    size_t input_length,
     const std::vector<const ShortcutsDatabase::Shortcut*>& shortcuts) {
   const int max_relevance =
       ShortcutsProvider::kShortcutsProviderDefaultMaxRelevance;
   return provider_
-      ->CreateScoredShortcutMatch(ASCIIToUTF16(terms),
+      ->CreateScoredShortcutMatch(input_length,
                                   /*stripped_destination_url=*/GURL(),
                                   shortcuts, max_relevance)
       .relevance;
@@ -823,38 +824,38 @@ TEST_F(ShortcutsProviderTest, Score) {
   auto shortcut_a_frequent = MakeShortcut(u"size__________16", days_ago(3), 10);
   auto shortcut_a_recent = MakeShortcut(u"size__________16", days_ago(1), 1);
   auto score_a = CalculateAggregateScore(
-      "a", {&shortcut_a_short, &shortcut_a_frequent, &shortcut_a_recent});
+      1, {&shortcut_a_short, &shortcut_a_frequent, &shortcut_a_recent});
   auto shortcut_b = MakeShortcut(u"size______12", days_ago(1), 12);
-  auto score_b = CalculateAggregateScore("a", {&shortcut_b});
+  auto score_b = CalculateAggregateScore(1, {&shortcut_b});
   EXPECT_EQ(score_a, score_b);
   EXPECT_GT(score_a, 0);
 
   // Typing more of the text increases score.
-  auto score_b_long_query = CalculateAggregateScore("ab", {&shortcut_b});
+  auto score_b_long_query = CalculateAggregateScore(2, {&shortcut_b});
   EXPECT_GT(score_b_long_query, score_b);
 
   // When creating or updating shortcuts, their text is set longer than the user
   // input (see `ShortcutBackend::AddOrUpdateShortcut()`). So `CalculateScore()`
   // permits up to 10 missing chars before beginning to decrease scores.
-  EXPECT_EQ(CalculateAggregateScore("test56", {&shortcut_a_frequent}),
-            CalculateAggregateScore("test5678901234", {&shortcut_a_frequent}));
+  EXPECT_EQ(CalculateAggregateScore(6, {&shortcut_a_frequent}),
+            CalculateAggregateScore(14, {&shortcut_a_frequent}));
 
   // Make sure there's no negative or weird scores when the shortcut text is
   // shorter than the 10 char adjustment.
   const auto shortcut = MakeShortcut(u"test");
-  const int kMaxScore = CalculateAggregateScore("test", {&shortcut});
+  const int kMaxScore = CalculateAggregateScore(4, {&shortcut});
   const auto short_shortcut = MakeShortcut(u"ab");
-  EXPECT_EQ(CalculateAggregateScore("ab", {&short_shortcut}), kMaxScore);
-  EXPECT_EQ(CalculateAggregateScore("a", {&short_shortcut}), kMaxScore);
+  EXPECT_EQ(CalculateAggregateScore(2, {&short_shortcut}), kMaxScore);
+  EXPECT_EQ(CalculateAggregateScore(1, {&short_shortcut}), kMaxScore);
 
   // More recent shortcuts should be scored higher.
   auto shortcut_b_old = MakeShortcut(u"size______12", days_ago(2), 12);
-  auto score_b_old = CalculateAggregateScore("a", {&shortcut_b_old});
+  auto score_b_old = CalculateAggregateScore(1, {&shortcut_b_old});
   EXPECT_LT(score_b_old, score_b);
 
   // Shortcuts with higher visit counts should be scored higher.
   auto shortcut_b_frequent = MakeShortcut(u"size______12", days_ago(1), 13);
-  auto score_b_frequent = CalculateAggregateScore("a", {&shortcut_b_frequent});
+  auto score_b_frequent = CalculateAggregateScore(1, {&shortcut_b_frequent});
   EXPECT_GT(score_b_frequent, score_b);
 }
 
@@ -903,7 +904,11 @@ TEST_F(ShortcutsProviderTest, ScoreBoost) {
 
   scoped_feature_list_.Reset();
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      omnibox::kShortcutBoost, {{"ShortcutBoostUrlScore", "1300"}});
+      omnibox_feature_configs::ShortcutBoosting::kShortcutBoost,
+      {{"ShortcutBoostUrlScore", "1300"}});
+  omnibox_feature_configs::ScopedConfigForTesting<
+      omnibox_feature_configs::ShortcutBoosting>
+      scoped_config;
 
   {
     // Searches shouldn't be boosted since the appropriate param is not set.
@@ -974,15 +979,14 @@ TEST_F(ShortcutsProviderTest, ScoreBoost) {
   }
 
   {
+    // Should not boost when counterfactual is enabled.
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        omnibox::kShortcutBoost, {{
-                                      "ShortcutBoostUrlScore",
-                                      "1300",
-                                  },
-                                  {"ShortcutBoostCounterfactual", "true"}});
+        omnibox_feature_configs::ShortcutBoosting::kShortcutBoost,
+        {{"ShortcutBoostUrlScore", "1300"},
+         {"ShortcutBoostCounterfactual", "true"}});
+    scoped_config.Reset();
 
-    // Should not boost when counterfactual is enabled.
     trigger_service->ResetSession();
     AutocompleteInput input(u"urls-before-searches",
                             metrics::OmniboxEventProto::OTHER,
@@ -1002,10 +1006,6 @@ TEST_F(ShortcutsProviderTest, ScoreBoost) {
 
 #if !BUILDFLAG(IS_IOS)
 TEST_F(ShortcutsProviderTest, HistoryClusterSuggestions) {
-  history_clusters::Config config;
-  config.omnibox_history_cluster_provider_shortcuts = true;
-  history_clusters::SetConfigForTesting(config);
-
   const auto create_test_data =
       [](std::string text, bool is_history_cluster) -> TestShortcutData {
     return {GetGuid(), text, "fill_into_edit",
@@ -1074,15 +1074,5 @@ TEST_F(ShortcutsProviderTest, HistoryClusterSuggestions) {
   EXPECT_EQ(matches[4].suggestion_group_id, absl::nullopt);
   EXPECT_EQ(matches[5].suggestion_group_id, absl::nullopt);
   EXPECT_EQ(matches[6].suggestion_group_id, absl::nullopt);
-
-  // With `omnibox_history_cluster_provider_allow_default`, should be allowed
-  // default.
-  config.omnibox_history_cluster_provider_allow_default = true;
-  history_clusters::SetConfigForTesting(config);
-  provider_->Start(input, false);
-  const auto matches_with_allow_default = provider_->matches();
-  ASSERT_EQ(matches.size(), matches.size());
-  for (const auto& m : matches_with_allow_default)
-    EXPECT_TRUE(m.allowed_to_be_default_match);
 }
 #endif  // !BUILDFLAG(IS_IOS)

@@ -25,6 +25,7 @@ ci.defaults.set(
 consoles.console_view(
     name = "chromium.fyi",
     branch_selector = [
+        branches.selector.CROS_LTS_BRANCHES,
         branches.selector.IOS_BRANCHES,
         branches.selector.LINUX_BRANCHES,
     ],
@@ -113,33 +114,6 @@ ci.builder(
         category = "site_isolation",
     ),
     notifies = ["Site Isolation Android"],
-)
-
-ci.builder(
-    name = "VR Linux",
-    branch_selector = branches.selector.LINUX_BRANCHES,
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -437,7 +411,6 @@ ci.thin_tester(
             target_bits = 64,
         ),
     ),
-    cores = None,
     console_view_entry = consoles.console_view_entry(
         category = "mac",
     ),
@@ -509,7 +482,7 @@ ci.builder(
         build_gs_bucket = "chromium-android-archive",
     ),
     builderless = False,
-    os = os.LINUX_BIONIC,
+    os = os.LINUX_DEFAULT,
     console_view_entry = consoles.console_view_entry(
         category = "android",
     ),
@@ -692,6 +665,7 @@ ci.builder(
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
+            apply_configs = ["use_clang_coverage"],
         ),
         chromium_config = builder_config.chromium_config(
             config = "chromium",
@@ -1372,6 +1346,7 @@ def build_perf_builder(**kwargs):
         # rely on the builder dimension for the bot selection.
         builderless = False,
         cores = None,
+        siso_config = "remote_all",
         siso_enable_cloud_profiler = True,
         siso_enable_cloud_trace = True,
         siso_project = siso.project.DEFAULT_UNTRUSTED,
@@ -1390,6 +1365,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             config = "chromium",
             apply_configs = [
                 "android",
+                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
                 "chromium_no_telemetry_dependencies",
             ],
         ),
@@ -1426,6 +1402,8 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             apply_configs = [
                 "android",
                 "checkout_siso",
+                "siso_latest",
+                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
                 "chromium_no_telemetry_dependencies",
             ],
         ),
@@ -1461,6 +1439,8 @@ This builder measures build performance for Android developer builds, by simulat
             apply_configs = [
                 "android",
                 "checkout_siso",
+                "siso_latest",
+                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
                 "chromium_no_telemetry_dependencies",
             ],
         ),
@@ -1497,6 +1477,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         gclient_config = builder_config.gclient_config(
             config = "chromium",
             apply_configs = [
+                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
                 "chromium_no_telemetry_dependencies",
             ],
         ),
@@ -1526,6 +1507,8 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             config = "chromium",
             apply_configs = [
                 "checkout_siso",
+                "siso_latest",
+                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
                 "chromium_no_telemetry_dependencies",
             ],
         ),
@@ -1554,6 +1537,8 @@ This builder measures build performance for Linux developer builds, by simulatin
             config = "chromium",
             apply_configs = [
                 "checkout_siso",
+                "siso_latest",
+                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
                 "chromium_no_telemetry_dependencies",
             ],
         ),
@@ -1584,6 +1569,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         gclient_config = builder_config.gclient_config(
             config = "chromium",
             apply_configs = [
+                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
                 "chromium_no_telemetry_dependencies",
             ],
         ),
@@ -1613,6 +1599,8 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
             config = "chromium",
             apply_configs = [
                 "checkout_siso",
+                "siso_latest",
+                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
                 "chromium_no_telemetry_dependencies",
             ],
         ),
@@ -1641,6 +1629,8 @@ This builder measures build performance for Windows developer builds, by simulat
             config = "chromium",
             apply_configs = [
                 "checkout_siso",
+                "siso_latest",
+                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
                 "chromium_no_telemetry_dependencies",
             ],
         ),
@@ -1659,6 +1649,69 @@ This builder measures build performance for Windows developer builds, by simulat
     reclient_instance = reclient.instance.DEVELOPER,
     reclient_jobs = 1000,
     use_clang_coverage = None,
+)
+
+build_perf_builder(
+    name = "linux-chromeos-build-perf",
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
+    description_html = """\
+This builder measures ChromeOS build performance with and without remote caches.<br/>\
+The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/linux-chromeos-rel-compilator">linux-chromeos-rel-compilator</a>.\
+""",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
+                "chromium_no_telemetry_dependencies",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+        ),
+    ),
+    os = os.LINUX_DEFAULT,
+    console_view_entry = consoles.console_view_entry(
+        category = "buildperf",
+        short_name = "cros",
+    ),
+)
+
+build_perf_builder(
+    name = "linux-chromeos-build-perf-siso",
+    branch_selector = branches.selector.CROS_LTS_BRANCHES,
+    description_html = """\
+This builder measures ChromeOS build performance with Siso.<br/>\
+The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/linux-chromeos-rel-compilator">linux-chromeos-rel-compilator</a>.\
+""",
+    executable = "recipe:chrome_build/build_perf_siso",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+                "checkout_siso",
+                "siso_latest",
+                # TODO(crbug.com/1441379): remove after the permission issue gets fixed.
+                "chromium_no_telemetry_dependencies",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+        ),
+    ),
+    os = os.LINUX_DEFAULT,
+    console_view_entry = consoles.console_view_entry(
+        category = "buildperf",
+        short_name = "crosss",
+    ),
 )
 
 ci.builder(
@@ -2241,7 +2294,7 @@ fyi_ios_builder(
 )
 
 fyi_ios_builder(
-    name = "ios15-beta-simulator",
+    name = "ios17-beta-simulator",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "ios"),
         chromium_config = builder_config.chromium_config(
@@ -2259,14 +2312,14 @@ fyi_ios_builder(
     os = os.MAC_13,
     console_view_entry = [
         consoles.console_view_entry(
-            category = "iOS|iOS15",
-            short_name = "ios15",
+            category = "iOS|iOS17",
+            short_name = "ios17",
         ),
     ],
 )
 
 fyi_ios_builder(
-    name = "ios15-sdk-simulator",
+    name = "ios17-sdk-simulator",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "ios"),
         chromium_config = builder_config.chromium_config(
@@ -2285,10 +2338,11 @@ fyi_ios_builder(
     cpu = cpu.ARM64,
     console_view_entry = [
         consoles.console_view_entry(
-            category = "iOS|iOS15",
-            short_name = "sdk15",
+            category = "iOS|iOS17",
+            short_name = "sdk17",
         ),
     ],
+    xcode = xcode.x15betabots,
 )
 
 fyi_ios_builder(
@@ -2337,6 +2391,7 @@ fyi_ios_builder(
         build_gs_bucket = "chromium-fyi-archive",
     ),
     os = os.MAC_13,
+    cpu = cpu.ARM64,
     console_view_entry = [
         consoles.console_view_entry(
             category = "iOS|iOS16",
@@ -2367,6 +2422,7 @@ fyi_ios_builder(
         build_gs_bucket = "chromium-fyi-archive",
     ),
     os = os.MAC_13,
+    cpu = cpu.ARM64,
     console_view_entry = consoles.console_view_entry(
         category = "iOS|iOS16",
         short_name = "sdk16",

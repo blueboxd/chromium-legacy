@@ -46,7 +46,7 @@ if (is_win) {
     "//media/midi",
     "//net",
     "//skia",
-    "//third_party/android_ndk:cpu_features",
+    "//third_party/cpu_features:ndk_compat",
     "//ui/android",
     "//ui/events",
     "//ui/shell_dialogs",
@@ -92,9 +92,6 @@ source_set("content_main_runner_app") {
       "//chromeos/startup",
       "//chromeos/startup:constants",
     ]
-  }
-  if (is_chromeos_ash) {
-    deps += [ "//chromeos/startup:constants" ]
   }
   if (build_tflite_with_xnnpack) {
     deps += [ "//third_party/cpuinfo" ]

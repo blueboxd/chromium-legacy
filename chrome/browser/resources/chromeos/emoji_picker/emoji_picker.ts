@@ -328,13 +328,13 @@ export class EmojiPicker extends PolymerElement {
     );
 
     if (this.gifSupport) {
-      this.fetchAndProcessGifData(prevFetchPromise, prevRenderPromise);
+      await this.fetchAndProcessGifData(prevFetchPromise, prevRenderPromise);
     }
   }
 
   private fetchAndProcessGifData(
       prevFetchPromise: Promise<EmojiGroupData> = Promise.resolve([]),
-      prevRenderPromise = Promise.resolve()) {
+      prevRenderPromise = Promise.resolve()): Promise<void> {
     this.validateRecentlyUsedGifs();
 
     // Set Recently Used and Trending in the GIF tabs first before fetching
@@ -375,7 +375,8 @@ export class EmojiPicker extends PolymerElement {
             });
     const featuredGifFetchPromise =
         categoriesFetchPromise.then(() => this.apiProxy.getFeaturedGifs());
-    Promise.all([categoriesRenderPromise, featuredGifFetchPromise])
+
+    return Promise.all([categoriesRenderPromise, featuredGifFetchPromise])
         .then((values) => {
           const {status, featuredGifs} = values[1];
           this.status = status;
@@ -397,7 +398,12 @@ export class EmojiPicker extends PolymerElement {
   }
 
   onClickTryAgain() {
-    this.fetchAndProcessGifData();
+    // The network error illustration only displays in GIF panel under offline
+    // mode; in this case, after reloading data, we should switch back to GIF
+    // panel (if it is successful).
+    this.fetchAndProcessGifData().then(() => {
+      this.onCategoryButtonClick(CategoryEnum.GIF);
+    });
   }
 
   private canScrollToGroup(category: CategoryEnum, groupId: string): boolean {
@@ -561,10 +567,10 @@ export class EmojiPicker extends PolymerElement {
   }
 
   private async insertText(category: CategoryEnum, item: {
-    emoji: string,
     isVariant: boolean,
-    baseEmoji: string,
-    allVariants?: Emoji[], name: string, text: string,
+    baseEmoji?: string,
+    allVariants?: Emoji[],
+    name?: string, text: string,
   }) {
     const {text, isVariant, baseEmoji, allVariants, name} = item;
     this.$.message.textContent = text + ' inserted.';
@@ -587,8 +593,7 @@ export class EmojiPicker extends PolymerElement {
   }
 
   private insertVisualContent(category: CategoryEnum, item: {
-    name: string,
-    visualContent: VisualContent,
+    name?: string, visualContent: VisualContent,
   }) {
     this.apiProxy.insertGif(item.visualContent.url.full);
     this.insertHistoryVisualContentItem(category, item);
@@ -692,6 +697,28 @@ export class EmojiPicker extends PolymerElement {
           this.getPaginationArray(this.emojiGroupTabs).pop() ?? 0;
       this.pagination = Math.min(this.pagination + 1, maxPagination);
       this.updateCurrentGroupTabs();
+    }
+  }
+
+  private onRightChevronKeyDown(event: KeyboardEvent) {
+    // Moves focus to the first button under the group of current category if
+    // user tries to move to the next element from right chevron button in a11y
+    // mode.
+    if (event.code === 'Tab' && !event.shiftKey) {
+      const currentGroups = this.shadowRoot!
+        .querySelectorAll<EmojiGroupComponent>(
+          `emoji-group[category='${this.category}'`);
+
+      // The first group might be a history group. If the user has no history
+      // item, we should continue to check the second group.
+      for (const group of currentGroups) {
+        const button = group.firstEmojiButton();
+        if (button) {
+          button.focus();
+          event.preventDefault();
+          return;
+        }
+      }
     }
   }
 
@@ -1057,9 +1084,8 @@ export class EmojiPicker extends PolymerElement {
    */
   private insertHistoryTextItem(category: CategoryEnum, item: {
     selectedEmoji: string,
-    baseEmoji: string,
-    alternates: Emoji[],
-    name: string,
+    baseEmoji?: string, alternates: Emoji[],
+    name?: string,
   }) {
     if (this.incognito) {
       return;
@@ -1073,7 +1099,7 @@ export class EmojiPicker extends PolymerElement {
 
     const preferenceUpdated =
         this.categoriesHistory[category]?.savePreferredVariant(
-            baseEmoji, selectedEmoji);
+            selectedEmoji, baseEmoji);
 
     this.categoryHistoryUpdated(category, true, preferenceUpdated);
   }
@@ -1084,7 +1110,7 @@ export class EmojiPicker extends PolymerElement {
    */
   private insertHistoryVisualContentItem(category: CategoryEnum, item: {
     visualContent: VisualContent,
-    name: string,
+    name?: string,
   }) {
     if (this.incognito) {
       return;
@@ -1459,11 +1485,23 @@ export class EmojiPicker extends PolymerElement {
     }
     return '';
   }
+
+  private getLeftChevronAriaLabel(gifSupport: boolean): string | undefined {
+    return gifSupport ? 'Previous' : undefined;
+  }
+
+  private getRightChevronAriaLabel(gifSupport: boolean): string | undefined {
+    return gifSupport ? 'Next': undefined;
+  }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
     [EmojiPicker.is]: EmojiPicker;
+  }
+  interface HTMLElementEventMap {
+    [events.EMOJI_PICKER_READY]: CustomEvent;
+    [events.CATEGORY_DATA_LOADED]: events.CategoryDataLoadEvent;
   }
 }
 

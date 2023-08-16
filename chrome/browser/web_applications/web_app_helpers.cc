@@ -88,6 +88,7 @@ AppId GenerateAppIdFromManifest(const blink::mojom::Manifest& manifest) {
 }
 
 ManifestId GenerateManifestIdFromStartUrlOnly(const GURL& start_url) {
+  CHECK(start_url.is_valid());
   return start_url.GetWithoutRef();
 }
 
@@ -110,6 +111,13 @@ absl::optional<AppId> FindInstalledAppWithUrlInScope(Profile* profile,
   return provider ? provider->registrar_unsafe().FindInstalledAppWithUrlInScope(
                         url, window_only)
                   : absl::nullopt;
+}
+
+bool IsNonLocallyInstalledAppWithUrlInScope(Profile* profile, const GURL& url) {
+  auto* provider = WebAppProvider::GetForWebApps(profile);
+  return provider ? provider->registrar_unsafe()
+                        .IsNonLocallyInstalledAppWithUrlInScope(url)
+                  : false;
 }
 
 }  // namespace web_app

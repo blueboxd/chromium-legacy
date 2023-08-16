@@ -193,6 +193,7 @@ source_set("clipboard") {
 
   if (is_mac) {
     sources += [ "clipboard_mac.mm" ]
+    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_win) {
@@ -258,6 +259,8 @@ static_library("common") {
     "action_executor.cc",
     "action_message_handler.cc",
     "action_message_handler.h",
+    "active_display_monitor.cc",
+    "active_display_monitor.h",
     "audio_capturer.cc",
     "audio_silence_detector.cc",
     "audio_volume_filter.cc",
@@ -520,7 +523,9 @@ static_library("common") {
   if (remoting_use_x11) {
     assert(use_glib)
     defines += [ "REMOTING_USE_X11" ]
+    sources -= [ "active_display_monitor.cc" ]
     sources += [
+      "active_display_monitor_linux.cc",
       "curtain_mode_linux.cc",
       "desktop_display_info_loader_linux.cc",
       "desktop_display_info_loader_x11.cc",
@@ -532,6 +537,8 @@ static_library("common") {
       "input_injector_x11.cc",
       "input_injector_x11.h",
       "keyboard_layout_monitor_linux.cc",
+      "linux/active_display_monitor_x11.cc",
+      "linux/active_display_monitor_x11.h",
       "linux/clipboard_portal.cc",
       "linux/clipboard_portal.h",
       "linux/clipboard_portal_injector.cc",
@@ -665,6 +672,8 @@ static_library("common") {
       "CoreAudio.framework",
     ]
 
+    configs += [ "//build/config/compiler:enable_arc" ]
+
     deps += [
       ":remoting_version",
       "//remoting/host/base",
@@ -715,6 +724,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "fake_active_display_monitor.cc",
+    "fake_active_display_monitor.h",
     "fake_desktop_environment.cc",
     "fake_desktop_environment.h",
     "fake_host_extension.cc",
@@ -853,6 +864,7 @@ source_set("unit_tests") {
     "//remoting/signaling",
     "//remoting/signaling:test_support",
     "//remoting/signaling:unit_tests",
+    "//services/network:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

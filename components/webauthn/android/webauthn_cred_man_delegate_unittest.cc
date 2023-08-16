@@ -10,6 +10,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace webauthn {
+
 class WebAuthnCredManDelegateTest : public testing::Test {
  public:
   void SetUp() override {
@@ -23,24 +25,24 @@ class WebAuthnCredManDelegateTest : public testing::Test {
 };
 
 TEST_F(WebAuthnCredManDelegateTest, FullRequestNotRunAfterCleanup) {
-  base::MockRepeatingClosure closure;
-  EXPECT_CALL(closure, Run()).Times(0);
-  delegate()->OnCredManConditionalRequestPending(nullptr, true, closure.Get());
+  base::MockCallback<base::RepeatingCallback<void(bool)>> closure;
+  EXPECT_CALL(closure, Run(testing::_)).Times(0);
+  delegate()->OnCredManConditionalRequestPending(true, closure.Get());
 
-  EXPECT_CALL(closure, Run()).Times(1);
+  EXPECT_CALL(closure, Run(false)).Times(1);
   delegate()->TriggerFullRequest();
 
-  EXPECT_CALL(closure, Run()).Times(0);
+  EXPECT_CALL(closure, Run(false)).Times(0);
   delegate()->CleanUpConditionalRequest();
 
-  EXPECT_CALL(closure, Run()).Times(0);
+  EXPECT_CALL(closure, Run(false)).Times(0);
   delegate()->TriggerFullRequest();
 }
 
 TEST_F(WebAuthnCredManDelegateTest, RequestCompletionCallbackRun) {
   base::MockCallback<base::RepeatingCallback<void(bool)>>
       mock_request_completion_callback;
-  base::MockRepeatingClosure mock_full_request;
+  base::MockCallback<base::RepeatingCallback<void(bool)>> mock_full_request;
   delegate()->SetRequestCompletionCallback(
       mock_request_completion_callback.Get());
 
@@ -51,8 +53,7 @@ TEST_F(WebAuthnCredManDelegateTest, RequestCompletionCallbackRun) {
   // callback.
   EXPECT_CALL(mock_request_completion_callback, Run(true)).Times(1);
   delegate()->CleanUpConditionalRequest();
-  delegate()->OnCredManConditionalRequestPending(nullptr, true,
-                                                 mock_full_request.Get());
+  delegate()->OnCredManConditionalRequestPending(true, mock_full_request.Get());
   delegate()->OnCredManUiClosed(true);
 }
 
@@ -65,3 +66,5 @@ TEST_F(WebAuthnCredManDelegateTest,
   EXPECT_CALL(mock_request_completion_callback, Run(false)).Times(1);
   delegate()->TriggerFullRequest();
 }
+
+}  // namespace webauthn

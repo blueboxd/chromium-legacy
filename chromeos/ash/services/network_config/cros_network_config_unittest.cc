@@ -53,6 +53,8 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/user_manager/fake_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -247,8 +249,13 @@ bool MojoApnHasId(const mojom::ApnPropertiesPtr& apn) {
 class CrosNetworkConfigTest : public testing::Test {
  public:
   CrosNetworkConfigTest() {
+    // TODO(b/278643115) Remove LoginState dependency.
     LoginState::Initialize();
     SystemTokenCertDbStorage::Initialize();
+
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<user_manager::FakeUserManager>());
+
     NetworkCertLoader::Initialize();
     helper_ = std::make_unique<NetworkHandlerTestHelper>();
     helper_->AddDefaultProfiles();
@@ -282,6 +289,7 @@ class CrosNetworkConfigTest : public testing::Test {
     cros_network_config_.reset();
     helper_.reset();
     NetworkCertLoader::Shutdown();
+    scoped_user_manager_.reset();
     SystemTokenCertDbStorage::Shutdown();
     LoginState::Shutdown();
   }
@@ -1079,6 +1087,7 @@ class CrosNetworkConfigTest : public testing::Test {
   base::HistogramTester histogram_tester_;
   std::unique_ptr<NetworkHandlerTestHelper> helper_;
   TestingPrefServiceSimple local_state_;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   std::unique_ptr<CrosNetworkConfig> cros_network_config_;
   std::unique_ptr<CrosNetworkConfigTestObserver> observer_;
   std::string wifi1_path_;
@@ -3374,8 +3383,9 @@ TEST_F(CrosNetworkConfigTest, GetGlobalPolicy) {
   EXPECT_FALSE(policy->allow_only_policy_cellular_networks);
   EXPECT_TRUE(policy->allow_only_policy_networks_to_autoconnect);
   EXPECT_FALSE(policy->allow_only_policy_wifi_networks_to_connect);
-  EXPECT_EQ(false,
-            policy->allow_only_policy_wifi_networks_to_connect_if_available);
+  EXPECT_FALSE(policy->allow_only_policy_wifi_networks_to_connect_if_available);
+  EXPECT_FALSE(policy->dns_queries_monitored);
+  EXPECT_FALSE(policy->report_xdr_events_enabled);
   ASSERT_EQ(2u, policy->blocked_hex_ssids.size());
   EXPECT_EQ("blocked_ssid1", policy->blocked_hex_ssids[0]);
   EXPECT_EQ("blocked_ssid2", policy->blocked_hex_ssids[1]);
@@ -3402,6 +3412,8 @@ TEST_F(CrosNetworkConfigTest, GlobalPolicyApplied) {
   EXPECT_FALSE(policy->allow_only_policy_networks_to_autoconnect);
   EXPECT_FALSE(policy->allow_only_policy_wifi_networks_to_connect);
   EXPECT_FALSE(policy->allow_only_policy_wifi_networks_to_connect_if_available);
+  EXPECT_FALSE(policy->dns_queries_monitored);
+  EXPECT_FALSE(policy->report_xdr_events_enabled);
   EXPECT_EQ(1, observer()->GetPolicyAppliedCount(/*userhash=*/std::string()));
 }
 
@@ -3619,6 +3631,22 @@ TEST_F(CrosNetworkConfigTest, ESimManagedPropertiesNameComesFromHermes) {
   std::string esim_guid = std::string("esim_guid") + kTestIccid;
   mojom::ManagedPropertiesPtr properties = GetManagedProperties(esim_guid);
   EXPECT_EQ(kTestProfileNickname, properties->name->active_value);
+}
+
+// Tests that the Passpoint identifier of a Wi-Fi network is reflected to its
+// network state.
+TEST_F(CrosNetworkConfigTest, NetworkStateHasPasspointId) {
+  const char kWifiGuid[] = "wifi_pp_guid";
+  const char kPasspointId[] = "passpoint_id";
+  helper()->ConfigureService(base::StringPrintf(
+      R"({"GUID": "%s", "Type": "wifi", "State": "idle",
+          "Strength": 90, "AutoConnect": true, "Connectable": true,
+          "Passpoint.ID": "%s"})",
+      kWifiGuid, kPasspointId));
+  mojom::NetworkStatePropertiesPtr network = GetNetworkState(kWifiGuid);
+  ASSERT_TRUE(network);
+  EXPECT_EQ(mojom::NetworkType::kWiFi, network->type);
+  EXPECT_EQ(kPasspointId, network->type_state->get_wifi()->passpoint_id);
 }
 
 TEST_F(CrosNetworkConfigTest, GetAlwaysOnVpn) {

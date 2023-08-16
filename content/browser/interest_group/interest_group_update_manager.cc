@@ -26,6 +26,7 @@
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/browser/interest_group/interest_group_update.h"
 #include "content/browser/interest_group/storage_interest_group.h"
+#include "content/services/auction_worklet/public/cpp/auction_downloader.h"
 #include "net/base/isolation_info.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -474,6 +475,11 @@ absl::optional<InterestGroupUpdate> ParseUpdateJson(
   if (maybe_bidding_wasm_helper_url) {
     interest_group_update.bidding_wasm_helper_url =
         GURL(*maybe_bidding_wasm_helper_url);
+  }
+  const std::string* maybe_update_url =
+      dict->FindString("updateURL");  // TODO check if we use this or updateURL
+  if (maybe_update_url) {
+    interest_group_update.daily_update_url = GURL(*maybe_update_url);
   }
   const std::string* maybe_trusted_bidding_signals_url =
       dict->FindString("trustedBiddingSignalsURL");

@@ -22,25 +22,24 @@ import {ConsoleTestRunner} from 'console_test_runner';
   var keyPath = 'testKey';
 
   var indexedDBModel = TestRunner.mainTarget.model(Resources.IndexedDBModel);
-  indexedDBModel._throttler._timeout = 100000;  // Disable live updating.
+  indexedDBModel.throttler['#timeout'] = 100000;  // Disable live updating.
   var databaseId;
 
   function waitRefreshDatabase() {
-    var view = UI.panels.resources._sidebar.indexedDBListTreeElement._idbDatabaseTreeElements[0]._view;
-    view._refreshDatabaseButtonClicked();
-    return new Promise((resolve) => {
-      TestRunner.addSniffer(Resources.IDBDatabaseView.prototype, '_updatedForTests', resolve, false);
-    });
+    var view = UI.panels.resources.sidebar.indexedDBListTreeElement.idbDatabaseTreeElements[0].view;
+
+    view.getComponent().refreshDatabaseButtonClicked();
+    return indexedDBModel.once(Resources.IndexedDBModel.Events.DatabaseLoaded);
   }
 
   function waitRefreshDatabaseRightClick() {
-    idbDatabaseTreeElement._refreshIndexedDB();
+    idbDatabaseTreeElement.refreshIndexedDB();
     return waitUpdateDataView();
   }
 
   function waitUpdateDataView() {
     return new Promise((resolve) => {
-      TestRunner.addSniffer(Resources.IDBDataView.prototype, '_updatedDataForTests', resolve, false);
+      TestRunner.addSniffer(Resources.IDBDataView.prototype, 'updatedDataForTests', resolve, false);
     });
   }
 
@@ -56,17 +55,17 @@ import {ConsoleTestRunner} from 'console_test_runner';
       Common.EventTarget.removeEventListeners([event]);
       callback();
     });
-    UI.panels.resources._sidebar.indexedDBListTreeElement.refreshIndexedDB();
+    UI.panels.resources.sidebar.indexedDBListTreeElement.refreshIndexedDB();
   }
 
   // Initial tree
   ApplicationTestRunner.dumpIndexedDBTree();
 
   // Create database
-  await ApplicationTestRunner.createDatabaseAsync(databaseName);
+  ApplicationTestRunner.createDatabaseAsync(databaseName);
   await new Promise(waitDatabaseAdded);
-  var idbDatabaseTreeElement = UI.panels.resources._sidebar.indexedDBListTreeElement._idbDatabaseTreeElements[0];
-  databaseId = idbDatabaseTreeElement._databaseId;
+  var idbDatabaseTreeElement = UI.panels.resources.sidebar.indexedDBListTreeElement.idbDatabaseTreeElements[0];
+  databaseId = idbDatabaseTreeElement.databaseId;
   TestRunner.addResult('Created database.');
   ApplicationTestRunner.dumpIndexedDBTree();
 
@@ -74,7 +73,7 @@ import {ConsoleTestRunner} from 'console_test_runner';
   indexedDBModel.refreshDatabase(databaseId);  // Initial database refresh.
   await new Promise(waitDatabaseLoaded);       // Needed to initialize database view, otherwise
   idbDatabaseTreeElement.onselect(false);      // IDBDatabaseTreeElement.database would be undefined.
-  var databaseView = idbDatabaseTreeElement._view;
+  var databaseView = idbDatabaseTreeElement.view;
 
   // Create first objectstore
   await ApplicationTestRunner.createObjectStoreAsync(databaseName, objectStoreName1, indexName, keyPath);
@@ -94,11 +93,24 @@ import {ConsoleTestRunner} from 'console_test_runner';
   TestRunner.addResult('Added ' + objectStoreName1 + ' entry.');
   ApplicationTestRunner.dumpObjectStores();
 
+  let onUpdate = () => {};
+
+  TestRunner.addSniffer(
+      Resources.IDBDataView.prototype, 'updatedDataForTests', function() {
+        onUpdate(this);
+      }, true);
+
+  const NUM_EXPECTED_VIEWS = 4;  // Two object store views and two index views
   // Refresh database view
+  let updates = new Promise(resolve => {
+    const updated = new Set();
+    onUpdate = (view) => {
+      updated.add(view);
+      if (updated.size === NUM_EXPECTED_VIEWS) resolve();
+    };
+  });
   await waitRefreshDatabase();
-  await waitUpdateDataView();  // Wait for indexes and second object store to refresh.
-  await waitUpdateDataView();
-  await waitUpdateDataView();
+  await updates;
   TestRunner.addResult('Refreshed database view.');
   ApplicationTestRunner.dumpObjectStores();
 
@@ -108,10 +120,15 @@ import {ConsoleTestRunner} from 'console_test_runner';
   ApplicationTestRunner.dumpObjectStores();
 
   // Right-click refresh database view
+  updates = new Promise(resolve => {
+    const updated = new Set();
+    onUpdate = (view) => {
+      updated.add(view);
+      if (updated.size === NUM_EXPECTED_VIEWS) resolve();
+    };
+  });
   await waitRefreshDatabaseRightClick();
-  await waitUpdateDataView();  // Wait for indexes and second object store to refresh.
-  await waitUpdateDataView();
-  await waitUpdateDataView();
+  await updates;
   TestRunner.addResult('Right-click refreshed database.');
   ApplicationTestRunner.dumpObjectStores();
 

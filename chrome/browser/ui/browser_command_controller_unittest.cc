@@ -167,7 +167,6 @@ TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKeyIsApp) {
 TEST_F(BrowserWithTestWindowTest, IncognitoCommands) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
-  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_SHOW_SIGNIN));
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_PERFORMANCE));
 
   TestingProfile* testprofile = browser()->profile()->AsTestingProfile();
@@ -178,7 +177,6 @@ TEST_F(BrowserWithTestWindowTest, IncognitoCommands) {
           browser()->command_controller(), testprofile);
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_SIGNIN));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_PERFORMANCE));
 
   testprofile->SetGuestSession(false);
@@ -190,7 +188,6 @@ TEST_F(BrowserWithTestWindowTest, IncognitoCommands) {
           browser()->command_controller(), testprofile);
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_IMPORT_SETTINGS));
-  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_SHOW_SIGNIN));
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_PERFORMANCE));
 }
 
@@ -382,7 +379,6 @@ TEST_F(BrowserCommandControllerFullscreenTest,
     { IDC_VIEW_PASSWORDS,          true,     false,     false,     false    },
     { IDC_ABOUT,                   true,     false,     false,     false    },
     { IDC_SHOW_APP_MENU,           true,     false,     false,     false    },
-    { IDC_SEND_TAB_TO_SELF,        true,     false,     false,     false    },
     { IDC_FULLSCREEN,              true,     false,     true,      true     },
     { IDC_CLOSE_TAB,               true,     true,      true,      false    },
     { IDC_CLOSE_WINDOW,            true,     true,      true,      false    },
@@ -393,7 +389,6 @@ TEST_F(BrowserCommandControllerFullscreenTest,
     { IDC_SELECT_PREVIOUS_TAB,     true,     true,      true,      false    },
     { IDC_EXIT,                    true,     true,      true,      true     },
     { IDC_SHOW_AS_TAB,             false,    false,     false,     false    },
-    { IDC_SHOW_SIGNIN,             true,     false,      true,      false   },
     // clang-format on
   };
   const content::NativeWebKeyboardEvent key_event(
@@ -497,38 +492,6 @@ TEST_F(BrowserWithTestWindowTest, OptionsConsistency) {
       browser()->profile()->GetPrefs(),
       policy::IncognitoModeAvailability::kForced);
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_OPTIONS));
-}
-
-TEST_F(BrowserCommandControllerTest, IncognitoModeOnSigninAllowedPrefChange) {
-  // Set up a profile with an off the record profile.
-  std::unique_ptr<TestingProfile> profile1 = TestingProfile::Builder().Build();
-  Profile* profile2 = profile1->GetPrimaryOTRProfile(/*create_if_needed=*/true);
-
-  EXPECT_EQ(profile2->GetOriginalProfile(), profile1.get());
-
-  // Create a new browser based on the off the record profile.
-  Browser::CreateParams profile_params(
-      profile1->GetPrimaryOTRProfile(/*create_if_needed=*/true), true);
-  std::unique_ptr<Browser> browser2(
-      CreateBrowserWithTestWindowForParams(profile_params));
-
-  chrome::BrowserCommandController command_controller(browser2.get());
-  const CommandUpdater* command_updater = &command_controller;
-
-  // Check that the SYNC_SETUP command is updated on preference change.
-  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_SIGNIN));
-  profile1->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
-  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SIGNIN));
-}
-
-TEST_F(BrowserCommandControllerTest, OnSigninAllowedPrefChange) {
-  chrome::BrowserCommandController command_controller(browser());
-  const CommandUpdater* command_updater = &command_controller;
-
-  // Check that the SYNC_SETUP command is updated on preference change.
-  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_SIGNIN));
-  profile()->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
-  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_SIGNIN));
 }
 
 TEST_F(BrowserCommandControllerTest,

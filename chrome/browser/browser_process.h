@@ -28,7 +28,6 @@ class BuildState;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
 class GpuModeManager;
-class HidPolicyAllowedDevices;
 class IconManager;
 class MediaFileSystemRegistry;
 class NotificationPlatformBridge;
@@ -45,10 +44,6 @@ class WebRtcLogUploader;
 class HidSystemTrayIcon;
 class IntranetRedirectDetector;
 #endif
-
-namespace device {
-class GeolocationManager;
-}
 
 namespace embedder_support {
 class OriginTrialsSettingsStorage;
@@ -132,9 +127,6 @@ class BrowserProcess {
   // the current sequence.
   virtual void FlushLocalStateAndReply(base::OnceClosure reply) = 0;
 
-  // Provides the geolocation manager or nullptr if not available
-  virtual device::GeolocationManager* geolocation_manager() = 0;
-
   // Gets the manager for the various metrics-related services, constructing it
   // if necessary.
   virtual metrics_services_manager::MetricsServicesManager*
@@ -162,10 +154,6 @@ class BrowserProcess {
   // NotificationPlatformBridge + NotificationDisplayService
   virtual NotificationUIManager* notification_ui_manager() = 0;
   virtual NotificationPlatformBridge* notification_platform_bridge() = 0;
-
-  // Sets geolocation manager
-  virtual void SetGeolocationManager(
-      std::unique_ptr<device::GeolocationManager> geolocation_manager) = 0;
 
   // Replacement for IOThread. It owns and manages the
   // NetworkContext which will use the network service when the network service
@@ -276,10 +264,6 @@ class BrowserProcess {
   // Returns the object which keeps track of serial port permissions configured
   // through the policy engine.
   virtual SerialPolicyAllowedPorts* serial_policy_allowed_ports() = 0;
-
-  // Returns the object which keeps track of Human Interface Device (HID)
-  // permissions configured through the policy engine.
-  virtual HidPolicyAllowedDevices* hid_policy_allowed_devices() = 0;
 
   // Returns the object which maintains Human Interface Device (HID) system tray
   // icon.

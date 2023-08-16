@@ -7,6 +7,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/color_util.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
+#include "ash/style/typography.h"
 #include "ui/color/color_id.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -126,7 +127,7 @@ void StyleUtil::SetUpInkDropForButton(views::Button* button,
                                       bool highlight_on_hover,
                                       bool highlight_on_focus,
                                       SkColor background_color) {
-  button->SetInstallFocusRingOnFocus(true);
+  SetUpFocusRingForView(button);
   views::InkDropHost* const ink_drop = views::InkDrop::Get(button);
   ink_drop->SetMode(views::InkDropHost::InkDropMode::ON);
   button->SetHasInkDropActionOnClick(true);
@@ -183,9 +184,8 @@ StyleUtil::CreateAshStyleTooltipView() {
   tooltip_view->SetBackground(views::CreateThemedRoundedRectBackground(
       ui::kColorTooltipBackground, kTooltipRoundedCornerRadius));
   tooltip_view->SetBorder(views::CreateEmptyBorder(kTooltipBorderInset));
-  tooltip_view->SetFontList(gfx::FontList({"Google Sans, Roboto", "Noto Sans"},
-                                          gfx::Font::NORMAL, 12,
-                                          gfx::Font::Weight::NORMAL));
+  tooltip_view->SetFontList(TypographyProvider::Get()->ResolveTypographyToken(
+      TypographyToken::kCrosAnnotation1));
   tooltip_view->SetMinLineHeight(kTooltipMinLineHeight);
   return tooltip_view;
 }

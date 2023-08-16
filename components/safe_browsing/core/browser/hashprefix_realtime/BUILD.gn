@@ -54,6 +54,10 @@ static_library("hash_realtime_utils") {
 
   deps = [
     "//base:base",
+    "//build:branding_buildflags",
+    "//components/prefs",
+    "//components/safe_browsing/core/common",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/safe_browsing/core/common/proto:safebrowsingv5_alpha1_proto",
   ]
 }
@@ -64,7 +68,6 @@ source_set("unit_tests") {
     "hash_realtime_cache_unittest.cc",
     "hash_realtime_service_unittest.cc",
     "hash_realtime_utils_unittest.cc",
-    "ohttp_key_service_unittest.cc",
   ]
   deps = [
     ":hash_realtime_cache",
@@ -83,4 +86,7 @@ source_set("unit_tests") {
     "//services/network:test_support",
     "//testing/gtest",
   ]
+  if (!is_android) {
+    sources += [ "ohttp_key_service_unittest.cc" ]
+  }
 }

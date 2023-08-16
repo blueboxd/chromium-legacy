@@ -3143,49 +3143,6 @@
       ]
     },
     {
-      "id": 336,
-      "cr_bugs": [625785],
-      "description": "DXVA video decoder crashes on some AMD GPUs.",
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x1002",
-      "device_id": ["0x15d8", "0x15dd"],
-      "exceptions": [
-        {
-          "vendor_id": "0x1002",
-          "driver_version": {
-            "op": "between",
-            "value": "26.20.11030.2",
-            "value2": "26.20.11999.99999"
-          }
-        },
-        {
-          "driver_version": {
-            "op": "between",
-            "value": "26.20.12020.15",
-            "value2": "26.20.12999.99999"
-          }
-        },
-        {
-          "driver_version": {
-            "op": "between",
-            "value": "26.20.13001.27002",
-            "value2": "26.20.13999.99999"
-          }
-        },
-        {
-          "driver_version": {
-            "op": ">=",
-            "value": "26.20.14001.7001"
-          }
-        }
-      ],
-      "features": [
-        "disable_dxva_video_decoder"
-      ]
-    },
-    {
       "id": 337,
       "description": "Disable hardware MFT H.264 encoder on older NVIDIA drivers",
       "cr_bugs": [1058583, 1263058],
@@ -3354,7 +3311,8 @@
         "dg1",
         "alderlake",
         "alchemist",
-        "raptorlake"
+        "raptorlake",
+        "meteorlake"
       ],
       "features": [
         "force_rgb10a2_overlay_support_flags"
@@ -3514,7 +3472,8 @@
         "dg1",
         "alderlake",
         "alchemist",
-        "raptorlake"
+        "raptorlake",
+        "meteorlake"
       ],
       "features": [
         "supports_two_yuv_hardware_overlays"
@@ -3638,18 +3597,6 @@
       "gl_vendor": "freedreno",
       "features": [
         "disable_accelerated_vp9_profile2_decode"
-      ]
-    },
-    {
-      "id": 374,
-      "cr_bugs": [1087422],
-      "description": "VP9 resilient mode causes corruptions with AMD VCN HW decoders, using DXVA",
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x1002",
-      "features": [
-        "disallow_vp9_resilient_dxva_decoding"
       ]
     },
     {
@@ -3788,7 +3735,7 @@
     },
     {
       "id": 387,
-      "description": "DXVAVideoDecodeAccelerator doesn't support a set of legacy AMD Gpus",
+      "description": "Windows hardware decoding doesn't support a set of legacy AMD GPUs",
       "cr_bugs": [822644, 1187900],
       "os": {
         "type": "win"
@@ -3839,7 +3786,7 @@
     },
     {
       "id": 388,
-      "description": "DXVAVideoDecodeAccelerator doesn't support a set of legacy Intel Gpus",
+      "description": "Windows hardware decoding doesn't support a set of legacy Intel GPUs",
       "cr_bugs": [822644, 1187900],
       "os": {
         "type": "win"
@@ -4216,6 +4163,22 @@
       "features": [
         "disable_accelerated_vp9_encode"
       ]
+    },
+    {
+      "id": 413,
+      "cr_bugs": [1447972],
+      "description": "Force to use the triple buffer video swap chain of direct composition",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "intel_gpu_series": [
+        "meteorlake"
+      ],
+      "features": [
+        "force_dcomp_triple_buffer_video_swap_chain"
+      ]
     }
+
   ]
 }

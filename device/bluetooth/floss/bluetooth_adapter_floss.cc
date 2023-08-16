@@ -835,6 +835,35 @@ void BluetoothAdapterFloss::AdapterClearedDevice(
   BLUETOOTH_LOG(EVENT) << __func__ << device_cleared;
 }
 
+void BluetoothAdapterFloss::AdapterDevicePropertyChanged(
+    FlossAdapterClient::BtPropertyType prop_type,
+    const FlossDeviceId& device) {
+  DCHECK(FlossDBusManager::Get());
+  DCHECK(IsPresent());
+
+  BLUETOOTH_LOG(EVENT) << __func__ << device;
+
+  BluetoothDeviceFloss* device_ptr =
+      static_cast<BluetoothDeviceFloss*>(GetDevice(device.address));
+
+  if (!device_ptr) {
+    return;
+  }
+
+  switch (prop_type) {
+    case FlossAdapterClient::BtPropertyType::kBdName:
+      if (device.name.size() != 0) {
+        device_ptr->SetName(device.name);
+        device_ptr->InitializeDeviceProperties(
+            BluetoothDeviceFloss::PropertiesState::kTriggeredByScan,
+            base::BindOnce(&BluetoothAdapterFloss::NotifyDeviceChanged,
+                           weak_ptr_factory_.GetWeakPtr(), device_ptr));
+      }
+      break;
+    default:;  // Do nothing for other property types for now
+  }
+}
+
 void BluetoothAdapterFloss::AdapterSspRequest(
     const FlossDeviceId& remote_device,
     uint32_t cod,
@@ -1471,6 +1500,9 @@ void BluetoothAdapterFloss::ScannerRegistered(device::BluetoothUUID uuid,
 void BluetoothAdapterFloss::ScanResultReceived(ScanResult scan_result) {
   BLUETOOTH_LOG(DEBUG) << __func__ << ": " << scan_result.address;
 
+  bool already_found = base::Contains(
+      devices_, device::CanonicalizeBluetoothAddress(scan_result.address));
+
   BluetoothDeviceFloss* device_ptr =
       CreateOrGetDeviceForUpdate(scan_result.address, scan_result.name);
 
@@ -1490,9 +1522,13 @@ void BluetoothAdapterFloss::ScanResultReceived(ScanResult scan_result) {
     observer.DeviceAdvertisementReceived(this, device_ptr, scan_result.rssi,
                                          scan_result.adv_data);
 
-  // Update properties and emit a |DeviceFound| if newly found or
-  // |DeviceChanged|.
+  // Update properties and emit a |DeviceFound| if newly found.
+  // Also explicitly call |DeviceChanged| if already found since
+  // |UpdateDeviceProperties| doesn't always emit |DeviceChanged|.
   UpdateDeviceProperties(false, device_ptr->AsFlossDeviceId());
+  if (already_found) {
+    NotifyDeviceChanged(device_ptr);
+  }
 }
 
 void BluetoothAdapterFloss::AdvertisementFound(uint8_t scanner_id,

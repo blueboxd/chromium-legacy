@@ -14,7 +14,7 @@ import {AcceleratorLookupManager} from './accelerator_lookup_manager.js';
 import {InputKeyElement, KeyInputState} from './input_key.js';
 import {mojoString16ToString} from './mojo_utils.js';
 import {AcceleratorSource, TextAcceleratorInfo, TextAcceleratorPart, TextAcceleratorPartType} from './shortcut_types.js';
-import {isCategoryLocked, isCustomizationDisabled, isTextAcceleratorInfo} from './shortcut_utils.js';
+import {isCustomizationDisabled, isTextAcceleratorInfo} from './shortcut_utils.js';
 import {getTemplate} from './text_accelerator.html.js';
 
 /**
@@ -93,7 +93,8 @@ export class TextAcceleratorElement extends PolymerElement {
   private parseAndDisplayTextParts(): void {
     const container =
         this.shadowRoot!.querySelector('.parts-container') as HTMLDivElement;
-    container.innerHTML = '';
+    assert(window.trustedTypes);
+    container.innerHTML = window.trustedTypes.emptyHTML;
     const textParts: Node[] = [];
     for (const part of this.parts) {
       const text = mojoString16ToString(part.text);
@@ -145,9 +146,11 @@ export class TextAcceleratorElement extends PolymerElement {
   private shouldShowLockIcon(): boolean {
     // Show lock icon in each row if customization is enabled and its
     // category is not locked.
-    return !isCustomizationDisabled() &&
-        !isCategoryLocked(this.lookupManager.getAcceleratorCategory(
-            this.source, this.action));
+    if (isCustomizationDisabled()) {
+      return false;
+    }
+    return !this.lookupManager.isCategoryLocked(
+        this.lookupManager.getAcceleratorCategory(this.source, this.action));
   }
 
   private areAllPartsTextParts(): boolean {

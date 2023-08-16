@@ -9,11 +9,12 @@
 #include "base/debug/crash_logging.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/types/optional_util.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
-#include "net/extras/shared_dictionary/shared_dictionary_storage_isolation_key.h"
+#include "net/extras/shared_dictionary/shared_dictionary_isolation_key.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "services/network/cors/cors_url_loader.h"
@@ -215,10 +216,10 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
     DCHECK_EQ(mojom::kBrowserProcessId, process_id_);
   }
 
-  if (context_->GetSharedDictionaryManager()) {
-    absl::optional<net::SharedDictionaryStorageIsolationKey> isolation_key =
-        net::SharedDictionaryStorageIsolationKey::MaybeCreate(
-            params->isolation_info);
+  if (context_->GetSharedDictionaryManager() && client_security_state_ &&
+      client_security_state_->is_web_secure_context) {
+    absl::optional<net::SharedDictionaryIsolationKey> isolation_key =
+        net::SharedDictionaryIsolationKey::MaybeCreate(params->isolation_info);
     if (isolation_key) {
       shared_dictionary_storage_ =
           context_->GetSharedDictionaryManager()->GetStorage(*isolation_key);
@@ -284,6 +285,14 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     const ResourceRequest& resource_request,
     mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+#if BUILDFLAG(IS_ANDROID)
+  // Use pseudo flag to investigate histogram issue.
+  // See https://crbug.com/1439721.
+  const bool observed = true;
+  base::UmaHistogramBoolean("NetworkService.CorsURLLoaderFactoryStart",
+                            observed);
+#endif
+
   debug::ScopedResourceRequestCrashKeys request_crash_keys(resource_request);
   SCOPED_CRASH_KEY_NUMBER("net", "traffic_annotation_hash",
                           traffic_annotation.unique_id_hash_code);

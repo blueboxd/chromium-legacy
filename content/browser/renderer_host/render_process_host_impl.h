@@ -412,6 +412,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static bool MayReuseAndIsSuitable(RenderProcessHost* host,
                                     SiteInstanceImpl* site_instance);
 
+  // Returns true if RenderProcessHost shutdown should be delayed by a few
+  // seconds to allow the subframe's process to be potentially reused. This aims
+  // to reduce process churn in navigations where the source and destination
+  // share subframes. Only returns true on platforms where process startup is
+  // expensive.
+  static bool ShouldDelayProcessShutdown();
+
   // Returns an existing RenderProcessHost for |site_info| in
   // |isolation_context|, if one exists.  Otherwise a new RenderProcessHost
   // should be created and registered using RegisterProcessHostForSite(). This
@@ -469,6 +476,34 @@ class CONTENT_EXPORT RenderProcessHostImpl
     kRefusedBySiteInstance = 5,
     kRefusedForPdfContent = 6,
     kMaxValue = kRefusedForPdfContent
+  };
+
+  // Please keep in sync with "RenderProcessHostDelayShutdownReason" in
+  // tools/metrics/histograms/enums.xml. These values should not be renumbered.
+  enum class DelayShutdownReason {
+    kNoDelay = 0,
+    // There are active or pending views other than the ones shutting down.
+    kOtherActiveOrPendingViews = 1,
+    // Single process mode never shuts down the renderer.
+    kSingleProcess = 2,
+    // Render process hasn't started or is probably crashed.
+    kNoProcess = 3,
+    // There is unload handler.
+    kUnload = 4,
+    // There is pending fetch keepalive request.
+    kFetchKeepAlive = 5,
+    // There is worker.
+    kWorker = 6,
+    // The process is pending to reuse.
+    kPendingReuse = 7,
+    // The process is requested to delay shutdown.
+    kShutdownDelay = 8,
+    // Has listeners.
+    kListener = 9,
+    // Delays until all observer callbacks completed.
+    kObserver = 10,
+
+    kMaxValue = kObserver,
   };
 
   static scoped_refptr<base::SingleThreadTaskRunner>
@@ -765,6 +800,21 @@ class CONTENT_EXPORT RenderProcessHostImpl
   }
 #endif
 
+#if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
+  using StableVideoDecoderFactoryCreationCB = base::RepeatingCallback<void(
+      mojo::PendingReceiver<media::stable::mojom::StableVideoDecoderFactory>)>;
+  static void SetStableVideoDecoderFactoryCreationCBForTesting(
+      StableVideoDecoderFactoryCreationCB cb);
+
+  enum class StableVideoDecoderEvent {
+    kFactoryResetTimerStopped,
+    kAllDecodersDisconnected,
+  };
+  using StableVideoDecoderEventCB =
+      base::RepeatingCallback<void(StableVideoDecoderEvent)>;
+  static void SetStableVideoDecoderEventCBForTesting(
+      StableVideoDecoderEventCB cb);
+#endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
   std::unique_ptr<IPC::ChannelProxy> channel_;
@@ -1040,6 +1090,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
 #if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
   void OnStableVideoDecoderDisconnected();
+
+  void ResetStableVideoDecoderFactory();
 #endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 
   mojo::OutgoingInvitation mojo_invitation_;
@@ -1209,6 +1261,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // way, we know when the remote StableVideoDecoder dies.
   mojo::ReceiverSet<media::stable::mojom::StableVideoDecoderTracker>
       stable_video_decoder_trackers_;
+
+  // |stable_video_decoder_factory_reset_timer_| allows us to delay the reset()
+  // of |stable_video_decoder_factory_remote_|: after all StableVideoDecoders
+  // have disconnected, we wait for the timer to trigger, and if no request
+  // comes in to create a StableVideoDecoder before that, we reset the
+  // |stable_video_decoder_factory_remote_| which should cause the destruction
+  // of the remote video decoder utility process.
+  base::OneShotTimer stable_video_decoder_factory_reset_timer_;
 #endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 
 #if BUILDFLAG(IS_FUCHSIA)

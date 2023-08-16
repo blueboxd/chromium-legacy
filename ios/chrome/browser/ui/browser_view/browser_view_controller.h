@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_focus_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_supporting.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_height_delegate.h"
 #import "ios/chrome/browser/web/web_state_container_view_provider.h"
 
 @protocol ApplicationCommands;
@@ -27,7 +28,6 @@
 @protocol BrowserCoordinatorCommands;
 @class BubblePresenter;
 @protocol CRWResponderInputView;
-@class NonModalDefaultBrowserPromoSchedulerSceneAgent;
 @protocol DefaultPromoNonModalPresentationDelegate;
 @protocol FindInPageCommands;
 class FullscreenController;
@@ -39,15 +39,14 @@ class FullscreenController;
 class PagePlaceholderBrowserAgent;
 @protocol PopupMenuCommands;
 @class PopupMenuCoordinator;
-@class PrimaryToolbarCoordinator;
 @class SafeAreaProvider;
-@class SecondaryToolbarCoordinator;
-@class SideSwipeController;
+@class SideSwipeMediator;
 @class TabStripCoordinator;
 @class TabStripLegacyCoordinator;
 class TabUsageRecorderBrowserAgent;
 @protocol TextZoomCommands;
 @class ToolbarAccessoryPresenter;
+@class ToolbarCoordinator;
 @protocol IncognitoReauthCommands;
 @class LayoutGuideCenter;
 @protocol LoadQueryCommands;
@@ -63,11 +62,10 @@ typedef struct {
   PopupMenuCoordinator* popupMenuCoordinator;
   NewTabPageCoordinator* ntpCoordinator;
   LensCoordinator* lensCoordinator;
-  PrimaryToolbarCoordinator* primaryToolbarCoordinator;
-  SecondaryToolbarCoordinator* secondaryToolbarCoordinator;
+  ToolbarCoordinator* toolbarCoordinator;
   TabStripCoordinator* tabStripCoordinator;
   TabStripLegacyCoordinator* legacyTabStripCoordinator;
-  SideSwipeController* sideSwipeController;
+  SideSwipeMediator* sideSwipeMediator;
   BookmarksCoordinator* bookmarksCoordinator;
   FullscreenController* fullscreenController;
   id<TextZoomCommands> textZoomHandler;
@@ -99,6 +97,7 @@ typedef struct {
                         OmniboxFocusDelegate,
                         OmniboxPopupPresenterDelegate,
                         ThumbStripSupporting,
+                        ToolbarHeightDelegate,
                         WebStateContainerViewProvider,
                         BrowserCommands>
 
@@ -133,11 +132,6 @@ typedef struct {
 // The container used for infobar modal overlays.
 @property(nonatomic, strong)
     UIViewController* infobarModalOverlayContainerViewController;
-
-// Scheduler for the non-modal default browser promo.
-// TODO(crbug.com/1204120): The BVC should not need this model-level object.
-@property(nonatomic, weak)
-    NonModalDefaultBrowserPromoSchedulerSceneAgent* nonModalPromoScheduler;
 
 // Presentation delegate for the non-modal default browser promo.
 @property(nonatomic, weak) id<DefaultPromoNonModalPresentationDelegate>

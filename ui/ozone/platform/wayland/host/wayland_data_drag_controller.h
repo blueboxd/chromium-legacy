@@ -7,6 +7,7 @@
 
 #include <list>
 #include <memory>
+#include <ostream>
 #include <string>
 
 #include "base/gtest_prod_util.h"
@@ -113,6 +114,8 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
   // Returns false iff the data is for a window dragging session.
   bool ShouldReleaseCaptureForDrag(ui::OSExchangeData* data) const;
 
+  void DumpState(std::ostream& out) const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest, ReceiveDrag);
   FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest, StartDrag);
@@ -217,7 +220,7 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
   raw_ptr<WaylandWindow> origin_window_ = nullptr;
 
   // Current window under pointer.
-  raw_ptr<WaylandWindow> window_ = nullptr;
+  raw_ptr<WaylandWindow, DanglingUntriaged> window_ = nullptr;
 
   // The most recent location received while dragging the data.
   gfx::PointF last_drag_location_;

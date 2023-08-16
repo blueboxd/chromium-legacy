@@ -60,6 +60,7 @@ extern const char kNTPContentSuggestionsEnabled[];
 extern const char kNTPContentSuggestionsForSupervisedUserEnabled[];
 extern const char kNTPFollowingFeedSortType[];
 extern const char kDefaultFollowingFeedSortTypeChanged[];
+extern const char kOSLockdownModeEnabled[];
 extern const char kOverflowMenuDestinationUsageHistory[];
 extern const char kOverflowMenuNewDestinations[];
 extern const char kOverflowMenuDestinationsOrder[];
@@ -91,7 +92,10 @@ extern const char kNewTabPageLocationOverride[];
 extern const char kHttpsOnlyModeEnabled[];
 extern const char kMixedContentAutoupgradeEnabled[];
 
-extern const char kAutofillBrandingIconAnimationRemainingCountPrefName[];
+extern const char kAutofillBrandingIconAnimationRemainingCount[];
+extern const char kAutofillBrandingIconDisplayCount[];
+extern const char kAutofillBrandingKeyboardAccessoriesTapped[];
+
 extern const char kPriceNotificationsHasBeenShown[];
 
 }  // namespace prefs

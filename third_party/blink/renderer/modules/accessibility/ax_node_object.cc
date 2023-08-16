@@ -1934,15 +1934,6 @@ AXRestriction AXNodeObject::Restriction() const {
   if (IsDisabled())
     return kRestrictionDisabled;
 
-  // Check aria-readonly if supported by current role.
-  bool is_read_only;
-  if (SupportsARIAReadOnly() &&
-      HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kReadOnly,
-                                    is_read_only)) {
-    // ARIA overrides other readonly state markup.
-    return is_read_only ? kRestrictionReadOnly : kRestrictionNone;
-  }
-
   // Only editable fields can be marked @readonly (unlike @aria-readonly).
   auto* text_area_element = DynamicTo<HTMLTextAreaElement>(*elem);
   if (text_area_element && text_area_element->IsReadOnly())
@@ -1950,6 +1941,15 @@ AXRestriction AXNodeObject::Restriction() const {
   if (const auto* input = DynamicTo<HTMLInputElement>(*elem)) {
     if (input->IsTextField() && input->IsReadOnly())
       return kRestrictionReadOnly;
+  }
+
+  // Check aria-readonly if supported by current role.
+  bool is_read_only;
+  if (SupportsARIAReadOnly() &&
+      HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kReadOnly,
+                                    is_read_only)) {
+    // ARIA overrides other readonly state markup.
+    return is_read_only ? kRestrictionReadOnly : kRestrictionNone;
   }
 
   // If a grid cell does not have it's own ARIA input restriction,
@@ -4175,32 +4175,10 @@ void AXNodeObject::AddImageMapChildren() {
 
   // Is this the primary image for this map?
   if (primary_image_element != curr_image_element) {
-    // No, the current image (for |this|) is not the primary image.
-    // Therefore, do not add area children to it.
-    AXObject* ax_primary_image =
-        AXObjectCache().GetOrCreate(primary_image_element);
-    if (ax_primary_image &&
-        ax_primary_image->ChildCountIncludingIgnored() == 0 &&
-        NodeTraversal::FirstChild(*map)) {
-      // The primary image still needs to add the area children, and there's at
-      // least one to add.
-      AXObjectCache().ChildrenChanged(primary_image_element);
-    }
     return;
   }
 
   // Yes, this is the primary image.
-
-  // If the children were part of a different parent, notify that parent that
-  // its children have changed.
-  if (AXObject* ax_previous_parent = AXObjectCache().GetAXImageForMap(*map)) {
-    if (ax_previous_parent != this) {
-      DCHECK(ax_previous_parent->GetNode());
-      AXObjectCache().ChildrenChangedWithCleanLayout(
-          ax_previous_parent->GetNode(), ax_previous_parent);
-      ax_previous_parent->ClearChildren();
-    }
-  }
 
   // Add the children to |this|.
   Node* child = LayoutTreeBuilderTraversal::FirstChild(*map);
@@ -4743,9 +4721,6 @@ bool AXNodeObject::OnNativeBlurAction() {
     return false;
   }
 
-  document->UpdateStyleAndLayoutTreeForNode(
-      node, DocumentUpdateReason::kAccessibility);
-
   // An AXObject's node will always be of type `Element`, `Document` or
   // `Text`. If the object we're currently on is associated with the currently
   // focused element or the document object, we want to clear the focus.
@@ -4773,9 +4748,6 @@ bool AXNodeObject::OnNativeFocusAction() {
   Node* node = GetNode();
   if (!document || !node)
     return false;
-
-  document->UpdateStyleAndLayoutTreeForNode(
-      node, DocumentUpdateReason::kAccessibility);
 
   if (!CanSetFocusAttribute())
     return false;

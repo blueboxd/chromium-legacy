@@ -70,7 +70,6 @@
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/hid/hid_policy_allowed_devices.h"
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/hid/hid_pinned_notification.h"
 #else
@@ -111,7 +110,7 @@ void TestingBrowserProcess::CreateInstance() {
       std::make_unique<device::FakeGeolocationManager>();
   fake_geolocation_manager->SetSystemPermission(
       device::LocationSystemPermissionStatus::kAllowed);
-  process->SetGeolocationManager(std::move(fake_geolocation_manager));
+  device::GeolocationManager::SetInstance(std::move(fake_geolocation_manager));
 #endif
 }
 
@@ -210,10 +209,6 @@ TestingBrowserProcess::GetMetricsServicesManager() {
 
 metrics::MetricsService* TestingBrowserProcess::metrics_service() {
   return metrics_service_;
-}
-
-device::GeolocationManager* TestingBrowserProcess::geolocation_manager() {
-  return geolocation_manager_.get();
 }
 
 embedder_support::OriginTrialsSettingsStorage*
@@ -335,11 +330,6 @@ void TestingBrowserProcess::set_background_mode_manager_for_test(
   NOTREACHED();
 }
 #endif
-
-void TestingBrowserProcess::SetGeolocationManager(
-    std::unique_ptr<device::GeolocationManager> geolocation_manager) {
-  geolocation_manager_ = std::move(geolocation_manager);
-}
 
 StatusTray* TestingBrowserProcess::status_tray() {
   return status_tray_.get();
@@ -513,14 +503,6 @@ SerialPolicyAllowedPorts* TestingBrowserProcess::serial_policy_allowed_ports() {
   return serial_policy_allowed_ports_.get();
 }
 
-HidPolicyAllowedDevices* TestingBrowserProcess::hid_policy_allowed_devices() {
-  if (!hid_policy_allowed_devices_) {
-    hid_policy_allowed_devices_ =
-        std::make_unique<HidPolicyAllowedDevices>(local_state());
-  }
-  return hid_policy_allowed_devices_.get();
-}
-
 HidSystemTrayIcon* TestingBrowserProcess::hid_system_tray_icon() {
   return hid_system_tray_icon_.get();
 }
@@ -572,7 +554,6 @@ void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
 #endif
 #if !BUILDFLAG(IS_ANDROID)
     serial_policy_allowed_ports_.reset();
-    hid_policy_allowed_devices_.reset();
 #endif
     ShutdownBrowserPolicyConnector();
     created_browser_policy_connector_ = false;

@@ -139,7 +139,7 @@ class BluetoothSocketFlossTest : public testing::Test {
     run_loop.Run();
   }
 
-  raw_ptr<FakeFlossSocketManager> GetFakeFlossSocketManager() {
+  FakeFlossSocketManager* GetFakeFlossSocketManager() {
     return static_cast<FakeFlossSocketManager*>(
         FlossDBusManager::Get()->GetSocketManager());
   }
@@ -275,6 +275,33 @@ TEST_F(BluetoothSocketFlossTest, Listen) {
   DisconnectSocket(client_socket.get());
   client_socket = nullptr;
   ClearCounters();
+
+  // Accept a connection when there's nothing there and then receives connection
+  // failed.
+  {
+    base::RunLoop run_loop;
+    server_socket->Accept(
+        base::BindOnce(&BluetoothSocketFlossTest::AcceptSuccessCallback,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       run_loop.QuitWhenIdleClosure()),
+        base::BindOnce(&BluetoothSocketFlossTest::ErrorCallback,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       run_loop.QuitWhenIdleClosure()));
+    run_loop.RunUntilIdle();
+
+    // No sockets found to accept.
+    EXPECT_EQ(0, success_callback_count_);
+    EXPECT_EQ(0, error_callback_count_);
+
+    GetFakeFlossSocketManager()->SendSocketReady(
+        id, device::BluetoothUUID(FakeFlossSocketManager::kRfcommUuid),
+        FlossDBusClient::BtifStatus::kFail);
+
+    EXPECT_EQ(1, error_callback_count_);
+    EXPECT_EQ(0, success_callback_count_);
+    EXPECT_TRUE(last_socket_.get() == nullptr);
+    ClearCounters();
+  }
 
   // Accept a connection when there's nothing there and then send connection.
   {

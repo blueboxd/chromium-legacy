@@ -134,6 +134,10 @@
     Finalizing...
   </message>
 
+  <message name="IDS_GETTING_DEVICE_READY" desc="Message that the system is getting the device ready" translateable="false">
+    Getting the device ready...
+  </message>
+
   <!-- Cellular Setup UI Strings -->
   <message name="IDS_CELLULAR_SETUP_BACK_LABEL" desc="Label for button to go to previous screen during cellular setup">
     Back
@@ -4511,6 +4515,14 @@
     There isn't enough space on this device to complete this update. Clear up <ph name="NECESSARY_SPACE">$1<ex>10 MB</ex></ph> on your device and try again.
   </message>
 
+  <!-- Lacros data backward migration screen. -->
+  <message name="IDS_LACROS_DATA_BACKWARD_MIGRATION_SCREEN_ERROR_SUBTITLE" desc="Shown if Lacros data backward migration fails.">
+    If you click “Cancel”, it may affect your browser data and you may need to perform a factory reset.
+  </message>
+  <message name="IDS_LACROS_DATA_BACKWARD_MIGRATION_SCREEN_ERROR_RETRY_BUTTON" desc="Shown if Lacros data backward migration fails.">
+    Retry
+  </message>
+
   <!-- Print Job Notification -->
   <message name="IDS_PRINT_JOB_NOTIFICATION_DISPLAY_SOURCE" desc="The context title of printing notification.">
     Print
@@ -4857,7 +4869,7 @@
     Upgrade Linux
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BODY" desc="Description for the Crostini upgrader, a dialog for upgrading Linux.">
-    For the best performance, upgrade to the latest version. Backing up your files is recommended in case the upgrade can’t be completed. Once the upgrade begins, Linux will shut down. Save open files before continuing. <ph name="LINK_START">&lt;a href="$1" target="_top"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+    For the best performance, upgrade to the latest version. Backing up your files is recommended in case the upgrade can’t be completed. Once the upgrade begins, Linux will shut down. Save open files before continuing. <ph name="LINK_START">&lt;a href="$1" target="_blank"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_CROSTINI_UPGRADER_UPGRADE_BUTTON" desc="Label for the button in the Crostini upgrader dialog to begin upgrading Linux.">
     Upgrade
@@ -6066,121 +6078,114 @@ Permissions you've already given to websites and apps may apply to this account.
   <message name="IDS_BOREALIS_CREDITS_PLACEHOLDER" desc="Shown to users who navigate to about://borealis-credits when the real credits file can't be shown (e.g. because borealis is not running)" translateable="false">
     Steam is either not installed or not running. Please run Steam to view credits.
   </message>
-  <message name="IDS_BOREALIS_DISALLOWED_TITLE" desc="Title of the dialog shown to users who are unable to install Steam on Chromebook (Steam is a video game distribution service)">
-    Steam cannot be installed
+  <message name="IDS_BOREALIS_DISALLOWED_TITLE" desc="Title of the dialog shown to users who are unable to install 'Steam for Chromebook' (Steam is a video game distribution service)">
+    Can't install Steam
   </message>
-  <message name="IDS_BOREALIS_DISALLOWED_DISABLED" desc="Message shown to the user when Steam on Chromebook is disabled on their device">
-    This device does not currently support Steam on Chromebook
+  <message name="IDS_BOREALIS_DISALLOWED_HARDWARE" desc="Message shown to the user when 'Steam for Chromebook' is disabled on their device">
+    Steam for Chromebook (beta) is not available on your Chromebook.
   </message>
-  <message name="IDS_BOREALIS_DISALLOWED_FAILED" desc="Message shown to the user when Steam on Chromebook failed to determine whether it should be allowed">
-    Please restart your device and try again
+  <message name="IDS_BOREALIS_DISALLOWED_FAILED" desc="Message shown to the user when 'Steam for Chromebook' failed to determine whether it should be allowed">
+    Restart your Chromebook and try again
   </message>
-  <message name="IDS_BOREALIS_DISALLOWED_IRREGULAR" desc="Message shown to users when they try to install Steam on Chromebook on an irregular (incognito, kiosk, etc) profile">
-    Please sign in to a user account and try again
+  <message name="IDS_BOREALIS_DISALLOWED_IRREGULAR" desc="Message shown to users when they try to install 'Steam for Chromebook' on an irregular (incognito, kiosk, etc) profile">
+    You need to be signed-in to a Google Account to use Steam for Chromebook (Beta). Sign in and try again.
   </message>
-  <message name="IDS_BOREALIS_DISALLOWED_PRIMARY" desc="Message shown to users when they try to install Steam on Chromebook on a secondary profile">
-    Please install using your primary profile
+  <message name="IDS_BOREALIS_DISALLOWED_PRIMARY" desc="Message shown to users when they try to install 'Steam for Chromebook' on a secondary profile">
+    Steam for Chromebook (Beta) is only available for the account that signed in first on this Chromebook.
   </message>
-  <message name="IDS_BOREALIS_DISALLOWED_CHILD" desc="Message shown to the users when they try to install Steam on Chromebook on a child account">
-    Accounts managed by Family Link are not yet supported
+  <message name="IDS_BOREALIS_DISALLOWED_CHILD" desc="Message shown to the users when they try to install 'Steam for Chromebook' on a child account">
+    Steam for Chromebook (Beta) is not available for child Google Accounts
   </message>
-  <message name="IDS_BOREALIS_DISALLOWED_ADMIN" desc="Message shown to the user when Steam on Chromebook is blocked by their admin">
-    Please contact your administrator
+  <message name="IDS_BOREALIS_DISALLOWED_ADMIN" desc="Message shown to the user when 'Steam for Chromebook' is blocked by their admin. The placeholders are the names of policy settings.">
+    Steam for Chromebook (Beta) is blocked by your administrator. Your administrator needs to turn on these policies:
   </message>
-  <message name="IDS_BOREALIS_DISALLOWED_CHANNEL" desc="Message shown to the user when they try to install Steam on Chromebook on stable channel before it's available">
-    Steam is coming to Chromebook soon. Check for updates to see if Steam is available.
+  <message name="IDS_BOREALIS_DISALLOWED_FLAG" desc="Message shown to the user when 'Steam for Chromebook' doesn't have the correct chrome://flags setting enabled">
+    You need to turn on the “Borealis Enabled” flag
   </message>
-  <message name="IDS_BOREALIS_DISALLOWED_FLAG" desc="Message shown to the user when Steam on Chromebook doesn't have the correct chrome://flags setting enabled">
-    #borealis-enabled must be enabled in chrome://flags
-  </message>
-  <message name="IDS_BOREALIS_DISALLOWED_BUTTON" desc="Button label used to dismiss the Steam on Chromebook disallowed dialog">
-    Got it
+  <message name="IDS_BOREALIS_DISALLOWED_FLAG_BUTTON" desc="Button label used to bring up the user's chrome://flags settings. Shown when users try to install borealis but are unable to due to their flags.">
+    ChromeOS flags
   </message>
   <message name="IDS_BOREALIS_INSTALLER_APP_NAME" desc="Name of a utility which is used to install the Steam application (Steam is a video game distribution service)">
-    Steam Installer
+    Steam installer
   </message>
-  <message name="IDS_BOREALIS_INSTALLER_CONFIRMATION_TITLE" desc="Title for installer for Steam (noun, name of app).">
-    Welcome to Steam on Chromebook
+  <message name="IDS_BOREALIS_INSTALLER_CONFIRMATION_TITLE" desc="Title of the installer for 'Steam for Chromebook'. 'Steam for Chromebook' is the name of the piece of software used to run 'Steam' (a software distribution platform) on Chromebooks.">
+    Welcome to Steam for Chromebook
   </message>
-  <message name="IDS_BOREALIS_INSTALLER_CONFIRMATION_MESSAGE" desc="Body for installer for Steam (noun, name of app).">
-    Let’s get started
+  <message name="IDS_BOREALIS_INSTALLER_CONFIRMATION_MESSAGE" desc="Body text shown in the installer for 'Steam for Chromebook'.">
+    This is a beta program. You can now use Steam to play some games on your Chromebook.
   </message>
-  <message name="IDS_BOREALIS_INSTALLER_INSTALL_BUTTON" desc="Button on installer to install Steam (noun, name of app).">
+  <message name="IDS_BOREALIS_INSTALLER_INSTALL_BUTTON" desc="Button on installer to install 'Steam for Chromebook'.">
     Install
   </message>
-  <message name="IDS_BOREALIS_INSTALLER_ONGOING_TITLE" desc="Title for installer while Steam (noun, name of app) is installing.">
-    Setting up Steam on Chromebook
+  <message name="IDS_BOREALIS_INSTALLER_ONGOING_TITLE" desc="Title for installer while 'Steam for Chromebook' is installing.">
+    Setting up Steam for Chromebook
   </message>
-  <message name="IDS_BOREALIS_INSTALLER_ONGOING_MESSAGE" desc="Body for Steam (noun, name of app) installer while Steam is installing.">
+  <message name="IDS_BOREALIS_INSTALLER_ONGOING_MESSAGE" desc="Body text shown in the installer while 'Steam for Chromebook' is installing.">
     This may take a few minutes
   </message>
-  <message name="IDS_BOREALIS_INSTALLER_ONGOING_PERCENTAGE" desc="Message containing the progress percentage of the ongoing Steam (noun, name of app) installation.">
+  <message name="IDS_BOREALIS_INSTALLER_ONGOING_PERCENTAGE" desc="Message containing the progress percentage of the ongoing 'Steam for Chromebook' installation.">
     <ph name="PERCENTAGE_COMPLETE">$1<ex>42</ex></ph>% completed
   </message>
-  <message name="IDS_BOREALIS_INSTALLER_ONGOING_INACTIVE" desc="Message shown while the steam installer is initializing.">
-    Starting installation
+  <message name="IDS_BOREALIS_INSTALLER_ONGOING_INITIAL" desc="Message shown while the 'Steam for Chromebook' installer is calculating how much longer it will need to complete.">
+    estimating time
   </message>
-  <message name="IDS_BOREALIS_INSTALLER_FINISHED_TITLE" desc="Title for installer when installation for Steam (noun, name of app) completes succesfully.">
-    You’re all set!
+  <message name="IDS_BOREALIS_INSTALLER_FINISHED_TITLE" desc="Title for installer when installation for 'Steam for Chromebook' completes succesfully.">
+    Let’s get gaming
   </message>
-  <message name="IDS_BOREALIS_INSTALLER_FINISHED_MESSAGE" desc="Title for Steam (noun, name of app) installer when installation suceeded.">
-    Enjoy gaming on your Chromebook
+  <message name="IDS_BOREALIS_INSTALLER_FINISHED_MESSAGE" desc="Body text shown in the installer when 'Steam for Chromebook' installation suceeded.">
+    You can now use Steam for Chromebook (Beta)
   </message>
-  <message name="IDS_BOREALIS_INSTALLER_LAUNCH_BUTTON" desc="Button in Steam (noun, name of app) installer to launch Steam.">
-    Launch Steam
+  <message name="IDS_BOREALIS_INSTALLER_LAUNCH_BUTTON" desc="Button in the installer for 'Steam for Chromebook' to launch Steam.">
+    Open Steam
   </message>
   <message name="IDS_BOREALIS_INSTALLER_ERROR_TITLE" desc="Title for installer when Steam (noun, name of app) fails to install.">
-    There was a problem setting up Steam on Chromebook
+    Can’t set up Steam for Chromebook (Beta)
   </message>
-  <message name="IDS_BOREALIS_INSTALLER_ERROR_DISALLOWED" desc="Title for Steam (noun, name of app) installer when it does not have permission to install.">
-    Steam could not be installed on this device
+  <message name="IDS_BOREALIS_INSTALLER_ERROR_DUPLICATE" desc="Body for Steam (noun, name of app) when installation fails due to another process already running.">
+    Steam is already being set up. Wait for setup to complete.
   </message>
-  <message name="IDS_BOREALIS_INSTALLER_ERROR_PROGRESS" desc="Body for Steam (noun, name of app) when installation fails due to another process already running.">
-    Another Steam setup is running. Please wait for it to complete before trying again
+  <message name="IDS_BOREALIS_INSTALLER_ERROR_UPDATE" desc="Body for Steam (noun, name of app) installer when installation fails due to device being out of date.">
+    Make sure your Chromebook is on the latest version. Then, restart your Chromebook and try again.
   </message>
-  <message name="IDS_BOREALIS_INSTALLER_ERROR_DLC_INTERNAL" desc="Body for Steam (noun, name of app) installer when installation fails due to device being out of date.">
-    Ensure that your device is up to date and try again
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_ERROR_DLC_BUSY" desc="Body for Steam (noun, name of app) installer when installation fails with suggestion to try again.">
-    Please wait a few minutes and try again
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_ERROR_REBOOT" desc="Body for Steam (noun, name of app) installer when a restart is needed.">
-    Please restart your device to use Steam on Chromebook
+  <message name="IDS_BOREALIS_INSTALLER_ERROR_BUSY" desc="Body for Steam (noun, name of app) installer when installation fails with suggestion to try again.">
+    Wait a few minutes and try again
   </message>
   <message name="IDS_BOREALIS_INSTALLER_ERROR_SPACE" desc="Body for Steam (noun, name of app) installer when installation fails due to low space.">
-    There is not enough available storage to complete setup. Please free up storage and try again
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_ERROR_DLC_UNKNOWN" desc="Body for Steam (noun, name of app) installer when installation fails due to an unknown dlc-related reason">
-    Please restart your device and try again
+    There is not enough device storage to complete setup. Free up space and try again.
   </message>
   <message name="IDS_BOREALIS_INSTALLER_ERROR_OFFLINE" desc="Body for Steam (noun, name of app) installer when installation fails due to being offline.">
-    Please ensure that your device is connected to the internet
+    Make sure you’re connected to the internet and try again
   </message>
   <message name="IDS_BOREALIS_INSTALLER_ERROR_STARTUP" desc="Body for Steam (noun, name of app) installer when installation fails trying to start up after installing">
-    Couldn't launch Steam on Chromebook. Please try again
+    Something went wrong. Try again.
   </message>
-  <message name="IDS_BOREALIS_INSTALLER_ERROR_RETRY" desc="Button for Steam (noun, name of app) installer to retry after failing.">
-    Retry
+  <message name="IDS_BOREALIS_INSTALLER_ERROR_BUTTON_RETRY" desc="Button for Steam (noun, name of app) installer to retry after failing.">
+    Try again
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_ERROR_BUTTON_STORAGE" desc="Button for Steam (noun, name of app) installer to free disk-space if needed.">
+    Storage management
+  </message>
+  <message name="IDS_BOREALIS_BETA_BADGE" desc="Badge text indicating that borealis (steam on chromeos) is a beta product, i.e. it is still under development.">
+    Beta
   </message>
   <message name="IDS_BOREALIS_CLIENT_UNINSTALL_CONFIRM_BODY" desc="Confirmation dialog for uninstalling Steam (name of app).">
-      Any games and apps installed via Steam will also be removed from this device
+      Any apps and games installed using Steam for Chromebook (Beta) will be removed from this device. Data associated with these apps and games will also be removed. Make sure to back up saved apps and games before uninstalling.
   </message>
   <message name="IDS_BOREALIS_APPLICATION_UNINSTALL_CONFIRM_BODY" desc="Confirmation dialog for uninstalling a game.">
       Data associated with this app may be removed from this device
   </message>
-  <message name="IDS_BOREALIS_FEEDBACK_NOTIFICATION_TITLE" desc="Title shown in notification that prompts users for feedback">
-    How was your gameplay experience?
-  </message>
-  <message name="IDS_BOREALIS_FEEDBACK_NOTIFICATION_MESSAGE" desc="Message shown in notification that prompts users for feedback">
-    Help us improve gaming on Chromebooks
-  </message>
-  <message name="IDS_BOREALIS_FEEDBACK_NOTIFICATION_SOURCE" desc="Source of notification that prompts users for feedback">
-    Chromebook Gaming
+  <message name="IDS_BOREALIS_SPLASHSCREEN_TITLE" desc="Title on splashscreen when starting Steam on Chrome OS. 'Steam for Chromebook' is the name of the product.">
+    Steam for Chromebook
   </message>
   <message name="IDS_BOREALIS_SPLASHSCREEN_MESSAGE" desc="Message on splashscreen when starting Steam on Chrome OS.">
-    starting up...
+    Loading...
   </message>
-
+  <message name="IDS_BOREALIS_HATS_TITLE" desc="Title for HaTS notification requesting feedback. It will appear occasionally when a user closes a Steam game. Clicking it will show a satisfaction survey to the user.">
+    Help us improve Steam for Chromebook
+  </message>
+  <message name="IDS_BOREALIS_HATS_BODY" desc="Message on HaTS notification requesting feedback. It will appear occasionally when a user closes a Steam game. Clicking it will show a satisfaction survey to the user.">
+    Tell us about your recent gameplay
+  </message>
   <!-- TPM firmware auto-update notifications -->
   <message name="IDS_TPM_AUTO_UPDATE_PLANNED_NOTIFICATION_TITLE" desc="Title for the notification informing the user that local data will be deleted.">
     Your local data will soon be deleted
@@ -6611,24 +6616,20 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
 
   <!-- Touchpad Scroll -->
-  <!-- TODO(b/265107054): Remove translateable tags when strings are finalized. -->
-  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TITLE" desc="Title of the touchpad scroll direction screen." translateable="false">
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TITLE" desc="Title of the touchpad scroll direction screen.">
     Change touchpad scrolling direction
   </message>
-  <message name="IDS_OOBE_TOUCHPAD_SCROLL_DESCRIPTION" desc="Description of the touchpad scroll direction screen." translateable="false">
-    Try it out. Turn the setting on or off, then scroll with two fingers on your touchpad in the test area.
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_DESCRIPTION" desc="Description of the touchpad scroll direction screen.">
+    Try it out. Turn the setting on or off, then scroll with two fingers on your touchpad in the test area. You can also find this later in Settings > Device > Mouse and touchpad.
   </message>
-   <message name="IDS_OOBE_TOUCHPAD_SCROLL_DESCRIPTION_ADDITIONAL" desc="Additional description of the touchpad scroll direction screen." translateable="false">
-    You can also find this later in Settings > Device > Mouse and touchpad.
-  </message>
-  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TOGGLE_TITLE" desc="Title for a toggle that allows reversing the scrolling directions." translateable="false">
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TOGGLE_TITLE" desc="Title for a toggle that allows reversing the scrolling directions.">
     Reverse scrolling
   </message>
-  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TOGGLE_DESC" desc="Description for a toggle that allows reversing the scrolling directions" translateable="false">
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TOGGLE_DESC" desc="Description for a toggle that allows reversing the scrolling directions">
     Swipe up to move the page down
   </message>
-  <message name="IDS_OOBE_TOUCHPAD_SCROLL_AREA_DESC" desc="Description for a scroll area that allows user to try the selected scrolling directions" translateable="false">
-    Scroll with two fingers on your touchpad in this area
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_AREA_DESC" desc="Description for a scroll area that allows user to try the selected scrolling directions">
+    Preview
   </message>
 
   <!-- Display Size -->
@@ -6668,6 +6669,12 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   <message name="IDS_OOBE_DISPLAY_SIZE_VALUE" desc="The currently selected display size percentage.">
     <ph name="DISPLAY_ZOOM">$1<ex>120</ex></ph>%
   </message>
+  <message name="IDS_OOBE_DISPLAY_SIZE_POSITIVE_BUTTON_ARIA" desc="The message to be announced by ChromeVox in the display size screen when the button to increase the size is focused">
+    Increase display and text size
+  </message>
+  <message name="IDS_OOBE_DISPLAY_SIZE_NEGATIVE_BUTTON_ARIA" desc="The message to be announced by ChromeVox in the display size screen when the button to decrease the size is focused">
+    Decrease display and text size
+  </message>
 
   <!-- Drive Offline-->
   <!-- TODO(b/278024582): Remove translateable tags when strings are finalized. -->
@@ -6702,27 +6709,42 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
 
   <!-- CHOOBE Screen -->
-  <!-- TODO(b/258503542): Remove translateable tags when strings are finalized. -->
-  <message name="IDS_OOBE_CHOOBE_TITLE" desc="Title of the CHOOBE screen." translateable="false">
-    Select features you want to set up next
+  <message name="IDS_OOBE_CHOOBE_TITLE" desc="Title of the CHOOBE screen.">
+    Choose more features to set up
   </message>
-  <message name="IDS_OOBE_CHOOBE_DESCRIPTION" desc="Subitle of the CHOOBE screen." translateable="false">
-    Or you can click Done for now and find them later in system Settings
+  <message name="IDS_OOBE_CHOOBE_DESCRIPTION" desc="Subitle of the CHOOBE screen.">
+    You can also find these options in Settings after you finish setting up your Chromebook
   </message>
-  <message name="IDS_OOBE_CHOOBE_SKIP_BUTTON" desc="Skip button for the CHOOBE screen" translateable="false">
-    Remind me later
+  <message name="IDS_OOBE_CHOOBE_SKIP_BUTTON" desc="Skip button for the CHOOBE screen">
+    Skip
   </message>
 
   <!-- CHOOBE Tiles -->
-  <!-- TODO(b/258503542): Remove translateable tags when strings are finalized. -->
-  <message name="IDS_OOBE_CHOOBE_THEME_SELECTION_TILE_TITLE" desc="Title of the theme selection tile in the CHOOBE screen." translateable="false">
-    Select dark/light theme
+  <message name="IDS_OOBE_CHOOBE_THEME_SELECTION_TILE_TITLE" desc="Title of the theme selection tile in the CHOOBE screen.">
+    Select light or dark theme
   </message>
-  <message name="IDS_OOBE_CHOOBE_TOUCHPAD_SCROLL_TILE_TITLE" desc="Title of the touchpad scroll tile in the CHOOBE screen." translateable="false">
+  <message name="IDS_OOBE_CHOOBE_TOUCHPAD_SCROLL_TILE_TITLE" desc="Title of the touchpad scroll tile in the CHOOBE screen.">
     Change touchpad scrolling direction
   </message>
-  <message name="IDS_OOBE_CHOOBE_DISPLAY_SIZE_TILE_TITLE" desc="Title of the display size tile in the CHOOBE screen." translateable="false">
-    Display size
+  <message name="IDS_OOBE_CHOOBE_DISPLAY_SIZE_TILE_TITLE" desc="Title of the display size tile in the CHOOBE screen.">
+    Change display and text size
+  </message>
+  <message name="IDS_OOBE_CHOOBE_RETURN_BUTTON" desc="Label for the return button shown in the last optional screen selected by the user if there still exists more features thaat the user can select.">
+    Save and see more
+  </message>
+  <message name="IDS_OOBE_CHOOBE_TOUCHPAD_SCROLL_SUBTITLE_ENABLED" desc="Subtitle of the touchpad scroll tile in the CHOOBE screen if reverse scroll enabled.">
+    Reverse scrolling enabled
+  </message>
+  <message name="IDS_OOBE_CHOOBE_TOUCHPAD_SCROLL_SUBTITLE_DISABLED" desc="Subtitle of the touchpad scroll tile in the CHOOBE screen if reverse scroll disabled.">
+    Reverse scrolling disabled
+  </message>
+
+  <!-- CHOOBE Tiles Accessibility -->
+  <message name="IDS_OOBE_CHOOBE_TILE_SYNCED" desc="message will be announced by the chromevox if the tile is synced and contain the sync icons.">
+    Setting synced from your previous device.
+  </message>
+  <message name="IDS_OOBE_CHOOBE_TILE_VISITED" desc="message will be announced by the chromevox if the tile is visited.">
+    Visited
   </message>
 
   <!-- Strings for the office fallback dialog -->
@@ -6757,6 +6779,26 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     Try enabling Google Drive in Settings.
   </message>
 
+  <!-- Office setup and move dialogs -->
+  <message name="IDS_CONNECT_TO_ONEDRIVE_TITLE" desc="Title for a dialog which allows the user to connect Files app and Microsoft OneDrive storage.">
+    Connect to Microsoft OneDrive
+  </message>
+  <message name="IDS_CONNECT_TO_ONEDRIVE_BODY_TEXT" desc="Explanation text for a dialog which allows the user to connect Files app and Microsoft OneDrive storage.">
+    Connect OneDrive to the Files app to manage your stored documents from your Chromebook. You'll need to sign in with your Microsoft account.
+  </message>
+  <message name="IDS_CANT_CONNECT_ONEDRIVE" desc="Error message text displayed when the user has tried to connect to OneDrive storage, but failed for any reason.">
+    Can't connect to OneDrive. Try again.
+  </message>
+  <message name="IDS_CONNECT_ONEDRIVE" desc="Text for a button which triggers a UI flow to connect the user to OneDrive storage.">
+    Connect to OneDrive
+  </message>
+  <message name="IDS_ONEDRIVE_CONNECTED_TITLE" desc="Text for a button which triggers a UI flow to connect the user to OneDrive storage.">
+    Microsoft OneDrive connected
+  </message>
+  <message name="IDS_ONEDRIVE_CONNECTED_BODY_TEXT" desc="Text for a button which triggers a UI flow to connect the user to OneDrive storage.">
+    OneDrive will now appear in the Files app
+  </message>
+
   <!-- security curtain -->
   <message name="IDS_SECURITY_CURTAIN_TITLE" desc="Title text displayed to inform the user a remote admin has taken control of the ChromeOs device.">
     Your administrator is controlling your device
@@ -6773,4 +6815,34 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     Your Google Account is the same account you use for Gmail, YouTube, Chrome, and other Google products.
     Use your account to easily access all of your bookmarks, files, and more. If you don't have an account, you can create one on the next screen.
   </message>
+
+  <!-- Floating Workspace -->
+  <message name="IDS_FLOATING_WORKSPACE_NO_NETWORK_TITLE" desc="Title of Floating Workspace notification when there is no network connection.">
+    Can't resume session
+  </message>
+  <message name="IDS_FLOATING_WORKSPACE_NO_NETWORK_MESSAGE" desc="Message for Floating Workspace notification when is no network connection.">
+    ChromeOS can't resume your previous session due to a network problem. Connect to a stable network and retry.
+  </message>
+  <message name="IDS_FLOATING_WORKSPACE_NO_NETWORK_BUTTON" desc="Button to show network settings for Floating Workspace notification when is no network connection.">
+    Network settings
+  </message>
+  <message name="IDS_FLOATING_WORKSPACE_RESTORE_FROM_ERROR_TITLE" desc="Title of Floating Workspace notification asking user to restore or not when a new remote desk arrives after an earlier restoration error occurs.">
+    Resume previous session?
+  </message>
+  <message name="IDS_FLOATING_WORKSPACE_RESTORE_FROM_ERROR_MESSAGE" desc="Message of Floating Workspace notification asking user to restore or not when a new remote desk arrives after an earlier restoration error occurs.">
+    You can resume your previous session while your current session remains active.
+  </message>
+  <message name="IDS_FLOATING_WORKSPACE_RESTORE_FROM_ERROR_RESTORATION_BUTTON" desc="Button for restoration option of Floating Workspace notification asking user to restore or not when a new remote desk arrives after an earlier restoration error occurs.">
+    Resume
+  </message>
+  <message name="IDS_FLOATING_WORKSPACE_ERROR_TITLE" desc="Title for Floating Workspace notification when there is an sync service error or timeout.">
+    Can't resume previous session
+  </message>
+  <message name="IDS_FLOATING_WORKSPACE_ERROR_MESSAGE" desc="Message for Floating Workspace notification when there is an sync service error or timeout.">
+    Something went wrong. Open the windows manuallly instead.
+  </message>
+  <message name="IDS_FLOATING_WORKSPACE_DISPLAY_SOURCE" desc="This is the string shown as the display source of the notification to notify user about floating workspace status.">
+    ChromeOS
+  </message>
+
 </grit-part>

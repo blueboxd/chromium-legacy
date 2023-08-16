@@ -397,8 +397,8 @@ void AVIFImageDecoder::DecodeToYUV() {
       SetFailed();
     return;
   }
+  const auto* image = decoded_image_;
 
-  const auto* image = decoder_->image;
   DCHECK(!image->alphaPlane);
   static_assert(cc::YUVIndex::kY == static_cast<cc::YUVIndex>(AVIF_CHAN_Y), "");
   static_assert(cc::YUVIndex::kU == static_cast<cc::YUVIndex>(AVIF_CHAN_U), "");
@@ -634,12 +634,17 @@ void AVIFImageDecoder::Decode(wtf_size_t index) {
     SetFailed();
     return;
   }
+  const auto* image = decoded_image_;
 
-  const auto* image = decoder_->image;
   // ImageDecoder::SizeCalculationMayOverflow(), called by UpdateDemuxer()
   // before being here, made sure the image height fits in an int.
   int displayable_height =
       static_cast<int>(avifDecoderDecodedRowCount(decoder_.get()));
+  if (image == cropped_image_.get()) {
+    displayable_height -= clap_origin_.y();
+    displayable_height =
+        std::clamp(displayable_height, 0, static_cast<int>(image->height));
+  }
 
   if (displayable_height == 0) {
     return;  // There is nothing to display.
@@ -767,8 +772,7 @@ bool AVIFImageDecoder::UpdateDemuxer() {
   have_parsed_current_data_ = true;
 
   if (!decoder_) {
-    decoder_ = std::unique_ptr<avifDecoder, void (*)(avifDecoder*)>(
-        avifDecoderCreate(), avifDecoderDestroy);
+    decoder_.reset(avifDecoderCreate());
     if (!decoder_)
       return false;
 
@@ -795,8 +799,8 @@ bool AVIFImageDecoder::UpdateDemuxer() {
     decoder_->ignoreXMP = AVIF_TRUE;
     decoder_->ignoreExif = AVIF_TRUE;
 
-    // Turn off libavif's 'clap' (clean aperture) property validation. (We
-    // ignore the 'clap' property.)
+    // Turn off libavif's 'clap' (clean aperture) property validation. We
+    // validate 'clap' ourselves and ignore invalid 'clap' properties.
     decoder_->strictFlags &= ~AVIF_STRICT_CLAP_VALID;
     // Allow the PixelInformationProperty ('pixi') to be missing in AV1 image
     // items. libheif v1.11.0 or older does not add the 'pixi' item property to
@@ -850,6 +854,8 @@ bool AVIFImageDecoder::UpdateDemuxer() {
   // If the image is progressive, decoder_->imageCount is the number of
   // progressive frames, but there is only one still image.
   decoded_frame_count_ = progressive_ ? 1 : decoder_->imageCount;
+  container_width_ = container->width;
+  container_height_ = container->height;
   bit_depth_ = container->depth;
   decode_to_half_float_ =
       ImageIsHighBitDepth() &&
@@ -979,7 +985,36 @@ bool AVIFImageDecoder::UpdateDemuxer() {
                                                  &yuv_color_space_) &&
       // TODO(crbug.com/911246): Support color space transforms for YUV decodes.
       !ColorTransform();
-  return SetSize(container->width, container->height);
+
+  unsigned width = container->width;
+  unsigned height = container->height;
+  // If the image is cropped, pass the size of the cropped image (the clean
+  // aperture) to SetSize().
+  if (container->transformFlags & AVIF_TRANSFORM_CLAP) {
+    avifCropRect crop_rect;
+    avifDiagnostics diag;
+    avifBool valid_clap = avifCropRectConvertCleanApertureBox(
+        &crop_rect, &container->clap, container->width, container->height,
+        container->yuvFormat, &diag);
+    if (!valid_clap) {
+      DVLOG(1) << "Invalid 'clap' property: " << diag.error
+               << "; showing the full image.";
+      ignore_clap_ = true;
+    } else if (crop_rect.x != 0 || crop_rect.y != 0) {
+      // To help discourage the creation of files with privacy risks, also
+      // consider 'clap' properties whose origins are not at (0, 0) as invalid.
+      // See https://github.com/AOMediaCodec/av1-avif/issues/188 and
+      // https://github.com/AOMediaCodec/av1-avif/issues/189.
+      DVLOG(1) << "Origin of 'clap' property anchored to (" << crop_rect.x
+               << ", " << crop_rect.y << "); showing the full image.";
+      ignore_clap_ = true;
+    } else {
+      clap_origin_.SetPoint(crop_rect.x, crop_rect.y);
+      width = crop_rect.width;
+      height = crop_rect.height;
+    }
+  }
+  return SetSize(width, height);
 }
 
 avifResult AVIFImageDecoder::DecodeImage(wtf_size_t index) {
@@ -987,21 +1022,19 @@ avifResult AVIFImageDecoder::DecodeImage(wtf_size_t index) {
   // |index| should be less than what DecodeFrameCount() returns, so we should
   // not get the AVIF_RESULT_NO_IMAGES_REMAINING error.
   DCHECK_NE(ret, AVIF_RESULT_NO_IMAGES_REMAINING);
-  if (ret != AVIF_RESULT_OK) {
-    if (ret != AVIF_RESULT_WAITING_ON_IO) {
-      DVLOG(1) << "avifDecoderNthImage(" << index
-               << ") failed: " << avifResultToString(ret) << ": "
-               << AvifDecoderErrorMessage(decoder_.get());
-    }
+  if (ret != AVIF_RESULT_OK && ret != AVIF_RESULT_WAITING_ON_IO) {
+    DVLOG(1) << "avifDecoderNthImage(" << index
+             << ") failed: " << avifResultToString(ret) << ": "
+             << AvifDecoderErrorMessage(decoder_.get());
     return ret;
   }
 
   const auto* image = decoder_->image;
   // Frame size must be equal to container size.
-  if (gfx::Size(image->width, image->height) != Size()) {
-    DVLOG(1) << "Frame size "
-             << gfx::Size(image->width, image->height).ToString()
-             << " differs from container size " << Size().ToString();
+  if (image->width != container_width_ || image->height != container_height_) {
+    DVLOG(1) << "Frame size " << image->width << "x" << image->height
+             << " differs from container size " << container_width_ << "x"
+             << container_height_;
     return AVIF_RESULT_UNKNOWN_ERROR;
   }
   // Frame bit depth must be equal to container bit depth.
@@ -1014,7 +1047,12 @@ avifResult AVIFImageDecoder::DecodeImage(wtf_size_t index) {
     DVLOG(1) << "Frame YUV format must be equal to container YUV format";
     return AVIF_RESULT_UNKNOWN_ERROR;
   }
-  return AVIF_RESULT_OK;
+
+  decoded_image_ = image;
+  if ((image->transformFlags & AVIF_TRANSFORM_CLAP) && !ignore_clap_) {
+    CropDecodedImage();
+  }
+  return ret;
 }
 
 void AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& frame_cs,
@@ -1029,6 +1067,22 @@ void AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& frame_cs,
   options.dst_bit_depth = bit_depth;
   color_transform_ = gfx::ColorTransform::NewColorTransform(
       frame_cs, gfx::ColorSpace(), options);
+}
+
+void AVIFImageDecoder::CropDecodedImage() {
+  DCHECK_NE(decoded_image_, cropped_image_.get());
+  if (!cropped_image_) {
+    cropped_image_.reset(avifImageCreateEmpty());
+  }
+  avifCropRect rect;
+  rect.x = clap_origin_.x();
+  rect.y = clap_origin_.y();
+  rect.width = Size().width();
+  rect.height = Size().height();
+  const avifResult result =
+      avifImageSetViewRect(cropped_image_.get(), decoded_image_, &rect);
+  CHECK_EQ(result, AVIF_RESULT_OK);
+  decoded_image_ = cropped_image_.get();
 }
 
 bool AVIFImageDecoder::RenderImage(const avifImage* image,
@@ -1102,7 +1156,7 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
                                static_cast<uint32_t>(*to_row - from_row)};
     view.reset(avifImageCreateEmpty());
     const avifResult result = avifImageSetViewRect(view.get(), image, &rect);
-    DCHECK_EQ(result, AVIF_RESULT_OK);
+    CHECK_EQ(result, AVIF_RESULT_OK);
     image = view.get();
   }
 

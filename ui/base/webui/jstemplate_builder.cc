@@ -13,7 +13,6 @@
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "build/chromeos_buildflags.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
 #include "ui/resources/grit/webui_resources.h"
@@ -86,7 +85,7 @@ void AppendJsTemplateProcessHtml(const base::Value::Dict& json,
   output->append(";");
   output->append("loadTimeData.data = pageData;");
   output->append("var tp = document.getElementById('");
-  output->append(template_id.data(), template_id.size());
+  output->append(template_id);
   output->append("');");
   output->append("jstProcess(new JsEvalContext(pageData), tp);");
   output->append("</script>");

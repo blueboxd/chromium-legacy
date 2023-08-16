@@ -12,7 +12,6 @@
 /android_build_tools/aapt2/lib64/*.so
 /android_build_tools/apkanalyzer/apkanalyzer.jar
 /android_build_tools/bundletool/*.jar
-/android_ndk/
 /android_prebuilts/build_tools
 /android_protobuf/src
 /android_sdk/androidx_browser/src
@@ -20,6 +19,7 @@
 /android_sdk/sources/
 /android_support_test_runner/lib/
 /android_system_sdk/*.jar
+/android_toolchain/
 /android_tools_internal/
 /android_webview_glue/src
 /androidx/BUILD.gn
@@ -28,6 +28,7 @@
 /androidx_javascriptengine/src/
 /angle
 /angle_dx11
+/anonymous_tokens/src/
 /aosp_dalvik/lib/*
 /apache-linux/LICENSE
 /apache-linux/bin/*
@@ -66,19 +67,19 @@
 /cast_web_runtime
 /catapult
 /ced/src
-/centipede/src
 /checkstyle/*.jar
 /chromeos_login_manager
 /chromeos_text_input
 /chromevox/third_party/sre/src
 /chromite
 /crossbench
-/clang_format/script
+/clang-format/script
 /cld_2/src
 /cld_3/src
 /colorama/src
 /content_analysis_sdk/src
 /cpuinfo/src
+/cpu_features/src
 /crc32c/src
 /cros
 /cros-components/src
@@ -110,6 +111,7 @@
 /fuchsia-sdk/images
 /fuchsia-sdk/images-internal
 /fuchsia-sdk/sdk
+/fuzztest/src
 /fxdiv/src
 /gemmlowp/src
 /gles2_conform
@@ -161,6 +163,7 @@
 /libaom/source/libaom
 /libassistant
 /libavif/src
+/libavifinfo/src
 /libc++-static/libc++.a
 /libdrm/src
 /libei/bin

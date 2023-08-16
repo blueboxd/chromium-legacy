@@ -253,7 +253,9 @@ void OmniboxPedal::SetNavigationUrl(const GURL& url) {
 #if defined(SUPPORT_PEDALS_VECTOR_ICONS)
 // static
 const gfx::VectorIcon& OmniboxPedal::GetDefaultVectorIcon() {
-  return omnibox::kPedalIcon;
+  return OmniboxFieldTrial::IsChromeRefreshActionChipIconsEnabled()
+             ? omnibox::kProductChromeRefreshIcon
+             : omnibox::kPedalIcon;
 }
 
 const gfx::VectorIcon& OmniboxPedal::GetVectorIcon() const {
@@ -321,7 +323,9 @@ OmniboxActionId OmniboxPedal::ActionId() const {
 base::android::ScopedJavaLocalRef<jobject> OmniboxPedal::GetOrCreateJavaObject(
     JNIEnv* env) const {
   if (!j_omnibox_action_) {
-    j_omnibox_action_.Reset(BuildOmniboxPedal(env, strings_.hint, PedalId()));
+    j_omnibox_action_.Reset(
+        BuildOmniboxPedal(env, reinterpret_cast<intptr_t>(this), strings_.hint,
+                          strings_.accessibility_hint, PedalId()));
   }
   return base::android::ScopedJavaLocalRef<jobject>(j_omnibox_action_);
 }

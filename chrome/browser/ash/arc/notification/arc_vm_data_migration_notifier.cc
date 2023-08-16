@@ -35,13 +35,16 @@ constexpr char kNotifierId[] = "arc_vm_data_migration_notifier";
 constexpr char kNotificationId[] = "arc_vm_data_migration_notification";
 
 bool ShouldShowNotification(Profile* profile) {
+  // Do not show a notification for managed users.
+  if (policy_util::IsAccountManaged(profile)) {
+    return false;
+  }
+
   switch (GetArcVmDataMigrationStatus(profile->GetPrefs())) {
     case ArcVmDataMigrationStatus::kUnnotified:
     case ArcVmDataMigrationStatus::kNotified:
     case ArcVmDataMigrationStatus::kConfirmed:
-      return !policy_util::IsAccountManaged(profile) ||
-             GetArcVmDataMigrationStrategy(profile->GetPrefs()) ==
-                 ArcVmDataMigrationStrategy::kPrompt;
+      return true;
     case ArcVmDataMigrationStatus::kStarted:
     case ArcVmDataMigrationStatus::kFinished:
       return false;

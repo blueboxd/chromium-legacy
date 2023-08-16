@@ -16,12 +16,16 @@
 #include "ash/public/cpp/ambient/fake_ambient_backend_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wallpaper/test_wallpaper_controller_client.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/webui/personalization_app/mojom/personalization_app.mojom-test-utils.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/web_applications/personalization_app/ambient_video_albums.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_metrics.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -51,6 +55,8 @@ using ::testing::IsTrue;
 using ::testing::Pointee;
 
 constexpr char kFakeTestEmail[] = "fakeemail@example.com";
+const AccountId kFakeTestAccountId =
+    AccountId::FromUserEmailGaiaId(kFakeTestEmail, kFakeTestEmail);
 
 class TestAmbientObserver
     : public ash::personalization_app::mojom::AmbientObserver {
@@ -182,6 +188,11 @@ class PersonalizationAppAmbientProviderImplTest : public ash::AshTestBase {
     ASSERT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile(kFakeTestEmail);
 
+    ash::FakeChromeUserManager* user_manager =
+        static_cast<ash::FakeChromeUserManager*>(
+            user_manager::UserManager::Get());
+    user_manager->AddUser(kFakeTestAccountId);
+
     web_contents_ = content::WebContents::Create(
         content::WebContents::CreateParams(profile_));
     web_ui_.set_web_contents(web_contents_.get());
@@ -191,6 +202,10 @@ class PersonalizationAppAmbientProviderImplTest : public ash::AshTestBase {
 
     ambient_provider_->BindInterface(
         ambient_provider_remote_.BindNewPipeAndPassReceiver());
+
+    ambient_provider_async_waiter_ =
+        std::make_unique<mojom::AmbientProviderAsyncWaiter>(
+            ambient_provider_remote_.get());
 
     SetEnabledPref(true);
     GetAmbientAshTestHelper()->ambient_client().SetAutomaticalyIssueToken(true);
@@ -215,6 +230,10 @@ class PersonalizationAppAmbientProviderImplTest : public ash::AshTestBase {
   mojo::Remote<ash::personalization_app::mojom::AmbientProvider>&
   ambient_provider_remote() {
     return ambient_provider_remote_;
+  }
+
+  mojom::AmbientProviderAsyncWaiter* ambient_provider_async_waiter() {
+    return ambient_provider_async_waiter_.get();
   }
 
   content::TestWebUI* web_ui() { return &web_ui_; }
@@ -297,10 +316,11 @@ class PersonalizationAppAmbientProviderImplTest : public ash::AshTestBase {
     ambient_provider_->SetTopicSource(topic_source);
   }
 
-  void SetAlbumSelected(const std::string& id,
+  void SetAlbumSelected(base::StringPiece id,
                         ash::AmbientModeTopicSource topic_source,
                         bool selected) {
-    ambient_provider_->SetAlbumSelected(id, topic_source, selected);
+    ambient_provider_->SetAlbumSelected(std::string(id), topic_source,
+                                        selected);
   }
 
   void FetchPreviewImages() { ambient_provider_->FetchPreviewImages(); }
@@ -391,6 +411,8 @@ class PersonalizationAppAmbientProviderImplTest : public ash::AshTestBase {
   mojo::Remote<ash::personalization_app::mojom::AmbientProvider>
       ambient_provider_remote_;
   std::unique_ptr<PersonalizationAppAmbientProviderImpl> ambient_provider_;
+  std::unique_ptr<mojom::AmbientProviderAsyncWaiter>
+      ambient_provider_async_waiter_;
   TestAmbientObserver test_ambient_observer_;
 
   std::unique_ptr<ash::FakeAmbientBackendControllerImpl>
@@ -456,6 +478,14 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
 
 TEST_F(PersonalizationAppAmbientProviderImplTest,
        ShouldCallOnAnimationThemeChanged) {
+  // When ambient mode is first enabled during test set up, the video theme
+  // should become active by default since the corresponding experiment flags
+  // are on. That should count as +1 in the usage metrics for the video theme.
+  histogram_tester().ExpectBucketCount(kAmbientModeAnimationThemeHistogramName,
+                                       ash::AmbientTheme::kVideo, 1);
+  histogram_tester().ExpectBucketCount(kAmbientModeVideoHistogramName,
+                                       ash::kDefaultAmbientVideo, 1);
+
   SetAmbientObserver();
   FetchSettings();
   SetAnimationTheme(ash::AmbientTheme::kSlideshow);
@@ -471,7 +501,21 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   SetAnimationTheme(ash::AmbientTheme::kVideo);
   EXPECT_EQ(ash::AmbientTheme::kVideo, ObservedAnimationTheme());
   histogram_tester().ExpectBucketCount(kAmbientModeAnimationThemeHistogramName,
-                                       ash::AmbientTheme::kVideo, 1);
+                                       ash::AmbientTheme::kVideo, 2);
+  histogram_tester().ExpectBucketCount(kAmbientModeVideoHistogramName,
+                                       ash::kDefaultAmbientVideo, 2);
+}
+
+TEST_F(PersonalizationAppAmbientProviderImplTest,
+       RestoresOldThemeAfterReenabling) {
+  SetAmbientObserver();
+  FetchSettings();
+  SetAnimationTheme(ash::AmbientTheme::kFeelTheBreeze);
+  SetEnabledPref(false);
+  SetEnabledPref(true);
+  EXPECT_EQ(ash::AmbientTheme::kFeelTheBreeze, ObservedAnimationTheme());
+  histogram_tester().ExpectBucketCount(kAmbientModeAnimationThemeHistogramName,
+                                       ash::AmbientTheme::kFeelTheBreeze, 2);
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest, FetchPreviewImages) {
@@ -486,8 +530,20 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   SetAmbientObserver();
   FetchSettings();
   ReplyFetchSettingsAndAlbums(/*success=*/true);
-  EXPECT_EQ(ash::AmbientModeTopicSource::kGooglePhotos, ObservedTopicSource());
+  // The default theme is video theme.
+  EXPECT_EQ(AmbientModeTopicSource::kVideo, ObservedTopicSource());
   EXPECT_FALSE(ObservedPreviews().empty());
+
+  // The other topic sources do not apply to the video theme, so all other
+  // `SetTopicSource()` calls should be rejected.
+  SetTopicSource(AmbientModeTopicSource::kArtGallery);
+  EXPECT_EQ(AmbientModeTopicSource::kVideo, ObservedTopicSource());
+  SetTopicSource(AmbientModeTopicSource::kGooglePhotos);
+  EXPECT_EQ(AmbientModeTopicSource::kVideo, ObservedTopicSource());
+
+  // Set to a different theme and select different topic source.
+  SetAnimationTheme(AmbientTheme::kSlideshow);
+  EXPECT_EQ(ash::AmbientModeTopicSource::kGooglePhotos, ObservedTopicSource());
 
   SetTopicSource(ash::AmbientModeTopicSource::kArtGallery);
   EXPECT_EQ(ash::AmbientModeTopicSource::kArtGallery, ObservedTopicSource());
@@ -496,16 +552,6 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   // apply to any of the other themes, so the existing topic source sticks.
   SetTopicSource(ash::AmbientModeTopicSource::kVideo);
   EXPECT_EQ(ash::AmbientModeTopicSource::kArtGallery, ObservedTopicSource());
-
-  SetAnimationTheme(AmbientTheme::kVideo);
-  EXPECT_EQ(AmbientModeTopicSource::kVideo, ObservedTopicSource());
-
-  // The other topic sources do not apply to the video theme, so all other
-  // `SeTopicSource()` calls should be rejected.
-  SetTopicSource(AmbientModeTopicSource::kArtGallery);
-  EXPECT_EQ(AmbientModeTopicSource::kVideo, ObservedTopicSource());
-  SetTopicSource(AmbientModeTopicSource::kGooglePhotos);
-  EXPECT_EQ(AmbientModeTopicSource::kVideo, ObservedTopicSource());
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest, ShouldCallOnAlbumsChanged) {
@@ -558,6 +604,10 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
 TEST_F(PersonalizationAppAmbientProviderImplTest, SetTopicSource) {
   FetchSettings();
   ReplyFetchSettingsAndAlbums(/*success=*/true);
+  // Default screen saver is video theme with only kVideo topic source option.
+  // Switch to other theme (kSlideshow) to try different topic sources.
+  SetAnimationTheme(AmbientTheme::kSlideshow);
+
   EXPECT_EQ(ash::AmbientModeTopicSource::kGooglePhotos, TopicSource());
 
   SetTopicSource(ash::AmbientModeTopicSource::kArtGallery);
@@ -889,36 +939,41 @@ TEST_F(PersonalizationAppAmbientProviderImplTest, TestSetSelectedVideo) {
                                           Eq(new_mexico_select))))}));
   };
 
+  // When ambient mode is first enabled during test set up, the video theme
+  // should become active by default since the corresponding experiment flags
+  // are on. That should count as +1 in the usage metrics for the video theme.
+  histogram_tester().ExpectBucketCount(kAmbientModeVideoHistogramName,
+                                       ash::AmbientVideo::kNewMexico, 1);
+
   SetAmbientObserver();
   FetchSettings();
   ReplyFetchSettingsAndAlbums(/*success=*/true);
-  // Even before the video theme is selected, the default video should be
-  // present in the list of albums and considered "checked".
+  // As Time of Day features are enabled, the default theme should be kVideo.
+  EXPECT_EQ(ObservedTopicSource(), AmbientModeTopicSource::kVideo);
+
+  // The default video should be checked.
   expect_videos_selected(/*clouds_selected=*/false,
                          /*new_mexico_selected=*/true);
 
-  SetAnimationTheme(AmbientTheme::kVideo);
-
-  // After video theme is selected, the default video should remain checked.
-  expect_videos_selected(/*clouds_selected=*/false,
-                         /*new_mexico_selected=*/true);
-
-  // Switch to clouds.
-  SetAlbumSelected(kCloudsAlbumId.data(), AmbientModeTopicSource::kVideo, true);
+  // Switch video to clouds.
+  SetAlbumSelected(kCloudsAlbumId, AmbientModeTopicSource::kVideo, true);
   expect_videos_selected(/*clouds_selected=*/true,
                          /*new_mexico_selected=*/false);
 
   // Switch back to new mexico.
-  SetAlbumSelected(kNewMexicoAlbumId.data(), AmbientModeTopicSource::kVideo,
-                   true);
+  SetAlbumSelected(kNewMexicoAlbumId, AmbientModeTopicSource::kVideo, true);
   expect_videos_selected(/*clouds_selected=*/false,
                          /*new_mexico_selected=*/true);
 
   // Should never be in a state where there are no videos selected.
-  SetAlbumSelected(kNewMexicoAlbumId.data(), AmbientModeTopicSource::kVideo,
-                   false);
+  SetAlbumSelected(kNewMexicoAlbumId, AmbientModeTopicSource::kVideo, false);
   expect_videos_selected(/*clouds_selected=*/false,
                          /*new_mexico_selected=*/true);
+
+  histogram_tester().ExpectBucketCount(kAmbientModeVideoHistogramName,
+                                       ash::AmbientVideo::kNewMexico, 2);
+  histogram_tester().ExpectBucketCount(kAmbientModeVideoHistogramName,
+                                       ash::AmbientVideo::kClouds, 1);
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest, TestAlbumNumbersAreRecorded) {
@@ -1055,22 +1110,60 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest,
+       HideBannerForPolicyManagedUsers) {
+  WallpaperControllerImpl* wallpaper_controller =
+      Shell::Get()->wallpaper_controller();
+  base::ScopedTempDir user_wallpaper_dir;
+  ASSERT_TRUE(user_wallpaper_dir.CreateUniqueTempDir());
+  wallpaper_controller->Init(
+      user_wallpaper_dir.GetPath(), user_wallpaper_dir.GetPath(),
+      user_wallpaper_dir.GetPath(), user_wallpaper_dir.GetPath());
+  TestWallpaperControllerClient client;
+  wallpaper_controller->SetClient(&client);
+  client.set_fake_files_id_for_account_id(kFakeTestAccountId,
+                                          "wallpaper_files_id");
+  wallpaper_controller->set_bypass_decode_for_testing();
+
+  // Set default wallpaper for the user. Banner should be shown.
+  wallpaper_controller->ShowDefaultWallpaperForTesting();
+  ASSERT_FALSE(
+      wallpaper_controller->IsWallpaperControlledByPolicy(kFakeTestAccountId));
+  bool should_show_banner = false;
+  ambient_provider_async_waiter()->ShouldShowTimeOfDayBanner(
+      &should_show_banner);
+  EXPECT_TRUE(should_show_banner);
+
+  // Set policy managed wallpaper for the user. Banner should be hidden.
+  wallpaper_controller->SetPolicyWallpaper(kFakeTestAccountId,
+                                           user_manager::USER_TYPE_REGULAR,
+                                           std::string() /*data=*/);
+  ASSERT_TRUE(
+      wallpaper_controller->IsWallpaperControlledByPolicy(kFakeTestAccountId));
+  should_show_banner = true;
+  ambient_provider_async_waiter()->ShouldShowTimeOfDayBanner(
+      &should_show_banner);
+  EXPECT_FALSE(should_show_banner);
+}
+
+TEST_F(PersonalizationAppAmbientProviderImplTest,
        DismissingBannerHidesItForever) {
-  bool called = false;
-  ambient_provider_remote()->ShouldShowTimeOfDayBanner(
-      base::BindLambdaForTesting([&called](bool should_show_banner) {
-        called = true;
-        EXPECT_TRUE(should_show_banner);
-      }));
-  ambient_provider_remote().FlushForTesting();
-  EXPECT_TRUE(called);
+  WallpaperControllerImpl* wallpaper_controller =
+      Shell::Get()->wallpaper_controller();
+  wallpaper_controller->set_bypass_decode_for_testing();
+  wallpaper_controller->ShowDefaultWallpaperForTesting();
+  ASSERT_FALSE(
+      wallpaper_controller->IsWallpaperControlledByPolicy(kFakeTestAccountId));
+  bool should_show_banner = false;
+  ambient_provider_async_waiter()->ShouldShowTimeOfDayBanner(
+      &should_show_banner);
+  EXPECT_TRUE(should_show_banner);
 
   ambient_provider_remote()->HandleTimeOfDayBannerDismissed();
 
-  ambient_provider_remote()->ShouldShowTimeOfDayBanner(
-      base::BindLambdaForTesting(
-          [](bool should_show_nudge) { EXPECT_FALSE(should_show_nudge); }));
-  ambient_provider_remote().FlushForTesting();
+  should_show_banner = true;
+  ambient_provider_async_waiter()->ShouldShowTimeOfDayBanner(
+      &should_show_banner);
+  EXPECT_FALSE(should_show_banner);
 }
 
 }  // namespace ash::personalization_app

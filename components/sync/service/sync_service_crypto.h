@@ -19,7 +19,7 @@
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_engine.h"
 #include "components/sync/service/data_type_encryption_handler.h"
-#include "components/sync/service/trusted_vault_client.h"
+#include "components/trusted_vault/trusted_vault_client.h"
 
 namespace syncer {
 
@@ -28,7 +28,7 @@ namespace syncer {
 // encryption communications with the sync thread.
 class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
                           public DataTypeEncryptionHandler,
-                          public TrustedVaultClient::Observer {
+                          public trusted_vault::TrustedVaultClient::Observer {
  public:
   class Delegate {
    public:
@@ -41,11 +41,10 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
     virtual std::string GetEncryptionBootstrapToken() = 0;
   };
 
-  // |delegate| must not be null and must outlive this object.
-  // |trusted_vault_client| may be null, but if non-null, the pointee must
-  // outlive this object.
+  // |delegate| and |trusted_vault_client| must not be null and must outlive
+  // this object.
   SyncServiceCrypto(Delegate* delegate,
-                    TrustedVaultClient* trusted_vault_client);
+                    trusted_vault::TrustedVaultClient* trusted_vault_client);
 
   SyncServiceCrypto(const SyncServiceCrypto&) = delete;
   SyncServiceCrypto& operator=(const SyncServiceCrypto&) = delete;
@@ -163,7 +162,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   const raw_ptr<Delegate> delegate_;
 
   // Never null and guaranteed to outlive us.
-  const raw_ptr<TrustedVaultClient> trusted_vault_client_;
+  const raw_ptr<trusted_vault::TrustedVaultClient> trusted_vault_client_;
 
   // All the mutable state is wrapped in a struct so that it can be easily
   // reset to its default values.

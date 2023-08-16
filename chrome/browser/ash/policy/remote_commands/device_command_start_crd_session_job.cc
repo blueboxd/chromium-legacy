@@ -159,6 +159,11 @@ void OnCrdSessionFinished(CrdSessionType crd_session_type,
       .LogSessionDuration(session_duration);
 }
 
+bool IsKioskSession(UserSessionType session_type) {
+  return session_type == UserSessionType::AUTO_LAUNCHED_KIOSK_SESSION ||
+         session_type == UserSessionType::MANUALLY_LAUNCHED_KIOSK_SESSION;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -381,6 +386,8 @@ void DeviceCommandStartCrdSessionJob::StartCrdHostAndGetCode(
   parameters.curtain_local_user_session = curtain_local_user_session_;
   parameters.admin_email = admin_email_;
   parameters.allow_troubleshooting_tools = ShouldAllowTroubleshootingTools();
+  parameters.allow_reconnections = ShouldAllowReconnections();
+  parameters.allow_file_transfer = ShouldAllowFileTransfer();
 
   delegate_->StartCrdHostAndGetCode(
       parameters,
@@ -544,16 +551,32 @@ bool DeviceCommandStartCrdSessionJob::ShouldTerminateUponInput() const {
   }
 }
 
-bool DeviceCommandStartCrdSessionJob::ShouldAllowTroubleshootingTools() const {
-  if (GetCurrentUserSessionType() !=
-          UserSessionType::AUTO_LAUNCHED_KIOSK_SESSION &&
-      GetCurrentUserSessionType() !=
-          UserSessionType::MANUALLY_LAUNCHED_KIOSK_SESSION) {
+bool DeviceCommandStartCrdSessionJob::ShouldAllowReconnections() const {
+  if (!base::FeatureList::IsEnabled(
+          remoting::features::kEnableCrdAdminRemoteAccessV2)) {
     return false;
   }
-  auto* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  CHECK(prefs);
-  return prefs->GetBoolean(prefs::kKioskTroubleshootingToolsEnabled);
+
+  // Curtained off sessions support reconnections if Chrome restarts.
+  return curtain_local_user_session_;
+}
+
+bool DeviceCommandStartCrdSessionJob::ShouldAllowTroubleshootingTools() const {
+  if (!IsKioskSession(GetCurrentUserSessionType())) {
+    return false;
+  }
+  return CHECK_DEREF(ProfileManager::GetActiveUserProfile()->GetPrefs())
+      .GetBoolean(prefs::kKioskTroubleshootingToolsEnabled);
+}
+
+bool DeviceCommandStartCrdSessionJob::ShouldAllowFileTransfer() const {
+  if (!IsKioskSession(GetCurrentUserSessionType())) {
+    return false;
+  }
+
+  // TODO(b/284944528): Add check here for policy.
+  return base::FeatureList::IsEnabled(
+      remoting::features::kEnableCrdFileTransferForKiosk);
 }
 
 DeviceCommandStartCrdSessionJob::ErrorCallback

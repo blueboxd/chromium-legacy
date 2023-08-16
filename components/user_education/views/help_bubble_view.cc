@@ -13,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/strings/grit/components_strings.h"
@@ -27,9 +28,13 @@
 #include "ui/base/models/image_model.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/color/color_provider.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -52,8 +57,8 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/menu/menu_scroll_view_container.h"
-#include "ui/views/event_monitor.h"
+#include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
@@ -65,6 +70,7 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_tracker.h"
 #include "ui/views/view_utils.h"
+#include "ui/views/widget/widget.h"
 
 namespace user_education {
 
@@ -295,7 +301,163 @@ constexpr int DotView::kStrokeWidth;
 BEGIN_METADATA(DotView, views::View)
 END_METADATA
 
+views::MenuItemView* GetAnchorAsMenuItem(
+    const views::BubbleDialogDelegate* delegate) {
+  return views::AsViewClass<views::MenuItemView>(delegate->GetAnchorView());
+}
+
 }  // namespace
+
+namespace internal {
+
+// Because menus use event capture, a help bubble anchored to a menu cannot
+// respond to events in the normal way. However, help bubbles are not
+// complicated and only have buttons. When a help bubble is anchored to a menu,
+// this object will monitor events that would be captured by the menu, and
+// ensures that the buttons on the help bubble still behavior predictably.
+class MenuEventMonitor {
+ public:
+  MenuEventMonitor(HelpBubbleView* help_bubble, views::MenuItemView* menu_item)
+      : help_bubble_(help_bubble),
+        callback_handle_(menu_item->GetMenuController()->SetAnnotationCallback(
+            base::BindRepeating(&MenuEventMonitor::OnEvent,
+                                base::Unretained(this)))) {}
+
+  ~MenuEventMonitor() = default;
+
+ private:
+  bool OnEvent(const ui::LocatedEvent& event) {
+    gfx::Point screen_coords;
+    screen_coords = event.root_location();
+
+    const views::Widget* const widget = help_bubble_->GetWidget();
+    if (!widget || !widget->GetWindowBoundsInScreen().Contains(screen_coords)) {
+      return false;
+    }
+
+    views::Button* const target_button = GetButtonAt(screen_coords);
+    const gfx::Point target_point =
+        target_button
+            ? views::View::ConvertPointFromScreen(target_button, screen_coords)
+            : gfx::Point();
+
+    switch (event.type()) {
+      // Pass mouse events on to the button as normal.
+      case ui::ET_MOUSE_PRESSED:
+        if (target_button) {
+          auto* const mouse_event = event.AsMouseEvent();
+          target_button->OnMousePressed(ui::MouseEvent(
+              ui::ET_MOUSE_PRESSED, gfx::PointF(target_point),
+              gfx::PointF(screen_coords), mouse_event->time_stamp(),
+              mouse_event->flags(), mouse_event->changed_button_flags()));
+        }
+        break;
+      case ui::ET_MOUSE_RELEASED:
+        if (target_button) {
+          auto* const mouse_event = event.AsMouseEvent();
+          target_button->OnMouseReleased(ui::MouseEvent(
+              ui::ET_MOUSE_RELEASED, gfx::PointF(target_point),
+              gfx::PointF(screen_coords), mouse_event->time_stamp(),
+              mouse_event->flags(), mouse_event->changed_button_flags()));
+        }
+        break;
+
+      // Touch events are not processed directly by Views; they are typically
+      // converted to something else. So, convert them to mouse clicks for the
+      // purpose of pressing buttons.
+      case ui::ET_TOUCH_PRESSED:
+        if (target_button) {
+          auto* const touch_event = event.AsTouchEvent();
+          target_button->OnMousePressed(ui::MouseEvent(
+              ui::ET_MOUSE_PRESSED, gfx::PointF(target_point),
+              gfx::PointF(screen_coords), touch_event->time_stamp(),
+              touch_event->flags() | ui::EF_LEFT_MOUSE_BUTTON |
+                  ui::EF_FROM_TOUCH,
+              ui::EF_LEFT_MOUSE_BUTTON));
+        }
+        break;
+      case ui::ET_TOUCH_RELEASED:
+        if (target_button) {
+          auto* const touch_event = event.AsTouchEvent();
+          target_button->OnMouseReleased(ui::MouseEvent(
+              ui::ET_MOUSE_RELEASED, gfx::PointF(target_point),
+              gfx::PointF(screen_coords), touch_event->time_stamp(),
+              touch_event->flags() | ui::EF_LEFT_MOUSE_BUTTON |
+                  ui::EF_FROM_TOUCH,
+              ui::EF_LEFT_MOUSE_BUTTON));
+        }
+        break;
+
+      // If a gesture is received, forward it as-is.
+      case ui::ET_GESTURE_TAP:
+        if (target_button) {
+          auto* const gesture = event.AsGestureEvent();
+          ui::GestureEvent tap(gesture->x(), gesture->y(), gesture->flags(),
+                               gesture->time_stamp(), gesture->details(),
+                               gesture->unique_touch_event_id());
+          target_button->button_controller()->OnGestureEvent(&tap);
+        }
+        break;
+
+      // Mouse moves could be routed through the inkdrop controller but it's
+      // easier to just set hovered state directly.
+      case ui::ET_MOUSE_MOVED:
+        if (target_button != hovered_button_) {
+          if (hovered_button_) {
+            views::InkDrop* const ink_drop =
+                views::InkDrop::Get(hovered_button_)->GetInkDrop();
+            if (ink_drop) {
+              ink_drop->SetHovered(false);
+            }
+          }
+          if (target_button) {
+            views::InkDrop* const ink_drop =
+                views::InkDrop::Get(target_button)->GetInkDrop();
+            if (ink_drop) {
+              ink_drop->SetHovered(true);
+            }
+          }
+          hovered_button_ = target_button;
+        }
+        break;
+      default:
+        return false;
+    }
+
+    return true;
+  }
+
+  // Gets which (if any) of the help bubble buttons are at the given
+  // `screen_coords`.
+  views::Button* GetButtonAt(const gfx::Point& screen_coords) const {
+    if (IsInButton(screen_coords, help_bubble_->close_button_)) {
+      return help_bubble_->close_button_;
+    }
+    if (IsInButton(screen_coords, help_bubble_->default_button_)) {
+      return help_bubble_->default_button_;
+    }
+    for (auto* const button : help_bubble_->non_default_buttons_) {
+      if (IsInButton(screen_coords, button)) {
+        return button;
+      }
+    }
+    return nullptr;
+  }
+
+  // Returns whether `screen_coords` are in `button`, which may be null.
+  static bool IsInButton(const gfx::Point& screen_coords,
+                         const views::Button* button) {
+    return button && button->HitTestPoint(views::View::ConvertPointFromScreen(
+                         button, screen_coords));
+  }
+
+  const raw_ptr<HelpBubbleView> help_bubble_;
+  raw_ptr<views::Button> hovered_button_ = nullptr;
+  // std::unique_ptr<views::EventMonitor> event_monitor_;
+  views::MenuController::AnnotationCallbackHandle callback_handle_;
+};
+
+}  // namespace internal
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(HelpBubbleView,
                                       kHelpBubbleElementIdForTesting);
@@ -306,15 +468,27 @@ DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(HelpBubbleView,
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(HelpBubbleView, kBodyTextIdForTesting);
 
-// Explicitly don't use the default DIALOG_SHADOW as it will show a black
-// outline in dark mode on Mac. Use our own shadow instead. The shadow type is
-// the same for all other platforms.
 HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
                                const internal::HelpBubbleAnchorParams& anchor,
                                HelpBubbleParams params)
-    : BubbleDialogDelegateView(anchor.view,
-                               TranslateArrow(params.arrow),
-                               views::BubbleBorder::STANDARD_SHADOW),
+    : BubbleDialogDelegateView(
+          anchor.view,
+          TranslateArrow(params.arrow),
+#if BUILDFLAG(IS_MAC)
+          // On Mac, the default DIALOG_SHADOW is system-drawn, which is
+          // incompatible with visible bubble arrows. Therefore, always use
+          // STANDARD_SHADOW.
+          views::BubbleBorder::STANDARD_SHADOW
+#else
+          // On other platforms, all shadows are Views-drawn, which means we
+          // can revert back to the (slightly better-looking) default
+          // DIALOG_SHADOW following the 2023 refresh. The old pre-refresh
+          // value is preserved just for consistency.
+          base::FeatureList::IsEnabled(features::kChromeRefresh2023)
+              ? views::BubbleBorder::DIALOG_SHADOW
+              : views::BubbleBorder::STANDARD_SHADOW
+#endif
+          ),
       delegate_(delegate) {
   if (anchor.rect.has_value()) {
     SetForceAnchorRect(anchor.rect.value());
@@ -643,18 +817,31 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
   // have to change it afterwards:
   set_adjust_if_offscreen(true);
   auto* const frame_view = GetBubbleFrameView();
-  frame_view->SetCornerRadius(
-      views::LayoutProvider::Get()->GetCornerRadiusMetric(
-          views::Emphasis::kHigh));
+  if (!base::FeatureList::IsEnabled(features::kChromeRefresh2023)) {
+    frame_view->SetCornerRadius(
+        views::LayoutProvider::Get()->GetCornerRadiusMetric(
+            views::Emphasis::kHigh));
+  }
   frame_view->SetDisplayVisibleArrow(anchor.show_arrow &&
                                      params.arrow != HelpBubbleArrow::kNone);
+
+  // If the anchor view is not a MenuItemView and the primary window
+  // widget is not the anchor widget, do not use the window anchor bounds.
+  if (!GetAnchorAsMenuItem(this) &&
+      widget->GetPrimaryWindowWidget() != widget) {
+    frame_view->set_use_anchor_window_bounds(false);
+  }
+
   SizeToContents();
 
   widget->ShowInactive();
-  auto* const anchor_bubble =
-      anchor.view->GetWidget()->widget_delegate()->AsBubbleDialogDelegate();
-  if (anchor_bubble)
+  if (auto* const anchor_bubble =
+          anchor_widget()->widget_delegate()->AsBubbleDialogDelegate()) {
     anchor_pin_ = anchor_bubble->PreventCloseOnDeactivate();
+  } else if (auto* const menu_item = GetAnchorAsMenuItem(this)) {
+    menu_event_monitor_ =
+        std::make_unique<internal::MenuEventMonitor>(this, menu_item);
+  }
   MaybeStartAutoCloseTimer();
 }
 
@@ -671,12 +858,6 @@ void HelpBubbleView::MaybeStartAutoCloseTimer() {
 void HelpBubbleView::OnTimeout() {
   std::move(timeout_callback_).Run();
   GetWidget()->Close();
-}
-
-bool HelpBubbleView::OnMousePressed(const ui::MouseEvent& event) {
-  base::RecordAction(
-      base::UserMetricsAction("InProductHelp.Promos.BubbleClicked"));
-  return false;
 }
 
 std::u16string HelpBubbleView::GetAccessibleWindowTitle() const {
@@ -781,12 +962,7 @@ void HelpBubbleView::OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
   // issues in Weston, the windowing environment used on chrome's Wayland
   // testbots:
   // https://gitlab.freedesktop.org/wayland/weston/-/issues/669
-  const views::View* const contents =
-      const_cast<HelpBubbleView*>(this)->anchor_widget()->GetContentsView();
-  if (contents &&
-      views::IsViewClass<views::MenuScrollViewContainer>(contents)) {
-    params->requires_accelerated_widget = true;
-  }
+  params->requires_accelerated_widget = (GetAnchorAsMenuItem(this) != nullptr);
 #endif
 }
 

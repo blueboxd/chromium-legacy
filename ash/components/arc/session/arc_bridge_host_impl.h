@@ -44,7 +44,7 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
 
   // ArcBridgeHost overrides.
   void OnAccessibilityHelperInstanceReady(
-      mojo::PendingRemote<mojom::AccessibilityHelperInstance>
+      mojo::PendingRemote<ax::android::mojom::AccessibilityHelperInstance>
           accessibility_helper_remote) override;
   void OnAdbdMonitorInstanceReady(
       mojo::PendingRemote<mojom::AdbdMonitorInstance> adbd_monitor_remote)
@@ -70,6 +70,9 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
           boot_phase_monitor_remote) override;
   void OnCameraInstanceReady(
       mojo::PendingRemote<mojom::CameraInstance> camera_remote) override;
+  void OnChromeFeatureFlagsInstanceReady(
+      mojo::PendingRemote<mojom::ChromeFeatureFlagsInstance>
+          chrome_feature_flags_remote) override;
   void OnClipboardInstanceReady(
       mojo::PendingRemote<mojom::ClipboardInstance> clipboard_remote) override;
   void OnCompatibilityModeInstanceReady(
@@ -131,8 +134,9 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
                                      obb_mounter_remote) override;
   void OnOemCryptoInstanceReady(
       mojo::PendingRemote<mojom::OemCryptoInstance> oemcrypto_remote) override;
-  void OnPaymentAppInstanceReady(mojo::PendingRemote<mojom::PaymentAppInstance>
-                                     payment_app_remote) override;
+  void OnPaymentAppInstanceReady(
+      mojo::PendingRemote<chromeos::payments::mojom::PaymentAppInstance>
+          payment_app_remote) override;
   void OnPipInstanceReady(
       mojo::PendingRemote<mojom::PipInstance> policy_remote) override;
   void OnPolicyInstanceReady(

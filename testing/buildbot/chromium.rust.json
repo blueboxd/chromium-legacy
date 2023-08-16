@@ -27,6 +27,28 @@
         "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/rust.components_unittests.filter"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "components_unittests",
+        "test_id_prefix": "ninja://components:components_unittests/"
+      },
+      {
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -149,6 +171,28 @@
         },
         "test": "base_unittests",
         "test_id_prefix": "ninja://base:base_unittests/"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/rust.components_unittests.filter"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "components_unittests",
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "merge": {
@@ -275,6 +319,28 @@
         "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/rust.components_unittests.filter"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "components_unittests",
+        "test_id_prefix": "ninja://components:components_unittests/"
+      },
+      {
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -375,7 +441,6 @@
   },
   "linux-rust-x64-dbg": {
     "additional_compile_targets": [
-      "gnrt_unittests",
       "mojo_rust",
       "mojo_rust_integration_unittests",
       "mojo_rust_unittests",
@@ -399,6 +464,9 @@
         "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/rust.components_unittests.filter"
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -411,8 +479,8 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gnrt_unittests",
-        "test_id_prefix": "ninja://tools/crates/gnrt/lib:gnrt_unittests/"
+        "test": "components_unittests",
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "merge": {
@@ -520,7 +588,6 @@
   },
   "linux-rust-x64-rel": {
     "additional_compile_targets": [
-      "gnrt_unittests",
       "mojo_rust",
       "mojo_rust_integration_unittests",
       "mojo_rust_unittests",
@@ -544,6 +611,9 @@
         "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/rust.components_unittests.filter"
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -556,8 +626,8 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gnrt_unittests",
-        "test_id_prefix": "ninja://tools/crates/gnrt/lib:gnrt_unittests/"
+        "test": "components_unittests",
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "merge": {
@@ -663,9 +733,8 @@
       }
     ]
   },
-  "mac-rust-x64-rel": {
+  "mac-rust-x64-dbg": {
     "additional_compile_targets": [
-      "gnrt_unittests",
       "mojo_rust",
       "mojo_rust_integration_unittests",
       "mojo_rust_unittests",
@@ -681,7 +750,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-13"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -690,6 +759,9 @@
         "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/rust.components_unittests.filter"
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -698,13 +770,13 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-13"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gnrt_unittests",
-        "test_id_prefix": "ninja://tools/crates/gnrt/lib:gnrt_unittests/"
+        "test": "components_unittests",
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "merge": {
@@ -715,7 +787,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-13"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -732,7 +804,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-13"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -749,7 +821,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-13"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -767,7 +839,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-13"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -785,7 +857,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-13"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -806,7 +878,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Mac-12|Mac-13"
+              "os": "Mac-13"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -818,7 +890,6 @@
   },
   "win-rust-x64-dbg": {
     "additional_compile_targets": [
-      "gnrt_unittests",
       "mojo_rust",
       "mojo_rust_integration_unittests",
       "mojo_rust_unittests",
@@ -843,6 +914,9 @@
         "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/rust.components_unittests.filter"
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -856,8 +930,8 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gnrt_unittests",
-        "test_id_prefix": "ninja://tools/crates/gnrt/lib:gnrt_unittests/"
+        "test": "components_unittests",
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "merge": {
@@ -971,7 +1045,6 @@
   },
   "win-rust-x64-rel": {
     "additional_compile_targets": [
-      "gnrt_unittests",
       "mojo_rust",
       "mojo_rust_integration_unittests",
       "mojo_rust_unittests",
@@ -996,6 +1069,9 @@
         "test_id_prefix": "ninja://base:base_unittests/"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/rust.components_unittests.filter"
+        ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -1009,8 +1085,8 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gnrt_unittests",
-        "test_id_prefix": "ninja://tools/crates/gnrt/lib:gnrt_unittests/"
+        "test": "components_unittests",
+        "test_id_prefix": "ninja://components:components_unittests/"
       },
       {
         "merge": {

@@ -15,7 +15,7 @@ import collections
 import errno
 import json
 import os
-import pipes
+import shlex
 import platform
 import re
 import shutil
@@ -1295,7 +1295,6 @@ class MetaBuildWrapper:
     file_ignore_list = [
         re.compile(r'.*build/chromeos.*'),
         re.compile(r'.*build/cros_cache.*'),
-        re.compile(r'.*third_party/chromite.*'),
         # No test target should rely on files in [output_dir]/gen.
         re.compile(r'^gen/.*'),
     ]
@@ -1733,6 +1732,8 @@ class MetaBuildWrapper:
     msan = 'is_msan=true' in vals['gn_args']
     tsan = 'is_tsan=true' in vals['gn_args']
     cfi_diag = 'use_cfi_diag=true' in vals['gn_args']
+    # Treat sanitizer warnings as test case failures (crbug/1442587).
+    fail_on_san_warnings = 'fail_on_san_warnings=true' in vals['gn_args']
     clang_coverage = 'use_clang_coverage=true' in vals['gn_args']
     java_coverage = 'use_jacoco_coverage=true' in vals['gn_args']
     javascript_coverage = 'use_javascript_coverage=true' in vals['gn_args']
@@ -1821,6 +1822,9 @@ class MetaBuildWrapper:
           '--cfi-diag=%d' % cfi_diag,
       ]
 
+      if fail_on_san_warnings:
+        cmdline += ['--fail-san=1']
+
       if javascript_coverage:
         cmdline += ['--devtools-code-coverage=${ISOLATED_OUTDIR}']
     elif test_type in ('windowed_test_launcher', 'console_test_launcher'):
@@ -1841,6 +1845,9 @@ class MetaBuildWrapper:
           '--tsan=%d' % tsan,
           '--cfi-diag=%d' % cfi_diag,
       ]
+
+      if fail_on_san_warnings:
+        cmdline += ['--fail-san=1']
     elif test_type == 'script':
       # If we're testing a CrOS simplechrome build, assume we need to prepare a
       # DUT for testing. So prepend the command to run with the test wrapper.
@@ -2064,7 +2071,7 @@ class MetaBuildWrapper:
     if self.platform == 'win32':
       shell_quoter = QuoteForCmd
     else:
-      shell_quoter = pipes.quote
+      shell_quoter = shlex.quote
 
     if cmd[0] == self.executable:
       cmd = ['python'] + cmd[1:]

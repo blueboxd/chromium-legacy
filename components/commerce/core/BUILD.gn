@@ -60,6 +60,8 @@ static_library("metrics") {
   ]
 
   deps = [
+    ":account_checker",
+    ":feature_list",
     ":proto",
     "//base",
     "//components/optimization_guide/core",
@@ -72,6 +74,7 @@ proto_library("proto") {
   proto_in_dir = "//"
   sources = [
     "proto/merchant_trust.proto",
+    "proto/price_insights.proto",
     "proto/price_tracking.proto",
   ]
 }
@@ -206,6 +209,7 @@ static_library("shopping_service") {
     "//components/session_proto_db:core",
     "//components/signin/public/identity_manager:identity_manager",
     "//components/sync/service",
+    "//components/unified_consent",
     "//services/network/public/cpp:cpp",
     "//ui/base",
     "//url:url",
@@ -263,6 +267,7 @@ source_set("shopping_service_test_support") {
     "//components/prefs:test_support",
     "//components/signin/public/identity_manager:test_support",
     "//components/sync:test_support",
+    "//components/unified_consent:unified_consent",
     "//services/data_decoder/public/cpp:test_support",
     "//services/network:network_service",
     "//services/network:test_support",
@@ -327,11 +332,12 @@ source_set("account_checker") {
     "//components/sync/service",
     "//components/unified_consent",
     "//net/traffic_annotation:traffic_annotation",
-    "//services/data_decoder/public/cpp",
     "//services/network/public/cpp:cpp",
     "//ui/base",
     "//url:url",
   ]
+
+  public_deps = [ "//services/data_decoder/public/cpp" ]
 }
 
 source_set("account_checker_test_support") {

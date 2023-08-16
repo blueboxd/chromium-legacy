@@ -78,7 +78,6 @@
 #include "content/browser/renderer_host/system_entropy_utils.h"
 #include "content/browser/site_info.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/web_package/subresource_web_bundle_navigation_info.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/common/trace_utils.h"
@@ -1151,20 +1150,14 @@ void NavigationControllerImpl::GoToIndex(
     absl::optional<blink::scheduler::TaskAttributionId>
         soft_navigation_heuristics_task_id,
     const std::string* navigation_api_key) {
-  SCOPED_CRASH_KEY_NUMBER("nav_reentrancy_caller1", "GoToIndex_index", index);
   TRACE_EVENT0("browser,navigation,benchmark",
                "NavigationControllerImpl::GoToIndex");
-  if (index < 0 || index >= static_cast<int>(entries_.size())) {
-    // We've seen reports of this NOTREACHED being hit on Android WebView, where
-    // we won't get the log message below. The following code ensures that
-    // `index` and `entries_size` will show up on the minidump for that case.
-    base::debug::Alias(&index);
-    const size_t entries_size = entries_.size();
-    base::debug::Alias(&entries_size);
-    NOTREACHED() << "Index " << index
-                 << " is out of bounds, entries_.size() is " << entries_size;
-    return;
-  }
+  SCOPED_CRASH_KEY_NUMBER("nav_reentrancy_caller1", "GoToIndex_index", index);
+  SCOPED_CRASH_KEY_NUMBER("nav_reentrancy_caller1", "GoToIndex_size",
+                          entries_.size());
+  // Indices should have have been validated by the caller.
+  CHECK_GE(index, 0);
+  CHECK_LT(static_cast<size_t>(index), entries_.size());
 
   if (entries_[index]->IsInitialEntryNotForSynchronousAboutBlank()) {
     // We should never navigate to an existing initial NavigationEntry that is
@@ -1203,9 +1196,14 @@ void NavigationControllerImpl::GoToOffsetFromRenderer(
     RenderFrameHostImpl* initiator_rfh,
     absl::optional<blink::scheduler::TaskAttributionId>
         soft_navigation_heuristics_task_id) {
-  // Note: This is actually reached in unit tests.
-  if (!CanGoToOffset(offset))
+  // If the renderer sent an out-of-bounds offset, cancel and notify the
+  // renderer.
+  if (!CanGoToOffset(offset)) {
+    initiator_rfh->GetAssociatedLocalFrame()->TraverseCancelled(
+        /*navigation_api_key=*/std::string(),
+        blink::mojom::TraverseCancelledReason::kNotFound);
     return;
+  }
 
   GoToIndex(GetIndexForOffset(offset), initiator_rfh,
             soft_navigation_heuristics_task_id,
@@ -1810,7 +1808,6 @@ void NavigationControllerImpl::UpdateNavigationEntryDetails(
       request ? request->common_params().initiator_base_url : absl::nullopt,
       request ? request->GetRedirectChain() : redirects, params.page_state,
       params.method, params.post_id, nullptr /* blob_url_loader_factory */,
-      (request ? request->GetSubresourceWebBundleNavigationInfo() : nullptr),
       ComputePolicyContainerPoliciesForFrameEntry(
           rfh, request && request->IsSameDocument(),
           request ? request->common_params().url : params.url));
@@ -1944,7 +1941,6 @@ void NavigationControllerImpl::RendererDidNavigateToNewEntry(
         Referrer(*params.referrer), initiator_origin, initiator_base_url,
         request->GetRedirectChain(), params.page_state, params.method,
         params.post_id, nullptr /* blob_url_loader_factory */,
-        request->GetSubresourceWebBundleNavigationInfo(),
         // We will set the document policies later in this function.
         nullptr /* policy_container_policies */,
         // Try to preserve protect_url_in_navigation_api from the previous
@@ -2295,7 +2291,6 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
       Referrer(*params.referrer), initiator_origin, initiator_base_url,
       request->GetRedirectChain(), params.page_state, params.method,
       params.post_id, nullptr /* blob_url_loader_factory */,
-      request->GetSubresourceWebBundleNavigationInfo(),
       std::move(policy_container_policies), protect_url_in_navigation_api);
 
   std::unique_ptr<NavigationEntryImpl> new_entry =
@@ -2787,9 +2782,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
         static_cast<SiteInstanceImpl*>(source_site_instance), url,
         absl::nullopt /* commit_origin */, referrer, initiator_origin,
         initiator_base_url, std::vector<GURL>(), blink::PageState(), method, -1,
-        blob_url_loader_factory,
-        nullptr /* subresource_web_bundle_navigation_info */,
-        nullptr /* policy_container_policies */);
+        blob_url_loader_factory, nullptr /* policy_container_policies */);
   } else {
     // Main frame case.
     // If `node` is the outermost main frame, it rewrites a virtual url in order
@@ -2831,9 +2824,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
         static_cast<SiteInstanceImpl*>(source_site_instance), url,
         absl::nullopt /* origin */, referrer, initiator_origin,
         initiator_base_url, std::vector<GURL>(), blink::PageState(), method, -1,
-        blob_url_loader_factory,
-        nullptr /* subresource_web_bundle_navigation_info */,
-        nullptr /* policy_container_policies */,
+        blob_url_loader_factory, nullptr /* policy_container_policies */,
         false /* protect_url_in_navigation_api */);
   }
 
@@ -3759,7 +3750,6 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
         params.url, absl::nullopt, params.referrer, params.initiator_origin,
         params.initiator_base_url, params.redirect_chain, blink::PageState(),
         "GET", -1, blob_url_loader_factory,
-        nullptr /* subresource_web_bundle_navigation_info */,
         // If in NavigateWithoutEntry we later determine that this navigation is
         // a conversion of a new navigation into a reload, we will set the right
         // document policies there.
@@ -3985,7 +3975,9 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           base::flat_map<::blink::mojom::RuntimeFeatureState, bool>(),
           /*fenced_frame_properties=*/absl::nullopt,
           /*not_restored_reasons=*/nullptr,
-          /*load_with_storage_access=*/false);
+          /*load_with_storage_access=*/false,
+          /*browsing_context_group_info=*/absl::nullopt,
+          /*lcpp_hint=*/nullptr);
 #if BUILDFLAG(IS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
     commit_params->data_url_as_string = params.data_url_as_string->data();

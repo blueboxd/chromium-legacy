@@ -64,10 +64,6 @@ class PasswordGenerationPopupObserver;
 class PasswordGenerationPopupControllerImpl;
 class Profile;
 
-#if BUILDFLAG(IS_ANDROID)
-class WebAuthnCredManDelegate;
-#endif  // BUILDFLAG(IS_ANDROID)
-
 namespace autofill {
 class LogManager;
 class RoutingLogManager;
@@ -88,7 +84,14 @@ class DeviceAuthenticator;
 
 namespace password_manager {
 class WebAuthnCredentialsDelegate;
+class CredManController;
 }
+
+namespace webauthn {
+#if BUILDFLAG(IS_ANDROID)
+class WebAuthnCredManDelegate;
+#endif  // BUILDFLAG(IS_ANDROID)
+}  // namespace webauthn
 
 // ChromePasswordManagerClient implements the PasswordManagerClient interface.
 class ChromePasswordManagerClient
@@ -139,9 +142,10 @@ class ChromePasswordManagerClient
       password_manager::ErrorMessageFlowType flow_type,
       password_manager::PasswordStoreBackendErrorType error_type) override;
 
-  void ShowTouchToFill(
+  void ShowKeyboardReplacingSurface(
       password_manager::PasswordManagerDriver* driver,
-      autofill::mojom::SubmissionReadinessState submission_readiness) override;
+      autofill::mojom::SubmissionReadinessState submission_readiness,
+      bool is_webauthn_form) override;
 #endif
 
   // Returns a pointer to the DeviceAuthenticator which is created on demand.
@@ -269,7 +273,7 @@ class ChromePasswordManagerClient
   GetWebAuthnCredentialsDelegateForDriver(
       password_manager::PasswordManagerDriver* driver) override;
 #if BUILDFLAG(IS_ANDROID)
-  WebAuthnCredManDelegate* GetWebAuthnCredManDelegateForDriver(
+  webauthn::WebAuthnCredManDelegate* GetWebAuthnCredManDelegateForDriver(
       password_manager::PasswordManagerDriver* driver) override;
 #endif  // BUILDFLAG(IS_ANDROID)
   version_info::Channel GetChannel() const override;
@@ -366,6 +370,8 @@ class ChromePasswordManagerClient
 
 #if BUILDFLAG(IS_ANDROID)
   void ResetErrorMessageDelegate();
+
+  password_manager::CredManController* GetOrCreateCredManController();
 #endif
 
   const raw_ptr<Profile> profile_;
@@ -381,6 +387,9 @@ class ChromePasswordManagerClient
   // Controller for the Touch To Fill sheet. Created on demand during the first
   // call to GetOrCreateTouchToFillController().
   std::unique_ptr<TouchToFillController> touch_to_fill_controller_;
+
+  // Controller for Android Credential Manager API. Created on demand.
+  std::unique_ptr<password_manager::CredManController> cred_man_controller_;
 
   std::unique_ptr<PasswordManagerErrorMessageDelegate>
       password_manager_error_message_delegate_;

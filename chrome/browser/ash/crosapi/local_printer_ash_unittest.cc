@@ -23,12 +23,11 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/crosapi/test_local_printer_ash.h"
 #include "chrome/browser/ash/printing/cups_printers_manager_factory.h"
+#include "chrome/browser/ash/printing/fake_cups_printers_manager.h"
 #include "chrome/browser/ash/printing/ipp_client_info_calculator.h"
 #include "chrome/browser/ash/printing/oauth2/authorization_zones_manager_factory.h"
 #include "chrome/browser/ash/printing/oauth2/mock_authorization_zones_manager.h"
 #include "chrome/browser/ash/printing/oauth2/status_code.h"
-#include "chrome/browser/ash/printing/test_cups_printers_manager.h"
-#include "chrome/browser/ash/printing/test_printer_configurer.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -205,7 +204,7 @@ class TestLocalPrinterAshWithPrinterConfigurer : public TestLocalPrinterAsh {
   TestLocalPrinterAshWithPrinterConfigurer(
       Profile* profile,
       scoped_refptr<chromeos::PpdProvider> ppd_provider,
-      ash::TestCupsPrintersManager* manager)
+      ash::FakeCupsPrintersManager* manager)
       : TestLocalPrinterAsh(profile, ppd_provider), manager_(manager) {}
   TestLocalPrinterAshWithPrinterConfigurer(
       const TestLocalPrinterAshWithPrinterConfigurer&) = delete;
@@ -214,12 +213,7 @@ class TestLocalPrinterAshWithPrinterConfigurer : public TestLocalPrinterAsh {
   ~TestLocalPrinterAshWithPrinterConfigurer() override = default;
 
  private:
-  std::unique_ptr<ash::PrinterConfigurer> CreatePrinterConfigurer(
-      Profile* profile) override {
-    return std::make_unique<ash::TestPrinterConfigurer>(manager_);
-  }
-
-  const raw_ptr<ash::TestCupsPrintersManager, ExperimentalAsh> manager_;
+  const raw_ptr<ash::FakeCupsPrintersManager, ExperimentalAsh> manager_;
 };
 
 // Base testing class for `LocalPrinterAsh`.  Contains the base
@@ -283,7 +277,7 @@ class LocalPrinterAshTestBase : public testing::Test {
         base::BindLambdaForTesting([this](content::BrowserContext* context)
                                        -> std::unique_ptr<KeyedService> {
           auto printers_manager =
-              std::make_unique<ash::TestCupsPrintersManager>();
+              std::make_unique<ash::FakeCupsPrintersManager>();
           printers_manager_ = printers_manager.get();
           return printers_manager;
         }));
@@ -370,7 +364,7 @@ class LocalPrinterAshTestBase : public testing::Test {
 
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
-  ash::TestCupsPrintersManager& printers_manager() {
+  ash::FakeCupsPrintersManager& printers_manager() {
     DCHECK(printers_manager_);
     return *printers_manager_;
   }
@@ -387,7 +381,7 @@ class LocalPrinterAshTestBase : public testing::Test {
   TestingProfile profile_;
   scoped_refptr<TestPrintBackend> sandboxed_test_backend_;
   scoped_refptr<TestPrintBackend> unsandboxed_test_backend_;
-  raw_ptr<ash::TestCupsPrintersManager, ExperimentalAsh> printers_manager_ =
+  raw_ptr<ash::FakeCupsPrintersManager, ExperimentalAsh> printers_manager_ =
       nullptr;
   scoped_refptr<FakePpdProvider> ppd_provider_;
   std::unique_ptr<crosapi::LocalPrinterAsh> local_printer_ash_;
@@ -531,7 +525,7 @@ TEST_P(LocalPrinterAshProcessScopeTest, GetCapabilityValidPrinter) {
   Printer saved_printer =
       CreateTestPrinter("printer1", "saved", "description1");
   printers_manager().AddPrinter(saved_printer, PrinterClass::kSaved);
-  printers_manager().InstallPrinter("printer1");
+  printers_manager().PrinterInstalled(saved_printer, /*is_automatic=*/true);
 
   // Add printer capabilities to `test_backend_`.
   AddPrinter("printer1", "saved", "description1", /*is_default=*/true,
@@ -562,8 +556,7 @@ TEST_P(LocalPrinterAshProcessScopeTest, GetCapabilityValidPrinter) {
 TEST_P(LocalPrinterAshProcessScopeTest, GetCapabilityPrinterNotInstalled) {
   Printer discovered_printer =
       CreateTestPrinter("printer1", "discovered", "description1");
-  // NOTE: The printer `discovered_printer` is not installed using
-  // `InstallPrinter`.
+  // NOTE: The printer `discovered_printer` is not installed.
   printers_manager().AddPrinter(discovered_printer, PrinterClass::kDiscovered);
 
   // Add printer capabilities to `test_backend_`.
@@ -608,7 +601,7 @@ TEST_P(LocalPrinterAshProcessScopeTest, GetCapabilityUnreachablePrinter) {
   Printer saved_printer =
       CreateTestPrinter("printer1", "saved", "description1");
   printers_manager().AddPrinter(saved_printer, PrinterClass::kSaved);
-  printers_manager().InstallPrinter("printer1");
+  printers_manager().PrinterInstalled(saved_printer, /*is_automatic=*/true);
 
   crosapi::mojom::CapabilitiesResponsePtr fetched_caps;
   local_printer_ash()->GetCapability(
@@ -631,7 +624,7 @@ TEST_F(LocalPrinterAshServiceTest, GetCapabilityTerminatedService) {
   Printer saved_printer =
       CreateTestPrinter("printer1", "saved", "description1");
   printers_manager().AddPrinter(saved_printer, PrinterClass::kSaved);
-  printers_manager().InstallPrinter("printer1");
+  printers_manager().PrinterInstalled(saved_printer, /*is_automatic=*/true);
 
   // Add printer capabilities to `test_backend_`.
   AddPrinter("printer1", "saved", "description1", /*is_default=*/true,
@@ -662,7 +655,7 @@ TEST_P(LocalPrinterAshProcessScopeTest, GetCapabilityAccessDenied) {
   Printer saved_printer =
       CreateTestPrinter("printer1", "saved", "description1");
   printers_manager().AddPrinter(saved_printer, PrinterClass::kSaved);
-  printers_manager().InstallPrinter("printer1");
+  printers_manager().PrinterInstalled(saved_printer, /*is_automatic=*/true);
 
   // Add printer capabilities to `test_backend_`.
   AddPrinter("printer1", "saved", "description1", /*is_default=*/true,
@@ -686,7 +679,7 @@ TEST_F(LocalPrinterAshServiceTest, GetCapabilityElevatedPermissionsSucceeds) {
   Printer saved_printer =
       CreateTestPrinter("printer1", "saved", "description1");
   printers_manager().AddPrinter(saved_printer, PrinterClass::kSaved);
-  printers_manager().InstallPrinter("printer1");
+  printers_manager().PrinterInstalled(saved_printer, /*is_automatic=*/true);
 
   // Add printer capabilities to `test_backend_`.
   AddPrinter("printer1", "saved", "description1", /*is_default=*/true,
@@ -726,7 +719,7 @@ TEST_F(LocalPrinterAshTest, FetchValidEulaUrl) {
   Printer saved_printer = CreateTestPrinterWithPpdReference(
       "printer1", "saved", "description1", ref);
   printers_manager().AddPrinter(saved_printer, PrinterClass::kSaved);
-  printers_manager().InstallPrinter("printer1");
+  printers_manager().PrinterInstalled(saved_printer, /*is_automatic=*/true);
 
   GURL fetched_eula_url;
   local_printer_ash()->GetEulaUrl(
@@ -744,7 +737,7 @@ TEST_F(LocalPrinterAshTest, FetchNotFoundEulaUrl) {
   Printer saved_printer =
       CreateTestPrinter("printer1", "saved", "description1");
   printers_manager().AddPrinter(saved_printer, PrinterClass::kSaved);
-  printers_manager().InstallPrinter("printer1");
+  printers_manager().PrinterInstalled(saved_printer, /*is_automatic=*/true);
 
   GURL fetched_eula_url;
   local_printer_ash()->GetEulaUrl(
@@ -1057,7 +1050,7 @@ class LocalPrinterAshWithOAuth2Test : public testing::Test {
         base::BindLambdaForTesting([this](content::BrowserContext* context)
                                        -> std::unique_ptr<KeyedService> {
           auto printers_manager =
-              std::make_unique<ash::TestCupsPrintersManager>();
+              std::make_unique<ash::FakeCupsPrintersManager>();
           printers_manager_ = printers_manager.get();
           return printers_manager;
         }));
@@ -1076,7 +1069,7 @@ class LocalPrinterAshWithOAuth2Test : public testing::Test {
   }
 
  protected:
-  ash::TestCupsPrintersManager& printers_manager() {
+  ash::FakeCupsPrintersManager& printers_manager() {
     DCHECK(printers_manager_);
     return *printers_manager_;
   }
@@ -1099,7 +1092,7 @@ class LocalPrinterAshWithOAuth2Test : public testing::Test {
 
   // Must outlive `printers_manager_`.
   TestingProfile profile_;
-  raw_ptr<ash::TestCupsPrintersManager, ExperimentalAsh> printers_manager_ =
+  raw_ptr<ash::FakeCupsPrintersManager, ExperimentalAsh> printers_manager_ =
       nullptr;
   raw_ptr<
       testing::StrictMock<ash::printing::oauth2::MockAuthorizationZoneManager>,
@@ -1260,7 +1253,7 @@ class LocalPrinterAshWithIppClientInfoTest : public LocalPrinterAshTest {
         base::BindLambdaForTesting([this](content::BrowserContext* context)
                                        -> std::unique_ptr<KeyedService> {
           auto printers_manager =
-              std::make_unique<ash::TestCupsPrintersManager>();
+              std::make_unique<ash::FakeCupsPrintersManager>();
           printers_manager_ = printers_manager.get();
           return printers_manager;
         }));
@@ -1274,7 +1267,7 @@ class LocalPrinterAshWithIppClientInfoTest : public LocalPrinterAshTest {
   }
 
  protected:
-  ash::TestCupsPrintersManager& printers_manager() {
+  ash::FakeCupsPrintersManager& printers_manager() {
     DCHECK(printers_manager_);
     return *printers_manager_;
   }
@@ -1293,7 +1286,7 @@ class LocalPrinterAshWithIppClientInfoTest : public LocalPrinterAshTest {
   // Must outlive `printers_manager_`.
   TestingProfile profile_;
   FakeUser primary_user_;
-  raw_ptr<ash::TestCupsPrintersManager, ExperimentalAsh> printers_manager_ =
+  raw_ptr<ash::FakeCupsPrintersManager, ExperimentalAsh> printers_manager_ =
       nullptr;
   NiceMock<MockIppClientInfoCalculator> client_info_calculator_;
   std::unique_ptr<crosapi::LocalPrinterAsh> local_printer_ash_;

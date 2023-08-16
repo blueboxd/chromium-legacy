@@ -177,8 +177,6 @@ BASE_FEATURE(kAllowBypassRenderPassQuads,
              "AllowBypassRenderPassQuads",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// TODO(crbug.com/1357744): Solve the vulkan flakiness issue before enabling
-// this on Linux.
 BASE_FEATURE(kAllowUndamagedNonrootRenderPassToSkip,
              "AllowUndamagedNonrootRenderPassToSkip",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -252,6 +250,13 @@ BASE_FEATURE(kOnBeginFrameAllowLateAcks,
              "OnBeginFrameAllowLateAcks",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// if enabled, Any CompositorFrameSink of type video that defines a preferred
+// framerate that is below the display framerate will throttle OnBeginFrame
+// callbacks to match the preferred framerate.
+BASE_FEATURE(kOnBeginFrameThrottleVideo,
+             "OnBeginFrameThrottleVideo",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSharedBitmapToSharedImage,
              "SharedBitmapToSharedImage",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -278,6 +283,12 @@ BASE_FEATURE(kEnableADPFMidFrameBoost,
 // this multiplier * ADPF target_duration.
 const base::FeatureParam<double> kADPFMidFrameBoostDurationMultiplier{
     &kEnableADPFMidFrameBoost, "adpf_mid_frame_boost_multiplier", 1.0};
+
+// If enabled, Chrome includes the Renderer Main thread(s) into the
+// ADPF(Android Dynamic Performance Framework) hint session.
+BASE_FEATURE(kEnableADPFRendererMain,
+             "EnableADPFRendererMain",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsDelegatedCompositingEnabled() {
   return base::FeatureList::IsEnabled(kDelegatedCompositing);
@@ -403,6 +414,10 @@ bool ShouldVideoDetectorIgnoreNonVideoFrames() {
 
 bool ShouldOverrideThrottledFrameRateParams() {
   return base::FeatureList::IsEnabled(kOverrideThrottledFrameRateParams);
+}
+
+bool ShouldOnBeginFrameThrottleVideo() {
+  return base::FeatureList::IsEnabled(features::kOnBeginFrameThrottleVideo);
 }
 
 bool ShouldRendererAllocateImages() {

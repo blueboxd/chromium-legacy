@@ -722,10 +722,8 @@ class ManifestUpdateManagerBrowserTest_UpdateDialog
     std::vector<base::test::FeatureRef> enabled_features;
     std::vector<base::test::FeatureRef> disabled_features;
     if (IsUpdateDialogEnabled()) {
-      enabled_features.push_back(features::kPwaUpdateDialogForName);
       enabled_features.push_back(features::kPwaUpdateDialogForIcon);
     } else {
-      disabled_features.push_back(features::kPwaUpdateDialogForName);
       disabled_features.push_back(features::kPwaUpdateDialogForIcon);
     }
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
@@ -1052,44 +1050,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   histogram_tester_.ExpectTotalCount(kUpdateHistogramName, 0);
 }
 
-class ManifestUpdateManagerBrowserTest_ExternalPrefMigration
-    : public ManifestUpdateManagerBrowserTest,
-      public testing::WithParamInterface<test::ExternalPrefMigrationTestCases> {
- public:
-  ManifestUpdateManagerBrowserTest_ExternalPrefMigration() {
-    std::vector<base::test::FeatureRef> enabled_features;
-    std::vector<base::test::FeatureRef> disabled_features;
-
-    switch (GetParam()) {
-      case test::ExternalPrefMigrationTestCases::kDisableMigrationReadPref:
-        disabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
-        disabled_features.push_back(
-            features::kUseWebAppDBInsteadOfExternalPrefs);
-        break;
-      case test::ExternalPrefMigrationTestCases::kDisableMigrationReadDB:
-        disabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
-        enabled_features.push_back(
-            features::kUseWebAppDBInsteadOfExternalPrefs);
-        break;
-      case test::ExternalPrefMigrationTestCases::kEnableMigrationReadPref:
-        enabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
-        disabled_features.push_back(
-            features::kUseWebAppDBInsteadOfExternalPrefs);
-        break;
-      case test::ExternalPrefMigrationTestCases::kEnableMigrationReadDB:
-        enabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
-        enabled_features.push_back(
-            features::kUseWebAppDBInsteadOfExternalPrefs);
-        break;
-    }
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_ExternalPrefMigration,
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                        CheckIgnoresPlaceholderApps) {
   // Set up app URL to redirect to force placeholder app to install.
   const GURL app_url = GetAppURL();
@@ -1131,7 +1092,7 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_ExternalPrefMigration,
       kUpdateHistogramName, ManifestUpdateResult::kAppIsPlaceholder, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_ExternalPrefMigration,
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                        CheckIgnoresPlaceholderAppsForKiosk) {
   // Set up app URL to redirect to force placeholder app to install.
   const GURL app_url = GetAppURL();
@@ -1172,16 +1133,6 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_ExternalPrefMigration,
   histogram_tester_.ExpectBucketCount(
       kUpdateHistogramName, ManifestUpdateResult::kAppIsPlaceholder, 1);
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    ManifestUpdateManagerBrowserTest_ExternalPrefMigration,
-    ::testing::Values(
-        test::ExternalPrefMigrationTestCases::kDisableMigrationReadPref,
-        test::ExternalPrefMigrationTestCases::kDisableMigrationReadDB,
-        test::ExternalPrefMigrationTestCases::kEnableMigrationReadPref,
-        test::ExternalPrefMigrationTestCases::kEnableMigrationReadDB),
-    test::GetExternalPrefMigrationTestName);
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                        CheckFindsThemeColorChange) {
@@ -4382,7 +4333,7 @@ class ManifestUpdateManagerAppIdentityBrowserTest
  public:
   ManifestUpdateManagerAppIdentityBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
-        {features::kPwaUpdateDialogForIcon, features::kPwaUpdateDialogForName},
+        {features::kPwaUpdateDialogForIcon},
         // These tests also cover update during shutdown which is reliably
         // triggered by having the web app window being the last browser window
         // to close when manifest updating is awaiting all web app windows to
@@ -5068,18 +5019,17 @@ enum AppIdTestParam {
   kWithFlagNone = 1 << 5,
   kWithFlagPolicyAppIdentity = 1 << 6,
   kWithFlagAppIdDialogForIcon = 1 << 7,
-  kWithFlagAppIdDialogForName = 1 << 8,
-  kActionUpdateTitle = 1 << 9,
-  kActionUpdateTitleAndLauncherIcon = 1 << 10,
-  kActionUpdateLauncherIcon = 1 << 11,
-  kActionUpdateInstallIcon = 1 << 12,
-  kActionUpdateLauncherAndInstallIcon = 1 << 13,
-  kActionUpdateUnimportantIcon = 1 << 14,
-  kActionRemoveLauncherIcon = 1 << 15,
-  kActionRemoveInstallIcon = 1 << 16,
-  kActionRemoveUnimportantIcon = 1 << 17,
-  kActionSwitchFromLauncher = 1 << 18,
-  kActionSwitchToLauncher = 1 << 19,
+  kActionUpdateTitle = 1 << 8,
+  kActionUpdateTitleAndLauncherIcon = 1 << 9,
+  kActionUpdateLauncherIcon = 1 << 10,
+  kActionUpdateInstallIcon = 1 << 11,
+  kActionUpdateLauncherAndInstallIcon = 1 << 12,
+  kActionUpdateUnimportantIcon = 1 << 13,
+  kActionRemoveLauncherIcon = 1 << 14,
+  kActionRemoveInstallIcon = 1 << 15,
+  kActionRemoveUnimportantIcon = 1 << 16,
+  kActionSwitchFromLauncher = 1 << 17,
+  kActionSwitchToLauncher = 1 << 18,
 };
 
 class ManifestUpdateManagerBrowserTest_AppIdentityParameterized
@@ -5094,11 +5044,6 @@ class ManifestUpdateManagerBrowserTest_AppIdentityParameterized
       enabled_features.push_back(features::kPwaUpdateDialogForIcon);
     } else {
       disabled_features.push_back(features::kPwaUpdateDialogForIcon);
-    }
-    if (IsAppIdentityUpdateDialogForNameEnabled()) {
-      enabled_features.push_back(features::kPwaUpdateDialogForName);
-    } else {
-      disabled_features.push_back(features::kPwaUpdateDialogForName);
     }
     if (IsPolicyAppIdentityOverrideEnabled()) {
       enabled_features.push_back(
@@ -5127,10 +5072,6 @@ class ManifestUpdateManagerBrowserTest_AppIdentityParameterized
   bool IsAppIdentityUpdateDialogForIconEnabled() const {
     return std::get<2>(GetParam()) &
            AppIdTestParam::kWithFlagAppIdDialogForIcon;
-  }
-  bool IsAppIdentityUpdateDialogForNameEnabled() const {
-    return std::get<2>(GetParam()) &
-           AppIdTestParam::kWithFlagAppIdDialogForName;
   }
   bool IsPolicyAppIdentityOverrideEnabled() const {
     return std::get<2>(GetParam()) & AppIdTestParam::kWithFlagPolicyAppIdentity;
@@ -5209,9 +5150,7 @@ class ManifestUpdateManagerBrowserTest_AppIdentityParameterized
     if (IsPolicyApp())
       return IsPolicyAppIdentityOverrideEnabled();
 
-    // User-installed apps don't get title updates unless App Id dialog is
-    // enabled for names.
-    return IsAppIdentityUpdateDialogForNameEnabled();
+    return true;  // App Identity Updates for names have launched.
   }
 
   // This function describes in which scenarios the test should expect the icons
@@ -5283,8 +5222,6 @@ class ManifestUpdateManagerBrowserTest_AppIdentityParameterized
       result += "PolicyCanUpdate_";
     if (flags & AppIdTestParam::kWithFlagAppIdDialogForIcon)
       result += "WithAppIdDlgForIcon_";
-    if (flags & AppIdTestParam::kWithFlagAppIdDialogForName)
-      result += "WithAppIdDlgForName_";
 
     return result;
   }
@@ -5382,9 +5319,6 @@ IN_PROC_BROWSER_TEST_P(
   trace += (IsAppIdentityUpdateDialogForIconEnabled()
                 ? ", with AppIdDlgForIcon: YES\n"
                 : ", with AppIdDlgForIcon: NO\n");
-  trace += (IsAppIdentityUpdateDialogForNameEnabled()
-                ? ", with AppIdDlgForName: YES\n"
-                : ", with AppIdDlgForName: NO\n");
 
   trace += base::ReplaceStringPlaceholders(
       "UPDATE: Title: $1 Launcher $2 Install $3 Other $4\n",
@@ -5420,8 +5354,14 @@ IN_PROC_BROWSER_TEST_P(
       nullptr);
   trace += "---------------------------\n";
 
-  if (IsAppIdentityUpdateDialogForIconEnabled() ||
-      IsAppIdentityUpdateDialogForNameEnabled()) {
+  // We need to auto-accept the App Identity Update dialog whenever the test
+  // enables icon updates, but also when title updates are requested (because
+  // they are default-enabled). When icon updates become default-enabled also,
+  // we can change this to auto-accept when either icon updates are requested,
+  // or name updates, or both.
+  if (IsAppIdentityUpdateDialogForIconEnabled()) {
+    AcceptAppIdentityUpdateDialogForTesting();
+  } else if (TitleUpdate()) {
     AcceptAppIdentityUpdateDialogForTesting();
   }
 
@@ -5689,13 +5629,9 @@ INSTANTIATE_TEST_SUITE_P(
                         AppIdTestParam::kTypeWebApp),
         testing::Values(AppIdTestParam::kWithFlagNone,
                         AppIdTestParam::kWithFlagAppIdDialogForIcon,
-                        AppIdTestParam::kWithFlagAppIdDialogForName,
-                        AppIdTestParam::kWithFlagAppIdDialogForIcon |
-                            AppIdTestParam::kWithFlagAppIdDialogForName,
                         AppIdTestParam::kWithFlagPolicyAppIdentity,
                         AppIdTestParam::kWithFlagPolicyAppIdentity |
-                            AppIdTestParam::kWithFlagAppIdDialogForIcon |
-                            AppIdTestParam::kWithFlagAppIdDialogForName)),
+                            AppIdTestParam::kWithFlagAppIdDialogForIcon)),
     ManifestUpdateManagerBrowserTest_AppIdentityParameterized::ParamToString);
 
 }  // namespace web_app

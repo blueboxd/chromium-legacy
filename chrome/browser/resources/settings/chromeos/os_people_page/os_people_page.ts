@@ -29,11 +29,11 @@ import {afterNextRender, flush, PolymerElement} from 'chrome://resources/polymer
 import {isAccountManagerEnabled} from '../common/load_time_booleans.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {LockStateMixin} from '../lock_state_mixin.js';
+import {Section} from '../mojom-webui/routes.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {OsPageAvailability} from '../os_page_availability.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
-import {Route, Router} from '../router.js';
+import {Route, Router, routes} from '../router.js';
 
 import {Account, AccountManagerBrowserProxyImpl} from './account_manager_browser_proxy.js';
 import {getTemplate} from './os_people_page.html.js';
@@ -56,6 +56,12 @@ export class OsSettingsPeoplePageElement extends
       prefs: {
         type: Object,
         notify: true,
+      },
+
+      section_: {
+        type: Number,
+        value: Section.kPeople,
+        readOnly: true,
       },
 
       /**
@@ -184,6 +190,7 @@ export class OsSettingsPeoplePageElement extends
   private isAccountManagerEnabled_: boolean;
   private showParentalControls_: boolean;
   private focusConfig_: Map<string, string>;
+  private section_: Section;
   private showPasswordPromptDialog_: boolean;
   private showSyncSettingsRevamp_: boolean;
   private setModes_: Object|undefined;

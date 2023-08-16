@@ -18,6 +18,7 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/overloaded.h"
@@ -29,7 +30,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
-#include "components/aggregation_service/aggregation_service.mojom.h"
+#include "components/aggregation_service/features.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/aggregation_keys.h"
@@ -43,6 +44,7 @@
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
+#include "content/browser/attribution_reporting/attribution_features.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_reporting.pb.h"
@@ -52,6 +54,7 @@
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/create_report_result.h"
+#include "content/browser/attribution_reporting/destination_throttler.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "content/browser/attribution_reporting/sql_queries.h"
 #include "content/browser/attribution_reporting/sql_utils.h"
@@ -61,6 +64,7 @@
 #include "content/public/browser/attribution_data_model.h"
 #include "net/base/schemeful_site.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/trigger_verification.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/recovery.h"
@@ -79,8 +83,6 @@ namespace {
 
 using AggregatableResult = ::content::AttributionTrigger::AggregatableResult;
 using EventLevelResult = ::content::AttributionTrigger::EventLevelResult;
-
-using ::aggregation_service::mojom::AggregationCoordinator;
 
 using ::attribution_reporting::SuitableOrigin;
 using ::attribution_reporting::mojom::SourceRegistrationTimeConfig;
@@ -308,11 +310,11 @@ std::string SerializeReportMetadata(
 void SerializeCommonAggregatableData(
     const AttributionReport::CommonAggregatableData& data,
     proto::AttributionCommonAggregatableMetadata& msg) {
-  switch (data.aggregation_coordinator) {
-    case AggregationCoordinator::kAwsCloud:
-      msg.set_coordinator(
-          proto::AttributionCommonAggregatableMetadata::AWS_CLOUD);
-      break;
+  if (base::FeatureList::IsEnabled(
+          aggregation_service::kAggregationServiceMultipleCloudProviders) &&
+      data.aggregation_coordinator_origin.has_value()) {
+    msg.set_coordinator_origin(
+        data.aggregation_coordinator_origin->Serialize());
   }
 
   if (const auto& verification_token = data.verification_token;
@@ -335,16 +337,20 @@ void SerializeCommonAggregatableData(
 [[nodiscard]] bool DeserializeCommonAggregatableData(
     const proto::AttributionCommonAggregatableMetadata& msg,
     AttributionReport::CommonAggregatableData& data) {
-  if (!msg.has_coordinator() || !msg.has_source_registration_time_config()) {
+  if (!msg.has_source_registration_time_config()) {
     return false;
   }
 
-  switch (msg.coordinator()) {
-    case proto::AttributionCommonAggregatableMetadata::AWS_CLOUD:
-      data.aggregation_coordinator = AggregationCoordinator::kAwsCloud;
-      break;
-    default:
+  if (base::FeatureList::IsEnabled(
+          ::aggregation_service::kAggregationServiceMultipleCloudProviders) &&
+      msg.has_coordinator_origin()) {
+    absl::optional<SuitableOrigin> aggregation_coordinator_origin =
+        SuitableOrigin::Deserialize(msg.coordinator_origin());
+    if (!aggregation_coordinator_origin.has_value()) {
       return false;
+    }
+    data.aggregation_coordinator_origin =
+        std::move(aggregation_coordinator_origin);
   }
 
   switch (msg.source_registration_time_config()) {
@@ -609,6 +615,20 @@ base::FilePath DatabasePath(const base::FilePath& user_data_directory) {
   return user_data_directory.Append(kDatabasePath);
 }
 
+StorableSource::Result ThrottleResultToStorableSourceResult(
+    DestinationThrottler::Result r) {
+  switch (r) {
+    case DestinationThrottler::Result::kAllowed:
+      return StorableSource::Result::kSuccess;
+    case DestinationThrottler::Result::kHitGlobalLimit:
+      return StorableSource::Result::kDestinationGlobalLimitReached;
+    case DestinationThrottler::Result::kHitReportingLimit:
+      return StorableSource::Result::kDestinationReportingLimitReached;
+    case DestinationThrottler::Result::kHitBothLimits:
+      return StorableSource::Result::kDestinationBothLimitsReached;
+  }
+}
+
 }  // namespace
 
 AttributionStorageSql::AttributionStorageSql(
@@ -621,7 +641,8 @@ AttributionStorageSql::AttributionStorageSql(
                                .page_size = 4096,
                                .cache_size = 32}),
       delegate_(std::move(delegate)),
-      rate_limit_table_(delegate_.get()) {
+      rate_limit_table_(delegate_.get()),
+      throttler_(delegate_->GetDestinationThrottlerPolicy()) {
   DCHECK(delegate_);
 
   db_.set_histogram_tag("Conversions");
@@ -664,6 +685,14 @@ bool AttributionStorageSql::DeactivateSources(
 StoreSourceResult AttributionStorageSql::StoreSource(
     const StorableSource& source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (StorableSource::Result result = CheckDestinationThrottler(source);
+      result != StorableSource::Result::kSuccess) {
+    StoreSourceResult store_result(result);
+    store_result.max_destinations_per_rate_limit_window_reporting_origin =
+        throttler_.GetMaxPerReportingSite();
+    return store_result;
+  }
+
   // Force the creation of the database if it doesn't exist, as we need to
   // persist the source.
   if (!LazyInit(DbCreationPolicy::kCreateIfAbsent)) {
@@ -892,6 +921,19 @@ StoreSourceResult AttributionStorageSql::StoreSource(
           ? StorableSource::Result::kSuccess
           : StorableSource::Result::kSuccessNoised,
       min_fake_report_time);
+}
+
+StorableSource::Result AttributionStorageSql::CheckDestinationThrottler(
+    const StorableSource& source) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DestinationThrottler::Result throttle_result = throttler_.UpdateAndGetResult(
+      source.registration().destination_set,
+      net::SchemefulSite(source.common_info().source_origin()),
+      net::SchemefulSite(source.common_info().reporting_origin()));
+  base::UmaHistogramEnumeration("Conversions.DestinationThrottlerResult",
+                                throttle_result);
+
+  return ThrottleResultToStorableSourceResult(throttle_result);
 }
 
 // Checks whether a new report is allowed to be stored for the given source
@@ -1597,14 +1639,16 @@ AttributionStorageSql::ReadReportFromStatement(sql::Statement& statement) {
   // database corruption.
   // TODO(apaseltiner): Should we raze the DB if we've detected corruption?
   //
-  // TODO(linnan): Consider verifying that reporting origin stored in `reports`
-  // table is consistent with that in `sources` table.
-  //
   // TODO(apaseltiner): Consider verifying that `context_origin` is valid for
   // the associated source.
   if (failed_send_attempts < 0 || !external_report_id.is_valid() ||
       !context_origin.has_value() || !reporting_origin.has_value() ||
       !report_type.has_value()) {
+    return absl::nullopt;
+  }
+
+  if (source_data && *source_data->source.common_info().reporting_origin() !=
+                         *reporting_origin) {
     return absl::nullopt;
   }
 
@@ -2519,15 +2563,13 @@ bool AttributionStorageSql::CreateSchema() {
 void AttributionStorageSql::DatabaseErrorCallback(int extended_error,
                                                   sql::Statement* stmt) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Attempt to recover a corrupt database, unless it is setup in memory.
-  if (sql::Recovery::ShouldRecover(extended_error) &&
-      !path_to_database_.empty()) {
-    // Prevent reentrant calls.
-    db_.reset_error_callback();
-
-    // After this call, the |db_| handle is poisoned so that future calls will
-    // return errors until the handle is re-opened.
-    sql::Recovery::RecoverDatabaseWithMetaVersion(&db_, path_to_database_);
+  // Attempt to recover a corrupt database, if it is eligible to be recovered.
+  if (sql::BuiltInRecovery::RecoverIfPossible(
+          &db_, extended_error,
+          sql::BuiltInRecovery::Strategy::kRecoverWithMetaVersionOrRaze,
+          &kAttributionStorageUseBuiltInRecoveryIfSupported)) {
+    // Recovery was attempted. The database handle has been poisoned and the
+    // error callback has been reset.
 
     // The DLOG(FATAL) below is intended to draw immediate attention to errors
     // in newly-written code.  Database corruption is generally a result of OS
@@ -2827,7 +2869,7 @@ AttributionStorageSql::MaybeCreateAggregatableAttributionReport(
       /*failed_send_attempts=*/0,
       AttributionReport::AggregatableAttributionData(
           AttributionReport::CommonAggregatableData(
-              trigger_registration.aggregation_coordinator,
+              trigger_registration.aggregation_coordinator_origin,
               /*verification_token=*/absl::nullopt,
               trigger_registration.source_registration_time_config),
           std::move(contributions), source));
@@ -2975,7 +3017,7 @@ bool AttributionStorageSql::GenerateNullAggregatableReportsAndStoreReports(
           /*failed_send_attempts=*/0,
           AttributionReport::NullAggregatableData(
               AttributionReport::CommonAggregatableData(
-                  trigger.registration().aggregation_coordinator,
+                  trigger.registration().aggregation_coordinator_origin,
                   /*verification_token=*/absl::nullopt,
                   trigger.registration().source_registration_time_config),
               trigger.reporting_origin(),
@@ -3014,44 +3056,40 @@ void AttributionStorageSql::AssignTriggerVerificationData(
     const AttributionTrigger& trigger) {
   DCHECK(!reports.empty());
 
-  // TODO(crbug.com/1435014): Multiple verification tokens should be
-  // randomly assigned to the reports.
+  // TODO(https://crbug.com/1442578): Add metric to understand the number of
+  // reports sent with a verification token.
 
-  // TODO(crbug.com/1435014): Consider how this metric changes when multiple
-  // verification tokens are supported and whether it can be recorded in
-  // `AttributionManagerImpl`.
-  if (base::FeatureList::IsEnabled(
-          network::features::kAttributionReportingReportVerification)) {
-    base::UmaHistogramBoolean(
-        "Conversions.ReportVerification.ReportHasVerification",
-        trigger.verification().has_value());
-  }
-
-  if (!trigger.verification().has_value()) {
+  if (trigger.verifications().empty()) {
     return;
   }
 
+  // Assign verification tokens according to:
+  // https://wicg.github.io/attribution-reporting-api/#assign-private-state-tokens
   delegate_->ShuffleReports(reports);
 
-  AttributionReport& random_report = reports.front();
+  std::vector<network::TriggerVerification> verifications =
+      trigger.verifications();
+  delegate_->ShuffleTriggerVerifications(verifications);
 
-  const auto assign_trigger_verification =
-      [&](AttributionReport::CommonAggregatableData& data) {
-        data.verification_token = trigger.verification()->token();
-        random_report.set_external_report_id(
-            trigger.verification()->aggregatable_report_id());
-      };
+  for (size_t i = 0; i < verifications.size() && i < reports.size(); ++i) {
+    network::TriggerVerification& verification = verifications.at(i);
+    AttributionReport& report = reports.at(i);
 
-  absl::visit(
-      base::Overloaded{
-          [](const AttributionReport::EventLevelData&) { NOTREACHED(); },
-          [&](AttributionReport::AggregatableAttributionData& data) {
-            assign_trigger_verification(data.common_data);
-          },
-          [&](AttributionReport::NullAggregatableData& data) {
-            assign_trigger_verification(data.common_data);
-          }},
-      random_report.data());
+    report.set_external_report_id(
+        std::move(verification.aggregatable_report_id()));
+    absl::visit(
+        base::Overloaded{
+            [](const AttributionReport::EventLevelData&) { NOTREACHED(); },
+            [&](AttributionReport::AggregatableAttributionData& data) {
+              data.common_data.verification_token =
+                  std::move(verification.token());
+            },
+            [&](AttributionReport::NullAggregatableData& data) {
+              data.common_data.verification_token =
+                  std::move(verification.token());
+            }},
+        report.data());
+  }
 }
 
 std::set<AttributionDataModel::DataKey>

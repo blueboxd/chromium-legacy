@@ -8,7 +8,6 @@
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
-#import "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/core/common/autofill_features.h"
@@ -17,15 +16,12 @@
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_params.h"
-#import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
 #import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/shared/coordinator/chrome_coordinator/chrome_coordinator.h"
-#import "ios/chrome/browser/shared/model/application_context/application_context.h"
-#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/security_alert_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -273,15 +269,14 @@ using base::UmaHistogramEnumeration;
   }
 
   // Return early if the URL can't be verified.
-  web::URLVerificationTrustLevel trustLevel;
-  const GURL pageURL(webState->GetCurrentURL(&trustLevel));
-  if (trustLevel != web::URLVerificationTrustLevel::kAbsolute) {
+  absl::optional<GURL> pageURL = webState->GetLastCommittedURLIfTrusted();
+  if (!pageURL) {
     [self reset];
     return;
   }
 
   // Return early, pause and reset if the url is not HTML.
-  if (!web::UrlHasWebScheme(pageURL) || !webState->ContentIsHTML()) {
+  if (!web::UrlHasWebScheme(*pageURL) || !webState->ContentIsHTML()) {
     [self reset];
     return;
   }
@@ -343,26 +338,6 @@ using base::UmaHistogramEnumeration;
   return ChromiumAccessoryViewTextData();
 }
 
-#pragma mark - BrandingViewControllerDelegate
-
-- (void)brandingIconPressed {
-  base::RecordAction(base::UserMetricsAction("Autofill_BrandingTapped"));
-}
-
-- (BOOL)brandingIconShouldPerformPopAnimation {
-  return GetApplicationContext()->GetLocalState()->GetInteger(
-             prefs::kAutofillBrandingIconAnimationRemainingCountPrefName) > 0;
-}
-
-- (void)brandingIconDidPerformPopAnimation {
-  PrefService* local_state = GetApplicationContext()->GetLocalState();
-  const int current_remaining_count = local_state->GetInteger(
-      prefs::kAutofillBrandingIconAnimationRemainingCountPrefName);
-  local_state->SetInteger(
-      prefs::kAutofillBrandingIconAnimationRemainingCountPrefName,
-      current_remaining_count - 1);
-}
-
 #pragma mark - CRWWebStateObserver
 
 - (void)webStateWasShown:(web::WebState*)webState {
@@ -415,14 +390,13 @@ using base::UmaHistogramEnumeration;
   }
 
   // Return early if the URL can't be verified.
-  web::URLVerificationTrustLevel trustLevel;
-  const GURL pageURL(_webState->GetCurrentURL(&trustLevel));
-  if (trustLevel != web::URLVerificationTrustLevel::kAbsolute) {
+  absl::optional<GURL> pageURL = _webState->GetLastCommittedURLIfTrusted();
+  if (!pageURL) {
     return NO;
   }
 
   // Return early if the url is not HTML.
-  if (!web::UrlHasWebScheme(pageURL) || !_webState->ContentIsHTML()) {
+  if (!web::UrlHasWebScheme(*pageURL) || !_webState->ContentIsHTML()) {
     return NO;
   }
 

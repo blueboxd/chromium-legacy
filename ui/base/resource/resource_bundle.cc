@@ -38,8 +38,8 @@
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/data_pack.h"
+#include "ui/base/resource/resource_scale_factor.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display.h"
@@ -259,7 +259,7 @@ class ResourceBundle::BitmapImageSource : public gfx::ImageSkiaSource {
   }
 
  private:
-  raw_ptr<ResourceBundle> rb_;
+  raw_ptr<ResourceBundle, DanglingUntriaged> rb_;
 
   const int resource_id_;
 };
@@ -951,10 +951,8 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
 #if BUILDFLAG(IS_IOS)
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   if (display.device_scale_factor() > 2.0) {
-    DCHECK_EQ(3.0, display.device_scale_factor());
     supported_scale_factors.push_back(k300Percent);
   } else if (display.device_scale_factor() > 1.0) {
-    DCHECK_EQ(2.0, display.device_scale_factor());
     supported_scale_factors.push_back(k200Percent);
   } else {
     supported_scale_factors.push_back(k100Percent);

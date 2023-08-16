@@ -126,6 +126,7 @@
 #include "components/embedder_support/switches.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/google/core/common/google_util.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/language/content/browser/geo_language_provider.h"
 #include "components/language/core/browser/language_usage_metrics.h"
 #include "components/language/core/browser/pref_names.h"
@@ -195,8 +196,8 @@
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/switches.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_provider_manager.h"
 
 #if BUILDFLAG(ENABLE_COMPONENT_UPDATER)
 #include "chrome/browser/component_updater/registration.h"
@@ -293,6 +294,7 @@
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #include "chrome/browser/headless/headless_mode_metrics.h"  // nogncheck
 #include "chrome/browser/headless/headless_mode_util.h"     // nogncheck
+#include "components/headless/select_file_dialog/headless_select_file_dialog.h"
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
@@ -517,6 +519,27 @@ bool ShouldInstallSodaDuringPostProfileInit(
 #else
   return false;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+void DisallowKeyedServiceFactoryRegistration() {
+  // From this point, do not allow KeyedServiceFactories to be registered, all
+  // factories should be registered in the main registration function
+  // `ChromeBrowserMainExtraPartsProfiles::EnsureBrowserContextKeyedServiceFactoriesBuilt()`.
+  BrowserContextDependencyManager::GetInstance()
+      ->DisallowKeyedServiceFactoryRegistration(
+          "ChromeBrowserMainExtraPartsProfiles::"
+          "EnsureBrowserContextKeyedServiceFactoriesBuilt()");
+}
+
+#if !BUILDFLAG(IS_ANDROID)
+void StartWatchingForProcessShutdownHangs() {
+  // This HangWatcher scope is covering the shutdown phase up to the end of the
+  // process. Intentionally leak this instance so that it is not destroyed
+  // before process termination.
+  auto* watcher = new base::WatchHangsInScope(base::Seconds(30));
+  ANNOTATE_LEAKING_OBJECT_PTR(watcher);
+  std::ignore = watcher;
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -1186,6 +1209,8 @@ void ChromeBrowserMainParts::PreProfileInit() {
   for (auto& chrome_extra_part : chrome_extra_parts_)
     chrome_extra_part->PreProfileInit();
 
+  DisallowKeyedServiceFactoryRegistration();
+
 #if !BUILDFLAG(IS_ANDROID)
   // Ephemeral profiles may have been left behind if the browser crashed.
   g_browser_process->profile_manager()
@@ -1394,10 +1419,21 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         *base::CommandLine::ForCurrentProcess());
   }
 
-  ui::SelectFileDialog::SetFactory(new ChromeSelectFileDialogFactory());
+  ui::SelectFileDialog::SetFactory(
+      std::make_unique<ChromeSelectFileDialogFactory>());
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  ui::SelectFileDialog::SetFactory(new ui::SelectFileDialogLacros::Factory());
+  ui::SelectFileDialog::SetFactory(
+      std::make_unique<ui::SelectFileDialogLacros::Factory>());
 #endif  // BUILDFLAG(IS_WIN)
+
+  // In headless mode provide alternate SelectFileDialog factory overriding
+  // any platform specific SelectFileDialog implementation that may have been
+  // set.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  if (headless::IsHeadlessMode()) {
+    headless::HeadlessSelectFileDialogFactory::SetUp();
+  }
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMakeDefaultBrowser)) {
@@ -1901,14 +1937,15 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // disconnects DBus services in its PostDestroyThreads.
   UpgradeDetector::GetInstance()->Shutdown();
 
+  // Start watching hangs up to the end of the process.
+  StartWatchingForProcessShutdownHangs();
+
   // Two different types of hang detection cannot attempt to upload crashes at
-  // the same time or they would interfere with each other.
-  if (base::HangWatcher::IsCrashReportingEnabled()) {
-    // TODO(crbug.com/1327000): Migrate away from ShutdownWatcher and its old
-    // timing.
-    constexpr base::TimeDelta kShutdownHangDelay{base::Seconds(30)};
-    watch_hangs_scope_.emplace(kShutdownHangDelay);
-  } else {
+  // the same time or they would interfere with each other. Do not start the
+  // ShutdownWatcher if the HangWatcher is already collecting crash.
+  // TODO(crbug.com/1327000): Migrate away from ShutdownWatcher and its old
+  // timing.
+  if (!base::HangWatcher::IsCrashReportingEnabled()) {
     // Start watching for jank during shutdown. It gets disarmed when
     // |shutdown_watcher_| object is destructed.
     constexpr base::TimeDelta kShutdownHangDelay{base::Seconds(300)};

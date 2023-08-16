@@ -19,6 +19,7 @@
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/system_ui/arc_system_ui_bridge.h"
 #include "ash/constants/app_types.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/accelerators.h"
@@ -154,7 +155,6 @@
 #include "chrome/browser/ui/views/plugin_vm/plugin_vm_installer_view.h"
 #include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_dialog.h"
 #include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_ui.h"
-#include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/api/autotest_private.h"
@@ -168,6 +168,7 @@
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -255,6 +256,14 @@ namespace extensions {
 namespace {
 
 using chromeos::PrinterClass;
+
+// Features used for testing `isFeatureEnabled`.
+BASE_FEATURE(kEnabledFeatureForTest,
+             "EnabledFeatureForTest",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kDisabledFeatureForTest,
+             "DisabledFeatureForTest",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 constexpr char kCrostiniNotAvailableForCurrentUserError[] =
     "Crostini is not available for the current user";
@@ -625,10 +634,8 @@ chromeos::WindowStateType GetExpectedWindowState(
     case api::autotest_private::WMEventType::kWmeventFullscreen:
       return chromeos::WindowStateType::kFullscreen;
     case api::autotest_private::WMEventType::kWmeventSnapPrimary:
-    case api::autotest_private::WMEventType::kWmeventSnapLeft:
       return chromeos::WindowStateType::kPrimarySnapped;
     case api::autotest_private::WMEventType::kWmeventSnapSecondary:
-    case api::autotest_private::WMEventType::kWmeventSnapRight:
       return chromeos::WindowStateType::kSecondarySnapped;
     case api::autotest_private::WMEventType::kWmeventFloat:
       return chromeos::WindowStateType::kFloated;
@@ -649,10 +656,8 @@ ash::WMEventType ToWMEventType(api::autotest_private::WMEventType event_type) {
     case api::autotest_private::WMEventType::kWmeventFullscreen:
       return ash::WMEventType::WM_EVENT_FULLSCREEN;
     case api::autotest_private::WMEventType::kWmeventSnapPrimary:
-    case api::autotest_private::WMEventType::kWmeventSnapLeft:
       return ash::WMEventType::WM_EVENT_SNAP_PRIMARY;
     case api::autotest_private::WMEventType::kWmeventSnapSecondary:
-    case api::autotest_private::WMEventType::kWmeventSnapRight:
       return ash::WMEventType::WM_EVENT_SNAP_SECONDARY;
     case api::autotest_private::WMEventType::kWmeventFloat:
       return ash::WMEventType::WM_EVENT_FLOAT;
@@ -1967,6 +1972,12 @@ AutotestPrivateSetPlayStoreEnabledFunction::Run() {
     // currently.
     profile->GetPrefs()->SetBoolean(arc::prefs::kArcLocationServiceEnabled,
                                     true);
+    // Since we are settings location to enabled, we don't have to sync this
+    // settings from android.
+    if (base::FeatureList::IsEnabled(ash::features::kCrosPrivacyHub)) {
+      profile->GetPrefs()->SetBoolean(
+          arc::prefs::kArcInitialLocationSettingSyncRequired, false);
+    }
     return RespondNow(NoArguments());
   } else {
     return RespondNow(Error("ARC is not available for the current user"));
@@ -2028,6 +2039,8 @@ AutotestPrivateGetLacrosInfoFunction::ToLacrosState(
   switch (state) {
     case crosapi::BrowserManager::State::NOT_INITIALIZED:
       return api::autotest_private::LacrosState::kNotInitialized;
+    case crosapi::BrowserManager::State::RELOADING:
+      return api::autotest_private::LacrosState::kReloading;
     case crosapi::BrowserManager::State::MOUNTING:
       return api::autotest_private::LacrosState::kMounting;
     case crosapi::BrowserManager::State::UNAVAILABLE:
@@ -4735,11 +4748,7 @@ AutotestPrivateSetAppWindowStateFunction::Run() {
   if (params->change.event_type ==
           api::autotest_private::WMEventType::kWmeventSnapPrimary ||
       params->change.event_type ==
-          api::autotest_private::WMEventType::kWmeventSnapSecondary ||
-      params->change.event_type ==
-          api::autotest_private::WMEventType::kWmeventSnapLeft ||
-      params->change.event_type ==
-          api::autotest_private::WMEventType::kWmeventSnapRight) {
+          api::autotest_private::WMEventType::kWmeventSnapSecondary) {
     const ash::WindowSnapWMEvent event(
         ToWMEventType(params->change.event_type));
     ash::WindowState::Get(window)->OnWMEvent(&event);
@@ -6660,6 +6669,47 @@ void AutotestPrivateRemoveBruschettaFunction::OnRemoveVm(bool success) {
   } else {
     Respond(Error("Failed to uninstall bruschetta"));
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateIsFeatureEnabledFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateIsFeatureEnabledFunction::
+    AutotestPrivateIsFeatureEnabledFunction() = default;
+
+AutotestPrivateIsFeatureEnabledFunction::
+    ~AutotestPrivateIsFeatureEnabledFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateIsFeatureEnabledFunction::Run() {
+  absl::optional<api::autotest_private::IsFeatureEnabled::Params> params =
+      api::autotest_private::IsFeatureEnabled::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // base::FeatureList does not allow lookup by string name. Use an allowlist
+  // of features instead.
+  static const base::Feature* const kAllowList[] = {
+      // clang-format off
+      &ash::features::kPrivacyIndicators,
+      &ash::features::kQsRevamp,
+      &ash::features::kVideoConference,
+      &chromeos::features::kJelly,
+      &kDisabledFeatureForTest,
+      &kEnabledFeatureForTest,
+      // clang-format on
+  };
+  auto* const* it = base::ranges::find(kAllowList, params->feature_name,
+                                       &base::Feature::name);
+  if (it == std::end(kAllowList)) {
+    std::string error = base::StrCat(
+        {"feature ", params->feature_name,
+         " is not on allowlist, see "
+         "AutotestPrivateIsFeatureEnabledFunction::Run() to update the list"});
+    return RespondNow(Error(error));
+  }
+  bool enabled = base::FeatureList::IsEnabled(**it);
+  return RespondNow(WithArguments(enabled));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

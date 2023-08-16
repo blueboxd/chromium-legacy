@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/raw_ptr.h"
-
 #import "chrome/browser/app_controller_mac.h"
 
 #include <dispatch/dispatch.h>
@@ -16,7 +14,9 @@
 
 #include "base/allocator/partition_allocator/shim/allocator_shim.h"
 #include "base/allocator/buildflags.h"
+#include "base/apple/bridging.h"
 #include "base/auto_reset.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
@@ -24,6 +24,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_objc_class_swizzler.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_multi_source_observation.h"
@@ -128,6 +129,10 @@
 #include "ui/native_theme/native_theme_mac.h"
 #include "ui/native_theme/native_theme_observer.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -253,11 +258,6 @@ void AttemptSessionRestore(Profile* profile) {
   LaunchBrowserStartup(profile);
 }
 
-CFStringRef BaseBundleID_CFString() {
-  return base::mac::NSToCFCast(
-      base::SysUTF8ToNSString(base::mac::BaseBundleID()));
-}
-
 // Record the location of the application bundle (containing the main framework)
 // from which Chromium was loaded. This is used by app mode shims to find
 // Chromium.
@@ -277,11 +277,12 @@ void RecordLastRunAppBundlePath() {
                                        .DirName()
                                        .DirName()
                                        .DirName();
-  base::ScopedCFTypeRef<CFStringRef> app_bundle_path_cfstring(
-      base::SysUTF8ToCFStringRef(app_bundle_path.value()));
+  base::ScopedCFTypeRef<CFStringRef> app_bundle_path_cfstring =
+      base::SysUTF8ToCFStringRef(app_bundle_path.value());
   CFPreferencesSetAppValue(
-      base::mac::NSToCFCast(app_mode::kLastRunAppBundlePathPrefsKey),
-      app_bundle_path_cfstring, BaseBundleID_CFString());
+      base::apple::NSToCFPtrCast(app_mode::kLastRunAppBundlePathPrefsKey),
+      app_bundle_path_cfstring,
+      base::SysUTF8ToCFStringRef(base::mac::BaseBundleID()));
 }
 
 bool IsProfileSignedOut(const base::FilePath& profile_path) {
@@ -576,7 +577,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
  public:
-  AppControllerNativeThemeObserver(AppController* app_controller)
+  explicit AppControllerNativeThemeObserver(AppController* app_controller)
       : app_controller_(app_controller) {
     native_theme_observation_.Observe(
         ui::NativeThemeMac::GetInstanceForNativeUi());
@@ -593,9 +594,103 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   AppController* const app_controller_;  // Weak; owns us.
 };
 
-@implementation AppController
+@implementation AppController {
+  // Manages the state of the command menu items.
+  std::unique_ptr<CommandUpdater> _menuState;
+
+  // The profile last used by a Browser. It is this profile that was used to
+  // build the user-data specific main menu items.
+  raw_ptr<Profile, DanglingUntriaged> _lastProfile;
+
+  // The ProfileObserver observes the ProfileAttributesStorage and gets notified
+  // when a profile has been deleted.
+  std::unique_ptr<AppControllerProfileObserver>
+      _profileAttributesStorageObserver;
+
+  // The NativeThemeObserver observes system-wide theme related settings
+  // change.
+  std::unique_ptr<AppControllerNativeThemeObserver> _nativeThemeObserver;
+
+  // Management of the bookmark menu which spans across all windows
+  // (and Browser*s). |profileBookmarkMenuBridgeMap_| is a cache that owns one
+  // pointer to a BookmarkMenuBridge for each profile. |bookmarkMenuBridge_| is
+  // a weak pointer that is updated to match the corresponding cache entry
+  // during a profile switch.
+  raw_ptr<BookmarkMenuBridge, DanglingUntriaged> _bookmarkMenuBridge;
+  std::map<base::FilePath, std::unique_ptr<BookmarkMenuBridge>>
+      _profileBookmarkMenuBridgeMap;
+
+  std::unique_ptr<HistoryMenuBridge> _historyMenuBridge;
+
+  // Controller that manages main menu items for packaged apps.
+  AppShimMenuController* __strong _appShimMenuController;
+
+  // The profile menu, which appears right before the Help menu. It is only
+  // available when multiple profiles is enabled.
+  ProfileMenuController* __strong _profileMenuController;
+
+  // Controller for the macOS system share menu.
+  ShareMenuController* __strong _shareMenuController;
+
+  std::unique_ptr<TabMenuBridge> _tabMenuBridge;
+
+  // If we're told to open URLs (in particular, via |-application:openURLs:| by
+  // Launch Services) before we've launched the browser, we queue them up in
+  // |startupUrls_| so that they can go in the first browser window/tab.
+  std::vector<GURL> _startupUrls;
+  BOOL _startupComplete;
+
+  // Outlets for the close tab/window menu items so that we can adjust the
+  // command-key equivalent depending on the kind of window and how many
+  // tabs it has.
+  NSMenuItem* __strong _closeTabMenuItem;
+  NSMenuItem* __strong _closeWindowMenuItem;
+
+  std::unique_ptr<PrefChangeRegistrar> _profilePrefRegistrar;
+  PrefChangeRegistrar _localPrefRegistrar;
+
+  // Displays a notification when quitting while apps are running.
+  scoped_refptr<QuitWithAppsController> _quitWithAppsController;
+
+  // Responsible for maintaining all state related to the Handoff feature.
+  HandoffManager* __strong _handoffManager;
+
+  // Observes changes to the active web contents.
+  std::unique_ptr<HandoffObserver> _handoffObserver;
+
+  // This will be true after receiving a NSWorkspaceWillPowerOffNotification.
+  BOOL _isPoweringOff;
+
+  // This will be true after receiving a |-applicationWillTerminate:| event.
+  BOOL _isShuttingDown;
+
+  // Request to keep the browser alive during that object's lifetime.
+  std::unique_ptr<ScopedKeepAlive> _keepAlive;
+
+  // Remembers whether _lastProfile had TabRestoreService entries. This is saved
+  // when _lastProfile is destroyed and Chromium enters the zero-profile state.
+  //
+  // By remembering this bit, Chromium knows whether to enable or disable
+  // Cmd+Shift+T and the related "File > Reopen Closed Tab" entry.
+  BOOL _tabRestoreWasEnabled;
+
+  // The color provider associated with the last active browser view.
+  raw_ptr<const ui::ColorProvider, DanglingUntriaged> _lastActiveColorProvider;
+}
 
 @synthesize startupComplete = _startupComplete;
+
++ (AppController*)sharedController {
+  static AppController* sharedController = [] {
+    AppController* sharedController = [[AppController alloc] init];
+    NSApp.delegate = sharedController;
+    return sharedController;
+  }();
+
+  CHECK_NE(nil, sharedController);
+  CHECK_EQ(NSApp.delegate, sharedController);
+  return sharedController;
+}
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -605,19 +700,15 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
     [NSMenu cr_setMenuItemForKeyEquivalentEventPreSearchBlock:^{
       // We avoid calling -[NSMenuDelegate menuNeedsUpdate:] on each submenu's
       // delegate as that can be slow. Instead, we update the relevant
-      // NSMenuItems if [NSApp delegate] is an instance of AppController. See
-      // https://crbug.com/851260#c4 .
-      [base::mac::ObjCCast<AppController>([NSApp delegate])
-          updateMenuItemKeyEquivalents];
+      // NSMenuItems.
+      [AppController.sharedController updateMenuItemKeyEquivalents];
     }];
   }
   return self;
 }
 
 - (void)dealloc {
-  [[_closeTabMenuItem menu] setDelegate:nil];
-  [NSMenu cr_setMenuItemForKeyEquivalentEventPreSearchBlock:nil];
-  [super dealloc];
+  NOTREACHED();
 }
 
 // This method is called very early in application startup (ie, before
@@ -637,8 +728,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
         forEventClass:'WWW!'    // A particularly ancient AppleEvent that dates
            andEventID:'OURL'];  // back to the Spyglass days.
 
-  NSNotificationCenter* notificationCenter =
-      [NSNotificationCenter defaultCenter];
+  NSNotificationCenter* notificationCenter = NSNotificationCenter.defaultCenter;
   [notificationCenter
       addObserver:self
          selector:@selector(windowDidResignKey:)
@@ -650,13 +740,13 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
              name:NSWindowDidBecomeMainNotification
            object:nil];
 
-  [[[NSWorkspace sharedWorkspace] notificationCenter]
+  [NSWorkspace.sharedWorkspace.notificationCenter
       addObserver:self
          selector:@selector(willPowerOff:)
              name:NSWorkspaceWillPowerOffNotification
            object:nil];
 
-  NSMenu* fileMenu = [[[NSApp mainMenu] itemWithTag:IDC_FILE_MENU] submenu];
+  NSMenu* fileMenu = [[NSApp.mainMenu itemWithTag:IDC_FILE_MENU] submenu];
   _closeTabMenuItem = [fileMenu itemWithTag:IDC_CLOSE_TAB];
   DCHECK(_closeTabMenuItem);
   _closeWindowMenuItem = [fileMenu itemWithTag:IDC_CLOSE_WINDOW];
@@ -675,8 +765,8 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
                            andEventID:kAEGetURL];
   [em removeEventHandlerForEventClass:'WWW!'
                            andEventID:'OURL'];
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
+  [NSNotificationCenter.defaultCenter removeObserver:self];
+  [NSWorkspace.sharedWorkspace.notificationCenter removeObserver:self];
 }
 
 // (NSApplicationDelegate protocol) This is the Apple-approved place to override
@@ -799,7 +889,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
   // Tell BrowserList not to keep the browser process alive. Once all the
   // browsers get dealloc'd, it will stop the RunLoop and fall back into main().
-  _keep_alive.reset();
+  _keepAlive.reset();
 
   // Reset local state watching, as this object outlives the prefs system.
   _localPrefRegistrar.RemoveAll();
@@ -811,7 +901,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
   _profileAttributesStorageObserver.reset();
   [self unregisterEventHandlers];
-  _appShimMenuController.reset();
+  _appShimMenuController = nil;
   _profileBookmarkMenuBridgeMap.clear();
 }
 
@@ -836,28 +926,26 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 // otherwise leave it as the normal cmd-w. Capitalization of the key equivalent
 // affects whether the shift modifier is used.
 - (void)adjustCloseWindowMenuItemKeyEquivalent:(BOOL)enableCloseTabShortcut {
-  [_closeWindowMenuItem setKeyEquivalent:(enableCloseTabShortcut ? @"W" :
-                                                                   @"w")];
-  [_closeWindowMenuItem
-      setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
+  _closeWindowMenuItem.keyEquivalent = enableCloseTabShortcut ? @"W" : @"w";
+  _closeWindowMenuItem.keyEquivalentModifierMask = NSEventModifierFlagCommand;
 }
 
 // If the window has a tab controller, make "close tab" take over cmd-w,
 // otherwise it shouldn't have any key-equivalent because it should be disabled.
 - (void)adjustCloseTabMenuItemKeyEquivalent:(BOOL)enableCloseTabShortcut {
   if (enableCloseTabShortcut) {
-    [_closeTabMenuItem setKeyEquivalent:@"w"];
-    [_closeTabMenuItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
+    _closeTabMenuItem.keyEquivalent = @"w";
+    _closeTabMenuItem.keyEquivalentModifierMask = NSEventModifierFlagCommand;
   } else {
-    [_closeTabMenuItem setKeyEquivalent:@""];
-    [_closeTabMenuItem setKeyEquivalentModifierMask:0];
+    _closeTabMenuItem.keyEquivalent = @"";
+    _closeTabMenuItem.keyEquivalentModifierMask = 0;
   }
 }
 
 // See if the focused window window has tabs, and adjust the key equivalents for
 // Close Tab/Close Window accordingly.
 - (void)menuNeedsUpdate:(NSMenu*)menu {
-  DCHECK(menu == [_closeTabMenuItem menu]);
+  DCHECK(menu == _closeTabMenuItem.menu);
   [self updateMenuItemKeyEquivalents];
 }
 
@@ -917,8 +1005,8 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   CFPropertyListRef plist = CFPreferencesCopyAppValue(checkInterval, app);
   if (!plist) {
     const float fiveHoursInSeconds = 5.0 * 60.0 * 60.0;
-    NSNumber* value = [NSNumber numberWithFloat:fiveHoursInSeconds];
-    CFPreferencesSetAppValue(checkInterval, value, app);
+    CFPreferencesSetAppValue(
+        checkInterval, base::apple::NSToCFPtrCast(@(fiveHoursInSeconds)), app);
     CFPreferencesAppSynchronize(app);
   }
 #endif
@@ -974,7 +1062,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
   // Notify BrowserList to keep the application running so it doesn't go away
   // when all the browser windows get closed.
-  _keep_alive = std::make_unique<ScopedKeepAlive>(
+  _keepAlive = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::APP_CONTROLLER, KeepAliveRestartOption::DISABLED);
 
   [self setUpdateCheckInterval];
@@ -988,7 +1076,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   _quitWithAppsController = new QuitWithAppsController();
 
   // Dynamically update shortcuts for "Close Window" and "Close Tab" menu items.
-  [[_closeTabMenuItem menu] setDelegate:self];
+  _closeTabMenuItem.menu.delegate = self;
 
   // Instantiate the ProfileAttributesStorage observer so that we can get
   // notified when a profile is deleted.
@@ -1042,7 +1130,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
             _menuState.get()));
   }
 
-  _handoff_observer = std::make_unique<HandoffObserver>(self);
+  _handoffObserver = std::make_unique<HandoffObserver>(self);
 
   if (@available(macOS 10.15, *)) {
     ASWebAuthenticationSessionWebBrowserSessionManager.sharedManager
@@ -1063,27 +1151,24 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 // Helper function for populating and displaying the in progress downloads at
 // exit alert panel.
 - (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount {
-  NSString* titleText = nil;
-  NSString* explanationText = nil;
-  NSString* waitTitle = nil;
-  NSString* exitTitle = nil;
-
   // Set the dialog text based on whether or not there are multiple downloads.
   // Dialog text: warning and explanation.
-  titleText = l10n_util::GetPluralNSStringF(IDS_ABANDON_DOWNLOAD_DIALOG_TITLE,
-                                            downloadCount);
-  explanationText =
+  NSString* titleText = l10n_util::GetPluralNSStringF(
+      IDS_ABANDON_DOWNLOAD_DIALOG_TITLE, downloadCount);
+  NSString* explanationText =
       l10n_util::GetNSString(IDS_ABANDON_DOWNLOAD_DIALOG_BROWSER_MESSAGE);
+
   // "Cancel download and exit" button text.
-  exitTitle = l10n_util::GetNSString(IDS_ABANDON_DOWNLOAD_DIALOG_EXIT_BUTTON);
+  NSString* exitTitle =
+      l10n_util::GetNSString(IDS_ABANDON_DOWNLOAD_DIALOG_EXIT_BUTTON);
 
   // "Wait for download" button text.
-  waitTitle =
+  NSString* waitTitle =
       l10n_util::GetNSString(IDS_ABANDON_DOWNLOAD_DIALOG_CONTINUE_BUTTON);
 
-  base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
-  [alert setMessageText:titleText];
-  [alert setInformativeText:explanationText];
+  NSAlert* alert = [[NSAlert alloc] init];
+  alert.messageText = titleText;
+  alert.informativeText = explanationText;
   [alert addButtonWithTitle:waitTitle];
   [alert addButtonWithTitle:exitTitle];
 
@@ -1103,30 +1188,30 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
 
   std::vector<Profile*> added_profiles;
-  for (Profile* p : profiles) {
-    for (Profile* otr : p->GetAllOffTheRecordProfiles())
+  for (Profile* profile : profiles) {
+    for (Profile* otr : profile->GetAllOffTheRecordProfiles())
       added_profiles.push_back(otr);
   }
   profiles.insert(profiles.end(), added_profiles.begin(), added_profiles.end());
 
-  for (size_t i = 0; i < profiles.size(); ++i) {
+  for (Profile* profile : profiles) {
     DownloadCoreService* download_core_service =
-            DownloadCoreServiceFactory::GetForBrowserContext(profiles[i]);
-        // `DownloadCoreService` can be nullptr for some irregular profiles, e.g.
-        // the System Profile.
-        content::DownloadManager* download_manager =
-            download_core_service &&
-                    download_core_service->HasCreatedDownloadManager()
-                ? profiles[i]->GetDownloadManager()
-                : nullptr;
+        DownloadCoreServiceFactory::GetForBrowserContext(profile);
+    // `DownloadCoreService` can be nullptr for some irregular profiles, e.g.
+    // the System Profile.
+    content::DownloadManager* download_manager =
+        download_core_service &&
+                download_core_service->HasCreatedDownloadManager()
+            ? profile->GetDownloadManager()
+            : nullptr;
     if (download_manager && download_manager->BlockingShutdownCount() > 0) {
       int downloadCount = download_manager->BlockingShutdownCount();
       if ([self userWillWaitForInProgressDownloads:downloadCount]) {
         // Create a new browser window (if necessary) and navigate to the
         // downloads page if the user chooses to wait.
-        Browser* browser = chrome::FindBrowserWithProfile(profiles[i]);
+        Browser* browser = chrome::FindBrowserWithProfile(profile);
         if (!browser) {
-          browser = Browser::Create(Browser::CreateParams(profiles[i], true));
+          browser = Browser::Create(Browser::CreateParams(profile, true));
           browser->window()->Show();
         }
         DCHECK(browser);
@@ -1318,8 +1403,9 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   // If not between -applicationDidFinishLaunching: and
   // -applicationWillTerminate:, ignore. This can happen when events are sitting
   // in the event queue while the browser is shutting down.
-  if (!_keep_alive)
+  if (!_keepAlive) {
     return;
+  }
 
   Profile* unsafeLastProfile = [self lastProfileIfLoaded];
   Profile* lastProfile = [self safeProfileForNewWindows:unsafeLastProfile];
@@ -1347,9 +1433,9 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
   // Asynchronously load profile first if needed.
   app_controller_mac::RunInLastProfileSafely(
-      base::BindOnce(base::RetainBlock(^(Profile* profile) {
+      base::BindOnce(^(Profile* profile) {
         [self executeCommand:sender withProfile:profile];
-      })),
+      }),
       app_controller_mac::kShowProfilePickerOnFailure);
 }
 
@@ -1569,20 +1655,18 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   // The controller will unhide the menu if necessary.
   [profileMenu setHidden:YES];
 
-  _profileMenuController.reset(
-      [[ProfileMenuController alloc] initWithMainMenuItem:profileMenu]);
+  _profileMenuController =
+      [[ProfileMenuController alloc] initWithMainMenuItem:profileMenu];
 }
 
 - (void)initShareMenu {
-  _shareMenuController.reset([[ShareMenuController alloc] init]);
-  NSMenu* mainMenu = [NSApp mainMenu];
-  NSMenu* fileMenu = [[mainMenu itemWithTag:IDC_FILE_MENU] submenu];
+  _shareMenuController = [[ShareMenuController alloc] init];
+  NSMenu* fileMenu = [NSApp.mainMenu itemWithTag:IDC_FILE_MENU].submenu;
   NSString* shareMenuTitle = l10n_util::GetNSString(IDS_SHARE_MAC);
   NSMenuItem* shareMenuItem = [fileMenu itemWithTitle:shareMenuTitle];
-  base::scoped_nsobject<NSMenu> shareSubmenu(
-      [[NSMenu alloc] initWithTitle:shareMenuTitle]);
-  [shareSubmenu setDelegate:_shareMenuController];
-  [shareMenuItem setSubmenu:shareSubmenu];
+  NSMenu* shareSubmenu = [[NSMenu alloc] initWithTitle:shareMenuTitle];
+  shareSubmenu.delegate = _shareMenuController;
+  shareMenuItem.submenu = shareSubmenu;
 }
 
 // The Confirm to Quit preference is atypical in that the preference lives in
@@ -1709,9 +1793,9 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 - (IBAction)showPreferences:(id)sender {
   // Asynchronously load profile first if needed.
   app_controller_mac::RunInLastProfileSafely(
-      base::BindOnce(base::RetainBlock(^(Profile* profile) {
+      base::BindOnce(^(Profile* profile) {
         [self showPreferencesForProfile:profile];
-      })),
+      }),
       app_controller_mac::kShowProfilePickerOnFailure);
 }
 
@@ -1730,9 +1814,9 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 - (IBAction)orderFrontStandardAboutPanel:(id)sender {
   // Asynchronously load profile first if needed.
   app_controller_mac::RunInLastProfileSafely(
-      base::BindOnce(base::RetainBlock(^(Profile* profile) {
+      base::BindOnce(^(Profile* profile) {
         [self orderFrontStandardAboutPanelForProfile:profile];
-      })),
+      }),
       app_controller_mac::kShowProfilePickerOnFailure);
 }
 
@@ -1761,22 +1845,23 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 }
 
 - (NSMenu*)applicationDockMenu:(NSApplication*)sender {
-  NSMenu* dockMenu = [[[NSMenu alloc] initWithTitle: @""] autorelease];
+  NSMenu* dockMenu = [[NSMenu alloc] initWithTitle:@""];
 
   BOOL profilesAdded = [_profileMenuController insertItemsIntoMenu:dockMenu
                                                           atOffset:0
                                                           fromDock:YES];
-  if (profilesAdded)
+  if (profilesAdded) {
     [dockMenu addItem:[NSMenuItem separatorItem]];
+  }
 
   NSString* titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_WINDOW_MAC);
-  base::scoped_nsobject<NSMenuItem> item(
+  NSMenuItem* item =
       [[NSMenuItem alloc] initWithTitle:titleStr
                                  action:@selector(commandFromDock:)
-                          keyEquivalent:@""]);
-  [item setTarget:self];
-  [item setTag:IDC_NEW_WINDOW];
-  [item setEnabled:[self validateUserInterfaceItem:item]];
+                          keyEquivalent:@""];
+  item.target = self;
+  item.tag = IDC_NEW_WINDOW;
+  item.enabled = [self validateUserInterfaceItem:item];
   [dockMenu addItem:item];
 
   Profile* profile = [self lastProfileIfLoaded];
@@ -1784,19 +1869,19 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   // Buttons below require the profile to be loaded. In particular, if the
   // profile picker is shown at startup, these buttons won't be added until the
   // user picks a profile.
-  if (!profile)
+  if (!profile) {
     return dockMenu;
+  }
 
   if (IncognitoModePrefs::GetAvailability(profile->GetPrefs()) !=
       policy::IncognitoModeAvailability::kDisabled) {
     titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_INCOGNITO_WINDOW_MAC);
-    item.reset(
-        [[NSMenuItem alloc] initWithTitle:titleStr
-                                   action:@selector(commandFromDock:)
-                            keyEquivalent:@""]);
-    [item setTarget:self];
-    [item setTag:IDC_NEW_INCOGNITO_WINDOW];
-    [item setEnabled:[self validateUserInterfaceItem:item]];
+    item = [[NSMenuItem alloc] initWithTitle:titleStr
+                                      action:@selector(commandFromDock:)
+                               keyEquivalent:@""];
+    item.target = self;
+    item.tag = IDC_NEW_INCOGNITO_WINDOW;
+    item.enabled = [self validateUserInterfaceItem:item];
     [dockMenu addItem:item];
   }
 
@@ -1821,7 +1906,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
 - (void)initAppShimMenuController {
   if (!_appShimMenuController)
-    _appShimMenuController.reset([[AppShimMenuController alloc] init]);
+    _appShimMenuController = [[AppShimMenuController alloc] init];
 }
 
 - (void)setLastProfile:(Profile*)profile {
@@ -1845,8 +1930,8 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
   _profilePrefRegistrar.reset();
 
-  NSMenuItem* bookmarkItem = [[NSApp mainMenu] itemWithTag:IDC_BOOKMARKS_MENU];
-  BOOL hidden = [bookmarkItem isHidden];
+  NSMenuItem* bookmarkItem = [NSApp.mainMenu itemWithTag:IDC_BOOKMARKS_MENU];
+  BOOL hidden = bookmarkItem.hidden;
   if (profile != nullptr) {
     // Rebuild the menus with the new profile. The bookmarks submenu is cached
     // to avoid slowdowns when switching between profiles with large numbers of
@@ -1855,7 +1940,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
     // submenu. This works around an apparent AppKit bug where setting a
     // *different* NSMenu submenu on a *hidden* menu item forces the item to
     // become visible. See https://crbug.com/497813 for more details.
-    [bookmarkItem setHidden:NO];
+    bookmarkItem.hidden = NO;
     _bookmarkMenuBridge = nullptr;
   } else if (_bookmarkMenuBridge && !_isShuttingDown) {
     DCHECK_EQ(_bookmarkMenuBridge->GetProfile(),
@@ -1877,8 +1962,8 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
     // This creates a deep copy, but only the first 3 items in the root menu
     // are really wanted. This can probably be optimized, but lazy-loading of
     // the menu should reduce the impact in most flows.
-    base::scoped_nsobject<NSMenu> submenu([[bookmarkItem submenu] copy]);
-    [submenu setDelegate:nil];  // The delegate is also copied. Remove it.
+    NSMenu* submenu = [bookmarkItem.submenu copy];
+    submenu.delegate = nil;  // The delegate is also copied. Remove it.
 
     // The original profile outlives the OTR profile. Always create the bridge
     // on the original profile, to prevent bugs WRT profile lifetime.
@@ -1891,8 +1976,8 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   _bookmarkMenuBridge = entry.get();
 
   // No need to |BuildMenu| here.  It is done lazily upon menu access.
-  [bookmarkItem setSubmenu:_bookmarkMenuBridge->BookmarkMenu()];
-  [bookmarkItem setHidden:hidden];
+  bookmarkItem.submenu = _bookmarkMenuBridge->BookmarkMenu();
+  bookmarkItem.hidden = hidden;
 
   _historyMenuBridge = std::make_unique<HistoryMenuBridge>(_lastProfile);
   _historyMenuBridge->BuildMenu();
@@ -1973,17 +2058,9 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   [self adjustCloseTabMenuItemKeyEquivalent:enableCloseTabShortcut];
 }
 
-// This only has an effect on macOS 12+, and requests any state restoration
-// archive to be created with secure encoding. See the article at
-// https://sector7.computest.nl/post/2022-08-process-injection-breaking-all-macos-security-layers-with-a-single-vulnerability/
-// for more details.
-- (BOOL)applicationSupportsSecureRestorableState:(NSApplication*)app {
-  return YES;
-}
-
 - (BOOL)application:(NSApplication*)application
   willContinueUserActivityWithType:(NSString*)userActivityType {
-  static NSString * const*NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
+  static NSString * const*NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString* const*>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
   if(NSUserActivityTypeBrowsingWebStr)
     return [userActivityType isEqualToString:*NSUserActivityTypeBrowsingWebStr];
   else
@@ -1995,7 +2072,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
       restorationHandler:
           (void (^)(NSArray<id<NSUserActivityRestoring>>*))restorationHandler
 {
-  static NSString * const*NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
+  static NSString * const*NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString* const*>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
   if(!NSUserActivityTypeBrowsingWebStr)
     return NO;
 
@@ -2037,7 +2114,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
 - (void)updateHandoffManager:(content::WebContents*)webContents {
   if (!_handoffManager)
-    _handoffManager.reset([[HandoffManager alloc] init]);
+    _handoffManager = [[HandoffManager alloc] init];
 
   if ([self isHandoffEligible:webContents]) {
     [self updateHandoffManagerWithURL:webContents->GetVisibleURL()
@@ -2090,8 +2167,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
     app_controller_mac::RunInLastProfileSafely(
         base::BindOnce(&BeginHandlingWebAuthenticationSessionRequestWithProfile,
-                       base::scoped_nsobject<ASWebAuthenticationSessionRequest>(
-                           request, base::scoped_policy::RETAIN)),
+                       request),
         app_controller_mac::kShowProfilePickerOnFailure);
   });
 }
@@ -2141,17 +2217,21 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 namespace {
 
 void UpdateProfileInUse(Profile* profile) {
-  if (!profile)
+  if (!profile) {
     return;
-  AppController* controller =
-      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
-  [controller setLastProfile:profile];
+  }
+  [AppController.sharedController setLastProfile:profile];
 }
 
 void OpenUrlsInBrowserWithProfile(const std::vector<GURL>& urls,
                                   Profile* profile) {
   if (!profile)
     return;  // No suitable profile to open the URLs, do nothing.
+  // Prefer a regular (non-incognito) profile
+  if (profile->IsIncognitoProfile()) {
+    profile = ProfileManager::MaybeForceOffTheRecordMode(
+        profile->GetOriginalProfile());
+  }
   Browser* browser = chrome::FindLastActiveWithProfile(profile);
   int startupIndex = TabStripModel::kNoTab;
   content::WebContents* startupContent = nullptr;
@@ -2190,14 +2270,9 @@ void OpenUrlsInBrowserWithProfile(const std::vector<GURL>& urls,
 
 // Returns the profile to be used for new windows (or nullptr if it fails).
 Profile* GetSafeProfile(Profile* loaded_profile) {
-  if (!loaded_profile)
-    return nullptr;
-  AppController* controller =
-      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
-  if (!controller)
-    return nullptr;
   DCHECK(loaded_profile);
-  return [controller safeProfileForNewWindows:loaded_profile];
+  return
+      [AppController.sharedController safeProfileForNewWindows:loaded_profile];
 }
 
 // Called when the profile has been loaded for RunIn*ProfileSafely(). This
@@ -2235,26 +2310,16 @@ void CreateGuestProfileIfNeeded() {
 }
 
 void EnterpriseStartupDialogClosed() {
-  AppController* controller =
-      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
-  if (controller != nil) {
-    NSNotification* notify = [NSNotification
-        notificationWithName:NSApplicationDidFinishLaunchingNotification
-                      object:NSApp];
-    [controller applicationDidFinishLaunching:notify];
-  }
+  NSNotification* notify = [NSNotification
+      notificationWithName:NSApplicationDidFinishLaunchingNotification
+                    object:NSApp];
+  [AppController.sharedController applicationDidFinishLaunching:notify];
 }
 
 void RunInLastProfileSafely(base::OnceCallback<void(Profile*)> callback,
                             ProfileLoadFailureBehavior on_failure) {
   DCHECK(callback);
-  AppController* controller =
-      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
-  if (!controller) {
-    OnProfileLoaded(std::move(callback), on_failure, nullptr);
-    return;
-  }
-  if (Profile* profile = [controller lastProfileIfLoaded]) {
+  if (Profile* profile = [AppController.sharedController lastProfileIfLoaded]) {
     OnProfileLoaded(std::move(callback), on_failure, profile);
     return;
   }

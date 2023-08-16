@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox.suggestions.base;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.IntDef;
@@ -15,6 +16,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.R;
+import org.chromium.components.browser_ui.widget.RoundedCornerOutlineProvider;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -34,6 +36,7 @@ class SuggestionLayout extends ViewGroup {
     public final @Px int mCompactContentHeightPx;
     private final @Px int mActionButtonWidthPx;
     private final @Px int mContentPaddingPx;
+    private final @NonNull RoundedCornerOutlineProvider mOutlineProvider;
 
     /**
      * SuggestionLayout's LayoutParams.
@@ -154,6 +157,15 @@ class SuggestionLayout extends ViewGroup {
 
         mContentPaddingPx =
                 getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_content_padding);
+
+        mOutlineProvider = new RoundedCornerOutlineProvider(getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_bg_round_corner_radius));
+        setOutlineProvider(mOutlineProvider);
+    }
+
+    public void setRoundingEdges(boolean roundTopEdge, boolean roundBottomEdge) {
+        mOutlineProvider.setRoundingEdges(true, roundTopEdge, true, roundBottomEdge);
+        setClipToOutline(roundTopEdge || roundBottomEdge);
     }
 
     @Override
@@ -266,6 +278,7 @@ class SuggestionLayout extends ViewGroup {
     private @Px int measureContentViewHeightPx(@Px int contentWidthPx) {
         int contentHeightPx = 0;
         boolean hasFooter = false;
+        View contentView = null;
 
         for (int index = 0; index < getChildCount(); ++index) {
             var view = getChildAt(index);
@@ -277,6 +290,7 @@ class SuggestionLayout extends ViewGroup {
                 // Content views' width is constrained by how much space the decoration views
                 // allocate. These views may, as a result, wrap around to one or more extra lines of
                 // text.
+                contentView = view;
                 view.measure(MeasureSpec.makeMeasureSpec(contentWidthPx, MeasureSpec.EXACTLY),
                         MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
                 contentHeightPx = view.getMeasuredHeight();
@@ -289,13 +303,19 @@ class SuggestionLayout extends ViewGroup {
         // suggestion height. Apply necessary corrections here. We currently expect the
         // CONTENT view to properly utilize the LAYOUT GRAVITY to position its content
         // around the center, if its measured height is smaller than our minimum.
-        assert contentHeightPx != 0 : "No content views, or content view is empty";
+        assert contentView != null : "No content views";
 
         // Pad suggestion around to guarantee appropriate spacing around suggestions.
         if (!hasFooter) contentHeightPx += mContentPaddingPx;
 
         // Guarantee that the suggestion height meets our required minimum tap target size.
-        return Math.max(contentHeightPx, hasFooter ? mCompactContentHeightPx : mContentHeightPx);
+        var height =
+                Math.max(contentHeightPx, hasFooter ? mCompactContentHeightPx : mContentHeightPx);
+        // Some views (e.g. TextView) won't render correctly unless measure specs are explicitly
+        // supplied, failing to properly center the content.
+        contentView.measure(MeasureSpec.makeMeasureSpec(contentWidthPx, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
+        return height;
     }
 
     /**

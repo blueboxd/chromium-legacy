@@ -231,7 +231,6 @@ PreloadingEligibility ToEligibility(PrerenderFinalStatus status) {
     case PrerenderFinalStatus::kLoginAuthRequested:
     case PrerenderFinalStatus::kUaChangeRequiresReload:
     case PrerenderFinalStatus::kBlockedByClient:
-    case PrerenderFinalStatus::kAudioOutputDeviceRequested:
     case PrerenderFinalStatus::kMixedContent:
       NOTREACHED_NORETURN();
     case PrerenderFinalStatus::kTriggerBackgrounded:
@@ -285,6 +284,10 @@ PreloadingEligibility ToEligibility(PrerenderFinalStatus status) {
       return PreloadingEligibility::kMemoryPressure;
     case PrerenderFinalStatus::kMemoryPressureAfterTriggered:
       NOTREACHED_NORETURN();
+    case PrerenderFinalStatus::kPrerenderingDisabledByDevTools:
+      return PreloadingEligibility::kPreloadingDisabledByDevTools;
+    case PrerenderFinalStatus::kResourceLoadBlockedByClient:
+      return PreloadingEligibility::kPreloadingDisabledByDevTools;
   }
 
   NOTREACHED_NORETURN();
@@ -438,6 +441,15 @@ BASE_FEATURE(kPrerender2IgnoreFailureOnMemoryFootprintQuery,
              "Prerender2IgnoreFailureOnMemoryFootprintQuery",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Kill-switch controlled by the field trial. When this feature is enabled,
+// PrerenderHostRegistry doesn't query about the current memory footprint and
+// bypasses the memory limit check, while it still checks the limit on the
+// number of ongoing prerendering requests and memory pressure events to prevent
+// excessive memory usage. See https://crbug.com/1382697 for details.
+BASE_FEATURE(kPrerender2BypassMemoryLimitCheck,
+             "Prerender2BypassMemoryLimitCheck",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 PrerenderHostRegistry::PrerenderHostRegistry(WebContents& web_contents)
     : memory_pressure_listener_(
           FROM_HERE,
@@ -498,6 +510,13 @@ int PrerenderHostRegistry::CreateAndStartHost(
   int frame_tree_node_id = RenderFrameHost::kNoFrameTreeNodeId;
 
   {
+    RenderFrameHostImpl* initiator_rfh =
+        attributes.IsBrowserInitiated()
+            ? nullptr
+            : RenderFrameHostImpl::FromFrameToken(
+                  attributes.initiator_process_id,
+                  attributes.initiator_frame_token.value());
+
     // Ensure observers are notified that a trigger occurred.
     base::ScopedClosureRunner notify_trigger(
         base::BindOnce(&PrerenderHostRegistry::NotifyTrigger,
@@ -597,6 +616,14 @@ int PrerenderHostRegistry::CreateAndStartHost(
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
+    if (initiator_rfh && initiator_rfh->frame_tree() &&
+        !devtools_instrumentation::IsPrerenderAllowed(
+            *initiator_rfh->frame_tree())) {
+      builder.RejectAsNotEligible(
+          attributes, PrerenderFinalStatus::kPrerenderingDisabledByDevTools);
+      return RenderFrameHost::kNoFrameTreeNodeId;
+    }
+
     // Once all eligibility checks are completed, set the status to kEligible.
     if (attempt)
       attempt->SetEligibility(PreloadingEligibility::kEligible);
@@ -605,12 +632,6 @@ int PrerenderHostRegistry::CreateAndStartHost(
     // Override Prerender2Holdback for speculation rules when DevTools is
     // opened to mitigate the cases in which developers are affected by
     // kPrerender2Holdback.
-    RenderFrameHostImpl* initiator_rfh =
-        attributes.IsBrowserInitiated()
-            ? nullptr
-            : RenderFrameHostImpl::FromFrameToken(
-                  attributes.initiator_process_id,
-                  attributes.initiator_frame_token.value());
     bool should_prerender2holdback_be_overridden =
         initiator_rfh &&
         RenderFrameDevToolsAgentHost::GetFor(initiator_rfh) != nullptr;
@@ -1358,7 +1379,7 @@ void PrerenderHostRegistry::ResourceLoadComplete(
     RecordBlockedByClientResourceType(resource_load_info.request_destination,
                                       host->trigger_type(),
                                       host->embedder_histogram_suffix());
-    CancelHost(host_id, PrerenderFinalStatus::kBlockedByClient);
+    CancelHost(host_id, PrerenderFinalStatus::kResourceLoadBlockedByClient);
     break;
   }
 }
@@ -1552,8 +1573,14 @@ bool PrerenderHostRegistry::IsAllowedToStartPrerenderingForTrigger(
 
 void PrerenderHostRegistry::DestroyWhenUsingExcessiveMemory(
     int frame_tree_node_id) {
-  if (!base::FeatureList::IsEnabled(blink::features::kPrerender2MemoryControls))
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kPrerender2MemoryControls)) {
     return;
+  }
+
+  if (base::FeatureList::IsEnabled(kPrerender2BypassMemoryLimitCheck)) {
+    return;
+  }
 
   // Override the memory restriction when the DevTools is open.
   if (IsDevToolsOpen(*web_contents())) {
@@ -1595,14 +1622,13 @@ void PrerenderHostRegistry::DidReceiveMemoryDump(
     private_footprint_total_kb += pmd.os_dump().private_footprint_kb;
   }
 
-  // TODO(crbug.com/1382697): Finalize the threshold after the experiment
-  // completes. The default acceptable percent is 10% of the system memory.
+  // The default acceptable percent is 60% of the system memory.
   int acceptable_percent_of_system_memory =
       base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kPrerender2MemoryControls,
           blink::features::
               kPrerender2MemoryAcceptablePercentOfSystemMemoryParamName,
-          10);
+          60);
 
   // When the current memory usage is higher than
   // `acceptable_percent_of_system_memory` % of the system memory, cancel a

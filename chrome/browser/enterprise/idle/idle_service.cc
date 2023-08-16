@@ -6,10 +6,14 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/json/values_util.h"
+#include "chrome/browser/enterprise/idle/idle_features.h"
+#include "chrome/browser/enterprise/idle/idle_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/idle/idle.h"
@@ -17,6 +21,7 @@
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/idle_bubble.h"
@@ -49,9 +54,12 @@ class IdleService::BrowserObserver : public BrowserListObserver {
   void OnBrowserSetLastActive(Browser* browser) override {
     Profile* profile = browser->profile();
     auto* prefs = profile->GetPrefs();
-    if (profile == profile_ &&
+    if (browser->is_type_normal() && profile == profile_ &&
         prefs->GetBoolean(prefs::kIdleTimeoutShowBubbleOnStartup)) {
-      ShowIdleBubble(browser, base::Minutes(5), GetActionSet(prefs));
+      ShowIdleBubble(
+          browser,
+          IdleServiceFactory::GetForBrowserContext(profile)->GetTimeout(),
+          GetActionSet(prefs));
       prefs->SetBoolean(prefs::kIdleTimeoutShowBubbleOnStartup, false);
     }
   }
@@ -85,6 +93,10 @@ IdleService::IdleService(Profile* profile)
       action_runner_(
           std::make_unique<ActionRunner>(profile_,
                                          ActionFactory::GetInstance())) {
+  if (!base::FeatureList::IsEnabled(kIdleTimeout)) {
+    // Policy disabled by kill-switch.
+    return;
+  }
   browser_observer_ = std::make_unique<BrowserObserver>(profile);
   DCHECK_EQ(profile_->GetOriginalProfile(), profile_);
   pref_change_registrar_.Init(profile->GetPrefs());
@@ -98,8 +110,7 @@ IdleService::IdleService(Profile* profile)
 IdleService::~IdleService() = default;
 
 void IdleService::OnIdleTimeoutPrefChanged() {
-  base::TimeDelta timeout =
-      profile_->GetPrefs()->GetTimeDelta(prefs::kIdleTimeout);
+  base::TimeDelta timeout = GetTimeout();
   if (timeout.is_positive()) {
     // `is_idle_` will auto-update in 1 second, no need to set it here.
     idle_threshold_ = timeout;
@@ -114,6 +125,13 @@ void IdleService::OnIdleTimeoutPrefChanged() {
     polling_service_observation_.Reset();
     browser_observer_->StopObserving();
   }
+}
+
+base::TimeDelta IdleService::GetTimeout() const {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kSimulateIdleTimeout)
+             ? base::Seconds(5)
+             : profile_->GetPrefs()->GetTimeDelta(prefs::kIdleTimeout);
 }
 
 void IdleService::OnIdleStateChange(

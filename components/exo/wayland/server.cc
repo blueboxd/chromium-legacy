@@ -42,7 +42,6 @@
 #include <xdg-decoration-unstable-v1-server-protocol.h>
 #include <xdg-output-unstable-v1-server-protocol.h>
 #include <xdg-shell-server-protocol.h>
-#include <xdg-shell-unstable-v6-server-protocol.h>
 
 #include <linux-dmabuf-unstable-v1-server-protocol.h>
 #include <memory>
@@ -109,7 +108,6 @@
 #include "components/exo/wayland/zwp_text_input_manager.h"
 #include "components/exo/wayland/zxdg_decoration_manager.h"
 #include "components/exo/wayland/zxdg_output_manager.h"
-#include "components/exo/wayland/zxdg_shell.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -152,6 +150,25 @@ bool IsDrmAtomicAvailable() {
 
 void wayland_log(const char* fmt, va_list argp) {
   LOG(WARNING) << "libwayland: " << base::StringPrintV(fmt, argp);
+}
+
+int GetTextInputExtensionV1Version() {
+  if (base::FeatureList::IsEnabled(
+          ash::features::kExoExtendedConfirmComposition) &&
+      base::FeatureList::IsEnabled(ash::features::kExoSurroundingTextOffset)) {
+    // set_surrounding_text_offset_utf16 + new surrounding_text_support
+    // strategy enabled once at version 10 was reverted (crbug.com/1451324).
+    // Unfortunately, we have to disable confirm-composition in version 11
+    // together, because of wayland's versioning system.
+    //
+    // Now, the new API to fix the issue is introduced in version 12.
+    // We cannot enable confirm-composition only, because it will be hitting
+    // the same issue at version 10. Thus, we'll set version 12 (including
+    // all fixes + confirm-composition), or 9 (before everything).
+    return 12;
+  }
+
+  return 9;
 }
 
 }  // namespace
@@ -250,6 +267,7 @@ Server::Server(Display* display,
 
 void Server::Initialize() {
   serial_tracker_ = std::make_unique<SerialTracker>(wl_display_.get());
+  rotation_serial_tracker_ = std::make_unique<SerialTracker>(wl_display_.get());
   wl_global_create(wl_display_.get(), &wl_compositor_interface,
                    kWlCompositorVersion, this, bind_compositor);
   wl_global_create(wl_display_.get(), &wl_shm_interface, 1, display_, bind_shm);
@@ -382,20 +400,13 @@ void Server::Initialize() {
 
   zcr_text_input_extension_data_ =
       std::make_unique<WaylandTextInputExtension>();
-  wl_global_create(
-      wl_display_.get(), &zcr_text_input_extension_v1_interface,
-      base::FeatureList::IsEnabled(ash::features::kExoSurroundingTextOffset)
-          ? 10
-          : 9,
-      zcr_text_input_extension_data_.get(), bind_text_input_extension);
+  wl_global_create(wl_display_.get(), &zcr_text_input_extension_v1_interface,
+                   GetTextInputExtensionV1Version(),
+                   zcr_text_input_extension_data_.get(),
+                   bind_text_input_extension);
 
-  zxdg_shell_data_ =
-      std::make_unique<WaylandZxdgShell>(display_, serial_tracker_.get());
-  wl_global_create(wl_display_.get(), &zxdg_shell_v6_interface, 1,
-                   zxdg_shell_data_.get(), bind_zxdg_shell_v6);
-
-  xdg_shell_data_ =
-      std::make_unique<WaylandXdgShell>(display_, serial_tracker_.get());
+  xdg_shell_data_ = std::make_unique<WaylandXdgShell>(
+      display_, serial_tracker_.get(), rotation_serial_tracker_.get());
   wl_global_create(wl_display_.get(), &xdg_wm_base_interface, 3,
                    xdg_shell_data_.get(), bind_xdg_shell);
 

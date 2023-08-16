@@ -89,6 +89,7 @@
 #include "services/network/brokered_client_socket_factory.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/cors/cors_url_loader_factory.h"
+#include "services/network/data_remover_util.h"
 #include "services/network/disk_cache/mojo_backend_file_operations_factory.h"
 #include "services/network/host_resolver.h"
 #include "services/network/http_auth_cache_copier.h"
@@ -121,6 +122,7 @@
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/restricted_cookie_manager.h"
 #include "services/network/session_cleanup_cookie_store.h"
+#include "services/network/shared_dictionary/shared_dictionary_constants.h"
 #include "services/network/shared_dictionary/shared_dictionary_manager.h"
 #include "services/network/ssl_config_service_mojo.h"
 #include "services/network/throttling/network_conditions.h"
@@ -465,10 +467,6 @@ NetworkContext::NetworkContext(
 #endif  // BUILDFLAG(ENABLE_REPORTING)
       params_(std::move(params)),
       on_connection_close_callback_(std::move(on_connection_close_callback)),
-#if BUILDFLAG(IS_ANDROID)
-      app_status_listener_(
-          std::make_unique<NetworkContextApplicationStatusListener>()),
-#endif  // BUILDFLAG(IS_ANDROID)
       receiver_(this, std::move(receiver)),
       first_party_sets_access_delegate_(
           std::move(params_->first_party_sets_access_delegate_receiver),
@@ -494,12 +492,36 @@ NetworkContext::NetworkContext(
   if (params_->http_cache_directory) {
     EnsureMounted(&*params_->http_cache_directory);
   }
+  if (params_->shared_dictionary_directory) {
+    EnsureMounted(&*params_->shared_dictionary_directory);
+  }
 #endif  // BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
 
   if (params_->shared_dictionary_enabled) {
-    // TODO(crbug.com/1413922): Implement a manager which supports persistence
-    // and use if for non-incognito mode.
-    shared_dictionary_manager_ = SharedDictionaryManager::CreateInMemory();
+    if (params_->shared_dictionary_directory &&
+        !params_->shared_dictionary_directory->path().empty()) {
+#if BUILDFLAG(IS_ANDROID)
+      app_status_listeners_.push_back(
+          std::make_unique<NetworkContextApplicationStatusListener>());
+#endif  // BUILDFLAG(IS_ANDROID)
+      // TODO(crbug.com/1413922): Set `file_operations_factory` to support
+      // sandboxed network service on Android.
+      shared_dictionary_manager_ = SharedDictionaryManager::CreateOnDisk(
+          params_->shared_dictionary_directory->path().Append(
+              FILE_PATH_LITERAL("db")),
+          params_->shared_dictionary_directory->path().Append(
+              FILE_PATH_LITERAL("cache")),
+          params_->shared_dictionary_cache_max_size,
+          shared_dictionary::kDictionaryMaxCountPerNetworkContext,
+#if BUILDFLAG(IS_ANDROID)
+          app_status_listeners_.rbegin()->get(),
+#endif  // BUILDFLAG(IS_ANDROID)
+          /*file_operations_factory=*/nullptr);
+    } else {
+      shared_dictionary_manager_ = SharedDictionaryManager::CreateInMemory(
+          params_->shared_dictionary_cache_max_size,
+          shared_dictionary::kDictionaryMaxCountPerNetworkContext);
+    }
   }
 
   mojo::PendingRemote<mojom::URLLoaderFactory>
@@ -591,10 +613,6 @@ NetworkContext::NetworkContext(
 #if BUILDFLAG(ENABLE_REPORTING)
       is_observing_reporting_service_(false),
 #endif  // BUILDFLAG(ENABLE_REPORTING)
-#if BUILDFLAG(IS_ANDROID)
-      app_status_listener_(
-          std::make_unique<NetworkContextApplicationStatusListener>()),
-#endif  // BUILDFLAG(IS_ANDROID)
       receiver_(this, std::move(receiver)),
       first_party_sets_access_delegate_(
           /*receiver=*/mojo::NullReceiver(),
@@ -2412,7 +2430,9 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     cache_params.reset_cache = params_->reset_http_cache_backend;
 
 #if BUILDFLAG(IS_ANDROID)
-    cache_params.app_status_listener = app_status_listener();
+    app_status_listeners_.push_back(
+        std::make_unique<NetworkContextApplicationStatusListener>());
+    cache_params.app_status_listener = app_status_listeners_.rbegin()->get();
 #endif  // BUILDFLAG(IS_ANDROID)
     builder.EnableHttpCache(cache_params);
   }
@@ -2874,6 +2894,34 @@ void NetworkContext::CreateTrustedUrlLoaderFactoryForNetworkService(
   url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
   CreateURLLoaderFactory(std::move(url_loader_factory_pending_receiver),
                          std::move(url_loader_factory_params));
+}
+
+void NetworkContext::SetSharedDictionaryCacheMaxSize(uint64_t cache_max_size) {
+  if (!shared_dictionary_manager_) {
+    return;
+  }
+  shared_dictionary_manager_->SetCacheMaxSize(cache_max_size);
+}
+
+void NetworkContext::ClearSharedDictionaryCache(
+    base::Time start_time,
+    base::Time end_time,
+    mojom::ClearDataFilterPtr filter,
+    ClearSharedDictionaryCacheCallback callback) {
+  if (!shared_dictionary_manager_) {
+    std::move(callback).Run();
+    return;
+  }
+  shared_dictionary_manager_->ClearData(
+      start_time, end_time,
+      filter
+          ? base::BindRepeating(&DoesUrlMatchFilter, filter->type,
+                                std::set<url::Origin>(filter->origins.begin(),
+                                                      filter->origins.end()),
+                                std::set<std::string>(filter->domains.begin(),
+                                                      filter->domains.end()))
+          : base::RepeatingCallback<bool(const GURL&)>(),
+      std::move(callback));
 }
 
 }  // namespace network

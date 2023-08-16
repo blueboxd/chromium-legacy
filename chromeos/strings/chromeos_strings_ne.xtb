@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">DNS समाधान गर्न सकिएन</translation>
 <translation id="1018656279737460067">रद्द गरियो</translation>
 <translation id="1020274983236703756"><ph name="PRODUCT_NAME" /> का खास एसेटहरू उपलब्ध भएका छन्</translation>
-<translation id="1022433422498218992">सामान्य कन्ट्रोलहरू</translation>
 <translation id="1022628058306505708">अर्थ फ्लो</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> वटा थ्रेड, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1047773237499189053">नयाँ सुविधा उपलब्ध छ, थप जान्न अप एरो की प्रयोग गर्नुहोस्।</translation>
@@ -59,6 +58,7 @@
 <translation id="1423591390236870726"><ph name="KEY_NAME" /> थिचिएको छैन</translation>
 <translation id="1435763214710588005">चयन गरिएको दिनमा डेटा प्रयोग स्वतः रिसेट गर्छ</translation>
 <translation id="1442433966118452622">फोटोको स्रोत</translation>
+<translation id="1449035143498573192">Google Search मा खोल्नुहोस्</translation>
 <translation id="1451536289672181509">यो डिभाइस किबोर्ड हो।</translation>
 <translation id="1459693405370120464">मौसम</translation>
 <translation id="1468664791493211953">योजनाहरू</translation>
@@ -114,7 +114,6 @@
 <translation id="1768959921651994223">प्रमाणीकरणको प्रकार</translation>
 <translation id="1776228893584526149">वालपेपरको टोन</translation>
 <translation id="1782199038061388045">अनुवाद</translation>
-<translation id="1790209694022261219">विन्डो तथा डेस्कहरू</translation>
 <translation id="1792647875738159689">स्क्यान गर्ने कार्य रद्द गरिँदै छ</translation>
 <translation id="1801418420130173017">अँध्यारो थिम अफ गर्नुहोस्</translation>
 <translation id="1807246157184219062">हल्का</translation>
@@ -245,7 +244,6 @@
 <translation id="3008341117444806826">पुनः ताजा गर्नुहोस्</translation>
 <translation id="3009958530611748826">सुरक्षित गर्न कुनै फोल्डर चयन गर्नुहोस्</translation>
 <translation id="3017079585324758401">पृष्ठभूमि</translation>
-<translation id="3020183492814296499">सर्टकटहरू</translation>
 <translation id="3027578600144895987">क्यामेरा बन्द गर्नुहोस्</translation>
 <translation id="3031560714565892478">यो डिभाइस भिडियो क्यामेरा हो।</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -615,6 +613,7 @@
 <translation id="5972388717451707488">अपडेट इन्जिन</translation>
 <translation id="5984145644188835034">डिफल्ट वालपेपर</translation>
 <translation id="6017514345406065928">हरियो</translation>
+<translation id="6019566113895157499">Key Shortcuts</translation>
 <translation id="6034694447310538551">मासिक रूपमा डेटा प्रयोग स्वतः रिसेट गर्ने विकल्प अन गर</translation>
 <translation id="6037291330010597344">स्क्यानरको डकुमेन्ट फिडर खाली छ। डकुमेन्टहरू हाल्नुहोस् र फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="6040143037577758943">बन्द गर्नुहोस्</translation>
@@ -861,6 +860,7 @@
 <translation id="7953669802889559161">इनपुटहरू</translation>
 <translation id="7955587717700691983">ब्लुटुथ भएको किबोर्ड</translation>
 <translation id="7960831585769876809">तापक्रम</translation>
+<translation id="7971535376154084247">सामान्य कन्ट्रोलहरू</translation>
 <translation id="7977800524392185497"><ph name="NETWORK_NAME" /> नेटवर्कमा कनेक्ट गर्न सेटिङमा जानुहोस्</translation>
 <translation id="7978412674231730200">निजी कुञ्जी</translation>
 <translation id="7994702968232966508">EAP विधि</translation>
@@ -924,6 +924,7 @@
 <translation id="8461329675984532579">गृह प्रदायकको नाम</translation>
 <translation id="8475690821716466388">WiFi नेटवर्क WEP PSK नामक कमजोर प्रोटोकोल प्रयोग गरी सुरक्षित गरिएको छ</translation>
 <translation id="8476242415522716722">किबोर्डको ब्याकलाइटको चमक कम गर्नुहोस्</translation>
+<translation id="8476942730579767658">विन्डो तथा डेस्कहरू</translation>
 <translation id="8477551185774834963">DNS को विलम्बता तोकिएको समयसीमाभन्दा थोरै बढी छ</translation>
 <translation id="8483248364096924578">IP एड्रेस</translation>
 <translation id="8491311378305535241">Android एपहरूबाट फायरवाल पार गरेर HTTP वेबसाइटहरूमा कनेक्ट गर्न सकिएन</translation>
@@ -966,6 +967,7 @@
 <translation id="8820817407110198400">बुकमार्कहरू</translation>
 <translation id="8834539327799336565">हाल कनेक्ट गरिएका डिभाइस</translation>
 <translation id="8845001906332463065">मद्दत प्राप्त गर्नुहोस्</translation>
+<translation id="8851859208664803097">रोकियो - प्रिन्टरमा कनेक्ट गर्न सकिएन</translation>
 <translation id="8855781559874488009">फायरवाल पार गरेर HTTP वेबसाइटहरूमा कनेक्ट गर्न सकिएन</translation>
 <translation id="885701979325669005">भण्डारण</translation>
 <translation id="885704831271383379">किबोर्डको ब्याकलाइट अझ अँध्यारो बनाउनुहोस्</translation>

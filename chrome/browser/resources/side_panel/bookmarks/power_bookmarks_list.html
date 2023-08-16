@@ -9,6 +9,11 @@
     :host {
       --edit-footer-background: var(--google-grey-900-white-4-percent);
     }
+
+    :host-context(html:not([chrome-refresh-2023])):host {
+      --cr-toolbar-search-field-background:
+          var(--google-grey-900-white-4-percent);
+    }
   }
 
   cr-icon-button {
@@ -52,6 +57,10 @@
     width: var(--icon-size);
   }
 
+  :host-context([chrome-refresh-2023]) sp-list-item-badge iron-icon {
+    --icon-size: 12px;
+  }
+
   iron-icon[invisible] {
     visibility: hidden;
   }
@@ -89,6 +98,10 @@
 
   sp-empty-state {
     margin-top: 40px;
+  }
+
+  #folderEmptyState {
+    margin-bottom: 40px;
   }
 
   sp-empty-state[guest] {
@@ -148,6 +161,8 @@
 
   :host-context([chrome-refresh-2023]) cr-toolbar-selection-overlay {
     background: transparent;
+    border: 0;
+    font-size: 12px;
     font-weight: 500;
   }
 
@@ -184,7 +199,8 @@
   </div>
 
   <div class="sp-card"
-      hidden$="[[shouldHideCard_(labels_.*, searchQuery_, shownBookmarks_)]]">
+      hidden$="[[shouldHideCard_(labels_.*, searchQuery_, shownBookmarks_,
+          guestMode_)]]">
     <sp-heading
         hidden$="[[shouldHideHeader_(
             labels_.*, searchQuery_, shownBookmarks_)]]"
@@ -220,6 +236,17 @@
           on-click="onBulkEditClicked_"></cr-icon-button>
     </sp-heading>
 
+    <div class="sp-scroller"
+        hidden="[[!shouldShowFolderEmptyState_(shownBookmarks_.length,
+                    hasLoadedData_)]]">
+      <sp-empty-state id="folderEmptyState"
+          image-path="./images/bookmarks_empty.svg"
+          dark-image-path="./images/bookmarks_empty_dark.svg"
+          heading="$i18n{emptyTitleFolder}"
+          body="$i18n{emptyBodyFolder}">
+      </sp-empty-state>
+    </div>
+
     <div id="bookmarks" class="bookmarks sp-scroller"
         hidden="[[!shownBookmarks_.length]]"
         role="[[getBookmarksListRole_(editing_)]]"
@@ -228,9 +255,8 @@
           items="[[shownBookmarks_]]" scroll-target="bookmarks">
         <template>
           <power-bookmark-row id="bookmark-[[item.id]]" bookmark="[[item]]"
-              description="[[getBookmarkDescription_(item,
-                              compactDescriptions_.*, expandedDescriptions_.*,
-                              compact_)]]"
+              description="[[getBookmarkDescription_(
+                             item, compact_, searchQuery_, item.*)]]"
               compact="[[compact_]]" trailing-icon="cr:more-vert"
               trailing-icon-aria-label="[[getBookmarkMenuA11yLabel_(
                                           item.url, item.title)]]"
@@ -243,7 +269,9 @@
               on-trailing-icon-clicked="onShowContextMenuClicked_"
               on-checkbox-change="onRowSelectedChange_"
               on-input-change="onRename_"
-              row-aria-label="[[getBookmarkA11yLabel_(item.url, item.title)]]"
+              row-aria-label="[[getBookmarkA11yLabel_(
+                                item.id, item.url, item.title, editing_,
+                                selectedBookmarks_.*)]]"
               row-aria-description="[[getBookmarkA11yDescription_(item)]]"
               tabindex$="[[tabIndex]]"
               image-urls="[[getBookmarkImageUrls_(
@@ -274,8 +302,9 @@
     </div>
   </div>
 
-  <sp-empty-state
-      hidden="[[shownBookmarks_.length]]"
+  <sp-empty-state id="topLevelEmptyState"
+      hidden="[[!shouldShowTopLevelEmptyState_(
+                  shownBookmarks_, guestMode_, hasLoadedData_)]]"
       guest$="[[guestMode_]]"
       image-path="[[getEmptyImagePath_(labels_.*, searchQuery_)]]"
       dark-image-path="[[getEmptyImagePathDark_(labels_.*, searchQuery_)]]"

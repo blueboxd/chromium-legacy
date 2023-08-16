@@ -107,10 +107,10 @@ extern const char kExtensionContentVerificationEnforce[];
 extern const char kExtensionContentVerificationEnforceStrict[];
 extern const char kExtensionsInstallVerification[];
 extern const char kExtensionsNotWebstore[];
-extern const char kIPAnonymizationProxyServer[];
-extern const char kIPAnonymizationProxyAllowList[];
-extern const char kIPAnonymizationProxyPassword[];
 extern const char kForceAppMode[];
+#if BUILDFLAG(IS_CHROMEOS)
+extern const char kForceDevToolsAvailable[];
+#endif
 extern const char kForceFirstRun[];
 extern const char kForceWhatsNew[];
 extern const char kHideCrashRestoreBubble[];
@@ -167,6 +167,7 @@ extern const char kSimulateElevatedRecovery[];
 extern const char kSimulateOutdated[];
 extern const char kSimulateOutdatedNoAU[];
 extern const char kSimulateUpgrade[];
+extern const char kSimulateIdleTimeout[];
 extern const char kSSLVersionMax[];
 extern const char kSSLVersionMin[];
 extern const char kSSLVersionTLSv12[];
@@ -210,7 +211,6 @@ extern const char kForceShowUpdateMenuItemCustomSummary[];
 extern const char kForceEnableSigninFRE[];
 extern const char kForceDisableSigninFRE[];
 extern const char kForceUpdateMenuType[];
-extern const char kForceHideNonDisplayableAccountEmailFRE[];
 extern const char kMarketUrlForTesting[];
 extern const char kRequestDesktopSites[];
 #endif  // BUILDFLAG(IS_ANDROID)

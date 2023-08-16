@@ -96,7 +96,6 @@ class NavigationURLLoaderTest : public testing::Test {
             nullptr /* trust_token_params */, absl::nullopt /* impression */,
             base::TimeTicks() /* renderer_before_unload_start */,
             base::TimeTicks() /* renderer_before_unload_end */,
-            absl::nullopt /* web_bundle_token */,
             blink::mojom::NavigationInitiatorActivationAndAdStatus::
                 kDidNotStartWithTransientActivation,
             false /* is_container_initiated */,
@@ -135,7 +134,7 @@ class NavigationURLLoaderTest : public testing::Test {
             false /* is_pdf */,
             content::WeakDocumentPtr() /* initiator_document */,
             GlobalRenderFrameHostId() /* previous_render_frame_host_id */,
-            false /* allow_cookies_from_browser */));
+            false /* allow_cookies_from_browser */, 0 /* navigation_id */));
     return NavigationURLLoader::Create(
         browser_context_.get(), storage_partition, std::move(request_info),
         nullptr, nullptr, nullptr, delegate,

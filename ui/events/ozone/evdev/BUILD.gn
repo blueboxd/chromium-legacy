@@ -104,8 +104,6 @@ component("evdev") {
     "touch_filter/neural_stylus_palm_detection_filter_model.h",
     "touch_filter/neural_stylus_palm_detection_filter_util.cc",
     "touch_filter/neural_stylus_palm_detection_filter_util.h",
-    "touch_filter/neural_stylus_palm_report_filter.cc",
-    "touch_filter/neural_stylus_palm_report_filter.h",
     "touch_filter/open_palm_detection_filter.cc",
     "touch_filter/open_palm_detection_filter.h",
     "touch_filter/palm_detection_filter.cc",
@@ -218,6 +216,7 @@ source_set("event_device_info") {
   visibility += [
     "//ash:ash_unittests",
     "//ash/webui/diagnostics_ui/backend:*",
+    "//chrome/browser/ash:unit_tests",
     "//chromeos/ash/services/cros_healthd/*",
     "//ui/chromeos/*",
     "//ui/events/ash/*",
@@ -241,6 +240,7 @@ source_set("event_device_info_test_utils") {
   visibility += [
     "//ash:ash_unittests",
     "//ash/webui/diagnostics_ui/backend:unit_tests",
+    "//chrome/browser/ash:unit_tests",
   ]
 }
 
@@ -268,7 +268,6 @@ source_set("unittests") {
     "touch_filter/heuristic_stylus_palm_detection_filter_unittest.cc",
     "touch_filter/neural_stylus_palm_detection_filter_unittest.cc",
     "touch_filter/neural_stylus_palm_detection_filter_util_unittest.cc",
-    "touch_filter/neural_stylus_palm_report_filter_unittest.cc",
     "touch_filter/open_palm_detection_filter_unittest.cc",
     "touch_filter/palm_detection_filter_factory_unittest.cc",
   ]

@@ -92,6 +92,9 @@ class ZWPTextInputWrapperClient {
   virtual void OnSetVirtualKeyboardOccludedBounds(
       const gfx::Rect& screen_bounds) = 0;
 
+  // Called when confirming the preedit.
+  virtual void OnConfirmPreedit(bool keep_selection) = 0;
+
   // Called when the visibility state of the input panel changed.
   // There's no detailed spec of |state|, and no actual implementor except
   // components/exo is found in the world at this moment.
@@ -128,7 +131,7 @@ class ZWPTextInputWrapper {
   virtual void SetCursorRect(const gfx::Rect& rect) = 0;
   virtual void SetSurroundingText(const std::string& text,
                                   const gfx::Range& selection_range) = 0;
-  virtual bool HasOffsetSupport() const = 0;
+  virtual bool HasAdvancedSurroundingTextSupport() const = 0;
   virtual void SetSurroundingTextOffsetUtf16(uint32_t offset_utf16) = 0;
   virtual void SetContentType(ui::TextInputType type,
                               ui::TextInputMode mode,

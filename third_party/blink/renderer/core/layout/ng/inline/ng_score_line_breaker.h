@@ -19,7 +19,8 @@ class NGConstraintSpace;
 class NGInlineBreakToken;
 class NGInlineNode;
 class NGLineInfoList;
-struct NGLineLayoutOpportunity;
+class NGLineWidths;
+struct NGLeadingFloats;
 
 //
 // This class computes line break points using penalties and scores, similar to
@@ -44,19 +45,31 @@ class CORE_EXPORT NGScoreLineBreaker {
  public:
   NGScoreLineBreaker(const NGInlineNode& node,
                      const NGConstraintSpace& space,
-                     const NGLineLayoutOpportunity& line_opportunity)
-      : node_(node), space_(space), line_opportunity_(line_opportunity) {
+                     const NGLineWidths& line_widths,
+                     const NGInlineBreakToken* break_token,
+                     NGExclusionSpace* exclusion_space)
+      : node_(node),
+        space_(space),
+        line_widths_(line_widths),
+        exclusion_space_(exclusion_space),
+        break_token_(break_token) {
     DCHECK(!node.IsScoreLineBreakDisabled());
   }
 
+  const NGConstraintSpace& ConstraintSpace() const { return space_; }
+  const NGInlineBreakToken* BreakToken() const { return break_token_; }
+
   // The primary entry point of doing all the work described in the class
   // comment.
-  void OptimalBreakPoints(const NGInlineBreakToken* break_token,
+  void OptimalBreakPoints(const NGLeadingFloats& leading_floats,
                           NGScoreLineBreakContext& context);
 
   // Makes the length of all lines balanced, by running the `OptimalBreakPoints`
   // with a higher penalty for the end of the paragraph.
-  void BalanceBreakPoints(NGScoreLineBreakContext& context);
+  void BalanceBreakPoints(const NGLeadingFloats& leading_floats,
+                          NGScoreLineBreakContext& context);
+
+  void SetScoresOutForTesting(Vector<float>* scores_out);
 
  private:
   struct NGLineBreakScore {
@@ -68,7 +81,6 @@ class CORE_EXPORT NGScoreLineBreaker {
       Vector<NGLineBreakScore, NGLineBreakCandidate::kInlineCapacity>;
 
   const NGInlineNode& Node() const { return node_; }
-  const NGConstraintSpace& ConstraintSpace() const { return space_; }
   LayoutUnit AvailableWidth(wtf_size_t line_index) const;
   LayoutUnit AvailableWidthToFit(wtf_size_t line_index) const {
     return AvailableWidth(line_index).AddEpsilon();  // Match `NGLineBreaker`.
@@ -80,6 +92,7 @@ class CORE_EXPORT NGScoreLineBreaker {
   bool ComputeCandidates(const NGLineInfoList& line_info_list,
                          NGLineBreaker& line_breaker,
                          NGLineBreakCandidates& candidates);
+  void SetupParameters();
   void ComputeLineWidths(const NGLineInfoList& line_info_list);
   void ComputeScores(const NGLineBreakCandidates& candidates,
                      NGLineBreakScores& scores);
@@ -93,9 +106,17 @@ class CORE_EXPORT NGScoreLineBreaker {
 
   const NGInlineNode node_;
   const NGConstraintSpace& space_;
-  const NGLineLayoutOpportunity& line_opportunity_;
+  const NGLineWidths& line_widths_;
+  NGExclusionSpace* exclusion_space_;
+  const NGInlineBreakToken* break_token_;
   LayoutUnit first_line_indent_;
+  float hyphen_penalty_ = .0f;
+  float line_penalty_ = .0f;
+  float zoom_ = .0f;
   bool is_balanced_ = false;
+  bool is_justified_ = false;
+
+  Vector<float>* scores_out_for_testing_ = nullptr;
 };
 
 }  // namespace blink

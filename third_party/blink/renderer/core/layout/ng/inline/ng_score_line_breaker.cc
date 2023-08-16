@@ -9,56 +9,69 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_breaker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_info_list.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_widths.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
 
+void NGScoreLineBreaker::SetScoresOutForTesting(Vector<float>* scores_out) {
+  scores_out_for_testing_ = scores_out;
+}
+
 void NGScoreLineBreaker::OptimalBreakPoints(
-    const NGInlineBreakToken* break_token,
+    const NGLeadingFloats& leading_floats,
     NGScoreLineBreakContext& context) {
-  DCHECK(!is_balanced_ || !break_token);
+  DCHECK(!is_balanced_ || !break_token_);
   DCHECK(context.LineBreakPoints().empty());
   DCHECK(!node_.IsScoreLineBreakDisabled());
   DCHECK(context.IsActive());
   NGLineInfoList& line_info_list = context.LineInfoList();
   DCHECK_LT(line_info_list.Size(), NGLineInfoList::kCapacity);
+  wtf_size_t line_index = 0;
   if (!line_info_list.IsEmpty()) {
-    // The incoming `break_token` should match the first cached line.
-    DCHECK_EQ((break_token ? break_token->Start() : NGInlineItemTextIndex()),
-              line_info_list.Front().Start());
-    // To compute the next line after the last cached line, update `break_token`
-    // to the last cached break token.
+    line_index = line_info_list.Size();
+    // To compute the next line after the last cached line, update
+    // `break_token_` to the last cached break token.
     const NGLineInfo& last_line = line_info_list.Back();
-    break_token = last_line.BreakToken();
+    break_token_ = last_line.BreakToken();
     // The last line should not be the end of paragraph.
     // `SuspendUntilConsumed()` should have prevented this from happening.
-    DCHECK(break_token && !last_line.HasForcedBreak());
+    DCHECK(break_token_ && !last_line.HasForcedBreak());
   }
 
   // Compute line breaks and cache the results (`NGLineInfo`) up to
   // `NGLineInfoList::kCapacity` lines.
-  NGExclusionSpace empty_exclusion_space;
-  NGPositionedFloatVector empty_leading_floats;
+  LayoutUnit line_width = line_widths_[line_index];
   NGLineBreaker line_breaker(
-      node_, NGLineBreakerMode::kContent, ConstraintSpace(), line_opportunity_,
-      empty_leading_floats,
-      /* handled_leading_floats_index */ 0u, break_token,
-      /* column_spanner_path */ nullptr, &empty_exclusion_space);
+      node_, NGLineBreakerMode::kContent, ConstraintSpace(),
+      NGLineLayoutOpportunity(line_width), leading_floats, break_token_,
+      /* column_spanner_path */ nullptr, exclusion_space_);
+  const int lines_until_clamp = space_.LinesUntilClamp().value_or(0);
   for (;;) {
     NGLineInfo& line_info = line_info_list.Append();
     line_breaker.NextLine(&line_info);
+    break_token_ = line_info.BreakToken();
     if (UNLIKELY(line_breaker.ShouldDisableScoreLineBreak())) {
-      context.SuspendUntilConsumed();
+      context.SuspendUntilEndParagraph();
       return;
     }
-    if (!line_info.BreakToken() || line_info.HasForcedBreak()) {
-      context.SuspendUntilConsumed();
+    if (line_info.IsEndParagraph() ||
+        UNLIKELY(lines_until_clamp > 0 &&
+                 line_info_list.Size() ==
+                     static_cast<wtf_size_t>(lines_until_clamp))) {
+      context.SuspendUntilEndParagraph();
       break;
     }
     DCHECK(!line_info.Results().empty());
     DCHECK(!line_breaker.IsFinished());
     if (line_info_list.Size() >= NGLineInfoList::kCapacity) {
       return;
+    }
+
+    const LayoutUnit next_line_width = line_widths_[++line_index];
+    if (next_line_width != line_width) {
+      line_width = next_line_width;
+      line_breaker.SetLineOpportunity(NGLineLayoutOpportunity(line_width));
     }
   }
   DCHECK(!line_info_list.IsEmpty());
@@ -73,6 +86,11 @@ void NGScoreLineBreaker::OptimalBreakPoints(
     if (last_line.Width() >= last_line.AvailableWidth() / 3) {
       // The optimization benefit is most visible when the last line is short.
       // Otherwise, the improvement is not worth the performance impact.
+      return;
+    }
+    if (line_breaker.CanBreakInside(last_line)) {
+      // Similarly, optimize only when the last line has a single word; i.e.,
+      // has no break opportunities.
       return;
     }
   }
@@ -96,15 +114,19 @@ void NGScoreLineBreaker::OptimalBreakPoints(
   }
 }
 
-void NGScoreLineBreaker::BalanceBreakPoints(NGScoreLineBreakContext& context) {
+void NGScoreLineBreaker::BalanceBreakPoints(
+    const NGLeadingFloats& leading_floats,
+    NGScoreLineBreakContext& context) {
   is_balanced_ = true;
-  OptimalBreakPoints(/*break_token*/ nullptr, context);
+  OptimalBreakPoints(leading_floats, context);
 }
 
 bool NGScoreLineBreaker::Optimize(const NGLineInfoList& line_info_list,
                                   NGLineBreaker& line_breaker,
                                   NGLineBreakPoints& break_points) {
   DCHECK(break_points.empty());
+
+  SetupParameters();
 
   // Compute all break opportunities and their penalties.
   NGLineBreakCandidates candidates;
@@ -123,11 +145,10 @@ bool NGScoreLineBreaker::Optimize(const NGLineInfoList& line_info_list,
     return false;
   }
 
-  // Increase penalties to minimize typographic orphans.
-  // TODO(kojii): Review the penalty value. Take the width into account?
   if (candidates.size() >= 4) {
+    // Increase penalties to minimize typographic orphans.
     constexpr float kOrphansPenalty = 10000;
-    candidates[candidates.size() - 2].penalty += kOrphansPenalty;
+    candidates[candidates.size() - 2].penalty += kOrphansPenalty * zoom_;
   }
 
   ComputeLineWidths(line_info_list);
@@ -140,6 +161,14 @@ bool NGScoreLineBreaker::Optimize(const NGLineInfoList& line_info_list,
 
   // Determine final break points.
   ComputeBreakPoints(candidates, scores, break_points);
+
+  // Copy data for testing.
+  if (UNLIKELY(scores_out_for_testing_)) {
+    for (const NGLineBreakScore& score : scores) {
+      scores_out_for_testing_->push_back(score.score);
+    }
+  }
+
   return true;
 }
 
@@ -149,6 +178,7 @@ bool NGScoreLineBreaker::ComputeCandidates(const NGLineInfoList& line_info_list,
   // The first entry is a sentinel at the start of the line.
   DCHECK(candidates.empty());
   NGLineBreakCandidateContext context(candidates);
+  context.SetHyphenPenalty(hyphen_penalty_);
   context.EnsureFirstSentinel(line_info_list.Front());
 
   for (wtf_size_t i = 0; i < line_info_list.Size(); ++i) {
@@ -165,7 +195,7 @@ bool NGScoreLineBreaker::ComputeCandidates(const NGLineInfoList& line_info_list,
 }
 
 LayoutUnit NGScoreLineBreaker::AvailableWidth(wtf_size_t line_index) const {
-  LayoutUnit available_width = line_opportunity_.AvailableInlineSize();
+  LayoutUnit available_width = line_widths_[line_index];
   if (line_index == 0) {
     available_width -= first_line_indent_;
   }
@@ -183,14 +213,36 @@ void NGScoreLineBreaker::ComputeLineWidths(
 #endif  // EXPENSIVE_DCHECKS_ARE_ON()
 }
 
+void NGScoreLineBreaker::SetupParameters() {
+  // Use the same heuristic parameters as Minikin's `computePenalties()`.
+  // https://cs.android.com/android/platform/superproject/+/master:frameworks/minikin/libs/minikin/OptimalLineBreaker.cpp
+  const LayoutUnit available_width =
+      line_widths_.Default().ClampNegativeToZero();
+  const ComputedStyle& block_style = node_.Style();
+  const float font_size = block_style.GetFontDescription().ComputedSize();
+  zoom_ = block_style.EffectiveZoom();
+  DCHECK_GT(zoom_, .0f);
+  // Penalties/scores should be a zoomed value. Because both `font_size` and
+  // `available_width` are zoomed, unzoom once.
+  const float width_times_font_size =
+      available_width.ToFloat() * font_size / zoom_;
+  is_justified_ = block_style.GetTextAlign() == ETextAlign::kJustify;
+  if (is_justified_) {
+    // For justified text, make hyphenation more aggressive and no line penalty.
+    hyphen_penalty_ = width_times_font_size / 2;
+    line_penalty_ = .0f;
+  } else {
+    hyphen_penalty_ = width_times_font_size * 2;
+    line_penalty_ = hyphen_penalty_ * 2;
+  }
+}
+
 void NGScoreLineBreaker::ComputeScores(const NGLineBreakCandidates& candidates,
                                        NGLineBreakScores& scores) {
   DCHECK_GE(candidates.size(), 2u);
   DCHECK(scores.empty());
   scores.push_back(NGLineBreakScore{0, 0, 0});
   wtf_size_t active = 0;
-  const ComputedStyle& block_style = node_.Style();
-  const bool is_justified = block_style.GetTextAlign() == ETextAlign::kJustify;
 
   // `end` iterates through candidates for the end of the line.
   for (wtf_size_t end = 1; end < candidates.size(); ++end) {
@@ -232,7 +284,7 @@ void NGScoreLineBreaker::ComputeScores(const NGLineBreakCandidates& candidates,
       // successive candidate breaks are considered.
       float width_score = 0;
       float additional_penalty = 0;
-      if ((is_end_last_candidate || !is_justified) && delta < 0) {
+      if ((is_end_last_candidate || !is_justified_) && delta < 0) {
         width_score = kScoreOverfull;
       } else if (is_end_last_candidate && !is_balanced_) {
         // Increase penalty for hyphen on last line.
@@ -242,7 +294,9 @@ void NGScoreLineBreaker::ComputeScores(const NGLineBreakCandidates& candidates,
       } else if (delta < 0) {
         width_score = kScoreOverfull;
       } else {
-        width_score = delta * delta;
+        // Penalties/scores should be a zoomed value. Because `delta` is zoomed,
+        // unzoom once.
+        width_score = delta * delta / zoom_;
       }
       if (delta < 0) {
         active = start + 1;
@@ -257,9 +311,8 @@ void NGScoreLineBreaker::ComputeScores(const NGLineBreakCandidates& candidates,
     }
 
     scores.push_back(NGLineBreakScore{
-        // TODO(kojii): Add `line_penalty`.
-        best + end_candidate.penalty /* + context.line_penalty */,
-        best_prev_index, scores[best_prev_index].line_index + 1});
+        best + end_candidate.penalty + line_penalty_, best_prev_index,
+        scores[best_prev_index].line_index + 1});
   }
 }
 

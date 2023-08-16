@@ -117,8 +117,67 @@ cx_events::PowerEventInfo UncheckedConvertPtr(
   return result;
 }
 
+cx_events::StylusGarageEventInfo UncheckedConvertPtr(
+    crosapi::TelemetryStylusGarageEventInfoPtr ptr) {
+  cx_events::StylusGarageEventInfo result;
+
+  result.event = Convert(ptr->state);
+
+  return result;
+}
+
 absl::optional<uint32_t> UncheckedConvertPtr(crosapi::UInt32ValuePtr ptr) {
   return ptr->value;
+}
+
+cx_events::TouchpadButtonEventInfo UncheckedConvertPtr(
+    crosapi::TelemetryTouchpadButtonEventInfoPtr ptr) {
+  cx_events::TouchpadButtonEventInfo result;
+  result.button = Convert(ptr->button);
+  result.state = Convert(ptr->state);
+  return result;
+}
+
+cx_events::TouchpadTouchEventInfo UncheckedConvertPtr(
+    crosapi::TelemetryTouchpadTouchEventInfoPtr ptr) {
+  cx_events::TouchpadTouchEventInfo result;
+  std::vector<cx_events::TouchPointInfo> converted_touch_points =
+      ConvertStructPtrVector<cx_events::TouchPointInfo>(
+          std::move(ptr->touch_points));
+  result.touch_points = std::move(converted_touch_points);
+  return result;
+}
+
+cx_events::TouchpadConnectedEventInfo UncheckedConvertPtr(
+    crosapi::TelemetryTouchpadConnectedEventInfoPtr ptr) {
+  cx_events::TouchpadConnectedEventInfo result;
+  std::vector<cx_events::InputTouchButton> converted_buttons =
+      ConvertVector<cx_events::InputTouchButton,
+                    crosapi::TelemetryInputTouchButton>(
+          std::move(ptr->buttons));
+  result.buttons = std::move(converted_buttons);
+  result.max_x = ptr->max_x;
+  result.max_y = ptr->max_y;
+  result.max_pressure = ptr->max_pressure;
+  return result;
+}
+
+cx_events::TouchPointInfo UncheckedConvertPtr(
+    crosapi::TelemetryTouchPointInfoPtr ptr) {
+  cx_events::TouchPointInfo result;
+  result.tracking_id = ptr->tracking_id;
+  result.x = ptr->x;
+  result.y = ptr->y;
+  result.pressure =
+      ConvertStructPtr<absl::optional<uint32_t>, crosapi::UInt32ValuePtr>(
+          std::move(ptr->pressure));
+  result.touch_major =
+      ConvertStructPtr<absl::optional<uint32_t>, crosapi::UInt32ValuePtr>(
+          std::move(ptr->touch_major));
+  result.touch_minor =
+      ConvertStructPtr<absl::optional<uint32_t>, crosapi::UInt32ValuePtr>(
+          std::move(ptr->touch_minor));
+  return result;
 }
 
 }  // namespace unchecked
@@ -335,6 +394,33 @@ cx_events::PowerEvent Convert(crosapi::TelemetryPowerEventInfo::State state) {
   NOTREACHED();
 }
 
+cx_events::StylusGarageEvent Convert(
+    crosapi::TelemetryStylusGarageEventInfo::State state) {
+  switch (state) {
+    case crosapi::TelemetryStylusGarageEventInfo_State::kUnmappedEnumField:
+      return cx_events::StylusGarageEvent::kNone;
+    case crosapi::TelemetryStylusGarageEventInfo_State::kInserted:
+      return cx_events::StylusGarageEvent::kInserted;
+    case crosapi::TelemetryStylusGarageEventInfo_State::kRemoved:
+      return cx_events::StylusGarageEvent::kRemoved;
+  }
+  NOTREACHED();
+}
+
+cx_events::InputTouchButton Convert(crosapi::TelemetryInputTouchButton button) {
+  switch (button) {
+    case crosapi::TelemetryInputTouchButton::kUnmappedEnumField:
+      return cx_events::InputTouchButton::kNone;
+    case crosapi::TelemetryInputTouchButton::kLeft:
+      return cx_events::InputTouchButton::kLeft;
+    case crosapi::TelemetryInputTouchButton::kMiddle:
+      return cx_events::InputTouchButton::kMiddle;
+    case crosapi::TelemetryInputTouchButton::kRight:
+      return cx_events::InputTouchButton::kRight;
+  }
+  NOTREACHED();
+}
+
 crosapi::TelemetryEventCategoryEnum Convert(cx_events::EventCategory input) {
   switch (input) {
     case cx_events::EventCategory::kNone:
@@ -351,6 +437,27 @@ crosapi::TelemetryEventCategoryEnum Convert(cx_events::EventCategory input) {
       return crosapi::TelemetryEventCategoryEnum::kPower;
     case cx_events::EventCategory::kKeyboardDiagnostic:
       return crosapi::TelemetryEventCategoryEnum::kKeyboardDiagnostic;
+    case cx_events::EventCategory::kStylusGarage:
+      return crosapi::TelemetryEventCategoryEnum::kStylusGarage;
+    case cx_events::EventCategory::kTouchpadButton:
+      return crosapi::TelemetryEventCategoryEnum::kTouchpadButton;
+    case cx_events::EventCategory::kTouchpadTouch:
+      return crosapi::TelemetryEventCategoryEnum::kTouchpadTouch;
+    case cx_events::EventCategory::kTouchpadConnected:
+      return crosapi::TelemetryEventCategoryEnum::kTouchpadConnected;
+  }
+  NOTREACHED();
+}
+
+cx_events::InputTouchButtonState Convert(
+    crosapi::TelemetryTouchpadButtonEventInfo::State state) {
+  switch (state) {
+    case crosapi::TelemetryTouchpadButtonEventInfo_State::kUnmappedEnumField:
+      return cx_events::InputTouchButtonState::kNone;
+    case crosapi::TelemetryTouchpadButtonEventInfo_State::kPressed:
+      return cx_events::InputTouchButtonState::kPressed;
+    case crosapi::TelemetryTouchpadButtonEventInfo_State::kReleased:
+      return cx_events::InputTouchButtonState::kReleased;
   }
   NOTREACHED();
 }

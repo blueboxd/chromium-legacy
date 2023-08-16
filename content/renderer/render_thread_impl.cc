@@ -163,7 +163,6 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/core/SkGraphics.h"
-#include "ui/base/layout.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -338,11 +337,6 @@ scoped_refptr<viz::ContextProviderCommandBuffer> CreateOffscreenContext(
   // This is for an offscreen context, so the default framebuffer doesn't need
   // alpha, depth, stencil, antialiasing.
   gpu::ContextCreationAttribs attributes;
-  attributes.alpha_size = -1;
-  attributes.depth_size = 0;
-  attributes.stencil_size = 0;
-  attributes.samples = 0;
-  attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
   attributes.enable_gles2_interface = support_gles2_interface;
@@ -924,20 +918,14 @@ void RenderThreadImpl::InitializeWebKit(mojo::BinderMap* binders) {
 
 void RenderThreadImpl::InitializeRenderer(
     const std::string& user_agent,
-    const std::string& full_user_agent,
-    const std::string& reduced_user_agent,
     const blink::UserAgentMetadata& user_agent_metadata,
     const std::vector<std::string>& cors_exempt_header_list,
     network::mojom::AttributionSupport attribution_support,
     blink::mojom::OriginTrialsSettingsPtr origin_trials_settings) {
   DCHECK(user_agent_.IsNull());
-  DCHECK(reduced_user_agent_.IsNull());
-  DCHECK(full_user_agent_.IsNull());
 
   user_agent_ = WebString::FromUTF8(user_agent);
   GetContentClient()->renderer()->DidSetUserAgent(user_agent);
-  full_user_agent_ = WebString::FromUTF8(full_user_agent);
-  reduced_user_agent_ = WebString::FromUTF8(reduced_user_agent);
   user_agent_metadata_ = user_agent_metadata;
   cors_exempt_header_list_ = cors_exempt_header_list;
   attribution_support_ = attribution_support;
@@ -1325,18 +1313,6 @@ blink::WebString RenderThreadImpl::GetUserAgent() {
   DCHECK(!user_agent_.IsNull());
 
   return user_agent_;
-}
-
-blink::WebString RenderThreadImpl::GetFullUserAgent() {
-  DCHECK(!full_user_agent_.IsNull());
-
-  return full_user_agent_;
-}
-
-blink::WebString RenderThreadImpl::GetReducedUserAgent() {
-  DCHECK(!reduced_user_agent_.IsNull());
-
-  return reduced_user_agent_;
 }
 
 const blink::UserAgentMetadata& RenderThreadImpl::GetUserAgentMetadata() {

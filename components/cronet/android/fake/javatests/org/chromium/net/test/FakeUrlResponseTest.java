@@ -4,10 +4,7 @@
 
 package org.chromium.net.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static com.google.common.truth.Truth.assertThat;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -22,7 +19,6 @@ import org.chromium.net.impl.UrlResponseInfoImpl;
 import java.io.UnsupportedEncodingException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -69,7 +65,7 @@ public class FakeUrlResponseTest {
         List<Map.Entry<String, String>> responseHeadersList = response.getAllHeadersList();
 
         // mTestHeaderEntry is header entry of TEST_HEADER_NAME, TEST_HEADER_VALUE.
-        assertTrue(responseHeadersList.contains(mTestHeaderEntry));
+        assertThat(responseHeadersList).contains(mTestHeaderEntry);
     }
 
     @Test
@@ -79,9 +75,8 @@ public class FakeUrlResponseTest {
         FakeUrlResponse responseNotEqualToTestResponse =
                 mTestResponse.toBuilder().setResponseBody("Not equal".getBytes()).build();
 
-        assertEquals(mTestResponse, mTestResponse);
-        assertEquals(mTestResponse, responseEqualToTestResponse);
-        assertNotEquals(mTestResponse, responseNotEqualToTestResponse);
+        assertThat(mTestResponse).isEqualTo(responseEqualToTestResponse);
+        assertThat(mTestResponse).isNotEqualTo(responseNotEqualToTestResponse);
     }
 
     @Test
@@ -90,8 +85,8 @@ public class FakeUrlResponseTest {
         try {
             FakeUrlResponse responseWithBodySetAsBytes =
                     mTestResponse.toBuilder().setResponseBody(TEST_BODY.getBytes("UTF-8")).build();
-            assertTrue(Arrays.equals(
-                    mTestResponse.getResponseBody(), responseWithBodySetAsBytes.getResponseBody()));
+            assertThat(mTestResponse.getResponseBody())
+                    .isEqualTo(responseWithBodySetAsBytes.getResponseBody());
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(
                     "Exception occurred while encoding response body: " + TEST_BODY);
@@ -109,7 +104,7 @@ public class FakeUrlResponseTest {
         List<Map.Entry<String, String>> responseHeadersListWithHeader =
                 responseWithHeader.getAllHeadersList();
 
-        assertNotEquals(responseHeadersListWithHeader, responseHeadersList);
+        assertThat(responseHeadersList).isNotEqualTo(responseHeadersListWithHeader);
     }
 
     @Test
@@ -125,8 +120,8 @@ public class FakeUrlResponseTest {
                         .addHeader(nameNotInOriginalList, valueNotInOriginalList)
                         .build();
 
-        assertFalse(mTestHeaders.contains(entryNotInOriginalList));
-        assertTrue(testResponseWithHeader.getAllHeadersList().contains(entryNotInOriginalList));
+        assertThat(mTestHeaders).doesNotContain(entryNotInOriginalList);
+        assertThat(testResponseWithHeader.getAllHeadersList()).contains(entryNotInOriginalList);
     }
 
     @Test
@@ -134,8 +129,8 @@ public class FakeUrlResponseTest {
     public void testHashCodeReturnsSameIntForEqualObjects() {
         FakeUrlResponse responseEqualToTest = mTestResponse.toBuilder().build();
 
-        assertEquals(mTestResponse.hashCode(), mTestResponse.hashCode());
-        assertEquals(mTestResponse.hashCode(), responseEqualToTest.hashCode());
+        assertThat(mTestResponse.hashCode()).isEqualTo(mTestResponse.hashCode());
+        assertThat(mTestResponse.hashCode()).isEqualTo(responseEqualToTest.hashCode());
         // Two non-equivalent values can map to the same hashCode.
     }
 
@@ -148,7 +143,7 @@ public class FakeUrlResponseTest {
                 + " Proxy Server: " + TEST_PROXY_SERVER + " Response Body (UTF-8): " + TEST_BODY;
         String responseToString = mTestResponse.toString();
 
-        assertEquals(expectedString, responseToString);
+        assertThat(responseToString).isEqualTo(expectedString);
     }
 
     @Test
@@ -166,7 +161,7 @@ public class FakeUrlResponseTest {
 
         FakeUrlResponse constructedResponse = new FakeUrlResponse(info);
 
-        assertEquals(expectedResponse, constructedResponse);
+        assertThat(constructedResponse).isEqualTo(expectedResponse);
     }
 
     @Test
@@ -186,7 +181,7 @@ public class FakeUrlResponseTest {
 
         FakeUrlResponse constructedResponse = new FakeUrlResponse(info);
 
-        assertEquals(expectedResponse, constructedResponse);
+        assertThat(constructedResponse).isEqualTo(expectedResponse);
     }
 
     @Test
@@ -198,8 +193,8 @@ public class FakeUrlResponseTest {
                         .build();
         FakeUrlResponse defaultResponse = new FakeUrlResponse.Builder().build();
 
-        assertNotEquals(
-                defaultResponse.getAllHeadersList(), defaultResponseWithHeader.getAllHeadersList());
+        assertThat(defaultResponseWithHeader.getAllHeadersList())
+                .isNotEqualTo(defaultResponse.getAllHeadersList());
     }
 
     @Test
@@ -212,7 +207,7 @@ public class FakeUrlResponseTest {
 
         Map infoMap = info.getAllHeaders();
 
-        assertTrue(infoMap.containsKey(TEST_HEADER_NAME.toLowerCase(Locale.ROOT)));
-        assertTrue(infoMap.containsKey(TEST_HEADER_NAME.toUpperCase(Locale.ROOT)));
+        assertThat(infoMap).containsKey(TEST_HEADER_NAME.toLowerCase(Locale.ROOT));
+        assertThat(infoMap).containsKey(TEST_HEADER_NAME.toUpperCase(Locale.ROOT));
     }
 }

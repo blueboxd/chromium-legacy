@@ -19,6 +19,10 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
 
   r.SAFETY_CHECK = r.PRIVACY.createSection('/safetyCheck', 'safetyCheck');
 
+  if (loadTimeData.getBoolean('enableSafetyHub')) {
+    r.SAFETY_HUB = r.PRIVACY.createChild('/safetyHub');
+  }
+
   if (loadTimeData.getBoolean('showPrivacyGuide')) {
     r.PRIVACY_GUIDE = r.PRIVACY.createChild('guide');
   }
@@ -124,6 +128,11 @@ function addPrivacyChildRoutes(r: Partial<SettingsRoutes>) {
       r.SITE_SETTINGS.createChild('windowManagement');
   r.SITE_SETTINGS_FILE_SYSTEM_WRITE = r.SITE_SETTINGS.createChild('filesystem');
   r.SITE_SETTINGS_LOCAL_FONTS = r.SITE_SETTINGS.createChild('localFonts');
+
+  if (loadTimeData.getBoolean('enablePermissionStorageAccessApi')) {
+    r.SITE_SETTINGS_STORAGE_ACCESS =
+        r.SITE_SETTINGS.createChild('storageAccess');
+  }
 }
 
 /**

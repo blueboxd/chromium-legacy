@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/ash_public_export.h"
 
 namespace ash {
@@ -20,14 +21,23 @@ class ASH_PUBLIC_EXPORT AnchoredNudgeManager {
   // Returns the singleton `AnchoredNudgeManager`.
   static AnchoredNudgeManager* Get();
 
-  // Shows an anchored nudge, and sets its contents with the provided `data`.
-  // It will persist until it is dismissed with `Cancel()`, it times out, or its
-  // anchor view is deleted/hidden. It will not be created if the anchor view is
-  // invisible or does not have a widget.
-  virtual void Show(const AnchoredNudgeData& nudge_data) = 0;
+  // Shows an anchored nudge, and sets its contents with the provided
+  // `nudge_data`. It will persist until it is dismissed with `Cancel()`, it
+  // times out, or its anchor view is deleted/hidden. It will not be created if
+  // the anchor view is invisible or does not have a widget.
+
+  // TODO(b/285023559): Add and use a `ChainedCancelCallback` class instead of a
+  // `RepeatingClosure` so we don't have to manually modify the provided
+  // callbacks in the manager, and we can pass `nudge_data` as a constant.
+  virtual void Show(AnchoredNudgeData& nudge_data) = 0;
 
   // Cancels an anchored nudge with the provided `id`.
   virtual void Cancel(const std::string& id) = 0;
+
+  // Records Nudge "TimeToAction" metric, which tracks the time from when a
+  // nudge was shown to when the nudge's suggested action was performed.
+  // No op if the nudge specified by `catalog_name` hasn't been shown before.
+  virtual void MaybeRecordNudgeAction(NudgeCatalogName catalog_name) = 0;
 
  protected:
   AnchoredNudgeManager();

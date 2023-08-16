@@ -8,16 +8,18 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/price_tracking_utils.h"
-#include "components/commerce/core/shopping_service.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets_outsets_base.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -30,34 +32,59 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/flex_layout_view.h"
+#include "ui/views/layout/layout_provider.h"
 
 namespace {
 constexpr int kProductImageSize = 56;
-constexpr int kHorizontalSpacing = 16;
 constexpr int kImageBorderRadius = 4;
 constexpr int kIconSize = 16;
 constexpr int kIconMargin = 14;
+constexpr int kIconSizeRefresh = 20;
+constexpr int kIconMarginRefresh = 8;
+
+int GetIconMargin() {
+  return features::IsChromeRefresh2023() ? kIconMarginRefresh : kIconMargin;
+}
+
+gfx::Size GetIconSize() {
+  return features::IsChromeRefresh2023()
+             ? gfx::Size(kIconSizeRefresh, kIconSizeRefresh)
+             : gfx::Size(kIconSize, kIconSize);
+}
+
 }  // namespace
 
 PriceTrackingView::PriceTrackingView(Profile* profile,
                                      const GURL& page_url,
                                      const gfx::ImageSkia& product_image,
-                                     bool is_price_track_enabled)
-    : profile_(profile), is_price_track_enabled_(is_price_track_enabled) {
+                                     bool is_price_track_enabled,
+                                     const commerce::ProductInfo& product_info)
+    : profile_(profile),
+      is_price_track_enabled_(is_price_track_enabled),
+      product_info_(product_info) {
+  auto* layout_provider = views::LayoutProvider::Get();
   const bool power_bookmarks_side_panel_enabled =
       base::FeatureList::IsEnabled(features::kPowerBookmarksSidePanel);
   const int label_spacing = power_bookmarks_side_panel_enabled ? 0 : 4;
-  const auto label_style = power_bookmarks_side_panel_enabled
-                               ? views::style::CONTEXT_LABEL
-                               : views::style::CONTEXT_DIALOG_BODY_TEXT;
+  const auto label_context = power_bookmarks_side_panel_enabled
+                                 ? views::style::CONTEXT_LABEL
+                                 : views::style::CONTEXT_DIALOG_BODY_TEXT;
+  const int horizontal_spacing = layout_provider->GetDistanceMetric(
+      views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
+  const gfx::Insets dialog_insets =
+      layout_provider->GetInsetsMetric(views::INSETS_DIALOG);
   if (power_bookmarks_side_panel_enabled) {
+    if (features::IsChromeRefresh2023()) {
+      SetCrossAxisAlignment(views::LayoutAlignment::kStart);
+    }
     // Icon column
     auto* icon = AddChildView(std::make_unique<views::ImageView>());
-    icon->SetImage(gfx::CreateVectorIcon(omnibox::kPriceTrackingDisabledIcon,
-                                         SkColor(gfx::kGoogleGrey700)));
-    icon->SetImageSize(gfx::Size(kIconSize, kIconSize));
+    icon->SetImage(
+        ui::ImageModel::FromVectorIcon(omnibox::kPriceTrackingDisabledIcon,
+                                       kColorBookmarkDialogTrackPriceIcon));
+    icon->SetImageSize(GetIconSize());
     icon->SetProperty(views::kMarginsKey,
-                      gfx::Insets::TLBR(0, 0, 0, kIconMargin));
+                      gfx::Insets::TLBR(0, 0, 0, GetIconMargin()));
   } else {
     // image column
     auto* product_image_containter =
@@ -65,15 +92,15 @@ PriceTrackingView::PriceTrackingView(Profile* profile,
     product_image_containter->SetCrossAxisAlignment(
         views::BoxLayout::CrossAxisAlignment::kCenter);
     product_image_containter->SetProperty(
-        views::kMarginsKey, gfx::Insets::TLBR(0, 0, 0, kHorizontalSpacing));
+        views::kMarginsKey, gfx::Insets::TLBR(0, 0, 0, horizontal_spacing));
     // Set product image.
     product_image_containter->AddChildView(
         views::Builder<views::ImageView>()
             .SetImageSize(gfx::Size(kProductImageSize, kProductImageSize))
             .SetPreferredSize(gfx::Size(kProductImageSize, kProductImageSize))
             // TODO(meiliang@): Verify color and corner radius with UX.
-            .SetBorder(views::CreateRoundedRectBorder(
-                1, kImageBorderRadius, SkColorSetA(gfx::kGoogleGrey900, 0x24)))
+            .SetBorder(views::CreateThemedRoundedRectBorder(
+                1, kImageBorderRadius, kColorBookmarkDialogProductImageBorder))
             .SetImage(
                 gfx::ImageSkiaOperations::CreateCroppedCenteredRoundRectImage(
                     gfx::Size(kProductImageSize, kProductImageSize),
@@ -88,7 +115,9 @@ PriceTrackingView::PriceTrackingView(Profile* profile,
   auto* title_label =
       text_container->AddChildView(std::make_unique<views::Label>(
           l10n_util::GetStringUTF16(IDS_OMNIBOX_TRACK_PRICE_DIALOG_TITLE),
-          label_style, views::style::STYLE_PRIMARY));
+          label_context,
+          features::IsChromeRefresh2023() ? views::style::STYLE_EMPHASIZED
+                                          : views::style::STYLE_PRIMARY));
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label->SetFocusBehavior(View::FocusBehavior::ACCESSIBLE_ONLY);
   // Body label
@@ -97,7 +126,7 @@ PriceTrackingView::PriceTrackingView(Profile* profile,
     body_string_id = IDS_BOOKMARK_STAR_DIALOG_TRACK_PRICE_DESCRIPTION_EMAIL_OFF;
   }
   body_label_ = text_container->AddChildView(std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(body_string_id), label_style,
+      l10n_util::GetStringUTF16(body_string_id), label_context,
       views::style::STYLE_SECONDARY));
   if (power_bookmarks_side_panel_enabled) {
     body_label_->SetFontList(body_label_->font_list().DeriveWithSizeDelta(-1));
@@ -114,10 +143,15 @@ PriceTrackingView::PriceTrackingView(Profile* profile,
   toggle_button_ = AddChildView(std::make_unique<views::ToggleButton>(
       base::BindRepeating(&PriceTrackingView::OnToggleButtonPressed,
                           weak_ptr_factory_.GetWeakPtr(), page_url)));
+
   toggle_button_->SetIsOn(is_price_track_enabled_);
+
+  scoped_observation_.Observe(
+      commerce::ShoppingServiceFactory::GetForBrowserContext(profile_));
+
   toggle_button_->SetAccessibleName(GetToggleAccessibleName());
   toggle_button_->SetProperty(views::kMarginsKey,
-                              gfx::Insets::TLBR(0, kHorizontalSpacing, 0, 0));
+                              gfx::Insets::TLBR(0, horizontal_spacing, 0, 0));
 
   const int bubble_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_BUBBLE_PREFERRED_WIDTH);
@@ -126,13 +160,18 @@ PriceTrackingView::PriceTrackingView(Profile* profile,
     toggle_button_->SetProperty(
         views::kFlexBehaviorKey,
         views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
-                                 views::MaximumFlexSizeRule::kUnbounded)
+                                 features::IsChromeRefresh2023()
+                                     ? views::MaximumFlexSizeRule::kPreferred
+                                     : views::MaximumFlexSizeRule::kUnbounded)
             .WithAlignment(views::LayoutAlignment::kEnd));
 
-    label_width = bubble_width - kHorizontalSpacing * 2 - kIconMargin * 2 -
-                  kIconSize - toggle_button_->GetPreferredSize().width();
+    label_width = bubble_width - horizontal_spacing * 2 -
+                  dialog_insets.right() - GetIconMargin() -
+                  GetIconSize().width() -
+                  toggle_button_->GetPreferredSize().width();
   } else {
-    label_width = bubble_width - kHorizontalSpacing * 4 - kProductImageSize -
+    label_width = bubble_width - horizontal_spacing * 2 -
+                  dialog_insets.width() - kProductImageSize -
                   toggle_button_->GetPreferredSize().width();
   }
   body_label_->SizeToFit(label_width);
@@ -144,6 +183,32 @@ PriceTrackingView::~PriceTrackingView() = default;
 
 bool PriceTrackingView::IsToggleOn() {
   return toggle_button_->GetIsOn();
+}
+
+void PriceTrackingView::OnSubscribe(const commerce::CommerceSubscription& sub,
+                                    bool succeeded) {
+  if (succeeded) {
+    HandleSubscriptionUpdate(sub, true);
+  }
+}
+
+void PriceTrackingView::OnUnsubscribe(const commerce::CommerceSubscription& sub,
+                                      bool succeeded) {
+  if (succeeded) {
+    HandleSubscriptionUpdate(sub, false);
+  }
+}
+
+void PriceTrackingView::HandleSubscriptionUpdate(
+    const commerce::CommerceSubscription& sub,
+    bool is_tracking) {
+  if (sub.id_type == commerce::IdentifierType::kProductClusterId &&
+      base::NumberToString(product_info_.product_cluster_id.value_or(
+          commerce::kInvalidSubscriptionId)) == sub.id) {
+    is_price_track_enabled_ = is_tracking;
+    toggle_button_->SetIsOn(is_tracking);
+    toggle_button_->SetAccessibleName(GetToggleAccessibleName());
+  }
 }
 
 std::u16string PriceTrackingView::GetToggleAccessibleName() {
@@ -171,7 +236,11 @@ void PriceTrackingView::UpdatePriceTrackingState(const GURL& url) {
       BookmarkModelFactory::GetForBrowserContext(profile_);
   const bookmarks::BookmarkNode* node =
       model->GetMostRecentlyAddedUserNodeForURL(url);
-  if (profile_ && is_price_track_enabled_) {
+
+  // If "track by default" is on, we'll show a dialog after saving to offer
+  // email notifications.
+  if (!base::FeatureList::IsEnabled(commerce::kShoppingListTrackByDefault) &&
+      profile_ && is_price_track_enabled_) {
     commerce::MaybeEnableEmailNotifications(profile_->GetPrefs());
   }
 
@@ -186,11 +255,9 @@ void PriceTrackingView::UpdatePriceTrackingState(const GURL& url) {
         service, model, node, is_price_track_enabled_, std::move(callback));
   } else {
     DCHECK(!is_price_track_enabled_);
-    absl::optional<commerce::ProductInfo> info =
-        service->GetAvailableProductInfoForUrl(url);
-    if (commerce::CanTrackPrice(info)) {
+    if (commerce::CanTrackPrice(product_info_)) {
       commerce::SetPriceTrackingStateForClusterId(
-          service, model, info->product_cluster_id.value(),
+          service, model, product_info_.product_cluster_id.value(),
           is_price_track_enabled_, std::move(callback));
     }
   }

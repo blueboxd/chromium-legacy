@@ -1860,7 +1860,6 @@ void HandleOOM(size_t unused_size) {
 // testing purpose.
 static constexpr partition_alloc::PartitionOptions
     kOnlyEnableBackupRefPtrOptions = {
-        .cookie = partition_alloc::PartitionOptions::Cookie::kAllowed,
         .backup_ref_ptr =
             partition_alloc::PartitionOptions::BackupRefPtr::kEnabled,
 };
@@ -1894,7 +1893,7 @@ class BindUnretainedDanglingInternalFixture : public BindTest {
   }
   template <typename T, RawPtrTraits Traits>
   void Free(raw_ptr<T, Traits>& ptr) {
-    allocator_.root()->Free(ptr);
+    allocator_.root()->Free(ptr.ExtractAsDangling());
   }
 
  private:

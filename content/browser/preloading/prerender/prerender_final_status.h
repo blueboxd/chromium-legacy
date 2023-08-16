@@ -54,7 +54,9 @@ enum class PrerenderFinalStatus {
   kLoginAuthRequested = 26,
   kUaChangeRequiresReload = 27,
   kBlockedByClient = 28,
-  kAudioOutputDeviceRequested = 29,
+  // Deprecate in favor of newly defined behavior to support Web Audio while
+  // prerendering. See https://github.com/WICG/nav-speculation/issues/165.
+  // kAudioOutputDeviceRequested = 29,
   kMixedContent = 30,
   kTriggerBackgrounded = 31,
   // Break down into kEmbedderTriggeredAndSameOriginRedirected and
@@ -119,7 +121,14 @@ enum class PrerenderFinalStatus {
   kMemoryPressureOnTrigger = 67,
   kMemoryPressureAfterTriggered = 68,
 
-  kMaxValue = kMemoryPressureAfterTriggered,
+  kPrerenderingDisabledByDevTools = 69,
+
+  // Different from kBlockedByClient, which tracks the failure caused by main
+  // frame navigation, this status indicates that clients block some resource
+  // loading.
+  kResourceLoadBlockedByClient = 70,
+
+  kMaxValue = kResourceLoadBlockedByClient,
 };
 
 // Helper method to convert PrerenderFinalStatus to PreloadingFailureReason.

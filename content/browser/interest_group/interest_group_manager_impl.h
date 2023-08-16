@@ -19,6 +19,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/interest_group/auction_process_manager.h"
+#include "content/browser/interest_group/bidding_and_auction_serializer.h"
+#include "content/browser/interest_group/bidding_and_auction_server_key_fetcher.h"
 #include "content/browser/interest_group/interest_group_k_anonymity_manager.h"
 #include "content/browser/interest_group/interest_group_permissions_checker.h"
 #include "content/browser/interest_group/interest_group_update.h"
@@ -314,6 +316,16 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   // Updates the last time that the key was reported to the k-anonymity server.
   void UpdateLastKAnonymityReported(const std::string& key);
 
+  void GetInterestGroupAdAuctionData(
+      url::Origin top_level_origin,
+      base::Uuid generation_id,
+      base::OnceCallback<void(BiddingAndAuctionData)> callback);
+
+  void GetBiddingAndAuctionServerKey(
+      network::mojom::URLLoaderFactory* loader,
+      base::OnceCallback<void(absl::optional<BiddingAndAuctionServerKey>)>
+          callback);
+
   InterestGroupPermissionsChecker& permissions_checker_for_testing() {
     return permissions_checker_;
   }
@@ -340,6 +352,14 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
     // the binary, so no need for anything to own them.
     const char* name;
     int request_url_size_bytes;
+  };
+
+  struct AdAuctionDataLoaderState {
+    AdAuctionDataLoaderState();
+    ~AdAuctionDataLoaderState();
+    AdAuctionDataLoaderState(AdAuctionDataLoaderState&& state);
+    BiddingAndAuctionSerializer serializer;
+    base::OnceCallback<void(BiddingAndAuctionData)> callback;
   };
 
   // Callbacks for CheckPermissionsAndJoinInterestGroup() and
@@ -418,6 +438,23 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   void QueueKAnonymityUpdateForInterestGroupFromJoinInterestGroup(
       absl::optional<StorageInterestGroup> maybe_group);
 
+  // Loads the next owner's interest group data. If there are no more owners
+  // whose interest groups need to be loaded, calls OnAdAuctionDataLoadComplete.
+  void LoadNextInterestGroupAdAuctionData(AdAuctionDataLoaderState state,
+                                          std::vector<url::Origin> owners);
+
+  // Serializes the loaded auction data and then calls
+  // LoadNextInterestGroupAdAuctionData to continue loading.
+  void OnLoadedNextInterestGroupAdAuctionData(
+      AdAuctionDataLoaderState state,
+      std::vector<url::Origin> owners,
+      url::Origin owner,
+      std::vector<StorageInterestGroup> groups);
+
+  // Constructs the AuctionAdata when the load is complete and calls the
+  // provided callback.
+  void OnAdAuctionDataLoadComplete(AdAuctionDataLoaderState state);
+
   // Owns and manages access to the InterestGroupStorage living on a different
   // thread.
   base::SequenceBound<InterestGroupStorage> impl_;
@@ -491,6 +528,10 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   // The resulting behavior is that if reports are continuously being sent for
   // too long, possibly from multiple auctions, all reports are timed out.
   base::OneShotTimer timeout_timer_;
+
+  // Used to fetch the key for encrypting the request to the bidding and auction
+  // server.
+  BiddingAndAuctionServerKeyFetcher ba_key_fetcher_;
 
   base::WeakPtrFactory<InterestGroupManagerImpl> weak_factory_{this};
 };

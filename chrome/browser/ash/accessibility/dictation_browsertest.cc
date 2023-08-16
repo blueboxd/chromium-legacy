@@ -9,7 +9,9 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/system_tray_test_api.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/system/accessibility/dictation_button_tray.h"
 #include "ash/system/notification_center/notification_center_test_api.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
@@ -32,9 +34,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/accessibility_test_utils.h"
+#include "chrome/browser/ash/accessibility/autoclick_test_utils.h"
 #include "chrome/browser/ash/accessibility/caret_bounds_changed_waiter.h"
 #include "chrome/browser/ash/accessibility/dictation_bubble_test_helper.h"
+#include "chrome/browser/ash/accessibility/select_to_speak_test_utils.h"
 #include "chrome/browser/ash/accessibility/speech_monitor.h"
+#include "chrome/browser/ash/accessibility/switch_access_test_utils.h"
 #include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/input_method/textinput_test_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -276,7 +281,9 @@ class CommitTextWaiter : public MockIMEInputContextHandler::Observer {
 class DictationTestBase : public InProcessBrowserTest,
                           public ::testing::WithParamInterface<TestConfig> {
  public:
-  DictationTestBase() : test_helper_(speech_recognition_type()) {}
+  DictationTestBase()
+      : wait_for_accessibility_common_extension_load_(true),
+        test_helper_(speech_recognition_type()) {}
   ~DictationTestBase() override = default;
   DictationTestBase(const DictationTestBase&) = delete;
   DictationTestBase& operator=(const DictationTestBase&) = delete;
@@ -306,10 +313,20 @@ class DictationTestBase : public InProcessBrowserTest,
     browser()->profile()->GetPrefs()->SetBoolean(
         prefs::kDictationAcceleratorDialogHasBeenAccepted, true);
 
-    extensions::ExtensionHostTestHelper host_helper(
-        browser()->profile(), extension_misc::kAccessibilityCommonExtensionId);
-    AccessibilityManager::Get()->SetDictationEnabled(true);
-    host_helper.WaitForHostCompletedFirstLoad();
+    if (wait_for_accessibility_common_extension_load_) {
+      // Use ExtensionHostTestHelper to detect when the accessibility common
+      // extension loads.
+      extensions::ExtensionHostTestHelper host_helper(
+          browser()->profile(),
+          extension_misc::kAccessibilityCommonExtensionId);
+      AccessibilityManager::Get()->SetDictationEnabled(true);
+      host_helper.WaitForHostCompletedFirstLoad();
+    } else {
+      // In some cases (e.g. DictationWithAutoclickTest) the accessibility
+      // common extension is already setup and loaded. For these cases, simply
+      // toggle Dictation.
+      AccessibilityManager::Get()->SetDictationEnabled(true);
+    }
 
     aura::Window* root_window = Shell::Get()->GetPrimaryRootWindow();
     generator_ = std::make_unique<ui::test::EventGenerator>(root_window);
@@ -372,8 +389,7 @@ class DictationTestBase : public InProcessBrowserTest,
     // `pumpkin_test_files` rule in the accessibility_common BUILD file.
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath gen_root_dir;
-    ASSERT_TRUE(
-        base::PathService::Get(base::DIR_GEN_TEST_DATA_ROOT, &gen_root_dir));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_ASSETS, &gen_root_dir));
     base::FilePath pumpkin_test_file_path =
         gen_root_dir.AppendASCII(kPumpkinTestFilePath);
     ASSERT_TRUE(base::PathExists(pumpkin_test_file_path));
@@ -571,8 +587,14 @@ class DictationTestBase : public InProcessBrowserTest,
   }
 
   EditableType editable_type() { return GetParam().editable_type(); }
+  ui::test::EventGenerator* generator() { return generator_.get(); }
+
+  void set_use_extension_host_test_helper(bool use) {
+    wait_for_accessibility_common_extension_load_ = use;
+  }
 
  private:
+  bool wait_for_accessibility_common_extension_load_;
   SpeechRecognitionTestHelper test_helper_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<MockIMEInputContextHandler> input_context_handler_;
@@ -758,6 +780,30 @@ IN_PROC_BROWSER_TEST_P(DictationTest, ChromeVoxSilencedWhenToggledOn) {
   // Assert ChromeVox was asked to stop speaking at the toggle. Note: multiple
   // requests to stop speech can be sent, so we just expect stop_count() > 0.
   EXPECT_GT(sm.stop_count(), 0);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationTest, WorksWithSelectToSpeak) {
+  // Set up Select to Speak.
+  test::SpeechMonitor sm;
+  EXPECT_FALSE(GetManager()->IsSelectToSpeakEnabled());
+  sts_test_utils::TurnOnSelectToSpeakForTest(browser());
+
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForEditableValue(
+      "Not idly do the leaves of Lorien fall",
+      "Not idly do the leaves of Lorien fall");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+
+  aura::Window* root_window = Shell::Get()->GetPrimaryRootWindow();
+  ui::test::EventGenerator generator(root_window);
+
+  sts_test_utils::StartSelectToSpeakInBrowserWindow(browser(), &generator);
+
+  // Now ensure STS still works properly.
+  sm.ExpectSpeechPattern("Not idly do the leaves of Lorien fall*");
+  sm.Replay();
 }
 
 IN_PROC_BROWSER_TEST_P(DictationTest, EntersInterimSpeechWhenToggledOff) {
@@ -989,14 +1035,25 @@ class DictationWithAutoclickTest : public DictationTestBase {
     // Autoclick doesn't steal focus away from the textarea (either by clicking
     // or via the presence of the Autoclick UI, which steals focus when
     // initially shown).
-    GetActiveUserPrefs()->SetInteger(prefs::kAccessibilityAutoclickDelayMs,
-                                     90 * 1000);
-    GetActiveUserPrefs()->CommitPendingWrite();
-    GetManager()->EnableAutoclick(true);
+    autoclick_test_utils_ =
+        std::make_unique<AutoclickTestUtils>(browser()->profile());
+    autoclick_test_utils_->SetAutoclickDelayMs(90 * 1000);
+    autoclick_test_utils_->LoadAutoclick();
     EXPECT_TRUE(GetManager()->IsAutoclickEnabled());
-
+    // Don't use ExtensionHostTestHelper for Dictation because we already used
+    // it for Autoclick.
+    set_use_extension_host_test_helper(false);
     DictationTestBase::SetUpOnMainThread();
   }
+
+  void TearDownOnMainThread() override { autoclick_test_utils_.reset(); }
+
+  AutoclickTestUtils* autoclick_test_utils() {
+    return autoclick_test_utils_.get();
+  }
+
+ private:
+  std::unique_ptr<AutoclickTestUtils> autoclick_test_utils_;
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1005,10 +1062,80 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
                                  EditableType::kTextArea)));
 
-IN_PROC_BROWSER_TEST_P(DictationWithAutoclickTest, CanDictate) {
+IN_PROC_BROWSER_TEST_P(DictationWithAutoclickTest, UseBothFeatures) {
   ToggleDictationWithKeystroke();
   WaitForRecognitionStarted();
   SendFinalResultAndWaitForEditableValue("Hello world", "Hello world");
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStopped();
+
+  content::AccessibilityNotificationWaiter selection_waiter(
+      browser()->tab_strip_model()->GetActiveWebContents(), ui::kAXModeComplete,
+      ui::AXEventGenerator::Event::TEXT_SELECTION_CHANGED);
+  content::BoundingBoxUpdateWaiter bounding_box_waiter(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  autoclick_test_utils()->SetAutoclickEventTypeWithHover(
+      generator(), AutoclickEventType::kDoubleClick);
+  autoclick_test_utils()->SetAutoclickDelayMs(5);
+  // Hovering over the editable should result in the text being selected.
+  autoclick_test_utils()->HoverOverHtmlElement(
+      browser()->tab_strip_model()->GetActiveWebContents(), generator(),
+      "input");
+  bounding_box_waiter.Wait();
+  ASSERT_TRUE(selection_waiter.WaitForNotification());
+}
+
+IN_PROC_BROWSER_TEST_P(DictationWithAutoclickTest, UseAutoclickToToggle) {
+  autoclick_test_utils()->SetAutoclickEventTypeWithHover(
+      generator(), AutoclickEventType::kLeftClick);
+  autoclick_test_utils()->SetAutoclickDelayMs(5);
+  gfx::Rect dictation_button = Shell::Get()
+                                   ->GetPrimaryRootWindowController()
+                                   ->GetStatusAreaWidget()
+                                   ->dictation_button_tray()
+                                   ->GetBoundsInScreen();
+  // Move the mouse to the Dictation button.
+  generator()->MoveMouseTo(dictation_button.CenterPoint());
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForEditableValue("Hello world", "Hello world");
+  // Move the mouse away from, then back to the Dictation button.
+  generator()->MoveMouseTo(gfx::Point(20, 20));
+  generator()->MoveMouseTo(dictation_button.CenterPoint());
+  WaitForRecognitionStopped();
+}
+
+class DictationWithSwitchAccessTest : public DictationTestBase {
+ public:
+  DictationWithSwitchAccessTest() = default;
+  ~DictationWithSwitchAccessTest() override = default;
+  DictationWithSwitchAccessTest(const DictationWithSwitchAccessTest&) = delete;
+  DictationWithSwitchAccessTest& operator=(
+      const DictationWithSwitchAccessTest&) = delete;
+
+ protected:
+  void SetUpOnMainThread() override {
+    switch_access_test_utils_ =
+        std::make_unique<SwitchAccessTestUtils>(browser()->profile());
+    switch_access_test_utils_->EnableSwitchAccess({'1', 'A'} /* select */,
+                                                  {'2', 'B'} /* next */,
+                                                  {'3', 'C'} /* previous */);
+    DictationTestBase::SetUpOnMainThread();
+  }
+
+ private:
+  std::unique_ptr<SwitchAccessTestUtils> switch_access_test_utils_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    NetworkTextArea,
+    DictationWithSwitchAccessTest,
+    ::testing::Values(TestConfig(speech::SpeechRecognitionType::kNetwork,
+                                 EditableType::kTextArea)));
+
+IN_PROC_BROWSER_TEST_P(DictationWithSwitchAccessTest, CanDictate) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SendFinalResultAndWaitForEditableValue("Hello", "Hello");
   ToggleDictationWithKeystroke();
   WaitForRecognitionStopped();
 }

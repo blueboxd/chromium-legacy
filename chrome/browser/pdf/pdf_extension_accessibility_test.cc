@@ -503,7 +503,7 @@ class PDFExtensionAccessibilityTextExtractionTest
         // Previous node pointed to us, so we are part of the same line.
         EXPECT_EQ(previous_node_id, prev_id)
             << "Expect this node to point to previous node.";
-        line.append(trimmed_name.data(), trimmed_name.size());
+        line.append(trimmed_name);
       } else {
         // Not linked with the previous node; this is a new line.
         EXPECT_EQ(previous_node_next_id, 0)
@@ -629,8 +629,8 @@ class PDFExtensionAccessibilityTreeDumpTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PDFExtensionAccessibilityTest::SetUpCommandLine(command_line);
 
-    // Each test pass might require custom command-line setup
-    test_helper_.SetUpCommandLine(command_line);
+    // Each test pass might require custom feature setup
+    test_helper_.InitializeFeatureList();
   }
 
  protected:
@@ -638,6 +638,13 @@ class PDFExtensionAccessibilityTreeDumpTest
     auto enabled = PDFExtensionAccessibilityTest::GetEnabledFeatures();
     enabled.push_back(chrome_pdf::features::kAccessiblePDFForm);
     return enabled;
+  }
+
+  std::vector<base::test::FeatureRef> GetDisabledFeatures() const override {
+    auto disabled = PDFExtensionAccessibilityTest::GetDisabledFeatures();
+    // PDF OCR should not modify the dump.
+    disabled.push_back(::features::kPdfOcr);
+    return disabled;
   }
 
   void RunPDFTest(const base::FilePath::CharType* pdf_file) {

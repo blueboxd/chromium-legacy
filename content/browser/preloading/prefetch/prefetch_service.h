@@ -47,7 +47,8 @@ enum class PrefetchRedirectResult {
   kFailedInvalidResponseCode = 4,
   kFailedInvalidChangeInNetworkContext = 5,
   kFailedIneligible = 6,
-  kMaxValue = kFailedIneligible,
+  kFailedInsufficientReferrerPolicy = 7,
+  kMaxValue = kFailedInsufficientReferrerPolicy,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -151,8 +152,7 @@ class CONTENT_EXPORT PrefetchService {
   // with result and an optional status stating why the prefetch is not
   // eligible.
   using OnEligibilityResultCallback =
-      base::OnceCallback<void(const GURL& url,
-                              base::WeakPtr<PrefetchContainer>,
+      base::OnceCallback<void(base::WeakPtr<PrefetchContainer>,
                               bool eligible,
                               absl::optional<PrefetchStatus> status)>;
   void CheckEligibilityOfPrefetch(
@@ -182,7 +182,6 @@ class CONTENT_EXPORT PrefetchService {
   // |prefetch_container|. If there is an existing proxy, then the prefetch is
   // not eligible.
   void OnGotProxyLookupResult(
-      const GURL& url,
       base::WeakPtr<PrefetchContainer> prefetch_container,
       OnEligibilityResultCallback result_callback,
       bool has_proxy) const;
@@ -191,7 +190,6 @@ class CONTENT_EXPORT PrefetchService {
   // prefetch is eligible it is added to the queue to be prefetched. If it is
   // not eligible, then we consider making it a decoy request.
   void OnGotEligibilityResult(
-      const GURL& url,
       base::WeakPtr<PrefetchContainer> prefetch_container,
       bool eligible,
       absl::optional<PrefetchStatus> status);
@@ -200,7 +198,8 @@ class CONTENT_EXPORT PrefetchService {
   // determined. If its eligible, then the prefetch will continue, otherwise it
   // is stopped.
   void OnGotEligibilityResultForRedirect(
-      const GURL& url,
+      const net::RedirectInfo& redirect_info,
+      network::mojom::URLResponseHeadPtr redirect_head,
       base::WeakPtr<PrefetchContainer> prefetch_container,
       bool eligible,
       absl::optional<PrefetchStatus> status);
@@ -236,14 +235,13 @@ class CONTENT_EXPORT PrefetchService {
 
   // Gets the URL loader for the given |prefetch_container|. If an override was
   // set by |SetURLLoaderFactoryForTesting|, then that will be returned instead.
-  network::mojom::URLLoaderFactory* GetURLLoaderFactory(
-      base::WeakPtr<PrefetchContainer> prefetch_container,
-      const GURL& url);
+  network::mojom::URLLoaderFactory* GetURLLoaderFactoryForCurrentPrefetch(
+      base::WeakPtr<PrefetchContainer> prefetch_container);
 
   // Called when the request for |prefetch_container| is redirected.
   void OnPrefetchRedirect(base::WeakPtr<PrefetchContainer> prefetch_container,
                           const net::RedirectInfo& redirect_info,
-                          const network::mojom::URLResponseHead& response_head);
+                          network::mojom::URLResponseHeadPtr redirect_head);
 
   // Called when the response for |prefetch_container| has started. Based on
   // |head|, returns a status to inform the |PrefetchStreamingURLLoader| whether
@@ -273,8 +271,7 @@ class CONTENT_EXPORT PrefetchService {
   // prefetch if needed, and updates its state.
   void ReturnPrefetchToServe(
       base::WeakPtr<PrefetchContainer> prefetch_container,
-      OnPrefetchToServeReady on_prefetch_to_serve_ready,
-      const GURL& nav_url);
+      OnPrefetchToServeReady on_prefetch_to_serve_ready);
 
   // Helper function for |GetPrefetchToServe| to wait for head of a
   // potentially matching CL in order to decide if we can use it or not for
@@ -300,7 +297,7 @@ class CONTENT_EXPORT PrefetchService {
 
   void DumpPrefetchesForDebug() const;
 
-  raw_ptr<BrowserContext> browser_context_;
+  raw_ptr<BrowserContext, DanglingUntriaged> browser_context_;
 
   // Delegate provided by embedder that controls specific behavior of |this|.
   // May be nullptr if embedder doesn't provide a delegate.

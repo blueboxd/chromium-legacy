@@ -947,6 +947,9 @@ interface CSSSkewY : CSSTransformComponent
     getter ay
     method constructor
     setter ay
+interface CSSStartingStyleRule : CSSGroupingRule
+    attribute @@toStringTag
+    method constructor
 interface CSSStyleDeclaration
     attribute @@toStringTag
     getter cssFloat
@@ -1257,6 +1260,13 @@ interface CharacterData : Node
     method replaceWith
     method substringData
     setter data
+interface ChildNodePart : Part
+    attribute @@toStringTag
+    getter children
+    getter nextSibling
+    getter previousSibling
+    method constructor
+    method replaceChildren
 interface Clipboard : EventTarget
     attribute @@toStringTag
     method constructor
@@ -1419,6 +1429,7 @@ interface CustomElementRegistry
     method constructor
     method define
     method get
+    method getName
     method upgrade
     method whenDefined
 interface CustomEvent : Event
@@ -1995,6 +2006,7 @@ interface Document : Node
     method getElementsByName
     method getElementsByTagName
     method getElementsByTagNameNS
+    method getPartRoot
     method getSelection
     method hasFocus
     method hasPrivateToken
@@ -2168,6 +2180,9 @@ interface DocumentFragment : Node
     method querySelector
     method querySelectorAll
     method replaceChildren
+interface DocumentPartRoot : PartRoot
+    attribute @@toStringTag
+    method constructor
 interface DocumentPictureInPicture : EventTarget
     attribute @@toStringTag
     getter onenter
@@ -5549,7 +5564,9 @@ interface MLGraphBuilder
     method sigmoid
     method slice
     method softmax
+    method split
     method sub
+    method tanh
     method transpose
 interface MLModelLoader
     attribute @@toStringTag
@@ -6498,6 +6515,10 @@ interface NodeList
     method item
     method keys
     method values
+interface NodePart : Part
+    attribute @@toStringTag
+    getter node
+    method constructor
 interface Notification : EventTarget
     static getter maxActions
     static getter permission
@@ -6731,6 +6752,17 @@ interface PannerNode : AudioNode
     setter panningModel
     setter refDistance
     setter rolloffFactor
+interface Part : PartRoot
+    attribute @@toStringTag
+    getter metadata
+    getter root
+    method constructor
+    method disconnect
+interface PartRoot
+    attribute @@toStringTag
+    method clone
+    method constructor
+    method getParts
 interface PasswordCredential : Credential
     attribute @@toStringTag
     getter iconURL

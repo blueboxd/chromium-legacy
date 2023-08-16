@@ -465,10 +465,11 @@ class IndexedDBBackingStoreTest : public testing::Test {
   scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   std::unique_ptr<TestIDBFactory> idb_factory_;
-  raw_ptr<PartitionedLockManager> lock_manager_;
+  raw_ptr<PartitionedLockManager, DanglingUntriaged> lock_manager_;
 
   IndexedDBBucketStateHandle bucket_state_handle_;
-  raw_ptr<TestableIndexedDBBackingStore> backing_store_ = nullptr;
+  raw_ptr<TestableIndexedDBBackingStore, DanglingUntriaged> backing_store_ =
+      nullptr;
   IndexedDBDataLossInfo data_loss_info_;
 
   // Sample keys and values that are consistent.
@@ -648,8 +649,8 @@ class IndexedDBBackingStoreTestWithExternalObjects
           }
           break;
         case IndexedDBExternalObject::ObjectType::kFileSystemAccessHandle:
-          if (b.file_system_access_token().empty()) {
-            EXPECT_FALSE(b.file_system_access_token().empty());
+          if (b.serialized_file_system_access_handle().empty()) {
+            EXPECT_FALSE(b.serialized_file_system_access_handle().empty());
             return false;
           }
           break;
@@ -680,8 +681,8 @@ class IndexedDBBackingStoreTestWithExternalObjects
             return false;
           break;
         case IndexedDBExternalObject::ObjectType::kFileSystemAccessHandle:
-          if (read.file_system_access_token().size() != 1 ||
-              read.file_system_access_token()[0] >
+          if (read.serialized_file_system_access_handle().size() != 1 ||
+              read.serialized_file_system_access_handle()[0] >
                   file_system_access_context_->writes().size()) {
             return false;
           }

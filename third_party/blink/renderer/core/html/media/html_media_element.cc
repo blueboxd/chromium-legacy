@@ -1498,9 +1498,7 @@ void HTMLMediaElement::StartPlayerLoad() {
   }
 
   LocalFrame* frame = LocalFrameForPlayer();
-  // TODO(srirama.m): Figure out how frame can be null when
-  // coming from executeDeferredLoad()
-  if (!frame) {
+  if (!frame || !GetExecutionContext()) {
     MediaLoadingFailed(
         WebMediaPlayer::kNetworkStateFormatError,
         BuildElementErrorMessage("Player load failure: document has no frame"));
@@ -1982,7 +1980,6 @@ void HTMLMediaElement::SetNetworkState(WebMediaPlayer::NetworkState state) {
   if (state == WebMediaPlayer::kNetworkStateIdle) {
     if (network_state_ > kNetworkIdle) {
       ChangeNetworkStateFromLoadingToIdle();
-      SetShouldDelayLoadEvent(false);
     } else {
       SetNetworkState(kNetworkIdle);
     }
@@ -2464,6 +2461,10 @@ bool HTMLMediaElement::HasVideo() const {
 
 bool HTMLMediaElement::HasAudio() const {
   return web_media_player_ && web_media_player_->HasAudio();
+}
+
+bool HTMLMediaElement::IsEncrypted() const {
+  return is_encrypted_media_;
 }
 
 bool HTMLMediaElement::seeking() const {

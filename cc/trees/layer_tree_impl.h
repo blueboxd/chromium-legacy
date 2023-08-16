@@ -42,7 +42,7 @@ class TracedValue;
 
 namespace viz {
 class ClientResourceProvider;
-class ContextProvider;
+class RasterContextProvider;
 }
 
 namespace cc {
@@ -127,7 +127,7 @@ class CC_EXPORT LayerTreeImpl {
   int max_texture_size() const;
   const LayerTreeSettings& settings() const;
   const LayerTreeDebugState& debug_state() const;
-  viz::ContextProvider* context_provider() const;
+  viz::RasterContextProvider* context_provider() const;
   viz::ClientResourceProvider* resource_provider() const;
   TileManager* tile_manager() const;
   ImageDecodeCache* image_decode_cache() const;
@@ -153,7 +153,6 @@ class CC_EXPORT LayerTreeImpl {
                                      float initial_opacity);
   void DidAnimateScrollOffset();
   bool use_gpu_rasterization() const;
-  GpuRasterizationStatus GetGpuRasterizationStatus() const;
   bool create_low_res_tiling() const;
   bool RequiresHighResToDraw() const;
   bool SmoothnessTakesPriority() const;
@@ -837,7 +836,7 @@ class CC_EXPORT LayerTreeImpl {
   int source_frame_number_;
   uint64_t trace_id_ = 0;
   int is_first_frame_after_commit_tracker_;
-  raw_ptr<HeadsUpDisplayLayerImpl> hud_layer_;
+  raw_ptr<HeadsUpDisplayLayerImpl, DanglingUntriaged> hud_layer_;
   PropertyTrees property_trees_;
   SkColor4f background_color_;
 

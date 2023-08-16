@@ -19,8 +19,10 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/icon_button.h"
+#include "ash/style/typography.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/palette/palette_tool_manager.h"
 #include "ash/system/palette/palette_utils.h"
@@ -35,6 +37,7 @@
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -43,6 +46,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -109,8 +113,14 @@ class BatteryView : public views::View {
     label_ = AddChildView(std::make_unique<views::Label>(
         l10n_util::GetStringUTF16(IDS_ASH_STYLUS_BATTERY_LOW_LABEL)));
     label_->SetEnabledColor(stylus_battery_delegate_.GetColorForBatteryLevel());
-    TrayPopupUtils::SetLabelFontList(label_,
-                                     TrayPopupUtils::FontStyle::kSmallTitle);
+    if (chromeos::features::IsJellyEnabled()) {
+      label_->SetAutoColorReadabilityEnabled(false);
+      TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosBody2,
+                                            *label_);
+    } else {
+      TrayPopupUtils::SetLabelFontList(label_,
+                                       TrayPopupUtils::FontStyle::kSmallTitle);
+    }
   }
 
   // views::View:
@@ -162,10 +172,15 @@ class TitleView : public views::View {
     auto* title_label = AddChildView(std::make_unique<views::Label>(
         l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_TITLE)));
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    title_label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary));
-    TrayPopupUtils::SetLabelFontList(title_label,
-                                     TrayPopupUtils::FontStyle::kPodMenuHeader);
+    title_label->SetEnabledColorId(kColorAshTextColorPrimary);
+    if (chromeos::features::IsJellyEnabled()) {
+      title_label->SetAutoColorReadabilityEnabled(false);
+      TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosTitle1,
+                                            *title_label);
+    } else {
+      TrayPopupUtils::SetLabelFontList(
+          title_label, TrayPopupUtils::FontStyle::kPodMenuHeader);
+    }
     layout_ptr->SetFlexForView(title_label, 1);
 
     if (ash::features::IsStylusBatteryStatusEnabled()) {
@@ -262,7 +277,6 @@ PaletteTray::PaletteTray(Shelf* shelf)
   icon->SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_TITLE));
   tray_container()->SetMargin(kTrayIconMainAxisInset, kTrayIconCrossAxisInset);
   icon_ = tray_container()->AddChildView(std::move(icon));
-  UpdateTrayIcon();
 
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
@@ -450,6 +464,11 @@ void PaletteTray::ClickedOutsideBubble() {
   HidePalette();
 }
 
+void PaletteTray::UpdateTrayItemColor(bool is_active) {
+  DCHECK(chromeos::features::IsJellyEnabled());
+  UpdateTrayIcon();
+}
+
 void PaletteTray::OnThemeChanged() {
   TrayBackgroundView::OnThemeChanged();
   UpdateTrayIcon();
@@ -615,19 +634,8 @@ void PaletteTray::ShowBubble() {
   // accelerator.
   DeactivateActiveTool();
 
-  TrayBubbleView::InitParams init_params;
-  init_params.delegate = GetWeakPtr();
-  init_params.parent_window = GetBubbleWindowContainer();
-  init_params.anchor_view = nullptr;
-  init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
-  init_params.anchor_rect = GetBubbleAnchor()->GetAnchorBoundsInScreen();
-  init_params.anchor_rect.Inset(GetBubbleAnchorInsets());
-  init_params.shelf_alignment = shelf()->alignment();
+  TrayBubbleView::InitParams init_params = CreateInitParamsForTrayBubble(this);
   init_params.preferred_width = kPaletteWidth;
-  init_params.close_on_deactivate = true;
-  init_params.translucent = true;
-  init_params.corner_radius = kTrayItemCornerRadius;
-  init_params.reroute_event_handler = true;
 
   // TODO(tdanderson): Refactor into common row layout code.
   // TODO(tdanderson|jdufault): Add material design ripple effects to the menu
@@ -635,7 +643,6 @@ void PaletteTray::ShowBubble() {
 
   // Create and customize bubble view.
   auto bubble_view = std::make_unique<TrayBubbleView>(init_params);
-  bubble_view->set_margins(GetSecondaryBubbleInsets());
   bubble_view->SetBorder(views::CreateEmptyBorder(
       gfx::Insets::TLBR(0, 0, kPaddingBetweenBottomAndLastTrayItem, 0)));
 
@@ -700,12 +707,19 @@ void PaletteTray::InitializeWithLocalState() {
 }
 
 void PaletteTray::UpdateTrayIcon() {
+  SkColor color;
+  if (chromeos::features::IsJellyEnabled()) {
+    color = GetColorProvider()->GetColor(
+        is_active() ? cros_tokens::kCrosSysSystemOnPrimaryContainer
+                    : cros_tokens::kCrosSysOnSurface);
+  } else {
+    color = AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kIconColorPrimary);
+  }
   icon_->SetImage(CreateVectorIcon(
       palette_tool_manager_->GetActiveTrayIcon(
           palette_tool_manager_->GetActiveTool(PaletteGroup::MODE)),
-      kTrayIconSize,
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconColorPrimary)));
+      kTrayIconSize, color));
 }
 
 void PaletteTray::OnPaletteEnabledPrefChanged() {

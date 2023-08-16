@@ -3,16 +3,19 @@
 // found in the LICENSE file.
 
 #include "base/functional/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/ui/autofill/payments/mandatory_reauth_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/mandatory_reauth_ui.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/autofill/payments/mandatory_reauth_confirmation_bubble_view.h"
 #include "chrome/browser/ui/views/autofill/payments/mandatory_reauth_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/mandatory_reauth_opt_in_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/metrics/payments/mandatory_reauth_metrics.h"
 #include "content/public/test/browser_test.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/test/widget_test.h"
@@ -41,20 +44,22 @@ class MandatoryReauthBubbleViewUiTest : public InProcessBrowserTest {
     controller->ShowBubble(accept_callback.Get(), cancel_callback.Get(),
                            close_callback.Get());
     views::test::WidgetVisibleWaiter visible_waiter(
-        static_cast<MandatoryReauthOptInBubbleView*>(
-            controller->GetBubbleView())
-            ->GetWidget());
+        GetOptInBubbleView()->GetWidget());
     visible_waiter.Wait();
   }
 
   void ReshowBubble() {
     MandatoryReauthBubbleControllerImpl* controller = GetController();
     controller->ReshowBubble();
-    views::test::WidgetVisibleWaiter visible_waiter(
-        static_cast<MandatoryReauthOptInBubbleView*>(
-            controller->GetBubbleView())
-            ->GetWidget());
-    visible_waiter.Wait();
+    if (controller->GetBubbleType() == MandatoryReauthBubbleType::kOptIn) {
+      views::test::WidgetVisibleWaiter visible_waiter(
+          GetOptInBubbleView()->GetWidget());
+      visible_waiter.Wait();
+    } else {
+      views::test::WidgetVisibleWaiter visible_waiter(
+          GetConfirmationBubbleView()->GetWidget());
+      visible_waiter.Wait();
+    }
   }
 
   bool IsIconVisible() { return GetIconView() && GetIconView()->GetVisible(); }
@@ -71,6 +76,18 @@ class MandatoryReauthBubbleViewUiTest : public InProcessBrowserTest {
 
   views::BubbleDialogDelegate* GetReauthBubble() {
     return GetIconView()->GetBubble();
+  }
+
+  MandatoryReauthOptInBubbleView* GetOptInBubbleView() {
+    MandatoryReauthBubbleControllerImpl* controller = GetController();
+    return static_cast<MandatoryReauthOptInBubbleView*>(
+        controller->GetBubbleView());
+  }
+
+  MandatoryReauthConfirmationBubbleView* GetConfirmationBubbleView() {
+    MandatoryReauthBubbleControllerImpl* controller = GetController();
+    return static_cast<MandatoryReauthConfirmationBubbleView*>(
+        controller->GetBubbleView());
   }
 
   MandatoryReauthIconView* GetIconView() {
@@ -138,15 +155,20 @@ class MandatoryReauthBubbleViewUiTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MandatoryReauthBubbleViewUiTest, ShowBubble) {
+  base::HistogramTester histogram_tester;
   ShowBubble();
   EXPECT_TRUE(GetReauthBubble());
   EXPECT_TRUE(IsIconVisible());
   EXPECT_EQ(GetController()->GetBubbleType(),
             MandatoryReauthBubbleType::kOptIn);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.PaymentMethods.MandatoryReauth.OptInBubbleOffer.FirstShow",
+      autofill_metrics::MandatoryReauthOptInBubbleOffer::kShown, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(MandatoryReauthBubbleViewUiTest,
                        ClickOptInCancelButton) {
+  base::HistogramTester histogram_tester;
   ShowBubble();
   EXPECT_CALL(cancel_callback, Run).Times(1);
   ClickOnCancelButton(GetReauthBubble());
@@ -154,9 +176,13 @@ IN_PROC_BROWSER_TEST_F(MandatoryReauthBubbleViewUiTest,
   EXPECT_FALSE(IsIconVisible());
   EXPECT_EQ(GetController()->GetBubbleType(),
             MandatoryReauthBubbleType::kInactive);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.PaymentMethods.MandatoryReauth.OptInBubbleResult.FirstShow",
+      autofill_metrics::MandatoryReauthOptInBubbleResult::kCancelled, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(MandatoryReauthBubbleViewUiTest, ClickOptInOkButton) {
+  base::HistogramTester histogram_tester;
   ShowBubble();
   EXPECT_CALL(accept_callback, Run).Times(1);
   ClickOnOkButton(GetReauthBubble());
@@ -164,9 +190,13 @@ IN_PROC_BROWSER_TEST_F(MandatoryReauthBubbleViewUiTest, ClickOptInOkButton) {
   EXPECT_TRUE(IsIconVisible());
   EXPECT_EQ(GetController()->GetBubbleType(),
             MandatoryReauthBubbleType::kConfirmation);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.PaymentMethods.MandatoryReauth.OptInBubbleResult.FirstShow",
+      autofill_metrics::MandatoryReauthOptInBubbleResult::kAccepted, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(MandatoryReauthBubbleViewUiTest, ClickOptInCloseButton) {
+  base::HistogramTester histogram_tester;
   ShowBubble();
   EXPECT_CALL(close_callback, Run).Times(1);
   ClickOnCloseButton(GetReauthBubble());
@@ -174,9 +204,13 @@ IN_PROC_BROWSER_TEST_F(MandatoryReauthBubbleViewUiTest, ClickOptInCloseButton) {
   EXPECT_TRUE(IsIconVisible());
   EXPECT_EQ(GetController()->GetBubbleType(),
             MandatoryReauthBubbleType::kOptIn);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.PaymentMethods.MandatoryReauth.OptInBubbleResult.FirstShow",
+      autofill_metrics::MandatoryReauthOptInBubbleResult::kClosed, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(MandatoryReauthBubbleViewUiTest, ReshowOptInBubble) {
+  base::HistogramTester histogram_tester;
   ShowBubble();
   ClickOnCloseButton(GetReauthBubble());
   ReshowBubble();
@@ -184,6 +218,9 @@ IN_PROC_BROWSER_TEST_F(MandatoryReauthBubbleViewUiTest, ReshowOptInBubble) {
   EXPECT_TRUE(IsIconVisible());
   EXPECT_EQ(GetController()->GetBubbleType(),
             MandatoryReauthBubbleType::kOptIn);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.PaymentMethods.MandatoryReauth.OptInBubbleOffer.Reshow",
+      autofill_metrics::MandatoryReauthOptInBubbleOffer::kShown, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(MandatoryReauthBubbleViewUiTest,

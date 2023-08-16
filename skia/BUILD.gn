@@ -7,6 +7,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/freetype/freetype.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//build/rust/rust_static_library.gni")
 import("//gpu/vulkan/features.gni")
 import("//testing/test.gni")
 import("//third_party/skia/gn/shared_sources.gni")
@@ -30,41 +31,75 @@ buildflag_header("buildflags") {
   ]
 }
 
+if (use_typeface_fontations) {
+  static_library("path_bridge_headers") {
+    sources = [
+      "//third_party/skia/src/ports/fontations/src/skpath_bridge.cpp",
+      "//third_party/skia/src/ports/fontations/src/skpath_bridge.h",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      ":skia_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
+  }
+
+  rust_static_library("bridge_rust_side") {
+    allow_unsafe = true
+    crate_root = "//third_party/skia/src/ports/fontations/src/ffi.rs"
+    sources = [ "//third_party/skia/src/ports/fontations/src/ffi.rs" ]
+    cxx_bindings = [ "//third_party/skia/src/ports/fontations/src/ffi.rs" ]
+    deps = [
+      ":path_bridge_headers",
+      "//third_party/rust/font_types/v0_3:lib",
+      "//third_party/rust/read_fonts/v0_5:lib",
+      "//third_party/rust/skrifa/v0_4:lib",
+    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      ":skia_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
+  }
+}
+
 # External-facing config for dependent code.
 config("skia_config") {
   defines = [
-    "SK_CODEC_DECODES_PNG",
-    "SK_CODEC_DECODES_WEBP",
-    "SK_ENCODE_PNG",
-    "SK_ENCODE_WEBP",
     "SK_ENABLE_SKSL",
     "SK_UNTIL_CRBUG_1187654_IS_FIXED",
     "SK_USER_CONFIG_HEADER=\"../../skia/config/SkUserConfig.h\"",
     "SK_WIN_FONTMGR_NO_SIMULATIONS",
-    "SK_DISABLE_LEGACY_IMAGE_FACTORIES",
-    "SK_DISABLE_LEGACY_MAKE_TEXTURE_IMAGE",
-    "SK_DISABLE_LEGACY_IMAGE_FLUSH",
-    "SK_DISABLE_LEGACY_GET_BACKEND_TEXTURE",
-    "SK_DISABLE_LEGACY_IMAGE_ENCODE_METHODS",
-    "SK_DISABLE_LEGACY_IMAGE_ENCODER",
     "SK_DISABLE_LEGACY_SKSURFACE_METHODS",
     "SK_DISABLE_LEGACY_GRAPHITE_IMAGE_FACTORIES",
     "SK_DISABLE_LEGACY_GRAPHITE_IMAGE_METHODS",
-
-    # Cannot turn this on until PDFium rolls into Chrome
-    # https://pdfium-review.googlesource.com/c/pdfium/+/107410
-    #"SK_DISABLE_LEGACY_SKSURFACE_FACTORIES",
+    "SK_DISABLE_LEGACY_SKSURFACE_FACTORIES",
+    "SK_DISABLE_LEGACY_SKSURFACE_FLUSH",
+    "SK_DISABLE_LEGACY_SKSURFACE_AS_IMAGE",
+    "SK_DISABLE_LEGACY_SKSURFACE_DISPLAYLIST",
   ]
 
-  include_dirs = [ "//third_party/skia" ]
+  include_dirs = [
+    "//third_party/skia",
+    "$root_gen_dir/third_party/skia",
+  ]
 
   if (use_blink) {
     defines += [
       "SK_CODEC_DECODES_JPEG",
+      "SK_CODEC_DECODES_PNG",
+      "SK_CODEC_DECODES_WEBP",
       "SK_ENCODE_JPEG",
+      "SK_ENCODE_PNG",
+      "SK_ENCODE_WEBP",
       "SK_HAS_WUFFS_LIBRARY",
     ]
     include_dirs += [ "//third_party/wuffs/src/release/c" ]
+  } else {
+    # Decoder sources are only added when use_blink == true, but SkCodec.cpp is
+    # always present.  SK_DISABLE_LEGACY_INIT_DECODERS ensures that SkCodec.cpp
+    # is not attempting to reference inexistent codec code.
+    defines += [ "SK_DISABLE_LEGACY_INIT_DECODERS" ]
   }
 
   if (is_component_build) {
@@ -340,6 +375,7 @@ component("skia") {
   # The imported Skia gni source paths are made absolute by gn.
   defines = []
   sources += skia_sksl_sources
+  sources += skia_codec_core
   sources += skia_utils_private
   sources += skia_xps_sources
   sources += skia_encode_srcs
@@ -356,7 +392,6 @@ component("skia") {
   ]
   if (use_blink) {
     sources -= [ "//third_party/skia/src/ports/SkImageGenerator_none.cpp" ]
-    sources += skia_codec_core
     sources += skia_codec_decode_bmp
     sources += skia_encode_jpeg_srcs
     public += skia_encode_jpeg_public
@@ -412,6 +447,18 @@ component("skia") {
     sources += [
       "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
       "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
+    ]
+  }
+
+  if (use_typeface_fontations) {
+    sources += [
+      "//third_party/skia/src/ports/SkTypeface_fontations.cpp",
+      "//third_party/skia/src/ports/SkTypeface_fontations_priv.h",
+    ]
+    deps += [
+      ":bridge_rust_side",
+      "//third_party/rust/read_fonts/v0_5:lib",
+      "//third_party/rust/skrifa/v0_4:lib",
     ]
   }
 
@@ -522,7 +569,7 @@ component("skia") {
 
   if (is_android) {
     deps += [
-      "//third_party/android_ndk:cpu_features",
+      "//third_party/cpu_features:ndk_compat",
       "//third_party/expat",
     ]
   }
@@ -558,7 +605,7 @@ component("skia") {
   if (skia_support_gpu) {
     public += skia_gpu_public
     public += skia_gpu_chromium_public
-    sources += skia_gpu_private
+    sources += skia_ganesh_private
     sources += skia_null_gpu_sources
     sources += skia_sksl_gpu_sources
     sources += skia_shared_gpu_sources
@@ -599,6 +646,12 @@ component("skia") {
     ]
     public += skia_pdf_public
     sources += skia_pdf_sources
+    if (use_blink) {
+      # Blink includes Skia's JPEG decoder
+      sources += skia_pdf_jpeginfo_lib
+    } else {
+      sources += skia_pdf_jpeginfo_none
+    }
   } else {
     sources += [ "//third_party/skia/src/pdf/SkDocument_PDF_None.cpp" ]
   }
@@ -660,6 +713,8 @@ template("skia_source_set") {
 skia_source_set("skia_core_and_effects") {
   defines = []
   sources = skia_core_sources
+  sources += skia_colorfilters_sources
+  sources += skia_colorfilters_sksl_sources
   sources += skia_effects_sources
   sources += skia_effects_imagefilter_sources
   if (skia_support_gpu) {
@@ -829,6 +884,10 @@ if (skia_support_gpu) {
         "-fobjc-arc",
       ]
       deps = [ "//gpu/config:workaround_list" ]
+      if (skia_use_dawn) {
+        # Needed due to include chain containing webgpu_cpp.h via GrDawnTypes.h.
+        public_deps = [ "//third_party/dawn/include/dawn:cpp_headers" ]
+      }
       visibility = [ ":skia" ]
     }
   }

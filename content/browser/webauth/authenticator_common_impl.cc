@@ -18,6 +18,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/back_forward_cache_disable.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/webauth/authenticator_environment.h"
 #include "content/browser/webauth/client_data_json.h"
 #include "content/browser/webauth/virtual_authenticator_manager_impl.h"
@@ -364,8 +365,7 @@ absl::optional<device::CredProtectRequest> ProtectionPolicyToCredProtect(
       if (make_credential_options.resident_key ==
               device::ResidentKeyRequirement::kRequired &&
           make_credential_options.user_verification ==
-              device::UserVerificationRequirement::kPreferred &&
-          base::FeatureList::IsEnabled(device::kWebAuthnCredProtectThree)) {
+              device::UserVerificationRequirement::kPreferred) {
         return device::CredProtectRequest::kUVRequired;
       }
       if (make_credential_options.resident_key !=
@@ -1262,6 +1262,12 @@ void AuthenticatorCommonImpl::OnRegisterResponse(
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
           nullptr, Focus::kDoCheck);
       return;
+    case device::MakeCredentialStatus::kHybridTransportError:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kHybridTransportError,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+      return;
     case device::MakeCredentialStatus::kUserConsentDenied:
       SignalFailureToRequestDelegate(
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
@@ -1532,6 +1538,12 @@ void AuthenticatorCommonImpl::OnSignResponse(
               kWinUserCancelled,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
+    case device::GetAssertionStatus::kHybridTransportError:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kHybridTransportError,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+      return;
     case device::GetAssertionStatus::kSuccess:
       break;
   }
@@ -1686,6 +1698,16 @@ AuthenticatorCommonImpl::CreateMakeCredentialResponse(
   if (leaf_cert) {
     transports_authoritative |=
         AddTransportsFromCertificate(*leaf_cert, &transports);
+  }
+
+  if (!transports_authoritative &&
+      response_data.transport_used == device::FidoTransportProtocol::kHybrid) {
+    // Windows doesn't provide transport data, but can provide the transport
+    // used. If the transport was hybrid then we assume that ['hybrid',
+    // 'internal'] is a reasonable set of transports.
+    transports.insert(device::FidoTransportProtocol::kHybrid);
+    transports.insert(device::FidoTransportProtocol::kInternal);
+    transports_authoritative = true;
   }
 
   // The order of transports doesn't matter because Blink will sort the
@@ -1963,6 +1985,12 @@ void AuthenticatorCommonImpl::CompleteGetAssertionRequest(
     blink::mojom::GetAssertionAuthenticatorResponsePtr response,
     blink::mojom::WebAuthnDOMExceptionDetailsPtr dom_exception_details) {
   DCHECK(get_assertion_response_callback_);
+
+  if (status == blink::mojom::AuthenticatorStatus::SUCCESS) {
+    static_cast<RenderFrameHostImpl*>(GetRenderFrameHost())
+        ->WebAuthnAssertionRequestSucceeded();
+  }
+
   std::move(get_assertion_response_callback_)
       .Run(status, std::move(response), std::move(dom_exception_details));
   Cleanup();

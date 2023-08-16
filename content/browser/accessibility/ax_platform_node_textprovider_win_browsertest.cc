@@ -6,9 +6,9 @@
 #include "ui/accessibility/platform/ax_platform_node_textprovider_win.h"
 #include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.h"
 
-#include "base/command_line.h"
 #include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
@@ -21,7 +21,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
-#include "ui/accessibility/accessibility_switches.h"
+#include "ui/accessibility/accessibility_features.h"
 
 using Microsoft::WRL::ComPtr;
 
@@ -51,11 +51,6 @@ namespace content {
 
 class AXPlatformNodeTextProviderWinBrowserTest : public ContentBrowserTest {
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kEnableExperimentalUIAutomation);
-  }
-
   void LoadInitialAccessibilityTreeFromUrl(
       const GURL& url,
       ui::AXMode accessibility_mode = ui::kAXModeComplete) {
@@ -159,6 +154,8 @@ class AXPlatformNodeTextProviderWinBrowserTest : public ContentBrowserTest {
 
     return nullptr;
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_{::features::kUiaProvider};
 };
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextProviderWinBrowserTest,
@@ -279,6 +276,41 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextProviderWinBrowserTest,
   EXPECT_UIA_TEXTRANGE_EQ(array_data[0], L"hello");
   ASSERT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(text_provider_ranges.Get()));
   text_provider_ranges.Reset();
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextProviderWinBrowserTest, GetVisibleRangesRefCount) {
+  LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(
+      <!DOCTYPE html>
+      <html>
+        <body>
+            hello
+        </body>
+      </html>
+  )HTML"));
+
+  auto* text_node = FindNode(ax::mojom::Role::kStaticText, "hello");
+  ASSERT_NE(nullptr, text_node);
+
+  ComPtr<ITextProvider> text_provider;
+  GetTextProviderFromTextNode(text_provider, text_node);
+
+  base::win::ScopedSafearray visible_ranges;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->GetVisibleRanges(visible_ranges.Receive()));
+  ASSERT_UIA_SAFEARRAY_OF_TEXTRANGEPROVIDER(visible_ranges.Get(), 1U);
+
+  LONG index = 0;
+  ComPtr<ITextRangeProvider> text_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(SafeArrayGetElement(
+      visible_ranges.Get(), &index, static_cast<void**>(&text_range_provider)));
+
+  // Validate that there was only one reference to the `text_range_provider`.
+  ASSERT_EQ(1U, text_range_provider->Release());
+
+  // This is needed to avoid calling SafeArrayDestroy from SafeArray's dtor when
+  // exiting the scope, which would crash trying to release the already
+  // destroyed `text_range_provider`.
+  visible_ranges.Release();
 }
 
 }  // namespace content

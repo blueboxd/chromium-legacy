@@ -5,6 +5,7 @@
 #include "content/browser/webid/federated_auth_user_info_request.h"
 
 #include "base/functional/callback.h"
+#include "base/metrics/histogram_functions.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/webid/flags.h"
 #include "content/browser/webid/webid_utils.h"
@@ -16,6 +17,52 @@
 #include "url/url_constants.h"
 
 namespace content {
+namespace {
+
+std::string GetConsoleErrorMessage(FederatedAuthUserInfoRequestResult error) {
+  switch (error) {
+    case FederatedAuthUserInfoRequestResult::kNotSameOrigin: {
+      return "getUserInfo() caller is not same origin as the config URL.";
+    }
+    case FederatedAuthUserInfoRequestResult::kNotIframe: {
+      return "getUserInfo() caller is not an iframe.";
+    }
+    case FederatedAuthUserInfoRequestResult::kNotPotentiallyTrustworthy: {
+      return "getUserInfo() failed because the config URL is not potentially "
+             "trustworthy.";
+    }
+    case FederatedAuthUserInfoRequestResult::kNoApiPermission: {
+      return "getUserInfo() is disabled because FedCM is disabled.";
+    }
+    case FederatedAuthUserInfoRequestResult::kNotSignedInWithIdp: {
+      return "getUserInfo() is disabled because the IDP Sign-In Status is "
+             "signed-out.";
+    }
+    case FederatedAuthUserInfoRequestResult::kNoAccountSharingPermission: {
+      return "getUserInfo() failed because the user has not yet used FedCM on "
+             "this site with the provided IDP.";
+    }
+    case FederatedAuthUserInfoRequestResult::kInvalidConfigOrWellKnown: {
+      return "getUserInfo() failed because the config and well-known files "
+             "were invalid.";
+    }
+    case FederatedAuthUserInfoRequestResult::kInvalidAccountsResponse: {
+      return "getUserInfo() failed because of an invalid accounts response.";
+    }
+    case FederatedAuthUserInfoRequestResult::
+        kNoReturningUserFromFetchedAccounts: {
+      return "getUserInfo() failed because no account received was a returning "
+             "account.";
+    }
+    case FederatedAuthUserInfoRequestResult::kUnhandledRequest:
+    case FederatedAuthUserInfoRequestResult::kSuccess: {
+      NOTREACHED();
+      return "";
+    }
+  }
+}
+
+}  // namespace
 
 using FederatedApiPermissionStatus =
     FederatedIdentityApiPermissionContextDelegate::PermissionStatus;
@@ -23,26 +70,22 @@ using LoginState = IdentityRequestAccount::LoginState;
 
 // static
 std::unique_ptr<FederatedAuthUserInfoRequest>
-FederatedAuthUserInfoRequest::CreateAndStart(
+FederatedAuthUserInfoRequest::Create(
     std::unique_ptr<IdpNetworkRequestManager> network_manager,
-    FederatedIdentityApiPermissionContextDelegate* api_permission_delegate,
     FederatedIdentityPermissionContextDelegate* permission_delegate,
     RenderFrameHost* render_frame_host,
     FedCmMetrics* metrics,
-    blink::mojom::IdentityProviderConfigPtr provider,
-    blink::mojom::FederatedAuthRequest::RequestUserInfoCallback callback) {
+    blink::mojom::IdentityProviderConfigPtr provider) {
   std::unique_ptr<FederatedAuthUserInfoRequest> request =
       base::WrapUnique<FederatedAuthUserInfoRequest>(
           new FederatedAuthUserInfoRequest(
               std::move(network_manager), permission_delegate,
-              render_frame_host, metrics, std::move(provider),
-              std::move(callback)));
-  request->Start(api_permission_delegate);
+              render_frame_host, metrics, std::move(provider)));
   return request;
 }
 
 FederatedAuthUserInfoRequest::~FederatedAuthUserInfoRequest() {
-  CompleteWithError();
+  CompleteWithError(FederatedAuthUserInfoRequestResult::kUnhandledRequest);
 }
 
 FederatedAuthUserInfoRequest::FederatedAuthUserInfoRequest(
@@ -50,15 +93,14 @@ FederatedAuthUserInfoRequest::FederatedAuthUserInfoRequest(
     FederatedIdentityPermissionContextDelegate* permission_delegate,
     RenderFrameHost* render_frame_host,
     FedCmMetrics* metrics,
-    blink::mojom::IdentityProviderConfigPtr provider,
-    blink::mojom::FederatedAuthRequest::RequestUserInfoCallback callback)
+    blink::mojom::IdentityProviderConfigPtr provider)
     : network_manager_(std::move(network_manager)),
       permission_delegate_(permission_delegate),
       metrics_(metrics),
+      render_frame_host_(render_frame_host),
       client_id_(provider->client_id),
       idp_config_url_(provider->config_url),
-      origin_(render_frame_host->GetLastCommittedOrigin()),
-      callback_(std::move(callback)) {
+      origin_(render_frame_host->GetLastCommittedOrigin()) {
   RenderFrameHost* main_frame = render_frame_host->GetMainFrame();
   DCHECK(main_frame->IsInPrimaryMainFrame());
   embedding_origin_ = main_frame->GetLastCommittedOrigin();
@@ -68,38 +110,55 @@ FederatedAuthUserInfoRequest::FederatedAuthUserInfoRequest(
       parent_frame ? parent_frame->GetLastCommittedOrigin() : url::Origin();
 }
 
-void FederatedAuthUserInfoRequest::Start(
+void FederatedAuthUserInfoRequest::SetCallbackAndStart(
+    blink::mojom::FederatedAuthRequest::RequestUserInfoCallback callback,
     FederatedIdentityApiPermissionContextDelegate* api_permission_delegate) {
+  callback_ = std::move(callback);
+
+  request_start_time_ = base::TimeTicks::Now();
+
   // Renderer also checks that the origin is same origin with `idp_config_url_`.
   // The check is duplicated in case that the renderer is compromised.
   if (!origin_.IsSameOriginWith(idp_config_url_)) {
-    Complete(blink::mojom::RequestUserInfoStatus::kError, absl::nullopt);
+    CompleteWithError(FederatedAuthUserInfoRequestResult::kNotSameOrigin);
     return;
   }
 
   // Check that `render_frame_host` is for an iframe.
   if (!parent_frame_origin_.GetURL().is_valid()) {
-    CompleteWithError();
+    CompleteWithError(FederatedAuthUserInfoRequestResult::kNotIframe);
     return;
   }
 
   if (!network::IsOriginPotentiallyTrustworthy(
           url::Origin::Create(idp_config_url_))) {
-    CompleteWithError();
+    CompleteWithError(
+        FederatedAuthUserInfoRequestResult::kNotPotentiallyTrustworthy);
     return;
   }
 
   FederatedApiPermissionStatus permission_status =
       api_permission_delegate->GetApiPermissionStatus(embedding_origin_);
   if (permission_status != FederatedApiPermissionStatus::GRANTED) {
-    CompleteWithError();
+    CompleteWithError(FederatedAuthUserInfoRequestResult::kNoApiPermission);
     return;
   }
 
   if (webid::ShouldFailAccountsEndpointRequestBecauseNotSignedInWithIdp(
-          idp_config_url_, permission_delegate_) &&
-      GetFedCmIdpSigninStatusMode() == FedCmIdpSigninStatusMode::ENABLED) {
-    CompleteWithError();
+          *render_frame_host_, idp_config_url_, permission_delegate_) &&
+      webid::GetIdpSigninStatusMode(*render_frame_host_) ==
+          FedCmIdpSigninStatusMode::ENABLED) {
+    CompleteWithError(FederatedAuthUserInfoRequestResult::kNotSignedInWithIdp);
+    return;
+  }
+
+  if (!permission_delegate_->HasSharingPermission(
+          parent_frame_origin_, embedding_origin_,
+          url::Origin::Create(idp_config_url_), /*account_id=*/absl::nullopt)) {
+    // If there is no sharing permission, we can abort before performing any
+    // fetch.
+    CompleteWithError(
+        FederatedAuthUserInfoRequestResult::kNoAccountSharingPermission);
     return;
   }
 
@@ -122,12 +181,14 @@ void FederatedAuthUserInfoRequest::OnAllConfigAndWellKnownFetched(
   if (fetch_results.size() != 1u) {
     // This could happen when the user info request was sent from a compromised
     // renderer (>1) or fetch_results is empty (<1).
-    CompleteWithError();
+    CompleteWithError(
+        FederatedAuthUserInfoRequestResult::kInvalidConfigOrWellKnown);
     return;
   }
 
   if (fetch_results[0].error) {
-    CompleteWithError();
+    CompleteWithError(
+        FederatedAuthUserInfoRequestResult::kInvalidConfigOrWellKnown);
     return;
   }
 
@@ -135,10 +196,11 @@ void FederatedAuthUserInfoRequest::OnAllConfigAndWellKnownFetched(
   // false during the API call. e.g. by the login/logout HEADER.
   does_idp_have_failing_signin_status_ =
       webid::ShouldFailAccountsEndpointRequestBecauseNotSignedInWithIdp(
-          idp_config_url_, permission_delegate_);
+          *render_frame_host_, idp_config_url_, permission_delegate_);
   if (does_idp_have_failing_signin_status_ &&
-      GetFedCmIdpSigninStatusMode() == FedCmIdpSigninStatusMode::ENABLED) {
-    CompleteWithError();
+      webid::GetIdpSigninStatusMode(*render_frame_host_) ==
+          FedCmIdpSigninStatusMode::ENABLED) {
+    CompleteWithError(FederatedAuthUserInfoRequestResult::kNotSignedInWithIdp);
     return;
   }
 
@@ -152,12 +214,13 @@ void FederatedAuthUserInfoRequest::OnAccountsResponseReceived(
     IdpNetworkRequestManager::FetchStatus fetch_status,
     IdpNetworkRequestManager::AccountList accounts) {
   webid::UpdateIdpSigninStatusForAccountsEndpointResponse(
-      idp_config_url_, fetch_status, does_idp_have_failing_signin_status_,
-      permission_delegate_, metrics_);
+      *render_frame_host_, idp_config_url_, fetch_status,
+      does_idp_have_failing_signin_status_, permission_delegate_, metrics_);
 
   if (fetch_status.parse_status !=
       IdpNetworkRequestManager::ParseStatus::kSuccess) {
-    CompleteWithError();
+    CompleteWithError(
+        FederatedAuthUserInfoRequestResult::kInvalidAccountsResponse);
     return;
   }
   MaybeReturnAccounts(std::move(accounts));
@@ -190,8 +253,18 @@ void FederatedAuthUserInfoRequest::MaybeReturnAccounts(
     has_returning_accounts = true;
   }
 
+  FedCmMetrics::NumAccounts num_accounts = FedCmMetrics::NumAccounts::kZero;
+  if (has_returning_accounts) {
+    num_accounts = accounts.size() == 1u ? FedCmMetrics::NumAccounts::kOne
+                                         : FedCmMetrics::NumAccounts::kMultiple;
+  }
+  base::UmaHistogramEnumeration("Blink.FedCm.UserInfo.NumAccounts",
+                                num_accounts);
+  base::UmaHistogramMediumTimes("Blink.FedCm.UserInfo.TimeToRequestCompleted",
+                                base::TimeTicks::Now() - request_start_time_);
   if (!has_returning_accounts) {
-    CompleteWithError();
+    CompleteWithError(FederatedAuthUserInfoRequestResult::
+                          kNoReturningUserFromFetchedAccounts);
     return;
   }
 
@@ -203,21 +276,49 @@ void FederatedAuthUserInfoRequest::MaybeReturnAccounts(
         account.email, account.given_name, account.name,
         account.picture.spec()));
   }
-  Complete(blink::mojom::RequestUserInfoStatus::kSuccess, std::move(user_info));
+  Complete(blink::mojom::RequestUserInfoStatus::kSuccess, std::move(user_info),
+           FederatedAuthUserInfoRequestResult::kSuccess);
 }
 
 void FederatedAuthUserInfoRequest::Complete(
     blink::mojom::RequestUserInfoStatus status,
-    absl::optional<std::vector<blink::mojom::IdentityUserInfoPtr>> user_info) {
+    absl::optional<std::vector<blink::mojom::IdentityUserInfoPtr>> user_info,
+    FederatedAuthUserInfoRequestResult request_status) {
   if (!callback_) {
     return;
   }
 
+  base::UmaHistogramEnumeration("Blink.FedCm.UserInfo.Status", request_status);
+
   std::move(callback_).Run(status, std::move(user_info));
 }
 
-void FederatedAuthUserInfoRequest::CompleteWithError() {
-  Complete(blink::mojom::RequestUserInfoStatus::kError, absl::nullopt);
+void FederatedAuthUserInfoRequest::CompleteWithError(
+    FederatedAuthUserInfoRequestResult error) {
+  // Do not add a console error for an unhandled request: the RenderFrameHost
+  // may have been destroyed.
+  if (error != FederatedAuthUserInfoRequestResult::kUnhandledRequest) {
+    render_frame_host_->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        GetConsoleErrorMessage(error));
+    AddDevToolsIssue(error);
+  }
+  Complete(blink::mojom::RequestUserInfoStatus::kError, absl::nullopt, error);
+}
+
+void FederatedAuthUserInfoRequest::AddDevToolsIssue(
+    FederatedAuthUserInfoRequestResult error) {
+  DCHECK_NE(error, FederatedAuthUserInfoRequestResult::kSuccess);
+
+  auto details = blink::mojom::InspectorIssueDetails::New();
+  auto federated_auth_user_info_request_details =
+      blink::mojom::FederatedAuthUserInfoRequestIssueDetails::New(error);
+  details->federated_auth_user_info_request_details =
+      std::move(federated_auth_user_info_request_details);
+  render_frame_host_->ReportInspectorIssue(
+      blink::mojom::InspectorIssueInfo::New(
+          blink::mojom::InspectorIssueCode::kFederatedAuthUserInfoRequestIssue,
+          std::move(details)));
 }
 
 }  // namespace content

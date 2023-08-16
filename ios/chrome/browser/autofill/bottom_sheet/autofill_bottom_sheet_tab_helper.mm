@@ -8,6 +8,7 @@
 #import "base/feature_list.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/ranges/algorithm.h"
+#import "components/autofill/core/browser/form_structure.h"
 #import "components/autofill/ios/form_util/form_activity_params.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/password_manager/ios/password_account_storage_notice_handler.h"
@@ -15,14 +16,36 @@
 #import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_java_script_feature.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/public/commands/autofill_bottom_sheet_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
-#import "ios/chrome/browser/shared/public/commands/password_bottom_sheet_commands.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/web/public/js_messaging/script_message.h"
 #import "ios/web/public/navigation/navigation_context.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// Whether the provided field type is one which can trigger the Payments Bottom
+// Sheet.
+bool IsPaymentsBottomSheetTriggeringField(autofill::ServerFieldType type) {
+  switch (type) {
+    case autofill::CREDIT_CARD_NAME_FULL:
+    case autofill::CREDIT_CARD_NUMBER:
+    case autofill::CREDIT_CARD_EXP_MONTH:
+    case autofill::CREDIT_CARD_EXP_2_DIGIT_YEAR:
+    case autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR:
+    case autofill::CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR:
+    case autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
+      return true;
+    default:
+      return false;
+  }
+}
+
+}  // namespace
 
 AutofillBottomSheetTabHelper::~AutofillBottomSheetTabHelper() = default;
 
@@ -38,33 +61,29 @@ AutofillBottomSheetTabHelper::AutofillBottomSheetTabHelper(
 
 // Public methods
 
-void AutofillBottomSheetTabHelper::SetPasswordBottomSheetHandler(
-    id<PasswordBottomSheetCommands> password_bottom_sheet_commands_handler) {
-  password_bottom_sheet_commands_handler_ =
-      password_bottom_sheet_commands_handler;
+void AutofillBottomSheetTabHelper::SetAutofillBottomSheetHandler(
+    id<AutofillBottomSheetCommands> commands_handler) {
+  commands_handler_ = commands_handler;
 }
 
 void AutofillBottomSheetTabHelper::OnFormMessageReceived(
     const web::ScriptMessage& message) {
   autofill::FormActivityParams params;
-  if (!password_bottom_sheet_commands_handler_ ||
-      !password_account_storage_notice_handler_ ||
+  if (!commands_handler_ || !password_account_storage_notice_handler_ ||
       !autofill::FormActivityParams::FromMessage(message, &params)) {
     return;
   }
 
   if (![password_account_storage_notice_handler_
           shouldShowAccountStorageNotice]) {
-    [password_bottom_sheet_commands_handler_ showPasswordBottomSheet:params];
+    [commands_handler_ showPasswordBottomSheet:params];
     return;
   }
 
-  __weak id<PasswordBottomSheetCommands>
-      weak_password_bottom_sheet_commands_handler =
-          password_bottom_sheet_commands_handler_;
+  __weak id<AutofillBottomSheetCommands> weak_commands_handler =
+      commands_handler_;
   [password_account_storage_notice_handler_ showAccountStorageNotice:^{
-    [weak_password_bottom_sheet_commands_handler
-        showPasswordBottomSheet:params];
+    [weak_commands_handler showPasswordBottomSheet:params];
   }];
 }
 
@@ -79,31 +98,73 @@ void AutofillBottomSheetTabHelper::AttachPasswordListeners(
     return;
   }
 
+  AttachListeners(renderer_ids, registered_password_renderer_ids_, frame,
+                  /*must_be_empty = */ false);
+}
+
+void AutofillBottomSheetTabHelper::AttachPaymentsListeners(
+    const std::vector<autofill::FormStructure*>& forms,
+    web::WebFrame* frame) {
+  // Verify that the payments bottom sheet feature is enabled
+  if (!base::FeatureList::IsEnabled(kIOSPaymentsBottomSheet)) {
+    return;
+  }
+
+  std::vector<autofill::FieldRendererId> renderer_ids;
+  for (const autofill::FormStructure* form : forms) {
+    if (form->IsCompleteCreditCardForm()) {
+      for (const auto& field : form->fields()) {
+        if (IsPaymentsBottomSheetTriggeringField(
+                field->Type().GetStorableType())) {
+          renderer_ids.emplace_back(field->unique_renderer_id);
+        }
+      }
+    }
+  }
+
+  if (!renderer_ids.empty()) {
+    AttachListeners(renderer_ids, registered_payments_renderer_ids_, frame,
+                    /*must_be_empty = */ true);
+  }
+}
+
+void AutofillBottomSheetTabHelper::AttachListeners(
+    const std::vector<autofill::FieldRendererId>& renderer_ids,
+    std::set<autofill::FieldRendererId>& registered_renderer_ids,
+    web::WebFrame* frame,
+    bool must_be_empty) {
   // Transfer the renderer IDs to a set so that they are sorted and unique.
   std::set<autofill::FieldRendererId> sorted_renderer_ids(renderer_ids.begin(),
                                                           renderer_ids.end());
   // Get vector of new renderer IDs which aren't already registered.
   std::vector<autofill::FieldRendererId> new_renderer_ids;
-  base::ranges::set_difference(sorted_renderer_ids,
-                               registered_password_renderer_ids_,
+  base::ranges::set_difference(sorted_renderer_ids, registered_renderer_ids,
                                std::back_inserter(new_renderer_ids));
 
   if (!new_renderer_ids.empty()) {
-    // Enable the password bottom sheet on the new renderer IDs.
+    // Enable the bottom sheet on the new renderer IDs.
     AutofillBottomSheetJavaScriptFeature::GetInstance()->AttachListeners(
-        new_renderer_ids, frame);
+        new_renderer_ids, frame, must_be_empty);
 
     // Add new renderer IDs to the list of registered renderer IDs.
-    std::copy(new_renderer_ids.begin(), new_renderer_ids.end(),
-              std::inserter(registered_password_renderer_ids_,
-                            registered_password_renderer_ids_.end()));
+    std::copy(
+        new_renderer_ids.begin(), new_renderer_ids.end(),
+        std::inserter(registered_renderer_ids, registered_renderer_ids.end()));
   }
 }
 
-void AutofillBottomSheetTabHelper::DetachListenersAndRefocus(
-    web::WebFrame* frame) {
-  AutofillBottomSheetJavaScriptFeature::GetInstance()
-      ->DetachListenersAndRefocus(frame);
+void AutofillBottomSheetTabHelper::DetachPasswordListeners(web::WebFrame* frame,
+                                                           bool refocus) {
+  AutofillBottomSheetJavaScriptFeature::GetInstance()->DetachListeners(
+      registered_password_renderer_ids_, frame, /*must_be_empty = */ false,
+      refocus);
+}
+
+void AutofillBottomSheetTabHelper::DetachPaymentsListeners(web::WebFrame* frame,
+                                                           bool refocus) {
+  AutofillBottomSheetJavaScriptFeature::GetInstance()->DetachListeners(
+      registered_payments_renderer_ids_, frame, /*must_be_empty = */ true,
+      refocus);
 }
 
 // WebStateObserver
@@ -117,6 +178,7 @@ void AutofillBottomSheetTabHelper::DidFinishNavigation(
 
   // Clear all registered renderer ids
   registered_password_renderer_ids_.clear();
+  registered_payments_renderer_ids_.clear();
 }
 
 void AutofillBottomSheetTabHelper::WebStateDestroyed(web::WebState* web_state) {

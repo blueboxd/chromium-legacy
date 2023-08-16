@@ -14,6 +14,7 @@ source_set("omnibox") {
   deps = [
     "//base",
     "//components/omnibox/browser",
+    "//components/search_engines",
     "//ui/base",
   ]
 }
@@ -141,7 +142,6 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/default_browser:utils",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/feature_engagement",
-    "//ios/chrome/browser/flags:system_flags",
     "//ios/chrome/browser/https_upgrades",
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/ntp",
@@ -160,6 +160,7 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/shared/model/url:constants",
     "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/shared/public/features:system_flags",
     "//ios/chrome/browser/shared/ui/symbols",
     "//ios/chrome/browser/shared/ui/util",
     "//ios/chrome/browser/ui/default_promo",
@@ -271,6 +272,7 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/omnibox/popup:popup_accessibility_identifier_constants",
+    "//ios/chrome/browser/ui/toolbar/public:constants",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/web/public/test:element_selector",
@@ -287,7 +289,6 @@ source_set("unit_tests") {
     "fake_suggestions_database_unittest.cc",
     "omnibox_text_field_ios_experimental_unittest.mm",
     "omnibox_text_field_ios_unittest.mm",
-    "omnibox_view_ios_unittest.mm",
     "zero_suggest_prefetch_helper_unittest.mm",
   ]
   deps = [
@@ -300,7 +301,7 @@ source_set("unit_tests") {
     "//components/search_engines",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/main",
-    "//ios/chrome/browser/paths",
+    "//ios/chrome/browser/shared/model/paths",
     "//ios/chrome/browser/shared/model/browser/test:test_support",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
     "//ios/chrome/browser/shared/model/url:constants",

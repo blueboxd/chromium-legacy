@@ -230,6 +230,8 @@ static_library("browser") {
     "psl_matching_helper.cc",
     "psl_matching_helper.h",
     "reauth_purpose.h",
+    "sharing_invitations.cc",
+    "sharing_invitations.h",
     "smart_bubble_stats_store.h",
     "sql_table_builder.cc",
     "sql_table_builder.h",
@@ -347,6 +349,7 @@ static_library("browser") {
 
   if (!is_android && !is_ios) {
     sources += [ "password_manager_features_util_desktop.cc" ]
+    deps += [ "//components/webauthn/core/browser" ]
   } else {
     sources += [ "password_manager_features_util_mobile.cc" ]
   }
@@ -357,8 +360,12 @@ static_library("browser") {
       "android_backend_error.h",
       "built_in_backend_to_android_backend_migrator.cc",
       "built_in_backend_to_android_backend_migrator.h",
+      "password_credential_filler.h",
+      "password_credential_filler_impl.cc",
+      "password_credential_filler_impl.h",
       "password_manager_eviction_util.cc",
       "password_manager_eviction_util.h",
+      "password_store_android_backend_api_error_codes.h",
       "password_store_backend_migration_decorator.cc",
       "password_store_backend_migration_decorator.h",
       "password_store_proxy_backend.cc",
@@ -469,6 +476,7 @@ if (is_android) {
       "password_check_referrer_android.h",
       "password_manager_metrics_util.h",
       "password_manager_setting.h",
+      "password_manager_util.h",
     ]
   }
 }
@@ -696,6 +704,7 @@ source_set("unit_tests") {
   if (is_android) {
     sources += [
       "built_in_backend_to_android_backend_migrator_unittest.cc",
+      "password_credential_filler_impl_unittest.cc",
       "password_manager_eviction_util_unittest.cc",
       "password_store_backend_metrics_recorder_unittest.cc",
       "password_store_backend_migration_decorator_unittest.cc",
@@ -778,7 +787,10 @@ source_set("unit_tests") {
 
   if (!is_android && !is_ios) {
     sources += [ "password_strength_calculation_unittest.cc" ]
-    deps += [ "//components/password_manager/services/password_strength:lib" ]
+    deps += [
+      "//components/password_manager/services/password_strength:lib",
+      "//components/webauthn/core/browser:test_support",
+    ]
   }
 
   if (!is_android) {

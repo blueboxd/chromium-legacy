@@ -41,9 +41,9 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.layouts.LayoutTestUtils;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimationHandler;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.quick_delete.QuickDeleteMetricsDelegate;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabUtils.UseDesktopUserAgentCaller;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuItemProperties;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
@@ -56,8 +56,11 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
+import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.test.util.DeviceRestriction;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
@@ -80,7 +83,6 @@ public class TabbedAppMenuTest {
                     .build();
 
     private static final String TEST_URL = UrlUtils.encodeHtmlDataUri("<html>foo</html>");
-    private static final String TEST_URL2 = UrlUtils.encodeHtmlDataUri("<html>bar</html>");
 
     private AppMenuHandler mAppMenuHandler;
 
@@ -116,6 +118,11 @@ public class TabbedAppMenuTest {
 
         CompositorAnimationHandler.setTestingMode(false);
         ShoppingFeatures.setShoppingListEligibleForTesting(null);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            WebsitePreferenceBridge.setCategoryEnabled(Profile.getLastUsedRegularProfile(),
+                    ContentSettingsType.REQUEST_DESKTOP_SITE, false);
+        });
     }
 
     /**
@@ -188,9 +195,9 @@ public class TabbedAppMenuTest {
      * Test that hitting ENTER on the top item actually triggers the top item.
      * Catches regressions for https://crbug.com/191239 for shrunken menus.
      */
+    @Test
     @SmallTest
     @Feature({"Browser", "Main"})
-    @Test
     public void testKeyboardMenuEnterOnTopItemLandscape() {
         ActivityTestUtils.rotateActivityToOrientation(
                 mActivityTestRule.getActivity(), Configuration.ORIENTATION_LANDSCAPE);
@@ -206,6 +213,7 @@ public class TabbedAppMenuTest {
     @Test
     @SmallTest
     @Feature({"Browser", "Main"})
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
     public void testKeyboardMenuEnterOnTopItemPortrait() {
         ActivityTestUtils.rotateActivityToOrientation(
                 mActivityTestRule.getActivity(), Configuration.ORIENTATION_PORTRAIT);
@@ -321,11 +329,11 @@ public class TabbedAppMenuTest {
                                        - getListView().getFirstVisiblePosition()),
                 "request_desktop_site");
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> tab.getWebContents().getNavigationController().setUseDesktopUserAgent(
-                                true /* useDesktop */, true /* reloadOnChange */,
-                                UseDesktopUserAgentCaller.OTHER));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            WebsitePreferenceBridge.setCategoryEnabled(Profile.getLastUsedRegularProfile(),
+                    ContentSettingsType.REQUEST_DESKTOP_SITE, true);
+            tab.reload();
+        });
         ChromeTabUtils.waitForTabPageLoaded(tab, TEST_URL);
         isRequestDesktopSite =
                 tab.getWebContents().getNavigationController().getUseDesktopUserAgent();
@@ -376,11 +384,11 @@ public class TabbedAppMenuTest {
                                        - getListView().getFirstVisiblePosition()),
                 "request_desktop_site_uncheck");
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> tab.getWebContents().getNavigationController().setUseDesktopUserAgent(
-                                true /* useDesktop */, true /* reloadOnChange */,
-                                UseDesktopUserAgentCaller.OTHER));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            WebsitePreferenceBridge.setCategoryEnabled(Profile.getLastUsedRegularProfile(),
+                    ContentSettingsType.REQUEST_DESKTOP_SITE, true);
+            tab.reload();
+        });
         ChromeTabUtils.waitForTabPageLoaded(tab, TEST_URL);
         isRequestDesktopSite =
                 tab.getWebContents().getNavigationController().getUseDesktopUserAgent();

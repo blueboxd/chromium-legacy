@@ -91,7 +91,6 @@
 <translation id="152234381334907219">कहिल्यै सुरक्षित गरिँदैन</translation>
 <translation id="1523341279170789507">सबै कुकीलाई अनुमति दिनुहोस्</translation>
 <translation id="1524563461097350801">पर्दैन, धन्यवाद</translation>
-<translation id="1531836666020185856">विशेष</translation>
 <translation id="1535268707340844072">तपाईंको हालको सेटिङका कारण केही साइटहरूले सही रूपमा काम नगर्न सक्छन्। सबै साइटका कुकीहरू व्यवस्थापन गर्न, <ph name="BEGIN_LINK" />कुकीसम्बन्धी सेटिङ<ph name="END_LINK" />मा जानुहोस्।</translation>
 <translation id="1540800554400757039">ठेगाना 1</translation>
 <translation id="1545749641540134597">QR कोड स्क्यान गर्नुहोस्</translation>
@@ -187,13 +186,13 @@
 <translation id="2230173723195178503">वेबपृष्ठ लोड गरियो</translation>
 <translation id="2239626343334228536">ब्राउजिङ डेटा खाली गर्दै...</translation>
 <translation id="2242467532204595597">जुनसुकै बेला म्यासेज, डकुमेन्ट र अन्य एपहरूमा भएका लिंकहरूमा ट्याप गरेर Chrome प्रयोग गर्नुहोस्।</translation>
-<translation id="22508856139286506">खारेज गरिएका चेतावनीहरू (<ph name="COUNT" />)</translation>
 <translation id="2251686759395008410">मेनु → इतिहास</translation>
 <translation id="2252674110805316998">वेब खोजी</translation>
 <translation id="2256933947031277845">तपाईंको सङ्गठनको नीतिअनुसार तपाईं निश्चित खातामार्फत मात्र साइन इन गर्न पाउनुहुन्छ।</translation>
 <translation id="225943865679747347">त्रुटि कोड: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">खाता थप्नुहोस्...</translation>
 <translation id="2268044343513325586">परिशुद्ध</translation>
+<translation id="2269277877025820298">थप हेर्नुहोस्</translation>
 <translation id="2273327106802955778">थप मेनु</translation>
 <translation id="2286505070150039482">हाइलाइट गरिएको टेक्स्ट</translation>
 <translation id="2287614783861766820">{count,plural, =1{यो डिभाइसबाट यो ठेगाना मेटाइने छ।}other{यो डिभाइसबाट यी ठेगानाहरू मेटाइने छन्।}}</translation>
@@ -219,7 +218,6 @@
 <translation id="2423077901494354337">तपाईं अब आफ्नो डिभाइसमा Chrome बाट बढीभन्दा बढी फाइदा पाउनु हुने छ।</translation>
 <translation id="2434405374328098816">तपाईंले <ph name="WEBSITE" /> का हकमा "<ph name="USERNAME" />" को पासवर्ड सेभ गरिसक्नुभएको छ</translation>
 <translation id="2435457462613246316">पासवर्ड देखाउनुहोस्</translation>
-<translation id="2439425774439590">सबैभन्दा धेरै पटक खोलिएका साइटहरू</translation>
 <translation id="2451654228769116489">ट्याब पिन गर्नुहोस्</translation>
 <translation id="2461070143328828326">पासवर्डसम्बन्धी सेटिङ</translation>
 <translation id="2469960372084740698">Safe Browsing अफ गर्ने हो?</translation>
@@ -356,6 +354,7 @@
 <translation id="3245744387817103524">तपाईंले गरेको परिवर्तन सेभ गर्न सकिएन।</translation>
 <translation id="3252394070589632019"><ph name="NUM_SUGGESTIONS" /> को <ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /></translation>
 <translation id="3264775633254836593">पासवर्डहरू अटोफिल गर्नुहोस्</translation>
+<translation id="3265534588625245297">आफूले फलो गर्ने साइटहरू व्यवस्थापन गर्नुहोस्</translation>
 <translation id="3268451620468152448">ट्याबहरू खोल्नुहोस्</translation>
 <translation id="3272527697863656322">रद्द गर्नुहोस्</translation>
 <translation id="3277021493514034324">साइटको ठेगाना कपी गरियो</translation>
@@ -1085,7 +1084,7 @@
 
 साइटहरूले तपाईंका गतिविधिअनुसार विज्ञापन देखाउने जस्ता प्रयोजनका लागि विभिन्न साइटहरूमा तपाईंको ब्राउजिङसम्बन्धी गतिविधि हेर्न कुकीहरू प्रयोग गर्न सक्छन्।</translation>
 <translation id="7971521879845308059">पप-अपहरूलाई रोक्नुहोस्</translation>
-<translation id="797413074872316787">सबै डिभाइसमा सिंक गर्न र आफू अनुकूल बनाउन सिंक गर्ने सुविधा अन गर्नुहोस्।</translation>
+<translation id="7975036700432177008">प्रयास गर्नुहोस्</translation>
 <translation id="7978018860671536736">३. "पासवर्ड स्वतः भरियोस्" मा ट्याप गर्नुहोस्</translation>
 <translation id="7982789257301363584">सञ्जाल</translation>
 <translation id="7987685713885608670">आफ्ना पासवर्डहरू अझ सुरक्षित राख्नका निम्ति ती पासवर्डहरू आफ्नो डिभाइसमा इन्क्रिप्ट गरेपछि मात्र Google पासवर्ड म्यानेजरमा सेभ गर्नुहोस्।</translation>
@@ -1147,6 +1146,7 @@
 <translation id="8323906514956095947">ट्याबसम्बन्धी थप विकल्पहरू हेर्न टच एण्ड होल्ड गर्नुहोस्</translation>
 <translation id="8328777765163860529">सबै बन्द गर्नुहोस्</translation>
 <translation id="8343993175958086504">आफ्नो डेटा ब्याकअप गर्नुहोस् र जुनसुकै डिभाइसमा सो डेटा प्रयोग गर्नुहोस्।</translation>
+<translation id="834783239627985533">सबैभन्दा बढी हेरिएका साइटहरू</translation>
 <translation id="8378714024927312812">तपाईंको सङ्गठनले व्यवस्थापन गरेको</translation>
 <translation id="8386068868580335421">रिसेट गर्नुहोस्</translation>
 <translation id="838867811594159347">पासफ्रेज हाल्नुहोस्…</translation>

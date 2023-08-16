@@ -85,6 +85,10 @@ extern const ui::ClassProperty<std::string*>* const kClientSurfaceIdKey;
 // component.
 extern const ui::ClassProperty<int32_t>* const kWindowSessionId;
 
+// A property key containing a boolean set to true if a surface augmenter is
+// associated with with surface object.
+extern const ui::ClassProperty<bool>* const kSurfaceHasAugmentedSurfaceKey;
+
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
 class Surface final : public ui::PropertyHandler {
@@ -313,6 +317,7 @@ class Surface final : public ui::PropertyHandler {
       const gfx::PointF& origin,
       float device_scale_factor,
       bool client_submits_in_pixel_coords,
+      bool needs_full_damage,
       FrameSinkResourceManager* resource_manager,
       viz::CompositorFrame* frame);
 
@@ -386,7 +391,9 @@ class Surface final : public ui::PropertyHandler {
   void SetOcclusionTracking(bool tracking);
 
   // Triggers sending an occlusion update to observers.
-  void OnWindowOcclusionChanged();
+  void OnWindowOcclusionChanged(
+      aura::Window::OcclusionState old_occlusion_state,
+      aura::Window::OcclusionState new_occlusion_state);
 
   // Triggers sending a locking status to observers.
   // true : lock a frame to normal or restore state
@@ -464,6 +471,9 @@ class Surface final : public ui::PropertyHandler {
   // Sets the accessibility window ID sent from the shell client to the window.
   // A negative number removes it.
   void SetClientAccessibilityId(int id);
+
+  // Set top inset for surface.
+  void SetTopInset(int height);
 
   // Inform observers and subsurfaces about new fullscreen state
   void OnFullscreenStateChanged(bool fullscreen);
@@ -601,6 +611,7 @@ class Surface final : public ui::PropertyHandler {
   void AppendContentsToFrame(const gfx::PointF& origin,
                              float device_scale_factor,
                              bool client_submits_in_pixel_coords,
+                             bool needs_full_damage,
                              viz::CompositorFrame* frame);
 
   // Update surface content size base on current buffer size.

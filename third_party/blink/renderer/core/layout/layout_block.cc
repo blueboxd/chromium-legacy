@@ -105,7 +105,6 @@ TrackedContainerMap& GetPositionedContainerMap() {
 
 LayoutBlock::LayoutBlock(ContainerNode* node)
     : LayoutBox(node),
-      descendants_with_floats_marked_for_layout_(false),
       has_positioned_objects_(false),
       has_svg_text_descendants_(false) {
   // LayoutBlockFlow calls setChildrenInline(true).
@@ -357,31 +356,6 @@ void LayoutBlock::RemoveLeftoverAnonymousBlock(LayoutBlock* child) {
   child->Destroy();
 }
 
-void LayoutBlock::UpdateLayout() {
-  NOT_DESTROYED();
-  DCHECK(!GetScrollableArea() || GetScrollableArea()->GetScrollAnchor());
-
-  bool needs_scroll_anchoring =
-      IsScrollContainer() &&
-      GetScrollableArea()->ShouldPerformScrollAnchoring();
-  if (needs_scroll_anchoring)
-    GetScrollableArea()->GetScrollAnchor()->NotifyBeforeLayout();
-
-  UpdateBlockLayout();
-
-  // It's safe to check for control clip here, since controls can never be table
-  // cells. If we have a lightweight clip, there can never be any overflow from
-  // children.
-  if (HasControlClip() && HasLayoutOverflow())
-    ClearLayoutOverflow();
-}
-
-void LayoutBlock::UpdateBlockLayout() {
-  NOT_DESTROYED();
-  ClearNeedsLayout();
-  NOTREACHED_NORETURN();
-}
-
 void LayoutBlock::AddVisualOverflowFromChildren() {
   NOT_DESTROYED();
   // It is an error to call this function on a LayoutBlock that it itself inside
@@ -427,18 +401,6 @@ void LayoutBlock::AddVisualOverflowFromBlockChildren() {
 }
 
 void LayoutBlock::Paint(const PaintInfo& paint_info) const {
-  NOT_DESTROYED();
-  NOTREACHED_NORETURN();
-}
-
-void LayoutBlock::PaintChildren(const PaintInfo& paint_info,
-                                const PhysicalOffset&) const {
-  NOT_DESTROYED();
-  NOTREACHED_NORETURN();
-}
-
-void LayoutBlock::PaintObject(const PaintInfo& paint_info,
-                              const PhysicalOffset& paint_offset) const {
   NOT_DESTROYED();
   NOTREACHED_NORETURN();
 }
@@ -1063,13 +1025,7 @@ LayoutUnit LayoutBlock::AvailableLogicalHeightForPercentageComputation() const {
       (!style.LogicalHeight().IsAuto() ||
        (!style.LogicalTop().IsAuto() && !style.LogicalBottom().IsAuto()));
 
-  LayoutUnit stretched_flex_height(-1);
-  if (HasOverrideLogicalHeight() && IsOverrideLogicalHeightDefinite()) {
-    stretched_flex_height = OverrideContentLogicalHeight();
-  }
-  if (stretched_flex_height != LayoutUnit(-1)) {
-    available_height = stretched_flex_height;
-  } else if (style.LogicalHeight().IsFixed()) {
+  if (style.LogicalHeight().IsFixed()) {
     LayoutUnit content_box_height = AdjustContentBoxLogicalHeightForBoxSizing(
         style.LogicalHeight().Value());
     available_height =

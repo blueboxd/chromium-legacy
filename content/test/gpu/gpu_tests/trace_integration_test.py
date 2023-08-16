@@ -11,7 +11,7 @@ import os
 import posixpath
 import sys
 import tempfile
-from typing import Any, Dict, Generator, Iterator, List, Optional, Tuple
+from typing import Any, Dict, Generator, Iterator, List, Optional, Set, Tuple
 import unittest
 
 from gpu_tests import common_browser_args as cba
@@ -110,6 +110,8 @@ _SWAP_CHAIN_GET_FRAME_STATISTICS_MEDIA_FAILED = -1
 _GET_STATISTICS_EVENT_NAME = 'GetFrameStatisticsMedia'
 _SWAP_CHAIN_PRESENT_EVENT_NAME = 'SwapChain::Present'
 _UPDATE_OVERLAY_EVENT_NAME = 'DCLayerTree::VisualTree::UpdateOverlay'
+_PRESENT_SWAP_CHAIN_EVENT_NAME =\
+    'DirectCompositionChildSurfaceWin::PresentSwapChain'
 
 _SUPPORTED_WIN_AMD_GPUS_WITH_NV12_ROTATED_OVERLAYS = [0x7340]
 
@@ -267,6 +269,29 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     return 'trace_test'
 
   @classmethod
+  def _SuiteSupportsParallelTests(cls) -> bool:
+    return True
+
+  def _GetSerialGlobs(self) -> Set[str]:
+    serial_globs = set()
+    if sys.platform == 'win32':
+      serial_globs |= {
+          # Flaky when run in parallel on Windows.
+          'OverlayModeTraceTest_DirectComposition_Underlay*',
+      }
+    return serial_globs
+
+  def _GetSerialTests(self) -> Set[str]:
+    serial_tests = set()
+    if sys.platform == 'darwin':
+      serial_tests |= {
+          # Flaky when run in parallel on Mac.
+          'WebGPUTraceTest_WebGPUCanvasOneCopyCapture',
+          'WebGPUTraceTest_WebGPUCanvasDisableOneCopyCapture_Accelerated',
+      }
+    return serial_tests
+
+  @classmethod
   def GenerateGpuTests(cls, options: ct.ParsedCmdArgs) -> ct.TestGenerator:
     # Include the device level trace tests, even though they're
     # currently skipped on all platforms, to give a hint that they
@@ -312,6 +337,16 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
               success_eval_func='CheckOverlayMode',
               other_args=p.other_args)
       ])
+    for p in namespace.RootSwapChainPages('SwapChainTraceTest'):
+      yield (p.name, posixpath.join(gpu_data_relative_path, p.url), [
+          _TraceTestArguments(
+              browser_args=p.browser_args,
+              category='gpu',
+              test_harness_script=basic_test_harness_script,
+              finish_js_condition='domAutomationController._finished',
+              success_eval_func='CheckSwapChainHasAlpha',
+              other_args=p.other_args)
+      ])
 
     for p in namespace.VideoFromCanvasPages('WebGLCanvasCaptureTraceTest'):
       yield (p.name, posixpath.join(gpu_data_relative_path, p.url), [
@@ -350,6 +385,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     #   reloaded in a restarted browser to expect some cache condition.
     webgpu_cache_test_browser_args = cba.ENABLE_WEBGPU_FOR_TESTING + [
         cba.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES,
+        '--enable-features=WebGPUBlobCache',
     ]
     # For the tests to run properly on Linux, we need additional args.
     if sys.platform.startswith('linux'):
@@ -893,6 +929,34 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       self.fail(
           'Overlay not expected but found: matching %s events were found' %
           _UPDATE_OVERLAY_EVENT_NAME)
+
+  def _EvaluateSuccess_CheckSwapChainHasAlpha(self, category: str,
+                                              event_iterator: Iterator,
+                                              other_args: dict) -> None:
+    """Verified that all DXGI swap chains are presented with the expected alpha
+    mode."""
+    os_name = self.browser.platform.GetOSName()
+    assert os_name and os_name.lower() == 'win'
+
+    overlay_bot_config = self._GetOverlayBotConfig()
+    if overlay_bot_config is None:
+      self.fail('Overlay bot config can not be determined')
+    assert overlay_bot_config.get('direct_composition', False)
+
+    expect_has_alpha = other_args and other_args.get('has_alpha', False)
+
+    # Verify expectations through captured trace events.
+    for event in event_iterator:
+      if event.category != category:
+        continue
+      if event.name != _PRESENT_SWAP_CHAIN_EVENT_NAME:
+        continue
+
+      got_has_alpha = event.args.get('has_alpha', None)
+      if got_has_alpha is not None and expect_has_alpha != got_has_alpha:
+        self.fail(
+            'Expected events with name %s with has_alpha expected %s, got %s' %
+            (_PRESENT_SWAP_CHAIN_EVENT_NAME, expect_has_alpha, got_has_alpha))
 
   def _EvaluateSuccess_CheckWebGLCanvasCapture(self, category: str,
                                                event_iterator: Iterator,

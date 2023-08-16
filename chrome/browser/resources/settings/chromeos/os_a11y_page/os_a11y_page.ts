@@ -20,10 +20,10 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
+import {Section} from '../mojom-webui/routes.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteOriginMixin} from '../route_origin_mixin.js';
-import {Route, Router} from '../router.js';
+import {Route, Router, routes} from '../router.js';
 
 import {getTemplate} from './os_a11y_page.html.js';
 import {OsA11yPageBrowserProxy, OsA11yPageBrowserProxyImpl} from './os_a11y_page_browser_proxy.js';
@@ -54,6 +54,12 @@ export class OsSettingsA11yPageElement extends OsSettingsA11yPageElementBase {
       currentRoute: {
         type: Object,
         notify: true,
+      },
+
+      section_: {
+        type: Number,
+        value: Section.kAccessibility,
+        readOnly: true,
       },
 
       /**
@@ -135,6 +141,7 @@ export class OsSettingsA11yPageElement extends OsSettingsA11yPageElementBase {
   private isGuest_: boolean;
   private isKioskModeActive_: boolean;
   private route_: Route;
+  private section_: Section;
   private showAccessibilityLabelsSetting_: boolean;
   private isAccessibilityChromeVoxPageMigrationEnabled_: boolean;
   private isAccessibilitySelectToSpeakPageMigrationEnabled_: boolean;

@@ -355,8 +355,6 @@ void SharedWorkerHost::Start(
           creator_policy_container_host_->policies().is_web_secure_context,
       GetContentClient()->browser()->GetUserAgentBasedOnPolicy(
           GetProcessHost()->GetBrowserContext()),
-      GetContentClient()->browser()->GetFullUserAgent(),
-      GetContentClient()->browser()->GetReducedUserAgent(),
       GetContentClient()->browser()->GetUserAgentMetadata(),
       devtools_handle_->pause_on_start(), devtools_handle_->dev_tools_token(),
       std::move(renderer_preferences), std::move(preference_watcher_receiver),
@@ -406,7 +404,8 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
       /*navigation_id=*/absl::nullopt,
       ukm::SourceIdObj::FromInt64(ukm_source_id_), &default_factory_receiver,
       &factory_params->header_client, bypass_redirect_checks,
-      /*disable_secure_dns=*/nullptr, &factory_params->factory_override);
+      /*disable_secure_dns=*/nullptr, &factory_params->factory_override,
+      /*navigation_response_task_runner=*/nullptr);
 
   devtools_instrumentation::WillCreateURLLoaderFactoryForSharedWorker(
       this, &factory_params->factory_override);

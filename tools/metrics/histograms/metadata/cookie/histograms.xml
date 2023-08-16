@@ -81,7 +81,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.CookiePrefix" enum="CookiePrefix"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
   <owner>estark@chromium.org</owner>
   <summary>
     Number of times a cookie was set with a name prefixed by
@@ -142,7 +142,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.CookieSchemeRequestScheme" enum="CookieRequestScheme"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -153,7 +153,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.CookieSourceScheme" enum="CookieSourceScheme"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
   <owner>estark@chromium.org</owner>
   <summary>
     For each cookie added to the store, record whether its source URL has a
@@ -297,6 +297,19 @@ chromium-metrics-reviews@google.com.
 
     This metric is recorded every time a cookie is successfully created using
     CanonicalCookie::Create.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.ErrorInitializeDB" enum="SqliteLoggedResultCode"
+    expires_after="2023-11-12">
+  <owner>wfh@chromium.org</owner>
+  <owner>src/net/cookies/OWNERS</owner>
+  <summary>
+    The exact database error encountered if initializing the cookies database
+    fails catastrophically. Initializing the cookies database happens once per
+    network context configured with persistent cookies, so this metric could be
+    reported multiple times from the same client. Catastrophic errors are
+    defined in sql::IsErrorCatastrophic.
   </summary>
 </histogram>
 
@@ -546,7 +559,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.FromStorageWithValidLength" enum="BooleanValid"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>bingler@chromium.org</owner>
   <owner>awillia@chromium.org</owner>
   <summary>
@@ -846,13 +859,27 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.SameSiteNoneSizeBytes" units="bytes"
-    expires_after="2023-08-13">
+    expires_after="2023-10-25">
   <owner>dylancutler@google.com</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>
     Size of SameSite=None cookies in bytes. Counted whenever a cookie is set via
     CookieMonster::SetCanonicalCookie.
   </summary>
+</histogram>
+
+<histogram name="Cookie.SameSiteNoneSizeBytes.{IsPartitioned}" units="bytes"
+    expires_after="2023-10-25">
+  <owner>dylancutler@google.com</owner>
+  <owner>src/net/cookies/OWNERS</owner>
+  <summary>
+    Size of SameSite=None {IsPartitioned} cookies in bytes. Counted whenever a
+    cookie is set via CookieMonster::SetCanonicalCookie.
+  </summary>
+  <token key="IsPartitioned">
+    <variant name="Partitioned"/>
+    <variant name="Unpartitioned"/>
+  </token>
 </histogram>
 
 <histogram name="Cookie.TimeBlockedOnLoad" units="ms"
@@ -893,6 +920,20 @@ chromium-metrics-reviews@google.com.
 <histogram name="Cookie.Type" enum="CookieType" expires_after="2023-11-12">
   <owner>mkwst@chromium.org</owner>
   <summary>For each cookie added to the store, record it's type(s).</summary>
+</histogram>
+
+<histogram name="Cookie.WinGetLastErrorInitializeDB" enum="WinGetLastError"
+    expires_after="2023-11-12">
+  <owner>wfh@chromium.org</owner>
+  <owner>src/net/cookies/OWNERS</owner>
+  <summary>
+    The result of calling ::GetLastError if initializing the cookies database
+    fails catastrophically. Initializing the cookies database happens once per
+    network context configured with persistent cookies, so this metric could be
+    reported multiple times from the same client. Catastrophic errors are
+    defined in sql::IsErrorCatastrophic. This metric is only reported on
+    Windows.
+  </summary>
 </histogram>
 
 </histograms>

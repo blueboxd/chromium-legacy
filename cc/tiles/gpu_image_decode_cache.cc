@@ -41,7 +41,6 @@
 #include "cc/tiles/raster_dark_mode_filter.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/client/context_support.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -1519,7 +1518,7 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
   // in DrawWithImageFinished.
   UnrefImageDecode(draw_image, cache_key);
 
-  sk_sp<SkColorFilter> dark_mode_color_filter = nullptr;
+  sk_sp<ColorFilter> dark_mode_color_filter = nullptr;
   if (draw_image.use_dark_mode()) {
     auto it = image_data->decode.dark_mode_color_filter_cache.find(
         draw_image.src_rect());

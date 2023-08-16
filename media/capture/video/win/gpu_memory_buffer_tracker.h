@@ -25,6 +25,8 @@ class CAPTURE_EXPORT GpuMemoryBufferTracker final
  public:
   explicit GpuMemoryBufferTracker(
       scoped_refptr<DXGIDeviceManager> dxgi_device_manager);
+  GpuMemoryBufferTracker(gfx::GpuMemoryBufferHandle gmb_handle,
+                         scoped_refptr<DXGIDeviceManager> dxgi_device_manager);
 
   GpuMemoryBufferTracker(const GpuMemoryBufferTracker&) = delete;
   GpuMemoryBufferTracker& operator=(const GpuMemoryBufferTracker&) = delete;
@@ -35,6 +37,8 @@ class CAPTURE_EXPORT GpuMemoryBufferTracker final
   bool Init(const gfx::Size& dimensions,
             VideoPixelFormat format,
             const mojom::PlaneStridesPtr& strides) override;
+  bool IsSameGpuMemoryBuffer(
+      const gfx::GpuMemoryBufferHandle& handle) const override;
   bool IsReusableForFormat(const gfx::Size& dimensions,
                            VideoPixelFormat format,
                            const mojom::PlaneStridesPtr& strides) override;
@@ -43,17 +47,32 @@ class CAPTURE_EXPORT GpuMemoryBufferTracker final
   base::UnsafeSharedMemoryRegion DuplicateAsUnsafeRegion() override;
   mojo::ScopedSharedBufferHandle DuplicateAsMojoBuffer() override;
   gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() override;
+  void OnHeldByConsumersChanged(bool is_held_by_consumers) override;
+  void UpdateExternalData(CapturedExternalVideoBuffer buffer) override;
 
  private:
+  bool CreateBufferInternal(gfx::GpuMemoryBufferHandle buffer_handle,
+                            const gfx::Size& dimensions);
+  bool IsD3DDeviceChanged();
+
   std::unique_ptr<gpu::GpuMemoryBufferImplDXGI> buffer_;
   scoped_refptr<DXGIDeviceManager> dxgi_device_manager_;
   Microsoft::WRL::ComPtr<ID3D11Device> d3d_device_;
   base::UnsafeSharedMemoryRegion region_;
   base::WritableSharedMemoryMapping mapping_;
   Microsoft::WRL::ComPtr<ID3D11Texture2D> staging_texture_;
-  gfx::Size buffer_size_;
-  bool CreateBufferInternal();
-  bool IsD3DDeviceChanged();
+  // |external_dxgi_handle_| is valid until Init() call.
+  gfx::GpuMemoryBufferHandle external_dxgi_handle_;
+  // The lifetime of the D3D texture is controlled by IMFBuffer. When the buffer
+  // lifetime is released, the Windows capture pipeline assumes the application
+  // has finished reading from the texture and the capture pipeline is, thus,
+  // free to use the texture in a subsequent write operation. We use ComPtr to
+  // hold the IMFBuffer and correctly reuse external texture.
+  Microsoft::WRL::ComPtr<IMFMediaBuffer> imf_buffer_;
+  // If |is_external_dxgi_handle_| is true, the handle originally isn't created
+  // by chromium. Currently it indicates the producer of handle is
+  // MFVideoCaptureEngine.
+  bool is_external_dxgi_handle_ = false;
 };
 
 }  // namespace media

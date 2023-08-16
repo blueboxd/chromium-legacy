@@ -40,21 +40,6 @@ std::string TestProfileTypeToString(
 #endif
   }
 
-  switch (info.param.external_pref_migration_case) {
-    case ExternalPrefMigrationTestCases::kDisableMigrationReadPref:
-      result += "_DisableMigration_ReadFromPrefs";
-      break;
-    case ExternalPrefMigrationTestCases::kDisableMigrationReadDB:
-      result += "_DisableMigration_ReadFromDB";
-      break;
-    case ExternalPrefMigrationTestCases::kEnableMigrationReadPref:
-      result += "EnableMigration_ReadFromPrefs";
-      break;
-    case ExternalPrefMigrationTestCases::kEnableMigrationReadDB:
-      result += "EnableMigration_ReadFromDB";
-      break;
-  }
-
   return result;
 }
 
@@ -72,40 +57,27 @@ void ConfigureCommandLineForGuestMode(base::CommandLine* command_line) {
 
 void InitCrosapiFeaturesForParam(
     web_app::test::CrosapiParam crosapi_state,
-    base::test::ScopedFeatureList* scoped_feature_list,
-    ExternalPrefMigrationTestCases external_pref_migration_case) {
+    base::test::ScopedFeatureList* scoped_feature_list) {
   std::vector<base::test::FeatureRef> enabled_features;
   std::vector<base::test::FeatureRef> disabled_features;
-
-  switch (external_pref_migration_case) {
-    case ExternalPrefMigrationTestCases::kDisableMigrationReadPref:
-      disabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
-      disabled_features.push_back(features::kUseWebAppDBInsteadOfExternalPrefs);
-      break;
-    case ExternalPrefMigrationTestCases::kDisableMigrationReadDB:
-      disabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
-      enabled_features.push_back(features::kUseWebAppDBInsteadOfExternalPrefs);
-      break;
-    case ExternalPrefMigrationTestCases::kEnableMigrationReadPref:
-      enabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
-      disabled_features.push_back(features::kUseWebAppDBInsteadOfExternalPrefs);
-      break;
-    case ExternalPrefMigrationTestCases::kEnableMigrationReadDB:
-      enabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
-      enabled_features.push_back(features::kUseWebAppDBInsteadOfExternalPrefs);
-      break;
-  }
 
   if (crosapi_state == web_app::test::CrosapiParam::kEnabled) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     enabled_features.push_back(features::kWebAppsCrosapi);
+    enabled_features.push_back(ash::features::kLacrosSupport);
+    enabled_features.push_back(ash::features::kLacrosPrimary);
+    enabled_features.push_back(ash::features::kLacrosOnly);
+    // Disable profile migration to avoid potential Ash restart.
+    enabled_features.push_back(ash::features::kLacrosProfileMigrationForceOff);
 #else
     NOTREACHED();
 #endif
   } else {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     disabled_features.push_back(features::kWebAppsCrosapi);
+    disabled_features.push_back(ash::features::kLacrosSupport);
     disabled_features.push_back(ash::features::kLacrosPrimary);
+    disabled_features.push_back(ash::features::kLacrosOnly);
 #endif
   }
   scoped_feature_list->InitWithFeatures(enabled_features, disabled_features);

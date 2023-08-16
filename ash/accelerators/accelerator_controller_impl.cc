@@ -236,6 +236,13 @@ bool CanHandleToggleAppList(
     const ui::Accelerator& accelerator,
     const ui::Accelerator& previous_accelerator,
     const std::set<ui::KeyboardCode>& currently_pressed_keys) {
+  // Check if the accelerator pressed is a RWIN/LWIN, if so perform a
+  // secondary check.
+  if (accelerator.key_code() != ui::VKEY_LWIN &&
+      accelerator.key_code() != ui::VKEY_RWIN) {
+    return true;
+  }
+
   for (auto key : currently_pressed_keys) {
     // The AppList accelerator is triggered on search(VKEY_LWIN) key release.
     // Sometimes users will press and release the search key while holding other
@@ -736,6 +743,8 @@ bool AcceleratorControllerImpl::CanPerformAction(
       return accelerators::CanShowStylusTools();
     case AcceleratorAction::kStartAssistant:
       return true;
+    case AcceleratorAction::kStopScreenRecording:
+      return accelerators::CanStopScreenRecording();
     case AcceleratorAction::kSwapPrimaryDisplay:
       return accelerators::CanSwapPrimaryDisplay();
     case AcceleratorAction::kSwitchIme:
@@ -804,9 +813,6 @@ bool AcceleratorControllerImpl::CanPerformAction(
       return accelerators::CanToggleProjectorMarker();
     case AcceleratorAction::kToggleResizeLockMenu:
       return accelerators::CanToggleResizeLockMenu();
-    case AcceleratorAction::kDebugTuckFloatedWindowLeft:
-    case AcceleratorAction::kDebugTuckFloatedWindowRight:
-      return debug::CanTuckFloatedWindow();
     case AcceleratorAction::kDebugToggleVideoConferenceCameraTrayIcon:
       return true;
 
@@ -1255,6 +1261,9 @@ void AcceleratorControllerImpl::PerformAction(
       base::RecordAction(UserMetricsAction("Accel_Swap_Primary_Display"));
       accelerators::ShiftPrimaryDisplay();
       break;
+    case AcceleratorAction::kStopScreenRecording:
+      accelerators::StopScreenRecording();
+      break;
     case AcceleratorAction::kSwitchIme:
       HandleSwitchIme(accelerator);
       break;
@@ -1312,10 +1321,6 @@ void AcceleratorControllerImpl::PerformAction(
     case AcceleratorAction::kToggleDockedMagnifier:
       base::RecordAction(UserMetricsAction("Accel_Toggle_Docked_Magnifier"));
       accelerators::ToggleDockedMagnifier();
-      break;
-    case AcceleratorAction::kDebugTuckFloatedWindowLeft:
-    case AcceleratorAction::kDebugTuckFloatedWindowRight:
-      debug::PerformDebugActionIfEnabled(action);
       break;
     case AcceleratorAction::kToggleFloating:
       // UMA metrics are recorded in the function.

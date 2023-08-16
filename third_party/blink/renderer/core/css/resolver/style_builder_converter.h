@@ -101,6 +101,7 @@ class StyleBuilderConverterBase {
       FontDescription::Size parent_size,
       const Document*);
   static FontSizeAdjust ConvertFontSizeAdjust(const CSSValue&);
+  static scoped_refptr<FontPalette> ConvertFontPalette(const CSSValue&);
 };
 
 // Note that we assume the parser only allows valid CSSValue types.
@@ -181,8 +182,8 @@ class StyleBuilderConverter {
   static GridPosition ConvertGridPosition(StyleResolverState&, const CSSValue&);
   static GridTrackSize ConvertGridTrackSize(StyleResolverState&,
                                             const CSSValue&);
-  static GridTrackList ConvertGridTrackSizeList(StyleResolverState&,
-                                                const CSSValue&);
+  static NGGridTrackList ConvertGridTrackSizeList(StyleResolverState&,
+                                                  const CSSValue&);
   static StyleHyphenateLimitChars ConvertHyphenateLimitChars(
       StyleResolverState&,
       const CSSValue&);
@@ -223,6 +224,8 @@ class StyleBuilderConverter {
                                                  const CSSValue&);
   static LengthPoint ConvertPosition(StyleResolverState&, const CSSValue&);
   static LengthPoint ConvertPositionOrAuto(StyleResolverState&,
+                                           const CSSValue&);
+  static LengthPoint ConvertOffsetPosition(StyleResolverState&,
                                            const CSSValue&);
   static float ConvertPerspective(StyleResolverState&, const CSSValue&);
   static Length ConvertQuirkyLength(StyleResolverState&, const CSSValue&);
@@ -321,8 +324,6 @@ class StyleBuilderConverter {
 
   static bool ConvertInternalAlignContentBlock(StyleResolverState& state,
                                                const CSSValue& value);
-  static bool ConvertInternalAlignSelfBlock(StyleResolverState& state,
-                                            const CSSValue& value);
   static bool ConvertInternalEmptyLineHeight(StyleResolverState& state,
                                              const CSSValue& value);
 
@@ -330,6 +331,10 @@ class StyleBuilderConverter {
 
   static RubyPosition ConvertRubyPosition(StyleResolverState& state,
                                           const CSSValue& value);
+
+  static absl::optional<StyleScrollbarColor> ConvertScrollbarColor(
+      StyleResolverState& state,
+      const CSSValue& value);
 
   static ScrollbarGutter ConvertScrollbarGutter(StyleResolverState& state,
                                                 const CSSValue& value);

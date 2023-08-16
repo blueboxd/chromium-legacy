@@ -17,9 +17,7 @@ script_test("wpt_tests_ios") {
     "chrome_ios",
     "--target",
     "Release",
-    "--webdriver-arg=--os=16.0",
-    "--no-restart-on-unexpected",
-    "--retry-unexpected=0",
+    "--zero-tests-executed-ok",
 
     # TODO(crbug.com/1351820): Enable more tests to run.
     "/css/css-transforms/",
@@ -139,6 +137,7 @@ source_set("app_support") {
     ":cwt_constants",
     "//base",
     "//base/test:test_support",
+    "//components/signin/internal/identity_manager",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app:tests_hook",
     "//ios/chrome/browser/shared/model/browser",

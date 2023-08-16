@@ -309,21 +309,32 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHPasswordManagerShortcutFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    config->trigger = EventConfig("iph_password_manager_shortcut_triggered",
+                                  Comparator(EQUAL, 0), 360, 360);
+    config->used = EventConfig("password_manager_shortcut_created",
+                               Comparator(EQUAL, 0), 360, 360);
+    return config;
+  }
+
   if (kIPHDownloadToolbarButtonFeature.name == feature->name) {
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
     config->availability = Comparator(ANY, 0);
-    // Don't show if user has already seen an IPH this session.
-    config->session_rate = Comparator(EQUAL, 0);
+    config->session_rate = Comparator(ANY, 0);
+    SessionRateImpact session_rate_impact;
+    session_rate_impact.type = SessionRateImpact::Type::NONE;
+    config->session_rate_impact = session_rate_impact;
     // Show the promo max once a year if the user hasn't interacted with the
     // download bubble within the last 21 days.
     config->trigger = EventConfig("download_bubble_iph_trigger",
                                   Comparator(EQUAL, 0), 360, 360);
     config->used = EventConfig("download_bubble_interaction",
                                Comparator(EQUAL, 0), 21, 360);
-    // Allow snoozing for 7 days, up to 3 times.
-    config->snooze_params.snooze_interval = 7;
-    config->snooze_params.max_limit = 3;
     return config;
   }
 
@@ -1191,6 +1202,24 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
         EventConfig("page_zoom_iph_trigger", Comparator(EQUAL, 0), 1440, 1440);
     config->used =
         EventConfig("page_zoom_opened", Comparator(EQUAL, 0), 1440, 1440);
+    return config;
+  }
+
+  if (kIPHRestoreTabsOnFREFeature.name == feature->name) {
+    // A config that allows the restore tabs on FRE promo to be shown:
+    // * If the user has gone through the FRE workflow.
+    // * If the promo has never been accepted.
+    // * Once per week if continually dismissed for a max of 2 weeks.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(LESS_THAN_OR_EQUAL, 14);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger =
+        EventConfig("restore_tabs_promo_trigger", Comparator(EQUAL, 0), 7, 7);
+    config->used =
+        EventConfig("restore_tabs_promo_used", Comparator(EQUAL, 0), 14, 14);
+    config->event_configs.insert(EventConfig(
+        "restore_tabs_on_first_run_show_promo", Comparator(EQUAL, 1), 14, 14));
     return config;
   }
 

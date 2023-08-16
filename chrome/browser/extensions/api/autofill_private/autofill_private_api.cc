@@ -35,6 +35,9 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/strings/grit/components_chromium_strings.h"
+#include "components/strings/grit/components_google_chrome_strings.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_registry.h"
@@ -843,16 +846,6 @@ AutofillPrivateRemoveVirtualCardFunction::Run() {
 ////////////////////////////////////////////////////////////////////////////////
 // AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction
 
-// Constructor
-AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction::
-    AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction() =
-        default;
-
-// Destructor
-AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction::
-    ~AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction() =
-        default;
-
 ExtensionFunction::ResponseAction
 AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction::Run() {
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
@@ -863,26 +856,30 @@ AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction::Run() {
     return RespondNow(Error(kErrorDeviceAuthUnavailable));
   }
 
-  // If `device_authenticator_` is not available, then don't do anything.
-  device_authenticator_ = client->GetDeviceAuthenticator();
-  if (!device_authenticator_) {
+  // If `device_authenticator` is not available, then don't do anything.
+  scoped_refptr<device_reauth::DeviceAuthenticator> device_authenticator =
+      client->GetDeviceAuthenticator();
+  if (!device_authenticator) {
     return RespondNow(Error(kErrorDeviceAuthUnavailable));
   }
 
-  base::OnceClosure on_reauth_completed = base::BindOnce(
-      &AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction::
-          OnReauthCompleted,
-      this);
+  // `device_authenticator` is a scoped_refptr, so we need to keep it alive
+  // until the callback that uses it is complete.
+  base::OnceClosure bind_device_authenticator =
+      base::DoNothingWithBoundArgs(device_authenticator);
+  const std::u16string message =
+      l10n_util::GetStringUTF16(IDS_PAYMENTS_AUTOFILL_MANDATORY_REAUTH_PROMPT);
+
   // We will be modifying the pref `kAutofillPaymentMethodsMandatoryReauth`
   // asynchronously. The pref value directly correlates to the mandatory auth
   // toggle.
-  autofill_util::AuthenticateUserOnMandatoryReauthToggled(
-      device_authenticator_,
+  autofill_util::AuthenticateUser(
+      device_authenticator, message,
       base::BindOnce(
           &AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction::
               UpdateMandatoryAuthTogglePref,
           this)
-          .Then(std::move(on_reauth_completed)));
+          .Then(base::IgnoreArgs(std::move(bind_device_authenticator))));
   base::RecordAction(base::UserMetricsAction(
       "PaymentsUserAuthTriggeredForMandatoryAuthToggle"));
   return RespondNow(NoArguments());
@@ -898,7 +895,7 @@ void AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction::
   if (reauth_succeeded && browser_context()) {
     PrefService* prefs =
         Profile::FromBrowserContext(browser_context())->GetPrefs();
-    autofill::prefs::SetAutofillPaymentMethodsMandatoryReauth(
+    autofill::prefs::SetPaymentMethodsMandatoryReauthEnabled(
         prefs, !prefs->GetBoolean(
                    autofill::prefs::kAutofillPaymentMethodsMandatoryReauth));
     base::RecordAction(base::UserMetricsAction(
@@ -907,9 +904,69 @@ void AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction::
 #endif
 }
 
-void AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction::
-    OnReauthCompleted() {
-  device_authenticator_.reset();
+////////////////////////////////////////////////////////////////////////////////
+// AutofillPrivateAuthenticateUserToEditLocalCardFunction
+
+ExtensionFunction::ResponseAction
+AutofillPrivateAuthenticateUserToEditLocalCardFunction::Run() {
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  // If `client` is not available, then don't do anything.
+  autofill::ContentAutofillClient* client =
+      autofill::ContentAutofillClient::FromWebContents(GetSenderWebContents());
+  if (!client) {
+    return RespondNow(Error(kErrorDeviceAuthUnavailable));
+  }
+
+  // If `personal_data_manager` is not available, then don't do anything.
+  autofill::PersonalDataManager* personal_data_manager =
+      client->GetPersonalDataManager();
+  if (!personal_data_manager || !personal_data_manager->IsDataLoaded()) {
+    return RespondNow(Error(kErrorDataUnavailable));
+  }
+  if (personal_data_manager->IsPaymentMethodsMandatoryReauthEnabled()) {
+    // If `device_authenticator` is not available, then don't do anything.
+    scoped_refptr<device_reauth::DeviceAuthenticator> device_authenticator =
+        client->GetDeviceAuthenticator();
+    if (!device_authenticator) {
+      return RespondNow(Error(kErrorDeviceAuthUnavailable));
+    }
+
+    // `device_authenticator` is a scoped_refptr, so we need to keep it alive
+    // until the callback that uses it is complete.
+    base::OnceClosure bind_device_authenticator =
+        base::DoNothingWithBoundArgs(device_authenticator);
+    const std::u16string message = l10n_util::GetStringUTF16(
+        IDS_PAYMENTS_AUTOFILL_EDIT_CARD_MANDATORY_REAUTH_PROMPT);
+
+    base::RecordAction(base::UserMetricsAction(
+        "PaymentsUserAuthTriggeredToShowEditLocalCardDialog"));
+    // Based on the result of the auth, we will be asynchronously returning if
+    // the user can edit the local card.
+    autofill_util::AuthenticateUser(
+        device_authenticator, message,
+        base::BindOnce(&AutofillPrivateAuthenticateUserToEditLocalCardFunction::
+                           CanShowEditDialogForLocalCard,
+                       this)
+            .Then(base::IgnoreArgs(std::move(bind_device_authenticator))));
+
+    // Due to async nature of AuthenticateWithMessage() on device authenticator
+    // we use the below check to make sure we have a `Respond` captured. If we
+    // didn't have this check, then we would show the edit card dialog box even
+    // before the user successfully completes the auth.
+    return did_respond() ? AlreadyResponded() : RespondLater();
+  }
+#endif
+  return RespondNow(WithArguments(true));
+}
+
+// Return the auth result for showing the edit card for local card.
+void AutofillPrivateAuthenticateUserToEditLocalCardFunction::
+    CanShowEditDialogForLocalCard(bool can_show) {
+  if (can_show) {
+    base::RecordAction(base::UserMetricsAction(
+        "PaymentsUserAuthSuccessfulToShowEditLocalCardDialog"));
+  }
+  Respond(WithArguments(can_show));
 }
 
 }  // namespace extensions

@@ -127,7 +127,7 @@ bool SwapGoogleUpdate(UpdaterScope scope,
 
   const absl::optional<base::FilePath> target_path =
       GetGoogleUpdateExePath(scope);
-  if (!target_path) {
+  if (!target_path || !base::CreateDirectory(target_path->DirName())) {
     return false;
   }
   list->AddCopyTreeWorkItem(updater_path, *target_path, temp_path,
@@ -271,7 +271,7 @@ ComServerApp::~ComServerApp() = default;
 void ComServerApp::Stop() {
   VLOG(2) << __func__ << ": COM server is shutting down.";
   UnregisterClassObjects();
-  main_task_runner_->PostTask(FROM_HERE, base::BindOnce([]() {
+  main_task_runner_->PostTask(FROM_HERE, base::BindOnce([] {
                                 scoped_refptr<ComServerApp> this_server =
                                     AppServerSingletonInstance();
                                 this_server->update_service_ = nullptr;
@@ -314,16 +314,14 @@ void ComServerApp::TaskStarted() {
       Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule()
           .IncrementObjectCount();
   VLOG(2) << "Starting task, Microsoft::WRL::Module count: " << count;
+  AppServer::TaskStarted();
 }
 
-void ComServerApp::TaskCompleted() {
-  main_task_runner_->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&ComServerApp::AcknowledgeTaskCompletion, this),
-      external_constants()->ServerKeepAliveTime());
+bool ComServerApp::ShutdownIfIdleAfterTask() {
+  return false;
 }
 
-void ComServerApp::AcknowledgeTaskCompletion() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+void ComServerApp::OnDelayedTaskComplete() {
   const auto count =
       Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule()
           .DecrementObjectCount();
@@ -350,7 +348,6 @@ void ComServerApp::ActiveDutyInternal(
 }
 
 void ComServerApp::Start(base::OnceCallback<HRESULT()> register_callback) {
-  main_task_runner_ = base::SequencedTaskRunner::GetCurrentDefault();
   CreateWRLModule();
   HRESULT hr = std::move(register_callback).Run();
   if (FAILED(hr)) {
@@ -403,20 +400,17 @@ bool ComServerApp::SwapInNewVersion() {
     StopProcessesUnderPath(target->DirName(), base::Seconds(45));
   }
 
-  const bool succeeded = list->Do();
-  if (succeeded) {
-    LOG_IF(ERROR,
-           UninstallGoogleUpdate(updater_scope(), temp_dir->GetPath(),
-                                 UpdaterScopeToHKeyRoot(updater_scope())));
-
-    // TODO(crbug.com/1425609) - revert the CL that introduced this logging
-    // after the bug is resolved.
-    for (const auto& clsid : GetServers(false, updater_scope())) {
-      LogClsidEntries(clsid);
-    }
+  if (!list->Do()) {
+    return false;
   }
 
-  return succeeded;
+  LOG_IF(ERROR, UninstallGoogleUpdate(updater_scope(), temp_dir->GetPath(),
+                                      UpdaterScopeToHKeyRoot(updater_scope())));
+  if (!IsSystemInstall(updater_scope())) {
+    LOG_IF(ERROR, DeleteLegacyEntriesPerUser());
+  }
+
+  return true;
 }
 
 bool ComServerApp::MigrateLegacyUpdaters(

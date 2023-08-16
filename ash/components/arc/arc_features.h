@@ -17,7 +17,6 @@ BASE_DECLARE_FEATURE(kArcOnDemandFeature);
 BASE_DECLARE_FEATURE(kBootCompletedBroadcastFeature);
 BASE_DECLARE_FEATURE(kCustomTabsExperimentFeature);
 BASE_DECLARE_FEATURE(kDocumentsProviderUnknownSizeFeature);
-BASE_DECLARE_FEATURE(kEnableArcHostVpn);
 BASE_DECLARE_FEATURE(kEnableArcIdleManager);
 extern const base::FeatureParam<bool> kEnableArcIdleManagerIgnoreBatteryForPLT;
 BASE_DECLARE_FEATURE(kEnableArcNearbyShareFuseBox);
@@ -66,6 +65,7 @@ BASE_DECLARE_FEATURE(kVmMemorySize);
 extern const base::FeatureParam<int> kVmMemorySizeShiftMiB;
 extern const base::FeatureParam<int> kVmMemorySizeMaxMiB;
 BASE_DECLARE_FEATURE(kVmBroadcastPreNotifyANR);
+BASE_DECLARE_FEATURE(kVmmSwapoutGhostWindow);
 BASE_DECLARE_FEATURE(kVmmSwapKeyboardShortcut);
 BASE_DECLARE_FEATURE(kVmmSwapPolicy);
 extern const base::FeatureParam<int> kVmmSwapOutDelaySecond;
@@ -74,6 +74,7 @@ extern const base::FeatureParam<int> kVmmSwapArcSilenceIntervalSecond;
 BASE_DECLARE_FEATURE(kPriorityAppLmkDelay);
 extern const base::FeatureParam<int> kPriorityAppLmkDelaySecond;
 extern const base::FeatureParam<std::string> kPriorityAppLmkDelayList;
+BASE_DECLARE_FEATURE(kLmkPerceptibleMinStateUpdate);
 }  // namespace arc
 
 #endif  // ASH_COMPONENTS_ARC_ARC_FEATURES_H_

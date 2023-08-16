@@ -33,7 +33,6 @@
 
 class AutocompleteResult;
 class OmniboxClient;
-class OmniboxEditModelDelegate;
 class OmniboxPopupView;
 
 namespace gfx {
@@ -67,9 +66,7 @@ class OmniboxEditModel {
     const AutocompleteInput autocomplete_input;
   };
 
-  OmniboxEditModel(OmniboxController* omnibox_controller,
-                   OmniboxView* view,
-                   OmniboxEditModelDelegate* edit_model_delegate);
+  OmniboxEditModel(OmniboxController* omnibox_controller, OmniboxView* view);
   virtual ~OmniboxEditModel();
   OmniboxEditModel(const OmniboxEditModel&) = delete;
   OmniboxEditModel& operator=(const OmniboxEditModel&) = delete;
@@ -85,8 +82,6 @@ class OmniboxEditModel {
   void set_popup_view(OmniboxPopupView* popup_view);
   OmniboxPopupView* get_popup_view() { return popup_view_; }
   const OmniboxPopupView* get_popup_view() const { return popup_view_; }
-
-  OmniboxEditModelDelegate* delegate() const { return edit_model_delegate_; }
 
   OmniboxClient* client() const { return omnibox_controller_->client(); }
 
@@ -329,13 +324,12 @@ class OmniboxEditModel {
   // Returns true if pasting is in progress.
   bool is_pasting() const { return paste_state_ == PASTING; }
 
-  // Called when the user presses up or down.  |count| is a repeat count,
-  // negative for moving up, positive for moving down. Virtual for testing.
-  virtual void OnUpOrDownKeyPressed(int count);
+  // Called when the user presses arrow up, arrow down, page up, or page down.
+  void OnUpOrDownPressed(bool down, bool page);
 
-  // If no query is in progress, starts working on an autocomplete query.
-  // Returns true if started; false otherwise.
-  bool MaybeStartQueryForPopup();
+  // Called when the user presses tab or shift+tab. The latter will traverse up
+  // the selections instead of down.
+  void OnTabPressed(bool shift);
 
   // Called when any relevant data changes.  This rolls together several
   // separate pieces of data into one call so we can update all the UI
@@ -430,13 +424,6 @@ class OmniboxEditModel {
                          bool reset_to_default = false,
                          bool force_update_ui = false);
 
-  // Changes the popup selection to the next available selection.
-  // Stepping the popup selection gives special consideration for
-  // keyword mode state.
-  OmniboxPopupSelection StepPopupSelection(
-      OmniboxPopupSelection::Direction direction,
-      OmniboxPopupSelection::Step step);
-
   // Returns true if popup selection is on the initial line, which is usually
   // the default match (except in the no-default-match case).
   bool IsPopupSelectionOnInitialLine() const;
@@ -522,23 +509,23 @@ class OmniboxEditModel {
                        // with ctrl-l or copying the selected text with ctrl-c.
   };
 
+  // If no query is in progress, starts working on an autocomplete query.
+  // Returns true if started; false otherwise.
+  bool MaybeStartQueryForPopup();
+
+  // Changes the popup selection to the next available selection. Stepping the
+  // popup selection gives special consideration for keyword mode state.
+  void StepPopupSelection(OmniboxPopupSelection::Direction direction,
+                          OmniboxPopupSelection::Step step);
+
   // Asks the browser to load the popup's currently selected item, using the
   // supplied disposition.  This may close the popup.
   void AcceptInput(
       WindowOpenDisposition disposition,
       base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
-  // Executes the action associated with match at given `selection`
-  // within result(). `disposition` may be used by actions to open
-  // in another tab, a new window, etc.
-  void ExecuteAction(OmniboxPopupSelection selection,
-                     WindowOpenDisposition disposition,
-                     base::TimeTicks match_selection_timestamp);
-
-  // Asks the browser to load |match|. |index| is only used for logging, and
-  // can be kNoMatch if the popup was closed, or if none of the suggestions
-  // in the popup were used (in the unusual no-default-match case). In that
-  // case, an artificial result set with only |match| will be logged.
+  // Asks the browser to load |match| or execute one of its actions
+  // according to |selection|.
   //
   // OpenMatch() needs to know the original text that drove this action.  If
   // |pasted_text| is non-empty, this is a Paste-And-Go/Search action, and
@@ -555,11 +542,11 @@ class OmniboxEditModel {
   //     could clear that data, leaving us with a pointer-to-garbage.  So at
   //     some point someone needs to make a copy of the match anyway, to
   //     preserve it past the popup closure.
-  void OpenMatch(AutocompleteMatch match,
+  void OpenMatch(OmniboxPopupSelection selection,
+                 AutocompleteMatch match,
                  WindowOpenDisposition disposition,
                  const GURL& alternate_nav_url,
                  const std::u16string& pasted_text,
-                 size_t index,
                  base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
   // Returns true if a query to an autocomplete provider is currently
@@ -635,9 +622,6 @@ class OmniboxEditModel {
 
   // Owns `OmniboxController` which owns this.
   raw_ptr<OmniboxView> view_;
-
-  // Implemented by `LocationBarView` which owns `OmniboxView`.
-  raw_ptr<OmniboxEditModelDelegate> edit_model_delegate_;
 
   OmniboxFocusState focus_state_ = OMNIBOX_FOCUS_NONE;
 

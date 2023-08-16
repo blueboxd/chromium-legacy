@@ -357,8 +357,11 @@ int WebStateList::InsertWebStateImpl(int index,
     wrapper->SetShouldResetOpenerOnActiveWebStateChange(true);
   }
 
+  const WebStateListChangeInsert insert_change(web_state_ptr);
+  const WebStateSelection selection = {.index = index,
+                                       .activating = activating};
   for (auto& observer : observers_) {
-    observer.WebStateInsertedAt(this, web_state_ptr, index, activating);
+    observer.WebStateListChanged(this, insert_change, selection);
   }
 
   if (opener.opener) {
@@ -400,8 +403,10 @@ void WebStateList::MoveWebStateAtImpl(int from_index, int to_index) {
     }
   }
 
+  const WebStateListChangeMove move_change(web_state, from_index);
+  const WebStateSelection selection = {.index = to_index, .activating = false};
   for (auto& observer : observers_) {
-    observer.WebStateMoved(this, web_state, from_index, to_index);
+    observer.WebStateListChanged(this, move_change, selection);
   }
 }
 
@@ -417,21 +422,24 @@ std::unique_ptr<web::WebState> WebStateList::ReplaceWebStateAtImpl(
   ClearOpenersReferencing(index);
 
   web::WebState* web_state_ptr = web_state.get();
-  std::unique_ptr<web::WebState> old_web_state =
+  std::unique_ptr<web::WebState> replaced_web_state =
       web_state_wrappers_[index]->ReplaceWebState(std::move(web_state));
 
+  const WebStateListChangeReplace replace_change(replaced_web_state.get(),
+                                                 web_state_ptr);
+  const WebStateSelection selection = {.index = index,
+                                       .activating = (index == active_index_)};
   for (auto& observer : observers_) {
-    observer.WebStateReplacedAt(this, old_web_state.get(), web_state_ptr,
-                                index);
+    observer.WebStateListChanged(this, replace_change, selection);
   }
 
   // When the active WebState is replaced, notify the observers as nearly
   // all of them needs to treat a replacement as the selection changed.
-  NotifyIfActiveWebStateChanged(old_web_state.get(),
+  NotifyIfActiveWebStateChanged(replaced_web_state.get(),
                                 ActiveWebStateChangeReason::Replaced);
 
-  delegate_->WebStateDetached(old_web_state.get());
-  return old_web_state;
+  delegate_->WebStateDetached(replaced_web_state.get());
+  return replaced_web_state;
 }
 
 std::unique_ptr<web::WebState> WebStateList::DetachWebStateAtImpl(int index) {

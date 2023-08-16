@@ -13,6 +13,7 @@ import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './audio.js';
 import './display.js';
+import './graphics_tablet_subpage.js';
 import './keyboard.js';
 import './per_device_keyboard.js';
 import './per_device_keyboard_remap_keys.js';
@@ -36,9 +37,9 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {KeyboardPolicies, MousePolicies} from '../mojom-webui/input_device_settings.mojom-webui.js';
 import {KeyboardSettingsObserverReceiver, MouseSettingsObserverReceiver, PointingStickSettingsObserverReceiver, TouchpadSettingsObserverReceiver} from '../mojom-webui/input_device_settings_provider.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
+import {Section} from '../mojom-webui/routes.mojom-webui.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
-import {Router} from '../router.js';
+import {Router, routes} from '../router.js';
 
 import {getTemplate} from './device_page.html.js';
 import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl} from './device_page_browser_proxy.js';
@@ -72,6 +73,12 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
         notify: true,
       },
 
+      section_: {
+        type: Number,
+        value: Section.kDevice,
+        readOnly: true,
+      },
+
       /**
        * |hasMouse_|, |hasPointingStick_|, and |hasTouchpad_| start undefined so
        * observers don't trigger until they have been populated.
@@ -100,23 +107,23 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
       },
 
       /**
-       * Whether audio management info should be shown.
-       */
-      showAudioInfo_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('enableAudioSettingsPage');
-        },
-        readOnly: true,
-      },
-
-      /**
        * Whether settings should be split per device.
        */
       isDeviceSettingsSplitEnabled_: {
         type: Boolean,
         value() {
           return loadTimeData.getBoolean('enableInputDeviceSettingsSplit');
+        },
+        readOnly: true,
+      },
+
+      /**
+       * Whether users are allowed to customize buttons on their peripherals.
+       */
+      isPeripheralCustomizationEnabled: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('enablePeripheralCustomization');
         },
         readOnly: true,
       },
@@ -183,6 +190,9 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
           if (routes.POWER) {
             map.set(routes.POWER.path, '#powerRow');
           }
+          if (routes.GRAPHICS_TABLET) {
+            map.set(routes.GRAPHICS_TABLET.path, '#tabletRow');
+          }
           return map;
         },
       },
@@ -241,12 +251,14 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
   private hasTouchpad_: boolean;
   private hasHapticTouchpad_: boolean;
   private isDeviceSettingsSplitEnabled_: boolean;
+  private isPeripheralCustomizationEnabled: boolean;
   private pointingStickSettingsObserverReceiver:
       PointingStickSettingsObserverReceiver;
   private keyboardSettingsObserverReceiver: KeyboardSettingsObserverReceiver;
   private touchpadSettingsObserverReceiver: TouchpadSettingsObserverReceiver;
   private inputDeviceSettingsProvider: InputDeviceSettingsProviderInterface;
   private mouseSettingsObserverReceiver: MouseSettingsObserverReceiver;
+  private section_: Section;
 
   constructor() {
     super();
@@ -432,6 +444,13 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
    */
   private onStylusClick_() {
     Router.getInstance().navigateTo(routes.STYLUS);
+  }
+
+  /**
+   * Handler for tapping the Graphics tablet settings menu item.
+   */
+  private onGraphicsTabletClick() {
+    Router.getInstance().navigateTo(routes.GRAPHICS_TABLET);
   }
 
   /**

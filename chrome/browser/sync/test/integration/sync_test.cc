@@ -81,6 +81,7 @@
 #include "components/sync/service/sync_service_impl.h"
 #include "components/sync/service/sync_user_settings.h"
 #include "components/sync/test/fake_server_network_resources.h"
+#include "components/trusted_vault/command_line_switches.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -357,7 +358,8 @@ void SyncTest::SetUpCommandLine(base::CommandLine* cl) {
     // server_type_ == EXTERNAL_LIVE_SERVER.
     // Effectively disables interaction with SecurityDomainService for E2E
     // tests.
-    cl->AppendSwitchASCII(syncer::kTrustedVaultServiceURL, "broken_url");
+    cl->AppendSwitchASCII(trusted_vault::kTrustedVaultServiceURLSwitch,
+                          "broken_url");
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -766,9 +768,6 @@ void SyncTest::SetupSyncInternal(SetupSyncMode setup_mode) {
     }
   }
 
-  // TODO(crbug.com/801482): If we ever start running tests against external
-  // servers again, we might have to find a way to clear any pre-existing data
-  // from the test account.
   if (server_type_ == EXTERNAL_LIVE_SERVER) {
     LOG(ERROR) << "WARNING: Running against external servers with an existing "
                   "account. If there is any pre-existing data in the account, "
@@ -838,10 +837,10 @@ bool SyncTest::SetupSync(SetupSyncMode setup_mode) {
   SetupSyncInternal(setup_mode);
 
   // Because clients may modify sync data as part of startup (for example
-  // local session-releated data is rewritten), we need to ensure all
+  // local session-related data is rewritten), we need to ensure all
   // startup-based changes have propagated between the clients.
   //
-  // Tests that don't use self-notifications can't await quiescense.  They'll
+  // Tests that don't use self-notifications can't await quiescence.  They'll
   // have to find their own way of waiting for an initial state if they really
   // need such guarantees.
   if (setup_mode != NO_WAITING && TestUsesSelfNotifications()) {

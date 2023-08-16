@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
 
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "base/test/mock_callback.h"
 #include "chrome/browser/touch_to_fill/password_generation/android/mock_touch_to_fill_password_generation_bridge.h"
 #include "chrome/browser/touch_to_fill/password_generation/android/touch_to_fill_password_generation_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -16,6 +19,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
 #include "ui/base/ime/text_input_type.h"
+
+using testing::_;
+using testing::Eq;
 
 class TouchToFillPasswordGenerationControllerTest
     : public ChromeRenderViewHostTestHarness {
@@ -32,6 +38,10 @@ class TouchToFillPasswordGenerationControllerTest
     return base::AsWeakPtr(password_mananger_driver_.get());
   }
 
+  base::MockCallback<base::OnceCallback<void()>> on_dismissed_callback_;
+  const std::u16string test_generated_password_ = u"Strong generated password";
+  const std::string test_user_account_ = "test@email.com";
+
  private:
   std::unique_ptr<password_manager::ContentPasswordManagerDriver>
       password_mananger_driver_;
@@ -44,9 +54,10 @@ TEST_F(TouchToFillPasswordGenerationControllerTest,
   auto bridge = std::make_unique<MockTouchToFillPasswordGenerationBridge>();
   MockTouchToFillPasswordGenerationBridge* bridge_ptr = bridge.get();
   auto controller = std::make_unique<TouchToFillPasswordGenerationController>(
-      password_mananger_driver(), web_contents(), std::move(bridge));
+      password_mananger_driver(), web_contents(), std::move(bridge),
+      on_dismissed_callback_.Get());
   EXPECT_CALL(*bridge_ptr, Show);
-  controller->ShowTouchToFill();
+  controller->ShowTouchToFill(test_generated_password_, test_user_account_);
 
   ui::mojom::TextInputStatePtr initial_state = ui::mojom::TextInputState::New();
   initial_state->type = ui::TEXT_INPUT_TYPE_PASSWORD;
@@ -67,4 +78,33 @@ TEST_F(TouchToFillPasswordGenerationControllerTest,
   // Keyboard is expected to be shown again after resetting the controller.
   EXPECT_FALSE(content::GetTextInputStateFromWebContents(web_contents())
                    ->always_hide_ime);
+}
+
+TEST_F(TouchToFillPasswordGenerationControllerTest,
+       OnDismissedCallbackIsTriggeredWhenBottomSheetDismissed) {
+  auto controller = std::make_unique<TouchToFillPasswordGenerationController>(
+      password_mananger_driver(), web_contents(),
+      std::make_unique<MockTouchToFillPasswordGenerationBridge>(),
+      on_dismissed_callback_.Get());
+
+  controller->ShowTouchToFill(test_generated_password_, test_user_account_);
+
+  EXPECT_CALL(on_dismissed_callback_, Run);
+  controller->OnDismissed();
+}
+
+TEST_F(TouchToFillPasswordGenerationControllerTest,
+       CallsHideOnBridgeWhenTouchToFillPasswordGenerationControllerDestroyed) {
+  auto bridge = std::make_unique<MockTouchToFillPasswordGenerationBridge>();
+  MockTouchToFillPasswordGenerationBridge* bridge_ptr = bridge.get();
+  auto controller = std::make_unique<TouchToFillPasswordGenerationController>(
+      password_mananger_driver(), web_contents(), std::move(bridge),
+      on_dismissed_callback_.Get());
+
+  EXPECT_CALL(*bridge_ptr,
+              Show(_, _, Eq(test_generated_password_), Eq(test_user_account_)));
+  controller->ShowTouchToFill(test_generated_password_, test_user_account_);
+
+  EXPECT_CALL(*bridge_ptr, Hide);
+  controller.reset();
 }

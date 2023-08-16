@@ -32,26 +32,37 @@ WebStateListFaviconDriverObserver::~WebStateListFaviconDriverObserver() {
   }
 }
 
-void WebStateListFaviconDriverObserver::WebStateInsertedAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index,
-    bool activating) {
-  AddNewWebState(web_state);
-}
+#pragma mark - WebStateListObserver
 
-void WebStateListFaviconDriverObserver::WebStateReplacedAt(
+void WebStateListFaviconDriverObserver::WebStateListChanged(
     WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int index) {
-  if (old_web_state) {
-    // Forward to WebStateDetachedAt as this is considered a webState removal.
-    WebStateDetachedAt(web_state_list, old_web_state, index);
-  }
-
-  if (new_web_state) {
-    AddNewWebState(new_web_state);
+    const WebStateListChange& change,
+    const WebStateSelection& selection) {
+  switch (change.type()) {
+    case WebStateListChange::Type::kSelectionOnly:
+      // Do nothing when a WebState is selected and its status is updated.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // WebStateDetachedAt() to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace: {
+      const WebStateListChangeReplace& replace_change =
+          change.As<WebStateListChangeReplace>();
+      // Forward to DetachWebState as this is considered a WebState removal.
+      DetachWebState(replace_change.replaced_web_state());
+      AddNewWebState(replace_change.inserted_web_state());
+      break;
+    }
+    case WebStateListChange::Type::kInsert: {
+      const WebStateListChangeInsert& insert_change =
+          change.As<WebStateListChangeInsert>();
+      AddNewWebState(insert_change.inserted_web_state());
+      break;
+    }
   }
 }
 
@@ -59,15 +70,7 @@ void WebStateListFaviconDriverObserver::WebStateDetachedAt(
     WebStateList* web_state_list,
     web::WebState* web_state,
     int index) {
-  favicon::WebFaviconDriver* driver =
-      favicon::WebFaviconDriver::FromWebState(web_state);
-  if (driver) {
-    auto iterator = driver_to_web_state_map_.find(driver);
-    DCHECK(iterator != driver_to_web_state_map_.end());
-    DCHECK(iterator->second == web_state);
-    driver_to_web_state_map_.erase(iterator);
-    driver->RemoveObserver(this);
-  }
+  DetachWebState(web_state);
 }
 
 void WebStateListFaviconDriverObserver::OnFaviconUpdated(
@@ -92,5 +95,18 @@ void WebStateListFaviconDriverObserver::AddNewWebState(
     DCHECK(iterator == driver_to_web_state_map_.end());
     driver_to_web_state_map_[driver] = web_state;
     driver->AddObserver(this);
+  }
+}
+
+void WebStateListFaviconDriverObserver::DetachWebState(
+    web::WebState* web_state) {
+  favicon::WebFaviconDriver* driver =
+      favicon::WebFaviconDriver::FromWebState(web_state);
+  if (driver) {
+    auto iterator = driver_to_web_state_map_.find(driver);
+    DCHECK(iterator != driver_to_web_state_map_.end());
+    DCHECK(iterator->second == web_state);
+    driver_to_web_state_map_.erase(iterator);
+    driver->RemoveObserver(this);
   }
 }

@@ -32,6 +32,8 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/user_education/user_education_service.h"
+#include "chrome/browser/ui/user_education/user_education_service_factory.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/settings/site_settings_helper.h"
 #include "chrome/common/chrome_features.h"
@@ -190,14 +192,17 @@ std::string GenerateContentSettingsExceptionsSubPage(ContentSettingsType type) {
   // will no longer be needed.
 
   static constexpr auto kSettingsPathOverrides =
-      base::MakeFixedFlatMap<ContentSettingsType, base::StringPiece>(
-          {{ContentSettingsType::AUTOMATIC_DOWNLOADS, "automaticDownloads"},
-           {ContentSettingsType::BACKGROUND_SYNC, "backgroundSync"},
-           {ContentSettingsType::MEDIASTREAM_MIC, "microphone"},
-           {ContentSettingsType::MEDIASTREAM_CAMERA, "camera"},
-           {ContentSettingsType::MIDI_SYSEX, "midiDevices"},
-           {ContentSettingsType::ADS, "ads"},
-           {ContentSettingsType::HID_CHOOSER_DATA, "hidDevices"}});
+      base::MakeFixedFlatMap<ContentSettingsType, base::StringPiece>({
+          {ContentSettingsType::AUTOMATIC_DOWNLOADS, "automaticDownloads"},
+          {ContentSettingsType::BACKGROUND_SYNC, "backgroundSync"},
+          {ContentSettingsType::MEDIASTREAM_MIC, "microphone"},
+          {ContentSettingsType::MEDIASTREAM_CAMERA, "camera"},
+          {ContentSettingsType::MIDI_SYSEX, "midiDevices"},
+          {ContentSettingsType::ADS, "ads"},
+          {ContentSettingsType::HID_CHOOSER_DATA, "hidDevices"},
+          {ContentSettingsType::STORAGE_ACCESS, "storageAccess"},
+      });
+
   const auto* it = kSettingsPathOverrides.find(type);
 
   return base::StrCat({kContentSettingsSubPage, "/",
@@ -439,6 +444,17 @@ void ShowPasswordManager(Browser* browser) {
   base::RecordAction(UserMetricsAction("Options_ShowPasswordManager"));
   if (base::FeatureList::IsEnabled(
           password_manager::features::kPasswordManagerRedesign)) {
+    // This code is necessary to fix a bug (crbug.com/1448559) during Password
+    // Manager Shortcut tutorial flow.
+    auto* service =
+        UserEducationServiceFactory::GetForProfile(browser->profile());
+    if (service) {
+      auto* tutorial_service = &service->tutorial_service();
+      if (tutorial_service && tutorial_service->IsRunningTutorial()) {
+        ShowSingletonTab(browser, GURL(kChromeUIPasswordManagerURL));
+        return;
+      }
+    }
     ShowSingletonTabIgnorePathOverwriteNTP(browser,
                                            GURL(kChromeUIPasswordManagerURL));
   } else {
@@ -615,51 +631,6 @@ void ShowShortcutCustomizationApp(Profile* profile) {
   ShowSystemAppInternal(profile, GURL(kOsUIShortcutCustomizationAppURL));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-// SigninViewController::ShowSignin is only available with DICE
-void ShowBrowserSignin(Browser* browser,
-                       signin_metrics::AccessPoint access_point,
-                       signin::ConsentLevel consent_level) {
-  Profile* original_profile = browser->profile()->GetOriginalProfile();
-  DCHECK(original_profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
-
-  // If the browser's profile is an incognito profile, make sure to use
-  // a browser window from the original profile. The user cannot sign in
-  // from an incognito window.
-  auto displayer =
-      std::make_unique<ScopedTabbedBrowserDisplayer>(original_profile);
-  browser = displayer->browser();
-
-  profiles::BubbleViewMode bubble_view_mode;
-  if (IdentityManagerFactory::GetForProfile(original_profile)
-          ->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
-    bubble_view_mode = profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH;
-  } else {
-    switch (consent_level) {
-      case signin::ConsentLevel::kSync:
-        bubble_view_mode = profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN;
-        break;
-      case signin::ConsentLevel::kSignin:
-        bubble_view_mode = profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT;
-        break;
-    }
-  }
-
-  browser->signin_view_controller()->ShowSignin(bubble_view_mode, access_point);
-}
-
-void ShowBrowserSigninOrSettings(Browser* browser,
-                                 signin_metrics::AccessPoint access_point) {
-  Profile* original_profile = browser->profile()->GetOriginalProfile();
-  DCHECK(original_profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
-  if (IdentityManagerFactory::GetForProfile(original_profile)
-          ->HasPrimaryAccount(signin::ConsentLevel::kSync))
-    ShowSettings(browser);
-  else
-    ShowBrowserSignin(browser, access_point, signin::ConsentLevel::kSync);
-}
-#endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)

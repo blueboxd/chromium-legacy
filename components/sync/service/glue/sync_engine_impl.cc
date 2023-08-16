@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -24,7 +25,6 @@
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
-#include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
@@ -139,7 +139,8 @@ SyncEngineImpl::SyncEngineImpl(
 #else
       sessions_invalidation_enabled_(true),
 #endif
-      active_devices_provider_(std::move(active_devices_provider)) {
+      active_devices_provider_(std::move(active_devices_provider)),
+      engine_created_time_for_metrics_(base::TimeTicks::Now()) {
   DCHECK(prefs_);
   DCHECK(sync_invalidations_service_);
   backend_ = base::MakeRefCounted<SyncEngineBackend>(
@@ -556,6 +557,14 @@ void SyncEngineImpl::HandleSyncStatusChanged(const SyncStatus& status) {
     host_->OnBackedOffTypesChanged();
   }
   if (invalidation_status_changed) {
+    if (status.notifications_enabled && !invalidations_enabled_reported_) {
+      // Record the time since the engine was created until invalidations are
+      // initialized.
+      base::UmaHistogramMediumTimes(
+          "Sync.InvalidationsInitializationTime",
+          base::TimeTicks::Now() - engine_created_time_for_metrics_);
+      invalidations_enabled_reported_ = true;
+    }
     host_->OnInvalidationStatusChanged();
   }
   if (has_new_invalidated_data_types) {
@@ -604,7 +613,7 @@ void SyncEngineImpl::GetNigoriNodeForDebugging(AllNodesCallback callback) {
   sync_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SyncEngineBackend::GetNigoriNodeForDebugging, backend_,
-                     BindToCurrentSequence(std::move(callback))));
+                     base::BindPostTaskToCurrentDefault(std::move(callback))));
 }
 
 void SyncEngineImpl::OnInvalidatorClientIdChange(const std::string& client_id) {

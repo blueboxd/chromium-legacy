@@ -215,12 +215,9 @@ class EnableDebuggingTestBase : public OobeBaseTest {
     debug_daemon_client_->SetDebuggingFeaturesStatus(
         DebugDaemonClient::DEV_FEATURE_NONE);
     WaitForOobeUI();
-    debug_daemon_client_->ResetWait();
     test::OobeJS().ExpectHidden(kDebuggingScreenId);
     InvokeEnableDebuggingScreen();
-    test::OobeJS()
-        .CreateVisibilityWaiter(true, kRemoveProtectionDialog)
-        ->Wait();
+    test::OobeJS().ExpectVisiblePath(kRemoveProtectionDialog);
     test::OobeJS().ExpectVisiblePath(kRemoveProtectionButton);
     test::OobeJS().ExpectVisiblePath(kHelpLink);
     debug_daemon_client_->WaitUntilCalled();
@@ -233,7 +230,7 @@ class EnableDebuggingTestBase : public OobeBaseTest {
     WaitForOobeUI();
     test::OobeJS().ExpectHidden(kDebuggingScreenId);
     InvokeEnableDebuggingScreen();
-    test::OobeJS().CreateVisibilityWaiter(true, kSetupDialog)->Wait();
+    test::OobeJS().ExpectVisiblePath(kSetupDialog);
     debug_daemon_client_->WaitUntilCalled();
     base::RunLoop().RunUntilIdle();
 
@@ -347,10 +344,9 @@ IN_PROC_BROWSER_TEST_F(EnableDebuggingDevTest, ShowOnTestImages) {
       debugd::DevFeatureFlag::DEV_FEATURE_SSH_SERVER_CONFIGURED |
       debugd::DevFeatureFlag::DEV_FEATURE_SYSTEM_ROOT_PASSWORD_SET);
   WaitForOobeUI();
-  debug_daemon_client_->ResetWait();
   test::OobeJS().ExpectHidden(kDebuggingScreenId);
   InvokeEnableDebuggingScreen();
-  test::OobeJS().CreateVisibilityWaiter(true, kRemoveProtectionDialog)->Wait();
+  test::OobeJS().ExpectVisiblePath(kRemoveProtectionDialog);
   debug_daemon_client_->WaitUntilCalled();
   base::RunLoop().RunUntilIdle();
 

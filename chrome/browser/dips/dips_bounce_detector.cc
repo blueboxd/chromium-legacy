@@ -34,9 +34,11 @@
 #include "content/public/browser/page.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "net/cookies/canonical_cookie.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using content::NavigationHandle;
 
@@ -373,6 +375,10 @@ void DIPSWebContentsObserver::RecordEvent(DIPSRecordedEvent event,
           .WithArgs(url, time, dips_service_->GetCookieMode());
       return;
     }
+    case DIPSRecordedEvent::kWebAuthnAssertion: {
+      // TODO(crbug.com/1446678): Record this events in a dedicated db column.
+      return;
+    }
   }
 }
 
@@ -389,6 +395,8 @@ ukm::SourceId DIPSWebContentsObserver::GetPageUkmSourceId() const {
 void DIPSWebContentsObserver::HandleRedirectChain(
     std::vector<DIPSRedirectInfoPtr> redirects,
     DIPSRedirectChainInfoPtr chain) {
+  // We need to pass in a WeakPtr to DIPSWebContentsObserver as it's not
+  // guaranteed to outlive the call.
   dips_service_->HandleRedirectChain(
       std::move(redirects), std::move(chain),
       base::BindRepeating(
@@ -430,6 +438,13 @@ class DIPSNavigationHandleImpl : public DIPSNavigationHandle {
     return handle_->GetPreviousPrimaryMainFrameURL();
   }
 
+  const GURL GetInitiator() const override {
+    return (!handle_->GetInitiatorOrigin().has_value() ||
+            handle_->GetInitiatorOrigin().value().opaque())
+               ? GURL("about:blank")
+               : handle_->GetInitiatorOrigin().value().GetURL();
+  }
+
   const std::vector<GURL>& GetRedirectChain() const override {
     return handle_->GetRedirectChain();
   }
@@ -465,7 +480,9 @@ void DIPSBounceDetector::DidStartNavigation(
   if (navigation_handle->HasUserGesture() || timedout ||
       !client_detection_state_.has_value()) {
     server_bounce_detection_state->navigation_start =
-        delegate_->GetLastCommittedURL();
+        delegate_->GetLastCommittedURL().is_empty()
+            ? navigation_handle->GetInitiator()
+            : delegate_->GetLastCommittedURL();
     return;
   }
 
@@ -491,7 +508,10 @@ void DIPSBounceDetector::DidStartNavigation(
           /*time=*/clock_->Now(),
           /*client_bounce_delay=*/client_bounce_delay,
           /*has_sticky_activation=*/
-          client_detection_state_->last_activation_time.has_value());
+          client_detection_state_->last_activation_time.has_value(),
+          /*web_authn_assertion_request_succeeded=*/
+          client_detection_state_->last_successful_web_authn_assertion_time
+              .has_value());
 }
 
 void DIPSWebContentsObserver::OnSiteDataAccessed(
@@ -507,8 +527,7 @@ void DIPSWebContentsObserver::OnSiteDataAccessed(
 
   DCHECK(access_details.render_frame_host);
 
-  // TODO(crbug.com/1434764): handle same-site iframes.
-  if (!access_details.render_frame_host->IsInPrimaryMainFrame() ||
+  if (!IsInPrimaryPage(access_details.render_frame_host) ||
       access_details.blocked_by_policy) {
     return;
   }
@@ -543,15 +562,33 @@ void DIPSBounceDetector::OnClientSiteDataAccessed(const GURL& url,
   }
 }
 
+bool HasCHIPS(const net::CookieList& cookie_list) {
+  for (const auto& cookie : cookie_list) {
+    if (cookie.IsPartitioned()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void DIPSWebContentsObserver::OnCookiesAccessed(
     content::RenderFrameHost* render_frame_host,
     const content::CookieAccessDetails& details) {
-  if (!IsInPrimaryPage(render_frame_host) || details.blocked_by_policy ||
-      !IsSameSiteForDIPS(details.first_party_url, details.url)) {
+  if (!IsInPrimaryPage(render_frame_host) || details.blocked_by_policy) {
     return;
   }
 
-  detector_.OnClientCookiesAccessed(details.url, details.type);
+  const absl::optional<GURL> fpu = GetFirstPartyURL(render_frame_host);
+  if (!fpu.has_value()) {
+    return;
+  }
+
+  if (!HasCHIPS(details.cookie_list) &&
+      !IsSameSiteForDIPS(fpu.value(), details.url)) {
+    return;
+  }
+
+  detector_.OnClientCookiesAccessed(fpu.value(), details.type);
 }
 
 void DIPSBounceDetector::OnClientCookiesAccessed(const GURL& url,
@@ -580,17 +617,20 @@ void DIPSWebContentsObserver::OnCookiesAccessed(
   // Discard all notifications that are:
   // - From other page types like FencedFrames, and Prerendered.
   // - Blocked by policies.
-  // - That are not same site (wrt GetSiteForDIPS()) with the first party URL.
-  // TODO(crbug.com/1445739): Treat partitioned 3P cookies as 1P cookies.
-  if (!IsInPrimaryPage(navigation_handle) || details.blocked_by_policy ||
-      !IsSameSiteForDIPS(details.first_party_url, details.url)) {
+  if (!IsInPrimaryPage(navigation_handle) || details.blocked_by_policy) {
     return;
   }
 
   // All access within the primary page iframes are attributed to the URL of the
   // main frame (ie the first party URL).
   if (IsInPrimaryPageIFrame(navigation_handle)) {
-    detector_.OnClientSiteDataAccessed(details.url, details.type);
+    if (!HasCHIPS(details.cookie_list) &&
+        !IsSameSiteForDIPS(GetFirstPartyURL(navigation_handle), details.url)) {
+      return;
+    }
+
+    detector_.OnClientSiteDataAccessed(GetFirstPartyURL(navigation_handle),
+                                       details.type);
     return;
   }
 
@@ -616,6 +656,14 @@ void DIPSWebContentsObserver::DidFinishNavigation(
   if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
+  }
+
+  if (navigation_handle->HasCommitted()) {
+    if (last_committed_site_.has_value()) {
+      dips_service_->RemoveOpenSite(last_committed_site_.value());
+    }
+    last_committed_site_ = GetSiteForDIPS(navigation_handle->GetURL());
+    dips_service_->AddOpenSite(last_committed_site_.value());
   }
 
   DIPSNavigationHandleImpl dips_handle(navigation_handle);
@@ -712,6 +760,36 @@ void DIPSBounceDetector::OnUserActivation() {
   delegate_->RecordEvent(DIPSRecordedEvent::kInteraction, url, now);
 }
 
+void DIPSBounceDetector::WebAuthnAssertionRequestSucceeded() {
+  GURL url = delegate_->GetLastCommittedURL();
+  if (!url.SchemeIsHTTPOrHTTPS()) {
+    return;
+  }
+
+  base::Time now = clock_->Now();
+  if (client_detection_state_.has_value()) {
+    // To decrease the number of writes made to the database, after a user web
+    // authn assertion happens, subsequent events will not be recorded for the
+    // next `kTimestampUpdateInterval`.
+    if (!ShouldUpdateTimestamp(
+            client_detection_state_->last_successful_web_authn_assertion_time,
+            now)) {
+      return;
+    }
+    client_detection_state_->last_successful_web_authn_assertion_time = now;
+  }
+
+  delegate_->RecordEvent(DIPSRecordedEvent::kWebAuthnAssertion, url, now);
+}
+
+void DIPSWebContentsObserver::WebAuthnAssertionRequestSucceeded(
+    content::RenderFrameHost* render_frame_host) {
+  if (!render_frame_host->IsInPrimaryMainFrame()) {
+    return;
+  }
+  detector_.WebAuthnAssertionRequestSucceeded();
+}
+
 bool DIPSBounceDetector::ShouldUpdateTimestamp(
     base::optional_ref<const base::Time> last_time,
     base::Time now) {
@@ -720,6 +798,10 @@ bool DIPSBounceDetector::ShouldUpdateTimestamp(
 }
 
 void DIPSWebContentsObserver::WebContentsDestroyed() {
+  if (last_committed_site_.has_value()) {
+    dips_service_->RemoveOpenSite(last_committed_site_.value());
+  }
+
   detector_.BeforeDestruction();
 }
 

@@ -55,6 +55,20 @@ void DisableRemoteContentForTests();
 // DisableRemoteContentForTests().
 bool IsRemoteContentDisabled();
 
+// Whether the current CHROME_VERSION_MAJOR is a minimum of 117
+bool IsMinimumRefreshVersion();
+
+// Whether the current CHROME_VERSION_MAJOR is either 117 or 118
+bool IsRefreshVersion();
+
+// Allow setting the CHROME_VERSION_MAJOR for tests
+void SetChromeVersionForTests(int chrome_version);
+
+// Returns true if user has received the Chrome 2023 Refresh flag. Once
+// the user/ has seen the Refresh version of the WNP, a pref is set to
+// disable ever showing this page again.
+bool ShouldShowRefresh(PrefService* local_state);
+
 // Returns true if the user has not yet seen the What's New page for the
 // current major milestone. When returning true, sets the pref in |local_state|
 // to indicate that What's New should not try to display again for the current

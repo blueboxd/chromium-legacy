@@ -422,7 +422,7 @@ class AccountTrackerServiceTest : public testing::Test {
   FakeProfileOAuth2TokenService fake_oauth2_token_service_;
   std::unique_ptr<AccountFetcherService> account_fetcher_;
   std::unique_ptr<AccountTrackerService> account_tracker_;
-  raw_ptr<FakeAccountCapabilitiesFetcherFactory>
+  raw_ptr<FakeAccountCapabilitiesFetcherFactory, DanglingUntriaged>
       fake_account_capabilities_fetcher_factory_ = nullptr;
   std::vector<TrackingEvent> account_tracker_events_;
 };
@@ -695,44 +695,6 @@ TEST_F(
     TokenAvailable_AccountCapabilitiesNotSubjectToParentalSupervisionEnabledForDesktop) {
   TestAccountCapabilitiesSubjectToParentalSupervision(true, false,
                                                       signin::Tribool::kFalse);
-}
-
-TEST_F(AccountTrackerServiceTest,
-       AccountCapabilitiesSubjectToParentalSupervisionThenEnableDesktopFlag) {
-  // This tests the case where the destkop supervision flag is enabled for an
-  // existing account that has the SubjectToParentalSupervision capability set.
-  // Validate that the child status is updated even though the account
-  // capabilities are unchanged.
-
-  // First, run through the a capabilities fetch where the feature flag is
-  // disabled and the parental controls capability is enabled.
-  //
-  // At this point, the child status is unknown, and the account capabilities
-  // are set on the account.
-  TestAccountCapabilitiesSubjectToParentalSupervision(
-      false, true, signin::Tribool::kUnknown);
-
-  // Now enable the flag, and repeat the fetch.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      supervised_user::kEnableSupervisionOnDesktopAndIOS);
-
-  ResetAccountTracker();
-
-  // Prior to the new fetch, the account capabilities say subject to parental
-  // controls, but the account state is not child.
-  AccountInfo account_info = account_tracker()->GetAccountInfo(
-      AccountKeyToAccountId(kAccountKeyChild));
-  EXPECT_EQ(account_info.capabilities.is_subject_to_parental_controls(),
-            signin::Tribool::kTrue);
-  EXPECT_EQ(account_info.is_child_account, signin::Tribool::kUnknown);
-
-  // After the new fetch, the account state is updated to child.
-  ReturnAccountCapabilitiesFetchIsSubjectToParentalSupervision(kAccountKeyChild,
-                                                               true);
-  account_info = account_tracker()->GetAccountInfo(
-      AccountKeyToAccountId(kAccountKeyChild));
-  EXPECT_EQ(account_info.is_child_account, signin::Tribool::kTrue);
 }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 

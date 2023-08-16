@@ -33,7 +33,6 @@ class Transform;
 
 namespace viz {
 class ClientResourceProvider;
-class ContextProvider;
 class RasterContextProvider;
 class CompositorRenderPass;
 class SharedBitmapReporter;
@@ -88,8 +87,7 @@ class MEDIA_EXPORT VideoResourceUpdater
   // For GPU compositing |context_provider| should be provided and for software
   // compositing |shared_bitmap_reporter| should be provided. If there is a
   // non-null |context_provider| we assume GPU compositing.
-  VideoResourceUpdater(viz::ContextProvider* context_provider,
-                       viz::RasterContextProvider* raster_context_provider,
+  VideoResourceUpdater(viz::RasterContextProvider* context_provider,
                        viz::SharedBitmapReporter* shared_bitmap_reporter,
                        viz::ClientResourceProvider* resource_provider,
                        bool use_stream_video_draw_quad,
@@ -148,9 +146,7 @@ class MEDIA_EXPORT VideoResourceUpdater
     gfx::Size size_in_pixels;
   };
 
-  bool software_compositor() const {
-    return context_provider_ == nullptr && raster_context_provider_ == nullptr;
-  }
+  bool software_compositor() const { return context_provider_ == nullptr; }
 
   // Reallocate |upload_pixels_| with the requested size.
   bool ReallocateUploadPixels(size_t needed_size);
@@ -199,17 +195,18 @@ class MEDIA_EXPORT VideoResourceUpdater
                        const gpu::SyncToken& sync_token,
                        bool lost_resource);
   void ReturnTexture(scoped_refptr<VideoFrame> video_frame,
-                     const gpu::SyncToken& sync_token,
+                     const gpu::SyncToken& original_release_token,
+                     const gpu::SyncToken& new_release_token,
                      bool lost_resource);
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  const raw_ptr<viz::ContextProvider> context_provider_;
-  const raw_ptr<viz::RasterContextProvider> raster_context_provider_;
+  const raw_ptr<viz::RasterContextProvider> context_provider_;
   const raw_ptr<viz::SharedBitmapReporter> shared_bitmap_reporter_;
-  const raw_ptr<viz::ClientResourceProvider> resource_provider_;
+  const raw_ptr<viz::ClientResourceProvider, DanglingUntriaged>
+      resource_provider_;
   const bool use_stream_video_draw_quad_;
   const bool use_gpu_memory_buffer_resources_;
   // TODO(crbug.com/759456): Remove after r16 is used without the flag.

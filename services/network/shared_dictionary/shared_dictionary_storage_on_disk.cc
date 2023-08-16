@@ -31,8 +31,13 @@ class SharedDictionaryStorageOnDisk::RefCountedSharedDictionary
       const net::SHA256HashValue& hash,
       const base::UnguessableToken& disk_cache_key_token,
       SharedDictionaryDiskCache& disk_cahe,
+      base::OnceClosure disk_cache_error_callback,
       base::ScopedClosureRunner on_deleted_closure_runner)
-      : SharedDictionaryOnDisk(size, hash, disk_cache_key_token, &disk_cahe),
+      : SharedDictionaryOnDisk(size,
+                               hash,
+                               disk_cache_key_token,
+                               &disk_cahe,
+                               std::move(disk_cache_error_callback)),
         on_deleted_closure_runner_(std::move(on_deleted_closure_runner)) {}
 
  private:
@@ -75,7 +80,7 @@ class SharedDictionaryStorageOnDisk::WrappedSharedDictionary
 
 SharedDictionaryStorageOnDisk::SharedDictionaryStorageOnDisk(
     base::WeakPtr<SharedDictionaryManagerOnDisk> manager,
-    const net::SharedDictionaryStorageIsolationKey& isolation_key,
+    const net::SharedDictionaryIsolationKey& isolation_key,
     base::ScopedClosureRunner on_deleted_closure_runner)
     : manager_(manager),
       isolation_key_(isolation_key),
@@ -93,11 +98,14 @@ std::unique_ptr<SharedDictionary> SharedDictionaryStorageOnDisk::GetDictionary(
   if (!manager_) {
     return nullptr;
   }
-  const net::SharedDictionaryInfo* info =
+  net::SharedDictionaryInfo* info =
       GetMatchingDictionaryFromDictionaryInfoMap(dictionary_info_map_, url);
   if (!info) {
     return nullptr;
   }
+
+  manager_->UpdateDictionaryLastUsedTime(*info);
+
   auto it = dictionaries_.find(info->disk_cache_key_token());
   if (it != dictionaries_.end()) {
     CHECK_EQ(info->size(), it->second->size());
@@ -109,6 +117,9 @@ std::unique_ptr<SharedDictionary> SharedDictionaryStorageOnDisk::GetDictionary(
       RefCountedSharedDictionary>(
       info->size(), info->hash(), info->disk_cache_key_token(),
       manager_->disk_cache(),
+      base::BindOnce(
+          &SharedDictionaryManagerOnDisk::MaybePostMismatchingEntryDeletionTask,
+          manager_),
       base::ScopedClosureRunner(base::BindOnce(
           &SharedDictionaryStorageOnDisk::OnRefCountedSharedDictionaryDeleted,
           weak_factory_.GetWeakPtr(), info->disk_cache_key_token())));
@@ -158,8 +169,23 @@ void SharedDictionaryStorageOnDisk::OnDictionaryWritten(
 
 void SharedDictionaryStorageOnDisk::OnRefCountedSharedDictionaryDeleted(
     const base::UnguessableToken& disk_cache_key_token) {
-  size_t removed_count = dictionaries_.erase(disk_cache_key_token);
-  CHECK_EQ(1U, removed_count);
+  dictionaries_.erase(disk_cache_key_token);
+}
+
+void SharedDictionaryStorageOnDisk::OnDictionaryDeleted(
+    const std::set<base::UnguessableToken>& disk_cache_key_tokens) {
+  std::erase_if(dictionaries_, [&disk_cache_key_tokens](const auto& it) {
+    return disk_cache_key_tokens.find(it.first) != disk_cache_key_tokens.end();
+  });
+
+  for (auto& it1 : dictionary_info_map_) {
+    std::erase_if(it1.second, [&disk_cache_key_tokens](const auto& it2) {
+      return disk_cache_key_tokens.find(it2.second.disk_cache_key_token()) !=
+             disk_cache_key_tokens.end();
+    });
+  }
+  std::erase_if(dictionary_info_map_,
+                [](const auto& it) { return it.second.empty(); });
 }
 
 }  // namespace network

@@ -7,6 +7,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/protocol/target_auto_attacher.h"
 #include "content/browser/devtools/protocol/target_handler.h"
+#include "content/browser/devtools/protocol/tracing_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/portal/portal.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -204,6 +205,9 @@ void WebContentsDevToolsAgentHost::PortalActivated(const Portal& portal) {
 
 void WebContentsDevToolsAgentHost::WillInitiatePrerender(FrameTreeNode* ftn) {
   auto_attacher_->WillInitiatePrerender(ftn);
+  for (auto* tracing : protocol::TracingHandler::ForAgentHost(this)) {
+    tracing->WillInitiatePrerender(ftn);
+  }
 }
 
 void WebContentsDevToolsAgentHost::UpdateChildFrameTrees(
@@ -364,6 +368,21 @@ void WebContentsDevToolsAgentHost::RenderFrameHostChanged(
   }
 }
 
+void WebContentsDevToolsAgentHost::ReadyToCommitNavigation(
+    NavigationHandle* navigation_handle) {
+  CHECK(web_contents());
+  NavigationRequest* request = NavigationRequest::From(navigation_handle);
+  for (auto* tracing : protocol::TracingHandler::ForAgentHost(this)) {
+    tracing->ReadyToCommitNavigation(request);
+  }
+}
+
+void WebContentsDevToolsAgentHost::FrameDeleted(int frame_tree_node_id) {
+  for (auto* tracing : protocol::TracingHandler::ForAgentHost(this)) {
+    tracing->FrameDeleted(frame_tree_node_id);
+  }
+}
+
 // DevToolsAgentHostImpl overrides.
 DevToolsSession::Mode WebContentsDevToolsAgentHost::GetSessionMode() {
   return DevToolsSession::Mode::kSupportsTabTarget;
@@ -382,6 +401,10 @@ bool WebContentsDevToolsAgentHost::AttachSession(DevToolsSession* session,
           ? protocol::TargetHandler::AccessMode::kRegular
           : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
       GetId(), auto_attacher_.get(), session);
+  DevToolsSession* root_session = session->GetRootSession();
+  CHECK(root_session);
+  session->CreateAndAddHandler<protocol::TracingHandler>(this, GetIOContext(),
+                                                         root_session);
   return true;
 }
 

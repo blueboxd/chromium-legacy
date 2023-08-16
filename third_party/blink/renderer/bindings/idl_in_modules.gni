@@ -616,7 +616,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_event.idl",
           "//third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_event_init.idl",
           "//third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.idl",
-          "//third_party/blink/renderer/modules/picture_in_picture/shadow_root_picture_in_picture.idl",
           "//third_party/blink/renderer/modules/plugins/mime_type.idl",
           "//third_party/blink/renderer/modules/plugins/mime_type_array.idl",
           "//third_party/blink/renderer/modules/plugins/navigator_plugins.idl",
@@ -672,6 +671,7 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/scheduler/task_priority_change_event_init.idl",
           "//third_party/blink/renderer/modules/scheduler/task_signal.idl",
           "//third_party/blink/renderer/modules/scheduler/task_signal_any_init.idl",
+          "//third_party/blink/renderer/modules/scheduler/window_or_worker_global_scope_timers.idl",
           "//third_party/blink/renderer/modules/scheduler/window_or_worker_scheduler.idl",
           "//third_party/blink/renderer/modules/screen_details/screen_detailed.idl",
           "//third_party/blink/renderer/modules/screen_details/screen_details.idl",
@@ -710,6 +710,8 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/service_worker/service_worker_container.idl",
           "//third_party/blink/renderer/modules/service_worker/service_worker_global_scope.idl",
           "//third_party/blink/renderer/modules/service_worker/service_worker_registration.idl",
+          "//third_party/blink/renderer/modules/service_worker/router_rule.idl",
+          "//third_party/blink/renderer/modules/service_worker/router_condition.idl",
           "//third_party/blink/renderer/modules/service_worker/window_client.idl",
           "//third_party/blink/renderer/modules/shapedetection/barcode_detector.idl",
           "//third_party/blink/renderer/modules/shapedetection/barcode_detector_options.idl",
@@ -732,14 +734,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/shared_storage/shared_storage_worklet_global_scope.idl",
           "//third_party/blink/renderer/modules/shared_storage/window_shared_storage.idl",
           "//third_party/blink/renderer/modules/shared_storage/shared_storage_iterator.idl",
-          "//third_party/blink/renderer/modules/smart_card/navigator_smart_card.idl",
-          "//third_party/blink/renderer/modules/smart_card/smart_card_connection.idl",
-          "//third_party/blink/renderer/modules/smart_card/smart_card_connection_status.idl",
-          "//third_party/blink/renderer/modules/smart_card/smart_card_error.idl",
-          "//third_party/blink/renderer/modules/smart_card/smart_card_reader.idl",
-          "//third_party/blink/renderer/modules/smart_card/smart_card_reader_presence_event.idl",
-          "//third_party/blink/renderer/modules/smart_card/smart_card_reader_presence_observer.idl",
-          "//third_party/blink/renderer/modules/smart_card/smart_card_resource_manager.idl",
           "//third_party/blink/renderer/modules/speech/speech_grammar.idl",
           "//third_party/blink/renderer/modules/speech/speech_grammar_list.idl",
           "//third_party/blink/renderer/modules/speech/speech_recognition.idl",
@@ -1249,6 +1243,25 @@ if (target_os != "android") {
             "//third_party/blink/renderer/modules/serial/serial_port_info.idl",
             "//third_party/blink/renderer/modules/serial/serial_port_request_options.idl",
             "//third_party/blink/renderer/modules/serial/worker_navigator_serial.idl",
+          ],
+          "abspath")
+}
+
+# Smart Card
+# This uses target_os rather than current_os (which is what is_android is set
+# from) for the case of generating the v8 context snapshot for android. When
+# generating the snapshot for android, blink is compiled with
+# current_os="linux" and target_os="android". Using target_os is necessary as
+# we need to compile in the same way as would happen when current_os="android".
+if (target_os != "android") {
+  static_idl_files_in_modules += get_path_info(
+          [
+            "//third_party/blink/renderer/modules/smart_card/navigator_smart_card.idl",
+            "//third_party/blink/renderer/modules/smart_card/smart_card_connection.idl",
+            "//third_party/blink/renderer/modules/smart_card/smart_card_connection_status.idl",
+            "//third_party/blink/renderer/modules/smart_card/smart_card_context.idl",
+            "//third_party/blink/renderer/modules/smart_card/smart_card_error.idl",
+            "//third_party/blink/renderer/modules/smart_card/smart_card_resource_manager.idl",
           ],
           "abspath")
 }

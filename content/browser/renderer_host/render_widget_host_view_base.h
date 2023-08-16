@@ -88,13 +88,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
     virtual void OnTooltipTextUpdated(const std::u16string& tooltip_text) = 0;
   };
 
-  // This function takes a (possibly invalid) pointer to
-  // RenderWidgetHostViewBase, and returns -1 if was never valid, 0 if there was
-  // once a valid object with that pointer that is now deallocated, and +1 if
-  // the pointer is valid.
-  // Diagnostic for https://crbug.com/1197154.
-  static int IsValidRWHVBPointer(const RenderWidgetHostViewBase* view);
-
   RenderWidgetHostViewBase(const RenderWidgetHostViewBase&) = delete;
   RenderWidgetHostViewBase& operator=(const RenderWidgetHostViewBase&) = delete;
 
@@ -111,6 +104,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   bool IsMouseLocked() override;
   bool GetIsMouseLockedUnadjustedMovementForTesting() override;
   bool CanBeMouseLocked() override;
+  bool AccessibilityHasFocus() override;
   bool LockKeyboard(absl::optional<base::flat_set<ui::DomCode>> codes) override;
   void SetBackgroundColor(SkColor color) override;
   absl::optional<SkColor> GetBackgroundColor() override;

@@ -20,6 +20,8 @@
 
 namespace content {
 
+class ServiceWorkerRouterEvaluator;
+
 namespace mojom {
 class ServiceWorkerContainerHost;
 }  // namespace mojom
@@ -72,7 +74,8 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
           remote_controller,
       const std::string& client_id,
       blink::mojom::ServiceWorkerFetchHandlerBypassOption
-          fetch_handler_bypass_option);
+          fetch_handler_bypass_option,
+      absl::optional<blink::ServiceWorkerRouterRules> router_rules);
 
   ControllerServiceWorkerConnector(const ControllerServiceWorkerConnector&) =
       delete;
@@ -111,6 +114,10 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
     return fetch_handler_bypass_option_;
   }
 
+  const ServiceWorkerRouterEvaluator* router_evaluator() const {
+    return router_evaluator_.get();
+  }
+
  private:
   void SetControllerServiceWorker(
       mojo::PendingRemote<blink::mojom::ControllerServiceWorker> controller);
@@ -139,6 +146,7 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   blink::mojom::ServiceWorkerFetchHandlerBypassOption
       fetch_handler_bypass_option_ =
           blink::mojom::ServiceWorkerFetchHandlerBypassOption::kDefault;
+  std::unique_ptr<ServiceWorkerRouterEvaluator> router_evaluator_;
 };
 
 }  // namespace content

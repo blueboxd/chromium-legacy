@@ -91,6 +91,7 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
+#include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -573,7 +574,7 @@ struct AddEntriesMessage {
 
     // Maps |value| to base::Time. Returns true on success.
     static bool MapStringToTime(base::StringPiece value, base::Time* time) {
-      return base::Time::FromString(value.data(), time);
+      return base::Time::FromString(std::string(value).c_str(), time);
     }
   };
 };
@@ -1434,6 +1435,41 @@ class DriveFsTestVolume : public TestVolume {
     drivefs_delegate.FlushForTesting();
   }
 
+  void SetFileProgress(const std::string* path, const int progress) {
+    const base::FilePath file_path(*path);
+    const auto& md =
+        fake_drivefs_helper_->fake_drivefs().GetItemMetadata(file_path);
+    CHECK(md.has_value()) << "No metadata found for " << file_path.value();
+
+    auto progress_event = drivefs::mojom::ProgressEvent::New();
+    base::FilePath full_path = mount_path();
+    CHECK(base::FilePath("/").AppendRelativePath(base::FilePath(*path),
+                                                 &full_path))
+        << "Failed to convert to full path";
+    progress_event->path = full_path.AsUTF8Unsafe();
+    progress_event->progress = progress;
+    progress_event->stable_id = md.value().stable_id;
+
+    auto& drivefs_delegate = fake_drivefs_helper_->fake_drivefs().delegate();
+    drivefs_delegate->OnItemProgress(std::move(progress_event));
+    drivefs_delegate.FlushForTesting();
+  }
+
+  void SetSyncError(const std::string* path) {
+    const base::FilePath file_path(*path);
+    const auto& md =
+        fake_drivefs_helper_->fake_drivefs().GetItemMetadata(file_path);
+    CHECK(md.has_value()) << "No metadata found for " << file_path.value();
+
+    auto drive_error = drivefs::mojom::DriveError::New();
+    drive_error->path = base::FilePath(*path);
+    drive_error->stable_id = md.value().stable_id;
+
+    auto& drivefs_delegate = fake_drivefs_helper_->fake_drivefs().delegate();
+    drivefs_delegate->OnError(std::move(drive_error));
+    drivefs_delegate.FlushForTesting();
+  }
+
   void SendCloudDeleteEvent(const std::string& path) {
     const base::FilePath file_path(path);
     absl::optional<drivefs::FakeDriveFs::FileMetadata> metadata =
@@ -2184,6 +2220,12 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(ash::features::kFilesDriveShortcuts);
   }
 
+  if (options.enable_jellybean) {
+    enabled_features.push_back(chromeos::features::kJelly);
+  } else {
+    disabled_features.push_back(chromeos::features::kJelly);
+  }
+
   if (options.feature_ids.size() > 0) {
     for (const std::string& feature_id : options.feature_ids) {
       base::AddTagToTestResult("feature_id", feature_id);
@@ -2238,13 +2280,17 @@ void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
 void FileManagerBrowserTestBase::SetUpOnMainThread() {
   const Options options = GetOptions();
 
-  // Must happen after the browser process is created because instantiating
-  // the factory will instantiate ExtensionSystemFactory which depends on
-  // ExtensionsBrowserClient setup in BrowserProcessImpl.
+  // Override factory to inject a test RemoteFileSyncService.
   sync_file_system::SyncFileSystemServiceFactory::GetInstance()
-      ->set_mock_remote_file_service(
-          std::make_unique<::testing::NiceMock<
-              sync_file_system::MockRemoteFileSyncService>>());
+      ->SetTestingFactory(
+          profile(), base::BindRepeating([](content::BrowserContext* context)
+                                             -> std::unique_ptr<KeyedService> {
+            return sync_file_system::SyncFileSystemServiceFactory::
+                BuildWithRemoteFileSyncServiceForTest(
+                    context,
+                    std::make_unique<::testing::NiceMock<
+                        sync_file_system::MockRemoteFileSyncService>>());
+          }));
 
   extensions::MixinBasedExtensionApiTest::SetUpOnMainThread();
 
@@ -2382,8 +2428,10 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     EnableVirtualKeyboard();
   }
 
-  select_factory_ = new SelectFileDialogExtensionTestFactory();
-  ui::SelectFileDialog::SetFactory(select_factory_);
+  auto select_factory =
+      std::make_unique<SelectFileDialogExtensionTestFactory>();
+  select_factory_ = select_factory.get();
+  ui::SelectFileDialog::SetFactory(std::move(select_factory));
 }
 
 void FileManagerBrowserTestBase::TearDownOnMainThread() {
@@ -3136,9 +3184,12 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "setSpacedFreeSpace") {
-    absl::optional<int> free_space = value.FindInt("freeSpace");
-    ASSERT_TRUE(free_space.has_value());
-    ash::FakeSpacedClient::Get()->set_free_disk_space(free_space.value());
+    const std::string* space = value.FindString("freeSpace");
+    ASSERT_TRUE(space) << "No freeSpace supplied";
+    int64_t free_space;
+    ASSERT_TRUE(base::StringToInt64(*space, &free_space))
+        << "Couldn't convert string to int64";
+    ash::FakeSpacedClient::Get()->set_free_disk_space(free_space);
     return;
   }
 
@@ -3383,7 +3434,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "isInlineSyncStatusProgressEventsEnabled") {
-    *output = options.enable_inline_sync_status_progress_events ? "true" : "false";
+    *output =
+        options.enable_inline_sync_status_progress_events ? "true" : "false";
     return;
   }
 
@@ -3394,6 +3446,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "isOsFeedbackEnabled") {
     *output = options.enable_os_feedback ? "true" : "false";
+    return;
+  }
+
+  if (name == "isFilesExperimentalEnabled") {
+    *output = options.files_experimental ? "true" : "false";
     return;
   }
 
@@ -3554,6 +3611,22 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "setDriveSyncProgress") {
+    auto* path = value.FindString("path");
+    auto progress = value.FindInt("progress");
+    ASSERT_TRUE(path);
+    ASSERT_TRUE(progress.has_value());
+    drive_volume_->SetFileProgress(path, *progress);
+    return;
+  }
+
+  if (name == "setDriveSyncError") {
+    auto* path = value.FindString("path");
+    ASSERT_TRUE(path);
+    drive_volume_->SetSyncError(path);
+    return;
+  }
+
   if (name == "getLastDriveDialogResult") {
     absl::optional<drivefs::mojom::DialogResult> result =
         drive_volume_->last_dialog_result();
@@ -3585,6 +3658,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     const std::string* path = value.FindString("path");
     ASSERT_TRUE(path) << "No supplied path to sendDriveFilesChangedEvent";
     drive_volume_->SendCloudDeleteEvent(*path);
+    return;
+  }
+
+  if (name == "isJellybean") {
+    *output = options.enable_jellybean ? "true" : "false";
     return;
   }
 
@@ -3801,7 +3879,7 @@ FileManagerBrowserTestBase::GetLastOpenWindowWebContents() {
 }
 
 bool FileManagerBrowserTestBase::PostKeyEvent(ui::KeyEvent* key_event) {
-  gfx::NativeWindow native_window = nullptr;
+  gfx::NativeWindow native_window = gfx::NativeWindow();
 
   content::WebContents* web_contents = GetLastOpenWindowWebContents();
   if (!web_contents && swa_web_contents_.size() > 0) {

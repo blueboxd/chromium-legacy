@@ -4,11 +4,6 @@
 
 load("//lib/targets.star", "targets")
 
-targets.compile_target(
-    name = "All_syzygy",
-    label = "//:All_syzygy",
-)
-
 targets.console_test_launcher(
     name = "absl_hardening_tests",
     label = "//third_party/abseil-cpp:absl_hardening_tests",
@@ -441,11 +436,6 @@ targets.generated_script(
 )
 
 targets.console_test_launcher(
-    name = "chrome_java_test_pagecontroller_tests",
-    label = "//chrome/test/android:chrome_java_test_pagecontroller_tests",
-)
-
-targets.console_test_launcher(
     name = "chrome_java_test_wpr_tests",
     label = "//chrome/test/android:chrome_java_test_wpr_tests",
 )
@@ -478,6 +468,11 @@ targets.compile_target(
 targets.generated_script(
     name = "chrome_private_code_test",
     label = "//chrome:chrome_private_code_test",
+)
+
+targets.console_test_launcher(
+    name = "chrome_public_apk_baseline_profile_generator",
+    label = "//chrome/test/android:chrome_public_apk_baseline_profile_generator",
 )
 
 targets.compile_target(
@@ -523,11 +518,6 @@ targets.compile_target(
 targets.generated_script(
     name = "chrome_sizes",
     label = "//chrome/test:chrome_sizes",
-)
-
-targets.console_test_launcher(
-    name = "chrome_webapk_integration_tests",
-    label = "//chrome/test/android:chrome_webapk_integration_tests",
 )
 
 targets.compile_target(
@@ -823,11 +813,6 @@ targets.console_test_launcher(
 targets.console_test_launcher(
     name = "crashpad_tests",
     label = "//third_party/crashpad/crashpad:crashpad_tests",
-)
-
-targets.console_test_launcher(
-    name = "gnrt_unittests",
-    label = "//tools/crates/gnrt/lib:gnrt_unittests",
 )
 
 targets.compile_target(
@@ -1305,14 +1290,6 @@ targets.console_test_launcher(
 targets.generated_script(
     name = "lacros_cq_tast_tests_eve",
     label = "//chromeos/lacros:lacros_cq_tast_tests_eve",
-    args = [
-        "--logs-dir=${ISOLATED_OUTDIR}",
-    ],
-)
-
-targets.generated_script(
-    name = "lacros_cq_tast_tests_jacuzzi",
-    label = "//chromeos/lacros:lacros_cq_tast_tests_jacuzzi",
     args = [
         "--logs-dir=${ISOLATED_OUTDIR}",
     ],
@@ -2055,6 +2032,11 @@ targets.console_test_launcher(
     label = "//build/rust/tests/test_cpp_including_rust:test_cpp_including_rust_unittests",
 )
 
+targets.generated_script(
+    name = "test_env_py_unittests",
+    label = "//testing:test_env_py_unittests",
+)
+
 targets.console_test_launcher(
     name = "test_serde_json_lenient",
     label = "//build/rust/tests/test_serde_json_lenient:test_serde_json_lenient",
@@ -2066,6 +2048,12 @@ targets.console_test_launcher(
 #     label = "//content/test:test_buildbucket_api_gpu_use_cases",
 #     script = "//testing/scripts/test_buildbucket_api_gpu_use_cases.py",
 # )
+
+targets.script(
+    name = "testing_pytype",
+    label = "//testing:testing_pytype",
+    script = "//testing/run_pytype.py",
+)
 
 targets.generated_script(
     name = "touch_to_fill_junit_tests",
@@ -2124,12 +2112,6 @@ targets.generated_script(
 targets.windowed_test_launcher(
     name = "ui_touch_selection_unittests",
     label = "//ui/touch_selection:ui_touch_selection_unittests",
-)
-
-targets.script(
-    name = "testing_pytype",
-    label = "//testing:testing_pytype",
-    script = "//testing/run_pytype.py",
 )
 
 targets.windowed_test_launcher(
@@ -2452,6 +2434,11 @@ targets.windowed_test_launcher(
         "--test-launcher-jobs=1",
         "--enable-pixel-output-in-tests",
     ],
+)
+
+targets.generated_script(
+    name = "xvfb_py_unittests",
+    label = "//testing:xvfb_py_unittests",
 )
 
 targets.console_test_launcher(

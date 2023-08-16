@@ -49,8 +49,6 @@ class TabSlotController {
     kEvent
   };
 
-  enum class Liveness { kAlive, kDeleted };
-
   virtual const ui::ListSelectionModel& GetSelectionModel() const = 0;
 
   // Returns the tab at |index|.
@@ -128,10 +126,9 @@ class TabSlotController {
       const ui::LocatedEvent& event,
       const ui::ListSelectionModel& original_selection) = 0;
 
-  // Continues dragging a Tab. May enter a nested event loop - returns
-  // Liveness::kDeleted if `this` was destroyed during this nested event loop,
-  // and Liveness::kAlive if `this` is still alive.
-  virtual Liveness ContinueDrag(views::View* view, const ui::LocatedEvent& event) = 0;
+  // Continues dragging a Tab.
+  virtual void ContinueDrag(views::View* view,
+                            const ui::LocatedEvent& event) = 0;
 
   // Ends dragging a Tab. Returns whether the tab has been destroyed.
   virtual bool EndDrag(EndDragReason reason) = 0;
@@ -176,10 +173,6 @@ class TabSlotController {
   // Returns whether the shapes of background tabs are visible against the
   // frame.
   virtual bool HasVisibleBackgroundTabShapes() const = 0;
-
-  // Returns whether the tab strip should be painted as if the window frame is
-  // active.
-  virtual bool ShouldPaintAsActiveFrame() const = 0;
 
   // Returns the color of the separator between the tabs.
   virtual SkColor GetTabSeparatorColor() const = 0;

@@ -98,11 +98,6 @@ SVGSVGElement::SVGSVGElement(Document& doc)
       time_container_(MakeGarbageCollected<SMILTimeContainer>(*this)),
       translation_(MakeGarbageCollected<SVGPoint>()),
       current_scale_(1) {
-  AddToPropertyMap(x_);
-  AddToPropertyMap(y_);
-  AddToPropertyMap(width_);
-  AddToPropertyMap(height_);
-
   UseCounter::Count(doc, WebFeature::kSVGSVGElement);
 }
 
@@ -214,10 +209,10 @@ void SVGSVGElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   SVGAnimatedPropertyBase* property = PropertyFromAttribute(name);
   if (property == x_) {
-    AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kX,
                                             x_->CssValue());
   } else if (property == y_) {
-    AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kY,
                                             y_->CssValue());
   } else if (IsOutermostSVGSVGElement() &&
              (property == width_ || property == height_)) {
@@ -226,13 +221,13 @@ void SVGSVGElement::CollectStyleForPresentationAttribute(
     // negative values here.
     if (property == width_) {
       if (const CSSValue* width = width_->NonNegativeCssValue()) {
-        AddPropertyToPresentationAttributeStyle(
-            style, property->CssPropertyId(), *width);
+        AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWidth,
+                                                *width);
       }
     } else if (property == height_) {
       if (const CSSValue* height = height_->NonNegativeCssValue()) {
-        AddPropertyToPresentationAttributeStyle(
-            style, property->CssPropertyId(), *height);
+        AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kHeight,
+                                                *height);
       }
     }
   } else {
@@ -744,6 +739,48 @@ void SVGSVGElement::Trace(Visitor* visitor) const {
   visitor->Trace(view_spec_);
   SVGGraphicsElement::Trace(visitor);
   SVGFitToViewBox::Trace(visitor);
+}
+
+SVGAnimatedPropertyBase* SVGSVGElement::PropertyFromAttribute(
+    const QualifiedName& attribute_name) const {
+  if (attribute_name == svg_names::kXAttr) {
+    return x_.Get();
+  } else if (attribute_name == svg_names::kYAttr) {
+    return y_.Get();
+  } else if (attribute_name == svg_names::kWidthAttr) {
+    return width_.Get();
+  } else if (attribute_name == svg_names::kHeightAttr) {
+    return height_.Get();
+  } else {
+    SVGAnimatedPropertyBase* ret =
+        SVGFitToViewBox::PropertyFromAttribute(attribute_name);
+    if (ret) {
+      return ret;
+    } else {
+      return SVGGraphicsElement::PropertyFromAttribute(attribute_name);
+    }
+  }
+}
+
+void SVGSVGElement::SynchronizeAllSVGAttributes() const {
+  SVGAnimatedPropertyBase* attrs[]{x_.Get(), y_.Get(), width_.Get(),
+                                   height_.Get()};
+  SynchronizeListOfSVGAttributes(attrs);
+  SVGFitToViewBox::SynchronizeAllSVGAttributes();
+  SVGGraphicsElement::SynchronizeAllSVGAttributes();
+}
+
+void SVGSVGElement::CollectExtraStyleForPresentationAttribute(
+    MutableCSSPropertyValueSet* style) {
+  for (auto* property : (SVGAnimatedPropertyBase*[]){
+           x_.Get(), y_.Get(), width_.Get(), height_.Get()}) {
+    DCHECK(property->HasPresentationAttributeMapping());
+    if (property->IsAnimating()) {
+      CollectStyleForPresentationAttribute(property->AttributeName(),
+                                           g_empty_atom, style);
+    }
+  }
+  SVGGraphicsElement::CollectExtraStyleForPresentationAttribute(style);
 }
 
 }  // namespace blink

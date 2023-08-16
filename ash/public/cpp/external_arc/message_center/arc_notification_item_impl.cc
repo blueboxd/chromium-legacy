@@ -95,6 +95,10 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
   if (data->small_icon)
     rich_data.small_image = gfx::Image::CreateFrom1xBitmap(*data->small_icon);
 
+  if (data->big_picture) {
+    rich_data.image = gfx::Image::CreateFrom1xBitmap(*data->big_picture);
+  }
+
   if (data->accessible_name.has_value()) {
     rich_data.accessible_name =
         base::UTF8ToUTF16(data->accessible_name.value());
@@ -130,6 +134,26 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
   const auto notification_type = render_on_chrome
                                      ? message_center::NOTIFICATION_TYPE_SIMPLE
                                      : message_center::NOTIFICATION_TYPE_CUSTOM;
+
+  // Add buttons to Chrome rendered ARC notifications only, as ARC rendered
+  // notifications already have buttons.
+  if (render_on_chrome && data->buttons) {
+    const auto& buttons = *data->buttons;
+    for (size_t i = 0; i < buttons.size(); ++i) {
+      const auto& button = buttons[i];
+      const auto button_label = button->label;
+      message_center::ButtonInfo rich_data_button;
+      rich_data_button.title = base::UTF8ToUTF16(button_label);
+
+      if (i == static_cast<size_t>(data->reply_button_index)) {
+        rich_data_button.placeholder =
+            button->buttonPlaceholder.has_value()
+                ? base::UTF8ToUTF16(button->buttonPlaceholder.value())
+                : std::u16string();
+      }
+      rich_data.buttons.emplace_back(rich_data_button);
+    }
+  }
 
   auto notification = std::make_unique<message_center::Notification>(
       notification_type, notification_id_, base::UTF8ToUTF16(data->title),
@@ -216,6 +240,12 @@ void ArcNotificationItemImpl::OpenSettings() {
 
 void ArcNotificationItemImpl::OpenSnooze() {
   manager_->OpenNotificationSnoozeSettings(notification_key_);
+}
+
+void ArcNotificationItemImpl::ClickButton(const int button_index,
+                                          const std::string& input) {
+  manager_->SendNotificationButtonClickedOnChrome(notification_key_,
+                                                  button_index, input);
 }
 
 void ArcNotificationItemImpl::ToggleExpansion() {

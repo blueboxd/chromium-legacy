@@ -23,19 +23,42 @@ WebSessionStateCacheWebStateListObserver::
 WebSessionStateCacheWebStateListObserver::
     ~WebSessionStateCacheWebStateListObserver() = default;
 
+#pragma mark - WebStateListObserver
+
+void WebSessionStateCacheWebStateListObserver::WebStateListChanged(
+    WebStateList* web_state_list,
+    const WebStateListChange& change,
+    const WebStateSelection& selection) {
+  switch (change.type()) {
+    case WebStateListChange::Type::kSelectionOnly:
+      // Do nothing when a WebState is selected and its status is updated.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // Do nothing when a WebState is detached.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace: {
+      const WebStateListChangeReplace& replace_change =
+          change.As<WebStateListChangeReplace>();
+      WebSessionStateTabHelper::FromWebState(
+          replace_change.inserted_web_state())
+          ->SaveSessionState();
+      break;
+    }
+    case WebStateListChange::Type::kInsert:
+      // Do nothing when a new WebState is inserted.
+      break;
+  }
+}
+
 void WebSessionStateCacheWebStateListObserver::WillCloseWebStateAt(
     WebStateList* web_state_list,
     web::WebState* web_state,
     int index,
     bool user_action) {
   [web_session_state_cache_ removeSessionStateDataForWebState:web_state];
-}
-void WebSessionStateCacheWebStateListObserver::WebStateReplacedAt(
-    WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int index) {
-  WebSessionStateTabHelper::FromWebState(new_web_state)->SaveSessionState();
 }
 
 void WebSessionStateCacheWebStateListObserver::WillBeginBatchOperation(

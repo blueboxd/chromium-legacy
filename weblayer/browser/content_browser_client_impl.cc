@@ -123,7 +123,6 @@
 #include "base/android/path_utils.h"
 #include "base/functional/bind.h"
 #include "components/browser_ui/client_certificate/android/ssl_client_certificate_request.h"
-#include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"  // nogncheck
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "components/embedder_support/android/metrics/android_metrics_service_client.h"
@@ -429,14 +428,6 @@ std::string ContentBrowserClientImpl::GetUserAgent() {
   return embedder_support::GetUserAgent();
 }
 
-std::string ContentBrowserClientImpl::GetFullUserAgent() {
-  return embedder_support::GetFullUserAgent();
-}
-
-std::string ContentBrowserClientImpl::GetReducedUserAgent() {
-  return embedder_support::GetReducedUserAgent();
-}
-
 blink::UserAgentMetadata ContentBrowserClientImpl::GetUserAgentMetadata() {
   return embedder_support::GetUserAgentMetadata();
 }
@@ -503,15 +494,11 @@ void ContentBrowserClientImpl::OnNetworkServiceCreated(
       network_service);
 }
 
-std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
-ContentBrowserClientImpl::CreateURLLoaderThrottles(
-    const network::ResourceRequest& request,
+std::unique_ptr<blink::URLLoaderThrottle>
+ContentBrowserClientImpl::MaybeCreateSafeBrowsingURLLoaderThrottle(
     content::BrowserContext* browser_context,
     const base::RepeatingCallback<content::WebContents*()>& wc_getter,
-    content::NavigationUIData* navigation_ui_data,
     int frame_tree_node_id) {
-  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
-
   if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
       IsSafebrowsingSupported()) {
 #if BUILDFLAG(IS_ANDROID)
@@ -533,10 +520,27 @@ ContentBrowserClientImpl::CreateURLLoaderThrottles(
               ? RealTimeUrlLookupServiceFactory::GetForBrowserContext(
                     browser_context)
               : nullptr;
-      result.push_back(GetSafeBrowsingService()->CreateURLLoaderThrottle(
-          wc_getter, frame_tree_node_id, url_lookup_service));
+      return GetSafeBrowsingService()->CreateURLLoaderThrottle(
+          wc_getter, frame_tree_node_id, url_lookup_service);
     }
 #endif
+  }
+  return nullptr;
+}
+
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+ContentBrowserClientImpl::CreateURLLoaderThrottles(
+    const network::ResourceRequest& request,
+    content::BrowserContext* browser_context,
+    const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+    content::NavigationUIData* navigation_ui_data,
+    int frame_tree_node_id) {
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
+
+  if (auto safe_browsing_throttle = MaybeCreateSafeBrowsingURLLoaderThrottle(
+          browser_context, wc_getter, frame_tree_node_id);
+      safe_browsing_throttle) {
+    result.push_back(std::move(safe_browsing_throttle));
   }
 
   auto signin_throttle =
@@ -553,6 +557,23 @@ ContentBrowserClientImpl::CreateURLLoaderThrottles(
         prerender::PrerenderHistograms::GetHistogramPrefix(
             no_state_prefetch_contents->origin()),
         GetPrerenderCanceler(web_contents)));
+  }
+
+  return result;
+}
+
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+ContentBrowserClientImpl::CreateURLLoaderThrottlesForKeepAlive(
+    const network::ResourceRequest& request,
+    content::BrowserContext* browser_context,
+    const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+    int frame_tree_node_id) {
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
+
+  if (auto safe_browsing_throttle = MaybeCreateSafeBrowsingURLLoaderThrottle(
+          browser_context, wc_getter, frame_tree_node_id);
+      safe_browsing_throttle) {
+    result.push_back(std::move(safe_browsing_throttle));
   }
 
   return result;
@@ -978,11 +999,6 @@ void ContentBrowserClientImpl::RegisterBrowserInterfaceBindersForFrame(
 
 void ContentBrowserClientImpl::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
-#if BUILDFLAG(IS_ANDROID)
-  host->AddFilter(new cdm::CdmMessageFilterAndroid(
-      !host->GetBrowserContext()->IsOffTheRecord(),
-      /*force_to_support_secure_codecs*/ false));
-#endif
   PageSpecificContentSettingsDelegate::InitializeRenderer(host);
 }
 
@@ -1094,7 +1110,8 @@ bool ContentBrowserClientImpl::WillCreateURLLoaderFactory(
         header_client,
     bool* bypass_redirect_checks,
     bool* disable_secure_dns,
-    network::mojom::URLLoaderFactoryOverridePtr* factory_override) {
+    network::mojom::URLLoaderFactoryOverridePtr* factory_override,
+    scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner) {
   // The navigation API intercepting API only supports main frame navigations.
   if (type != URLLoaderFactoryType::kNavigation || frame->GetParent())
     return false;

@@ -34,10 +34,6 @@ bool FakeWebClient::IsAppSpecificURL(const GURL& url) const {
   return url.SchemeIs(kTestWebUIScheme) || url.SchemeIs(kTestAppSpecificScheme);
 }
 
-std::u16string FakeWebClient::GetPluginNotSupportedText() const {
-  return plugin_not_supported_text_;
-}
-
 std::string FakeWebClient::GetUserAgent(UserAgentType type) const {
   if (type == UserAgentType::DESKTOP)
     return "Chromium/66.0.3333.0 CFNetwork/893.14 Darwin/16.7.0 Desktop";
@@ -57,9 +53,14 @@ std::vector<JavaScriptFeature*> FakeWebClient::GetJavaScriptFeatures(
   return java_script_features_;
 }
 
+NSString* FakeWebClient::GetDocumentStartScriptForAllFrames(
+    BrowserState* browser_state) const {
+  return early_page_script_for_all_frames_ ?: @"";
+}
+
 NSString* FakeWebClient::GetDocumentStartScriptForMainFrame(
     BrowserState* browser_state) const {
-  return early_page_script_ ? early_page_script_ : @"";
+  return early_page_script_for_main_frame_ ?: @"";
 }
 
 void FakeWebClient::SetPluginNotSupportedText(const std::u16string& text) {
@@ -71,8 +72,14 @@ void FakeWebClient::SetJavaScriptFeatures(
   java_script_features_ = features;
 }
 
-void FakeWebClient::SetEarlyPageScript(NSString* page_script) {
-  early_page_script_ = [page_script copy];
+void FakeWebClient::SetEarlyPageScriptForAllFrames(
+    NSString* page_script_for_all_frames) {
+  early_page_script_for_all_frames_ = [page_script_for_all_frames copy];
+}
+
+void FakeWebClient::SetEarlyPageScriptForMainFrame(
+    NSString* page_script_for_main_frame) {
+  early_page_script_for_main_frame_ = [page_script_for_main_frame copy];
 }
 
 void FakeWebClient::PrepareErrorPage(

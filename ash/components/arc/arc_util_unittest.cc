@@ -65,20 +65,8 @@ class ScopedArcFeature {
 class ScopedRtVcpuFeature {
  public:
   ScopedRtVcpuFeature(bool dual_core_enabled, bool quad_core_enabled) {
-    std::vector<base::test::FeatureRef> enabled_features;
-    std::vector<base::test::FeatureRef> disabled_features;
-
-    if (dual_core_enabled)
-      enabled_features.push_back(kRtVcpuDualCore);
-    else
-      disabled_features.push_back(kRtVcpuDualCore);
-
-    if (quad_core_enabled)
-      enabled_features.push_back(kRtVcpuQuadCore);
-    else
-      disabled_features.push_back(kRtVcpuQuadCore);
-
-    feature_list.InitWithFeatures(enabled_features, disabled_features);
+    feature_list.InitWithFeatureStates({{kRtVcpuDualCore, dual_core_enabled},
+                                        {kRtVcpuQuadCore, quad_core_enabled}});
   }
   ~ScopedRtVcpuFeature() = default;
   ScopedRtVcpuFeature(const ScopedRtVcpuFeature&) = delete;
@@ -647,26 +635,6 @@ TEST_F(ArcUtilTest, SetAndGetArcVmDataMigrationStatus) {
     SetArcVmDataMigrationStatus(profile_prefs(), status);
     EXPECT_EQ(status, GetArcVmDataMigrationStatus(profile_prefs()));
   }
-}
-
-TEST_F(ArcUtilTest, SetAndGetArcVmDataMigrationStrategy) {
-  profile_prefs()->SetInteger(prefs::kArcVmDataMigrationStrategy, -1);
-  EXPECT_EQ(ArcVmDataMigrationStrategy::kDoNotPrompt,
-            GetArcVmDataMigrationStrategy(profile_prefs()));
-
-  profile_prefs()->SetInteger(prefs::kArcVmDataMigrationStrategy, 0);
-  EXPECT_EQ(ArcVmDataMigrationStrategy::kDoNotPrompt,
-            GetArcVmDataMigrationStrategy(profile_prefs()));
-
-  profile_prefs()->SetInteger(prefs::kArcVmDataMigrationStrategy, 1);
-  EXPECT_EQ(ArcVmDataMigrationStrategy::kPrompt,
-            GetArcVmDataMigrationStrategy(profile_prefs()));
-
-  profile_prefs()->SetInteger(
-      prefs::kArcVmDataMigrationStrategy,
-      static_cast<int>(ArcVmDataMigrationStrategy::kMaxValue) + 1);
-  EXPECT_EQ(ArcVmDataMigrationStrategy::kPrompt,
-            GetArcVmDataMigrationStrategy(profile_prefs()));
 }
 
 // Tests that ShouldUseVirtioBlkData() returns true when virtio-blk /data is

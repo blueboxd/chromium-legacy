@@ -257,7 +257,8 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 # web tests to download baselines for.
                 continue
 
-            step_names = results_fetcher.get_layout_test_step_names(build)
+            step_names = self._tool.builders.step_names_for_builder(
+                build.builder_name)
             build_steps.extend((build, step_name) for step_name in step_names)
 
         map_fn = self._io_pool.map if self._io_pool else map
@@ -297,7 +298,15 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             A TestBaselineSet object.
         """
         test_baseline_set = TestBaselineSet(self._tool.builders)
-        tests = self._tool.port_factory.get().tests(test_patterns)
+        port, tests = self._tool.port_factory.get(), set()
+        for test_pattern in sorted(test_patterns):
+            resolved_tests = port.tests([test_pattern])
+            if not resolved_tests:
+                _log.warning(
+                    '%r does not represent any tests and may be misspelled.',
+                    test_pattern)
+            tests.update(resolved_tests)
+
         for test, (build, builder_results) in itertools.product(
                 tests, builds_to_results.items()):
             for step_results in builder_results:

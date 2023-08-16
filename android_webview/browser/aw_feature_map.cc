@@ -33,6 +33,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kWebViewUmaUploadQualityOfServiceSetToDefault,
     &metrics::kAndroidMetricsAsyncMetricLogging,
     &features::kWebViewZoomKeyboardShortcuts,
+    &features::kWebViewClearFunctorInBackground,
+    &features::kWebViewReportFrameMetrics,
 };
 
 // static

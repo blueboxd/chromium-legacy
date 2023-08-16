@@ -5,6 +5,8 @@
 import * as InputDeviceSettingsTypes from '../mojom-webui/input_device_settings.mojom-webui.js';
 import * as InputDeviceSettingsProviderTypes from '../mojom-webui/input_device_settings_provider.mojom-webui.js';
 import * as ModifierKeyTypes from '../mojom-webui/modifier_key.mojom-webui.js';
+import * as SimulateRightClickModifierTypes from '../mojom-webui/simulate_right_click_modifier.mojom-webui.js';
+import * as SixPackShortcutModifierTypes from '../mojom-webui/six_pack_shortcut_modifier.mojom-webui.js';
 
 /**
  * @fileoverview
@@ -16,6 +18,18 @@ export const MetaKey = InputDeviceSettingsTypes.MetaKey;
 export type ModifierKey = ModifierKeyTypes.ModifierKey;
 export const ModifierKey = ModifierKeyTypes.ModifierKey;
 
+export type SimulateRightClickModifier =
+    SimulateRightClickModifierTypes.SimulateRightClickModifier;
+export const SimulateRightClickModifier =
+    SimulateRightClickModifierTypes.SimulateRightClickModifier;
+
+export type SixPackShortcutModifier =
+    SixPackShortcutModifierTypes.SixPackShortcutModifier;
+export const SixPackShortcutModifier =
+    SixPackShortcutModifierTypes.SixPackShortcutModifier;
+
+export type SixPackKeyInfo = InputDeviceSettingsTypes.SixPackKeyInfo;
+
 export type PolicyStatus = InputDeviceSettingsTypes.PolicyStatus;
 export const PolicyStatus = InputDeviceSettingsTypes.PolicyStatus;
 
@@ -23,6 +37,26 @@ export type Keyboard = InputDeviceSettingsTypes.Keyboard;
 export type Touchpad = InputDeviceSettingsTypes.Touchpad;
 export type Mouse = InputDeviceSettingsTypes.Mouse;
 export type PointingStick = InputDeviceSettingsTypes.PointingStick;
+
+export interface Stylus {
+  // Unique per device based on this VID/PID pair as follows: "<vid>:<pid>"
+  // where VID/PID are represented in lowercase hex
+  deviceKey: string;
+  id: number;
+  name: string;
+  // TODO(yyhyyh@): Add Stylus settings with buttonRemapping: ButtonRemapping[]
+  // setting.
+}
+
+export interface GraphicsTablet {
+  // Unique per device based on this VID/PID pair as follows: "<vid>:<pid>"
+  // where VID/PID are represented in lowercase hex
+  deviceKey: string;
+  id: number;
+  name: string;
+  // TODO(yyhyyh@): Add GraphicsTablet settings with
+  // buttonRemapping: ButtonRemapping[] setting.
+}
 
 export type KeyboardSettings = InputDeviceSettingsTypes.KeyboardSettings;
 export type TouchpadSettings = InputDeviceSettingsTypes.TouchpadSettings;
@@ -57,8 +91,19 @@ export interface PointingStickObserverInterface {
   onPointingStickListUpdated(pointingSticks: PointingStick[]): void;
 }
 
+export interface StylusObserverInterface {
+  // Fired when the stylus list is updated.
+  onStylusListUpdated(styluses: Stylus[]): void;
+}
+
+export interface GraphicsTabletObserverInterface {
+  // Fired when the graphics tablet list is updated.
+  onGraphicsTabletListUpdated(graphicsTablet: GraphicsTablet[]): void;
+}
+
 interface FakeInputDeviceSettingsProviderInterface extends
     InputDeviceSettingsProviderTypes.InputDeviceSettingsProviderInterface {
+  RestoreDefaultKeyboardRemappings(id: number): void;
   setKeyboardSettings(id: number, settings: KeyboardSettings): void;
   setMouseSettings(id: number, settings: MouseSettings): void;
   setTouchpadSettings(id: number, settings: TouchpadSettings): void;

@@ -105,6 +105,7 @@ bool IsRelevantActionForVisibility(AccessoryAction action) {
     case AccessoryAction::USE_OTHER_PASSWORD:
     case AccessoryAction::GENERATE_PASSWORD_MANUAL:
     case AccessoryAction::CREDMAN_CONDITIONAL_UI_REENTRY:
+    case AccessoryAction::CROSS_DEVICE_PASSKEY:
       return true;
 
     case AccessoryAction::COUNT:
@@ -395,6 +396,7 @@ bool ManualFillingControllerImpl::ShouldShowAccessory() const {
     // If there are suggestions, show on usual form fields.
     case FocusedFieldType::kFillablePasswordField:
     case FocusedFieldType::kFillableUsernameField:
+    case FocusedFieldType::kFillableWebauthnTaggedField:
     case FocusedFieldType::kFillableNonSearchField:
       return !available_sources_.empty();
 
@@ -501,6 +503,7 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForAction(
     case AccessoryAction::GENERATE_PASSWORD_AUTOMATIC:
     case AccessoryAction::TOGGLE_SAVE_PASSWORDS:
     case AccessoryAction::CREDMAN_CONDITIONAL_UI_REENTRY:
+    case AccessoryAction::CROSS_DEVICE_PASSKEY:
       return pwd_controller_.get();
     case AccessoryAction::MANAGE_ADDRESSES:
       return address_controller_.get();

@@ -39,6 +39,7 @@ enum SourceType {
   kBrotli,
   kDeflate,
   kGzip,
+  kZstd,
   kNone,
   kUnknown,
 };
@@ -118,15 +119,6 @@ struct WebBundleTokenParams {
   // process, for subframe navigation requests to bundled resources. Not used
   // for subresource requests sent by renderer processes.
   int32 render_process_id;
-};
-
-// Options that may be set when URLRequests need to take over NetLog related
-// parameters. The URLRequest will use these parameters on logging.
-// Typemapped to net::NetLogSource.
-struct NetLogSource {
-  uint32 source_type;
-  uint32 source_id;
-  mojo_base.mojom.TimeTicks start_time;
 };
 
 // Typemapped to network::ResourceRequest.
@@ -520,6 +512,12 @@ struct URLRequest {
   // TODO(https://crbug.com/1443602): Get rid of this with proper OT
   // infrastructure support in the network service.
   AttributionReportingRuntimeFeatures attribution_reporting_runtime_features;
+
+  // Indicate the state of CompressionDictionaryTransport feature. When it is
+  // true, `use-as-dictionary` response HTTP header may be processed.
+  // TODO(crbug.com/1413922): Remove this flag when we launch
+  // CompressionDictionaryTransport feature.
+  bool shared_dictionary_writer_enabled = false;
 };
 
 // URLRequestBody represents body (i.e. upload data) of a HTTP request.

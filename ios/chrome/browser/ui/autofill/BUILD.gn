@@ -32,6 +32,7 @@ source_set("autofill") {
     "//google_apis",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/autofill:autofill_shared",
+    "//ios/chrome/browser/autofill/bottom_sheet",
     "//ios/chrome/browser/autofill/manual_fill",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/metrics",
@@ -151,15 +152,6 @@ source_set("autofill_ui_type") {
     "//components/autofill/core/browser",
     "//ios/chrome/app/strings",
   ]
-}
-
-source_set("autofill_message") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "save_card_message_with_links.h",
-    "save_card_message_with_links.mm",
-  ]
-  deps = [ "//url:url" ]
 }
 
 source_set("autofill_metrics") {

@@ -13,6 +13,7 @@
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/dips/dips_service.h"
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service.h"
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -81,22 +82,29 @@ void RecordOutcomeSample(RequestOutcome outcome) {
 
 content_settings::ContentSettingConstraints ComputeConstraints(
     RequestOutcome outcome) {
+  content_settings::ContentSettingConstraints constraints;
   switch (outcome) {
     case RequestOutcome::kGrantedByFirstPartySet:
-      return {content_settings::GetConstraintExpiration(kImplicitGrantDuration),
-              content_settings::SessionModel::NonRestorableUserSession};
+      constraints.set_lifetime(kImplicitGrantDuration);
+      constraints.set_session_model(
+          content_settings::SessionModel::NonRestorableUserSession);
+      return constraints;
     case RequestOutcome::kGrantedByAllowance:
-      return {content_settings::GetConstraintExpiration(kImplicitGrantDuration),
-              content_settings::SessionModel::UserSession};
+      constraints.set_lifetime(kImplicitGrantDuration);
+      constraints.set_session_model(
+          content_settings::SessionModel::UserSession);
+      return constraints;
     case RequestOutcome::kDismissedByUser:
     case RequestOutcome::kDeniedByFirstPartySet:
     case RequestOutcome::kDeniedByPrerequisites:
     case RequestOutcome::kReusedPreviousDecision:
+    case RequestOutcome::kDeniedByTopLevelInteractionHeuristic:
       NOTREACHED_NORETURN();
     case RequestOutcome::kGrantedByUser:
     case RequestOutcome::kDeniedByUser:
-      return {content_settings::GetConstraintExpiration(kExplicitGrantDuration),
-              content_settings::SessionModel::Durable};
+      constraints.set_lifetime(kExplicitGrantDuration);
+      constraints.set_session_model(content_settings::SessionModel::Durable);
+      return constraints;
   }
 }
 
@@ -249,10 +257,10 @@ void StorageAccessGrantPermissionContext::UseImplicitGrantOrPrompt(
   ContentSetting existing_setting =
       PermissionContextBase::GetPermissionStatusInternal(rfh, requesting_origin,
                                                          embedding_origin);
-  if (existing_setting == CONTENT_SETTING_BLOCK) {
+  if (existing_setting != CONTENT_SETTING_ASK) {
     NotifyPermissionSetInternal(id, requesting_origin, embedding_origin,
                                 std::move(callback),
-                                /*persist=*/false, CONTENT_SETTING_BLOCK,
+                                /*persist=*/false, existing_setting,
                                 RequestOutcome::kReusedPreviousDecision);
     return;
   }
@@ -277,6 +285,44 @@ void StorageAccessGrantPermissionContext::UseImplicitGrantOrPrompt(
                                 std::move(callback),
                                 /*persist=*/true, CONTENT_SETTING_ALLOW,
                                 RequestOutcome::kGrantedByAllowance);
+    return;
+  }
+
+  // We haven't found a reason to auto-grant permission, but before we prompt
+  // there's one more hurdle: the user must have interacted with the requesting
+  // site in a top-level context recently.
+  DIPSService* dips_service = DIPSService::Get(browser_context());
+  const base::TimeDelta bound =
+      blink::features::kStorageAccessAPITopLevelUserInteractionBound.Get();
+  if (bound != base::TimeDelta() && dips_service) {
+    dips_service->DidSiteHaveInteractionSince(
+        requesting_origin, base::Time::Now() - bound,
+        base::BindOnce(&StorageAccessGrantPermissionContext::
+                           OnCheckedUserInteractionHeuristic,
+                       weak_factory_.GetWeakPtr(), id, requesting_origin,
+                       embedding_origin, user_gesture, std::move(callback)));
+    return;
+  }
+
+  // If we don't have access to this kind of historical info or the time bound
+  // is empty, we waive the requirement, and show the prompt.
+  PermissionContextBase::DecidePermission(id, requesting_origin,
+                                          embedding_origin, user_gesture,
+                                          std::move(callback));
+}
+
+void StorageAccessGrantPermissionContext::OnCheckedUserInteractionHeuristic(
+    const permissions::PermissionRequestID& id,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    bool user_gesture,
+    permissions::BrowserPermissionCallback callback,
+    bool had_top_level_user_interaction) {
+  if (!had_top_level_user_interaction) {
+    NotifyPermissionSetInternal(
+        id, requesting_origin, embedding_origin, std::move(callback),
+        /*persist=*/false, CONTENT_SETTING_BLOCK,
+        RequestOutcome::kDeniedByTopLevelInteractionHeuristic);
     return;
   }
 
@@ -352,9 +398,9 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
         content_settings::PageSpecificContentSettings::GetForFrame(
             id.global_render_frame_host_id());
     if (content_settings) {
-      content_settings->OnTwoSitePermissionRequested(
+      content_settings->OnTwoSitePermissionChanged(
           ContentSettingsType::STORAGE_ACCESS,
-          net::SchemefulSite(requesting_origin), permission_allowed);
+          net::SchemefulSite(requesting_origin), content_setting);
     }
   }
 

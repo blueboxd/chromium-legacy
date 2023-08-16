@@ -14,6 +14,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/scope_extension_info.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -22,7 +23,6 @@
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
-#include "components/webapps/common/web_page_metadata.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
@@ -196,8 +196,6 @@ struct WebAppInstallInfo {
 
   WebAppInstallInfo(WebAppInstallInfo&&);
   WebAppInstallInfo& operator=(WebAppInstallInfo&&);
-
-  explicit WebAppInstallInfo(const webapps::mojom::WebPageMetadata& metadata);
   ~WebAppInstallInfo();
 
   // Creates a deep copy of this struct.
@@ -369,6 +367,9 @@ struct WebAppInstallInfo {
   // Note that list is not meant to be an exhaustive enumeration of all possible
   // policy_ids but rather just a supplement for tricky cases.
   std::vector<std::string> additional_policy_ids;
+
+  // Used to specify the version of an Isolated Web App that is being installed.
+  base::Version isolated_web_app_version;
 
  private:
   // Used this method in Clone() method. Use Clone() to deep copy explicitly.

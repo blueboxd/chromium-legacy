@@ -10,7 +10,6 @@
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
-#include "content/public/common/network_service_util.h"
 #include "content/renderer/content_security_policy_util.h"
 #include "content/renderer/policy_container_util.h"
 #include "content/renderer/worker/fetch_client_settings_object_helpers.h"
@@ -39,8 +38,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     const url::Origin& constructor_origin,
     bool is_constructor_secure_context,
     const std::string& user_agent,
-    const std::string& full_user_agent,
-    const std::string& reduced_user_agent,
     const blink::UserAgentMetadata& ua_metadata,
     bool pause_on_start,
     const base::UnguessableToken& devtools_worker_token,
@@ -86,16 +83,14 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   // If the network service crashes, then self-destruct so clients don't get
   // stuck with a worker with a broken loader. Self-destruction is effectively
   // the same as the worker's process crashing.
-  if (IsOutOfProcessNetworkService()) {
-    default_factory_disconnect_handler_holder_.Bind(std::move(
-        pending_subresource_loader_factory_bundle->pending_default_factory()));
-    default_factory_disconnect_handler_holder_->Clone(
-        pending_subresource_loader_factory_bundle->pending_default_factory()
-            .InitWithNewPipeAndPassReceiver());
-    default_factory_disconnect_handler_holder_.set_disconnect_handler(
-        base::BindOnce(&EmbeddedSharedWorkerStub::Terminate,
-                       base::Unretained(this)));
-  }
+  default_factory_disconnect_handler_holder_.Bind(std::move(
+      pending_subresource_loader_factory_bundle->pending_default_factory()));
+  default_factory_disconnect_handler_holder_->Clone(
+      pending_subresource_loader_factory_bundle->pending_default_factory()
+          .InitWithNewPipeAndPassReceiver());
+  default_factory_disconnect_handler_holder_.set_disconnect_handler(
+      base::BindOnce(&EmbeddedSharedWorkerStub::Terminate,
+                     base::Unretained(this)));
 
   // Initialize the subresource loader factory bundle passed by the browser
   // process.
@@ -123,8 +118,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       blink::WebString::FromUTF8(info->options->name),
       blink::WebSecurityOrigin(constructor_origin),
       is_constructor_secure_context, blink::WebString::FromUTF8(user_agent),
-      blink::WebString::FromUTF8(full_user_agent),
-      blink::WebString::FromUTF8(reduced_user_agent), ua_metadata,
+      ua_metadata,
       ToWebContentSecurityPolicies(std::move(info->content_security_policies)),
       FetchClientSettingsObjectFromMojomToWeb(
           info->outside_fetch_client_settings_object),

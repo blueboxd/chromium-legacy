@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
-#include "third_party/blink/renderer/core/frame/dom_timer.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -1157,6 +1156,11 @@ const base::UnguessableToken& Page::CoopRelatedGroupToken() {
   return browsing_context_group_info_.coop_related_group_token;
 }
 
+void Page::UpdateBrowsingContextGroup(
+    const blink::BrowsingContextGroupInfo& browsing_context_group_info) {
+  browsing_context_group_info_ = browsing_context_group_info;
+}
+
 template class CORE_TEMPLATE_EXPORT Supplement<Page>;
 
 const char InternalSettingsPageSupplementBase::kSupplementName[] =
@@ -1168,8 +1172,13 @@ void Page::PrepareForLeakDetection() {
   // depending on whether the garbage collector(s) are able to find the settings
   // object through the Page supplement. Prepares for leak detection by removing
   // all InternalSetting objects from Pages.
-  for (Page* page : OrdinaryPages())
+  for (Page* page : OrdinaryPages()) {
     page->RemoveSupplement<InternalSettingsPageSupplementBase>();
+
+    // V8CompileHintsProducer keeps v8::Script objects alive until the page
+    // becomes interactive. Give it a chance to clean up.
+    page->v8_compile_hints_->ClearData();
+  }
 }
 
 // Ensure the 10 bits reserved for connected frame count in NodeRareData are

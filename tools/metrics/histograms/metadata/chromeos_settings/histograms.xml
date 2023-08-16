@@ -66,7 +66,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.BlurredWindowDuration" units="ms"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
   <owner>wesokuhara@google.com</owner>
   <owner>xiaohuic@chromium.org</owner>
   <owner>cros-settings@google.com</owner>
@@ -276,7 +276,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ChromeOS.Settings.NumClicksUntilChange"
-    units="clicks" expires_after="2023-10-08">
+    units="clicks" expires_after="2023-12-10">
 <!-- Name completed by histogram_suffixes name="OsSettingsChangeType" -->
 
   <owner>wesokuhara@google.com</owner>
@@ -296,7 +296,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ChromeOS.Settings.NumSearchesUntilChange"
-    units="searches" expires_after="2023-10-08">
+    units="searches" expires_after="2023-12-10">
 <!-- Name completed by histogram_suffixes name="OsSettingsChangeType" -->
 
   <owner>wesokuhara@google.com</owner>
@@ -314,6 +314,31 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     The number of search results fetched each time a successful search request
     is made to the Settings Search Mojo API.
   </summary>
+</histogram>
+
+<histogram
+    name="ChromeOS.Settings.NumUniqueSettingsChanged.DeviceLifetime.{Time}"
+    units="Unique Setting(s) Changed" expires_after="2024-05-16">
+  <owner>moteva@google.com</owner>
+  <owner>wesokuhara@google.com</owner>
+  <owner>cros-settings@google.com</owner>
+  <summary>
+    Records the total number of unique settings changed by a user over a
+    device's lifetime. It is triggered when the user closes the Settings app. It
+    will not record the number if the user did not make any new unique changes
+    in the session.
+  </summary>
+  <token key="Time">
+    <variant name="FirstWeek"
+        summary="Setting changed within the first week since the user has
+                 completed OOBE."/>
+    <variant name="SubsequentWeeks"
+        summary="Setting changed after the first week since the user has
+                 completed OOBE"/>
+    <variant name="Total"
+        summary="Total Settings changed within the lifetime of the device per
+                 each user."/>
+  </token>
 </histogram>
 
 <histogram name="ChromeOS.Settings.NumUniqueSettingsChanged.PerSession"
@@ -365,13 +390,15 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.Privacy.PeripheralDataAccessProtection"
-    enum="BooleanEnabled" expires_after="2022-11-30">
+    enum="BooleanEnabled" expires_after="2024-06-09">
   <owner>jimmyxgong@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
     Records when the users clicks on the Peripheral Data Access toggle. A true
     value refers to the user enables peripheral data access protection (toggle
     is turned on).
+
+    Data may be missing from 2022-11-30 to 2023-06-09.
   </summary>
 </histogram>
 
@@ -396,7 +423,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.SearchLatency" units="ms"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
   <owner>wesokuhara@google.com</owner>
   <owner>xiaohuic@chromium.org</owner>
   <owner>cros-settings@google.com</owner>
@@ -495,7 +522,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ChromeOS.Settings.TimeUntilChange" units="ms"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
 <!-- Name completed by histogram_suffixes name="OsSettingsChangeType" -->
 
   <owner>wesokuhara@google.com</owner>

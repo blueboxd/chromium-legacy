@@ -20,6 +20,7 @@
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
+#include "third_party/blink/public/common/performance/performance_timeline_constants.h"
 #include "third_party/blink/public/common/responsiveness_metrics/user_interaction_latency.h"
 #include "third_party/blink/public/common/subresource_load_metrics.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -43,6 +44,7 @@ class WebSecurityOrigin;
 class WebString;
 class WebURLRequest;
 class WebWorkerFetchContext;
+struct JavaScriptFrameworkDetectionResult;
 }  // namespace blink
 
 namespace gfx {
@@ -213,6 +215,11 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // load. This is used for metrics collection.
   virtual void DidObserveLoadingBehavior(blink::LoadingBehaviorFlag behavior) {}
 
+  // Notification when the renderer performed framework detection during a page
+  // load. This is used for metrics collection.
+  virtual void DidObserveJavaScriptFrameworks(
+      const blink::JavaScriptFrameworkDetectionResult&) {}
+
   // Notification when the renderer uses subresources.
   // It is called when there is a subresouce load. The reported values via
   // arguments are cumulative. They are NOT a difference from the previous call.
@@ -231,7 +238,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // - Initiated with the window.history or window.navigation APIs.
   // - Accompanied with a DOM modification of the <main> element during the same
   // or a descendant task.
-  virtual void DidObserveSoftNavigation(uint32_t count) {}
+  virtual void DidObserveSoftNavigation(blink::SoftNavigationMetrics metrics) {}
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   // This is called once for each animation frame containing any layout shift,

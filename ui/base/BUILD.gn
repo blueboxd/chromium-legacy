@@ -325,8 +325,6 @@ component("base") {
       "cocoa/defaults_utils.mm",
       "cocoa/find_pasteboard.h",
       "cocoa/find_pasteboard.mm",
-      "cocoa/flipped_view.h",
-      "cocoa/flipped_view.mm",
       "cocoa/menu_controller.h",
       "cocoa/menu_controller.mm",
       "cocoa/nsmenu_additions.h",
@@ -359,8 +357,6 @@ component("base") {
       "dragdrop/os_exchange_data_provider_mac.mm",
       "interaction/element_tracker_mac.h",
       "interaction/element_tracker_mac.mm",
-      "l10n/l10n_util_mac.h",
-      "l10n/l10n_util_mac.mm",
       "resource/resource_bundle_mac.mm",
     ]
   }
@@ -371,6 +367,8 @@ component("base") {
       "cocoa/quartz_util.mm",
       "cocoa/remote_layer_api.h",
       "cocoa/remote_layer_api.mm",
+      "l10n/l10n_util_mac.h",
+      "l10n/l10n_util_mac.mm",
     ]
   }
 
@@ -383,9 +381,7 @@ component("base") {
       "device_form_factor_ios.mm",
       "resource/resource_bundle_ios.mm",
     ]
-  }
-
-  if (!is_ios) {
+  } else {
     sources += [
       "user_activity/user_activity_detector.cc",
       "user_activity/user_activity_detector.h",
@@ -483,6 +479,10 @@ component("base") {
     "//build/config/compiler:wexit_time_destructors",
   ]
 
+  if (is_apple) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
+
   defines = [ "IS_UI_BASE_IMPL" ]
 
   if (enable_pseudolocales) {
@@ -509,6 +509,7 @@ component("base") {
     "//base:base_static",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//build:branding_buildflags",
     "//build:chromeos_buildflags",
     "//net",
     "//third_party/brotli:dec",
@@ -544,8 +545,6 @@ component("base") {
 
   if (is_ios) {
     sources += [
-      "l10n/l10n_util_mac.h",
-      "l10n/l10n_util_mac.mm",
       "l10n/l10n_util_mac_bridge.h",
       "l10n/l10n_util_mac_bridge.mm",
     ]
@@ -771,6 +770,28 @@ if (use_blink) {
   }
 }
 
+if (is_mac) {
+  # TODO(https://crbug.com/1280317): Merge back into the `test_support` target
+  # once all .mm files are ARCed.
+  source_set("test_support_arc") {
+    testonly = true
+    sources = [
+      "test/cocoa_helper.h",
+      "test/cocoa_helper.mm",
+      "test/view_tree_validator.h",
+      "test/view_tree_validator.mm",
+    ]
+    configs += [ "//build/config/compiler:enable_arc" ]
+    deps = [
+      "//base:base",
+      "//base/test:test_config",
+      "//base/test:test_support",
+      "//testing/gtest",
+      "//ui/display",
+    ]
+  }
+}
+
 static_library("test_support") {
   testonly = true
   sources = [
@@ -792,12 +813,14 @@ static_library("test_support") {
     "test/idle_test_utils.h",
   ]
 
+  if (is_apple) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
+
   if (is_mac) {
     sources += [
       "interaction/interaction_test_util_mac.h",
       "interaction/interaction_test_util_mac.mm",
-      "test/cocoa_helper.h",
-      "test/cocoa_helper.mm",
       "test/menu_test_observer.h",
       "test/menu_test_observer.mm",
       "test/ns_ax_tree_validator.h",
@@ -811,7 +834,6 @@ static_library("test_support") {
       "test/scoped_preferred_scroller_style_mac.h",
       "test/scoped_preferred_scroller_style_mac.mm",
       "test/ui_controls_mac.mm",
-      "test/view_tree_validator.mm",
       "test/windowed_nsnotification_observer.h",
       "test/windowed_nsnotification_observer.mm",
     ]
@@ -834,7 +856,6 @@ static_library("test_support") {
       "test/test_dialog_model_host.h",
       "test/ui_controls.cc",
       "test/ui_controls.h",
-      "test/view_tree_validator.h",
     ]
   } else {
     sources += [
@@ -871,6 +892,10 @@ static_library("test_support") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  if (is_mac) {
+    public_deps += [ ":test_support_arc" ]
+  }
 
   if (is_ios) {
     deps -= [
@@ -995,6 +1020,24 @@ source_set("run_all_unittests") {
   ]
 }
 
+if (is_apple) {
+  # TODO(https://crbug.com/1280317): Merge back into ui_base_unittests once all
+  # .mm files are ARCed.
+  source_set("ui_base_unittests_arc") {
+    testonly = true
+    if (is_mac) {
+      sources = [ "interaction/element_tracker_mac_unittest.mm" ]
+    }
+    configs += [ "//build/config/compiler:enable_arc" ]
+    deps = [
+      ":base",
+      "//base/test:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
+  }
+}
+
 test("ui_base_unittests") {
   use_xvfb = use_xvfb_in_this_config
 
@@ -1010,7 +1053,6 @@ test("ui_base_unittests") {
     "interaction/interactive_test_unittest.cc",
     "l10n/l10n_util_unittest.cc",
     "l10n/time_format_unittest.cc",
-    "layout_unittest.cc",
     "models/image_model_unittest.cc",
     "models/simple_combobox_model_unittest.cc",
     "models/simple_menu_model_unittest.cc",
@@ -1032,7 +1074,7 @@ test("ui_base_unittests") {
     "resource/data_pack_literal.h",
     "resource/data_pack_unittest.cc",
     "resource/resource_bundle_unittest.cc",
-    "resource/scale_factor_unittest.cc",
+    "resource/resource_scale_factor_unittest.cc",
     "scoped_visibility_tracker_unittest.cc",
     "template_expressions_unittest.cc",
     "test/page_transition_types_unittest.cc",
@@ -1083,6 +1125,10 @@ test("ui_base_unittests") {
     sources += [ "user_activity/user_activity_detector_unittest.cc" ]
   }
 
+  if (is_apple) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
+
   if (is_mac) {
     sources += [
       "accelerators/platform_accelerator_cocoa_unittest.mm",
@@ -1096,10 +1142,10 @@ test("ui_base_unittests") {
       "cocoa/nsmenuitem_additions_unittest.mm",
       "cocoa/touch_bar_util_unittest.mm",
       "cocoa/tracking_area_unittest.mm",
-      "interaction/element_tracker_mac_unittest.mm",
       "l10n/l10n_util_mac_unittest.mm",
       "test/view_tree_validator_unittest.mm",
     ]
+    deps += [ ":ui_base_unittests_arc" ]
   }
 
   if (is_chromeos_lacros) {

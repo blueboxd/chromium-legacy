@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <vector>
-
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "ppapi/c/pp_graphics_3d.h"
@@ -22,7 +20,6 @@
 
 namespace gpu {
 struct Capabilities;
-struct ContextCreationAttribs;
 }
 
 namespace ppapi {
@@ -96,7 +93,7 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
  private:
   void OnMsgCreate(PP_Instance instance,
                    HostResource share_context,
-                   const gpu::ContextCreationAttribs& attrib_helper,
+                   const Graphics3DContextAttribs& context_attribs,
                    HostResource* result,
                    gpu::Capabilities* capabilities,
                    SerializedHandle* handle,

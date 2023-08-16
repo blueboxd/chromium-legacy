@@ -59,7 +59,6 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
                                ChromeBrowserState* browser_state,
                                id<OmniboxCommands> omnibox_focuser)
     : OmniboxView(
-          edit_model_delegate,
           edit_model_delegate
               ? std::make_unique<ChromeOmniboxClientIOS>(
                     edit_model_delegate,
@@ -312,11 +311,11 @@ size_t OmniboxViewIOS::GetAllSelectionsLength() const {
 }
 
 gfx::NativeView OmniboxViewIOS::GetNativeView() const {
-  return nullptr;
+  return gfx::NativeView();
 }
 
 gfx::NativeView OmniboxViewIOS::GetRelativeWindowForPopup() const {
-  return nullptr;
+  return gfx::NativeView();
 }
 
 void OmniboxViewIOS::OnDidBeginEditing() {

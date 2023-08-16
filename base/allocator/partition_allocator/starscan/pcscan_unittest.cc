@@ -331,7 +331,7 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceDifferentBucketsAligned) {
     size_t i = 0;
     uintptr_t first_slot_span_end = 0;
     uintptr_t second_slot_span_start = 0;
-    IterateSlotSpans<ThreadSafe>(
+    IterateSlotSpans(
         super_page, true, [&](SlotSpan* slot_span) -> bool {
           if (i == 0) {
             first_slot_span_end = SlotSpan::ToSlotSpanStart(slot_span) +
@@ -450,7 +450,7 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceFromSingleSlotSlotSpan) {
   using ValueList = SourceList;
 
   auto* source = SourceList::Create(root());
-  auto* slot_span = SlotSpanMetadata<ThreadSafe>::FromObject(source);
+  auto* slot_span = SlotSpanMetadata::FromObject(source);
   ASSERT_TRUE(slot_span->CanStoreRawSize());
 
   auto* value = ValueList::Create(root());
@@ -465,12 +465,10 @@ TEST_F(PartitionAllocPCScanTest, DanglingInterPartitionReference) {
 
   ThreadSafePartitionRoot source_root(PartitionOptions{
       .quarantine = PartitionOptions::Quarantine::kAllowed,
-      .cookie = PartitionOptions::Cookie::kAllowed,
   });
   source_root.UncapEmptySlotSpanMemoryForTesting();
   ThreadSafePartitionRoot value_root(PartitionOptions{
       .quarantine = PartitionOptions::Quarantine::kAllowed,
-      .cookie = PartitionOptions::Cookie::kAllowed,
   });
   value_root.UncapEmptySlotSpanMemoryForTesting();
 
@@ -492,12 +490,10 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceToNonScannablePartition) {
 
   ThreadSafePartitionRoot source_root(PartitionOptions{
       .quarantine = PartitionOptions::Quarantine::kAllowed,
-      .cookie = PartitionOptions::Cookie::kAllowed,
   });
   source_root.UncapEmptySlotSpanMemoryForTesting();
   ThreadSafePartitionRoot value_root(PartitionOptions{
       .quarantine = PartitionOptions::Quarantine::kAllowed,
-      .cookie = PartitionOptions::Cookie::kAllowed,
   });
   value_root.UncapEmptySlotSpanMemoryForTesting();
 
@@ -519,12 +515,10 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceFromNonScannablePartition) {
 
   ThreadSafePartitionRoot source_root(PartitionOptions{
       .quarantine = PartitionOptions::Quarantine::kAllowed,
-      .cookie = PartitionOptions::Cookie::kAllowed,
   });
   source_root.UncapEmptySlotSpanMemoryForTesting();
   ThreadSafePartitionRoot value_root(PartitionOptions{
       .quarantine = PartitionOptions::Quarantine::kAllowed,
-      .cookie = PartitionOptions::Cookie::kAllowed,
   });
   value_root.UncapEmptySlotSpanMemoryForTesting();
 
@@ -675,7 +669,7 @@ TEST_F(PartitionAllocPCScanTest, DontScanUnusedRawSize) {
   void* ptr = root().Alloc(big_size, nullptr);
 
   uintptr_t slot_start = root().ObjectToSlotStart(ptr);
-  auto* slot_span = SlotSpanMetadata<ThreadSafe>::FromSlotStart(slot_start);
+  auto* slot_span = SlotSpanMetadata::FromSlotStart(slot_start);
   ASSERT_TRUE(big_size + sizeof(void*) <=
               root().AllocationCapacityFromSlotStart(slot_start));
   ASSERT_TRUE(slot_span->CanStoreRawSize());
@@ -712,8 +706,7 @@ TEST_F(PartitionAllocPCScanTest, PointersToGuardPages) {
   // Initialize scannable pointers with addresses of guard pages and metadata.
   // None of these point to an MTE-tagged area, so no need for retagging.
   pointers->super_page = reinterpret_cast<void*>(super_page);
-  pointers->metadata_page =
-      PartitionSuperPageToMetadataArea<ThreadSafe>(super_page);
+  pointers->metadata_page = PartitionSuperPageToMetadataArea(super_page);
   pointers->guard_page1 =
       static_cast<char*>(pointers->metadata_page) + SystemPageSize();
   pointers->scan_bitmap = SuperPageStateBitmap(super_page);
@@ -781,7 +774,7 @@ TEST_F(PartitionAllocPCScanTest, DanglingPointerOutsideUsablePart) {
   using SourceList = List<64>;
 
   auto* value = ValueList::Create(root());
-  auto* slot_span = SlotSpanMetadata<ThreadSafe>::FromObject(value);
+  auto* slot_span = SlotSpanMetadata::FromObject(value);
   ASSERT_TRUE(slot_span->CanStoreRawSize());
 
   auto* source = SourceList::Create(root());

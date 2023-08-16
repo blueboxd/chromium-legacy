@@ -31,12 +31,15 @@
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_enums.h"
-#include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_state_restorer.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/progress_reporter.h"
 #include "ui/gl/trace_util.h"
+
+#if BUILDFLAG(IS_OZONE)
+#include "ui/gl/gl_image.h"
+#endif
 
 using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpLevelOfDetail;
@@ -564,21 +567,11 @@ void TexturePassthrough::MarkContextLost() {
   have_context_ = false;
 }
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_OZONE)
 void TexturePassthrough::SetLevelImage(GLenum target,
                                        GLint level,
                                        gl::GLImage* image) {
   SetLevelImageInternal(target, level, image, owned_service_id_);
-}
-
-gl::GLImage* TexturePassthrough::GetLevelImage(GLenum target,
-                                               GLint level) const {
-  size_t face_idx = 0;
-  if (!LevelInfoExists(target, level, &face_idx)) {
-    return nullptr;
-  }
-
-  return level_images_[face_idx][level].image.get();
 }
 #endif
 
@@ -630,7 +623,7 @@ bool TexturePassthrough::LevelInfoExists(GLenum target,
   return true;
 }
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_OZONE)
 void TexturePassthrough::SetLevelImageInternal(
     GLenum target,
     GLint level,
@@ -748,10 +741,17 @@ Texture::LevelInfo::LevelInfo(const LevelInfo& rhs)
       border(rhs.border),
       format(rhs.format),
       type(rhs.type),
+#if BUILDFLAG(IS_OZONE)
       image(rhs.image),
+#endif
       estimated_size(rhs.estimated_size),
-      internal_workaround(rhs.internal_workaround),
-      image_state(rhs.image_state) {}
+      internal_workaround(rhs.internal_workaround)
+#if BUILDFLAG(IS_OZONE)
+      ,
+      image_state(rhs.image_state)
+#endif
+{
+}
 
 Texture::LevelInfo::~LevelInfo() = default;
 
@@ -877,11 +877,18 @@ void Texture::AddToSignature(
   const Texture::LevelInfo& info =
       face_infos_[face_index].level_infos[level];
 
+  bool has_image =
+#if BUILDFLAG(IS_OZONE)
+      info.image.get();
+#else
+      false;
+#endif
+
   TextureSignature signature_data(
       target, level, sampler_state_, usage_, info.internal_format, info.width,
       info.height, info.depth, base_level_, info.border, max_level_,
-      info.format, info.type, info.image.get() != nullptr,
-      CanRender(feature_info), CanRenderTo(feature_info, level), npot_);
+      info.format, info.type, has_image, CanRender(feature_info),
+      CanRenderTo(feature_info, level), npot_);
 
   signature->append(TextureTag, sizeof(TextureTag));
   signature->append(reinterpret_cast<const char*>(&signature_data),
@@ -977,10 +984,16 @@ bool Texture::CanGenerateMipmaps(const FeatureInfo* feature_info) const {
 
   for (size_t ii = 0; ii < face_infos_.size(); ++ii) {
     const LevelInfo& info = face_infos_[ii].level_infos[base_level_];
+    bool has_image =
+#if BUILDFLAG(IS_OZONE)
+        info.image.get();
+#else
+        false;
+#endif
     if ((info.target == 0) ||
         feature_info->validators()->compressed_texture_format.IsValid(
             info.internal_format) ||
-        info.image.get()) {
+        has_image) {
       return false;
     }
   }
@@ -1163,6 +1176,9 @@ void Texture::UpdateHasImages() {
     return;
 
   bool has_images = false;
+  // TODO(crbug.com/1324249): Investigate making `has_images` and
+  // everything around its maintenance Ozone-only.
+#if BUILDFLAG(IS_OZONE)
   for (size_t ii = 0; ii < face_infos_.size(); ++ii) {
     for (size_t jj = 0; jj < face_infos_[ii].level_infos.size(); ++jj) {
       const Texture::LevelInfo& info = face_infos_[ii].level_infos[jj];
@@ -1172,6 +1188,7 @@ void Texture::UpdateHasImages() {
       }
     }
   }
+#endif
 
   if (has_images_ == has_images)
     return;
@@ -1320,8 +1337,10 @@ void Texture::SetLevelInfo(GLenum target,
   info.border = border;
   info.format = format;
   info.type = type;
+#if BUILDFLAG(IS_OZONE)
   info.image.reset();
   info.image_state = NOIMAGE;
+#endif
   info.internal_workaround = false;
 
   UpdateMipCleared(&info, width, height, cleared_rect);
@@ -1865,6 +1884,7 @@ bool Texture::ClearLevel(DecoderContext* decoder, GLenum target, GLint level) {
   return true;
 }
 
+#if BUILDFLAG(IS_OZONE)
 void Texture::SetLevelImageInternal(GLenum target,
                                     GLint level,
                                     gl::GLImage* image,
@@ -1893,38 +1913,16 @@ void Texture::SetBoundLevelImage(GLenum target,
   SetLevelImageInternal(target, level, image, ImageState::BOUND);
 }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-void Texture::SetUnboundLevelImage(GLenum target,
-                                   GLint level,
-                                   gl::GLImage* image) {
-  SetStreamTextureServiceId(0);
-  SetLevelImageInternal(target, level, image, ImageState::UNBOUND);
-}
-#endif
-
 void Texture::UnsetLevelImage(GLenum target, GLint level) {
   SetStreamTextureServiceId(0);
   SetLevelImageInternal(target, level, nullptr, ImageState::NOIMAGE);
 }
+#endif
 
 #if BUILDFLAG(IS_ANDROID)
 void Texture::BindToServiceId(GLuint service_id) {
   SetStreamTextureServiceId(service_id);
   UpdateCanRenderCondition();
-}
-#endif
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-void Texture::MarkLevelImageBound(GLenum target, GLint level) {
-  DCHECK_GE(level, 0);
-  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
-  DCHECK_LT(face_index, face_infos_.size());
-  DCHECK_LT(static_cast<size_t>(level),
-            face_infos_[face_index].level_infos.size());
-  Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
-  DCHECK_EQ(info.target, target);
-  DCHECK_EQ(info.level, level);
-  info.image_state = ImageState::BOUND;
 }
 #endif
 
@@ -1944,31 +1942,6 @@ const Texture::LevelInfo* Texture::GetLevelInfo(GLint target,
   }
   return nullptr;
 }
-
-gl::GLImage* Texture::GetLevelImage(GLint target, GLint level) const {
-  const LevelInfo* info = GetLevelInfo(target, level);
-  if (!info)
-    return nullptr;
-
-  return info->image.get();
-}
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-bool Texture::HasUnboundLevelImage(GLint target, GLint level) const {
-  const LevelInfo* info = GetLevelInfo(target, level);
-  if (!info) {
-    return false;
-  }
-
-  if (!info->image.get()) {
-    DCHECK(info->image_state == ImageState::NOIMAGE);
-    return false;
-  }
-
-  DCHECK(info->image_state != ImageState::NOIMAGE);
-  return info->image_state == ImageState::UNBOUND;
-}
-#endif
 
 void Texture::DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
                               uint64_t client_tracing_id,
@@ -2600,6 +2573,7 @@ GLsizei TextureManager::ComputeMipMapCount(GLenum target,
   }
 }
 
+#if BUILDFLAG(IS_OZONE)
 void TextureManager::SetBoundLevelImage(TextureRef* ref,
                                         GLenum target,
                                         GLint level,
@@ -2608,22 +2582,13 @@ void TextureManager::SetBoundLevelImage(TextureRef* ref,
   ref->texture()->SetBoundLevelImage(target, level, image);
 }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-void TextureManager::SetUnboundLevelImage(TextureRef* ref,
-                                          GLenum target,
-                                          GLint level,
-                                          gl::GLImage* image) {
-  DCHECK(ref);
-  ref->texture()->SetUnboundLevelImage(target, level, image);
-}
-#endif
-
 void TextureManager::UnsetLevelImage(TextureRef* ref,
                                      GLenum target,
                                      GLint level) {
   DCHECK(ref);
   ref->texture()->UnsetLevelImage(target, level);
 }
+#endif
 
 size_t TextureManager::GetSignatureSize() const {
   return sizeof(TextureTag) + sizeof(TextureSignature);

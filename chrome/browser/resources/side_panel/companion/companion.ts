@@ -8,7 +8,7 @@ import {assert} from '//resources/js/assert_ts.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
 import {Url} from '//resources/mojo/url/mojom/url.mojom-webui.js';
 
-import {ImageQuery, LinkOpenMetadata, MethodType, PromoAction, PromoType} from './companion.mojom-webui.js';
+import {ImageQuery, MethodType, PromoAction, PromoType, VisualSearchResult} from './companion.mojom-webui.js';
 import {CompanionProxy, CompanionProxyImpl} from './companion_proxy.js';
 
 /**
@@ -57,16 +57,14 @@ enum ParamType {
   URL_TO_OPEN = 'urlToOpen',
   USE_NEW_TAB = 'useNewTab',
 
-  // Arguments for MethodType.kNotifyLinkOpen for browser -> iframe
-  // communication.
-  LINK_OPEN_OPENED_URL = 'openedUrl',
-  LINK_OPEN_METADATA = 'openMetadata',
-
   // Arguments for browser -> iframe communication.
   COMPANION_UPDATE_PARAMS = 'companionUpdateParams',
 
   // Arguments for sending text find results from browser to iframe.
   CQ_TEXT_FIND_RESULTS = 'cqTextFindResults',
+
+  // Arguments for sending Visual Search results from browser to iframe.
+  VISUAL_SEARCH_PARAMS = 'visualSearchParams',
 }
 
 const companionProxy: CompanionProxy = CompanionProxyImpl.getInstance();
@@ -170,25 +168,26 @@ function initialize() {
         }
       });
 
-  companionProxy.callbackRouter.notifyLinkOpen.addListener(
-      (openedUrl: Url, metadata: LinkOpenMetadata) => {
-        const companionOrigin =
-            new URL(loadTimeData.getString('companion_origin')).origin;
-        const message = {
-          [ParamType.METHOD_TYPE]: MethodType.kNotifyLinkOpen,
-          [ParamType.LINK_OPEN_OPENED_URL]: openedUrl.url,
-          [ParamType.LINK_OPEN_METADATA]: metadata,
-        };
-
-        const frame = document.body.querySelector('iframe');
-        assert(frame);
-        if (frame.contentWindow) {
-          frame.contentWindow.postMessage(message, companionOrigin);
-        }
-      });
-
   companionProxy.handler.showUI();
 }
+
+// POST dataUris from the Visual Search classification results to the iframe
+companionProxy.callbackRouter.onDeviceVisualClassificationResult.addListener(
+    (results: VisualSearchResult[]) => {
+      const dataUris = results.map(result => result.dataUri);
+      const message = {
+        [ParamType.METHOD_TYPE]: MethodType.kOnDeviceVisualClassificationResult,
+        [ParamType.VISUAL_SEARCH_PARAMS]: dataUris,
+      };
+
+      const companionOrigin =
+          new URL(loadTimeData.getString('companion_origin')).origin;
+      const frame = document.body.querySelector('iframe');
+      assert(frame);
+      if (frame.contentWindow) {
+        frame.contentWindow.postMessage(message, companionOrigin);
+      }
+    });
 
 // Handler for postMessage() calls from the embedded iframe.
 function onCompanionMessageEvent(event: MessageEvent) {

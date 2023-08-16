@@ -53,6 +53,7 @@
 #include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ash/fileapi/file_system_backend.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -355,6 +356,7 @@ void ExecuteTaskAfterMimeTypesCollected(
 
 void PostProcessFoundTasks(Profile* profile,
                            const std::vector<extensions::EntryInfo>& entries,
+                           const std::vector<std::string>& dlp_source_urls,
                            FindTasksCallback callback,
                            std::unique_ptr<ResultingTasks> resulting_tasks) {
   AdjustTasksForMediaApp(entries, &resulting_tasks->tasks);
@@ -397,6 +399,11 @@ void PostProcessFoundTasks(Profile* profile,
       FullTaskDescriptor office_task(*it);
       office_task.task_descriptor.action_id =
           base::StrCat({kChromeUIFileManagerURL, "?", kActionIdOpenInOffice});
+      // A transfer to OneDrive is required for the Office PWA to open files, if
+      // transferring files to OneDrive is restricted, we gray out the
+      // corresponding task.
+      office_task.is_dlp_blocked = policy::dlp::IsFilesTransferBlocked(
+          dlp_source_urls, data_controls::Component::kOneDrive);
       resulting_tasks->tasks.push_back(office_task);
     }
   }
@@ -487,7 +494,6 @@ bool ExecuteOpenInOfficeTask(Profile* profile,
       modal_parent);
 }
 
-/*
 void RecordDriveOfflineUMAsGotDocsOfflineStats(
     bool open_available,
     drive::FileError error,
@@ -559,7 +565,7 @@ void RecordDriveOfflineUMAs(Profile* profile,
     }
   }
 }
-*/
+
 }  // namespace
 
 ResultingTasks::ResultingTasks() = default;
@@ -864,8 +870,7 @@ bool ExecuteFileTask(Profile* profile,
   // TODO(crbug.com/1005640): Move recording this metric to the App Service when
   // file handling is supported there.
   apps::RecordAppLaunch(task.app_id, apps::LaunchSource::kFromFileManager);
-  // TODO(b/281199375): Hold off Drive offline UMAs until DriveFS 76.
-  // RecordDriveOfflineUMAs(profile, file_urls);
+  RecordDriveOfflineUMAs(profile, file_urls);
 
   if (auto* notifier = FileTasksNotifier::GetForProfile(profile)) {
     notifier->NotifyFileTasks(file_urls);
@@ -1074,7 +1079,7 @@ void FindExtensionAndAppTasks(Profile* profile,
   FindAppServiceTasks(profile, entries, file_urls, dlp_source_urls, tasks);
 
   // Done. Apply post-filtering and callback.
-  PostProcessFoundTasks(profile, entries, std::move(callback),
+  PostProcessFoundTasks(profile, entries, dlp_source_urls, std::move(callback),
                         std::move(resulting_tasks));
 }
 

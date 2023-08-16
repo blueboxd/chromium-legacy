@@ -7,13 +7,17 @@
 #include "base/check_is_test.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 
 namespace webnn::dml {
 
 CommandQueue::CommandQueue(ComPtr<ID3D12CommandQueue> command_queue,
                            ComPtr<ID3D12Fence> fence)
-    : command_queue_(std::move(command_queue)), fence_(std::move(fence)) {
-  fence_event_.Set(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+    : base::win::ObjectWatcher::Delegate(),
+      command_queue_(std::move(command_queue)),
+      fence_(std::move(fence)) {
+  fence_event_.Set(CreateEvent(nullptr, /*bManualReset=*/FALSE,
+                               /*bInitialState=*/FALSE, nullptr));
   CHECK(fence_event_.is_valid());
 }
 
@@ -46,30 +50,62 @@ std::unique_ptr<CommandQueue> CommandQueue::Create(ID3D12Device* d3d12_device) {
       new CommandQueue(std::move(command_queue), std::move(fence)));
 }
 
-void CommandQueue::ReferenceUntilCompleted(ComPtr<IUnknown> object) {
-  QueuedObject queue_object = {last_fence_value_, std::move(object)};
-  queued_objects_.push_back(queue_object);
+HRESULT CommandQueue::ExecuteCommandList(ID3D12CommandList* command_list) {
+  return ExecuteCommandLists(base::make_span(&command_list, 1u));
 }
 
 HRESULT CommandQueue::ExecuteCommandLists(
-    const std::vector<ID3D12CommandList*>& command_lists) {
-  command_queue_->ExecuteCommandLists(command_lists.size(),
-                                      command_lists.data());
+    base::span<ID3D12CommandList*> command_lists) {
+  command_queue_->ExecuteCommandLists(
+      base::checked_cast<uint32_t>(command_lists.size()), command_lists.data());
   ++last_fence_value_;
   return command_queue_->Signal(fence_.Get(), last_fence_value_);
 }
 
-void CommandQueue::WaitForTesting() {
+HRESULT CommandQueue::WaitSyncForTesting() {
   CHECK_IS_TEST();
   if (fence_->GetCompletedValue() >= last_fence_value_) {
-    return;
+    return S_OK;
   }
+
   HRESULT hr =
-      fence_->SetEventOnCompletion(last_fence_value_, fence_event_.Get());
+      fence_->SetEventOnCompletion(last_fence_value_, fence_event_.get());
   if (FAILED(hr)) {
-    return;
+    DLOG(ERROR) << "Failed to set event on completion : "
+                << logging::SystemErrorCodeToString(hr);
+    return hr;
+  };
+  CHECK_EQ(WaitForSingleObject(fence_event_.get(), INFINITE), WAIT_OBJECT_0);
+  return S_OK;
+}
+
+void CommandQueue::OnObjectSignaled(HANDLE object) {
+  CHECK_EQ(object, fence_event_.get());
+  while (!queued_callbacks_.empty() &&
+         queued_callbacks_.front().fence_value <= fence_->GetCompletedValue()) {
+    std::move(queued_callbacks_.front().callback).Run();
+    queued_callbacks_.pop_front();
   }
-  CHECK_EQ(WaitForSingleObject(fence_event_.Get(), INFINITE), WAIT_OBJECT_0);
+}
+
+HRESULT CommandQueue::WaitAsync(base::OnceClosure callback) {
+  if (!object_watcher_.IsWatching()) {
+    CHECK(object_watcher_.StartWatchingMultipleTimes(fence_event_.get(), this));
+  }
+
+  HRESULT hr =
+      fence_->SetEventOnCompletion(last_fence_value_, fence_event_.get());
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to set event on completion : "
+                << logging::SystemErrorCodeToString(hr);
+    return hr;
+  };
+  queued_callbacks_.push_back({last_fence_value_, std::move(callback)});
+  return S_OK;
+}
+
+void CommandQueue::ReferenceUntilCompleted(ComPtr<IUnknown> object) {
+  queued_objects_.push_back({last_fence_value_, std::move(object)});
 }
 
 void CommandQueue::ReleaseCompletedResources() {
@@ -80,15 +116,28 @@ void CommandQueue::ReleaseCompletedResources() {
   }
 }
 
-CommandQueue::QueuedObject::QueuedObject(uint64_t fence_value,
-                                         ComPtr<IUnknown> object) {
-  this->fence_value = fence_value;
-  this->object = std::move(object);
+uint64_t CommandQueue::GetCompletedValue() const {
+  return fence_->GetCompletedValue();
 }
 
-CommandQueue::QueuedObject::QueuedObject(const QueuedObject& other) = default;
+uint64_t CommandQueue::GetLastFenceValue() const {
+  return last_fence_value_;
+}
 
-CommandQueue::QueuedObject::QueuedObject() = default;
+CommandQueue::QueuedObject::QueuedObject(uint64_t fence_value,
+                                         ComPtr<IUnknown> object)
+    : fence_value(fence_value), object(std::move(object)) {}
+CommandQueue::QueuedObject::QueuedObject(QueuedObject&& other) = default;
+CommandQueue::QueuedObject& CommandQueue::QueuedObject::operator=(
+    QueuedObject&& other) = default;
 CommandQueue::QueuedObject::~QueuedObject() = default;
+
+CommandQueue::QueuedCallback::QueuedCallback(uint64_t fence_value,
+                                             base::OnceClosure callback)
+    : fence_value(fence_value), callback(std::move(callback)) {}
+CommandQueue::QueuedCallback::QueuedCallback(QueuedCallback&& other) = default;
+CommandQueue::QueuedCallback& CommandQueue::QueuedCallback::operator=(
+    QueuedCallback&& other) = default;
+CommandQueue::QueuedCallback::~QueuedCallback() = default;
 
 }  // namespace webnn::dml

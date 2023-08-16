@@ -11,6 +11,11 @@
 
 namespace privacy_sandbox {
 
+// When a new enum value is added:
+// 1. Update kMaxValue to match it.
+// 2. Update `PrivacySandboxAttestationsGatedAPIProto` in
+//    `privacy_sandbox_attestations.proto`.
+// 3. Update `AllowAPI` in `privacy_sandbox_attestations_parser.cc`.
 enum class PrivacySandboxAttestationsGatedAPI {
   kTopics,
   kProtectedAudience,
@@ -18,15 +23,18 @@ enum class PrivacySandboxAttestationsGatedAPI {
   kAttributionReporting,
   kSharedStorage,
 
-  // Update this value whenever a new API is added.
   kMaxValue = kSharedStorage,
 };
 
-using PrivacySandboxAttestationsMap = base::flat_map<
-    net::SchemefulSite,
+using PrivacySandboxAttestationsGatedAPISet =
     base::EnumSet<PrivacySandboxAttestationsGatedAPI,
                   PrivacySandboxAttestationsGatedAPI::kTopics,
-                  PrivacySandboxAttestationsGatedAPI::kMaxValue>>;
+                  PrivacySandboxAttestationsGatedAPI::kMaxValue>;
+
+// TODO(crbug.com/1454847): Add a concise representation for "this site is
+// attested for all APIs".
+using PrivacySandboxAttestationsMap =
+    base::flat_map<net::SchemefulSite, PrivacySandboxAttestationsGatedAPISet>;
 
 class PrivacySandboxAttestations {
  public:
@@ -36,7 +44,7 @@ class PrivacySandboxAttestations {
   PrivacySandboxAttestations(PrivacySandboxAttestations&) = delete;
 
   // Returns whether `site` is enrolled and attested for `invoking_api`.
-  // (If the `kEnforcePrivacySandboxAttestations` flag is enabled, returns
+  // (If the `kEnforcePrivacySandboxAttestations` flag is disabled, returns
   // true unconditionally.)
   bool IsSiteAttested(net::SchemefulSite site,
                       PrivacySandboxAttestationsGatedAPI invoking_api) const;

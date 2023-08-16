@@ -50,6 +50,12 @@ class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
 
   ~PWAConfirmationBubbleView() override;
 
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kInstallButton);
+  DECLARE_CLASS_CUSTOM_ELEMENT_EVENT_TYPE(kInstalledPWAEventId);
+
+  // WidgetDelegate
+  void OnWidgetInitialized() override;
+
   // LocationBarBubbleDelegateView:
   bool OnCloseRequested(views::Widget::ClosedReason close_reason) override;
   views::View* GetInitiallyFocusedView() override;

@@ -230,28 +230,51 @@ v4l2_ctrl_h264_scaling_matrix SetupScalingMatrix(const H264SPS* sps,
 
 // Sets up v4l2_ctrl_h264_decode_params from data in the H264SliceHeader and
 // the current H264SliceMetadata.
-void SetupDecodeParams(const H264SliceHeader& slice,
-                       const H264SliceMetadata& slice_metadata,
-                       v4l2_ctrl_h264_decode_params* v4l2_decode_param) {
-  v4l2_decode_param->nal_ref_idc = slice.nal_ref_idc;
-  v4l2_decode_param->frame_num = slice.frame_num;
-  v4l2_decode_param->idr_pic_id = slice.idr_pic_id;
-  v4l2_decode_param->pic_order_cnt_lsb = slice.pic_order_cnt_lsb;
-  v4l2_decode_param->delta_pic_order_cnt_bottom =
+v4l2_ctrl_h264_decode_params SetupDecodeParams(
+    const H264SliceHeader& slice,
+    const H264SliceMetadata& slice_metadata,
+    const H264DPB& dpb) {
+  v4l2_ctrl_h264_decode_params v4l2_decode_params = {};
+
+  v4l2_decode_params.nal_ref_idc = slice.nal_ref_idc;
+  v4l2_decode_params.frame_num = slice.frame_num;
+  v4l2_decode_params.idr_pic_id = slice.idr_pic_id;
+  v4l2_decode_params.pic_order_cnt_lsb = slice.pic_order_cnt_lsb;
+  v4l2_decode_params.delta_pic_order_cnt_bottom =
       slice.delta_pic_order_cnt_bottom;
-  v4l2_decode_param->delta_pic_order_cnt0 = slice.delta_pic_order_cnt0;
-  v4l2_decode_param->delta_pic_order_cnt1 = slice.delta_pic_order_cnt1;
-  v4l2_decode_param->dec_ref_pic_marking_bit_size =
+  v4l2_decode_params.delta_pic_order_cnt0 = slice.delta_pic_order_cnt0;
+  v4l2_decode_params.delta_pic_order_cnt1 = slice.delta_pic_order_cnt1;
+  v4l2_decode_params.dec_ref_pic_marking_bit_size =
       slice.dec_ref_pic_marking_bit_size;
-  v4l2_decode_param->pic_order_cnt_bit_size = slice.pic_order_cnt_bit_size;
+  v4l2_decode_params.pic_order_cnt_bit_size = slice.pic_order_cnt_bit_size;
 
-  v4l2_decode_param->flags = 0;
+  v4l2_decode_params.flags = 0;
   if (slice.idr_pic_flag)
-    v4l2_decode_param->flags |= V4L2_H264_DECODE_PARAM_FLAG_IDR_PIC;
+    v4l2_decode_params.flags |= V4L2_H264_DECODE_PARAM_FLAG_IDR_PIC;
 
-  v4l2_decode_param->top_field_order_cnt = slice_metadata.top_field_order_cnt;
-  v4l2_decode_param->bottom_field_order_cnt =
+  v4l2_decode_params.top_field_order_cnt = slice_metadata.top_field_order_cnt;
+  v4l2_decode_params.bottom_field_order_cnt =
       slice_metadata.bottom_field_order_cnt;
+
+  size_t i = 0;
+  constexpr size_t kTimestampToNanoSecs = 1000;
+  for (const auto& element : dpb) {
+    struct v4l2_h264_dpb_entry& entry = v4l2_decode_params.dpb[i++];
+    entry = {.reference_ts = element.second.ref_ts_nsec * kTimestampToNanoSecs,
+             .pic_num = static_cast<unsigned short>(element.second.pic_num),
+             .frame_num = static_cast<unsigned short>(element.second.frame_num),
+             .fields = V4L2_H264_FRAME_REF,
+             .top_field_order_cnt = element.second.top_field_order_cnt,
+             .bottom_field_order_cnt = element.second.bottom_field_order_cnt,
+             .flags = static_cast<uint32_t>(
+                 V4L2_H264_DPB_ENTRY_FLAG_VALID |
+                 (element.second.ref ? V4L2_H264_DPB_ENTRY_FLAG_ACTIVE : 0) |
+                 (element.second.long_term_reference_flag
+                      ? V4L2_H264_DPB_ENTRY_FLAG_LONG_TERM
+                      : 0))};
+  }
+
+  return v4l2_decode_params;
 }
 
 // Determines whether the current slice is part of the same
@@ -584,9 +607,8 @@ VideoDecoder::Result H264Decoder::InitializeSliceMetadata(
 }
 
 VideoDecoder::Result H264Decoder::StartNewFrame(
-    H264SliceMetadata* slice_metadata,
-    v4l2_ctrl_h264_decode_params* v4l2_decode_param,
-    bool is_OUTPUT_queue_new) {
+    bool is_OUTPUT_queue_new,
+    H264SliceMetadata* slice_metadata) {
   const H264PPS* pps = parser_->GetPPS(curr_slice_hdr_->pic_parameter_set_id);
   const H264SPS* sps = parser_->GetSPS(pps->seq_parameter_set_id);
 
@@ -626,47 +648,28 @@ VideoDecoder::Result H264Decoder::StartNewFrame(
   v4l2_ioctl_->SetExtCtrls(OUTPUT_queue_, &ext_ctrls,
                            is_OUTPUT_queue_new && cur_val_is_supported_);
 
-  memset(v4l2_decode_param->dpb, 0, sizeof(v4l2_decode_param->dpb));
-  size_t i = 0;
-  constexpr size_t kTimestampToNanoSecs = 1000;
-  for (const auto& element : dpb_) {
-    struct v4l2_h264_dpb_entry& entry = v4l2_decode_param->dpb[i++];
-    entry = {.reference_ts = element.second.ref_ts_nsec * kTimestampToNanoSecs,
-             .pic_num = static_cast<unsigned short>(element.second.pic_num),
-             .frame_num = static_cast<unsigned short>(element.second.frame_num),
-             .fields = V4L2_H264_FRAME_REF,
-             .top_field_order_cnt = element.second.top_field_order_cnt,
-             .bottom_field_order_cnt = element.second.bottom_field_order_cnt,
-             .flags = static_cast<uint32_t>(
-                 V4L2_H264_DPB_ENTRY_FLAG_VALID |
-                 (element.second.ref ? V4L2_H264_DPB_ENTRY_FLAG_ACTIVE : 0) |
-                 (element.second.long_term_reference_flag
-                      ? V4L2_H264_DPB_ENTRY_FLAG_LONG_TERM
-                      : 0))};
-  }
-
   return VideoDecoder::kOk;
 }
 
 void H264Decoder::ProcessNextFrame() {
   H264SliceMetadata slice_metadata = {};
-  v4l2_ctrl_h264_decode_params v4l2_decode_param = {};
 
   const bool is_OUTPUT_queue_new = !OUTPUT_queue_;
   if (!OUTPUT_queue_) {
     CreateOUTPUTQueue(kDriverCodecFourcc);
   }
 
-  StartNewFrame(&slice_metadata, &v4l2_decode_param, is_OUTPUT_queue_new);
-  SetupDecodeParams(*curr_slice_hdr_, slice_metadata, &v4l2_decode_param);
+  StartNewFrame(is_OUTPUT_queue_new, &slice_metadata);
+  v4l2_ctrl_h264_decode_params v4l2_decode_params =
+      SetupDecodeParams(*curr_slice_hdr_, slice_metadata, dpb_);
 
   const int pps_id = curr_slice_hdr_->pic_parameter_set_id;
   const int sps_id = parser_->GetPPS(pps_id)->seq_parameter_set_id;
 
   struct v4l2_ext_control ctrls[] = {
       {.id = V4L2_CID_STATELESS_H264_DECODE_PARAMS,
-       .size = sizeof(v4l2_decode_param),
-       .ptr = &v4l2_decode_param},
+       .size = sizeof(v4l2_decode_params),
+       .ptr = &v4l2_decode_params},
       {.id = V4L2_CID_STATELESS_H264_DECODE_MODE,
        .value = V4L2_STATELESS_H264_DECODE_MODE_FRAME_BASED}};
   struct v4l2_ext_controls ext_ctrls = {
@@ -946,11 +949,11 @@ std::set<uint32_t> H264Decoder::GetReusableReferenceSlots(
   return reusable_buffer_slots;
 }
 
-VideoDecoder::Result H264Decoder::DecodeNextFrame(std::vector<uint8_t>& y_plane,
+VideoDecoder::Result H264Decoder::DecodeNextFrame(const int frame_number,
+                                                  std::vector<uint8_t>& y_plane,
                                                   std::vector<uint8_t>& u_plane,
                                                   std::vector<uint8_t>& v_plane,
-                                                  gfx::Size& size,
-                                                  const int frame_number) {
+                                                  gfx::Size& size) {
   // If this is the start of the Decoder, initialize Decoder state.
   if (!parser_) {
     InitializeDecoderLogic();

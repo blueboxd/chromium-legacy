@@ -53,7 +53,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Quota.AvailableDiskSpace2" units="MB"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -71,11 +71,43 @@ chromium-metrics-reviews@google.com.
     attempting to migrate the database.
   </summary>
   <token key="VersionUpgrades">
-    <variant name="FromV5ToV7"/>
-    <variant name="FromV6ToV7"/>
     <variant name="FromV7ToV8"/>
     <variant name="FromV8ToV9"/>
     <variant name="FromV9ToV10"/>
+  </token>
+</histogram>
+
+<histogram name="Quota.DatabaseSpecificError.{Statement}"
+    enum="SqliteLoggedResultCode" expires_after="2024-01-01">
+  <owner>estade@chromium.org</owner>
+  <owner>chrome-owp-storage@google.com</owner>
+  <summary>
+    Records error codes returned by SQLite for operations on the quota database.
+    These are logged separately for each database operation to help isolate
+    issues the quota db might be facing.
+  </summary>
+  <token key="Statement">
+    <variant name="BootstrapDefaultBucket"/>
+    <variant name="Commit"/>
+    <variant name="CountBuckets"/>
+    <variant name="CreateBucket"/>
+    <variant name="CreateTable"/>
+    <variant name="DeleteBucket"/>
+    <variant name="GetBucket"/>
+    <variant name="GetBucketById"/>
+    <variant name="GetBucketsForEviction"/>
+    <variant name="GetBucketsForHost"/>
+    <variant name="GetBucketsForStorageKey"/>
+    <variant name="GetBucketsForType"/>
+    <variant name="GetBucketsModifiedBetween"/>
+    <variant name="GetExpired"/>
+    <variant name="GetStorageKeys"/>
+    <variant name="Open"/>
+    <variant name="SetBucketLastAccessTime"/>
+    <variant name="SetBucketLastModifiedTime"/>
+    <variant name="SetStorageKeyLastAccessTime"/>
+    <variant name="UpdateBucketExpiration"/>
+    <variant name="UpdateBucketPersistence"/>
   </token>
 </histogram>
 
@@ -100,7 +132,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Quota.EvictedBucketDaysSinceAccess" units="units"
-    expires_after="2023-09-24">
+    expires_after="2023-12-04">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -158,7 +190,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Quota.NumberOfEvictedBucketsPerRound" units="units"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>Number of evicted buckets per round.</summary>

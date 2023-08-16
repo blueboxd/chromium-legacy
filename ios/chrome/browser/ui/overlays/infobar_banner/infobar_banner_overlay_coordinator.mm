@@ -6,11 +6,16 @@
 
 #import "base/check.h"
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/browser/infobars/infobar_ios.h"
+#import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay_request_config.h"
+#import "ios/chrome/browser/overlays/public/default/default_infobar_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_support.h"
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
-#import "ios/chrome/browser/shared/ui/util/named_guide.h"
+#import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
+#import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
+#import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_accessibility_util.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
@@ -73,12 +78,10 @@
 #pragma mark - InfobarBannerPositioner
 
 - (CGFloat)bannerYPosition {
-  NamedGuide* omniboxGuide =
-      [NamedGuide guideWithName:kOmniboxGuide
-                           view:self.baseViewController.view];
-  UIView* owningView = omniboxGuide.owningView;
-  CGRect omniboxFrame = [owningView convertRect:omniboxGuide.layoutFrame
-                                         toView:owningView.window];
+  LayoutGuideCenter* layoutGuideCenter =
+      LayoutGuideCenterForBrowser(self.browser);
+  UIView* omnibox = [layoutGuideCenter referencedViewUnderName:kOmniboxGuide];
+  CGRect omniboxFrame = [omnibox convertRect:omnibox.bounds toView:nil];
   return CGRectGetMaxY(omniboxFrame);
 }
 
@@ -181,11 +184,50 @@
 // Creates a mediator instance from the supported mediator class list that
 // supports the coordinator's request.
 - (InfobarBannerOverlayMediator*)newMediator {
+  if (DefaultInfobarOverlayRequestConfig::RequestSupport()->IsRequestSupported(
+          self.request)) {
+    DefaultInfobarOverlayRequestConfig* config =
+        self.request->GetConfig<DefaultInfobarOverlayRequestConfig>();
+    return [self mediatorForInfobarType:config->infobar_type()];
+  }
+
   InfobarBannerOverlayMediator* mediator =
       base::mac::ObjCCast<InfobarBannerOverlayMediator>(GetMediatorForRequest(
           [self class].supportedMediatorClasses, self.request));
   DCHECK(mediator) << "None of the supported mediator classes support request.";
   return mediator;
+}
+
+// Returns the mediator corresponding to the given `infobarType`.
+- (InfobarBannerOverlayMediator*)mediatorForInfobarType:
+    (InfobarType)infobarType {
+  Class mediatorClass = nil;
+
+  switch (infobarType) {
+    case InfobarType::kInfobarTypePasswordSave:
+    case InfobarType::kInfobarTypePasswordUpdate:
+      mediatorClass = [PasswordInfobarBannerOverlayMediator class];
+      break;
+    case InfobarType::kInfobarTypePermissions:
+      mediatorClass = [PermissionsBannerOverlayMediator class];
+      break;
+    case InfobarType::kInfobarTypeTailoredSecurityService:
+      mediatorClass = [TailoredSecurityInfobarBannerOverlayMediator class];
+      break;
+    case InfobarType::kInfobarTypeSaveCard:
+      mediatorClass = [SaveCardInfobarBannerOverlayMediator class];
+      break;
+    case InfobarType::kInfobarTypeSyncError:
+      mediatorClass = [SyncErrorInfobarBannerOverlayMediator class];
+      break;
+    case InfobarType::kInfobarTypeTranslate:
+      mediatorClass = [TranslateInfobarBannerOverlayMediator class];
+      break;
+    default:
+      NOTREACHED_NORETURN() << "Received unsupported infobarType.";
+  }
+
+  return [[mediatorClass alloc] initWithRequest:self.request];
 }
 
 // Indicate to the UI to dismiss itself if it is ready (e.g. the user is not

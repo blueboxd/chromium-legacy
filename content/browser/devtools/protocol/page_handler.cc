@@ -386,6 +386,8 @@ Response PageHandler::Disable() {
     item->RemoveObserver(this);
   pending_downloads_.clear();
   navigate_callbacks_.clear();
+  SetPrerenderingAllowed(true);
+
   return Response::FallThrough();
 }
 
@@ -1470,6 +1472,8 @@ Page::BackForwardCacheNotRestoredReason NotRestoredReasonToProtocol(
       return Page::BackForwardCacheNotRestoredReasonEnum::ErrorDocument;
     case Reason::kFencedFramesEmbedder:
       return Page::BackForwardCacheNotRestoredReasonEnum::FencedFramesEmbedder;
+    case Reason::kCookieDisabled:
+      return Page::BackForwardCacheNotRestoredReasonEnum::CookieDisabled;
     case Reason::kBlocklistedFeatures:
       // Blocklisted features should be handled separately and be broken down
       // into sub reasons.
@@ -1486,10 +1490,16 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
   switch (feature) {
     case WebSchedulerTrackedFeature::kWebSocket:
       return Page::BackForwardCacheNotRestoredReasonEnum::WebSocket;
+    case WebSchedulerTrackedFeature::kWebSocketSticky:
+      return Page::BackForwardCacheNotRestoredReasonEnum::WebSocketSticky;
     case WebSchedulerTrackedFeature::kWebTransport:
       return Page::BackForwardCacheNotRestoredReasonEnum::WebTransport;
+    case WebSchedulerTrackedFeature::kWebTransportSticky:
+      return Page::BackForwardCacheNotRestoredReasonEnum::WebTransportSticky;
     case WebSchedulerTrackedFeature::kWebRTC:
       return Page::BackForwardCacheNotRestoredReasonEnum::WebRTC;
+    case WebSchedulerTrackedFeature::kWebRTCSticky:
+      return Page::BackForwardCacheNotRestoredReasonEnum::WebRTCSticky;
     case WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoCache:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           MainResourceHasCacheControlNoCache;
@@ -1590,8 +1600,14 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
       // This is a test only reason and should never be called.
       NOTREACHED();
       return Page::BackForwardCacheNotRestoredReasonEnum::Dummy;
-    case WebSchedulerTrackedFeature::kAuthorizationHeader:
-      return Page::BackForwardCacheNotRestoredReasonEnum::AuthorizationHeader;
+    case WebSchedulerTrackedFeature::
+        kJsNetworkRequestReceivedCacheControlNoStoreResource:
+      return Page::BackForwardCacheNotRestoredReasonEnum::
+          JsNetworkRequestReceivedCacheControlNoStoreResource;
+    case WebSchedulerTrackedFeature::kWebSerial:
+      // Currently we add WebSchedulerTrackedFeature::kWebSerial only for
+      // disabling aggressive throttling.
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -1737,6 +1753,7 @@ Page::BackForwardCacheNotRestoredReasonType MapNotRestoredReasonToType(
     case Reason::kNoResponseHead:
     case Reason::kErrorDocument:
     case Reason::kFencedFramesEmbedder:
+    case Reason::kCookieDisabled:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::Circumstantial;
     case Reason::kCacheControlNoStore:
     case Reason::kCacheControlNoStoreCookieModified:
@@ -1802,8 +1819,14 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
     case WebSchedulerTrackedFeature::kInjectedJavascript:
     case WebSchedulerTrackedFeature::kDocumentLoaded:
     case WebSchedulerTrackedFeature::kDummy:
-    case WebSchedulerTrackedFeature::kAuthorizationHeader:
+    case WebSchedulerTrackedFeature::
+        kJsNetworkRequestReceivedCacheControlNoStoreResource:
+    case WebSchedulerTrackedFeature::kWebRTCSticky:
+    case WebSchedulerTrackedFeature::kWebTransportSticky:
+    case WebSchedulerTrackedFeature::kWebSocketSticky:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::Circumstantial;
+    case WebSchedulerTrackedFeature::kWebSerial:
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -1890,6 +1913,21 @@ Response PageHandler::AddCompilationCache(const std::string& url,
   if (allow_unsafe_operations_)
     return Response::FallThrough();
   return Response::ServerError("Permission denied");
+}
+
+void PageHandler::IsPrerenderingAllowed(bool& is_allowed) {
+  is_allowed &= is_prerendering_allowed_;
+}
+
+Response PageHandler::SetPrerenderingAllowed(bool is_allowed) {
+  Response response = AssureTopLevelActiveFrame();
+  if (response.IsError()) {
+    return response;
+  }
+
+  is_prerendering_allowed_ = is_allowed;
+
+  return Response::Success();
 }
 
 Response PageHandler::AssureTopLevelActiveFrame() {

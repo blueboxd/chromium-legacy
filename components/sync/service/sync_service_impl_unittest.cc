@@ -204,6 +204,7 @@ class SyncServiceImplTest : public ::testing::Test {
     SyncStatus status = engine()->GetDetailedStatus();
     status.notifications_enabled = true;
     engine()->SetDetailedStatus(status);
+    service()->OnInvalidationStatusChanged();
   }
 
   void TriggerPassphraseRequired() {
@@ -255,7 +256,8 @@ class SyncServiceImplTest : public ::testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_;
   SyncServiceImplBundle sync_service_impl_bundle_;
   std::unique_ptr<SyncServiceImpl> service_;
-  raw_ptr<SyncClientMock> sync_client_;  // Owned by |service_|.
+  raw_ptr<SyncClientMock, DanglingUntriaged>
+      sync_client_;  // Owned by |service_|.
   // The controllers are owned by |service_|.
   std::map<ModelType, FakeDataTypeController*> controller_map_;
 };
@@ -579,7 +581,8 @@ TEST_F(SyncServiceImplTest,
   EXPECT_EQ(1, component_factory()->clear_transport_data_call_count());
 #if BUILDFLAG(IS_IOS)
   SyncPrefs sync_prefs(prefs());
-  EXPECT_FALSE(sync_prefs.IsOptedInForBookmarksAndReadingListAccountStorage());
+  EXPECT_FALSE(
+      sync_prefs.IsOptedInForBookmarksAndReadingListAccountStorageForTesting());
 #endif  // BUILDFLAG(IS_IOS)
 }
 
@@ -616,7 +619,8 @@ TEST_F(SyncServiceImplTest,
 
   EXPECT_EQ(1, component_factory()->clear_transport_data_call_count());
 #if BUILDFLAG(IS_IOS)
-  EXPECT_FALSE(sync_prefs.IsOptedInForBookmarksAndReadingListAccountStorage());
+  EXPECT_FALSE(
+      sync_prefs.IsOptedInForBookmarksAndReadingListAccountStorageForTesting());
 #endif  // BUILDFLAG(IS_IOS)
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1004,7 +1008,10 @@ TEST_F(SyncServiceImplTest, DisableSyncOnClient) {
   ASSERT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
   ASSERT_EQ(0, get_controller(BOOKMARKS)->model()->clear_metadata_call_count());
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   ASSERT_FALSE(service()->IsSyncFeatureDisabledViaDashboard());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   EXPECT_CALL(
       *trusted_vault_client(),
@@ -1026,20 +1033,29 @@ TEST_F(SyncServiceImplTest, DisableSyncOnClient) {
   EXPECT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
   EXPECT_TRUE(service()->IsSyncFeatureDisabledViaDashboard());
-#else
-  EXPECT_FALSE(
-      identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSync));
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+#elif BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+  // On iOS and Android, the primary account is cleared.
   EXPECT_FALSE(
       identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSignin));
-#endif
   EXPECT_EQ(SyncService::DisableReasonSet(
                 {SyncService::DISABLE_REASON_NOT_SIGNED_IN}),
             service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
             service()->GetTransportState());
   EXPECT_TRUE(service()->GetLastSyncedTimeForDebugging().is_null());
-#endif
+#else
+  // On Desktop and Lacros, the sync consent is revoked, but the primary account
+  // is left at ConsentLevel::kSignin. Sync will restart in standalone transport
+  // mode.
+  EXPECT_FALSE(
+      identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSync));
+  EXPECT_TRUE(
+      identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+  EXPECT_TRUE(service()->GetDisableReasons().Empty());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SyncService::TransportState::ACTIVE,
+            service()->GetTransportState());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   EXPECT_GT(get_controller(BOOKMARKS)->model()->clear_metadata_call_count(), 0);
 
@@ -1378,13 +1394,19 @@ TEST_F(SyncServiceImplTest, ShouldReturnErrorDownloadStatus) {
 }
 
 TEST_F(SyncServiceImplTest, ShouldReturnErrorDownloadStatusWhenSyncDisabled) {
+  base::HistogramTester histogram_tester;
   prefs()->SetManagedPref(prefs::internal::kSyncManaged, base::Value(true));
   SignIn();
   CreateService();
   InitializeForNthSync();
 
+  // OnInvalidationStatusChanged() is used to only notify observers. This will
+  // cause the histogram recorder to check data types status.
+  service()->OnInvalidationStatusChanged();
   EXPECT_EQ(service()->GetDownloadStatusFor(syncer::BOOKMARKS),
             SyncService::ModelTypeDownloadStatus::kError);
+  histogram_tester.ExpectTotalCount("Sync.ModelTypeUpToDateTime",
+                                    /*expected_count=*/0);
 }
 
 TEST_F(SyncServiceImplTest, ShouldReturnWaitingDownloadStatus) {
@@ -1431,6 +1453,7 @@ TEST_F(SyncServiceImplTest, ShouldReturnWaitingDownloadStatus) {
 }
 
 TEST_F(SyncServiceImplTest, ShouldReturnErrorWhenDataTypeDisabled) {
+  base::HistogramTester histogram_tester;
   SignIn();
   CreateService();
   InitializeForNthSync(/*run_until_idle=*/false);
@@ -1448,6 +1471,12 @@ TEST_F(SyncServiceImplTest, ShouldReturnErrorWhenDataTypeDisabled) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(service()->GetDownloadStatusFor(syncer::BOOKMARKS),
             SyncService::ModelTypeDownloadStatus::kError);
+
+  SetInvalidationsEnabled();
+  histogram_tester.ExpectTotalCount("Sync.ModelTypeUpToDateTime.BOOKMARK",
+                                    /*expected_count=*/0);
+  histogram_tester.ExpectTotalCount("Sync.ModelTypeUpToDateTime",
+                                    /*expected_count=*/1);
 }
 
 TEST_F(SyncServiceImplTest, ShouldWaitUntilNoInvalidations) {
@@ -1479,6 +1508,7 @@ TEST_F(SyncServiceImplTest, ShouldWaitForInitializedInvalidations) {
 }
 
 TEST_F(SyncServiceImplTest, ShouldWaitForPollRequest) {
+  base::HistogramTester histogram_tester;
   SignIn();
   CreateService();
   InitializeForNthSync();
@@ -1486,13 +1516,46 @@ TEST_F(SyncServiceImplTest, ShouldWaitForPollRequest) {
   ASSERT_EQ(service()->GetDownloadStatusFor(syncer::BOOKMARKS),
             SyncService::ModelTypeDownloadStatus::kUpToDate);
 
+  histogram_tester.ExpectTotalCount("Sync.ModelTypeUpToDateTime.BOOKMARK",
+                                    /*expected_count=*/1);
+  histogram_tester.ExpectTotalCount("Sync.ModelTypeUpToDateTime",
+                                    /*expected_count=*/1);
+
+  // OnInvalidationStatusChanged() is used to only notify observers, this is
+  // required for metrics since they are calculated only when SyncService state
+  // changes.
   engine()->SetPollIntervalElapsed(true);
+  service()->OnInvalidationStatusChanged();
   EXPECT_EQ(service()->GetDownloadStatusFor(syncer::BOOKMARKS),
             SyncService::ModelTypeDownloadStatus::kWaitingForUpdates);
 
   engine()->SetPollIntervalElapsed(false);
+  service()->OnInvalidationStatusChanged();
   EXPECT_EQ(service()->GetDownloadStatusFor(syncer::BOOKMARKS),
             SyncService::ModelTypeDownloadStatus::kUpToDate);
+
+  // The histograms should be recorded only once.
+  histogram_tester.ExpectTotalCount("Sync.ModelTypeUpToDateTime.BOOKMARK",
+                                    /*expected_count=*/1);
+  histogram_tester.ExpectTotalCount("Sync.ModelTypeUpToDateTime",
+                                    /*expected_count=*/1);
+}
+
+TEST_F(SyncServiceImplTest, ShouldReturnErrorOnSyncPaused) {
+  SignIn();
+  CreateService();
+  InitializeForNthSync();
+  ASSERT_EQ(service()->GetDownloadStatusFor(syncer::BOOKMARKS),
+            SyncService::ModelTypeDownloadStatus::kWaitingForUpdates);
+
+  // Mimic entering Sync paused state.
+  identity_test_env()->SetInvalidRefreshTokenForPrimaryAccount();
+  ASSERT_EQ(SyncService::TransportState::PAUSED,
+            service()->GetTransportState());
+
+  // Expect the error status when Sync is paused.
+  EXPECT_EQ(service()->GetDownloadStatusFor(syncer::BOOKMARKS),
+            SyncService::ModelTypeDownloadStatus::kError);
 }
 
 }  // namespace

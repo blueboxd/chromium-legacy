@@ -848,7 +848,7 @@ static Node* ConvertNodesIntoNode(
   return fragment;
 }
 
-void Node::Prepend(
+void Node::prepend(
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
     ExceptionState& exception_state) {
   auto* this_node = DynamicTo<ContainerNode>(this);
@@ -864,7 +864,7 @@ void Node::Prepend(
     this_node->InsertBefore(node, this_node->firstChild(), exception_state);
 }
 
-void Node::Append(
+void Node::append(
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
     ExceptionState& exception_state) {
   auto* this_node = DynamicTo<ContainerNode>(this);
@@ -880,7 +880,7 @@ void Node::Append(
     this_node->AppendChild(node, exception_state);
 }
 
-void Node::Before(
+void Node::before(
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
     ExceptionState& exception_state) {
   ContainerNode* parent = parentNode();
@@ -897,7 +897,7 @@ void Node::Before(
   }
 }
 
-void Node::After(
+void Node::after(
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
     ExceptionState& exception_state) {
   ContainerNode* parent = parentNode();
@@ -909,7 +909,7 @@ void Node::After(
     parent->InsertBefore(node, viable_next_sibling, exception_state);
 }
 
-void Node::ReplaceWith(
+void Node::replaceWith(
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
     ExceptionState& exception_state) {
   ContainerNode* parent = parentNode();
@@ -927,7 +927,7 @@ void Node::ReplaceWith(
 }
 
 // https://dom.spec.whatwg.org/#dom-parentnode-replacechildren
-void Node::ReplaceChildren(
+void Node::replaceChildren(
     const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
     ExceptionState& exception_state) {
   auto* this_node = DynamicTo<ContainerNode>(this);
@@ -968,6 +968,14 @@ void Node::remove(ExceptionState& exception_state) {
 
 void Node::remove() {
   remove(ASSERT_NO_EXCEPTION);
+}
+
+Element* Node::previousElementSibling() {
+  return ElementTraversal::PreviousSibling(*this);
+}
+
+Element* Node::nextElementSibling() {
+  return ElementTraversal::NextSibling(*this);
 }
 
 Node* Node::cloneNode(bool deep, ExceptionState& exception_state) const {
@@ -2712,47 +2720,6 @@ void Node::RemoveAllEventListenersRecursively() {
   }
 }
 
-namespace {
-
-// Helper object to allocate EventTargetData which is otherwise only used
-// through EventTargetWithInlineData.
-class EventTargetDataObject final
-    : public GarbageCollected<EventTargetDataObject> {
- public:
-  void Trace(Visitor* visitor) const { visitor->Trace(data_); }
-
-  EventTargetData& GetEventTargetData() { return data_; }
-
- private:
-  EventTargetData data_;
-};
-
-}  // namespace
-
-using EventTargetDataMap =
-    HeapHashMap<WeakMember<Node>, Member<EventTargetDataObject>>;
-static EventTargetDataMap& GetEventTargetDataMap() {
-  DEFINE_STATIC_LOCAL(Persistent<EventTargetDataMap>, map,
-                      (MakeGarbageCollected<EventTargetDataMap>()));
-  return *map;
-}
-
-EventTargetData* Node::GetEventTargetData() {
-  return HasEventTargetData()
-             ? &GetEventTargetDataMap().at(this)->GetEventTargetData()
-             : nullptr;
-}
-
-EventTargetData& Node::EnsureEventTargetData() {
-  if (HasEventTargetData())
-    return GetEventTargetDataMap().at(this)->GetEventTargetData();
-  DCHECK(!GetEventTargetDataMap().Contains(this));
-  auto* data = MakeGarbageCollected<EventTargetDataObject>();
-  GetEventTargetDataMap().Set(this, data);
-  SetHasEventTargetData(true);
-  return data->GetEventTargetData();
-}
-
 const HeapVector<Member<MutationObserverRegistration>>*
 Node::MutationObserverRegistry() {
   if (!HasRareData())
@@ -2897,8 +2864,9 @@ void Node::NotifyMutationObserversNodeWillDetach() {
 }
 
 void Node::HandleLocalEvents(Event& event) {
-  if (!HasEventTargetData())
+  if (!GetEventTargetData()) {
     return;
+  }
 
   if (IsDisabledFormControl(this) && IsA<MouseEvent>(event) &&
       !RuntimeEnabledFeatures::SendMouseEventsDisabledFormControlsEnabled()) {
@@ -3010,16 +2978,15 @@ void Node::DefaultEventHandler(Event& event) {
       if (EnclosingLinkEventParentOrSelf())
         return;
 
-      // Avoid that canBeScrolledAndHasScrollableArea changes layout tree
-      // structure.
+      // Avoid that IsUserScrollable changes layout tree structure.
       // FIXME: We should avoid synchronous layout if possible. We can
       // remove this synchronous layout if we avoid synchronous layout in
       // LayoutTextControlSingleLine::scrollHeight
       GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kInput);
       LayoutObject* layout_object = GetLayoutObject();
-      while (layout_object && (!layout_object->IsBox() ||
-                               !To<LayoutBox>(layout_object)
-                                    ->CanBeScrolledAndHasScrollableArea())) {
+      while (layout_object &&
+             (!layout_object->IsBox() ||
+              !To<LayoutBox>(layout_object)->IsUserScrollable())) {
         if (auto* document = DynamicTo<Document>(layout_object->GetNode())) {
           Element* owner = document->LocalOwner();
           layout_object = owner ? owner->GetLayoutObject() : nullptr;
@@ -3397,7 +3364,7 @@ void Node::RemovedFromFlatTree() {
 
   // Ensure removal from accessibility cache even if it doesn't have layout.
   if (auto* cache = GetDocument().ExistingAXObjectCache()) {
-    cache->Remove(this);
+    cache->RemoveSubtreeWhenSafe(this);
   }
 }
 

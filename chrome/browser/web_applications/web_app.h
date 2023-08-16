@@ -13,6 +13,7 @@
 #include "base/containers/flat_set.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
@@ -332,9 +333,36 @@ class WebApp {
   // If present, signals that this app is an Isolated Web App, and contains
   // IWA-specific information like bundle location.
   struct IsolationData {
-    explicit IsolationData(IsolatedWebAppLocation location);
+    // If present, signals that an update for this app is available locally and
+    // waiting to be applied.
+    struct PendingUpdateInfo {
+      PendingUpdateInfo(IsolatedWebAppLocation location, base::Version version);
+      ~PendingUpdateInfo();
+      PendingUpdateInfo(const PendingUpdateInfo&);
+      PendingUpdateInfo& operator=(const PendingUpdateInfo&);
+
+      bool operator==(const PendingUpdateInfo&) const;
+      bool operator!=(const PendingUpdateInfo&) const;
+
+      base::Value AsDebugValue() const;
+      friend std::ostream& operator<<(std::ostream& os,
+                                      const PendingUpdateInfo& update_info) {
+        return os << update_info.AsDebugValue();
+      }
+
+      IsolatedWebAppLocation location;
+      base::Version version;
+
+      // TODO(cmfcmf): Add further information about the update here, such as
+      // whether it should be applied immediately, or only once the IWA is
+      // closed.
+    };
+
+    IsolationData(IsolatedWebAppLocation location, base::Version version);
     IsolationData(IsolatedWebAppLocation location,
-                  const std::set<std::string>& controlled_frame_partitions);
+                  base::Version version,
+                  const std::set<std::string>& controlled_frame_partitions,
+                  const absl::optional<PendingUpdateInfo>& pending_update_info);
     ~IsolationData();
     IsolationData(const IsolationData&);
     IsolationData& operator=(const IsolationData&);
@@ -343,10 +371,30 @@ class WebApp {
 
     bool operator==(const IsolationData&) const;
     bool operator!=(const IsolationData&) const;
+
     base::Value AsDebugValue() const;
+    friend std::ostream& operator<<(std::ostream& os,
+                                    const IsolationData& isolation_data) {
+      return os << isolation_data.AsDebugValue();
+    }
+
+    // Sets the pending update info. Will `CHECK` if the type of
+    // `pending_update_info.location` is not the same as `location`. In other
+    // words, a `DevModeBundle` app cannot be updated to, e.g.,
+    // `InstalledBundle`.
+    void SetPendingUpdateInfo(
+        const absl::optional<PendingUpdateInfo>& pending_update_info);
+
+    const absl::optional<PendingUpdateInfo>& pending_update_info() const {
+      return pending_update_info_;
+    }
 
     IsolatedWebAppLocation location;
+    base::Version version;
     std::set<std::string> controlled_frame_partitions;
+
+   private:
+    absl::optional<PendingUpdateInfo> pending_update_info_;
   };
   const absl::optional<IsolationData>& isolation_data() const {
     return isolation_data_;
@@ -396,9 +444,11 @@ class WebApp {
   // Performs sorting and uniquifying of |sizes| if passed as vector.
   void SetDownloadedIconSizes(IconPurpose purpose, SortedSizesPx sizes);
   void SetIsGeneratedIcon(bool is_generated_icon);
-  void SetShortcutsMenuItemInfos(
-      std::vector<WebAppShortcutsMenuItemInfo> shortcuts_menu_item_infos);
-  void SetDownloadedShortcutsMenuIconsSizes(std::vector<IconSizes> icon_sizes);
+  // Sets information about the shortcuts menu for the app.
+  // `shortcuts_menu_item_infos` and `downloaded_sizes` must be the same length.
+  void SetShortcutsMenuInfo(
+      std::vector<WebAppShortcutsMenuItemInfo> shortcuts_menu_item_infos,
+      std::vector<IconSizes> downloaded_sizes);
   void SetFileHandlers(apps::FileHandlers file_handlers);
   void SetFileHandlerApprovalState(ApiApprovalState approval_state);
   void SetFileHandlerOsIntegrationState(
@@ -455,7 +505,7 @@ class WebApp {
   // This adds a policy_id per management type (source) for the
   // ExternalConfigMap.
   void AddPolicyIdToManagementExternalConfigMap(WebAppManagement::Type type,
-                                                const std::string& policy_id);
+                                                std::string policy_id);
 
   // Encapsulate the addition of install_url and is_placeholder information
   // for cases where both need to be added.
@@ -463,7 +513,8 @@ class WebApp {
                                     GURL install_url,
                                     bool is_placeholder);
 
-  bool RemoveInstallUrlForSource(WebAppManagement::Type type, GURL install_url);
+  bool RemoveInstallUrlForSource(WebAppManagement::Type type,
+                                 const GURL& install_url);
 
   // Only used on Mac, determines if the toolbar should be permanently shown
   // when in fullscreen.

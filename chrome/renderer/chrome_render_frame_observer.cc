@@ -29,6 +29,7 @@
 #include "chrome/common/open_search_description_document_handler.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/renderer/chrome_content_settings_agent_delegate.h"
+#include "chrome/renderer/companion/visual_search/visual_search_classifier_agent.h"
 #include "chrome/renderer/media/media_feeds.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/lens/lens_metadata.mojom.h"
@@ -198,6 +199,10 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
   SetClientSidePhishingDetection();
 #endif
 
+#if !BUILDFLAG(IS_ANDROID)
+  SetVisualSearchClassifierAgent();
+#endif
+
   if (!translate::IsSubFrameTranslationEnabled()) {
     translate_agent_ = new translate::TranslateAgent(
         render_frame, ISOLATED_WORLD_ID_TRANSLATE);
@@ -325,7 +330,7 @@ void ChromeRenderFrameObserver::DidClearWindowObject() {
 
   // Install ReadAnythingAppController on render frames with the Read Anything
   // url, which is chrome-untrusted. ReadAnythingAppController installs v8
-  // bindings in the chrome.readAnything namespace which are consumed by
+  // bindings in the chrome.readingMode namespace which are consumed by
   // read_anything/app.ts, the resource of the Read Anything WebUI.
   if (features::IsReadAnythingEnabled() &&
       render_frame()->GetWebFrame()->GetDocument().Url() ==
@@ -551,6 +556,14 @@ void ChromeRenderFrameObserver::SetClientSidePhishingDetection() {
 #if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
   phishing_classifier_ = safe_browsing::PhishingClassifierDelegate::Create(
       render_frame(), nullptr);
+#endif
+}
+
+void ChromeRenderFrameObserver::SetVisualSearchClassifierAgent() {
+#if !BUILDFLAG(IS_ANDROID)
+  visual_classifier_ =
+      companion::visual_search::VisualSearchClassifierAgent::Create(
+          render_frame());
 #endif
 }
 

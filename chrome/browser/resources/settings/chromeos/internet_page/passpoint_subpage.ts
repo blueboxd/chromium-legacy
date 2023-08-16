@@ -12,16 +12,17 @@ import '../settings_shared.css.js';
 import {MojoConnectivityProvider} from 'chrome://resources/ash/common/connectivity/mojo_connectivity_provider.js';
 import {PasspointServiceInterface, PasspointSubscription} from 'chrome://resources/ash/common/connectivity/passpoint.mojom-webui.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
+import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
 import {App, AppType, PageHandlerInterface} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 import {BrowserProxy as AppManagementComponentBrowserProxy} from 'chrome://resources/cr_components/app_management/browser_proxy.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {CrosNetworkConfigInterface, NetworkCertificate} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
-import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {CrosNetworkConfigInterface, FilterType, NetworkCertificate, NetworkStateProperties, NO_LIMIT} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
+import {NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
+import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {castExists} from '../assert_extras.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
-import {Route, Router} from '../router.js';
+import {Route, Router, routes} from '../router.js';
 
 import {PasspointListenerMixin} from './passpoint_listener_mixin.js';
 import {getTemplate} from './passpoint_subpage.html.js';
@@ -62,6 +63,14 @@ export class SettingsPasspointSubpageElement extends PasspointListenerMixin
         computed: 'getProviderName_(subscription_, app_)',
       },
 
+      /** List of networks populated with the subscription. */
+      networks_: {
+        type: Array,
+        value() {
+          return [];
+        },
+      },
+
       /** Tell if the forget dialog should be displayed. */
       showForgetDialog_: Boolean,
 
@@ -76,6 +85,7 @@ export class SettingsPasspointSubpageElement extends PasspointListenerMixin
   private domainsExpanded_: boolean;
   private id_: string;
   private networkConfig_: CrosNetworkConfigInterface;
+  private networks_: NetworkStateProperties[];
   private passpointService_: PasspointServiceInterface;
   private providerName_: string;
   private showForgetDialog_: boolean;
@@ -132,6 +142,7 @@ export class SettingsPasspointSubpageElement extends PasspointListenerMixin
     this.subscription_ = response.result;
     this.refreshCertificates_();
     this.refreshApp_(this.subscription_);
+    this.refreshNetworks_(this.subscription_);
   }
 
   private async refreshCertificates_(): Promise<void> {
@@ -149,6 +160,19 @@ export class SettingsPasspointSubpageElement extends PasspointListenerMixin
         return;
       }
     }
+  }
+
+  private async refreshNetworks_(subscription: PasspointSubscription):
+      Promise<void> {
+    const filter = {
+      filter: FilterType.kConfigured,
+      limit: NO_LIMIT,
+      networkType: NetworkType.kWiFi,
+    };
+    const response = await this.networkConfig_.getNetworkStateList(filter);
+    this.networks_ = response.result.filter(network => {
+      return network.typeState!.wifi!.passpointId === subscription.id;
+    });
   }
 
   private getCertificateAuthorityName_(): string {
@@ -180,9 +204,30 @@ export class SettingsPasspointSubpageElement extends PasspointListenerMixin
     return this.subscription_!.domains;
   }
 
-  private getRemovalDialogDescription_(): string {
-    return this.i18n(
-        'passpointRemovalDescription', this.subscription_!.friendlyName);
+  private getNetworkDisplayName_(networkState: OncMojo.NetworkStateProperties):
+      string {
+    return OncMojo.getNetworkStateDisplayName(networkState);
+  }
+
+  private hasNetworks_(): boolean {
+    return this.networks_.length > 0;
+  }
+
+  private onAssociatedNetworkClicked_(
+      event: DomRepeatEvent<OncMojo.NetworkStateProperties>): void {
+    const networkState = event.model.item;
+    const showDetailEvent = new CustomEvent(
+        'show-detail', {bubbles: true, composed: true, detail: networkState});
+    this.dispatchEvent(showDetailEvent);
+    event.stopPropagation();
+  }
+
+  private getRemovalDialogDescription_(): TrustedHTML {
+    return this.i18nAdvanced('passpointRemovalDescription', {
+      substitutions: [
+        this.subscription_!.friendlyName,
+      ],
+    });
   }
 
   private getRemovalDialog_(): HTMLDialogElement {
@@ -190,7 +235,7 @@ export class SettingsPasspointSubpageElement extends PasspointListenerMixin
         this.shadowRoot!.querySelector<HTMLDialogElement>('#removalDialog'));
   }
 
-  private onForgetTap_(): void {
+  private onForgetClick_(): void {
     this.showForgetDialog_ = true;
   }
 

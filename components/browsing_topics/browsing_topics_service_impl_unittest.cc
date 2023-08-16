@@ -59,7 +59,6 @@ constexpr base::Time kTime1 =
 constexpr base::Time kTime2 =
     base::Time::FromDeltaSinceWindowsEpoch(base::Days(2));
 
-constexpr size_t kTaxonomySize = 349;
 constexpr int kTaxonomyVersion = 1;
 constexpr int64_t kModelVersion = 5000000000LL;
 
@@ -77,8 +76,8 @@ EpochTopics CreateTestEpochTopics(
   }
 
   return EpochTopics(std::move(top_topics_and_observing_domains),
-                     padded_top_topics_start_index, kTaxonomySize,
-                     kTaxonomyVersion, model_version, calculation_time);
+                     padded_top_topics_start_index, kTaxonomyVersion,
+                     model_version, calculation_time);
 }
 
 }  // namespace
@@ -168,7 +167,8 @@ class BrowsingTopicsServiceImplTest
             base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         /*enabled_features=*/
-        {{blink::features::kBrowsingTopics,
+        {{blink::features::kBrowsingTopics, {}},
+         {blink::features::kBrowsingTopicsParameters,
           {{"time_period_per_epoch",
             base::StrCat({base::NumberToString(kEpoch.InSeconds()), "s"})},
            {"browsing_topics_max_epoch_introduction_delay",
@@ -2063,7 +2063,8 @@ TEST_F(BrowsingTopicsServiceImplTest, BlockTopicWithFinch) {
   scoped_feature_list_.Reset();
   scoped_feature_list_.InitWithFeaturesAndParameters(
       /*enabled_features=*/
-      {{blink::features::kBrowsingTopics,
+      {{blink::features::kBrowsingTopics, {}},
+       {blink::features::kBrowsingTopicsParameters,
         {{"time_period_per_epoch",
           base::StrCat({base::NumberToString(kEpoch.InSeconds()), "s"})},
          {"browsing_topics_max_epoch_introduction_delay",

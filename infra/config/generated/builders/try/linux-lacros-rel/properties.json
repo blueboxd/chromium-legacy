@@ -11,7 +11,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "linux-lacros-builder-rel",
-              "project": "chromium-m115"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -38,7 +38,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "linux-lacros-tester-rel",
-              "project": "chromium-m115"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -63,7 +63,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "linux-lacros-builder-rel",
-                "project": "chromium-m115"
+                "project": "chromium"
               }
             }
           }
@@ -73,17 +73,24 @@
         {
           "bucket": "ci",
           "builder": "linux-lacros-builder-rel",
-          "project": "chromium-m115"
+          "project": "chromium"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
           "builder": "linux-lacros-tester-rel",
-          "project": "chromium-m115"
+          "project": "chromium"
         }
       ]
     }
+  },
+  "$build/code_coverage": {
+    "coverage_test_types": [
+      "unit",
+      "overall"
+    ],
+    "use_clang_coverage": true
   },
   "$build/flakiness": {
     "check_for_flakiness": true

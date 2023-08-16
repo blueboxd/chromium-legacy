@@ -115,13 +115,6 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
             "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_POSITION";
 
     /**
-     * Extra that defines the behavior of the opening animation of the side sheet.
-     * It is set to {@link #ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_SIDE} by default.
-     */
-    public static final String EXTRA_ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR =
-            "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR";
-
-    /**
      * Extra used to keep the caller alive. Its value is an Intent.
      */
     public static final String EXTRA_KEEP_ALIVE = "android.support.customtabs.extra.KEEP_ALIVE";
@@ -427,8 +420,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         return CustomTabsConnection.getInstance().isFirstParty(packageName);
     }
 
-    @Nullable
-    private static String getClientPackageNameFromSessionOrCallingActivity(
+    private static @Nullable String getClientPackageNameFromSessionOrCallingActivity(
             Intent intent, CustomTabsSessionToken session) {
         String packageNameFromSession =
                 CustomTabsConnection.getInstance().getClientPackageNameForSession(session);
@@ -834,8 +826,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         return url;
     }
 
-    @Nullable
-    private TrustedWebActivityDisplayMode resolveTwaDisplayMode() {
+    private @Nullable TrustedWebActivityDisplayMode resolveTwaDisplayMode() {
         Bundle bundle = IntentUtils.safeGetBundleExtra(mIntent,
                 TrustedWebActivityIntentBuilder.EXTRA_DISPLAY_MODE);
         if (bundle == null) {
@@ -1024,9 +1015,6 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         if (IntentUtils.safeHasExtra(intent, EXTRA_ACTIVITY_SIDE_SHEET_POSITION)) {
             featureUsage.log(CustomTabsFeature.EXTRA_ACTIVITY_SIDE_SHEET_POSITION);
         }
-        if (IntentUtils.safeHasExtra(intent, EXTRA_ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR)) {
-            featureUsage.log(CustomTabsFeature.EXTRA_ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR);
-        }
     }
 
     @Override
@@ -1045,14 +1033,12 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     }
 
     @Override
-    @Nullable
-    public CustomTabsSessionToken getSession() {
+    public @Nullable CustomTabsSessionToken getSession() {
         return mSession;
     }
 
     @Override
-    @Nullable
-    public Intent getKeepAliveServiceIntent() {
+    public @Nullable Intent getKeepAliveServiceIntent() {
         return mKeepAliveServiceIntent;
     }
 
@@ -1084,8 +1070,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     }
 
     @Override
-    @Nullable
-    public String getClientPackageName() {
+    public @Nullable String getClientPackageName() {
         return getClientPackageNameFromSessionOrCallingActivity(mIntent, mSession);
     }
 
@@ -1109,8 +1094,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     }
 
     @Override
-    @Nullable
-    public String getUrlToLoad() {
+    public @Nullable String getUrlToLoad() {
         if (mUrlToLoad == null) {
             mUrlToLoad = resolveUrlToLoad(getIntent());
         }
@@ -1128,8 +1112,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     }
 
     @Override
-    @Nullable
-    public Drawable getCloseButtonDrawable() {
+    public @Nullable Drawable getCloseButtonDrawable() {
         return mCloseButtonIcon;
     }
 
@@ -1154,8 +1137,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     }
 
     @Override
-    @Nullable
-    public RemoteViews getBottomBarRemoteViews() {
+    public @Nullable RemoteViews getBottomBarRemoteViews() {
         return mRemoteViews;
     }
 
@@ -1167,8 +1149,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     }
 
     @Override
-    @Nullable
-    public PendingIntent getRemoteViewsPendingIntent() {
+    public @Nullable PendingIntent getRemoteViewsPendingIntent() {
         return mRemoteViewsPendingIntent;
     }
 
@@ -1216,8 +1197,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
      * @return See {@link #EXTRA_MEDIA_VIEWER_URL}.
      */
     @Override
-    @Nullable
-    public String getMediaViewerUrl() {
+    public @Nullable String getMediaViewerUrl() {
         return mMediaViewerUrl;
     }
 
@@ -1259,8 +1239,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     }
 
     @Override
-    @Nullable
-    public String getTranslateLanguage() {
+    public @Nullable String getTranslateLanguage() {
         return shouldAutoTranslate() ? mAutoTranslateLanguage : mTranslateLanguage;
     }
 
@@ -1285,8 +1264,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     }
 
     @Override
-    @Nullable
-    public ShareTarget getShareTarget() {
+    public @Nullable ShareTarget getShareTarget() {
         Bundle bundle = IntentUtils.safeGetBundleExtra(
                 getIntent(), TrustedWebActivityIntentBuilder.EXTRA_SHARE_TARGET);
         if (bundle == null) return null;
@@ -1299,8 +1277,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     }
 
     @Override
-    @Nullable
-    public ShareData getShareData() {
+    public @Nullable ShareData getShareData() {
         Bundle bundle = IntentUtils.safeGetParcelableExtra(
                 getIntent(), TrustedWebActivityIntentBuilder.EXTRA_SHARE_DATA);
         if (bundle == null) return null;
@@ -1408,12 +1385,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
 
     @Override
     public int getSideSheetSlideInBehavior() {
-        @ActivitySideSheetSlideInBehavior
-        int slideInBehavior = IntentUtils.safeGetIntExtra(mIntent,
-                EXTRA_ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR, ACTIVITY_SIDE_SHEET_SLIDE_IN_DEFAULT);
-        return slideInBehavior == ACTIVITY_SIDE_SHEET_SLIDE_IN_DEFAULT
-                ? ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_SIDE
-                : slideInBehavior;
+        return ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_SIDE;
     }
 
     @Override

@@ -483,7 +483,9 @@ void FakeCrosHealthd::RunBatteryChargeRoutine(
       callback_delay_);
 }
 
-void FakeCrosHealthd::RunMemoryRoutine(RunMemoryRoutineCallback callback) {
+void FakeCrosHealthd::RunMemoryRoutine(
+    absl::optional<uint32_t> max_testing_mem_kib,
+    RunMemoryRoutineCallback callback) {
   actual_passed_parameters_.clear();
   last_run_routine_ = mojom::DiagnosticRoutineEnum::kMemory;
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
@@ -701,6 +703,19 @@ void FakeCrosHealthd::RunBluetoothPairingRoutine(
     const std::string& peripheral_id,
     RunBluetoothPairingRoutineCallback callback) {
   last_run_routine_ = mojom::DiagnosticRoutineEnum::kBluetoothPairing;
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+
+void FakeCrosHealthd::RunPowerButtonRoutine(
+    uint32_t timeout_seconds,
+    RunPowerButtonRoutineCallback callback) {
+  last_run_routine_ = mojom::DiagnosticRoutineEnum::kPowerButton;
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+
+void FakeCrosHealthd::RunAudioDriverRoutine(
+    RunAudioDriverRoutineCallback callback) {
+  last_run_routine_ = mojom::DiagnosticRoutineEnum::kAudioDriver;
   std::move(callback).Run(run_routine_response_.Clone());
 }
 

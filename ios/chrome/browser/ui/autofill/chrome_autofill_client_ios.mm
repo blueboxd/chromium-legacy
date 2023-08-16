@@ -24,6 +24,7 @@
 #import "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
 #import "components/autofill/core/browser/payments/payments_client.h"
 #import "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
+#import "components/autofill/core/browser/ui/popup_item_ids.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/core/common/autofill_prefs.h"
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
@@ -43,6 +44,7 @@
 #import "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #import "ios/chrome/browser/autofill/autocomplete_history_manager_factory.h"
 #import "ios/chrome/browser/autofill/autofill_log_router_factory.h"
+#import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_tab_helper.h"
 #import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/autofill/strike_database_factory.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
@@ -469,6 +471,15 @@ void ChromeAutofillClientIOS::PropagateAutofillPredictions(
   if (!frame) {
     return;
   }
+
+  // Attach listeners to fields which may open the payments bottom sheet if
+  // there are any credit cards to suggest.
+  AutofillBottomSheetTabHelper* helper =
+      AutofillBottomSheetTabHelper::FromWebState(web_state_);
+  if (helper && !personal_data_manager_->GetCreditCardsToSuggest().empty()) {
+    helper->AttachPaymentsListeners(forms, frame);
+  }
+
   // If the frame exists, then the driver will exist/be created.
   IOSPasswordManagerDriver* password_manager_driver =
       IOSPasswordManagerDriverFactory::FromWebStateAndWebFrame(web_state_,
@@ -488,10 +499,6 @@ void ChromeAutofillClientIOS::DidFillOrPreviewField(
 
 bool ChromeAutofillClientIOS::IsContextSecure() const {
   return IsContextSecureForWebState(web_state_);
-}
-
-void ChromeAutofillClientIOS::ExecuteCommand(Suggestion::FrontendId id) {
-  NOTIMPLEMENTED();
 }
 
 void ChromeAutofillClientIOS::OpenPromoCodeOfferDetailsURL(const GURL& url) {

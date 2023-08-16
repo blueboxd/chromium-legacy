@@ -40,6 +40,8 @@ component("network") {
     "//dbus",
     "//net",
     "//services/preferences/public/cpp",
+    "//third_party/abseil-cpp:absl",
+    "//third_party/re2",
     "//url",
   ]
 
@@ -292,6 +294,7 @@ source_set("unit_tests") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/abseil-cpp:absl",
   ]
   sources = [
     "auto_connect_handler_unittest.cc",

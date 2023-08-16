@@ -5,10 +5,14 @@
 #include "ash/webui/print_management/print_management_ui.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "ash/webui/common/trusted_types_util.h"
 #include "ash/webui/grit/ash_print_management_resources.h"
 #include "ash/webui/grit/ash_print_management_resources_map.h"
+#include "ash/webui/print_management/backend/print_management_delegate.h"
+#include "ash/webui/print_management/backend/print_management_handler.h"
 #include "ash/webui/print_management/url_constants.h"
 #include "base/feature_list.h"
 #include "chromeos/components/print_management/mojom/printing_manager.mojom.h"
@@ -100,6 +104,8 @@ void AddPrintManagementStrings(content::WebUIDataSource* html_source) {
        IDS_PRINT_MANAGEMENT_TRAY_MISSING_STOPPED_ERROR_STATUS},
       {"outputFullStopped",
        IDS_PRINT_MANAGEMENT_OUTPUT_FULL_STOPPED_ERROR_STATUS},
+      {"printerUnreachableStopped",
+       IDS_PRINT_MANAGEMENT_PRINTER_UNREACHABLE_STOPPED_ERROR_STATUS},
       {"stoppedGeneric", IDS_PRINT_MANAGEMENT_GENERIC_STOPPED_ERROR_STATUS},
       {"unknownPrinterErrorStopped",
        IDS_PRINT_MANAGEMENT_UNKNOWN_STOPPED_ERROR_STATUS},
@@ -117,7 +123,9 @@ void AddPrintManagementStrings(content::WebUIDataSource* html_source) {
       {"emptyStatePrinterSettingsMessage",
        IDS_PRINT_MANAGEMENT_EMPTY_STATE_PRINTER_SETTINGS_MESSAGE},
       {"managePrintersButtonLabel",
-       IDS_PRINT_MANAGEMENT_EMPTY_STATE_MANAGE_PRINTERS_LABEL}};
+       IDS_PRINT_MANAGEMENT_EMPTY_STATE_MANAGE_PRINTERS_LABEL},
+      {"headerManagePrintersButtonLabel",
+       IDS_PRINT_MANAGEMENT_HEADER_MANAGE_PRINTERS_LABEL}};
 
   html_source->AddLocalizedStrings(kLocalizedStrings);
   html_source->UseStringsJs();
@@ -126,9 +134,12 @@ void AddPrintManagementStrings(content::WebUIDataSource* html_source) {
 
 PrintManagementUI::PrintManagementUI(
     content::WebUI* web_ui,
-    BindPrintingMetadataProviderCallback callback)
+    BindPrintingMetadataProviderCallback callback,
+    std::unique_ptr<PrintManagementDelegate> delegate)
     : ui::MojoWebUIController(web_ui),
-      bind_pending_receiver_callback_(std::move(callback)) {
+      bind_pending_receiver_callback_(std::move(callback)),
+      print_management_handler_(
+          std::make_unique<PrintManagementHandler>(std::move(delegate))) {
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::CreateAndAdd(
           web_ui->GetWebContents()->GetBrowserContext(),
@@ -137,7 +148,7 @@ PrintManagementUI::PrintManagementUI(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test chrome://webui-test "
       "'self';");
-  html_source->DisableTrustedTypesCSP();
+  ash::EnableTrustedTypesCSP(html_source);
 
   const auto resources = base::make_span(kAshPrintManagementResources,
                                          kAshPrintManagementResourcesSize);

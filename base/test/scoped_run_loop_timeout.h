@@ -11,16 +11,15 @@
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 FORWARD_DECLARE_TEST(ContentBrowserTest, RunTimeoutInstalled);
 }
 
-namespace base {
-namespace test {
+namespace base::test {
 
 FORWARD_DECLARE_TEST(TaskEnvironmentTest, SetsDefaultRunTimeout);
 
@@ -66,9 +65,10 @@ class ScopedRunLoopTimeout {
   ~ScopedRunLoopTimeout();
 
   // Invokes |on_timeout_log| if |timeout| expires, and appends it to the
-  // logged error message.
+  // logged error message. If `timeout` is not specified the current timeout is
+  // used and only the log message is overridden.
   ScopedRunLoopTimeout(const Location& timeout_enabled_from_here,
-                       TimeDelta timeout,
+                       absl::optional<TimeDelta> timeout,
                        RepeatingCallback<std::string()> on_timeout_log);
 
   ScopedRunLoopTimeout(const ScopedRunLoopTimeout&) = delete;
@@ -88,9 +88,7 @@ class ScopedRunLoopTimeout {
   // Exposes the RunLoopTimeout to the friend tests (see above).
   static const RunLoop::RunLoopTimeout* GetTimeoutForCurrentThread();
 
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #union
-  RAW_PTR_EXCLUSION const RunLoop::RunLoopTimeout* const nested_timeout_;
+  raw_ptr<const RunLoop::RunLoopTimeout> const nested_timeout_;
   RunLoop::RunLoopTimeout run_timeout_;
 };
 
@@ -107,7 +105,6 @@ class ScopedDisableRunLoopTimeout {
   const raw_ptr<const RunLoop::RunLoopTimeout> nested_timeout_;
 };
 
-}  // namespace test
-}  // namespace base
+}  // namespace base::test
 
 #endif  // BASE_TEST_SCOPED_RUN_LOOP_TIMEOUT_H_

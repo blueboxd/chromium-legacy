@@ -80,13 +80,13 @@ PtrPosWithinAlloc IsPtrWithinSameAlloc(uintptr_t orig_address,
   // Zero it just in case, to catch errors.
   adjusted_address = 0;
 
-  auto* slot_span = SlotSpanMetadata<ThreadSafe>::FromSlotStart(slot_start);
-  auto* root = PartitionRoot<ThreadSafe>::FromSlotSpan(slot_span);
+  auto* slot_span = SlotSpanMetadata::FromSlotStart(slot_start);
+  auto* root = PartitionRoot::FromSlotSpan(slot_span);
   // Double check that ref-count is indeed present.
   PA_DCHECK(root->brp_enabled());
 
   uintptr_t object_addr = root->SlotStartToObjectAddr(slot_start);
-  uintptr_t object_end = object_addr + slot_span->GetUsableSize(root);
+  uintptr_t object_end = object_addr + root->GetSlotUsableSize(slot_span);
   if (test_address < object_addr || object_end < test_address) {
     return PtrPosWithinAlloc::kFarOOB;
 #if BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
@@ -111,8 +111,7 @@ namespace {
 internal::Lock g_root_enumerator_lock;
 }
 
-template <bool thread_safe>
-internal::Lock& PartitionRoot<thread_safe>::GetEnumeratorLock() {
+internal::Lock& PartitionRoot::GetEnumeratorLock() {
   return g_root_enumerator_lock;
 }
 
@@ -212,10 +211,9 @@ namespace {
 
 #if PA_CONFIG(HAS_ATFORK_HANDLER)
 
-void LockRoot(PartitionRoot<internal::ThreadSafe>* root,
-              bool) PA_NO_THREAD_SAFETY_ANALYSIS {
+void LockRoot(PartitionRoot* root, bool) PA_NO_THREAD_SAFETY_ANALYSIS {
   PA_DCHECK(root);
-  root->lock_.Acquire();
+  internal::PartitionRootLock(root).Acquire();
 }
 
 // PA_NO_THREAD_SAFETY_ANALYSIS: acquires the lock and doesn't release it, by
@@ -242,9 +240,9 @@ void UnlockOrReinit(T& lock, bool in_child) PA_NO_THREAD_SAFETY_ANALYSIS {
   }
 }
 
-void UnlockOrReinitRoot(PartitionRoot<internal::ThreadSafe>* root,
+void UnlockOrReinitRoot(PartitionRoot* root,
                         bool in_child) PA_NO_THREAD_SAFETY_ANALYSIS {
-  UnlockOrReinit(root->lock_, in_child);
+  UnlockOrReinit(internal::PartitionRootLock(root), in_child);
 }
 
 void ReleaseLocks(bool in_child) PA_NO_THREAD_SAFETY_ANALYSIS {
@@ -347,12 +345,10 @@ MinPurgeableSlotSize() {
 }
 }  // namespace
 
-template <bool thread_safe>
-static size_t PartitionPurgeSlotSpan(
-    internal::SlotSpanMetadata<thread_safe>* slot_span,
-    bool discard) {
-  auto* root = PartitionRoot<thread_safe>::FromSlotSpan(slot_span);
-  const internal::PartitionBucket<thread_safe>* bucket = slot_span->bucket;
+static size_t PartitionPurgeSlotSpan(internal::SlotSpanMetadata* slot_span,
+                                     bool discard) {
+  auto* root = PartitionRoot::FromSlotSpan(slot_span);
+  const internal::PartitionBucket* bucket = slot_span->bucket;
   size_t slot_size = bucket->slot_size;
 
   if (slot_size < MinPurgeableSlotSize() || !slot_span->num_allocated_slots) {
@@ -368,7 +364,7 @@ static size_t PartitionPurgeSlotSpan(
     discardable_bytes = bucket->slot_size - utilized_slot_size;
     if (discardable_bytes && discard) {
       uintptr_t slot_span_start =
-          internal::SlotSpanMetadata<thread_safe>::ToSlotSpanStart(slot_span);
+          internal::SlotSpanMetadata::ToSlotSpanStart(slot_span);
       uintptr_t committed_data_end = slot_span_start + utilized_slot_size;
       ScopedSyscallTimer timer{root};
       DiscardSystemPages(committed_data_end, discardable_bytes);
@@ -403,8 +399,7 @@ static size_t PartitionPurgeSlotSpan(
   size_t last_slot = static_cast<size_t>(-1);
 #endif
   memset(slot_usage, 1, num_slots);
-  uintptr_t slot_span_start =
-      SlotSpanMetadata<thread_safe>::ToSlotSpanStart(slot_span);
+  uintptr_t slot_span_start = SlotSpanMetadata::ToSlotSpanStart(slot_span);
   // First, walk the freelist for this slot span and make a bitmap of which
   // slots are not in use.
   for (PartitionFreelistEntry* entry = slot_span->get_freelist_head(); entry;
@@ -572,26 +567,20 @@ static size_t PartitionPurgeSlotSpan(
   return discardable_bytes;
 }
 
-template <bool thread_safe>
-static void PartitionPurgeBucket(
-    internal::PartitionBucket<thread_safe>* bucket) {
+static void PartitionPurgeBucket(internal::PartitionBucket* bucket) {
   if (bucket->active_slot_spans_head !=
-      internal::SlotSpanMetadata<thread_safe>::get_sentinel_slot_span()) {
-    for (internal::SlotSpanMetadata<thread_safe>* slot_span =
-             bucket->active_slot_spans_head;
+      internal::SlotSpanMetadata::get_sentinel_slot_span()) {
+    for (internal::SlotSpanMetadata* slot_span = bucket->active_slot_spans_head;
          slot_span; slot_span = slot_span->next_slot_span) {
-      PA_DCHECK(
-          slot_span !=
-          internal::SlotSpanMetadata<thread_safe>::get_sentinel_slot_span());
+      PA_DCHECK(slot_span !=
+                internal::SlotSpanMetadata::get_sentinel_slot_span());
       PartitionPurgeSlotSpan(slot_span, true);
     }
   }
 }
 
-template <bool thread_safe>
-static void PartitionDumpSlotSpanStats(
-    PartitionBucketMemoryStats* stats_out,
-    internal::SlotSpanMetadata<thread_safe>* slot_span) {
+static void PartitionDumpSlotSpanStats(PartitionBucketMemoryStats* stats_out,
+                                       internal::SlotSpanMetadata* slot_span) {
   uint16_t bucket_num_slots = slot_span->bucket->get_slots_per_span();
 
   if (slot_span->is_decommitted()) {
@@ -624,10 +613,8 @@ static void PartitionDumpSlotSpanStats(
   }
 }
 
-template <bool thread_safe>
-static void PartitionDumpBucketStats(
-    PartitionBucketMemoryStats* stats_out,
-    const internal::PartitionBucket<thread_safe>* bucket) {
+static void PartitionDumpBucketStats(PartitionBucketMemoryStats* stats_out,
+                                     const internal::PartitionBucket* bucket) {
   PA_DCHECK(!bucket->is_direct_mapped());
   stats_out->is_valid = false;
   // If the active slot span list is empty (==
@@ -635,7 +622,7 @@ static void PartitionDumpBucketStats(
   // still need to be reported if it has a list of empty, decommitted or full
   // slot spans.
   if (bucket->active_slot_spans_head ==
-          internal::SlotSpanMetadata<thread_safe>::get_sentinel_slot_span() &&
+          internal::SlotSpanMetadata::get_sentinel_slot_span() &&
       !bucket->empty_slot_spans_head && !bucket->decommitted_slot_spans_head &&
       !bucket->num_full_slot_spans) {
     return;
@@ -655,13 +642,12 @@ static void PartitionDumpBucketStats(
   stats_out->resident_bytes =
       bucket->num_full_slot_spans * stats_out->allocated_slot_span_size;
 
-  for (internal::SlotSpanMetadata<thread_safe>* slot_span =
-           bucket->empty_slot_spans_head;
+  for (internal::SlotSpanMetadata* slot_span = bucket->empty_slot_spans_head;
        slot_span; slot_span = slot_span->next_slot_span) {
     PA_DCHECK(slot_span->is_empty() || slot_span->is_decommitted());
     PartitionDumpSlotSpanStats(stats_out, slot_span);
   }
-  for (internal::SlotSpanMetadata<thread_safe>* slot_span =
+  for (internal::SlotSpanMetadata* slot_span =
            bucket->decommitted_slot_spans_head;
        slot_span; slot_span = slot_span->next_slot_span) {
     PA_DCHECK(slot_span->is_decommitted());
@@ -669,13 +655,11 @@ static void PartitionDumpBucketStats(
   }
 
   if (bucket->active_slot_spans_head !=
-      internal::SlotSpanMetadata<thread_safe>::get_sentinel_slot_span()) {
-    for (internal::SlotSpanMetadata<thread_safe>* slot_span =
-             bucket->active_slot_spans_head;
+      internal::SlotSpanMetadata::get_sentinel_slot_span()) {
+    for (internal::SlotSpanMetadata* slot_span = bucket->active_slot_spans_head;
          slot_span; slot_span = slot_span->next_slot_span) {
-      PA_DCHECK(
-          slot_span !=
-          internal::SlotSpanMetadata<thread_safe>::get_sentinel_slot_span());
+      PA_DCHECK(slot_span !=
+                internal::SlotSpanMetadata::get_sentinel_slot_span());
       PartitionDumpSlotSpanStats(stats_out, slot_span);
     }
   }
@@ -701,9 +685,7 @@ void PartitionAllocThreadIsolationInit(ThreadIsolationOption thread_isolation) {
 
 }  // namespace internal
 
-template <bool thread_safe>
-[[noreturn]] PA_NOINLINE void PartitionRoot<thread_safe>::OutOfMemory(
-    size_t size) {
+[[noreturn]] PA_NOINLINE void PartitionRoot::OutOfMemory(size_t size) {
   const size_t virtual_address_space_size =
       total_size_of_super_pages.load(std::memory_order_relaxed) +
       total_size_of_direct_mapped_pages.load(std::memory_order_relaxed);
@@ -760,19 +742,17 @@ template <bool thread_safe>
   OOM_CRASH(size);
 }
 
-template <bool thread_safe>
-void PartitionRoot<thread_safe>::DecommitEmptySlotSpans() {
+void PartitionRoot::DecommitEmptySlotSpans() {
   ShrinkEmptySlotSpansRing(0);
   // Just decommitted everything, and holding the lock, should be exactly 0.
   PA_DCHECK(empty_slot_spans_dirty_bytes == 0);
 }
 
-template <bool thread_safe>
-void PartitionRoot<thread_safe>::DestructForTesting() {
+void PartitionRoot::DestructForTesting() {
   // We need to destruct the thread cache before we unreserve any of the super
   // pages below, which we currently are not doing. So, we should only call
   // this function on PartitionRoots without a thread cache.
-  PA_CHECK(!flags.with_thread_cache);
+  PA_CHECK(!settings.with_thread_cache);
   auto pool_handle = ChoosePool();
 #if BUILDFLAG(ENABLE_THREAD_ISOLATION)
   // The pages managed by thread isolated pool will be free-ed at
@@ -802,10 +782,8 @@ void PartitionRoot<thread_safe>::DestructForTesting() {
 }
 
 #if PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
-template <bool thread_safe>
-void PartitionRoot<thread_safe>::InitMac11MallocSizeHackUsableSize(
-    size_t ref_count_size) {
-  flags.mac11_malloc_size_hack_enabled_ = true;
+void PartitionRoot::InitMac11MallocSizeHackUsableSize(size_t ref_count_size) {
+  settings.mac11_malloc_size_hack_enabled_ = true;
 
   // 0 means reserve just enough extras to fit PartitionRefCount.
   if (!ref_count_size) {
@@ -813,22 +791,18 @@ void PartitionRoot<thread_safe>::InitMac11MallocSizeHackUsableSize(
   }
   // Request of 32B will fall into a 48B bucket in the presence of BRP
   // ref-count, yielding |48 - ref_count_size| of actual usable space.
-  flags.mac11_malloc_size_hack_usable_size_ = 48 - ref_count_size;
+  settings.mac11_malloc_size_hack_usable_size_ = 48 - ref_count_size;
 }
 
-template <bool thread_safe>
-void PartitionRoot<thread_safe>::EnableMac11MallocSizeHackForTesting(
-    size_t ref_count_size) {
-  flags.mac11_malloc_size_hack_enabled_ = true;
+void PartitionRoot::EnableMac11MallocSizeHackForTesting(size_t ref_count_size) {
+  settings.mac11_malloc_size_hack_enabled_ = true;
   InitMac11MallocSizeHackUsableSize(ref_count_size);
 }
 
-template <bool thread_safe>
-void PartitionRoot<thread_safe>::EnableMac11MallocSizeHackIfNeeded(
-    size_t ref_count_size) {
-  flags.mac11_malloc_size_hack_enabled_ =
-      flags.brp_enabled_ && internal::base::mac::IsOS11();
-  if (flags.mac11_malloc_size_hack_enabled_) {
+void PartitionRoot::EnableMac11MallocSizeHackIfNeeded(size_t ref_count_size) {
+  settings.mac11_malloc_size_hack_enabled_ =
+      settings.brp_enabled_ && internal::base::mac::IsOS11();
+  if (settings.mac11_malloc_size_hack_enabled_) {
     InitMac11MallocSizeHackUsableSize(ref_count_size);
   }
 }
@@ -872,8 +846,7 @@ void ReserveBackupRefPtrGuardRegionIfNeeded() {
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&
         // !BUILDFLAG(HAS_64_BIT_POINTERS)
 
-template <bool thread_safe>
-void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
+void PartitionRoot::Init(PartitionOptions opts) {
   {
 #if BUILDFLAG(IS_APPLE)
     // Needed to statically bound page size, which is a runtime constant on
@@ -904,11 +877,11 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
     ReserveBackupRefPtrGuardRegionIfNeeded();
 #endif
 
-    flags.allow_aligned_alloc =
+    settings.allow_aligned_alloc =
         opts.aligned_alloc == PartitionOptions::AlignedAlloc::kAllowed;
-    flags.allow_cookie = opts.cookie == PartitionOptions::Cookie::kAllowed;
+    settings.allow_cookie = opts.cookie == PartitionOptions::Cookie::kAllowed;
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
-    flags.brp_enabled_ =
+    settings.brp_enabled_ =
         opts.backup_ref_ptr == PartitionOptions::BackupRefPtr::kEnabled;
 #if PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
     EnableMac11MallocSizeHackIfNeeded(opts.ref_count_size);
@@ -916,48 +889,49 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
 #else   // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     PA_CHECK(opts.backup_ref_ptr == PartitionOptions::BackupRefPtr::kDisabled);
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
-    flags.use_configurable_pool =
+    settings.use_configurable_pool =
         (opts.use_configurable_pool ==
          PartitionOptions::UseConfigurablePool::kIfAvailable) &&
         IsConfigurablePoolAvailable();
-    PA_DCHECK(!flags.use_configurable_pool || IsConfigurablePoolAvailable());
+    PA_DCHECK(!settings.use_configurable_pool || IsConfigurablePoolAvailable());
 #if PA_CONFIG(HAS_MEMORY_TAGGING)
-    flags.memory_tagging_enabled_ =
+    settings.memory_tagging_enabled_ =
         opts.memory_tagging == PartitionOptions::MemoryTagging::kEnabled;
     // Memory tagging is not supported in the configurable pool because MTE
     // stores tagging information in the high bits of the pointer, it causes
     // issues with components like V8's ArrayBuffers which use custom pointer
     // representations. All custom representations encountered so far rely on an
     // "is in configurable pool?" check, so we use that as a proxy.
-    PA_CHECK(!flags.memory_tagging_enabled_ || !flags.use_configurable_pool);
-#endif
+    PA_CHECK(!settings.memory_tagging_enabled_ ||
+             !settings.use_configurable_pool);
+#endif  // PA_CONFIG(HAS_MEMORY_TAGGING)
 
     // brp_enabled() is not supported in the configurable pool because
     // BRP requires objects to be in a different Pool.
-    PA_CHECK(!(flags.use_configurable_pool && brp_enabled()));
+    PA_CHECK(!(settings.use_configurable_pool && brp_enabled()));
 
 #if BUILDFLAG(ENABLE_THREAD_ISOLATION)
     // BRP and thread isolated mode use different pools, so they can't be
     // enabled at the same time.
     PA_CHECK(!opts.thread_isolation.enabled ||
              opts.backup_ref_ptr == PartitionOptions::BackupRefPtr::kDisabled);
-    flags.thread_isolation = opts.thread_isolation;
-#endif
+    settings.thread_isolation = opts.thread_isolation;
+#endif  // BUILDFLAG(ENABLE_THREAD_ISOLATION)
 
     // Ref-count messes up alignment needed for AlignedAlloc, making this
     // option incompatible. However, except in the
     // PUT_REF_COUNT_IN_PREVIOUS_SLOT case.
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && \
     !BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
-    PA_CHECK(!flags.allow_aligned_alloc || !flags.brp_enabled_);
+    PA_CHECK(!settings.allow_aligned_alloc || !settings.brp_enabled_);
 #endif
 
 #if PA_CONFIG(EXTRAS_REQUIRED)
-    flags.extras_size = 0;
-    flags.extras_offset = 0;
+    settings.extras_size = 0;
+    settings.extras_offset = 0;
 
-    if (flags.allow_cookie) {
-      flags.extras_size += internal::kPartitionCookieSizeAdjustment;
+    if (settings.allow_cookie) {
+      settings.extras_size += internal::kPartitionCookieSizeAdjustment;
     }
 
     if (brp_enabled()) {
@@ -973,20 +947,20 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
         ref_count_size = internal::base::bits::AlignUp(
             ref_count_size, internal::kMemTagGranuleSize);
       }
-      flags.ref_count_size = ref_count_size;
+      settings.ref_count_size = ref_count_size;
 #endif  // PA_CONFIG(INCREASE_REF_COUNT_SIZE_FOR_MTE)
       PA_CHECK(internal::kPartitionRefCountSizeAdjustment <= ref_count_size);
-      flags.extras_size += ref_count_size;
-      flags.extras_offset += internal::kPartitionRefCountOffsetAdjustment;
+      settings.extras_size += ref_count_size;
+      settings.extras_offset += internal::kPartitionRefCountOffsetAdjustment;
     }
 #endif  // PA_CONFIG(EXTRAS_REQUIRED)
 
     // Re-confirm the above PA_CHECKs, by making sure there are no
     // pre-allocation extras when AlignedAlloc is allowed. Post-allocation
     // extras are ok.
-    PA_CHECK(!flags.allow_aligned_alloc || !flags.extras_offset);
+    PA_CHECK(!settings.allow_aligned_alloc || !settings.extras_offset);
 
-    flags.quarantine_mode =
+    settings.quarantine_mode =
 #if BUILDFLAG(USE_STARSCAN)
         (opts.quarantine == PartitionOptions::Quarantine::kDisallowed
              ? QuarantineMode::kAlwaysDisabled
@@ -1025,13 +999,13 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
 
 #if !PA_CONFIG(THREAD_CACHE_SUPPORTED)
     // TLS in ThreadCache not supported on other OSes.
-    flags.with_thread_cache = false;
+    settings.with_thread_cache = false;
 #else
     ThreadCache::EnsureThreadSpecificDataInitialized();
-    flags.with_thread_cache =
+    settings.with_thread_cache =
         (opts.thread_cache == PartitionOptions::ThreadCache::kEnabled);
 
-    if (flags.with_thread_cache) {
+    if (settings.with_thread_cache) {
       ThreadCache::Init(this);
     }
 #endif  // !PA_CONFIG(THREAD_CACHE_SUPPORTED)
@@ -1049,16 +1023,23 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
 #endif
 
 #if BUILDFLAG(ENABLE_THREAD_ISOLATION)
-  if (flags.thread_isolation.enabled) {
-    internal::PartitionAllocThreadIsolationInit(flags.thread_isolation);
+  if (settings.thread_isolation.enabled) {
+    internal::PartitionAllocThreadIsolationInit(settings.thread_isolation);
   }
 #endif
 }
 
-template <bool thread_safe>
-PartitionRoot<thread_safe>::~PartitionRoot() {
+PartitionRoot::Settings::Settings() = default;
+
+PartitionRoot::PartitionRoot() : settings() {}
+
+PartitionRoot::PartitionRoot(PartitionOptions opts) : settings() {
+  Init(opts);
+}
+
+PartitionRoot::~PartitionRoot() {
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-  PA_CHECK(!flags.with_thread_cache)
+  PA_CHECK(!settings.with_thread_cache)
       << "Must not destroy a partition with a thread cache";
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
@@ -1069,11 +1050,10 @@ PartitionRoot<thread_safe>::~PartitionRoot() {
 #endif  // PA_CONFIG(USE_PARTITION_ALLOC_ENUMERATOR)
 }
 
-template <bool thread_safe>
-void PartitionRoot<thread_safe>::EnableThreadCacheIfSupported() {
+void PartitionRoot::EnableThreadCacheIfSupported() {
 #if PA_CONFIG(THREAD_CACHE_SUPPORTED)
   ::partition_alloc::internal::ScopedGuard guard{lock_};
-  PA_CHECK(!flags.with_thread_cache);
+  PA_CHECK(!settings.with_thread_cache);
   // By the time we get there, there may be multiple threads created in the
   // process. Since `with_thread_cache` is accessed without a lock, it can
   // become visible to another thread before the effects of
@@ -1088,13 +1068,12 @@ void PartitionRoot<thread_safe>::EnableThreadCacheIfSupported() {
   PA_CHECK(before == 0);
   ThreadCache::Init(this);
   thread_caches_being_constructed_.fetch_sub(1, std::memory_order_release);
-  flags.with_thread_cache = true;
+  settings.with_thread_cache = true;
 #endif  // PA_CONFIG(THREAD_CACHE_SUPPORTED)
 }
 
-template <bool thread_safe>
-bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
-    internal::SlotSpanMetadata<thread_safe>* slot_span,
+bool PartitionRoot::TryReallocInPlaceForDirectMap(
+    internal::SlotSpanMetadata* slot_span,
     size_t requested_size) {
   PA_DCHECK(slot_span->bucket->is_direct_mapped());
   // Slot-span metadata isn't MTE-tagged.
@@ -1138,13 +1117,13 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
 
   // bucket->slot_size is the currently committed size of the allocation.
   size_t current_slot_size = slot_span->bucket->slot_size;
-  size_t current_usable_size = slot_span->GetUsableSize(this);
+  size_t current_usable_size = GetSlotUsableSize(slot_span);
   uintptr_t slot_start = SlotSpan::ToSlotSpanStart(slot_span);
   // This is the available part of the reservation up to which the new
   // allocation can grow.
   size_t available_reservation_size =
       current_reservation_size - extent->padding_for_alignment -
-      PartitionRoot<thread_safe>::GetDirectMapMetadataAndGuardPagesSize();
+      PartitionRoot::GetDirectMapMetadataAndGuardPagesSize();
 #if BUILDFLAG(PA_DCHECK_IS_ON)
   uintptr_t reservation_start = slot_start & internal::kSuperPageBaseMask;
   PA_DCHECK(internal::IsReservationStart(reservation_start));
@@ -1201,26 +1180,23 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
   auto* thread_cache = GetOrCreateThreadCache();
   if (ThreadCache::IsValid(thread_cache)) {
     thread_cache->RecordDeallocation(current_usable_size);
-    thread_cache->RecordAllocation(slot_span->GetUsableSize(this));
+    thread_cache->RecordAllocation(GetSlotUsableSize(slot_span));
   }
 
 #if BUILDFLAG(PA_DCHECK_IS_ON)
   // Write a new trailing cookie.
-  if (flags.allow_cookie) {
+  if (settings.allow_cookie) {
     auto* object = static_cast<unsigned char*>(SlotStartToObject(slot_start));
-    internal::PartitionCookieWriteValue(object +
-                                        slot_span->GetUsableSize(this));
+    internal::PartitionCookieWriteValue(object + GetSlotUsableSize(slot_span));
   }
 #endif
 
   return true;
 }
 
-template <bool thread_safe>
-bool PartitionRoot<thread_safe>::TryReallocInPlaceForNormalBuckets(
-    void* object,
-    SlotSpan* slot_span,
-    size_t new_size) {
+bool PartitionRoot::TryReallocInPlaceForNormalBuckets(void* object,
+                                                      SlotSpan* slot_span,
+                                                      size_t new_size) {
   uintptr_t slot_start = ObjectToSlotStart(object);
   PA_DCHECK(internal::IsManagedByNormalBuckets(slot_start));
 
@@ -1231,7 +1207,7 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForNormalBuckets(
       AllocationCapacityFromSlotStart(slot_start)) {
     return false;
   }
-  size_t current_usable_size = slot_span->GetUsableSize(this);
+  size_t current_usable_size = GetSlotUsableSize(slot_span);
 
   // Trying to allocate |new_size| would use the same amount of underlying
   // memory as we're already using, so re-use the allocation after updating
@@ -1257,9 +1233,9 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForNormalBuckets(
 #if BUILDFLAG(PA_DCHECK_IS_ON)
     // Write a new trailing cookie only when it is possible to keep track
     // raw size (otherwise we wouldn't know where to look for it later).
-    if (flags.allow_cookie) {
+    if (settings.allow_cookie) {
       internal::PartitionCookieWriteValue(static_cast<unsigned char*>(object) +
-                                          slot_span->GetUsableSize(this));
+                                          GetSlotUsableSize(slot_span));
     }
 #endif  // BUILDFLAG(PA_DCHECK_IS_ON)
   }
@@ -1270,17 +1246,16 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForNormalBuckets(
   ThreadCache* thread_cache = GetOrCreateThreadCache();
   if (PA_LIKELY(ThreadCache::IsValid(thread_cache))) {
     thread_cache->RecordDeallocation(current_usable_size);
-    thread_cache->RecordAllocation(slot_span->GetUsableSize(this));
+    thread_cache->RecordAllocation(GetSlotUsableSize(slot_span));
   }
 
   return object;
 }
 
-template <bool thread_safe>
-void* PartitionRoot<thread_safe>::ReallocWithFlags(unsigned int flags,
-                                                   void* ptr,
-                                                   size_t new_size,
-                                                   const char* type_name) {
+void* PartitionRoot::ReallocWithFlags(unsigned int flags,
+                                      void* ptr,
+                                      size_t new_size,
+                                      const char* type_name) {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   CHECK_MAX_SIZE_OR_RETURN_NULLPTR(new_size, flags);
   void* result = realloc(ptr, new_size);
@@ -1322,10 +1297,11 @@ void* PartitionRoot<thread_safe>::ReallocWithFlags(unsigned int flags,
     bool success = false;
     bool tried_in_place_for_direct_map = false;
     {
-      ::partition_alloc::internal::ScopedGuard guard{old_root->lock_};
+      ::partition_alloc::internal::ScopedGuard guard{
+          internal::PartitionRootLock(old_root)};
       // TODO(crbug.com/1257655): See if we can afford to make this a CHECK.
-      PA_DCHECK(IsValidSlotSpan(slot_span));
-      old_usable_size = slot_span->GetUsableSize(old_root);
+      DCheckIsValidSlotSpan(slot_span);
+      old_usable_size = old_root->GetSlotUsableSize(slot_span);
 
       if (PA_UNLIKELY(slot_span->bucket->is_direct_mapped())) {
         tried_in_place_for_direct_map = true;
@@ -1370,10 +1346,10 @@ void* PartitionRoot<thread_safe>::ReallocWithFlags(unsigned int flags,
 #endif
 }
 
-template <bool thread_safe>
-void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
+void PartitionRoot::PurgeMemory(int flags) {
   {
-    ::partition_alloc::internal::ScopedGuard guard{lock_};
+    ::partition_alloc::internal::ScopedGuard guard{
+        internal::PartitionRootLock(this)};
 #if BUILDFLAG(USE_STARSCAN)
     // Avoid purging if there is PCScan task currently scheduled. Since pcscan
     // takes snapshot of all allocated pages, decommitting pages here (even
@@ -1411,8 +1387,7 @@ void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
   }
 }
 
-template <bool thread_safe>
-void PartitionRoot<thread_safe>::ShrinkEmptySlotSpansRing(size_t limit) {
+void PartitionRoot::ShrinkEmptySlotSpansRing(size_t limit) {
   int16_t index = global_empty_slot_span_ring_index;
   int16_t starting_index = index;
   while (empty_slot_spans_dirty_bytes > limit) {
@@ -1441,10 +1416,9 @@ void PartitionRoot<thread_safe>::ShrinkEmptySlotSpansRing(size_t limit) {
   }
 }
 
-template <bool thread_safe>
-void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
-                                           bool is_light_dump,
-                                           PartitionStatsDumper* dumper) {
+void PartitionRoot::DumpStats(const char* partition_name,
+                              bool is_light_dump,
+                              PartitionStatsDumper* dumper) {
   static const size_t kMaxReportableDirectMaps = 4096;
   // Allocate on the heap rather than on the stack to avoid stack overflow
   // skirmishes (on Windows, in particular). Allocate before locking below,
@@ -1466,7 +1440,8 @@ void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
   // Collect data with the lock held, cannot allocate or call third-party code
   // below.
   {
-    ::partition_alloc::internal::ScopedGuard guard{lock_};
+    ::partition_alloc::internal::ScopedGuard guard{
+        internal::PartitionRootLock(this)};
     PA_DCHECK(total_size_of_allocated_bytes <= max_size_of_allocated_bytes);
 
     stats.total_mmapped_bytes =
@@ -1528,7 +1503,7 @@ void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
     stats.total_active_bytes += direct_mapped_allocations_total_size;
     stats.total_active_count += num_direct_mapped_allocations;
 
-    stats.has_thread_cache = flags.with_thread_cache;
+    stats.has_thread_cache = settings.with_thread_cache;
     if (stats.has_thread_cache) {
       ThreadCacheRegistry::Instance().DumpStats(
           true, &stats.current_thread_cache_stats);
@@ -1564,12 +1539,10 @@ void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
 }
 
 // static
-template <bool thread_safe>
-void PartitionRoot<thread_safe>::DeleteForTesting(
-    PartitionRoot* partition_root) {
-  if (partition_root->flags.with_thread_cache) {
+void PartitionRoot::DeleteForTesting(PartitionRoot* partition_root) {
+  if (partition_root->settings.with_thread_cache) {
     ThreadCache::SwapForTesting(nullptr);
-    partition_root->flags.with_thread_cache = false;
+    partition_root->settings.with_thread_cache = false;
   }
 
   partition_root->DestructForTesting();  // IN-TEST
@@ -1577,22 +1550,22 @@ void PartitionRoot<thread_safe>::DeleteForTesting(
   delete partition_root;
 }
 
-template <bool thread_safe>
-void PartitionRoot<thread_safe>::ResetForTesting(bool allow_leaks) {
-  if (flags.with_thread_cache) {
+void PartitionRoot::ResetForTesting(bool allow_leaks) {
+  if (settings.with_thread_cache) {
     ThreadCache::SwapForTesting(nullptr);
-    flags.with_thread_cache = false;
+    settings.with_thread_cache = false;
   }
 
-  ::partition_alloc::internal::ScopedGuard guard(lock_);
+  ::partition_alloc::internal::ScopedGuard guard{
+      internal::PartitionRootLock(this)};
 
 #if BUILDFLAG(PA_DCHECK_IS_ON)
   if (!allow_leaks) {
     unsigned num_allocated_slots = 0;
     for (Bucket& bucket : buckets) {
       if (bucket.active_slot_spans_head !=
-          internal::SlotSpanMetadata<thread_safe>::get_sentinel_slot_span()) {
-        for (internal::SlotSpanMetadata<thread_safe>* slot_span =
+          internal::SlotSpanMetadata::get_sentinel_slot_span()) {
+        for (internal::SlotSpanMetadata* slot_span =
                  bucket.active_slot_spans_head;
              slot_span; slot_span = slot_span->next_slot_span) {
           num_allocated_slots += slot_span->num_allocated_slots;
@@ -1635,7 +1608,7 @@ void PartitionRoot<thread_safe>::ResetForTesting(bool allow_leaks) {
   first_extent = nullptr;
 
   direct_map_list = nullptr;
-  for (auto& entity : global_empty_slot_span_ring) {
+  for (auto*& entity : global_empty_slot_span_ring) {
     entity = nullptr;
   }
 
@@ -1644,15 +1617,14 @@ void PartitionRoot<thread_safe>::ResetForTesting(bool allow_leaks) {
   initialized = false;
 }
 
-template <bool thread_safe>
-void PartitionRoot<thread_safe>::ResetBookkeepingForTesting() {
-  ::partition_alloc::internal::ScopedGuard guard{lock_};
+void PartitionRoot::ResetBookkeepingForTesting() {
+  ::partition_alloc::internal::ScopedGuard guard{
+      internal::PartitionRootLock(this)};
   max_size_of_allocated_bytes = total_size_of_allocated_bytes;
   max_size_of_committed_pages.store(total_size_of_committed_pages);
 }
 
-template <>
-ThreadCache* PartitionRoot<internal::ThreadSafe>::MaybeInitThreadCache() {
+ThreadCache* PartitionRoot::MaybeInitThreadCache() {
   auto* tcache = ThreadCache::Get();
   // See comment in `EnableThreadCacheIfSupport()` for why this is an acquire
   // load.
@@ -1691,22 +1663,17 @@ ThreadCache* PartitionRoot<internal::ThreadSafe>::MaybeInitThreadCache() {
   return tcache;
 }
 
-template <>
-void PartitionRoot<internal::ThreadSafe>::EnableSortActiveSlotSpans() {
+void PartitionRoot::EnableSortActiveSlotSpans() {
   sort_active_slot_spans_ = true;
 }
 
-template struct PA_COMPONENT_EXPORT(PARTITION_ALLOC)
-    PartitionRoot<internal::ThreadSafe>;
-
-static_assert(offsetof(PartitionRoot<internal::ThreadSafe>, sentinel_bucket) ==
-                  offsetof(PartitionRoot<internal::ThreadSafe>, buckets) +
-                      internal::kNumBuckets *
-                          sizeof(PartitionRoot<internal::ThreadSafe>::Bucket),
+static_assert(offsetof(PartitionRoot, sentinel_bucket) ==
+                  offsetof(PartitionRoot, buckets) +
+                      internal::kNumBuckets * sizeof(PartitionRoot::Bucket),
               "sentinel_bucket must be just after the regular buckets.");
 
 static_assert(
-    offsetof(PartitionRoot<internal::ThreadSafe>, lock_) >= 64,
+    offsetof(PartitionRoot, lock_) >= 64,
     "The lock should not be on the same cacheline as the read-mostly flags");
 
 }  // namespace partition_alloc

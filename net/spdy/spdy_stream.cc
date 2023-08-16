@@ -27,6 +27,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/spdy/spdy_buffer_producer.h"
 #include "net/spdy/spdy_http_utils.h"
+#include "net/spdy/spdy_log_util.h"
 #include "net/spdy/spdy_session.h"
 
 namespace net {
@@ -728,6 +729,11 @@ base::WeakPtr<SpdyStream> SpdyStream::GetWeakPtr() {
 
 int SpdyStream::SendRequestHeaders(spdy::Http2HeaderBlock request_headers,
                                    SpdySendStatus send_status) {
+  net_log_.AddEvent(
+      NetLogEventType::HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS,
+      [&](NetLogCaptureMode capture_mode) {
+        return Http2HeaderBlockNetLogParams(&request_headers, capture_mode);
+      });
   CHECK_NE(type_, SPDY_PUSH_STREAM);
   CHECK_EQ(pending_send_status_, MORE_DATA_TO_SEND);
   CHECK(!request_headers_valid_);
@@ -936,10 +942,10 @@ void SpdyStream::SaveResponseHeaders(
 
   // Reject pushed stream with unsupported status code regardless of whether
   // delegate is already attached or not.
+  // TODO(https://crbug.com/1426477): Remove this code, since pushed streams are
+  // already rejected.
   if (type_ == SPDY_PUSH_STREAM &&
       (status / 100 != 2 && status / 100 != 3 && status != 416)) {
-    SpdySession::RecordSpdyPushedStreamFateHistogram(
-        SpdyPushedStreamFate::kUnsupportedStatusCode);
     session_->ResetStream(stream_id_, ERR_HTTP2_CLIENT_REFUSED_STREAM,
                           "Unsupported status code for pushed stream.");
     return;
@@ -950,6 +956,8 @@ void SpdyStream::SaveResponseHeaders(
   if (!delegate_)
     return;
 
+  // TODO(https://crbug.com/1426477): Remove this code, since pushed streams are
+  // already rejected.
   if (type_ == SPDY_PUSH_STREAM) {
     // OnPushPromiseHeadersReceived() must have been called before
     // OnHeadersReceived().

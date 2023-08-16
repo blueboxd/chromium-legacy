@@ -8,6 +8,8 @@
 #import "ios/chrome/browser/ntp/set_up_list_item_type.h"
 #import "ios/chrome/browser/shared/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/content_suggestions/set_up_list/constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view_data.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -37,6 +39,9 @@ constexpr CGFloat kMargin = 14;
 // The padding used inside the list.
 constexpr CGFloat kPadding = 15;
 
+// The spacing between items in the list.
+constexpr CGFloat kItemSpacing = 18;
+
 // The spacing used between title and description in the "All Set" View.
 constexpr CGFloat kAllSetSpacing = 10;
 
@@ -52,14 +57,6 @@ constexpr base::TimeDelta kAllSetAnimationDuration = base::Seconds(0.5);
 // The names of images used on the left and right sides of the "All Set" view.
 constexpr NSString* const kAllSetLeft = @"set_up_list_all_set_left";
 constexpr NSString* const kAllSetRight = @"set_up_list_all_set_right";
-
-// The accessibility IDs used for various UI items.
-constexpr NSString* const kSetUpListAccessibilityID =
-    @"kSetUpListAccessibilityID";
-constexpr NSString* const kSetUpListExpandButtonID =
-    @"kSetUpListExpandButtonID";
-constexpr NSString* const kSetUpListMenuButtonID = @"kSetUpListMenuButtonID";
-constexpr NSString* const kSetUpListAllSetID = @"kSetUpListAllSetID";
 
 }  //  namespace
 
@@ -216,9 +213,16 @@ constexpr NSString* const kSetUpListAllSetID = @"kSetUpListAllSetID";
   }
 
   self.translatesAutoresizingMaskIntoConstraints = NO;
-  self.accessibilityIdentifier = kSetUpListAccessibilityID;
+  self.accessibilityIdentifier = set_up_list::kAccessibilityID;
 
   UILabel* listTitle = [self createListTitle];
+  _menuButton = [self createMenuButton];
+  UIStackView* titleContainer = [[UIStackView alloc]
+      initWithArrangedSubviews:@[ listTitle, _menuButton ]];
+  titleContainer.translatesAutoresizingMaskIntoConstraints = NO;
+  titleContainer.axis = UILayoutConstraintAxisHorizontal;
+  titleContainer.distribution = UIStackViewDistributionFill;
+
   _items = [self createItems];
   _itemsStack = [self createItemsStack];
   if (_items.count > kInitialItemCount && ![self allItemsComplete]) {
@@ -227,23 +231,14 @@ constexpr NSString* const kSetUpListAllSetID = @"kSetUpListAllSetID";
   }
 
   UIStackView* containerStack = [[UIStackView alloc]
-      initWithArrangedSubviews:@[ listTitle, _itemsStack ]];
+      initWithArrangedSubviews:@[ titleContainer, _itemsStack ]];
   containerStack.translatesAutoresizingMaskIntoConstraints = NO;
   containerStack.axis = UILayoutConstraintAxisVertical;
   containerStack.spacing = kPadding;
   [self addSubview:containerStack];
   AddSameConstraintsWithInsets(
       containerStack, self,
-      NSDirectionalEdgeInsetsMake(0, kMargin, 0, kMargin));
-
-  _menuButton = [self createMenuButton];
-  [self addSubview:_menuButton];
-  [NSLayoutConstraint activateConstraints:@[
-    [_menuButton.trailingAnchor
-        constraintEqualToAnchor:containerStack.trailingAnchor],
-    [_menuButton.firstBaselineAnchor
-        constraintEqualToAnchor:listTitle.firstBaselineAnchor],
-  ]];
+      NSDirectionalEdgeInsetsMake(0, kMargin, kMargin, kMargin));
 
   if (_expandButton) {
     self.accessibilityElements =
@@ -287,7 +282,7 @@ constexpr NSString* const kSetUpListAllSetID = @"kSetUpListAllSetID";
       [[UIStackView alloc] initWithArrangedSubviews:initialItems];
   stack.axis = UILayoutConstraintAxisVertical;
   stack.translatesAutoresizingMaskIntoConstraints = NO;
-  stack.spacing = kPadding;
+  stack.spacing = kItemSpacing;
   stack.layer.masksToBounds = YES;
   stack.layer.cornerRadius = kBorderRadius;
   stack.layer.borderWidth = kBorderWidth;
@@ -306,9 +301,12 @@ constexpr NSString* const kSetUpListAllSetID = @"kSetUpListAllSetID";
 - (UILabel*)createListTitle {
   UILabel* label = [[UILabel alloc] init];
   label.text = l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_TITLE);
-  label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
+  label.font =
+      CreateDynamicFont(UIFontTextStyleSubheadline, UIFontWeightMedium);
   label.textColor = [UIColor colorNamed:kTextSecondaryColor];
   label.accessibilityTraits = UIAccessibilityTraitHeader;
+  label.numberOfLines = 0;
+  label.lineBreakMode = NSLineBreakByWordWrapping;
   return label;
 }
 
@@ -320,8 +318,10 @@ constexpr NSString* const kSetUpListAllSetID = @"kSetUpListAllSetID";
       DefaultSymbolTemplateWithPointSize(kMenuSymbol, kButtonPointSize);
   [button setImage:icon forState:UIControlStateNormal];
   button.tintColor = [UIColor colorNamed:kGrey600Color];
+  [button setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                            forAxis:UILayoutConstraintAxisHorizontal];
 
-  button.accessibilityIdentifier = kSetUpListMenuButtonID;
+  button.accessibilityIdentifier = set_up_list::kMenuButtonID;
   button.isAccessibilityElement = YES;
   button.accessibilityLabel = l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_MENU);
 
@@ -341,7 +341,7 @@ constexpr NSString* const kSetUpListAllSetID = @"kSetUpListAllSetID";
   [button setImage:icon forState:UIControlStateNormal];
   button.tintColor = [UIColor colorNamed:kGrey600Color];
 
-  button.accessibilityIdentifier = kSetUpListExpandButtonID;
+  button.accessibilityIdentifier = set_up_list::kExpandButtonID;
   button.isAccessibilityElement = YES;
   button.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_EXPAND);
@@ -373,7 +373,7 @@ constexpr NSString* const kSetUpListAllSetID = @"kSetUpListAllSetID";
 
   UIStackView* stack =
       [[UIStackView alloc] initWithArrangedSubviews:@[ title, description ]];
-  stack.accessibilityIdentifier = kSetUpListAllSetID;
+  stack.accessibilityIdentifier = set_up_list::kAllSetID;
   stack.axis = UILayoutConstraintAxisVertical;
   stack.alignment = UIStackViewAlignmentCenter;
   stack.translatesAutoresizingMaskIntoConstraints = NO;

@@ -117,6 +117,10 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   bool RegisterBacking(std::unique_ptr<SharedImageBacking> backing);
   bool AddSecondaryReference(const gpu::Mailbox& mailbox);
 
+  // Returns the usage for the shared image backing. If no backing is registered
+  // for `mailbox` this will return 0.
+  uint32_t GetUsageForMailbox(const Mailbox& mailbox);
+
   SharedContextState* GetSharedContextState() const {
     return shared_context_state_;
   }
@@ -139,9 +143,10 @@ class GPU_GLES2_EXPORT SharedImageFactory {
       gfx::GpuMemoryBufferType gmb_type);
   void LogGetFactoryFailed(uint32_t usage,
                            viz::SharedImageFormat format,
-                           gfx::GpuMemoryBufferType gmb_type);
+                           gfx::GpuMemoryBufferType gmb_type,
+                           const std::string& debug_label);
 
-  raw_ptr<SharedImageManager> shared_image_manager_;
+  raw_ptr<SharedImageManager, DanglingUntriaged> shared_image_manager_;
   raw_ptr<SharedContextState> shared_context_state_;
   std::unique_ptr<MemoryTypeTracker> memory_tracker_;
 

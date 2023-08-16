@@ -14,11 +14,14 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.IntDef;
@@ -26,6 +29,7 @@ import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.StyleRes;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -46,6 +50,7 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
+import org.chromium.ui.display.DisplayUtil;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
 
@@ -239,8 +244,7 @@ public class ChromeBaseAppCompatActivity extends AppCompatActivity
      * Creates a {@link ModalDialogManager} for this class. Subclasses that need one should override
      * this method.
      */
-    @Nullable
-    protected ModalDialogManager createModalDialogManager() {
+    protected @Nullable ModalDialogManager createModalDialogManager() {
         return null;
     }
 
@@ -255,8 +259,30 @@ public class ChromeBaseAppCompatActivity extends AppCompatActivity
      */
     @CallSuper
     protected boolean applyOverrides(Context baseContext, Configuration overrideConfig) {
+        applyOverridesForAutomotive(baseContext, overrideConfig);
         return NightModeUtils.applyOverridesForNightMode(
                 getNightModeStateProvider(), overrideConfig);
+    }
+
+    @VisibleForTesting
+    static void applyOverridesForAutomotive(Context baseContext, Configuration overrideConfig) {
+        if (BuildInfo.getInstance().isAutomotive) {
+            scaleUpUI(baseContext, overrideConfig, DisplayUtil.UI_SCALING_FACTOR_FOR_AUTO);
+        }
+    }
+
+    private static void scaleUpUI(Context context, Configuration config, float scaleUpFactor) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        WindowManager windowManager = (WindowManager) context.getSystemService(WINDOW_SERVICE);
+        assert windowManager != null;
+        windowManager.getDefaultDisplay().getRealMetrics(displayMetrics);
+
+        config.densityDpi = (int) (displayMetrics.densityDpi * scaleUpFactor);
+        config.screenWidthDp =
+                (int) (displayMetrics.widthPixels / (displayMetrics.density * scaleUpFactor));
+        config.screenHeightDp =
+                (int) (displayMetrics.heightPixels / (displayMetrics.density * scaleUpFactor));
+        config.smallestScreenWidthDp = Math.min(config.screenWidthDp, config.screenHeightDp);
     }
 
     /**
@@ -381,7 +407,8 @@ public class ChromeBaseAppCompatActivity extends AppCompatActivity
             super.setContentView(R.layout.automotive_layout_with_back_button_toolbar);
             setAutomotiveToolbarBackButtonAction();
             LinearLayout linearLayout = findViewById(R.id.automotive_base_linear_layout);
-            linearLayout.addView(view);
+            linearLayout.addView(
+                    view, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         } else {
             super.setContentView(view);
         }
@@ -396,7 +423,8 @@ public class ChromeBaseAppCompatActivity extends AppCompatActivity
             setAutomotiveToolbarBackButtonAction();
             LinearLayout linearLayout = findViewById(R.id.automotive_base_linear_layout);
             linearLayout.setLayoutParams(params);
-            linearLayout.addView(view);
+            linearLayout.addView(
+                    view, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         } else {
             super.setContentView(view, params);
         }

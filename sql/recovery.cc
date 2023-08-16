@@ -14,6 +14,7 @@
 
 #include "base/check_op.h"
 #include "base/dcheck_is_on.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/functional/bind.h"
@@ -24,11 +25,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/types/pass_key.h"
+#include "build/build_config.h"
 #include "sql/database.h"
 #include "sql/error_delegate_util.h"
 #include "sql/internal_api_token.h"
 #include "sql/meta_table.h"
 #include "sql/recover_module/module.h"
+#include "sql/sql_features.h"
 #include "sql/sqlite_result_code.h"
 #include "sql/sqlite_result_code_values.h"
 #include "sql/statement.h"
@@ -43,9 +46,20 @@ constexpr char kMainDatabaseName[] = "main";
 }  // namespace
 
 // static
+bool BuiltInRecovery::IsSupported() {
+  // TODO(https://crbug.com/1385500): `BuiltInRecovery` is not yet supported on
+  // Fuchsia.
+#if BUILDFLAG(IS_FUCHSIA)
+  return false;
+#else
+  return base::FeatureList::IsEnabled(features::kUseBuiltInRecoveryIfSupported);
+#endif  // BUILDFLAG(IS_FUCHSIA)
+}
+
+// static
 bool BuiltInRecovery::ShouldAttemptRecovery(Database* database,
                                             int extended_error) {
-  return database && database->is_open() &&
+  return BuiltInRecovery::IsSupported() && database && database->is_open() &&
          !database->DbPath(InternalApiToken()).empty() &&
          IsErrorCatastrophic(extended_error);
 }
@@ -53,8 +67,60 @@ bool BuiltInRecovery::ShouldAttemptRecovery(Database* database,
 // static
 SqliteResultCode BuiltInRecovery::RecoverDatabase(Database* database,
                                                   Strategy strategy) {
+  if (!BuiltInRecovery::IsSupported()) {
+    return SqliteResultCode::kAbort;
+  }
+
   auto recovery = BuiltInRecovery(database, strategy);
   return recovery.RecoverAndReplaceDatabase();
+}
+
+// static
+bool BuiltInRecovery::RecoverIfPossible(
+    Database* database,
+    int extended_error,
+    Strategy strategy,
+    const base::Feature* const use_builtin_recovery_if_supported_flag) {
+  // If `BuiltInRecovery` is supported at all, check the flag for this specific
+  // database, provided by the feature team.
+  bool use_builtin_recovery =
+      BuiltInRecovery::IsSupported() &&
+      (!use_builtin_recovery_if_supported_flag ||
+       base::FeatureList::IsEnabled(*use_builtin_recovery_if_supported_flag));
+
+  if (use_builtin_recovery
+          ? !BuiltInRecovery::ShouldAttemptRecovery(database, extended_error)
+          : !database || !database->is_open() ||
+                database->DbPath(InternalApiToken()).empty() ||
+                !Recovery::ShouldRecover(extended_error)) {
+    return false;
+  }
+
+  // Recovery should be attempted. Since recovery must only be attempted from
+  // within a database error callback, reset the error callback to prevent
+  // re-entry.
+  database->reset_error_callback();
+
+  if (use_builtin_recovery) {
+    CHECK(BuiltInRecovery::IsSupported());
+    auto result = BuiltInRecovery::RecoverDatabase(database, strategy);
+    if (!IsSqliteSuccessCode(result)) {
+      DLOG(ERROR) << "Database recovery failed with result code: " << result;
+    }
+  } else {
+    switch (strategy) {
+      case BuiltInRecovery::Strategy::kRecoverOrRaze:
+        Recovery::RecoverDatabase(database,
+                                  database->DbPath(InternalApiToken()));
+        break;
+      case BuiltInRecovery::Strategy::kRecoverWithMetaVersionOrRaze:
+        Recovery::RecoverDatabaseWithMetaVersion(
+            database, database->DbPath(InternalApiToken()));
+        break;
+    }
+  }
+
+  return true;
 }
 
 BuiltInRecovery::BuiltInRecovery(Database* database, Strategy strategy)
@@ -91,6 +157,8 @@ BuiltInRecovery::~BuiltInRecovery() {
   CHECK_NE(result_, Result::kUnknown);
 
   base::UmaHistogramEnumeration("Sql.Recovery.Result", result_);
+  UmaHistogramSqliteResult("Sql.Recovery.ResultCode",
+                           static_cast<int>(sqlite_result_code_));
 
   if (db_) {
     if (result_ == Result::kSuccess) {
@@ -119,7 +187,8 @@ void BuiltInRecovery::SetRecoverySucceeded() {
   result_ = Result::kSuccess;
 }
 
-void BuiltInRecovery::SetRecoveryFailed(Result failure_result) {
+void BuiltInRecovery::SetRecoveryFailed(Result failure_result,
+                                        SqliteResultCode result_code) {
   // Recovery result must only be set once.
   CHECK_EQ(result_, Result::kUnknown);
 
@@ -140,6 +209,7 @@ void BuiltInRecovery::SetRecoveryFailed(Result failure_result) {
   }
 
   result_ = failure_result;
+  sqlite_result_code_ = result_code;
 }
 
 SqliteResultCode BuiltInRecovery::RecoverAndReplaceDatabase() {
@@ -155,7 +225,8 @@ SqliteResultCode BuiltInRecovery::RecoverAndReplaceDatabase() {
     // TODO(https://crbug.com/1385500): It's unfortunate to give up now, after
     // we've successfully recovered the database to a backup. Consider falling
     // back to base::Move().
-    SetRecoveryFailed(Result::kFailedToOpenRecoveredDatabase);
+    SetRecoveryFailed(Result::kFailedToOpenRecoveredDatabase,
+                      ToSqliteResultCode(recover_db_.GetErrorCode()));
     return SqliteResultCode::kError;
   }
 
@@ -210,7 +281,7 @@ SqliteResultCode BuiltInRecovery::AttemptToRecoverDatabaseToBackup() {
     // TODO(https://crbug.com/1385500): This is likely a transient issue, so we
     // could consider keeping the database intact in case the caller wants to
     // try again later. For now, we'll always raze.
-    SetRecoveryFailed(Result::kFailedRecoveryInit);
+    SetRecoveryFailed(Result::kFailedRecoveryInit, sqlite_result_code);
 
     DVLOG(1) << "recovery config error: " << sqlite_result_code
              << sqlite3_recover_errcode(recover);
@@ -231,7 +302,7 @@ SqliteResultCode BuiltInRecovery::AttemptToRecoverDatabaseToBackup() {
 
   if (sqlite_result_code != SqliteResultCode::kOk) {
     // Could not recover the database.
-    SetRecoveryFailed(Result::kFailedRecoveryRun);
+    SetRecoveryFailed(Result::kFailedRecoveryRun, sqlite_result_code);
 
     DVLOG(1) << "recovery error: " << sqlite_result_code
              << sqlite3_recover_errmsg(recover);
@@ -260,7 +331,7 @@ SqliteResultCode BuiltInRecovery::ReplaceOriginalWithRecoveredDb() {
     // TODO(https://crbug.com/1385500): It's unfortunate to give up now, after
     // we've successfully recovered the database. Consider falling back to
     // base::Move().
-    SetRecoveryFailed(Result::kFailedBackupInit);
+    SetRecoveryFailed(Result::kFailedBackupInit, result_code);
     return result_code;
   }
 
@@ -297,7 +368,7 @@ SqliteResultCode BuiltInRecovery::ReplaceOriginalWithRecoveredDb() {
 
     DVLOG(1) << "sqlite3_backup_step() failed: "
              << sqlite3_errmsg(db_->db(InternalApiToken()));
-    SetRecoveryFailed(Result::kFailedBackupRun);
+    SetRecoveryFailed(Result::kFailedBackupRun, sqlite_result_code);
     return sqlite_result_code;
   }
 
@@ -313,7 +384,8 @@ bool BuiltInRecovery::RecoveredDbHasValidMetaTable() {
 
   if (!MetaTable::DoesTableExist(&recover_db_)) {
     DVLOG(1) << "Meta table does not exist in recovery database.";
-    SetRecoveryFailed(Result::kFailedMetaTableDoesNotExist);
+    SetRecoveryFailed(Result::kFailedMetaTableDoesNotExist,
+                      ToSqliteResultCode(recover_db_.GetErrorCode()));
     return false;
   }
 
@@ -321,13 +393,15 @@ bool BuiltInRecovery::RecoveredDbHasValidMetaTable() {
   sql::MetaTable meta_table;
   if (!meta_table.Init(&recover_db_, /*version=*/1,
                        /*compatible_version=*/1)) {
-    SetRecoveryFailed(Result::kFailedMetaTableInit);
+    SetRecoveryFailed(Result::kFailedMetaTableInit,
+                      ToSqliteResultCode(recover_db_.GetErrorCode()));
     return false;
   }
 
   // Confirm that we can read a valid version number from the recovered table.
   if (meta_table.GetVersionNumber() <= 0) {
-    SetRecoveryFailed(Result::kFailedMetaTableVersionWasInvalid);
+    SetRecoveryFailed(Result::kFailedMetaTableVersionWasInvalid,
+                      ToSqliteResultCode(recover_db_.GetErrorCode()));
     return false;
   }
 

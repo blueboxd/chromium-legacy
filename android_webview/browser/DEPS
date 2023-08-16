@@ -15,7 +15,6 @@ include_rules = [
   "+components/cdm/browser",
   "+components/component_updater/android",
   "+components/component_updater/installer_policies",
-  "+components/content_relationship_verification",
   "+components/crash/content/browser",
   "+components/crash/core",
   "+components/download/public/common",
@@ -104,6 +103,7 @@ include_rules = [
 
   "+third_party/blink/public/common/client_hints/enabled_client_hints.h",
   "+third_party/blink/public/common/features.h",
+  "+third_party/blink/public/common/origin_trials/origin_trial_feature.h",
   "+third_party/blink/public/common/origin_trials/origin_trials_settings_provider.h",
   "+third_party/blink/public/common/origin_trials/trial_token_validator.h",
   "+third_party/blink/public/common/page_state/page_state.h",
@@ -111,7 +111,6 @@ include_rules = [
   "+third_party/blink/public/common/storage_key/storage_key.h",
   "+third_party/blink/public/common/user_agent/user_agent_metadata.h",
   "+third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h",
-  "+third_party/blink/public/platform/resource_request_blocked_reason.h",
   "+third_party/crashpad/crashpad/client",
   "+third_party/crashpad/crashpad/util",
   "+third_party/zlib/google/compression_utils.h",

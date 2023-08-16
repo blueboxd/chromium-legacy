@@ -14,6 +14,7 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/focus_cycler.h"
@@ -44,9 +45,11 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/user_education/user_education_util.h"
 #include "ash/utility/haptics_tracking_test_input_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
+#include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -57,6 +60,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -69,6 +73,7 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/interaction/element_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -87,6 +92,7 @@
 #include "ui/views/animation/test/ink_drop_host_test_api.h"
 #include "ui/views/animation/test/ink_drop_impl_test_api.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -443,6 +449,45 @@ class ShelfViewTest : public AshTestBase {
     ASSERT_EQ(map_index, id_map.size());
   }
 
+  void ExpectHelpBubbleAnchorBoundsChangedEvent(
+      base::FunctionRef<void()> function_ref) {
+    base::RunLoop run_loop;
+
+    auto subscription =
+        ui::ElementTracker::GetElementTracker()->AddCustomEventCallback(
+            user_education_util::GetHelpBubbleAnchorBoundsChangedEventType(),
+            views::ElementTrackerViews::GetContextForView(shelf_view_),
+            base::BindLambdaForTesting(
+                [&](ui::TrackedElement* tracked_element) {
+                  if (tracked_element->IsA<views::TrackedElementViews>() &&
+                      tracked_element->AsA<views::TrackedElementViews>()
+                              ->view() == shelf_view_) {
+                    run_loop.Quit();
+                  }
+                }));
+
+    function_ref();
+    run_loop.Run();
+  }
+
+  void VerifyAnchorBoundsInScreenAreValid() {
+    gfx::Rect anchor_bounds_in_screen;
+    for (int i : shelf_view_->visible_views_indices()) {
+      if (test_api_->GetButton(i)) {
+        anchor_bounds_in_screen.Union(
+            test_api_->GetViewAt(i)->GetBoundsInScreen());
+      }
+    }
+    if (shelf_view_->parent()) {
+      anchor_bounds_in_screen.Intersect(
+          shelf_view_->parent()->GetBoundsInScreen());
+    }
+    EXPECT_THAT(shelf_view_->GetAnchorBoundsInScreen(),
+                ::testing::Conditional(anchor_bounds_in_screen.IsEmpty(),
+                                       shelf_view_->GetBoundsInScreen(),
+                                       anchor_bounds_in_screen));
+  }
+
   void VerifyShelfItemBoundsAreValid() {
     for (int i : shelf_view_->visible_views_indices()) {
       if (test_api_->GetButton(i)) {
@@ -651,6 +696,44 @@ const char*
     ShelfViewTest::kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName =
         ShelfButtonPressedMetricTracker::
             kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName;
+
+TEST_P(LtrRtlShelfViewTest, GetAnchorBoundsInScreen) {
+  // Help bubble anchor bounds changed events are only propagated when user
+  // education features are enabled.
+  base::test::ScopedFeatureList scoped_feature_list(features::kWelcomeTour);
+
+  {
+    SCOPED_TRACE("Initial anchor bounds.");
+    VerifyAnchorBoundsInScreenAreValid();
+  }
+
+  ShelfID app_shortcut_id;
+
+  {
+    SCOPED_TRACE("Update anchor bounds due to addition.");
+    ExpectHelpBubbleAnchorBoundsChangedEvent(
+        [&]() { app_shortcut_id = AddAppShortcut(); });
+    VerifyAnchorBoundsInScreenAreValid();
+  }
+
+  {
+    SCOPED_TRACE("Update anchor bounds due to removal.");
+    ExpectHelpBubbleAnchorBoundsChangedEvent(
+        [&]() { RemoveByID(app_shortcut_id); });
+    VerifyAnchorBoundsInScreenAreValid();
+  }
+
+  {
+    SCOPED_TRACE("Shelf overflow anchor bounds.");
+    ExpectHelpBubbleAnchorBoundsChangedEvent([&]() {
+      while (shelf_view_->parent()->bounds().width() >=
+             shelf_view_->bounds().width()) {
+        AddAppShortcut();
+      }
+    });
+    VerifyAnchorBoundsInScreenAreValid();
+  }
+}
 
 TEST_P(LtrRtlShelfViewTest, VisibleShelfItemsBounds) {
   // Add 3 pinned apps, and a normal app.
@@ -3562,134 +3645,6 @@ TEST_F(ShelfViewGestureTapTest, MouseClickInterruptionBeforeGestureLongPress) {
   EXPECT_EQ(views::InkDropState::HIDDEN, GetInkDropStateOfAppIcon1());
 }
 
-class ShelfPartyTest : public ShelfViewTest,
-                       public testing::WithParamInterface<
-                           std::pair<ShelfAlignment, ShelfAutoHideBehavior>> {
- public:
-  ShelfPartyTest()
-      : ShelfViewTest(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
-    scoped_feature_list_.InitAndEnableFeature(features::kShelfParty);
-  }
-  ShelfPartyTest(const ShelfPartyTest&) = delete;
-  ShelfPartyTest& operator=(const ShelfPartyTest&) = delete;
-  ~ShelfPartyTest() override = default;
-
-  void SetUp() override {
-    ShelfViewTest::SetUp();
-    shelf_view_->shelf()->SetAlignment(GetParam().first);
-    shelf_view_->shelf()->SetAutoHideBehavior(GetParam().second);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    ShelfPartyTest,
-    testing::Values(
-        std::make_pair(ShelfAlignment::kBottom, ShelfAutoHideBehavior::kAlways),
-        std::make_pair(ShelfAlignment::kBottom, ShelfAutoHideBehavior::kNever),
-        std::make_pair(ShelfAlignment::kLeft, ShelfAutoHideBehavior::kNever),
-        std::make_pair(ShelfAlignment::kRight, ShelfAutoHideBehavior::kNever),
-        std::make_pair(ShelfAlignment::kBottomLocked,
-                       ShelfAutoHideBehavior::kNever),
-        std::make_pair(ShelfAlignment::kBottom,
-                       ShelfAutoHideBehavior::kAlwaysHidden)));
-
-// Exercises the party animation.
-TEST_P(ShelfPartyTest, PartyAnimation) {
-  for (int i = 0; i < 16; ++i) {
-    AddAppShortcut();
-  }
-  model_->ToggleShelfParty();
-  task_environment()->FastForwardBy(base::Seconds(2));
-  model_->ToggleShelfParty();
-  test_api_->RunMessageLoopUntilAnimationsDone();
-}
-
-// Verifies that partying items are hidden from the shelf.
-TEST_P(ShelfPartyTest, PartyingItemsHiddenFromShelf) {
-  AddAppShortcut();
-  AddAppShortcut();
-  AddApp();
-  ShelfItem item = model_->items()[1u];
-  item.status = STATUS_RUNNING;
-  model_->Set(1, item);
-  const gfx::Rect initial_bounds0 = test_api_->GetBoundsByIndex(0);
-  const gfx::Rect initial_bounds2 = test_api_->GetBoundsByIndex(2);
-
-  // Start shelf party.
-  model_->ToggleShelfParty();
-  {
-    const std::vector<size_t> not_partying = {1, 3};
-    EXPECT_EQ(not_partying, shelf_view_->visible_views_indices());
-  }
-  task_environment()->FastForwardBy(base::Seconds(1));
-  EXPECT_TRUE(test_api_->GetBoundsByIndex(0).IsEmpty());
-  EXPECT_TRUE(test_api_->GetBoundsByIndex(2).IsEmpty());
-
-  // End shelf party.
-  model_->ToggleShelfParty();
-  {
-    const std::vector<size_t> not_partying = {0, 1, 2, 3};
-    EXPECT_EQ(not_partying, shelf_view_->visible_views_indices());
-  }
-  test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(initial_bounds0, test_api_->GetBoundsByIndex(0));
-  EXPECT_EQ(initial_bounds2, test_api_->GetBoundsByIndex(2));
-}
-
-// Verifies that the feature that enables dragging unpinned apps to pin works
-// with shelf party.
-TEST_P(ShelfPartyTest, DragUnpinnedAppToPin) {
-  AddAppShortcut();
-  AddAppShortcut();
-  const ShelfID running_unpinned_app = AddApp();
-
-  ShelfItem item = model_->items()[1u];
-  item.status = STATUS_RUNNING;
-  model_->Set(1, item);
-  const ShelfID running_pinned_app = item.id;
-
-  // Start shelf party.
-  model_->ToggleShelfParty();
-  {
-    const std::vector<size_t> not_partying = {1, 3};
-    EXPECT_EQ(not_partying, shelf_view_->visible_views_indices());
-  }
-  task_environment()->FastForwardBy(base::Seconds(1));
-
-  // At this point, there should be only 1 pinned app and 1 unpinned app on the
-  // shelf.
-  const gfx::Point unpinned_app_center = GetButtonCenter(running_unpinned_app);
-  const gfx::Point pinned_app_center = GetButtonCenter(running_pinned_app);
-  auto* generator = GetEventGenerator();
-
-  // Drag the unpinned app to the front.
-  generator->MoveMouseTo(unpinned_app_center);
-  generator->PressLeftButton();
-  generator->MoveMouseTo(pinned_app_center);
-
-  // The first visible item, which is the dragged item, should not be pinned.
-  const size_t first_visible_index =
-      shelf_view_->visible_views_indices().front();
-  EXPECT_TRUE(!IsAppPinned(model_->items()[first_visible_index].id));
-
-  // Drag the unpinned app back to its original position and release it.
-  generator->MoveMouseTo(unpinned_app_center);
-  generator->ReleaseLeftButton();
-
-  // The last visible item, which is the dragged item, should still be an
-  // unpinned one.
-  const size_t last_visible_index = shelf_view_->visible_views_indices().back();
-  EXPECT_TRUE(!IsAppPinned(model_->items()[last_visible_index].id));
-
-  // End shelf party.
-  model_->ToggleShelfParty();
-  test_api_->RunMessageLoopUntilAnimationsDone();
-}
-
 // Test class to test the desk button.
 class ShelfViewDeskButtonTest : public ShelfViewTest {
  public:
@@ -3717,16 +3672,20 @@ class ShelfViewDeskButtonTest : public ShelfViewTest {
                   ->GetWindowBoundsInScreen()
                   .width(),
               336);
+    prefs_ = Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   }
+
+  PrefService* prefs_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Verify that the desk button is visible normally, and not visible in overview
-// mode.
+// Verify that the desk button is visible outside of overview, and not visible
+// in overview mode.
 TEST_F(ShelfViewDeskButtonTest, OverviewVisibility) {
-  // The button should be normally visible.
+  SetShowDeskButtonInShelfPref(prefs_, true);
+  // The button should be visible.
   EXPECT_TRUE(desk_button_widget()->GetLayer()->GetTargetVisibility());
   const int original_hotseat_width = GetPrimaryShelf()
                                          ->shelf_widget()
@@ -3759,6 +3718,7 @@ TEST_F(ShelfViewDeskButtonTest, OverviewVisibility) {
 
 // Verify that the desk button is not visible in tablet mode.
 TEST_F(ShelfViewDeskButtonTest, TabletModeVisibility) {
+  SetShowDeskButtonInShelfPref(prefs_, true);
   EXPECT_TRUE(desk_button_widget()->GetLayer()->GetTargetVisibility());
 
   // In tablet mode, the shelf should be visible but the desk button shouldn't.
@@ -3773,6 +3733,7 @@ TEST_F(ShelfViewDeskButtonTest, TabletModeVisibility) {
 // Verify that the desk button is 136 wide if the screen width is greater than
 // 1280px, and 96 otherwise, and that the button is 36x36 in vertical alignment.
 TEST_F(ShelfViewDeskButtonTest, Position) {
+  SetShowDeskButtonInShelfPref(prefs_, true);
   test_api_->shelf_view()->shelf()->SetAlignment(ShelfAlignment::kBottom);
   UpdateDisplay("1281x400");
   EXPECT_EQ(desk_button_widget()->GetTargetBounds().width(), 136);
@@ -3786,4 +3747,112 @@ TEST_F(ShelfViewDeskButtonTest, Position) {
   EXPECT_EQ(desk_button_widget()->GetTargetBounds().height(), 36);
 }
 
+// Verify that the desk button does not appear by default, appears when the user
+// has more than 1 desk, and stays even if they go back to having just one desk.
+TEST_F(ShelfViewDeskButtonTest, NewDeskVisibility) {
+  // By default the visibility pref should be `kNotSet`, the device uses desks
+  // pref should be false, and the button should not be visible.
+  EXPECT_EQ(prefs_->GetString(prefs::kShowDeskButtonInShelf), "");
+  EXPECT_FALSE(prefs_->GetBoolean(prefs::kDeviceUsesDesks));
+  EXPECT_FALSE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+
+  // Going into and out of tablet mode and overview shouldn't change this.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  EXPECT_EQ(prefs_->GetString(prefs::kShowDeskButtonInShelf), "");
+  EXPECT_FALSE(prefs_->GetBoolean(prefs::kDeviceUsesDesks));
+  EXPECT_FALSE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+
+  ToggleOverview();
+  EXPECT_FALSE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+  ToggleOverview();
+  EXPECT_EQ(prefs_->GetString(prefs::kShowDeskButtonInShelf), "");
+  EXPECT_FALSE(prefs_->GetBoolean(prefs::kDeviceUsesDesks));
+  EXPECT_FALSE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+
+  // Adding one desk should change the device uses desks pref to true, and it
+  // should stay that way when the desk is removed. The desk button visibility
+  // pref should not be changed.
+  Shell::Get()->desks_controller()->NewDesk(
+      DesksCreationRemovalSource::kButton);
+  EXPECT_EQ(prefs_->GetString(prefs::kShowDeskButtonInShelf), "");
+  EXPECT_TRUE(prefs_->GetBoolean(prefs::kDeviceUsesDesks));
+  EXPECT_TRUE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+
+  RemoveDesk(Shell::Get()->desks_controller()->GetTargetActiveDesk(),
+             DeskCloseType::kCloseAllWindows);
+  EXPECT_EQ(prefs_->GetString(prefs::kShowDeskButtonInShelf), "");
+  EXPECT_TRUE(prefs_->GetBoolean(prefs::kDeviceUsesDesks));
+  EXPECT_TRUE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+}
+
+// Verify that if the user hides the desk button, the button will never show
+// unless the user elects to show the button manually.
+TEST_F(ShelfViewDeskButtonTest, PrefHidden) {
+  SetShowDeskButtonInShelfPref(prefs_, false);
+  SetDeviceUsesDesksPref(prefs_, false);
+  EXPECT_FALSE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+
+  // Adding a desk should not make the button visible.
+  Shell::Get()->desks_controller()->NewDesk(
+      DesksCreationRemovalSource::kButton);
+  EXPECT_EQ(prefs_->GetString(prefs::kShowDeskButtonInShelf), "Hidden");
+  EXPECT_TRUE(prefs_->GetBoolean(prefs::kDeviceUsesDesks));
+  EXPECT_FALSE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+
+  // Removing the desk, cycling overview, and tablet mode should not make it
+  // visible.
+
+  RemoveDesk(Shell::Get()->desks_controller()->GetTargetActiveDesk(),
+             DeskCloseType::kCloseAllWindows);
+  EXPECT_EQ(prefs_->GetString(prefs::kShowDeskButtonInShelf), "Hidden");
+  EXPECT_FALSE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+
+  ToggleOverview();
+  EXPECT_FALSE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+  ToggleOverview();
+  EXPECT_EQ(prefs_->GetString(prefs::kShowDeskButtonInShelf), "Hidden");
+  EXPECT_FALSE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  EXPECT_EQ(prefs_->GetString(prefs::kShowDeskButtonInShelf), "Hidden");
+  EXPECT_FALSE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+
+  // Setting the pref to shown after being hidden should make the button
+  // visible.
+  SetShowDeskButtonInShelfPref(prefs_, true);
+  EXPECT_EQ(prefs_->GetString(prefs::kShowDeskButtonInShelf), "Shown");
+  EXPECT_TRUE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+
+  // Setting the pref to hidden after being shown should make the button
+  // disappear.
+  SetShowDeskButtonInShelfPref(prefs_, false);
+  EXPECT_EQ(prefs_->GetString(prefs::kShowDeskButtonInShelf), "Hidden");
+  EXPECT_FALSE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+}
+
+// Verify that the correct combination of values for the two desk button
+// visibility preferences result in the desk button being shown and not shown.
+TEST_F(ShelfViewDeskButtonTest, PrefVisibilityRelationship) {
+  for (std::string visibility : {"", "Shown", "Hidden"}) {
+    for (bool uses_desks : {true, false}) {
+      prefs_->SetString(prefs::kShowDeskButtonInShelf, visibility);
+      SetDeviceUsesDesksPref(prefs_, uses_desks);
+      if (uses_desks) {
+        if (visibility == "Hidden") {
+          EXPECT_FALSE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+        } else {
+          EXPECT_TRUE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+        }
+      } else {
+        if (visibility == "Shown") {
+          EXPECT_TRUE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+        } else {
+          EXPECT_FALSE(desk_button_widget()->GetLayer()->GetTargetVisibility());
+        }
+      }
+    }
+  }
+}
 }  // namespace ash

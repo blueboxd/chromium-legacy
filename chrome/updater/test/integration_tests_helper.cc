@@ -148,6 +148,22 @@ base::RepeatingCallback<bool(Args...)> WithSwitch(
       }));
 }
 
+// Overload for TimeDelta switches.
+template <typename... Args>
+base::RepeatingCallback<bool(Args...)> WithSwitch(
+    const std::string& flag,
+    base::RepeatingCallback<bool(const base::TimeDelta&, Args...)> callback) {
+  return WithSwitch(
+      flag,
+      base::BindLambdaForTesting([=](const std::string& flag, Args... args) {
+        int flag_value;
+        if (base::StringToInt(flag, &flag_value)) {
+          return callback.Run(base::Seconds(flag_value), std::move(args)...);
+        }
+        return false;
+      }));
+}
+
 // Overload for base::Value::Dict switches.
 template <typename... Args>
 base::RepeatingCallback<bool(Args...)> WithSwitch(
@@ -255,9 +271,11 @@ void AppTestHelper::FirstTaskRun() {
     // then use the With* helper functions to provide its arguments.
     {"clean", WithSystemScope(Wrap(&Clean))},
     {"enter_test_mode",
-     WithSwitch("device_management_url",
-                WithSwitch("crash_upload_url",
-                           WithSwitch("update_url", Wrap(&EnterTestMode))))},
+     WithSwitch("idle_timeout",
+                WithSwitch("device_management_url",
+                           WithSwitch("crash_upload_url",
+                                      WithSwitch("update_url",
+                                                 Wrap(&EnterTestMode)))))},
     {"exit_test_mode", WithSystemScope(Wrap(&ExitTestMode))},
     {"set_group_policies", WithSwitch("values", Wrap(&SetGroupPolicies))},
     {"fill_log", WithSystemScope(Wrap(&FillLog))},
@@ -317,12 +335,17 @@ void AppTestHelper::FirstTaskRun() {
     {"run_wake_active",
      WithSwitch("exit_code", WithSystemScope(Wrap(&RunWakeActive)))},
     {"run_crash_me", WithSystemScope(Wrap(&RunCrashMe))},
+    {"run_server",
+     WithSwitch("internal",
+                WithSwitch("exit_code", WithSystemScope(Wrap(&RunServer))))},
     {"update",
      WithSwitch("install_data_index",
                 (WithSwitch("app_id", WithSystemScope(Wrap(&Update)))))},
     {"check_for_update",
      (WithSwitch("app_id", WithSystemScope(Wrap(&CheckForUpdate))))},
     {"update_all", WithSystemScope(Wrap(&UpdateAll))},
+    {"get_app_states",
+     WithSwitch("expected_app_states", WithSystemScope(Wrap(&GetAppStates)))},
     {"delete_updater_directory",
      WithSystemScope(Wrap(&DeleteUpdaterDirectory))},
     {"delete_file", (WithSwitch("path", WithSystemScope(Wrap(&DeleteFile))))},
@@ -364,6 +387,10 @@ void AppTestHelper::FirstTaskRun() {
      WithSwitch("silent",
                 WithSwitch("legacy_install",
                            WithSystemScope(Wrap(&RunOfflineInstall))))},
+    {"run_offline_install_os_not_supported",
+     WithSwitch("silent", WithSwitch("legacy_install",
+                                     WithSystemScope(Wrap(
+                                         &RunOfflineInstallOsNotSupported))))},
     {"dm_deregister_device", WithSystemScope(Wrap(&DMDeregisterDevice))},
     {"dm_cleanup", WithSystemScope(Wrap(&DMCleanup))},
   };

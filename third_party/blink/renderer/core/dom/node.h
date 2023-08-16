@@ -149,7 +149,7 @@ enum class LinkHighlightCandidate {
 // A Node is a base class for all objects in the DOM tree.
 // The spec governing this interface can be found here:
 // https://dom.spec.whatwg.org/#interface-node
-class CORE_EXPORT Node : public EventTarget {
+class CORE_EXPORT Node : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
   friend class TreeScope;
   friend class TreeScopeAdopter;
@@ -240,26 +240,37 @@ class CORE_EXPORT Node : public EventTarget {
   // https://dom.spec.whatwg.org/#concept-closed-shadow-hidden
   bool IsClosedShadowHiddenFrom(const Node&) const;
 
-  void Prepend(
+  // ParentNode interface. These functions are only actually web-exposed on
+  // interfaces that include ParentNode in their idl.
+  void prepend(
       const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
       ExceptionState& exception_state);
-  void Append(
+  void append(
       const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
       ExceptionState& exception_state);
-  void Before(
+  void replaceChildren(
       const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
       ExceptionState& exception_state);
-  void After(
+
+  // ChildNode interface. These functions are only actually web-exposed on
+  // interfaces that include ChildNode in their idl.
+  void before(
       const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
       ExceptionState& exception_state);
-  void ReplaceWith(
+  void after(
       const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
       ExceptionState& exception_state);
-  void ReplaceChildren(
+  void replaceWith(
       const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
       ExceptionState& exception_state);
   void remove(ExceptionState&);
   void remove();
+
+  // NonDocumentTypeChildNode interface. These functions are only actually
+  // web-exposed on  interfaces that include NonDocumentTypeChildNode in their
+  // idl.
+  Element* previousElementSibling();
+  Element* nextElementSibling();
 
   Node* PseudoAwareNextSibling() const;
   Node* PseudoAwarePreviousSibling() const;
@@ -607,11 +618,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   void SetIsLink(bool f);
 
-  bool HasEventTargetData() const { return GetFlag(kHasEventTargetDataFlag); }
-  void SetHasEventTargetData(bool flag) {
-    SetFlag(flag, kHasEventTargetDataFlag);
-  }
-
   virtual void SetFocused(bool flag, mojom::blink::FocusType);
   void SetHasFocusWithin(bool flag);
   virtual void SetDragged(bool flag);
@@ -893,9 +899,6 @@ class CORE_EXPORT Node : public EventTarget {
   // https://dom.spec.whatwg.org/#eventtarget-activation-behavior
   virtual bool HasActivationBehavior() const;
 
-  EventTargetData* GetEventTargetData() override;
-  EventTargetData& EnsureEventTargetData() override;
-
   void GetRegisteredMutationObserversOfType(
       HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>&,
       MutationType,
@@ -993,9 +996,9 @@ class CORE_EXPORT Node : public EventTarget {
 
  private:
   enum NodeFlags : uint32_t {
-    // Let the NodeTypeMask comes first, so the shit operation can
-    // be eliminated when get NodeType for the reason of performance.
-    // Node type flags. These never change once created.
+    // getNodeType() is called extensively. As it's called quite a bit its
+    // value is first so that a bit-shift is not needed to extract the value.
+    // Also note the node-type never changes once created.
     kNodeTypeMask = 0xf,
     kIsContainerFlag = 1 << 4,
     kElementNamespaceTypeMask = 0x3 << kElementNamespaceTypeShift,
@@ -1027,24 +1030,23 @@ class CORE_EXPORT Node : public EventTarget {
     kCustomElementStateMask = 0x7 << kNodeCustomElementShift,
 
     kHasNameOrIsEditingTextFlag = 1 << 22,
-    kHasEventTargetDataFlag = 1 << 23,
 
-    kNeedsReattachLayoutTree = 1 << 24,
-    kChildNeedsReattachLayoutTree = 1 << 25,
+    kNeedsReattachLayoutTree = 1 << 23,
+    kChildNeedsReattachLayoutTree = 1 << 24,
 
-    kHasDuplicateAttributes = 1 << 26,
+    kHasDuplicateAttributes = 1 << 25,
 
-    kForceReattachLayoutTree = 1 << 27,
+    kForceReattachLayoutTree = 1 << 26,
 
-    kHasDisplayLockContext = 1 << 28,
+    kHasDisplayLockContext = 1 << 27,
 
-    kSelfOrAncestorHasDirAutoAttribute = 1 << 29,
-    kCachedDirectionalityIsRtl = 1 << 30,
-    kNeedsInheritDirectionalityFromParent = 1u << 31,
+    kSelfOrAncestorHasDirAutoAttribute = 1 << 28,
+    kCachedDirectionalityIsRtl = 1 << 29,
+    kNeedsInheritDirectionalityFromParent = 1u << 30,
 
     kDefaultNodeFlags = kIsFinishedParsingChildrenFlag,
 
-    // 0 bits remaining.
+    // 1 bit remaining.
   };
 
   ALWAYS_INLINE bool GetFlag(NodeFlags mask) const {

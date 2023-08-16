@@ -31,9 +31,8 @@ import {Constructor} from '../common/types.js';
 import {DeepLinkingMixin, DeepLinkingMixinInterface} from '../deep_linking_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin, RouteObserverMixinInterface} from '../route_observer_mixin.js';
-import {Route} from '../router.js';
+import {Route, routes} from '../router.js';
 
 import {getTemplate} from './internet_known_networks_subpage.html.js';
 import {PasspointListenerMixin, PasspointListenerMixinInterface} from './passpoint_listener_mixin.js';
@@ -378,7 +377,7 @@ class SettingsInternetKnownNetworksPageElement extends
     event.stopPropagation();
   }
 
-  private onSubscriptionListItemTap_(
+  private onSubscriptionListItemClick_(
       event: DomRepeatEvent<PasspointSubscription>): void {
     const showPasspointEvent = new CustomEvent(
         'show-passpoint-detail',
@@ -394,7 +393,7 @@ class SettingsInternetKnownNetworksPageElement extends
     event.stopPropagation();
   }
 
-  private onSubscriptionMenuButtonTap_(
+  private onSubscriptionMenuButtonClick_(
       event: DomRepeatEvent<PasspointSubscription>): void {
     const button = event.target as HTMLButtonElement;
     this.selectedSubscriptionId_ = event.model.item.id;
@@ -409,7 +408,7 @@ class SettingsInternetKnownNetworksPageElement extends
         this.getSubscriptionDisplayName_(subscription));
   }
 
-  private async onSubscriptionForgetTap_(): Promise<void> {
+  private async onSubscriptionForgetClick_(): Promise<void> {
     this.$.subscriptionDotsMenu.close();
     this.selectedSubscriptionId_ = '';
     const response = await this.passpointService_.deletePasspointSubscription(

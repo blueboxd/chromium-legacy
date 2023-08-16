@@ -182,9 +182,7 @@ public class CardUnmaskPrompt implements EmptyTextWatcher, OnClickListener,
                     ChromeFeatureList.AUTOFILL_TOUCH_TO_FILL_FOR_CREDIT_CARDS_ANDROID)) {
             mMainView = inflater.inflate(R.layout.autofill_card_unmask_prompt_new, null);
             AutofillUiUtils.addCardDetails(context, mMainView, cardName, cardLastFourDigits,
-                    cardExpiration, cardArtUrl, cardIconId,
-                    AutofillUiUtils.getCardUnmaskDialogIconWidthId(),
-                    AutofillUiUtils.getCardUnmaskDialogIconHeightId(),
+                    cardExpiration, cardArtUrl, cardIconId, AutofillUiUtils.CardIconSize.LARGE,
                     R.dimen.card_unmask_dialog_credit_card_icon_end_margin,
                     /* cardNameAndNumberTextAppearance= */ R.style.TextAppearance_TextLarge_Primary,
                     /* cardLabelTextAppearance= */ R.style.TextAppearance_TextMedium_Secondary,
@@ -230,7 +228,9 @@ public class CardUnmaskPrompt implements EmptyTextWatcher, OnClickListener,
                         .with(ModalDialogProperties.CUSTOM_VIEW, mMainView)
                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, confirmButtonLabel)
                         .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, context.getResources(),
-                                R.string.cancel);
+                                R.string.cancel)
+                        .with(ModalDialogProperties.BUTTON_STYLES,
+                                ModalDialogProperties.ButtonStyles.PRIMARY_FILLED_NEGATIVE_OUTLINE);
         mDialogModel = dialogModelBuilder.build();
 
         mShouldRequestExpirationDate = shouldRequestExpirationDate;

@@ -19,6 +19,7 @@
 #include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
@@ -125,6 +126,11 @@
 #include "content/shell/browser/bluetooth/shell_bluetooth_delegate_impl_client.h"
 #endif
 
+#if BUILDFLAG(IS_WIN)
+#include "media/mojo/mojom/media_foundation_preferences.mojom.h"
+#include "media/mojo/services/media_foundation_preferences.h"
+#endif  // BUILDFLAG(IS_WIN)
+
 namespace content {
 
 namespace {
@@ -204,23 +210,6 @@ class ShellVariationsServiceClient
       PrefService* local_state) override {}
 };
 
-// Returns the full user agent string for the content shell.
-std::string GetShellFullUserAgent() {
-  std::string product = "Chrome/" CONTENT_SHELL_VERSION;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
-    product += " Mobile";
-  return BuildUserAgentFromProduct(product);
-}
-
-// Returns the reduced user agent string for the content shell.
-std::string GetShellReducedUserAgent() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return content::GetReducedUserAgent(
-      command_line->HasSwitch(switches::kUseMobileUserAgent),
-      CONTENT_SHELL_MAJOR_VERSION);
-}
-
 void BindNetworkHintsHandler(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<network_hints::mojom::NetworkHintsHandler> receiver) {
@@ -228,6 +217,18 @@ void BindNetworkHintsHandler(
   network_hints::SimpleNetworkHintsHandlerImpl::Create(frame_host,
                                                        std::move(receiver));
 }
+
+#if BUILDFLAG(IS_WIN)
+void BindMediaFoundationPreferences(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<media::mojom::MediaFoundationPreferences> receiver) {
+  // Passing in a NullCallback since we don't have MediaFoundationServiceMonitor
+  // in content.
+  MediaFoundationPreferencesImpl::Create(
+      frame_host->GetSiteInstance()->GetSiteURL(), base::NullCallback(),
+      std::move(receiver));
+}
+#endif  // BUILDFLAG(IS_WIN)
 
 base::flat_set<url::Origin> GetIsolatedContextOriginSetFromFlag() {
   std::string cmdline_origins(
@@ -298,16 +299,6 @@ std::unique_ptr<PrefService> CreateLocalState() {
 }
 
 }  // namespace
-
-std::string GetShellUserAgent() {
-  if (base::FeatureList::IsEnabled(blink::features::kFullUserAgent))
-    return GetShellFullUserAgent();
-
-  if (base::FeatureList::IsEnabled(blink::features::kReduceUserAgent))
-    return GetShellReducedUserAgent();
-
-  return GetShellFullUserAgent();
-}
 
 std::string GetShellLanguage() {
   return "en-us,en";
@@ -568,6 +559,10 @@ void ShellContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
       ->ExposeInterfacesToRenderFrame(map);
   map->Add<network_hints::mojom::NetworkHintsHandler>(
       base::BindRepeating(&BindNetworkHintsHandler));
+#if BUILDFLAG(IS_WIN)
+  map->Add<media::mojom::MediaFoundationPreferences>(
+      base::BindRepeating(&BindMediaFoundationPreferences));
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 void ShellContentBrowserClient::OpenURL(
@@ -629,15 +624,10 @@ base::FilePath ShellContentBrowserClient::GetFirstPartySetsDirectory() {
 }
 
 std::string ShellContentBrowserClient::GetUserAgent() {
-  return GetShellUserAgent();
-}
-
-std::string ShellContentBrowserClient::GetFullUserAgent() {
-  return GetShellFullUserAgent();
-}
-
-std::string ShellContentBrowserClient::GetReducedUserAgent() {
-  return GetShellReducedUserAgent();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return content::GetReducedUserAgent(
+      command_line->HasSwitch(switches::kUseMobileUserAgent),
+      CONTENT_SHELL_MAJOR_VERSION);
 }
 
 blink::UserAgentMetadata ShellContentBrowserClient::GetUserAgentMetadata() {
@@ -846,10 +836,14 @@ absl::optional<blink::ParsedPermissionsPolicy>
 ShellContentBrowserClient::GetPermissionsPolicyForIsolatedWebApp(
     content::BrowserContext* browser_context,
     const url::Origin& app_origin) {
+  std::vector<blink::OriginWithPossibleWildcards> allowlist;
+  if (auto origin_with_possible_wildcards =
+          blink::OriginWithPossibleWildcards::FromOrigin(app_origin);
+      origin_with_possible_wildcards.has_value()) {
+    allowlist.emplace_back(*origin_with_possible_wildcards);
+  }
   blink::ParsedPermissionsPolicyDeclaration decl(
-      blink::mojom::PermissionsPolicyFeature::kDirectSockets,
-      {blink::OriginWithPossibleWildcards(app_origin,
-                                          /*has_subdomain_wildcard=*/false)},
+      blink::mojom::PermissionsPolicyFeature::kDirectSockets, allowlist,
       /*self_if_matches=*/absl::nullopt,
       /*matches_all_origins=*/false, /*matches_opaque_src=*/false);
   return {{decl}};

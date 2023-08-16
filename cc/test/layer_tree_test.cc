@@ -64,7 +64,7 @@ namespace {
 class SynchronousLayerTreeFrameSink : public TestLayerTreeFrameSink {
  public:
   SynchronousLayerTreeFrameSink(
-      scoped_refptr<viz::ContextProvider> compositor_context_provider,
+      scoped_refptr<viz::RasterContextProvider> compositor_context_provider,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const viz::RendererSettings& renderer_settings,
@@ -674,7 +674,7 @@ class LayerTreeTestLayerTreeFrameSinkClient
 
  private:
   raw_ptr<TestHooks> hooks_;
-  raw_ptr<TaskRunnerProvider> task_runner_provider_;
+  raw_ptr<TaskRunnerProvider, DanglingUntriaged> task_runner_provider_;
 };
 
 LayerTreeTest::LayerTreeTest(viz::RendererType renderer_type)
@@ -1177,7 +1177,8 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
 
 void LayerTreeTest::RequestNewLayerTreeFrameSink() {
   scoped_refptr<viz::TestContextProvider> shared_context_provider =
-      use_software_renderer() ? nullptr : viz::TestContextProvider::Create();
+      use_software_renderer() ? nullptr
+                              : viz::TestContextProvider::CreateRaster();
   scoped_refptr<viz::TestContextProvider> worker_context_provider =
       use_software_renderer() ? nullptr
                               : viz::TestContextProvider::CreateWorker();
@@ -1210,7 +1211,7 @@ void LayerTreeTest::SetUpUnboundContextProviders(
 std::unique_ptr<TestLayerTreeFrameSink> LayerTreeTest::CreateLayerTreeFrameSink(
     const viz::RendererSettings& renderer_settings,
     double refresh_rate,
-    scoped_refptr<viz::ContextProvider> compositor_context_provider,
+    scoped_refptr<viz::RasterContextProvider> compositor_context_provider,
     scoped_refptr<viz::RasterContextProvider> worker_context_provider) {
   constexpr bool disable_display_vsync = false;
   bool synchronous_composite =

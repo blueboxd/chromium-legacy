@@ -22,6 +22,7 @@ GEN('#include "components/autofill/core/common/autofill_features.h"');
 GEN('#include "components/privacy_sandbox/privacy_sandbox_features.h"');
 GEN('#include "content/public/common/content_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
+GEN('#include "components/permissions/features.h"');
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS)');
 GEN('#include "components/language/core/common/language_experiments.h"');
@@ -556,6 +557,35 @@ TEST_F('CrSettingsPerformancePageMultistateTest', 'ExceptionList', function() {
   runMochaSuite('TabDiscardExceptionList');
 });
 
+var CrSettingsPerformancePageDiscardExceptionImprovementsTest =
+    class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/performance_page_test.js';
+  }
+
+  /** @override */
+  get featureListInternal() {
+    return {
+      enabled: [
+        'performance_manager::features::kDiscardExceptionsImprovements',
+      ],
+    };
+  }
+};
+
+TEST_F(
+    'CrSettingsPerformancePageDiscardExceptionImprovementsTest', 'Controls',
+    function() {
+      runMochaSuite('PerformancePage');
+    });
+
+TEST_F(
+    'CrSettingsPerformancePageDiscardExceptionImprovementsTest',
+    'ExceptionList', function() {
+      runMochaSuite('TabDiscardExceptionList');
+    });
+
 var CrSettingsBatteryPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -607,6 +637,7 @@ var CrSettingsPrivacyPageTest = class extends CrSettingsBrowserTest {
     return {
       enabled: [
         'privacy_sandbox::kPrivacySandboxSettings4',
+        'permissions::features::kPermissionStorageAccessAPI',
       ],
     };
   }
@@ -852,6 +883,14 @@ TEST_F('CrSettingsRouteTest', 'DynamicParameters', function() {
   runMochaSuite('DynamicParameters');
 });
 
+TEST_F('CrSettingsRouteTest', 'SafetyHubReachableTests', function() {
+  runMochaSuite('SafetyHubReachableTests');
+});
+
+TEST_F('CrSettingsRouteTest', 'SafetyHubNotReachableTests', function() {
+  runMochaSuite('SafetyHubNotReachableTests');
+});
+
 // Copied from Polymer 2 test:
 // Failing on ChromiumOS dbg. https://crbug.com/709442
 GEN('#if (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)) && !defined(NDEBUG)');
@@ -937,6 +976,7 @@ var CrSettingsSiteSettingsPageTest = class extends CrSettingsBrowserTest {
       enabled: [
         'privacy_sandbox::kPrivacySandboxSettings4',
         'content_settings::features::kSafetyCheckUnusedSitePermissions',
+        'permissions::features::kPermissionStorageAccessAPI',
       ],
     };
   }
@@ -986,6 +1026,12 @@ TEST_F(
     'CrSettingsSiteSettingsPageTest',
     'MAYBE_UnusedSitePermissionsReviewDisabled', function() {
       runMochaSuite('UnusedSitePermissionsReviewDisabled');
+    });
+
+TEST_F(
+    'CrSettingsSiteSettingsPageTest', 'PermissionStorageAccessApiDisabled',
+    function() {
+      runMochaSuite('PermissionStorageAccessApiDisabled');
     });
 
 var CrSettingsMenuTest = class extends CrSettingsBrowserTest {
@@ -1043,6 +1089,7 @@ TEST_F('CrSettingsMenuTest', 'All', function() {
  // Flaky on all OSes. TODO(crbug.com/1127733): Enable the test.
  ['ResetPage', 'reset_page_test.js', 'DISABLED_All'],
  ['ResetProfileBanner', 'reset_profile_banner_test.js'],
+ ['SafetyHub', 'safety_hub_test.js'],
  ['SearchEngines', 'search_engines_page_test.js'],
  ['SearchPage', 'search_page_test.js'],
  ['Search', 'search_settings_test.js'],

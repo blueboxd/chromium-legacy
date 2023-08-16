@@ -37,7 +37,7 @@
 #include "components/power_scheduler/power_mode_arbiter.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/frame_timing_details.h"
-#include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 
 namespace cc {
 
@@ -523,13 +523,6 @@ void SingleThreadProxy::SetVideoNeedsBeginFrames(bool needs_begin_frames) {
   // In tests the layer tree is destroyed after the scheduler is.
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetVideoNeedsBeginFrames(needs_begin_frames);
-}
-
-bool SingleThreadProxy::HasInvalidationAnimation() const {
-  // DebugScopedSetImplThread here is just a formality; all SchedulerClient
-  // methods should have it.
-  DebugScopedSetImplThread impl(task_runner_provider_);
-  return false;
 }
 
 bool SingleThreadProxy::IsInsideDraw() {

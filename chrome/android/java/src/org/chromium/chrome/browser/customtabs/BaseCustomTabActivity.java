@@ -267,13 +267,6 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
         return (getIntent().getFlags() & separateTaskFlags) != 0;
     }
 
-    /**
-     * Return true when PageInsights Hub is enabled on Custom Tabs. False by default.
-     */
-    protected boolean isPageInsightsHubEnabled() {
-        return false;
-    }
-
     @Override
     public void performPreInflationStartup() {
         // Parse the data from the Intent before calling super to allow the Intent to customize
@@ -380,8 +373,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
     }
 
     @Override
-    @ActivityType
-    public int getActivityType() {
+    public @ActivityType int getActivityType() {
         return getIntentDataProvider().getActivityType();
     }
 
@@ -397,8 +389,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
     }
 
     @Override
-    @Nullable
-    public Tab getActivityTab() {
+    public @Nullable Tab getActivityTab() {
         return mTabProvider.getTab();
     }
 
@@ -416,7 +407,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
                 mIntentDataProvider.shouldShowShareMenuItem(),
                 mIntentDataProvider.shouldShowStarButton(),
                 mIntentDataProvider.shouldShowDownloadButton(), mIntentDataProvider.isIncognito(),
-                isMenuIconAtStart, this::isPageInsightsHubEnabled);
+                isMenuIconAtStart, mBaseCustomTabRootUiCoordinator::isPageInsightsHubEnabled);
     }
 
     @Override
@@ -593,8 +584,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
      * @return The package name of the Trusted Web Activity, if the activity is a TWA; null
      * otherwise.
      */
-    @Nullable
-    public String getTwaPackage() {
+    public @Nullable String getTwaPackage() {
         return mTwaCoordinator == null ? null : mTwaCoordinator.getTwaPackage();
     }
 

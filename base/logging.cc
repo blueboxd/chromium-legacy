@@ -57,6 +57,10 @@ typedef HANDLE FileHandle;
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_12
 #define USE_ASL
 #endif
+CRASH_REPORTER_CLIENT_HIDDEN
+struct crashreporter_annotations_t gCRAnnotations
+    __attribute__((section("__DATA," CRASHREPORTER_ANNOTATIONS_SECTION)))
+    = { CRASHREPORTER_ANNOTATIONS_VERSION, 0, 0, 0, 0, 0, 0, 0 };
 #endif  // BUILDFLAG(IS_IOS)
 
 #if defined(USE_ASL)
@@ -1026,6 +1030,12 @@ LogMessage::~LogMessage() {
     char str_stack[1024];
     base::strlcpy(str_stack, str_newline.data(), std::size(str_stack));
     base::debug::Alias(&str_stack);
+
+#if BUILDFLAG(IS_MAC)
+    CRSetCrashLogMessage(str_newline.c_str());
+    CRSetCrashLogBacktrace(base::debug::StackTrace().ToString().c_str());
+    CRSetCrashLogMessage2(base::debug::TaskTrace().ToString().c_str());
+#endif
 
     if (!GetLogAssertHandlerStack().empty()) {
       LogAssertHandlerFunction log_assert_handler =

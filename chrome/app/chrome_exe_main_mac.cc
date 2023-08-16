@@ -20,6 +20,7 @@
 #include <memory>
 
 #include "base/allocator/early_zone_registration_mac.h"
+#include "base/logging.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_version.h"
@@ -35,6 +36,11 @@ extern "C" {
 // Crashpad directly.
 void abort_report_np(const char* fmt, ...);
 }
+
+CRASH_REPORTER_CLIENT_HIDDEN
+struct crashreporter_annotations_t gCRAnnotations
+    __attribute__((section("__DATA," CRASHREPORTER_ANNOTATIONS_SECTION)))
+    = { CRASHREPORTER_ANNOTATIONS_VERSION, 0, 0, 0, 0, 0, 0, 0 };
 
 namespace {
 
@@ -144,6 +150,8 @@ __attribute__((used)) const char kGrossPaddingForCrbug1300598[36 * 1024] = {};
     fputs(message, stderr);
     if (__builtin_available(macOS 10.11, *)) {
       abort_report_np("%s", message);
+    } else {
+      CRSetCrashLogMessage(message);
     }
   }
   va_end(valist);

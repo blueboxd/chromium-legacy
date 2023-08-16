@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "sandbox/mac/sandbox_logging.h"
+#include "base/logging.h"
 
 #include <errno.h>
 #include <stdarg.h>
@@ -115,9 +116,11 @@ void SendAslLog(Level level, const char* message) {
   asl_set(asl_message.get(), ASL_KEY_MSG, message);
   asl_send(asl_client.get(), asl_message.get());
 
-  if (__builtin_available(macOS 10.11, *)) {
-    if (level == Level::FATAL) {
+  if (level == Level::FATAL) {
+    if (__builtin_available(macOS 10.11, *)) {
       abort_report_np(message);
+    } else {
+      CRSetCrashLogMessage(message);
     }
   }
 }

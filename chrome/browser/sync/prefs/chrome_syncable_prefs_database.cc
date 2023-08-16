@@ -6,6 +6,7 @@
 
 #include "base/containers/fixed_flat_map.h"
 #include "base/strings/string_piece.h"
+#include "chrome/browser/promos/promos_pref_names.h"
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "components/embedder_support/pref_names.h"
@@ -256,6 +257,9 @@ enum {
   kShowDeskButtonInShelf = 100203,
   kOsDogfoodGroupsSyncPrefName = 100204,
   kProjectorSWAUIPrefsMigrated = 100205,
+  kiOSPasswordPromoLastImpressionTimestamp = 100206,
+  kiOSPasswordPromoImpressionsCounter = 100207,
+  kiOSPasswordPromoOptOut = 100208,
   // See components/sync_preferences/README.md about adding new entries here.
   // vvvvv IMPORTANT! vvvvv
   // Note to the reviewer: IT IS YOUR RESPONSIBILITY to ensure that new syncable
@@ -267,8 +271,6 @@ enum {
 
 const auto& SyncablePreferences() {
   // Non-iOS specific list of syncable preferences.
-  // TODO(crbug.com/1448000): Revise the history opt-in requirement flag for
-  // prefs.
   static const auto kChromeSyncablePrefsAllowlist = base::MakeFixedFlatMap<
       base::StringPiece, sync_preferences::SyncablePrefMetadata>({
 #if BUILDFLAG(IS_ANDROID)
@@ -721,7 +723,7 @@ const auto& SyncablePreferences() {
           false}},
         {performance_manager::user_tuning::prefs::kTabDiscardingExceptions,
          {syncable_prefs_ids::kTabDiscardingExceptions, syncer::PREFERENCES,
-          false}},
+          true}},
         {prefs::kAccessibilityImageLabelsEnabled,
          {syncable_prefs_ids::kAccessibilityImageLabelsEnabled,
           syncer::PREFERENCES, false}},
@@ -816,37 +818,37 @@ const auto& SyncablePreferences() {
         // content_settings_registry.
         {"profile.content_settings.exceptions.anti_abuse",
          {syncable_prefs_ids::kProfileContentSettingsExceptionsAntiAbuse,
-          syncer::PREFERENCES, false}},
+          syncer::PREFERENCES, true}},
         {"profile.content_settings.exceptions.automatic_downloads",
          {syncable_prefs_ids::
               kProfileContentSettingsExceptionsAutomaticDownloads,
-          syncer::PREFERENCES, false}},
+          syncer::PREFERENCES, true}},
         {"profile.content_settings.exceptions.cookies",
          {syncable_prefs_ids::kProfileContentSettingsExceptionsCookies,
-          syncer::PREFERENCES, false}},
+          syncer::PREFERENCES, true}},
         {"profile.content_settings.exceptions.get_display_media_set_select_all_"
          "screens",
          {syncable_prefs_ids::
               kProfileContentSettingsExceptionsGetDisplayMediaSetSelectAllScreens,
-          syncer::PREFERENCES, false}},
+          syncer::PREFERENCES, true}},
         {"profile.content_settings.exceptions.images",
          {syncable_prefs_ids::kProfileContentSettingsExceptionsImages,
-          syncer::PREFERENCES, false}},
+          syncer::PREFERENCES, true}},
         {"profile.content_settings.exceptions.javascript",
          {syncable_prefs_ids::kProfileContentSettingsExceptionsJavascript,
-          syncer::PREFERENCES, false}},
+          syncer::PREFERENCES, true}},
         {"profile.content_settings.exceptions.local_fonts",
          {syncable_prefs_ids::kProfileContentSettingsExceptionsLocalFonts,
-          syncer::PREFERENCES, false}},
+          syncer::PREFERENCES, true}},
         {"profile.content_settings.exceptions.mouselock",
          {syncable_prefs_ids::kProfileContentSettingsExceptionsMouselock,
-          syncer::PREFERENCES, false}},
+          syncer::PREFERENCES, true}},
         {"profile.content_settings.exceptions.popups",
          {syncable_prefs_ids::kProfileContentSettingsExceptionsPopups,
-          syncer::PREFERENCES, false}},
+          syncer::PREFERENCES, true}},
         {"profile.content_settings.exceptions.window_placement",
          {syncable_prefs_ids::kProfileContentSettingsExceptionsWindowPlacement,
-          syncer::PREFERENCES, false}},
+          syncer::PREFERENCES, true}},
         {"profile.default_content_setting_values.anti_abuse",
          {syncable_prefs_ids::kProfileDefaultContentSettingValuesAntiAbuse,
           syncer::PREFERENCES, false}},
@@ -885,6 +887,15 @@ const auto& SyncablePreferences() {
         // TODO(crbug.com/1420978): Declare this in the corresponding header.
         {"webauthn.cablev2_pairings",
          {syncable_prefs_ids::kWebauthnCablev2Pairings, syncer::PREFERENCES,
+          false}},
+        {promos_prefs::kiOSPasswordPromoLastImpressionTimestamp,
+         {syncable_prefs_ids::kiOSPasswordPromoLastImpressionTimestamp,
+          syncer::PREFERENCES, false}},
+        {promos_prefs::kiOSPasswordPromoImpressionsCounter,
+         {syncable_prefs_ids::kiOSPasswordPromoImpressionsCounter,
+          syncer::PREFERENCES, false}},
+        {promos_prefs::kiOSPasswordPromoOptOut,
+         {syncable_prefs_ids::kiOSPasswordPromoOptOut, syncer::PREFERENCES,
           false}},
   });
   return kChromeSyncablePrefsAllowlist;

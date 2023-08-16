@@ -293,6 +293,18 @@ const char kDefaultBrowserPromoForceShowPromoDescription[] =
     "IPH_iOSPromoDefaultBrowser, or disable kPromosManagerUsesFET and enable "
     "Force Promo (Default Browser) in the system settings experimental flags.";
 
+const char kDefaultBrowserTriggerCriteriaExperimentName[] =
+    "Show default browser promo trigger criteria experiment";
+const char kDefaultBrowserTriggerCriteriaExperimentDescription[] =
+    "When enabled, default browser promo will be displayed to user without "
+    "matching all the trigger criteria.";
+
+const char kDefaultBrowserTriggerOnOmniboxCopyPasteName[] =
+    "Trigger promo on omnibox copy-paste";
+const char kDefaultBrowserTriggerOnOmniboxCopyPasteDescription[] =
+    "When enabled promo will be displayed on omnibox copy-paste event instead "
+    "of on chrome launch";
+
 const char kDefaultBrowserVideoPromoName[] =
     "Enable default browser video promo";
 const char kDefaultBrowserVideoPromoDescription[] =
@@ -646,6 +658,10 @@ const char kIOSSharedHighlightingV2Name[] = "Text Fragments UI improvements";
 const char kIOSSharedHighlightingV2Description[] =
     "Enables improvements to text fragments UI, including a menu for removing "
     "or resharing a highlight.";
+
+const char kIPHForSafariSwitcherName[] = "IPH for Safari Switcher";
+const char kIPHForSafariSwitcherDescription[] =
+    "Enables displaying IPH for users who are considered Safari Switcher";
 
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =
@@ -1025,10 +1041,9 @@ const char kTFLiteLanguageDetectionIgnoreDescription[] =
     "Computes the TFLite language detection but ignore the result and uses the "
     "CLD3 detection instead.";
 
-const char kToolbarContainerName[] = "Use Toolbar Containers";
-const char kToolbarContainerDescription[] =
-    "When enabled, the toolbars and their fullscreen animations will be "
-    "managed by the toolbar container coordinator rather than BVC.";
+const char kThemeColorInToolbarName[] = "Use page's theme color";
+const char kThemeColorInToolbarDescription[] =
+    "When enabled, the omnibox background color is the page's theme color";
 
 const char kEnableLensInHomeScreenWidgetName[] =
     "Enable Google Lens in the Home Screen Widget";
@@ -1076,6 +1091,11 @@ const char kSFSymbolsFollowUpDescription[] = "Change the + button.";
 const char kTabGridRecencySortName[] = "Change TabGrid sorting";
 const char kTabGridRecencySortDescription[] =
     "When enabled, the tabs in the Tab Grid are sorted differently.";
+
+const char kTabGridRefactoringName[] = "Enable tab grid refactoring";
+const char kTabGridRefactoringDescription[] =
+    "When enabled, the Tab Grid use the refactored version, it should not have "
+    "any visual difference nor different feature with the legacy one.";
 
 const char kTabGridNewTransitionsName[] = "Enable new TabGrid transitions";
 const char kTabGridNewTransitionsDescription[] =

@@ -6,11 +6,13 @@
 <translation id="1352919863522755794">Google Lösenordshantering kunde inte kontrollera dina lösenord. Testa att kontrollera internetanslutningen.</translation>
 <translation id="1462727070346936664">Logga in så att du får ut mesta möjliga av Chrome.</translation>
 <translation id="1479202195792305274">Chrome kan kontrollera dina lösenord när du loggar in med Google-kontot.</translation>
+<translation id="1491435845014430217">Aktivera Lås inkognitoflikar när du stänger Chrome.</translation>
 <translation id="1493827051843127077">Ställ in Chrome som standardwebbläsare och synkronisera flikar, lösenord och betalningsuppgifter på alla enheter</translation>
 <translation id="1504372625950710826">Chrome kunde inte söka efter uppdateringar. Testa att kontrollera internetanslutningen.</translation>
 <translation id="1511320244449497906">Du är inloggad på och synkroniserar din data med ett konto som hanteras av <ph name="DOMAIN" />. Administratören kan nu ställa in användarpolicyer som gäller det kontot specifikt och som kan påverka hur Chrome fungerar.</translation>
 <translation id="1554731936187952550">Du har den starkaste säkerheten i Chrome mot skadliga webbplatser</translation>
 <translation id="1682483655351012182">Synkronisera data i Chrome</translation>
+<translation id="1733654336159102143">Lås inkognito när du lämnar Chrome eller byter till en annan app.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Använd Chrome automatiskt varje gång du trycker på länkar i meddelanden, dokument och andra appar.</translation>
 <translation id="1917964099031477364">Det här kontot och data som inte har sparats tas bort från Chrome och andra Google-appar på den här enheten.</translation>
@@ -48,6 +50,7 @@
 <translation id="3503014945441706099">Få Förbättrad säker webbsökning även för den här Chromium-profilen</translation>
 <translation id="3522659714780527202">Aktivera synkronisering om du vill ha samma flikar tillgängliga på alla enheter där du använder Chrome</translation>
 <translation id="3533694711092285624">Det finns inga sparade lösenord. Chrome kan bara kontrollera dina lösenord om du sparar dem.</translation>
+<translation id="3594076341410558780">Dölj Få ut mesta möjliga av Chrome</translation>
 <translation id="3655656110921623717">Detta betyder att mobilversionen av webbplatsen begärs varje gång i Chrome.</translation>
 <translation id="3720541637541300822">Lås inkognitoflikar när du stänger Chrome</translation>
 <translation id="3827545470516145620">Du har standardsäkerhetsskydd på den här enheten</translation>
@@ -66,8 +69,10 @@
 <translation id="4636900170638246267">Logga in på den här webbplatsen och i Chrome.</translation>
 <translation id="4698415050768537821">Chrome kunde inte kontrollera alla lösenord. Försök igen i morgon eller <ph name="BEGIN_LINK" />kontrollera lösenorden i ditt Google-konto<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Chrome skickar data om användning och krascher till Google i syfte att förbättra appen. <ph name="BEGIN_LINK" />Hantera<ph name="END_LINK" /></translation>
+<translation id="4830799082179398588">Vill du använda Chrome som standardwebbläsare?</translation>
 <translation id="484033449593719797">Stöds inte på Chrome Beta</translation>
 <translation id="4840404732697892756">Google Lösenordshantering kan kontrollera dina lösenord när du loggar in med Google-kontot.</translation>
+<translation id="4903674399067644695">Det här kortet visar förslag på hur du får ut mesta möjliga av Chrome.</translation>
 <translation id="5030102366287574140">Chrome kan skydda dig från dataintrång, osäkra webbplatser med mera.</translation>
 <translation id="5108659628347594808">Gör Chrome bättre</translation>
 <translation id="5119391094379141756">Välj Chrome</translation>
@@ -76,6 +81,7 @@
 <translation id="5395376160638294582">Se till att du alltid kan använda Chrome-data i Google-kontot</translation>
 <translation id="5460571915754665838">4. Välj Chrome</translation>
 <translation id="5492504007368565877">Google Lösenordshantering kan inte kontrollera dina lösenord.</translation>
+<translation id="5527026824954593399">Tryck på Visa med Google Maps i Chrome.</translation>
 <translation id="5552137475244467770">Chrome kontrollerar regelbundet om dina lösenord finns med på listor som har publicerats online. Under kontrollen krypteras dina lösenord och användarnamn så att varken Google eller någon annan kan läsa dem.</translation>
 <translation id="5639704535586432836">Öppna Inställningar &gt; Integritet &gt; Kamera &gt; Google Chrome och aktivera kameran.</translation>
 <translation id="5642200033778930880">Google Chrome kan inte använda kameran i delad vy</translation>
@@ -111,10 +117,12 @@
 <translation id="7261678641327190792">Chrome kan inte kontrollera dina lösenord</translation>
 <translation id="7272930098487145294">Om du vill spara bilder trycker du på Inställningar och låter Chrome lägga till dina foton</translation>
 <translation id="7275945473750112644">Eftersom ditt konto hanteras av <ph name="HOSTED_DOMAIN" /> raderas din data i Chrome från enheten</translation>
+<translation id="7394108421562933108">Maps i Chrome</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
 <translation id="7501046334262221972">Öppna inställningarna för att välja Chrome som standardwebbläsare. Tryck på Standardwebbläsarapp och välj sedan Chrome.</translation>
 <translation id="756809126120519699">Data i Chrome har rensats</translation>
 <translation id="7662994914830945754">Logga in och aktivera synkronisering om du vill ha samma flikar tillgängliga på alla enheter där du använder Chrome</translation>
+<translation id="7669869107155339016">Öppna inställningarna för Chrome.</translation>
 <translation id="7693590760643069321">Nu kan du använda Chrome varje gång du trycker på länkar i meddelanden, dokument och andra appar.</translation>
 <translation id="7698568245838009292">Chrome vill ha tillgång till kameran</translation>
 <translation id="7754633291442704733">Organisationen <ph name="DOMAIN" /> har åtkomst till data, bokmärken, historik, lösenord och andra inställningar i Chrome som du lagrar i det här kontot. När du loggar ut raderas din data från enheten.  Datan lagras dock fortfarande i det hanterade Google-kontot och kan kommas åt av organisationen. Organisationen kan även ställa in användarpolicyer som gäller det kontot specifikt och som kan påverka hur Chrome fungerar.</translation>

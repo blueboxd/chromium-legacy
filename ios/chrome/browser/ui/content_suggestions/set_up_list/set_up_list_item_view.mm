@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/shared/ui/elements/crossfade_label.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_icon.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view+private.h"
@@ -145,6 +146,18 @@ struct ViewConfig {
       stringWithFormat:@"%@, %@", [self titleText], [self descriptionText]];
 }
 
+#pragma mark - UITraitEnvironment
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if (previousTraitCollection.preferredContentSizeCategory !=
+      self.traitCollection.preferredContentSizeCategory) {
+    // Force a layout since the size of text components may have changed.
+    [self setNeedsLayout];
+    [self layoutIfNeeded];
+  }
+}
+
 #pragma mark - Public methods
 
 - (void)handleTap:(UITapGestureRecognizer*)sender {
@@ -167,7 +180,7 @@ struct ViewConfig {
   self.accessibilityTraits += UIAccessibilityTraitNotEnabled;
 
   // Set up the label crossfades.
-  UIColor* newTextColor = [UIColor colorNamed:kTextQuaternaryColor];
+  UIColor* newTextColor = [UIColor colorNamed:kTextSecondaryColor];
   [_title setUpCrossfadeWithTextColor:newTextColor
                        attributedText:Strikethrough(_title.text)];
   [_description setUpCrossfadeWithTextColor:newTextColor
@@ -268,13 +281,15 @@ struct ViewConfig {
   CrossfadeLabel* label = [[CrossfadeLabel alloc] init];
   label.text = [self titleText];
   label.translatesAutoresizingMaskIntoConstraints = NO;
+  label.numberOfLines = 0;
+  label.lineBreakMode = NSLineBreakByWordWrapping;
   label.font =
       _config.hero_layout
           ? CreateDynamicFont(UIFontTextStyleFootnote, UIFontWeightSemibold)
           : [UIFont preferredFontForTextStyle:_config.title_font];
   label.adjustsFontForContentSizeCategory = YES;
   if (_complete) {
-    label.textColor = [UIColor colorNamed:kTextQuaternaryColor];
+    label.textColor = [UIColor colorNamed:kTextSecondaryColor];
     label.attributedText = Strikethrough(label.text);
   } else {
     label.textColor = [UIColor colorNamed:kTextPrimaryColor];
@@ -287,14 +302,13 @@ struct ViewConfig {
   CrossfadeLabel* label = [[CrossfadeLabel alloc] init];
   label = [[CrossfadeLabel alloc] init];
   label.text = [self descriptionText];
-  label.numberOfLines = 4;
+  label.numberOfLines = IsMagicStackEnabled() ? 2 : 4;
   label.lineBreakMode = NSLineBreakByTruncatingTail;
   label.font = [UIFont preferredFontForTextStyle:_config.description_font];
+  label.adjustsFontForContentSizeCategory = YES;
+  label.textColor = [UIColor colorNamed:kTextSecondaryColor];
   if (_complete) {
-    label.textColor = [UIColor colorNamed:kTextQuaternaryColor];
     label.attributedText = Strikethrough(label.text);
-  } else {
-    label.textColor = [UIColor colorNamed:kTextSecondaryColor];
   }
   return label;
 }

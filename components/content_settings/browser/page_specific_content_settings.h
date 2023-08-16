@@ -76,14 +76,15 @@ struct AccessDetails {
                 AccessType access_type,
                 GURL url,
                 bool blocked_by_policy,
-                content::RenderFrameHost* render_frame_host);
+                bool is_from_primary_page);
   ~AccessDetails();
 
   SiteDataType site_data_type = SiteDataType::kUnknown;
   AccessType access_type = AccessType::kUnknown;
   GURL url;
   bool blocked_by_policy = false;
-  raw_ptr<content::RenderFrameHost> render_frame_host;
+  // Specifies whether the access occurred in the primary page.
+  bool is_from_primary_page = false;
 };
 
 // TODO(msramek): Media is storing their state in PageSpecificContentSettings:
@@ -182,23 +183,6 @@ class PageSpecificContentSettings
 
     // Notifies the delegate a particular content settings type was blocked.
     virtual void OnContentBlocked(ContentSettingsType type) = 0;
-
-    // Notifies the delegate that access to storage of type |storage_type| was
-    // granted in |page|.
-    virtual void OnStorageAccessAllowed(
-        mojom::ContentSettingsManager::StorageType storage_type,
-        const url::Origin& origin,
-        content::Page& page) = 0;
-
-    // Notifies the delegate that access was granted to |accessed_cookies| in
-    // |page|.
-    virtual void OnCookieAccessAllowed(const net::CookieList& accessed_cookies,
-                                       content::Page& page) = 0;
-
-    // Notifies the delegate that access was granted to service workers for
-    // |origin|.
-    virtual void OnServiceWorkerAccessAllowed(const url::Origin& origin,
-                                              content::Page& page) = 0;
   };
 
   // Classes that want to be notified about site data events must implement
@@ -410,7 +394,6 @@ class PageSpecificContentSettings
       mojom::ContentSettingsManager::StorageType storage_type,
       const GURL& url,
       bool blocked_by_policy,
-      content::RenderFrameHost* rfh = nullptr,
       content::Page* originating_page = nullptr);
   void OnSharedWorkerAccessed(const GURL& worker_url,
                               const std::string& name,

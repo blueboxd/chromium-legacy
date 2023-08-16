@@ -89,10 +89,6 @@
   [super stop];
 }
 
-- (void)dealloc {
-  CHECK(!_navigationController);
-}
-
 #pragma mark - FirstRunScreenDelegate
 
 - (void)screenWillFinishPresenting {

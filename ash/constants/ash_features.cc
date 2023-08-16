@@ -174,7 +174,7 @@ BASE_FEATURE(kAssistantNativeIcons,
 // Enables warning in the quick settings when NBS device is in use.
 BASE_FEATURE(kAudioHFPNbsWarning,
              "AudioHFPNbsWarning",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables Peripheral volume change by hardware reported steps
 BASE_FEATURE(kAudioPeripheralVolumeGranularity,
@@ -833,7 +833,7 @@ BASE_FEATURE(kExoOrdinalMotion,
 // or not (=decides using heuristics based on key code etc.).
 BASE_FEATURE(kExoConsumedByImeByFlag,
              "ExoConsumedByImeByFlag",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables using an extended Wayland API for ConfirmCompositionText.
 BASE_FEATURE(kExoExtendedConfirmComposition,
@@ -844,7 +844,7 @@ BASE_FEATURE(kExoExtendedConfirmComposition,
 // or not (=decides using heuristics based on key code etc.).
 BASE_FEATURE(kExoSurroundingTextOffset,
              "ExoSurroundingTextOffset",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Allows RGB Keyboard to test new animations/patterns.
 BASE_FEATURE(kExperimentalRgbKeyboardPatterns,
@@ -1304,7 +1304,7 @@ BASE_FEATURE(kImeDownloaderUpdate,
 // If enabled, use the updated parameters for the decoder.
 BASE_FEATURE(kImeFstDecoderParamsUpdate,
              "ImeFstDecoderParamsUpdate",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled use the updated US English IME language models.
 BASE_FEATURE(kImeUsEnglishModelUpdate,
@@ -1381,7 +1381,7 @@ BASE_FEATURE(kIppClientInfo, "IppClientInfo", base::FEATURE_ENABLED_BY_DEFAULT);
 // Enables correct handling of the function key row in Japanese.
 BASE_FEATURE(kJapaneseFunctionRow,
              "JapaneseFunctionRow",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the "Remember password" button in the Kerberos "Add account"
 // dialog should be checked by default.
@@ -1448,7 +1448,7 @@ BASE_FEATURE(kLacrosProfileBackwardMigration,
 // removed. This is kill-switch just in case of accident.
 BASE_FEATURE(kLacrosSxSPrimaryRemove,
              "LacrosSxSPrimaryRemove",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, the Language Pack corresponding to the application locale is
 // downloaded and installed during OOBE. This pre-fetching is aimed at improving
@@ -1648,7 +1648,7 @@ BASE_FEATURE(kOnDeviceSpeechRecognition,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, CHOBOE Screen will be shown during the new user onboarding flow.
-BASE_FEATURE(kOobeChoobe, "OobeChoobe", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kOobeChoobe, "OobeChoobe", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, Drive Pinning Screen will be shown during
 // the new user onboarding flow.
@@ -1670,11 +1670,11 @@ BASE_FEATURE(kOobeGaiaInfoScreen,
 // enabling this without enabling OobeChoobe flag will have no effect
 BASE_FEATURE(kOobeTouchpadScroll,
              "OobeTouchpadScrollDirection",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kOobeDisplaySize,
              "OobeDisplaySize",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables the ChromeOS OOBE HID Detection Revamp, which updates
 // the OOBE HID detection screen UI and related infrastructure. See
@@ -1686,7 +1686,7 @@ BASE_FEATURE(kOobeHidDetectionRevamp,
 // Enables OOBE Jelly features.
 BASE_FEATURE(kOobeJelly, "OobeJelly", base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables lazy loading in OOBE's WebUI by prioritizing the first screen.n.
+// Enables lazy loading in OOBE's WebUI by prioritizing the first screen.
 BASE_FEATURE(kOobeLazyLoading,
              "OobeLazyLoading",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1735,7 +1735,7 @@ BASE_FEATURE(kOsSettingsAppNotificationsPage,
 // enabling this without enabling Lacros flag will have no effect
 BASE_FEATURE(kOsSyncConsentRevamp,
              "OsSyncConsentRevamp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, the jelly colors will be used in the os feedback app. Requires
 // jelly-colors flag to also be enabled.
@@ -2549,7 +2549,7 @@ const base::FeatureParam<int> kDeviceForceScheduledRebootMaxDelay{
 // Enables settings to be split per device.
 BASE_FEATURE(kInputDeviceSettingsSplit,
              "InputDeviceSettingsSplit",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables peripheral customization to be split per device.
 BASE_FEATURE(kPeripheralCustomization,

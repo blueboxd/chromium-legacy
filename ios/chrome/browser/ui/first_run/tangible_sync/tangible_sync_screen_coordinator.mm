@@ -89,10 +89,6 @@
   _delegate = nil;
 }
 
-- (void)dealloc {
-  CHECK(!_tangibleSyncCoordinator);
-}
-
 #pragma mark - Private
 
 // Dismisses the current screen.

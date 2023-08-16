@@ -62,10 +62,6 @@
       base::UserMetricsAction("Signin_BottomSheet_IdentityChooser_Closed"));
 }
 
-- (void)dealloc {
-  CHECK(!self.mediator);
-}
-
 #pragma mark - Properties
 
 - (UIViewController*)viewController {

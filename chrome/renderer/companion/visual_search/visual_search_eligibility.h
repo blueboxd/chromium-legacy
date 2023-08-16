@@ -14,7 +14,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
-#include "chrome/common/companion/eligibility_spec.pb.h"
+#include "components/optimization_guide/proto/visual_search_model_metadata.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -26,11 +26,18 @@ using ::gfx::Rect;
 using ::gfx::Size;
 using ::gfx::SizeF;
 
+using optimization_guide::proto::EligibilitySpec;
+using optimization_guide::proto::FeatureLibrary;
+using optimization_guide::proto::OrOfThresholdingRules;
+using optimization_guide::proto::ThresholdingRule;
+
 // Stores the raw features of a single image.
 struct SingleImageGeometryFeatures {
   std::string image_identifier;
   Size original_image_size;
   Rect onpage_rect = Rect(0, 0, 0, 0);
+  // Used for filtering of overlapping images using the z index.
+  absl::optional<int> z_index;
   ~SingleImageGeometryFeatures() = default;
 };
 
@@ -50,10 +57,10 @@ class EligibilityModule {
       const std::vector<SingleImageGeometryFeatures>& images);
 
   // Applies the classifier_score_rules and post_renormalization_rules from the
-  // eligibility spec and outputs the list of image identifiers that pass, in
-  // no particular order. Should be run after RunFirstPassEligibility above
-  // is run and only if the image geometry features have not changed since
-  // that method was called.
+  // eligibility spec and outputs the list of image identifiers that pass,
+  // sorted by descending shoppy score. Should be run after
+  // RunFirstPassEligibility above is run and only if the image geometry
+  // features have not changed since that method was called.
   std::vector<std::string> RunSecondPassPostClassificationEligibility(
       const base::flat_map<std::string, double>& shopping_classifier_scores,
       const base::flat_map<std::string, double>& sensitivity_classifier_scores);
@@ -62,6 +69,10 @@ class EligibilityModule {
   // the given image_identifier.
   base::flat_map<std::string, double> GetDebugFeatureValuesForImage(
       const std::string& image_id);
+
+  // These methods are mainly used to calculate metrics for logging.
+  bool IsImageShoppyForMetrics(const std::string& image_id);
+  bool IsImageSensitiveForMetrics(const std::string& image_id);
 
   EligibilityModule(const EligibilityModule&) = delete;
   EligibilityModule& operator=(const EligibilityModule&) = delete;
@@ -76,6 +87,8 @@ class EligibilityModule {
   void RenormalizeForThirdPass();
   void ComputeFeaturesForOrOfThresholdingRules(
       const google::protobuf::RepeatedPtrField<OrOfThresholdingRules>& rules,
+      const SingleImageGeometryFeatures& image);
+  void ComputeFeaturesForSortingClauses(
       const SingleImageGeometryFeatures& image);
   // Eligibility evaluation methods.
   bool IsEligible(
@@ -95,15 +108,16 @@ class EligibilityModule {
   double RetrieveImageFeatureOrDie(
       FeatureLibrary::ImageLevelFeatureName feature_name,
       const std::string& image_id);
-  double RetrievePageLevelFeatureOrDie(
-      FeatureLibrary::PageLevelFeatureName feature_name);
-  double ComputeAndGetPageLevelFeatureValue(
-      FeatureLibrary::PageLevelFeatureName feature_name,
+  double RetrieveNormalizingFeatureOrDie(
+      FeatureLibrary::ImageLevelFeatureName feature_name,
+      FeatureLibrary::NormalizingOp normalizing_op);
+  double ComputeAndGetNormalizingFeatureValue(
+      FeatureLibrary::ImageLevelFeatureName feature_name,
+      FeatureLibrary::NormalizingOp normalizing_op,
       const std::vector<SingleImageGeometryFeatures>& images,
       bool limit_to_second_pass_eligible);
   double GetMaxFeatureValue(
-      FeatureLibrary::PageLevelFeatureName page_level_feature_name,
-      FeatureLibrary::ImageLevelFeatureName corresponding_image_feature_name,
+      FeatureLibrary::ImageLevelFeatureName feature_name,
       const std::vector<SingleImageGeometryFeatures>& images);
   double MaxFeatureValueAfterSecondPass(
       FeatureLibrary::ImageLevelFeatureName image_feature_name);
@@ -111,6 +125,11 @@ class EligibilityModule {
       const std::string& image_id,
       const google::protobuf::RepeatedPtrField<OrOfThresholdingRules>& rules,
       base::flat_map<std::string, double>& output_map);
+  // Apply the sorting clauses of the spec before returning the results.
+  void SortImages(
+      std::vector<std::pair<std::string, double>>* images_with_feature_values);
+  void RunAdditionalCheapPruning(
+      const std::vector<SingleImageGeometryFeatures>& images);
 
   EligibilitySpec spec_;
   // Cache for features that are computed individually for each image.
@@ -118,9 +137,10 @@ class EligibilityModule {
   base::flat_map<std::string,
                  base::flat_map<FeatureLibrary::ImageLevelFeatureName, double>>
       image_level_features_;
-  // Cache for features that are computed at the level of the whole page.
-  base::flat_map<FeatureLibrary::PageLevelFeatureName, double>
-      page_level_features_;
+  // Cache for the max value of image-level features, with the max taken over
+  // all the images on the page.
+  base::flat_map<FeatureLibrary::ImageLevelFeatureName, double>
+      max_value_features_;
   // Keep track of what images were eligible after the first and second passes.
   base::flat_set<std::string> eligible_after_first_pass_;
   base::flat_set<std::string> eligible_after_second_pass_;
@@ -133,6 +153,18 @@ class EligibilityModule {
   // Keeps track of whether the first pass has run since the last time we ran
   // the second pass.
   bool have_run_first_pass_;
+
+  // Counters incremented during eligibility rule evaluation if the image meets
+  // the appropriate thresholding rule for shoppy or sensitivity classification.
+  int num_shoppy_images_;
+  int num_sensitive_images_;
+
+  // The id and classification scores of the eligible image with the highest
+  // shopping score. The associated sensitivity score may or may not be below
+  // the threshold value.
+  std::string most_shoppy_id_;
+  float most_shoppy_shopping_score_;
+  float most_shoppy_sens_score_;
 };
 }  // namespace companion::visual_search
 #endif

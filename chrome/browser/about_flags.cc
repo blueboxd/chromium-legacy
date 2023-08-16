@@ -324,6 +324,10 @@
 #include "ui/ozone/public/ozone_switches.h"
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chrome/browser/promos/promos_features.h"
+#endif  // !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 #if BUILDFLAG(IS_WIN)
 #include "chrome/browser/enterprise/platform_auth/platform_auth_features.h"
 #include "chrome/browser/win/titlebar_config.h"
@@ -2926,13 +2930,9 @@ const FeatureEntry::FeatureVariation kDrawPredictedPointVariations[] = {
 
 const FeatureEntry::FeatureParam kFedCmVariationIdpSignout[] = {
     {features::kFedCmIdpSignoutFieldTrialParamName, "true"}};
-const FeatureEntry::FeatureParam kFedCmVariationIdpSigninStatus[] = {
-    {features::kFedCmIdpSigninStatusFieldTrialParamName, "true"}};
 const FeatureEntry::FeatureVariation kFedCmFeatureVariations[] = {
     {"- with FedCM IDP sign-out", kFedCmVariationIdpSignout,
      std::size(kFedCmVariationIdpSignout), nullptr},
-    {"- with FedCM IDP sign-in status", kFedCmVariationIdpSigninStatus,
-     std::size(kFedCmVariationIdpSigninStatus), nullptr},
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -3490,17 +3490,6 @@ const FeatureEntry::FeatureVariation
          kGalleryAppPdfEditNotificationOpenWithGalleryApp,
          std::size(kGalleryAppPdfEditNotificationOpenWithGalleryApp), nullptr}};
 #endif
-
-constexpr FeatureEntry::FeatureParam
-    kPasswordStrengthIndicatorMinimizedVariation[] = {
-        {password_manager::features::
-             kPasswordStrengthIndicatorWithMinimizedState.name,
-         "true"}};
-
-constexpr FeatureEntry::FeatureVariation
-    kPasswordStrengthIndicatorVariations[] = {
-        {" with minimized state", kPasswordStrengthIndicatorMinimizedVariation,
-         std::size(kPasswordStrengthIndicatorMinimizedVariation), nullptr}};
 
 #if !BUILDFLAG(IS_ANDROID)
 const FeatureEntry::FeatureParam kOsIntegrationSubManagersWriteConfig[] = {
@@ -4900,6 +4889,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaRouterOtrInstanceName,
      flag_descriptions::kMediaRouterOtrInstanceDescription, kOsAll,
      FEATURE_VALUE_TYPE(media_router::kMediaRouterOTRInstance)},
+    {"media-route-dial-provider",
+     flag_descriptions::kDialMediaRouteProviderName,
+     flag_descriptions::kDialMediaRouteProviderDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(media_router::kDialMediaRouteProvider)},
 
     {"enable-preinstalled-web-app-duplication-fixer",
      flag_descriptions::kEnablePreinstalledWebAppDuplicationFixerName,
@@ -6701,6 +6694,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDownloadRangeDescription, kOsAll,
      FEATURE_VALUE_TYPE(download::features::kDownloadRange)},
 
+    {"tab-hover-card-image-settings",
+     flag_descriptions::kTabHoverCardImageSettingsName,
+     flag_descriptions::kTabHoverCardImageSettingsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kTabHoverCardImageSettings)},
+
     {"tab-hover-card-images", flag_descriptions::kTabHoverCardImagesName,
      flag_descriptions::kTabHoverCardImagesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabHoverCardImages)},
@@ -7326,12 +7324,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceStartupSigninPromoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(switches::kForceStartupSigninPromo)},
 
-    {"gaia-id-in-amf",
-     flag_descriptions::kGaiaIdCacheInAccountManagerFacadeName,
-     flag_descriptions::kGaiaIdCacheInAccountManagerFacadeDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(switches::kGaiaIdCacheInAccountManagerFacade)},
-
     {"tangible-sync", flag_descriptions::kTangibleSyncName,
      flag_descriptions::kTangibleSyncDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(switches::kTangibleSync,
@@ -7669,6 +7661,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableManagedByParentUiDescription,
      kOsLinux | kOsMac | kOsWin,
      FEATURE_VALUE_TYPE(supervised_user::kEnableManagedByParentUi)},
+
+    {"enable-supervised-users-remain-signed-in",
+     flag_descriptions::kClearingCookiesKeepsSupervisedUsersSignedInName,
+     flag_descriptions::kClearingCookiesKeepsSupervisedUsersSignedInDescription,
+     kOsLinux | kOsMac | kOsWin,
+     FEATURE_VALUE_TYPE(
+         supervised_user::kClearingCookiesKeepsSupervisedUsersSignedIn)},
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
     {"notification-scheduler", flag_descriptions::kNotificationSchedulerName,
@@ -8814,6 +8813,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFedCmUserInfoDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kFedCmUserInfo)},
 
+    {"fedcm-idp-signin-status-api",
+     flag_descriptions::kFedCmIdpSigninStatusName,
+     flag_descriptions::kFedCmIdpSigninStatusDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kFedCmIdpSigninStatusEnabled)},
+
     {"fedcm-without-third-party-cookies",
      flag_descriptions::kFedCmWithoutThirdPartyCookiesName,
      flag_descriptions::kFedCmWithoutThirdPartyCookiesDescription, kOsAll,
@@ -8955,7 +8959,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"ios-promo-password-bubble",
      flag_descriptions::kIOSPromoPasswordBubbleName,
      flag_descriptions::kIOSPromoPasswordBubbleDecription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kIOSPromoPasswordBubble,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(promos_features::kIOSPromoPasswordBubble,
                                     kIOSPromoPasswordBubbleVariations,
                                     "IOSPromoPasswordBubble")},
 #endif
@@ -8999,14 +9003,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFocusFollowsCursorDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(::features::kFocusFollowsCursor)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-    {"password-strength-indicator",
-     flag_descriptions::kPasswordStrengthIndicatorName,
-     flag_descriptions::kPasswordStrengthIndicatorDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         password_manager::features::kPasswordStrengthIndicator,
-         kPasswordStrengthIndicatorVariations,
-         "PasswordStrengthIndicator")},
 
 #if !BUILDFLAG(IS_ANDROID)
     {"password-generation-experiment",
@@ -10329,6 +10325,14 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableNewCardArtAndNetworkImages)},
+
+    {"autofill-enable-card-art-server-side-stretching",
+     flag_descriptions::kAutofillEnableCardArtServerSideStretchingName,
+     flag_descriptions::kAutofillEnableCardArtServerSideStretchingDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableCardArtServerSideStretching)},
+
     {"autofill-upstream-use-alternate-secure-data-type",
      flag_descriptions::kAutofillUpstreamUseAlternateSecureDataTypeName,
      flag_descriptions::kAutofillUpstreamUseAlternateSecureDataTypeDescription,
@@ -10626,6 +10630,19 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSystemNudgeV2Description, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kSystemNudgeV2)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"speak-on-mute-opt-in-nudge-prefs-reset",
+     flag_descriptions::kSpeakOnMuteOptInNudgePrefsResetName,
+     flag_descriptions::kSpeakOnMuteOptInNudgePrefsResetDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kSpeakOnMuteOptInNudgePrefsReset)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    {"privacy-sandbox-enrollment-overrides",
+     flag_descriptions::kPrivacySandboxEnrollmentOverridesName,
+     flag_descriptions::kPrivacySandboxEnrollmentOverridesDescription, kOsAll,
+     ORIGIN_LIST_VALUE_TYPE(privacy_sandbox::kPrivacySandboxEnrollmentOverrides,
+                            "")},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

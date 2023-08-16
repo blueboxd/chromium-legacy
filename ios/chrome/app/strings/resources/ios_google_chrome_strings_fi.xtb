@@ -6,11 +6,13 @@
 <translation id="1352919863522755794">Google Salasanat ei voinut tarkistaa salasanojasi. Tarkista internetyhteytesi.</translation>
 <translation id="1462727070346936664">Saat eniten irti Chromesta kirjautumalla sisään.</translation>
 <translation id="1479202195792305274">Chrome voi tarkistaa salasanasi, kun kirjaudut sisään Google-tililläsi.</translation>
+<translation id="1491435845014430217">Laita päälle "Lukitse incognito-välilehdet, kun suljet Chromen".</translation>
 <translation id="1493827051843127077">Aseta Chrome oletusselaimeksi, niin voit synkronoida välilehdet, salasanat ja maksutiedot kaikilla laitteillasi</translation>
 <translation id="1504372625950710826">Chrome ei voinut tarkistaa, onko päivityksiä saatavilla. Tarkista internetyhteytesi.</translation>
 <translation id="1511320244449497906">Olet kirjautunut sisään ja dataasi synkronoidaan <ph name="DOMAIN" />-osoitteen hallinnoimalle tilille. Sen järjestelmänvalvoja voi nyt asettaa tilikohtaisia käyttäjäkäytäntöjä, jotka voivat muuttaa Chromen käyttäytymistä.</translation>
 <translation id="1554731936187952550">Käytössäsi on Chromen vahvin suojaus haitallisia verkkosivustoja vastaan</translation>
 <translation id="1682483655351012182">Chrome-datan synkronointi</translation>
+<translation id="1733654336159102143">Lukitse incognito-tila, kun poistut Chromesta tai vaihdat toiseen sovellukseen.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Käytä Chromea automaattisesti, kun napautat linkkejä viesteissä, dokumenteissa ja muissa sovelluksissa.</translation>
 <translation id="1917964099031477364">Tämä tili ja kaikki tallentamaton data poistetaan Chromesta ja muista Google-sovelluksista tällä laitteella.</translation>
@@ -48,6 +50,7 @@
 <translation id="3503014945441706099">Lisää Parannettu selaussuoja myös tälle Chrome-profiilille</translation>
 <translation id="3522659714780527202">Laita synkronointi päälle, niin voit nähdä Chrome-välilehtesi missä tahansa</translation>
 <translation id="3533694711092285624">Ei tallennettuja salasanoja. Chrome voi tarkistaa salasanasi, kun tallennat niitä.</translation>
+<translation id="3594076341410558780">Piilota "Näin saat kaiken irti Chromesta"</translation>
 <translation id="3655656110921623717">Tämä tarkoittaa, että Chrome pyytää aina mobiilisivustoa.</translation>
 <translation id="3720541637541300822">Lukitse incognito-välilehdet, kun suljet Chromen</translation>
 <translation id="3827545470516145620">Tällä laitteella on perustason suojaus</translation>
@@ -66,8 +69,10 @@
 <translation id="4636900170638246267">Kirjaudu tälle sivustolle ja Chromeen.</translation>
 <translation id="4698415050768537821">Chrome ei voinut tarkistaa kaikkia salasanoja. Yritä uudelleen huomenna tai <ph name="BEGIN_LINK" />tarkista salasanat Google-tililtä<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Chrome lähettää käyttö- ja kaatumisdataa Googlelle sovelluksen kehittämiseksi. <ph name="BEGIN_LINK" />Muokkaa<ph name="END_LINK" /></translation>
+<translation id="4830799082179398588">Tehdäänkö Chromesta oletusselain?</translation>
 <translation id="484033449593719797">Ei tueta Chrome Betassa</translation>
 <translation id="4840404732697892756">Google Salasanat voi tarkistaa salasanasi, kun kirjaudut sisään Google-tililläsi.</translation>
+<translation id="4903674399067644695">Tässä kortissa on ehdotuksia Chromen hyödyntämiseen parhaalla mahdollisella tavalla.</translation>
 <translation id="5030102366287574140">Chrome voi auttaa suojaamaan sinua esim. tietosuojaloukkauksilta ja riskialttiilta verkkosivustoilta.</translation>
 <translation id="5108659628347594808">Entistä parempi Chrome</translation>
 <translation id="5119391094379141756">Valitse Chrome</translation>
@@ -76,6 +81,7 @@
 <translation id="5395376160638294582">Varmista, että voit aina käyttää Chrome-dataa Google-tilillä</translation>
 <translation id="5460571915754665838">4. Valitse Chrome</translation>
 <translation id="5492504007368565877">Google Salasanat ei voi tarkistaa salasanojasi.</translation>
+<translation id="5527026824954593399">Valitse "Katso Google Mapsin avulla Chromessa".</translation>
 <translation id="5552137475244467770">Chrome vertaa salasanojasi säännöllisesti listoihin salasanoista, jotka on julkaistu verkossa. Tätä varten salasanat ja käyttäjänimet salataan, joten kukaan (myöskään Google) ei voi lukea niitä.</translation>
 <translation id="5639704535586432836">Avaa Asetukset &gt; Tietosuoja &gt; Kamera &gt; Google Chrome ja ota kamera käyttöön.</translation>
 <translation id="5642200033778930880">Google Chrome ei voi käyttää kameraa jaetussa näkymässä.</translation>
@@ -111,10 +117,12 @@
 <translation id="7261678641327190792">Chrome ei voi tarkistaa salasanojasi</translation>
 <translation id="7272930098487145294">Anna Chromen lisätä uusia kuvia valitsemalla Asetukset, niin voit tallentaa kuvia.</translation>
 <translation id="7275945473750112644"><ph name="HOSTED_DOMAIN" /> ylläpitää tiliäsi, joten Chrome-datasi poistetaan tältä laitteelta</translation>
+<translation id="7394108421562933108">Maps Chromessa</translation>
 <translation id="7400722733683201933">Tietoja Google Chromesta</translation>
 <translation id="7501046334262221972">Voit tehdä Chromesta oletusselaimesi avaamalla Asetukset ja valitsemalla Oletusselainsovellus ja sitten Chrome.</translation>
 <translation id="756809126120519699">Chrome-tiedot tyhjennetty</translation>
 <translation id="7662994914830945754">Kirjaudu sisään ja laita synkronointi päälle, jotta voit nähdä Chrome-välilehtesi missä tahansa</translation>
+<translation id="7669869107155339016">Siirry Chromen asetuksiin.</translation>
 <translation id="7693590760643069321">Voit nyt käyttää Chromea aina, kun napautat linkkejä viesteissä, dokumenteissa tai muissa sovelluksissa.</translation>
 <translation id="7698568245838009292">Chrome pyytää kameran käyttöoikeutta</translation>
 <translation id="7754633291442704733">Organisaatiosi <ph name="DOMAIN" /> saa pääsyn Chrome-dataasi, kirjanmerkkeihisi, historiaasi, salasanoihisi ja muihin asetuksiisi, jotka olet tallentanut tälle tilille. Kun kirjaudut ulos, datasi tyhjennetään tältä laitteelta.  Data säilyy kuitenkin hallinnoidulla Google-tililläsi ja on organisaation saatavilla. Organisaatiosi voi myös asettaa tilikohtaisia käyttäjäkäytäntöjä, jotka voivat muuttaa Chromen toimintaa.</translation>

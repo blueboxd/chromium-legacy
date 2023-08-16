@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/card_metadata_metrics.h"
 #include "components/autofill/core/browser/payments/autofill_offer_manager.h"
+#include "components/autofill/core/browser/payments/constants.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion_selection.h"
@@ -416,7 +417,8 @@ bool AutofillSuggestionGenerator::ShouldShowVirtualCardOption(
     const CreditCard* candidate_card) const {
   switch (candidate_card->record_type()) {
     case CreditCard::LOCAL_CARD:
-      candidate_card = GetServerCardForLocalCard(candidate_card);
+      candidate_card =
+          personal_data_->GetServerCardForLocalCard(candidate_card);
 
       // If we could not find a matching server duplicate, return false.
       if (!candidate_card) {
@@ -432,25 +434,6 @@ bool AutofillSuggestionGenerator::ShouldShowVirtualCardOption(
       NOTREACHED();
       return false;
   }
-}
-
-const CreditCard* AutofillSuggestionGenerator::GetServerCardForLocalCard(
-    const CreditCard* local_card) const {
-  DCHECK(local_card);
-  if (local_card->record_type() != CreditCard::LOCAL_CARD)
-    return nullptr;
-
-  std::vector<CreditCard*> server_cards =
-      personal_data_->GetServerCreditCards();
-  auto it =
-      base::ranges::find_if(server_cards, [&](const CreditCard* server_card) {
-        return local_card->IsLocalOrServerDuplicateOf(*server_card);
-      });
-
-  if (it != server_cards.end())
-    return *it;
-
-  return nullptr;
 }
 
 // TODO(crbug.com/1346331): Separate logic for desktop, Android dropdown, and
@@ -628,7 +611,7 @@ void AutofillSuggestionGenerator::AdjustVirtualCardSuggestionContent(
     const AutofillType& type) const {
   if (credit_card.record_type() == CreditCard::LOCAL_CARD) {
     const CreditCard* server_duplicate_card =
-        GetServerCardForLocalCard(&credit_card);
+        personal_data_->GetServerCardForLocalCard(&credit_card);
     DCHECK(server_duplicate_card);
     suggestion.payload = Suggestion::BackendId(server_duplicate_card->guid());
   }
@@ -699,31 +682,33 @@ void AutofillSuggestionGenerator::SetCardArtURL(
     Suggestion& suggestion,
     const CreditCard& credit_card,
     bool virtual_card_option) const {
-  if (!virtual_card_option &&
-      !base::FeatureList::IsEnabled(features::kAutofillEnableCardArtImage)) {
-    return;
-  }
-
-  GURL card_art_url;
-  if (credit_card.record_type() == CreditCard::MASKED_SERVER_CARD) {
-    card_art_url = credit_card.card_art_url();
-  } else if (credit_card.record_type() == CreditCard::LOCAL_CARD) {
-    const CreditCard* server_duplicate_card =
-        GetServerCardForLocalCard(&credit_card);
-    if (server_duplicate_card)
-      card_art_url = server_duplicate_card->card_art_url();
-  }
+  const GURL card_art_url = personal_data_->GetCardArtURL(credit_card);
 
   if (card_art_url.is_empty() || !card_art_url.is_valid())
     return;
 
+  // The Capital One icon for virtual cards is not card metadata, it only helps
+  // distinguish FPAN from virtual cards when metadata is unavailable. FPANs
+  // should only ever use the network logo or rich card art. The Capital One
+  // logo is reserved for virtual cards only.
+  if (!virtual_card_option && card_art_url == kCapitalOneCardArtUrl) {
+    return;
+  }
+
+  // Only show card art if the experiment is enabled or if it is the Capital One
+  // virtual card icon.
+  if (base::FeatureList::IsEnabled(features::kAutofillEnableCardArtImage) ||
+      card_art_url == kCapitalOneCardArtUrl) {
 #if BUILDFLAG(IS_ANDROID)
-  suggestion.custom_icon_url = card_art_url;
+    suggestion.custom_icon_url = card_art_url;
 #else
-  gfx::Image* image = personal_data_->GetCreditCardArtImageForUrl(card_art_url);
-  if (image)
-    suggestion.custom_icon = *image;
+    gfx::Image* image =
+        personal_data_->GetCreditCardArtImageForUrl(card_art_url);
+    if (image) {
+      suggestion.custom_icon = *image;
+    }
 #endif
+  }
 }
 
 bool AutofillSuggestionGenerator::ShouldShowVirtualCardOptionForServerCard(

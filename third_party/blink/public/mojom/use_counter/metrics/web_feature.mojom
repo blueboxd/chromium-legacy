@@ -3926,6 +3926,17 @@ enum WebFeature {
   kWebGPUQueueSubmit = 4586,
   kWebGPUCanvasContextGetCurrentTexture = 4587,
   kEditContext = 4588,
+  kServiceWorkerStaticRouter_RegisterRouter = 4589,
+  kServiceWorkerStaticRouter_Evaluate = 4590,
+  kClientHintsUAFormFactor = 4591,
+  kURLSearchParamsHasFnBehaviourDiverged = 4592,
+  kURLSearchParamsDeleteFnBehaviourDiverged = 4593,
+  kTextWrapPretty = 4594,
+  kTextWrapPrettyFail = 4595,
+  kContainerQueryEvalUnknown = 4596,
+  kEventTimingPresentationPromiseResolvedAfterReport = 4597,
+  kGetCoalescedEventsInInsecureContext = 4598,
+  kCSPEESameOriginBlanketEnforcement = 4599,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

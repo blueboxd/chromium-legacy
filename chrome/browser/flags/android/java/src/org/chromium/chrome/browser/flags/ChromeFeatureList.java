@@ -117,6 +117,7 @@ public abstract class ChromeFeatureList {
     public static final String APP_LANGUAGE_PROMPT = "AppLanguagePrompt";
     public static final String APP_LANGUAGE_PROMPT_ULP = "AppLanguagePromptULP";
     public static final String APP_MENU_MOBILE_SITE_OPTION = "AppMenuMobileSiteOption";
+    public static final String AUTOFILL_ACCOUNT_PROFILE_STORAGE = "AutofillAccountProfileStorage";
     public static final String AUTOFILL_ADDRESS_PROFILE_SAVE_PROMPT_NICKNAME_SUPPORT =
             "AutofillAddressProfileSavePromptNicknameSupport";
     public static final String AUTOFILL_ALLOW_NON_HTTP_ACTIVATION =
@@ -127,6 +128,8 @@ public abstract class ChromeFeatureList {
             "AutofillEnableManualFallbackForVirtualCards";
     public static final String AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES =
             "AutofillEnableNewCardArtAndNetworkImages";
+    public static final String AUTOFILL_ENABLE_CARD_ART_SERVER_SIDE_STRETCHING =
+            "AutofillEnableCardArtServerSideStretching";
     public static final String AUTOFILL_ENABLE_PAYMENTS_MANDATORY_REAUTH =
             "AutofillEnablePaymentsMandatoryReauth";
     public static final String AUTOFILL_ENABLE_RANKING_FORMULA_ADDRESS_PROFILES =
@@ -353,6 +356,7 @@ public abstract class ChromeFeatureList {
     public static final String PRERENDER2 = "Prerender2";
     public static final String PRECONNECT_ON_TAB_CREATION = "PreconnectOnTabCreation";
     public static final String PRIVACY_GUIDE = "PrivacyGuideAndroid";
+    public static final String PRIVACY_GUIDE_POST_MVP = "PrivacyGuideAndroidPostMVP";
     public static final String PRIVACY_SANDBOX_FPS_UI = "PrivacySandboxFirstPartySetsUI";
     public static final String PRIVACY_SANDBOX_SETTINGS_3 = "PrivacySandboxSettings3";
     public static final String PRIVACY_SANDBOX_SETTINGS_4 = "PrivacySandboxSettings4";
@@ -433,6 +437,9 @@ public abstract class ChromeFeatureList {
     public static final String SYNC_ANDROID_LIMIT_NTP_PROMO_IMPRESSIONS =
             "SyncAndroidLimitNTPPromoImpressions";
     public static final String SYNC_ENABLE_HISTORY_DATA_TYPE = "SyncEnableHistoryDataType";
+    public static final String SYNC_ENABLE_CONTACT_INFO_DATA_TYPE = "SyncEnableContactInfoDataType";
+    public static final String SYNC_ENABLE_CONTACT_INFO_DATA_TYPE_IN_TRANSPORT_MODE =
+            "SyncEnableContactInfoDataTypeInTransportMode";
     public static final String TAB_DRAG_DROP_ANDROID = "TabDragDropAndroid";
     public static final String TAB_ENGAGEMENT_REPORTING_ANDROID = "TabEngagementReportingAndroid";
     public static final String TAB_GRID_LAYOUT_ANDROID = "TabGridLayoutAndroid";
@@ -545,6 +552,8 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sInstanceSwitcher = new CachedFlag(INSTANCE_SWITCHER, true);
     public static final CachedFlag sInstantStart = new CachedFlag(INSTANT_START, false);
     public static final CachedFlag sInterestFeedV2 = new CachedFlag(INTEREST_FEED_V2, true);
+    public static final CachedFlag sPrivacyGuidePostMVP =
+            new CachedFlag(PRIVACY_GUIDE_POST_MVP, false);
     public static final CachedFlag sOmniboxMatchToolbarAndStatusBarColor =
             new CachedFlag(OMNIBOX_MATCH_TOOLBAR_AND_STATUS_BAR_COLOR, false);
     public static final CachedFlag sOmniboxModernizeVisualUpdate =
@@ -640,6 +649,7 @@ public abstract class ChromeFeatureList {
         sInstanceSwitcher,
         sInstantStart,
         sInterestFeedV2,
+        sPrivacyGuidePostMVP,
         sOmniboxMatchToolbarAndStatusBarColor,
         sOmniboxModernizeVisualUpdate,
         sOmniboxMostVisitedTilesAddRecycledViewPool,

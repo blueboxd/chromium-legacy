@@ -1226,6 +1226,7 @@
       "external/wpt/html/canvas/element/layers/2d.layer.invalid-calls.endLayer.html",
       "external/wpt/html/canvas/element/layers/2d.layer.invalid-calls.save-beginLayer-restore.html",
       "external/wpt/html/canvas/element/layers/2d.layer.invalid-calls.save-endLayer.html",
+      "external/wpt/html/canvas/element/layers/2d.layer.several-complex.html",
       "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.beginLayer-reset-endLayer.html",
       "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.beginLayer-reset-endLayer.worker.js",
       "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.beginLayer-restore.html",
@@ -1237,7 +1238,9 @@
       "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.save-beginLayer-restore.html",
       "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.save-beginLayer-restore.worker.js",
       "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.save-endLayer.html",
-      "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.save-endLayer.worker.js"
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.invalid-calls.save-endLayer.worker.js",
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.several-complex.html",
+      "external/wpt/html/canvas/offscreen/layers/2d.layer.several-complex.w.html"
     ],
     "args": ["--enable-fake-no-alloc-direct-call-for-testing"],
     "expires": "Jul 1, 2023"
@@ -2095,7 +2098,10 @@
   {
     "prefix": "font-palette-animation",
     "platforms": ["Linux"],
-    "bases": ["wpt_internal/css/css-fonts/animations"],
+    "bases": [
+      "wpt_internal/css/css-fonts/animations",
+      "wpt_internal/css/css-fonts/palette-mix-computed.tentative.html"
+    ],
     "exclusive_tests": "ALL",
     "args": [
       "--enable-blink-features=FontPaletteAnimation"
@@ -2110,5 +2116,25 @@
       "--disable-features=CSPWildcardsInPermissionsPolicies"
     ],
     "expires": "Dec 1, 2023"
+   },
+   {
+    "prefix": "soft-navigation-fp-fcp",
+    "platforms": ["Linux"],
+    "bases": [
+      "external/wpt/soft-navigation-heuristics"
+    ],
+    "args": ["--enable-blink-features=SoftNavigationHeuristicsExposeFPAndFCP"],
+    "expires": "Dec 31, 2023"
+  },
+  {
+    "prefix": "produce-compile-hints",
+    "platforms": ["Linux"],
+    "bases": [
+      "external/wpt/fetch",
+      "external/wpt/loading",
+      "external/wpt/html/semantics/scripting-1"
+    ],
+    "args": ["--enable-features=ProduceCompileHints"],
+    "expires": "never"
   }
 ]

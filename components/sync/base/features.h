@@ -103,13 +103,6 @@ BASE_DECLARE_FEATURE(kUseSyncInvalidations);
 // upload/download invalidations support from ModelTypeState msg will be added.
 BASE_DECLARE_FEATURE(kSyncPersistInvalidations);
 
-// If enabled, types related to Wallet and Offer will be included in interested
-// data types, and the device will listen to new invalidations for those types
-// (if they are enabled).
-// The device will not register for old invalidations at all.
-// UseSyncInvalidations must be enabled for this to take effect.
-BASE_DECLARE_FEATURE(kUseSyncInvalidationsForWalletAndOffer);
-
 // When enabled, optimization flags (single client and a list of FCM
 // registration tokens) will be disabled if during the current sync cycle
 // DeviceInfo has been updated.
@@ -207,6 +200,9 @@ inline constexpr base::FeatureParam<base::TimeDelta>
 
 // Feature flag to replace all sync-related UI with sign-in ones.
 BASE_DECLARE_FEATURE(kReplaceSyncPromosWithSignInPromos);
+
+// Flag to stop call to reconfiguration of datatypes if it's already stopping.
+BASE_DECLARE_FEATURE(kSyncAvoidReconfigurationIfAlreadyStopping);
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_BASE_FEATURES_H_

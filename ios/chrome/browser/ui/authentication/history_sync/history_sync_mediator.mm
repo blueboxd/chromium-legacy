@@ -16,8 +16,4 @@
   self.consumer = nil;
 }
 
-- (void)dealloc {
-  CHECK(!self.consumer);
-}
-
 @end

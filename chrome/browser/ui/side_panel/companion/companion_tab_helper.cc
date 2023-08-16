@@ -116,6 +116,11 @@ CompanionTabHelper::GetCompanionPageHandler() {
   return companion_page_handler_;
 }
 
+void CompanionTabHelper::AddCompanionFinishedLoadingCallback(
+    CompanionTabHelper::CompanionLoadedCallback callback) {
+  delegate_->AddCompanionFinishedLoadingCallback(std::move(callback));
+}
+
 content::WebContents* CompanionTabHelper::GetCompanionWebContentsForTesting() {
   return delegate_->GetCompanionWebContentsForTesting();  // IN-TEST
 }
@@ -135,7 +140,7 @@ void CompanionTabHelper::SetTextQuery(const std::string& text_query) {
   CHECK(!text_query.empty());
   text_query_ = text_query;
   if (companion_page_handler_) {
-    companion_page_handler_->OnSearchTextQuery(GetTextQuery());
+    companion_page_handler_->OnSearchTextQuery();
   }
 }
 

@@ -12,6 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/types/pass_key.h"
 #include "components/site_engagement/content/site_engagement_observer.h"
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_params.h"
@@ -32,8 +33,13 @@ class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
+namespace segmentation_platform {
+class SegmentationPlatformService;
+}  // namespace segmentation_platform
+
 namespace webapps {
 class InstallableManager;
+class MLInstallabilityPromoter;
 enum class WebappInstallSource;
 struct InstallableData;
 struct Screenshot;
@@ -188,7 +194,13 @@ class AppBannerManager : public content::WebContentsObserver,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  virtual base::WeakPtr<AppBannerManager> GetWeakPtr() = 0;
+  // This weak pointer should be valid for a given navigation, and will be
+  // invalidated when `InvalidateWeakPtrsForThisNavigation` is called.
+  virtual base::WeakPtr<AppBannerManager> GetWeakPtrForThisNavigation() = 0;
+
+  // This weak pointer is NOT invalidated when
+  // `InvalidateWeakPtrsForThisNavigation` is called.
+  base::WeakPtr<AppBannerManager> GetWeakPtr();
 
   // This is used to determine if the `AppBannerManager` pipeline should be
   // disabled. A test may disable the original `AppBannerManager` (by using
@@ -241,6 +253,20 @@ class AppBannerManager : public content::WebContentsObserver,
   virtual bool IsMlPromotionBlockedByHistoryGuardrail(
       const GURL& manifest_id) = 0;
 
+  // This is called by the MLInstallabilityPromoter when, for this current web
+  // contents:
+  // - There is no existing install (tracked by the MlInstallOperationTracker).
+  // - Ml install prompting is not blocked by guardrails (via
+  //   IsMlPromotionBlockedByHistoryGuardrail).
+  // - The web contents is visible.
+  // - Metrics have been gathered and the ML model has returned with a given
+  //   classification.
+  virtual void OnMlInstallPrediction(base::PassKey<MLInstallabilityPromoter>,
+                                     std::string result_label) = 0;
+
+  virtual segmentation_platform::SegmentationPlatformService*
+  GetSegmentationPlatformService() = 0;
+
  protected:
   explicit AppBannerManager(content::WebContents* web_contents);
   ~AppBannerManager() override;
@@ -275,7 +301,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // alerting websites that a banner is about to be created.
   virtual std::string GetBannerType();
 
-  virtual void InvalidateWeakPtrs() = 0;
+  virtual void InvalidateWeakPtrsForThisNavigation() = 0;
 
   // Returns true if |has_sufficient_engagement_| is true or
   // ShouldBypassEngagementChecks() returns true.
@@ -489,6 +515,8 @@ class AppBannerManager : public content::WebContentsObserver,
   PwaInstallPathTracker install_path_tracker_;
 
   base::ObserverList<Observer, true> observer_list_;
+
+  base::WeakPtrFactory<AppBannerManager> weak_factory_{this};
 };
 
 }  // namespace webapps

@@ -6,7 +6,8 @@
 #define IOS_CHROME_BROWSER_UI_WHATS_NEW_WHATS_NEW_UTIL_H_
 
 #import <Foundation/Foundation.h>
-#include "base/feature_list.h"
+#import "base/feature_list.h"
+#import "ios/chrome/browser/ui/whats_new/data_source/whats_new_item.h"
 
 class PromosManager;
 
@@ -16,11 +17,20 @@ BASE_DECLARE_FEATURE(kWhatsNewIOSM116);
 // Key to store whether the What's New promo has been register.
 extern NSString* const kWhatsNewPromoRegistrationKey;
 
+// Key to store whether the What's New m116 promo has been register.
+extern NSString* const kWhatsNewM116PromoRegistrationKey;
+
 // Key to store the date of FRE.
 extern NSString* const kWhatsNewDaysAfterFre;
 
+// Key to store the date of FRE for What's New M116.
+extern NSString* const kWhatsNewM116DaysAfterFre;
+
 // Key to store the number of launches after FRE.
 extern NSString* const kWhatsNewLaunchesAfterFre;
+
+// Key to store the number of launches after FRE for What's New M116.
+extern NSString* const kWhatsNewM116LaunchesAfterFre;
 
 // Key to store whether a user interacted with What's New from the overflow
 // menu.
@@ -46,5 +56,11 @@ bool ShouldRegisterWhatsNewPromo();
 
 // Returns whether What's New M116 is enabled.
 bool IsWhatsNewM116Enabled();
+
+// Returns a string version of WhatsNewType.
+const char* WhatsNewTypeToString(WhatsNewType type);
+
+// Returns a string version of WhatsNewType only for M116 content.
+const char* WhatsNewTypeToStringM116(WhatsNewType type);
 
 #endif  // IOS_CHROME_BROWSER_UI_WHATS_NEW_WHATS_NEW_UTIL_H_

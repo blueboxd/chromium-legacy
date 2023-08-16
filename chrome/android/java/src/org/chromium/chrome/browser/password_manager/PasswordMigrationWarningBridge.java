@@ -4,9 +4,19 @@
 
 package org.chromium.chrome.browser.password_manager;
 
+import android.app.Activity;
+import android.content.Context;
+
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.password_manager.settings.ExportFlow;
+import org.chromium.chrome.browser.password_manager.settings.PasswordListObserver;
+import org.chromium.chrome.browser.password_manager.settings.PasswordManagerHandlerProvider;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningCoordinator;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
+import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.ui.base.WindowAndroid;
@@ -18,9 +28,29 @@ class PasswordMigrationWarningBridge {
         BottomSheetController bottomSheetController =
                 BottomSheetControllerProvider.from(windowAndroid);
         if (bottomSheetController == null) return;
+        Context context = windowAndroid.getContext().get();
+        if (context == null) return;
+        // The export flow won't work unless the sheet is started with an Activity as a Context.
+        if (ContextUtils.activityFromContext(context) == null) return;
+        showWarningInternal(context, bottomSheetController, profile);
+    }
+
+    @CalledByNative
+    static void showWarningWithActivity(
+            Activity activity, BottomSheetController bottomSheetController, Profile profile) {
+        showWarningInternal(activity, bottomSheetController, profile);
+    }
+
+    private static void showWarningInternal(
+            Context context, BottomSheetController bottomSheetController, Profile profile) {
         PasswordMigrationWarningCoordinator passwordMigrationWarningCoordinator =
-                new PasswordMigrationWarningCoordinator(
-                        windowAndroid.getContext().get(), bottomSheetController);
-        passwordMigrationWarningCoordinator.showWarning(profile);
+                new PasswordMigrationWarningCoordinator(context, profile, bottomSheetController,
+                        SyncConsentActivityLauncherImpl.get(), new SettingsLauncherImpl(),
+                        ManageSyncSettings.class, new ExportFlow(),
+                        (PasswordListObserver observer)
+                                -> PasswordManagerHandlerProvider.getInstance().addObserver(
+                                        observer),
+                        new PasswordStoreBridge());
+        passwordMigrationWarningCoordinator.showWarning();
     }
 }

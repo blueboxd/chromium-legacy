@@ -76,10 +76,6 @@
   [super stop];
 }
 
-- (void)dealloc {
-  CHECK(!self.mediator);
-}
-
 #pragma mark - Properties
 
 - (UIViewController*)viewController {

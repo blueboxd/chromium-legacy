@@ -6,11 +6,13 @@
 <translation id="1352919863522755794">Google Password Manager tidak dapat menyemak kata laluan anda. Cuba periksa sambungan Internet anda.</translation>
 <translation id="1462727070346936664">Log masuk untuk memanfaatkan Chrome sepenuhnya.</translation>
 <translation id="1479202195792305274">Chrome boleh menyemak kata laluan anda apabila anda log masuk menggunakan Akaun Google anda.</translation>
+<translation id="1491435845014430217">Hidupkan “Kunci Tab Inkognito Apabila Anda Menutup Chrome”.</translation>
 <translation id="1493827051843127077">Tetapkan Chrome sebagai penyemak imbas lalai untuk menyegerakkan tab, kata laluan dan maklumat pembayaran anda pada semua peranti anda</translation>
 <translation id="1504372625950710826">Chrome tidak dapat menyemak kemaskinian. Cuba periksa sambungan internet anda.</translation>
 <translation id="1511320244449497906">Anda telah log masuk dan menyegerakkan data anda dengan akaun yang diurus oleh <ph name="DOMAIN" />. Kini pentadbirnya boleh menetapkan dasar pengguna khusus untuk akaun tersebut yang boleh mengubah gelagat Chrome.</translation>
 <translation id="1554731936187952550">Anda mempunyai keselamatan terkuat Chrome terhadap laman web berbahaya</translation>
 <translation id="1682483655351012182">Segerakkan Data Chrome Anda</translation>
+<translation id="1733654336159102143">Kunci tab inkognito anda semasa anda keluar daripada Chrome atau beralih kepada apl lain.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Gunakan Chrome secara automatik apabila anda mengetik pautan dalam mesej, dokumen dan apl lain.</translation>
 <translation id="1917964099031477364">Akaun ini dan sebarang data yang tidak disimpan akan dialih keluar daripada Chrome dan apl Google yang lain pada peranti ini.</translation>
@@ -48,6 +50,7 @@
 <translation id="3503014945441706099">Dapatkan juga Penyemakan Imbas Selamat Dipertingkat untuk profil Chrome ini</translation>
 <translation id="3522659714780527202">Untuk melihat tab anda daripada mana-mana tempat anda menggunakan Chrome, hidupkan penyegerakan</translation>
 <translation id="3533694711092285624">Tiada kata laluan yang disimpan. Chrome boleh menyemak kata laluan anda yang disimpan.</translation>
+<translation id="3594076341410558780">Sembunyikan “Manfaatkan Chrome sepenuhnya”</translation>
 <translation id="3655656110921623717">Ini bermakna Chrome akan meminta laman mudah alih setiap masa.</translation>
 <translation id="3720541637541300822">Kunci Tab Inkognito Apabila Anda Menutup Chrome</translation>
 <translation id="3827545470516145620">Anda mendapat perlindungan keselamatan standard pada peranti ini</translation>
@@ -66,8 +69,10 @@
 <translation id="4636900170638246267">Log masuk ke laman ini dan Chrome.</translation>
 <translation id="4698415050768537821">Chrome tidak dapat menyemak semua kata laluan. Cuba lagi esok atau <ph name="BEGIN_LINK" />semak kata laluan dalam Akaun Google anda.<ph name="END_LINK" /></translation>
 <translation id="4819268619367838612">Untuk membantu dalam usaha meningkatkan apl, Chrome menghantar data penggunaan dan ranap sistem kepada Google. <ph name="BEGIN_LINK" />Urus<ph name="END_LINK" /></translation>
+<translation id="4830799082179398588">Jadikan Chrome penyemak imbas lalai anda?</translation>
 <translation id="484033449593719797">Tidak disokong pada Chrome Beta</translation>
 <translation id="4840404732697892756">Google Password Manager boleh menyemak kata laluan anda apabila anda log masuk menggunakan Google Account anda.</translation>
+<translation id="4903674399067644695">Kad ini menunjukkan cadangan tentang cara memanfaatkan Chrome sepenuhnya.</translation>
 <translation id="5030102366287574140">Chrome dapat membantu untuk memastikan anda selamat daripada pelanggaran data, laman web yang tidak selamat dan pelbagai lagi.</translation>
 <translation id="5108659628347594808">Jadikan Chrome Lebih Baik</translation>
 <translation id="5119391094379141756">Pilih Chrome</translation>
@@ -76,6 +81,7 @@
 <translation id="5395376160638294582">Pastikan anda dapat menggunakan data Chrome pada bila-bila masa dalam Google Account anda</translation>
 <translation id="5460571915754665838">4. Pilih Chrome</translation>
 <translation id="5492504007368565877">Google Password Manager tidak dapat menyemak kata laluan anda.</translation>
+<translation id="5527026824954593399">Ketik “Paparkan dengan Google Maps pada Chrome”.</translation>
 <translation id="5552137475244467770">Chrome menyemak kata laluan anda secara berkala pada senarai yang telah diterbitkan dalam talian. Apabila melakukan tindakan ini, kata laluan dan nama pengguna anda akan disulitkan supaya data ini tidak dapat dibaca oleh sesiapa termasuk Google.</translation>
 <translation id="5639704535586432836">Buka Tetapan &gt; Privasi &gt; Kamera &gt; Google Chrome dan hidupkan kamera.</translation>
 <translation id="5642200033778930880">Google Chrome tidak dapat menggunakan kamera anda dalam mod Paparan Pisah</translation>
@@ -111,10 +117,12 @@
 <translation id="7261678641327190792">Chrome tidak dapat menyemak kata laluan anda</translation>
 <translation id="7272930098487145294">Untuk menyimpan imej, ketik Tetapan untuk membolehkan Chrome membuat penambahan pada foto anda.</translation>
 <translation id="7275945473750112644">Akaun anda diurus oleh <ph name="HOSTED_DOMAIN" />, oleh itu data Chrome anda akan dikosongkan daripada peranti ini</translation>
+<translation id="7394108421562933108">Maps pada Chrome</translation>
 <translation id="7400722733683201933">Mengenai Google Chrome</translation>
 <translation id="7501046334262221972">Untuk menjadikan Chrome sebagai penyemak imbas lalai anda, buka Tetapan. Ketik Apl Penyemak Imbas Lalai, kemudian pilih Chrome.</translation>
 <translation id="756809126120519699">Data Chrome dikosongkan</translation>
 <translation id="7662994914830945754">Untuk melihat tab anda daripada mana-mana tempat anda menggunakan Chrome, log masuk dan hidupkan penyegerakan</translation>
+<translation id="7669869107155339016">Akses Tetapan Chrome.</translation>
 <translation id="7693590760643069321">Kini anda boleh menggunakan Chrome pada bila-bila masa anda mengetik pautan dalam mesej, dokumen dan apl lain.</translation>
 <translation id="7698568245838009292">Chrome Ingin Mengakses Kamera Anda</translation>
 <translation id="7754633291442704733">Organisasi <ph name="DOMAIN" /> anda akan mempunyai akses kepada data Chrome, penanda halaman, sejarah, kata laluan dan tetapan lain yang anda simpan dalam akaun ini. Apabila anda log keluar, data anda akan dikosongkan daripada peranti ini.  Namun begitu, data anda akan terus disimpan dalam Google Account terurus anda dan akan tersedia di organisasi anda. Organisasi anda juga boleh menetapkan dasar pengguna khusus untuk akaun tersebut yang boleh mengubah gelagat Chrome.</translation>

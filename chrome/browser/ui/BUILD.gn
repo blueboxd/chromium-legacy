@@ -519,7 +519,6 @@ static_library("ui") {
     "//chrome/browser/breadcrumbs",
     "//chrome/browser/chrome_for_testing:buildflags",
     "//chrome/browser/companion/core",
-    "//chrome/browser/companion/visual_search",
     "//chrome/browser/devtools",
     "//chrome/browser/favicon",
     "//chrome/browser/google",
@@ -1930,6 +1929,8 @@ static_library("ui") {
       "//chrome/browser/cart:mojo_bindings",
       "//chrome/browser/companion/core/mojom:mojo_bindings",
       "//chrome/browser/companion/text_finder",
+      "//chrome/browser/companion/visual_search",
+      "//chrome/browser/companion/visual_search:flags",
       "//chrome/browser/headless:command_processor",
       "//chrome/browser/image_editor",
       "//chrome/browser/image_editor:image_editor_component_util",
@@ -4615,6 +4616,8 @@ static_library("ui") {
       "views/autofill/payments/virtual_card_manual_fallback_bubble_views.h",
       "views/autofill/payments/virtual_card_manual_fallback_icon_view.cc",
       "views/autofill/payments/virtual_card_manual_fallback_icon_view.h",
+      "views/autofill/popup/popup_autocomplete_cell_view.cc",
+      "views/autofill/popup/popup_autocomplete_cell_view.h",
       "views/autofill/popup/popup_base_view.cc",
       "views/autofill/popup/popup_base_view.h",
       "views/autofill/popup/popup_cell_utils.cc",
@@ -5302,6 +5305,8 @@ static_library("ui") {
       "views/shopping_bubble/shopping_prompt_impl.h",
       "views/side_panel/bookmarks/bookmarks_side_panel_coordinator.cc",
       "views/side_panel/bookmarks/bookmarks_side_panel_coordinator.h",
+      "views/side_panel/companion_side_panel_web_view.cc",
+      "views/side_panel/companion_side_panel_web_view.h",
       "views/side_panel/customize_chrome/customize_chrome_side_panel_controller.cc",
       "views/side_panel/customize_chrome/customize_chrome_side_panel_controller.h",
       "views/side_panel/customize_chrome/customize_chrome_side_panel_controller_utils.cc",
@@ -5649,6 +5654,7 @@ static_library("ui") {
       "side_search:side_search_tab_data_proto",
       "//base",
       "//chrome/browser/apps:icon_standardizer",
+      "//chrome/browser/promos:utils",
       "//chrome/browser/ui/views",
       "//chromeos/components/kiosk",
       "//components/commerce/core:public",
@@ -5673,6 +5679,7 @@ static_library("ui") {
       "//components/power_bookmarks/core:core",
       "//components/power_bookmarks/storage",
       "//components/reading_list/features:flags",
+      "//components/segmentation_platform/embedder/default_model:default_model",
       "//components/services/app_service/public/cpp:intents",
       "//components/services/screen_ai/buildflags",
       "//components/soda",
@@ -5699,6 +5706,8 @@ static_library("ui") {
         "views/promos/ios_promo_password_bubble.cc",
         "views/promos/ios_promo_password_bubble.h",
       ]
+
+      deps += [ "//components/prefs:prefs" ]
     }
 
     if (is_linux || is_chromeos_lacros) {

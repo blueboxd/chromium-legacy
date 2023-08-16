@@ -861,6 +861,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Network.Cellular.ESim.InstallViaQrCode.DBusResult"
+    enum="DBusResult" expires_after="2023-12-31">
+  <owner>nikhilcn@chromium.org</owner>
+  <owner>khorimoto@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <summary>
+    Tracks the dbus result for all eSIM installation attempts. This gets logged
+    only if we receive an unknown hermes response code.
+
+    Emitted once the operation completes.
+  </summary>
+</histogram>
+
 <histogram name="Network.Cellular.ESim.InstallViaQrCode.OperationResult"
     enum="NetworkCellularESimInstallResult" expires_after="2023-12-31">
   <obsolete>
@@ -2357,7 +2370,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.TimeToConfig" units="ms"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2708,7 +2721,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.RemoteAuthenticationType"
-    enum="VPNRemoteAuthenticationType" expires_after="2023-10-15">
+    enum="VPNRemoteAuthenticationType" expires_after="2023-12-17">
   <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2718,7 +2731,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.TimeOnline" units="seconds"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2732,7 +2745,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.TimeToConfig" units="ms"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2752,7 +2765,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.UserAuthenticationType"
-    enum="VPNUserAuthenticationType" expires_after="2023-10-15">
+    enum="VPNUserAuthenticationType" expires_after="2023-12-17">
   <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>

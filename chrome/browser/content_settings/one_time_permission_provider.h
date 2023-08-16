@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/memory/raw_ptr.h"
+#include "base/power_monitor/power_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/permissions/one_time_permissions_tracker_observer.h"
 #include "components/content_settings/core/browser/content_settings_origin_identifier_value_map.h"
@@ -24,11 +25,12 @@ class OneTimePermissionsTracker;
 // - All tabs of that origin have been discarded
 // - All tabs of that origin have been backgrounded (without visible indicator)
 //     for more than 5 minutes
-// - 24 hours have elapsed since the one-time grant
+// - `kOneTimePermissionMaximumLifetime` has elapsed since the one-time grant
 // - The grant is manually revoked (via page info, settings, or a policy)
 class OneTimePermissionProvider
     : public content_settings::UserModifiableProvider,
-      OneTimePermissionsTrackerObserver {
+      public OneTimePermissionsTrackerObserver,
+      public base::PowerSuspendObserver {
  public:
   explicit OneTimePermissionProvider(
       OneTimePermissionsTracker* one_time_permissions_tracker);
@@ -64,6 +66,13 @@ class OneTimePermissionProvider
                            ContentSettingsType content_type) override;
   void SetClockForTesting(base::Clock* clock) override;
 
+  void ExpireWebsiteSetting(const ContentSettingsPattern& primary_pattern,
+                            const ContentSettingsPattern& secondary_pattern,
+                            ContentSettingsType content_settings_type) override;
+
+  // PowerSuspendObserver:
+  void OnSuspend() override;
+
   // OneTimePermissionsTrackerObserver:
   void OnLastPageFromOriginClosed(const url::Origin&) override;
   void OnAllTabsInBackgroundTimerExpired(const url::Origin&) override;
@@ -73,8 +82,17 @@ class OneTimePermissionProvider
   void OnShutdown() override;
 
  private:
-  // Deletes the matching values and records matching UMA events.
-  void DeleteValuesMatchingGurl(
+  struct ContentSettingEntry {
+    ContentSettingsType type;
+    ContentSettingsPattern primary_pattern;
+    ContentSettingsPattern secondary_pattern;
+  };
+
+  void DeleteEntriesAndNotify(
+      const std::vector<ContentSettingEntry>& entries_to_delete);
+
+  // Deletes the matching entries and records matching UMA events.
+  void DeleteEntriesMatchingGURL(
       ContentSettingsType content_setting_type,
       const GURL& origin_gurl,
       permissions::OneTimePermissionEvent trigger_event);

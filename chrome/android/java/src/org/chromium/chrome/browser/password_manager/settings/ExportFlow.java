@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.password_manager.settings;
 
-import android.app.Activity;
+import static org.chromium.chrome.browser.flags.ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING;
+
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,16 +16,22 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.FragmentManager;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FileUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.pwd_migration.ExportFlowInterface;
 import org.chromium.ui.widget.Toast;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -45,7 +52,7 @@ import java.lang.annotation.RetentionPolicy;
  * (4)  {@link #sendExportIntent} creates an intent chooser for sharing the exported passwords with
  *      an app of user's choice.
  */
-public class ExportFlow {
+public class ExportFlow implements ExportFlowInterface {
     @IntDef({ExportState.INACTIVE, ExportState.REQUESTED, ExportState.CONFIRMED})
     @Retention(RetentionPolicy.SOURCE)
     private @interface ExportState {
@@ -87,7 +94,8 @@ public class ExportFlow {
     // ExportPasswordsResult from
     // //components/password_manager/core/browser/password_manager_metrics_util.h.
     @IntDef({HistogramExportResult.SUCCESS, HistogramExportResult.USER_ABORTED,
-            HistogramExportResult.WRITE_FAILED, HistogramExportResult.NO_CONSUMER})
+            HistogramExportResult.WRITE_FAILED, HistogramExportResult.NO_CONSUMER,
+            HistogramExportResult.NUM_ENTRIES})
     @Retention(RetentionPolicy.SOURCE)
     @VisibleForTesting
     public @interface HistogramExportResult {
@@ -187,36 +195,28 @@ public class ExportFlow {
         return mProgressBarManager;
     }
 
-    /** The delegate to provide ExportFlow with essential information from the owning fragment. */
-    public interface Delegate {
-        /**
-         * @return The activity associated with the owning fragment.
-         */
-        Activity getActivity();
-
-        /**
-         * @return The fragment manager associated with the owning fragment.
-         */
-        FragmentManager getFragmentManager();
-
-        /**
-         * @return The ID of the root view of the owning fragment.
-         */
-        int getViewId();
-    }
-
     /** The concrete delegate instance. It is (re)set in {@link #onCreate}. */
     private Delegate mDelegate;
 
-    /**
-     * A hook to be used in the onCreate method of the owning {@link Fragment}. I restores the state
-     * of the flow.
-     * @param savedInstanceState The {@link Bundle} passed from the fragment's onCreate
-     * method.
-     * @param delegate The {@link Delegate} for this ExportFlow.
-     */
-    public void onCreate(Bundle savedInstanceState, Delegate delegate) {
+    /** Histogram names for metrics logging. */
+    private String mExportEventHistogramName;
+    private String mExportResultHistogramName;
+
+    private boolean mPasswordSerializationStarted;
+
+    public String getExportEventHistogramName() {
+        return mExportEventHistogramName;
+    }
+
+    public String getExportResultHistogramNameForTesting() {
+        return mExportResultHistogramName;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState, Delegate delegate, String callerMetricsId) {
         mDelegate = delegate;
+        mExportEventHistogramName = callerMetricsId + ".Event";
+        mExportResultHistogramName = callerMetricsId + ".Result";
 
         if (savedInstanceState == null) return;
 
@@ -285,14 +285,10 @@ public class ExportFlow {
         }
     }
 
-    /**
-     * Starts the password export flow.
-     * Current state of export flow: the user just tapped the menu item for export
-     * The next steps are: passing reauthentication, confirming the export, waiting for exported
-     * data (if needed) and choosing a consumer app for the data.
-     */
+    @Override
     public void startExporting() {
         assert mExportState == ExportState.INACTIVE;
+        mPasswordSerializationStarted = false;
         // Disable re-triggering exporting until the current exporting finishes.
         mExportState = ExportState.REQUESTED;
 
@@ -301,17 +297,11 @@ public class ExportFlow {
         // fails the reauthentication, the serialized passwords will simply get ignored when
         // they arrive.
         mEntriesCount = null;
-        PasswordManagerHandlerProvider.getInstance().getPasswordManagerHandler().serializePasswords(
-                getTargetDirectory(),
-                (int entriesCount, String pathToPasswordsFile)
-                        -> {
-                    mEntriesCount = entriesCount;
-                    shareSerializedPasswords(pathToPasswordsFile);
-                },
-                (String errorMessage) -> {
-                    showExportErrorAndAbort(R.string.password_settings_export_tips, errorMessage,
-                            R.string.try_again, HistogramExportResult.WRITE_FAILED);
-                });
+        if (!PasswordManagerHandlerProvider.getInstance()
+                        .getPasswordManagerHandler()
+                        .isWaitingForPasswordStore()) {
+            serializePasswords();
+        }
         if (!ReauthenticationManager.isScreenLockSetUp(
                     mDelegate.getActivity().getApplicationContext())) {
             Toast.makeText(mDelegate.getActivity().getApplicationContext(),
@@ -329,6 +319,32 @@ public class ExportFlow {
     }
 
     /**
+     * Starts fetching the serialized passwords.
+     */
+    void serializePasswords() {
+        if (mPasswordSerializationStarted) return;
+        mPasswordSerializationStarted = true;
+        PasswordManagerHandlerProvider.getInstance().getPasswordManagerHandler().serializePasswords(
+                getTargetDirectory(),
+                (int entriesCount, String pathToPasswordsFile)
+                        -> {
+                    mEntriesCount = entriesCount;
+                    shareSerializedPasswords(pathToPasswordsFile);
+                },
+                (String errorMessage) -> {
+                    showExportErrorAndAbort(R.string.password_settings_export_tips, errorMessage,
+                            R.string.try_again, HistogramExportResult.WRITE_FAILED);
+                });
+    }
+
+    @Override
+    public void passwordsAvailable() {
+        if (mExportState == ExportState.REQUESTED) {
+            serializePasswords();
+        }
+    }
+
+    /**
      * Continues with the password export flow after the user successfully reauthenticated.
      * Current state of export flow: the user tapped the menu item for export and passed
      * reauthentication. The next steps are: confirming the export, waiting for exported data (if
@@ -339,14 +355,15 @@ public class ExportFlow {
         mExportWarningDialogFragment = new ExportWarningDialogFragment();
         mExportWarningDialogFragment.setExportWarningHandler(
                 new ExportWarningDialogFragment.Handler() {
+                    private boolean mConfirmed;
                     /**
                      * On positive button response asks the parent to continue with the export flow.
                      */
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (which == AlertDialog.BUTTON_POSITIVE) {
-                            RecordHistogram.recordEnumeratedHistogram(
-                                    PasswordSettings.PASSWORD_EXPORT_EVENT_HISTOGRAM,
+                            mConfirmed = true;
+                            RecordHistogram.recordEnumeratedHistogram(mExportEventHistogramName,
                                     PasswordExportEvent.EXPORT_CONFIRMED,
                                     PasswordExportEvent.COUNT);
                             mExportState = ExportState.CONFIRMED;
@@ -369,11 +386,17 @@ public class ExportFlow {
                         // Unless the positive button action moved the exporting state forward,
                         // cancel the export. This happens both when the user taps the negative
                         // button or when they tap outside of the dialog to dismiss it.
-                        if (mExportState != ExportState.CONFIRMED) {
-                            RecordHistogram.recordEnumeratedHistogram(
-                                    PasswordSettings.PASSWORD_EXPORT_EVENT_HISTOGRAM,
+                        if (!mConfirmed) {
+                            RecordHistogram.recordEnumeratedHistogram(mExportEventHistogramName,
                                     PasswordExportEvent.EXPORT_DISMISSED,
                                     PasswordExportEvent.COUNT);
+                            if (ChromeFeatureList.isEnabled(
+                                        UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING)) {
+                                RecordHistogram.recordEnumeratedHistogram(
+                                        mExportResultHistogramName,
+                                        HistogramExportResult.USER_ABORTED,
+                                        HistogramExportResult.NUM_ENTRIES);
+                            }
                             mExportState = ExportState.INACTIVE;
                         }
 
@@ -426,7 +449,7 @@ public class ExportFlow {
      * dialog.
      */
     @VisibleForTesting
-    public void showExportErrorAndAbort(int descriptionId, @Nullable String detailedDescription,
+    void showExportErrorAndAbort(int descriptionId, @Nullable String detailedDescription,
             int positiveButtonLabelId, @HistogramExportResult int histogramExportResult) {
         assert mErrorDialogParams == null;
         mProgressBarManager.hide(() -> {
@@ -438,6 +461,11 @@ public class ExportFlow {
     public void showExportErrorAndAbortImmediately(int descriptionId,
             @Nullable String detailedDescription, int positiveButtonLabelId,
             @HistogramExportResult int histogramExportResult) {
+        if (ChromeFeatureList.isEnabled(UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING)) {
+            RecordHistogram.recordEnumeratedHistogram(mExportResultHistogramName,
+                    histogramExportResult, HistogramExportResult.NUM_ENTRIES);
+        }
+
         mErrorDialogParams = new ExportErrorDialogFragment.ErrorDialogParams();
         mErrorDialogParams.positiveButtonLabelId = positiveButtonLabelId;
         mErrorDialogParams.description =
@@ -482,6 +510,7 @@ public class ExportFlow {
                 } else if (which == AlertDialog.BUTTON_NEGATIVE) {
                     // Re-enable exporting, the current one was just cancelled.
                     mExportState = ExportState.INACTIVE;
+                    mExportFileUri = null;
                 }
             }
         });
@@ -498,13 +527,38 @@ public class ExportFlow {
 
         if (mExportFileUri.equals(Uri.EMPTY)) return;
 
+        // With UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING feature on, offer to save the
+        // exported passwords on disk. Otherwise offer to share the passwords with a chosen Android
+        // app.
+        if (ChromeFeatureList.isEnabled(UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING)) {
+            runCreateFileOnDiskIntent();
+        } else {
+            runSharePasswordsIntent();
+        }
+    }
+
+    private void runCreateFileOnDiskIntent() {
+        Intent saveToDownloads = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        saveToDownloads.setType("text/csv");
+        saveToDownloads.addCategory(Intent.CATEGORY_OPENABLE);
+        saveToDownloads.putExtra(Intent.EXTRA_TITLE,
+                mDelegate.getActivity().getResources().getString(
+                        R.string.password_manager_default_export_filename));
+        try {
+            mDelegate.runCreateFileOnDiskIntent(saveToDownloads);
+        } catch (ActivityNotFoundException e) {
+            showExportErrorAndAbort(R.string.password_settings_export_no_app, e.getMessage(),
+                    R.string.try_again, HistogramExportResult.NO_CONSUMER);
+        }
+    }
+
+    private void runSharePasswordsIntent() {
         Intent send = new Intent(Intent.ACTION_SEND);
         send.setType("text/csv");
         send.putExtra(Intent.EXTRA_STREAM, mExportFileUri);
         send.putExtra(Intent.EXTRA_SUBJECT,
                 mDelegate.getActivity().getResources().getString(
                         R.string.password_settings_export_subject));
-
         try {
             Intent chooser = Intent.createChooser(send, null);
             chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -517,10 +571,49 @@ public class ExportFlow {
         mExportFileUri = null;
     }
 
-    /**
-     * A hook to be used in a {@link Fragment}'s onResume method. I processes the result of the
-     * reauthentication.
-     */
+    @Override
+    public void savePasswordsToDownloads(Uri passwordsFile) {
+        new AsyncTask<String>() {
+            @Override
+            protected String doInBackground() {
+                try {
+                    writeToInternalStorage(mExportFileUri, passwordsFile);
+                } catch (IOException e) {
+                    return e.getMessage();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(String exceptionMessage) {
+                if (exceptionMessage != null) {
+                    showExportErrorAndAbort(R.string.password_settings_export_tips,
+                            exceptionMessage, R.string.try_again,
+                            HistogramExportResult.WRITE_FAILED);
+                } else {
+                    mDelegate.onExportFlowSucceeded();
+                    mExportFileUri = null;
+                    RecordHistogram.recordEnumeratedHistogram(mExportResultHistogramName,
+                            HistogramExportResult.SUCCESS, HistogramExportResult.NUM_ENTRIES);
+                }
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private static void writeToInternalStorage(Uri exportedPasswordsUri, Uri savedPasswordsFileUri)
+            throws IOException {
+        try (InputStream fileInputStream =
+                        ContextUtils.getApplicationContext().getContentResolver().openInputStream(
+                                exportedPasswordsUri)) {
+            try (OutputStream fileOutputStream = ContextUtils.getApplicationContext()
+                                                         .getContentResolver()
+                                                         .openOutputStream(savedPasswordsFileUri)) {
+                FileUtils.copyStream(fileInputStream, fileOutputStream);
+            }
+        }
+    }
+
+    @Override
     public void onResume() {
         if (mExportState == ExportState.REQUESTED) {
             // If Chrome returns to foreground from being paused (but without being killed), and

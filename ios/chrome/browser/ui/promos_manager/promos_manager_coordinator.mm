@@ -33,6 +33,8 @@
 #import "ios/chrome/browser/ui/app_store_rating/app_store_rating_display_handler.h"
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
 #import "ios/chrome/browser/ui/credential_provider_promo/credential_provider_promo_display_handler.h"
+#import "ios/chrome/browser/ui/default_promo/post_restore/features.h"
+#import "ios/chrome/browser/ui/default_promo/post_restore/post_restore_default_browser_promo_provider.h"
 #import "ios/chrome/browser/ui/default_promo/promo_handler/default_browser_promo_display_handler.h"
 #import "ios/chrome/browser/ui/post_restore_signin/post_restore_signin_provider.h"
 #import "ios/chrome/browser/ui/promos_manager/bannered_promo_view_provider.h"
@@ -132,7 +134,7 @@
 #pragma mark - Public
 
 - (void)start {
-  [self displayPromoIfAvailable];
+  [self displayPromoIfAvailable:YES];
 }
 
 - (void)stop {
@@ -141,6 +143,12 @@
 }
 
 - (void)displayPromoIfAvailable {
+  [self displayPromoIfAvailable:NO];
+}
+
+// Display a promo if one is available, with special behavior if this is the
+// first time this coordinator has shown a promo.
+- (void)displayPromoIfAvailable:(BOOL)isFirstShownPromo {
   if (ShouldPromosManagerUseFET()) {
     // Wait to present a promo until the feature engagement tracker database
     // is fully initialized.
@@ -149,7 +157,7 @@
       if (!successfullyLoaded) {
         return;
       }
-      [weakSelf displayPromoCallback];
+      [weakSelf displayPromoCallback:isFirstShownPromo];
     };
 
     feature_engagement::Tracker* tracker =
@@ -157,13 +165,13 @@
             self.browser->GetBrowserState());
     tracker->AddOnInitializedCallback(base::BindOnce(onInitializedBlock));
   } else {
-    [self displayPromoCallback];
+    [self displayPromoCallback:isFirstShownPromo];
   }
 }
 
-- (void)displayPromoCallback {
+- (void)displayPromoCallback:(BOOL)isFirstShownPromo {
   absl::optional<promos_manager::Promo> nextPromoForDisplay =
-      [self.mediator nextPromoForDisplay];
+      [self.mediator nextPromoForDisplay:isFirstShownPromo];
 
   if (nextPromoForDisplay.has_value()) {
     [self displayPromo:nextPromoForDisplay.value()];
@@ -544,6 +552,12 @@
   // StandardPromoAlertProvider promo(s) below:
   _alertProviderPromos[promos_manager::Promo::PostRestoreSignInAlert] =
       [[PostRestoreSignInProvider alloc] init];
+  if (GetPostRestoreDefaultBrowserPromoType() ==
+      PostRestoreDefaultBrowserPromoType::kAlert) {
+    _alertProviderPromos
+        [promos_manager::Promo::PostRestoreDefaultBrowserAlert] =
+            [[PostRestoreDefaultBrowserPromoProvider alloc] init];
+  }
 
   // WhatsNewPromoHandler promo below:
   _displayHandlerPromos[promos_manager::Promo::WhatsNew] =

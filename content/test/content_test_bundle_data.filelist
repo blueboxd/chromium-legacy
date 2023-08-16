@@ -5900,6 +5900,7 @@ data/gpu/webgl1_conformance_linux_runtimes.json
 data/gpu/webgl1_conformance_mac_runtimes.json
 data/gpu/webgl1_conformance_win_runtimes.json
 data/gpu/webgl2-context-blocked.html
+data/gpu/webgl2-copytexsubimage2d-high-power-switch-does-not-crash.html
 data/gpu/webgl2-multisampling-high-power-switch-does-not-crash.html
 data/gpu/webgl2-multisampling-high-power-switch-loses-context.html
 data/gpu/webgl2-preserve-db-high-power-switch-loses-context.html
@@ -6701,6 +6702,7 @@ data/set_cookie.html
 data/set_cookie.html.mock-http-headers
 data/set_document_cookie.html
 data/shared_dictionary/blank.html
+data/shared_dictionary/fetch_dictionary.js
 data/shared_dictionary/test.dict
 data/shared_dictionary/test.dict.mock-http-headers
 data/shared_storage/customizable_module.js

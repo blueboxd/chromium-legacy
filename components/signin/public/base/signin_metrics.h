@@ -176,9 +176,6 @@ enum class AccessPoint : int {
   ACCESS_POINT_NTP_SIGNED_OUT_ICON = 41,
   ACCESS_POINT_NTP_FEED_CARD_MENU_PROMO = 42,
   ACCESS_POINT_NTP_FEED_BOTTOM_PROMO = 43,
-  // TODO(crbug.com/1261772): Not a real access point, as this is an internal
-  // component. We should replace its usage with actual access points once we
-  // find ways to attribute the changes accurately.
   ACCESS_POINT_DESKTOP_SIGNIN_MANAGER = 44,
   // Access point for the "For You" First Run Experience on Desktop. See
   // go/for-you-fre or launch/4223982 for more info.
@@ -196,6 +193,8 @@ enum class AccessPoint : int {
   ACCESS_POINT_SEARCH_COMPANION = 50,
   // Access point for the IOS Set Up List on the NTP.
   ACCESS_POINT_SET_UP_LIST = 51,
+  // Access point for the local password migration warning on Android.
+  ACCESS_POINT_PASSWORD_MIGRATION_WARNING_ANDROID = 52,
 
   // Add values above this line with a corresponding label to the
   // "SigninAccessPoint" enum in tools/metrics/histograms/enums.xml
@@ -598,11 +597,11 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point);
 // Records |Signin_Impression_From*| user action.
 void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point);
 
-#if BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 // Records |Signin.AccountConsistencyPromoAction.{PromoEvent}| histogram.
 void RecordConsistencyPromoUserAction(AccountConsistencyPromoAction action,
                                       AccessPoint access_point);
-#endif  // BUILDFLAG(IS_IOS)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 }  // namespace signin_metrics
 

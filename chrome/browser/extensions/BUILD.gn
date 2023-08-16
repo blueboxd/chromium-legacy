@@ -1178,6 +1178,7 @@ static_library("extensions") {
       "//chromeos/ash/components/attestation",
       "//chromeos/ash/components/cryptohome",
       "//chromeos/ash/components/dbus",
+      "//chromeos/ash/components/dbus/attestation:attestation_proto",
       "//chromeos/ash/components/dbus/cicerone:cicerone",
       "//chromeos/ash/components/dbus/cicerone:cicerone_proto",
       "//chromeos/ash/components/dbus/constants",
@@ -1406,6 +1407,7 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "api/identity/test_scoped_should_animate_web_auth_flow_info_bar.h",
     "api/passwords_private/test_passwords_private_delegate.cc",
     "api/passwords_private/test_passwords_private_delegate.h",
     "chrome_extension_test_notification_observer.cc",

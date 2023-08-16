@@ -189,8 +189,7 @@ class CORE_EXPORT ComputedStyleUtils {
   static CSSValue* ValueForAnimationTimelineList(const CSSAnimationData*);
 
   static CSSValue* SingleValueForTimelineShorthand(const ScopedCSSName* name,
-                                                   TimelineAxis,
-                                                   TimelineAttachment);
+                                                   TimelineAxis);
   static CSSValueList* ValuesForBorderRadiusCorner(const LengthSize&,
                                                    const ComputedStyle&);
   static CSSValue* ValueForBorderRadiusCorner(const LengthSize&,
@@ -312,9 +311,8 @@ class CORE_EXPORT ComputedStyleUtils {
   static const CSSValue* ValueForStyleAutoColor(const ComputedStyle&,
                                                 const StyleAutoColor&,
                                                 CSSValuePhase);
-  static CSSValue* ValueForIntrinsicLength(
-      const ComputedStyle&,
-      const absl::optional<StyleIntrinsicLength>&);
+  static CSSValue* ValueForIntrinsicLength(const ComputedStyle&,
+                                           const StyleIntrinsicLength&);
   static CSSValue* ValueForScrollStart(const ComputedStyle&,
                                        const ScrollStartData&);
   static std::unique_ptr<CrossThreadStyleValue>

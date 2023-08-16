@@ -21,7 +21,7 @@
 namespace blink {
 
 namespace {
-class FakeTransformableFrame : public webrtc::TransformableFrameInterface {
+class FakeTransformableFrame : public webrtc::TransformableAudioFrameInterface {
  public:
   FakeTransformableFrame() = default;
   ~FakeTransformableFrame() override = default;
@@ -32,16 +32,25 @@ class FakeTransformableFrame : public webrtc::TransformableFrameInterface {
   uint32_t GetSsrc() const override { return 0; }
   // 255 is not a valid payload type (which can be in the range [0..127]).
   uint8_t GetPayloadType() const override { return 255; }
+  void SetRTPTimestamp(uint32_t timestamp) override {}
+  const webrtc::RTPHeader& GetHeader() const override { return header_; }
+  rtc::ArrayView<const uint32_t> GetContributingSources() const override {
+    return {};
+  }
+  const absl::optional<uint16_t> SequenceNumber() const override {
+    return absl::nullopt;
+  }
+
+ private:
+  webrtc::RTPHeader header_;
 };
 }  // namespace
 
 class RTCEncodedAudioUnderlyingSourceTest : public testing::Test {
  public:
-  RTCEncodedAudioUnderlyingSource* CreateSource(ScriptState* script_state,
-                                                bool is_receiver = false) {
+  RTCEncodedAudioUnderlyingSource* CreateSource(ScriptState* script_state) {
     return MakeGarbageCollected<RTCEncodedAudioUnderlyingSource>(
-        script_state, WTF::CrossThreadBindOnce(disconnect_callback_.Get()),
-        is_receiver);
+        script_state, WTF::CrossThreadBindOnce(disconnect_callback_.Get()));
   }
 
  protected:

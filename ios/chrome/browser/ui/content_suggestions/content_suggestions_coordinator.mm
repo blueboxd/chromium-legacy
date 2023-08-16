@@ -47,6 +47,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -169,7 +170,8 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
       [self.NTPDelegate isGoogleDefaultSearchEngine];
 
   self.contentSuggestionsMetricsRecorder =
-      [[ContentSuggestionsMetricsRecorder alloc] init];
+      [[ContentSuggestionsMetricsRecorder alloc]
+          initWithLocalState:GetApplicationContext()->GetLocalState()];
 
   AuthenticationService* authenticationService =
       AuthenticationServiceFactory::GetForBrowserState(
@@ -230,6 +232,8 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
   }
   [self.contentSuggestionsMediator disconnect];
   self.contentSuggestionsMediator = nil;
+  [self.contentSuggestionsMetricsRecorder disconnect];
+  self.contentSuggestionsMetricsRecorder = nil;
   self.contentSuggestionsViewController = nil;
   [self.sharingCoordinator stop];
   self.sharingCoordinator = nil;
@@ -273,6 +277,19 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
   return [SceneStateBrowserAgent::FromBrowser(self.browser)
               ->GetSceneState()
               .window.rootViewController.view safeAreaInsets];
+}
+
+- (void)neverShowModuleType:(ContentSuggestionsModuleType)type {
+  switch (type) {
+    case ContentSuggestionsModuleType::kSetUpListSync:
+    case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
+    case ContentSuggestionsModuleType::kSetUpListAutofill:
+    case ContentSuggestionsModuleType::kCompactedSetUpList:
+      [self.contentSuggestionsMediator disableSetUpList];
+      break;
+    default:
+      break;
+  }
 }
 
 #pragma mark - Public methods
@@ -463,11 +480,15 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
 
 // Shows the SigninSync UI with the SetUpList access point.
 - (void)showSignIn {
-  ShowSigninCommandCompletionCallback callback = ^(BOOL success) {
-    PrefService* localState = GetApplicationContext()->GetLocalState();
-    set_up_list_prefs::MarkItemComplete(localState,
-                                        SetUpListItemType::kSignInSync);
-  };
+  ShowSigninCommandCompletionCallback callback =
+      ^(SigninCoordinatorResult result) {
+        if (result == SigninCoordinatorResultSuccess ||
+            result == SigninCoordinatorResultCanceledByUser) {
+          PrefService* localState = GetApplicationContext()->GetLocalState();
+          set_up_list_prefs::MarkItemComplete(localState,
+                                              SetUpListItemType::kSignInSync);
+        }
+      };
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
       initWithOperation:AuthenticationOperationSigninAndSyncWithTwoScreens
                identity:nil

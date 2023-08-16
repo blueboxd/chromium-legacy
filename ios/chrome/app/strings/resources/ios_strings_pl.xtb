@@ -28,6 +28,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />wyczyść dane Chrome na swo
 <translation id="1126809382673880764">Nie chroni przed niebezpiecznymi stronami, pobieranymi plikami ani rozszerzeniami. Funkcja Bezpieczne przeglądanie nadal będzie chronić Cię w innych usługach Google, w których jest dostępna (takich jak Gmail i wyszukiwarka).</translation>
 <translation id="1145536944570833626">Usuń istniejące dane.</translation>
 <translation id="1147031633655575115">Używasz konta <ph name="USER" /></translation>
+<translation id="1150989369772528668">Kalendarz</translation>
 <translation id="1154984953698510061">Zobacz inne karty</translation>
 <translation id="1161340988127985692">Poproś o otwieranie linków z innych aplikacji w trybie incognito</translation>
 <translation id="1164064664035028907">Użyj silnego hasła:</translation>
@@ -37,7 +38,9 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />wyczyść dane Chrome na swo
 <translation id="1176932207622159128">Nie można zapisać</translation>
 <translation id="1177414119866731261">Otwórz menu Chrome</translation>
 <translation id="1181037720776840403">Usuń</translation>
+<translation id="1200396280085622191">Używaj Chrome, zawsze gdy klikasz linki w wiadomościach i w innych aplikacjach.</translation>
 <translation id="1207113853726624428">Nowe wyszukiwanie</translation>
+<translation id="1207493287814084192">17:30</translation>
 <translation id="1209206284964581585">Na razie ukryj</translation>
 <translation id="1219674500290482172">Nie można połączyć się z internetem.</translation>
 <translation id="1226238226094914652">Hasła na wszystkich Twoich urządzeniach</translation>
@@ -59,15 +62,18 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />wyczyść dane Chrome na swo
 <translation id="1291506870746876680">Gdy opuścisz tę stronę, uprawnienia witryny <ph name="BEGIN_BOLD" />„<ph name="SITE_NAME" />”<ph name="END_BOLD" /> zostaną wyłączone.</translation>
 <translation id="1305822519689023679">Aby móc zawsze używać haseł na koncie Google, potwierdź swoją tożsamość.</translation>
 <translation id="1312721752506309252">Włączona jest silniejsza ochrona</translation>
+<translation id="1316466854070752597">Zobacz wszystkie otwarte karty</translation>
 <translation id="1321993286294231467">Błąd podczas zapisywania obrazu.</translation>
 <translation id="1322735045095424339">Twoja organizacja wymaga trybu incognito</translation>
 <translation id="1323735185997015385">Usuń</translation>
 <translation id="132683371494960526">Kliknij dwukrotnie, by zmienić folder nadrzędny.</translation>
 <translation id="1335348992705722518">Zarządzaj ustawieniami…</translation>
 <translation id="1340643665687018190">Zamknij menu</translation>
+<translation id="1348596747084433075">https://www.amazon.com/Wife-Gifts/s?k=for+Wife+Gifts</translation>
 <translation id="1358214951266274152">Otwórz skopiowany link</translation>
 <translation id="1360432990279830238">Wylogować i wyłączyć synchronizację?</translation>
 <translation id="1363028406613469049">Utwór</translation>
+<translation id="1365106417372288489">Twój iPhone został ostatnio przywrócony, co mogło spowodować zmianę przeglądarki domyślnej.</translation>
 <translation id="1375321115329958930">Zapisane hasła</translation>
 <translation id="1377255359165588604">Synchronizacja przestała działać.</translation>
 <translation id="1377321085342047638">Numer karty</translation>
@@ -77,6 +83,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />wyczyść dane Chrome na swo
 <translation id="1400642268715879018">Ostatnie cztery tygodnie</translation>
 <translation id="1404330357948037222">Nie korzystasz teraz z konta</translation>
 <translation id="1407135791313364759">Otwórz wszystkie</translation>
+<translation id="1408847409015257906">Kliknij „Prywatność i bezpieczeństwo”.</translation>
 <translation id="1430915738399379752">Drukuj</translation>
 <translation id="1449835205994625556">Ukryj hasło</translation>
 <translation id="1450170672351507823">Włączona jest standardowa ochrona. Jeśli zależy Ci na większym bezpieczeństwie, użyj silniejszej ochrony.</translation>
@@ -96,15 +103,18 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />wyczyść dane Chrome na swo
 <translation id="1545749641540134597">Zeskanuj kod QR</translation>
 <translation id="1552525382687785070">Administrator wyłączył synchronizację</translation>
 <translation id="1554477036522844996">Nowe okno</translation>
+<translation id="1563071802032385236">Włącz „Poproś o otwieranie linków z innych aplikacji w trybie incognito”.</translation>
 <translation id="1565371473877914088">Nowa karta incognito</translation>
 <translation id="1580715474678097352">Korzystaj z ochrony przed niebezpiecznymi stronami</translation>
 <translation id="1580783302095112590">E-mail wysłany.</translation>
 <translation id="1582732959743469162">Spowoduje to zatrzymanie bieżącego pobierania.</translation>
+<translation id="1594034544529347967">Rozpoczęcie</translation>
 <translation id="1605405588277479165">Wyłączono – niezalecane</translation>
 <translation id="1605658421715042784">Kopiuj obraz</translation>
 <translation id="1608337082864370066">Wyszukaj skopiowany obraz</translation>
 <translation id="1612730193129642006">Pokaż układ kart</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1622717322707146952">Wybierz „Dodaj do Kalendarza Google” lub „Dodaj do Kalendarza Apple”.</translation>
 <translation id="1626771852476987600">Ponownie użyte hasła: <ph name="COUNT" /></translation>
 <translation id="1641113438599504367">Bezpieczne przeglądanie</translation>
 <translation id="1644574205037202324">Historia</translation>
@@ -142,6 +152,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />wyczyść dane Chrome na swo
 <translation id="1872096359983322073">Latarka</translation>
 <translation id="1883255238294161206">Zwiń listę</translation>
 <translation id="1894023287452300670">Tutaj możesz monitorować cenę</translation>
+<translation id="189531189292803889">Twój iPad został ostatnio przywrócony, co mogło spowodować zmianę przeglądarki domyślnej.</translation>
 <translation id="1910975740091000991">Chrome na iOS</translation>
 <translation id="1911619930368729126">Prześlij na Dysk Google</translation>
 <translation id="1923342640370224680">Ostatnia godzina</translation>
@@ -149,6 +160,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />wyczyść dane Chrome na swo
 <translation id="1941314575388338491">Kliknij dwukrotnie, by skopiować.</translation>
 <translation id="1943478190258551035">Menu → Ustawienia</translation>
 <translation id="1952172573699511566">Gdy będzie to możliwe, tekst na stronach internetowych będzie się wyświetlać w Twoim preferowanym języku.</translation>
+<translation id="1959441496380398824">Naciśnij i przytrzymaj datę.</translation>
 <translation id="1959679933317802873">Czekam na treść</translation>
 <translation id="1965935827552890526">Dokończ czynności rozpoczęte w innym otwartym oknie Chrome.</translation>
 <translation id="1967461193809857427">{count,plural, =1{Czy chcesz wrócić na kartę ostatnio wyświetlaną na Androidzie?}few{Czy chcesz wrócić na karty ostatnio wyświetlane na Androidzie?}many{Czy chcesz wrócić na karty ostatnio wyświetlane na Androidzie?}other{Czy chcesz wrócić na karty ostatnio wyświetlane na Androidzie?}}</translation>
@@ -156,6 +168,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />wyczyść dane Chrome na swo
 <translation id="1974060860693918893">Zaawansowane</translation>
 <translation id="1980417445547898121">{count,plural, =1{Pobierz na tego iPhone'a {count} ostatnio aktywną kartę z innego urządzenia}few{Pobierz na tego iPhone'a {count} ostatnio aktywne karty z innego urządzenia}many{Pobierz na tego iPhone'a {count} ostatnio aktywnych kart z innego urządzenia}other{Pobierz na tego iPhone'a {count} ostatnio aktywnej karty z innego urządzenia}}</translation>
 <translation id="1981118202195772574">Mobilny</translation>
+<translation id="1987779152850321833">Wykonaj te sugerowane działania, aby w pełni wykorzystać możliwości Chrome.</translation>
 <translation id="1989112275319619282">Przeglądaj</translation>
 <translation id="1990820278544963435">Znajdź</translation>
 <translation id="199425419756152024">Wyświetl hasło</translation>
@@ -170,6 +183,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />wyczyść dane Chrome na swo
 <translation id="2073572773299281212">Aktywność <ph name="DAYS" /> dni temu</translation>
 <translation id="2074131957428911366">W <ph name="BEGIN_LINK" />ustawieniach<ph name="END_LINK" /> możesz wybrać, co chcesz synchronizować.</translation>
 <translation id="2079545284768500474">Cofnij</translation>
+<translation id="2080409463824088391">Otwórz w aplikacji…</translation>
 <translation id="2080769225927880590">Zaloguj się na prawidłowe konto</translation>
 <translation id="2103075008456228677">Otwórz history.google.com</translation>
 <translation id="21133533946938348">Przypnij kartę</translation>
@@ -219,12 +233,14 @@ Witryny nie mogą używać plików cookie do śledzenia Twojej aktywności zwią
 <translation id="2434405374328098816">Masz już zapisane hasło do strony <ph name="WEBSITE" /> powiązane z nazwą użytkownika „<ph name="USERNAME" />”</translation>
 <translation id="2435457462613246316">Pokaż hasło</translation>
 <translation id="2451654228769116489">Przypnij kartę</translation>
+<translation id="2459155039684421202">Na pasku adresu wpisz zadanie takie jak „Wyczyść moją historię” lub „Edytuj hasła”.</translation>
 <translation id="2461070143328828326">Ustawienia hasła</translation>
 <translation id="2469960372084740698">Wyłączyć Bezpieczne przeglądanie?</translation>
 <translation id="2473876017985765807">Masz już zapisane hasło do strony <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Niewybrany</translation>
 <translation id="2479148705183875116">Otwórz Ustawienia</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
+<translation id="2484459871750294497">Jak włączyć tę funkcję?</translation>
 <translation id="2496626742194544812">Przejdź do pierwszej karty</translation>
 <translation id="2500374554657206846">Opcje zapisania hasła</translation>
 <translation id="2523363575747517183">Ta strona internetowa wielokrotnie próbuje otworzyć inną aplikację.</translation>
@@ -303,9 +319,13 @@ Twoja wyszukiwarka to <ph name="DSE_NAME" />. Zapoznaj się z jej instrukcjami,
 <translation id="2921219216347069551">Nie można udostępnić</translation>
 <translation id="2923448633003185837">Wklej i otwórz</translation>
 <translation id="292639812446257861">Oznacz jako nieprzeczytane</translation>
+<translation id="2931440415625410757">Pokaż instrukcje</translation>
 <translation id="2932085390869194046">Zaproponuj hasło...</translation>
 <translation id="2932765531295814441">Ręczne dodawanie haseł</translation>
+<translation id="2952246431280799028">Naciśnij i przytrzymaj adres.</translation>
+<translation id="2952278131021475699">Wyszukiwanie za pomocą aparatu i Obiektywu</translation>
 <translation id="2952581218264071393">1. Otwórz ustawienia Chrome.</translation>
+<translation id="2956733177489514605">Zaloguj się na konto Google, aby synchronizować swoje hasła i inne dane.</translation>
 <translation id="2958718410589002129">Hasła</translation>
 <translation id="2961210776189273067">Tytuł</translation>
 <translation id="2964349545761222050">Blokowanie plików cookie innych firm</translation>
@@ -327,6 +347,7 @@ Twoje zaszyfrowane dane może odczytać tylko osoba znająca hasło. Hasło nie 
 Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wyszukiwarki.</translation>
 <translation id="3080525922482950719">Możesz zapisać strony, by przeczytać je później lub offline</translation>
 <translation id="3081338492074632642">Upewnij się, że zapisujesz hasło do witryny <ph name="WEBSITE" />.</translation>
+<translation id="309672519329227863">Korzystaj z haseł w Chrome i innych ustawień w innych aplikacjach.</translation>
 <translation id="3112556859945124369">Oznacz…</translation>
 <translation id="3122484138405575719"><ph name="BEGIN_LINK" />Zobacz, co możesz synchronizować<ph name="END_LINK" /></translation>
 <translation id="3130863904455712965">Historia i inne elementy</translation>
@@ -349,6 +370,7 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="3224641773458703735">Aby wyeksportować hasła, musisz najpierw ustawić kod dostępu na urządzeniu.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3235063766008841141">Wpisane na stronie wprowadzającej w błąd i przejęte wskutek naruszenia bezpieczeństwa danych</translation>
+<translation id="3235242129752692527">Zmień szczegóły wydarzenia i kliknij „Zapisz”.</translation>
 <translation id="3240426699337459095">Link skopiowany</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3245744387817103524">Nie udało się zapisać zmiany.</translation>
@@ -371,6 +393,8 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="3393920035788932672">Pop-upy akceptowane</translation>
 <translation id="3399930248910934354">Otwórz ustawienia Chrome</translation>
 <translation id="3404744938087714423">Wylogowanie spowoduje wyłączenie synchronizacji.</translation>
+<translation id="3409785640040772790">Mapy</translation>
+<translation id="3416023309465857378">25 października 2023 r.</translation>
 <translation id="3425644765244388016">Nazwa karty</translation>
 <translation id="3433057996795775706">Usunięcie tego hasła nie spowoduje usunięcia Twojego konta w serwisie <ph name="WEBSITE" />. Aby uniemożliwić innym osobom dostęp do konta w serwisie <ph name="WEBSITE" />, zmień do niego hasło.</translation>
 <translation id="3443810440409579745">Odebrano kartę.</translation>
@@ -414,6 +438,7 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="3638472932233958418">Wstępne wczytywanie stron</translation>
 <translation id="3661160521073045932">Dostępny jest profil konfiguracji</translation>
 <translation id="3670030362669914947">Numer</translation>
+<translation id="368329460027487650">Wylogowano. Otwiera opcje logowania.</translation>
 <translation id="3700134753671613714">Zaloguj się, by pobrać zakładki na wszystkie urządzenia.</translation>
 <translation id="3709582977625132201">Oznacz jako nieprzeczytane</translation>
 <translation id="371230970611282515">Przewiduje niebezpieczne zdarzenia i ostrzega Cię przed nimi, zanim nastąpią.</translation>
@@ -467,6 +492,7 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="4045648459118332842">Uzyskaj dostęp do zapisanych haseł w dowolnej aplikacji jednym kliknięciem</translation>
 <translation id="4049507953662678203">Upewnij się, że masz połączenie z siecią, i spróbuj ponownie.</translation>
 <translation id="4063300985191096908">Przejdź do kanału</translation>
+<translation id="4066639687323968621">Zaloguj się na konto Google, aby synchronizować swoje hasła, historię i inne dane.</translation>
 <translation id="408404951701638773">Pasek wyszukiwania jest teraz łatwiej dostępny</translation>
 <translation id="4092655288299341041">Pokaż pomoc</translation>
 <translation id="4105841739161771091">{count,plural, =1{Usuń adres}few{Usuń adresy}many{Usuń adresy}other{Usuń adresy}}</translation>
@@ -491,13 +517,14 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="424315890655130736">Wpisz hasło</translation>
 <translation id="4249955472157341256">Sortuj od najnowszego</translation>
 <translation id="4250432749243022864">{count,plural, =0{Otwórz {count} kartę}=1{Otwórz {count} kartę}few{Otwórz {count} karty}many{Otwórz {count} kart}other{Otwórz {count} karty}}</translation>
-<translation id="4253168017788158739">Uwaga</translation>
+<translation id="4253168017788158739">Notatka</translation>
 <translation id="4263576668337963058">Pokaż dostępne działania dotyczące strony</translation>
 <translation id="4267586310863245665">{COUNT,plural, =1{Odrzucono {COUNT} ostrzeżenie}few{Odrzucono {COUNT} ostrzeżenia}many{Odrzucono {COUNT} ostrzeżeń}other{Odrzucono {COUNT} ostrzeżenia}}</translation>
 <translation id="4272631900155121838">Aby zeskanować kod QR, włącz aparat w ustawieniach</translation>
 <translation id="4277990410970811858">Bezpieczne przeglądanie</translation>
 <translation id="4281844954008187215">Warunki korzystania z usługi</translation>
 <translation id="4293080268407233932">Szukaj</translation>
+<translation id="4302248187517737842">Brak nazwy użytkownika ••••••••</translation>
 <translation id="4304713468139749426">Menedżer haseł</translation>
 <translation id="430793432425771671">Synchronizuj wszystko</translation>
 <translation id="4309403553630140242">Kliknij dwukrotnie, by dowiedzieć się więcej</translation>
@@ -513,6 +540,7 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="4375040482473363939">Wyszukiwanie z użyciem kodu QR</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4389019817280890563">Kliknij, by zmienić język.</translation>
+<translation id="4405320213589929829">Używaj adresów na stronach internetowych, aby uzyskiwać informacje lokalne i wskazówki dojazdu.</translation>
 <translation id="4420409367264901497">Edytuj zakładkę</translation>
 <translation id="4442550905108052454">Otwórz <ph name="BEGIN_BOLD" />Ustawienia<ph name="END_BOLD" /></translation>
 <translation id="4454246407045105932">Dodaj język</translation>
@@ -525,7 +553,6 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="448433063499977729">Synchronizacja została wyłączona</translation>
 <translation id="4488754974567924717">Jeśli Twoje hasła zostaną przejęte, damy Ci znać</translation>
 <translation id="4489536976005181779">{count,plural, =1{Dodano stronę do listy Do przeczytania na koncie {email}}few{Dodano strony do listy Do przeczytania na koncie {email}}many{Dodano strony do listy Do przeczytania na koncie {email}}other{Dodano strony do listy Do przeczytania na koncie {email}}}</translation>
-<translation id="4496373720959965247">Dodaj karty i przełączaj się między stronami</translation>
 <translation id="4502566650163919158">Sprawdź teraz</translation>
 <translation id="4505980578794259603">Ostatnio sprawdzano <ph name="TIME" /></translation>
 <translation id="4508750114462689118">Zamknij okno zachęcające do logowania</translation>
@@ -641,8 +668,10 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="5190835502935405962">Pasek zakładek</translation>
 <translation id="519530786644929958">Pobieranie się nie udało i nie można go powtórzyć.</translation>
 <translation id="5197255632782567636">Internet</translation>
+<translation id="5209674813563615506">Otwórz nową kartę</translation>
 <translation id="5211488077761630279">Zezwolić witrynie „<ph name="SITE_NAME" />” na korzystanie z <ph name="PERMISSION" />?</translation>
 <translation id="5219295696240154694">Pomóż poprawić bezpieczeństwo wszystkich użytkowników internetu</translation>
+<translation id="5220945116117011963">Twórz wydarzenia w kalendarzu na podstawie dat</translation>
 <translation id="5221339005270097309">Sprawdzam hasła…</translation>
 <translation id="5226568866393490213">Zamknij ostrzeżenie</translation>
 <translation id="5228579091201413441">Włącz synchronizację</translation>
@@ -651,6 +680,7 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="5245322853195994030">Anuluj synchronizację</translation>
 <translation id="5271265092610673171">{count,plural, =1{Wymagane pole jest puste. Wypełnij je przed zapisaniem.}few{Niektóre wymagane pola są puste. Wypełnij je przed zapisaniem.}many{Niektóre wymagane pola są puste. Wypełnij je przed zapisaniem.}other{Niektóre wymagane pola są puste. Wypełnij je przed zapisaniem.}}</translation>
 <translation id="5271549068863921519">Zapisz hasło</translation>
+<translation id="5283494734135414249">Kliknij skrót, który pojawi się pod paskiem adresu.</translation>
 <translation id="5295239312320826323">Usunąć konto <ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">Pokaż</translation>
 <translation id="5317780077021120954">Zapisz</translation>
@@ -672,8 +702,10 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="5443952882982198570">Karty kredytowe</translation>
 <translation id="5444892875087332195">Zakładki</translation>
 <translation id="5457226814769348910">Otwórz wersję offline</translation>
+<translation id="5478327362747197944">Wydarzenia w Kalendarzu możesz tworzyć bezpośrednio, klikając datę na stronie internetowej.</translation>
 <translation id="5489208564673669003">Aby zarządzać plikami cookie we wszystkich witrynach, sprawdź <ph name="BEGIN_LINK" />Ustawienia plików cookie<ph name="END_LINK" />.</translation>
 <translation id="5490005495580364134">Blokuj wszystkie pliki cookie (niezalecane)</translation>
+<translation id="5511959326926949696">Opcjonalna, ekstremalna ochrona przeglądarki. Korzystaj z niej tylko wtedy, gdy uważasz, że możesz być celem zaawansowanego cyberataku.</translation>
 <translation id="5513681519188741830"><ph name="TIME" /> g temu</translation>
 <translation id="5520466080178053306">Kliknij kolejno: Menedżer haseł i Dodaj</translation>
 <translation id="5525095647255982834">Aby wysłać tę kartę na inne urządzenie, zaloguj się na nim w Chrome.</translation>
@@ -714,6 +746,7 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="5738385766833540397">Zarządzaj sposobami otrzymywania alertów o obniżkach cen produktów, które śledzisz</translation>
 <translation id="5738887413654608789">Pozwoli Ci to odkrywać strony internetowe dotyczące rzeczy z Twojego otoczenia.</translation>
 <translation id="5745916533876677730">Przejdź do poprzedniej karty</translation>
+<translation id="574762237186762643">Wydarzenia</translation>
 <translation id="5755162682436943950">Wylogowano. Otwiera okno logowania się i włączania synchronizacji.</translation>
 <translation id="5758631781033351321">Znajdziesz tu swoją listę Do przeczytania</translation>
 <translation id="5762370665605786758">Szyfrowanie haseł nie obejmuje form płatności ani adresów w Google Pay.
@@ -767,10 +800,11 @@ Twoje zaszyfrowane dane może odczytać tylko osoba znająca hasło. Hasło nie 
 <translation id="6021332621416007159">Otwórz w...</translation>
 <translation id="6027945736510816438">Czy chodziło Ci o <ph name="WEBSITE" />?</translation>
 <translation id="6036215966221662377">Wyczyść dane przeglądania</translation>
-<translation id="6036514205982097558">Wszystkie Twoje karty w 1 przeglądarce</translation>
+<translation id="6036514205982097558">Wszystkie Twoje karty w jednej przeglądarce</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="6042308850641462728">Więcej</translation>
+<translation id="6045460247888249350">Dodaj tytuł</translation>
 <translation id="6054613632208573261">Używaj domyślnie Chrome</translation>
 <translation id="605721222689873409">RR</translation>
 <translation id="6059830886158432458">Tutaj możesz zarządzać wyświetlanymi wiadomościami i aktywnością</translation>
@@ -788,6 +822,7 @@ Twoje zaszyfrowane dane może odczytać tylko osoba znająca hasło. Hasło nie 
 <translation id="6149061208933997199">Użyj hasła</translation>
 <translation id="6152406514676263192">Włącz synchronizację, aby wyświetlały się treści najlepiej pasujące do Twoich zainteresowań.</translation>
 <translation id="6159839020698489198">opcjonalnie</translation>
+<translation id="6166946945007577435">Nowe menu, dzięki któremu szybciej dotrzesz tam, gdzie chcesz.</translation>
 <translation id="6170450281939467187">Nie udało się przetłumaczyć</translation>
 <translation id="6173499589275053515">Hasło zostało zapisane na Twoim koncie Google (<ph name="EMAIL" />)</translation>
 <translation id="6177442314419606057">Szukaj w Chrome</translation>
@@ -864,6 +899,7 @@ Witryny nie mogą używać plików cookie do śledzenia Twojej aktywności zwią
 <translation id="6484712497741564393">Zalogowano jako <ph name="EMAIL" />.
 
 Dane zostały zaszyfrowane Twoim hasłem. Podaj hasło, aby korzystać z danych Chrome i zapisywać je na swoim koncie Google.</translation>
+<translation id="6494931198667773526">Zakończenie</translation>
 <translation id="6497772452874122664">Jeśli ufasz stronie <ph name="TIME" />, możesz użyć zapisanego hasła z innej witryny.
 
 Postaraj się używać innego hasła w każdej witrynie.</translation>
@@ -878,6 +914,7 @@ Postaraj się używać innego hasła w każdej witrynie.</translation>
 <translation id="6540120577248033958">Wejdź na stronę i kliknij Obserwuj w menu Chrome</translation>
 <translation id="6550675742724504774">Opcje</translation>
 <translation id="6561262006871132942">Powiększ</translation>
+<translation id="6579867704846662339">Przychodzące adresy URL z innych aplikacji możesz otwierać w trybie incognito.</translation>
 <translation id="6583087784430677195">Aby wyłączyć funkcję, otwórz <ph name="BEGIN_LINK" />Ustawienia<ph name="END_LINK" /> i przejdź do sekcji Automatyczne wypełnianie haseł.</translation>
 <translation id="6585618849026997638">Utwórz zakładkę, jeśli chcesz wrócić do interesującej Cię strony</translation>
 <translation id="6596481460663245319">Szukaj grafiki z Google</translation>
@@ -906,8 +943,10 @@ W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twoj
 <translation id="6674571176963658787">Aby rozpocząć synchronizację, wpisz hasło</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6684906340059221832">Monitorowanie cen</translation>
+<translation id="6685259053455152195">Skróty pozwalające na szybką zmianę ustawień i korzystanie z funkcji z paska adresu.</translation>
 <translation id="6710079714193676716">Zarządzana przez Twoją organizację. Niektóre funkcje mogą być niedostępne. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="672735642903863329">Korzystaj z zakładek, haseł i innych ustawień na wszystkich urządzeniach.</translation>
 <translation id="6730682669179532099">Nie można wyeksportować haseł</translation>
 <translation id="6732087373923685049">kamera</translation>
 <translation id="6748108480210050150">Od</translation>
@@ -916,6 +955,7 @@ W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twoj
 <translation id="6762812039470893796">Odznacz wszystko</translation>
 <translation id="6780034285637185932">Kod pocztowy</translation>
 <translation id="6781260999953472352">Włączyć synchronizację?</translation>
+<translation id="6781405765516175232">Aby uzyskać informacje o trasie, kliknij „Wyznacz trasę”.</translation>
 <translation id="6785453220513215166">Wysyłam raport o awarii...</translation>
 <translation id="6790502149545262384">Już niedługo po otwarciu nowej karty będziesz widzieć relacje ze strony <ph name="CHANNEL_NAME" />.</translation>
 <translation id="6797885426782475225">Wyszukiwanie głosowe</translation>
@@ -968,6 +1008,7 @@ W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twoj
 <translation id="7108762695052995889">Otwórz stronę</translation>
 <translation id="7133798577887235672">Imię i nazwisko</translation>
 <translation id="7136892417564438900">Aparat jest niedostępny</translation>
+<translation id="7154343200458623869">Wykonaj zadanie.</translation>
 <translation id="7161230316646448869">Synchronizuj zakładki, historię i inne dane na wszystkich swoich urządzeniach</translation>
 <translation id="7162168282402939716">Odblokuj karty incognito za pomocą <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /></translation>
 <translation id="7172852049901402487">Chroń swoje hasła przed zagrożeniami</translation>
@@ -1005,6 +1046,7 @@ W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twoj
 <translation id="7446583256109515732">Karta została odpięta</translation>
 <translation id="7451023311965289370">{count,plural, =1{Zakładka została zapisana tutaj: „{title}”}few{Zakładki zostały zapisane tutaj: „{title}”}many{Zakładki zostały zapisane tutaj: „{title}”}other{Zakładki zostały zapisane tutaj: „{title}”}}</translation>
 <translation id="7454057999980797137">Stan/region</translation>
+<translation id="745899714366929493">Cały dzień</translation>
 <translation id="7459628154744868585">Silniejsza ochrona jest włączona</translation>
 <translation id="746684838091935575">3. Wybierz Chrome.</translation>
 <translation id="7472734401283673885">Nazwa firmy</translation>
@@ -1014,6 +1056,7 @@ W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twoj
 <translation id="750493650310597496">Nic nie wybrałeś</translation>
 <translation id="7508728395076009983">Aby zablokować karty incognito, skonfiguruj Touch ID, Face ID lub hasło.</translation>
 <translation id="7514365320538308">Pobierz</translation>
+<translation id="7524055474074101597">Uzyskaj dostęp do haseł i innych danych w aplikacjach.</translation>
 <translation id="7531345132340165516">Bieżąca witryna</translation>
 <translation id="7537586195939242955">Twojego hasła nie można teraz umieścić w Passbooku.</translation>
 <translation id="754655535278952384">Sprawdzono <ph name="TIME" /></translation>
@@ -1021,6 +1064,7 @@ W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twoj
 <translation id="7554645225856321710">Zamknij wszystko</translation>
 <translation id="7554791636758816595">Nowa karta</translation>
 <translation id="7561196759112975576">Zawsze</translation>
+<translation id="7582857256643797524">To ustawienie jest włączone na Twoim urządzeniu</translation>
 <translation id="7583004045319035904">Używaj <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /> do odblokowywania kart incognito.</translation>
 <translation id="7600965453749440009">Nigdy nie tłumacz z języka: <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Zablokowano pop-upy (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
@@ -1036,6 +1080,7 @@ W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twoj
 <translation id="7671141431838911305">ZAINSTALUJ</translation>
 <translation id="7679915578945954324">Adresy witryn zostały skopiowane</translation>
 <translation id="7687508192620387263">Dostępny jest plik kalendarza</translation>
+<translation id="769104993356536261">Korzystaj z Działań w Chrome na iOS</translation>
 <translation id="7701040980221191251">Brak</translation>
 <translation id="7711440461521638739">Nie używasz ponownie żadnych haseł</translation>
 <translation id="7720410380936703141">SPRÓBUJ PONOWNIE</translation>
@@ -1047,6 +1092,7 @@ W trybie incognito witryny nie mogą używać plików cookie do śledzenia Twoj
 <translation id="7744394900930577716">Hasła w innych aplikacjach</translation>
 <translation id="7749790401023484470">Nie wybrano żadnego tekstu.</translation>
 <translation id="7756478488453921771">Menu → Ustawienia → Formy płatności</translation>
+<translation id="7760127703945531263">Blokada trybu incognito</translation>
 <translation id="7765158879357617694">Przenieś</translation>
 <translation id="7772032839648071052">Potwierdź hasło</translation>
 <translation id="777572173400717978">{count,plural, =1{Dodano do zakładek}few{Dodano do zakładek}many{Dodano do zakładek}other{Dodano do zakładek}}</translation>
@@ -1090,6 +1136,7 @@ Witryny mogą używać plików cookie do śledzenia Twojej aktywności związane
 <translation id="7993619969781047893">Funkcje niektórych stron mogą nie działać prawidłowo</translation>
 <translation id="800361585186029508">Otwiera wpisane adresy URL w Google Chrome.</translation>
 <translation id="8005666035647241369">W menedżerze haseł Google w przypadku tego urządzenia</translation>
+<translation id="8009225694047762179">Zarządzaj hasłami</translation>
 <translation id="8011489434346330032">Inspektor sieci</translation>
 <translation id="8016714545083187120">Zawsze używaj bezpiecznych połączeń</translation>
 <translation id="802154636333426148">Nie udało się pobrać</translation>
@@ -1106,6 +1153,7 @@ Witryny mogą używać plików cookie do śledzenia Twojej aktywności związane
 <translation id="8073872304774253879">Ulepsz wyszukiwanie i przeglądanie</translation>
 <translation id="8076492880354921740">Karty</translation>
 <translation id="8077675488769462025">Nieaktywne karty</translation>
+<translation id="8079530767338315840">Powtórz</translation>
 <translation id="8079602123447022758">To ustawienie jest zarządzenie. Kliknij dwukrotnie, by dowiedzieć się więcej.</translation>
 <translation id="8080028325999236607">Zamknij wszystkie karty</translation>
 <translation id="8084285576995584326">Zarządzaj danymi z konta Google</translation>
@@ -1144,6 +1192,7 @@ Witryny mogą używać plików cookie do śledzenia Twojej aktywności związane
 <translation id="8319076807703933069">Nowe wyszukiwanie</translation>
 <translation id="8323906514956095947">Naciśnij i przytrzymaj, by zobaczyć więcej opcji</translation>
 <translation id="8328777765163860529">Zamknij wszystkie</translation>
+<translation id="8331621926962374866">Gdy Chrome jest w trybie blokady, niektóre technologie internetowe są blokowane, przez co niektóre strony mogą się wolniej ładować lub działać nieprawidłowo.</translation>
 <translation id="8343993175958086504">Twórz kopie zapasowe swoich danych i używaj ich na dowolnym urządzeniu.</translation>
 <translation id="834783239627985533">Najczęściej odwiedzane witryny</translation>
 <translation id="8378714024927312812">Zarządzane przez Twoją organizację</translation>
@@ -1171,6 +1220,7 @@ Dane zostały zaszyfrowane hasłem <ph name="TIME" />. Podaj hasło, aby korzyst
 <translation id="850600235656508448">Otwórz w trybie incognito</translation>
 <translation id="8517375800490286174">Licencje typu open source</translation>
 <translation id="8524799873541103884">Karty <ph name="INCOGNITO" /> od <ph name="FIRST_VISIBLE_TAB" /> do <ph name="LAST_VISIBLE_TAB" /> z <ph name="NUMBER_OF_OPEN_TABS" /></translation>
+<translation id="8528009254289981965">Otwieraj linki z innych aplikacji w trybie incognito</translation>
 <translation id="8529767659511976195">Nowość</translation>
 <translation id="8532105204136943229">Rok utraty ważności</translation>
 <translation id="8533166274275423134">Otwarto w innym oknie</translation>
@@ -1247,6 +1297,7 @@ Dane zostały zaszyfrowane hasłem <ph name="TIME" />. Podaj hasło, aby korzyst
 <translation id="8985320356172329008">Jesteś zalogowany w Google jako</translation>
 <translation id="8986567980592931173">Zaloguj się na konto Google, aby synchronizować swoje hasła, historię i inne dane.</translation>
 <translation id="8998289560386111590">Niedostępne na Twoim urządzeniu</translation>
+<translation id="8999545564078155498">Odblokuj przez Face ID</translation>
 <translation id="9000089900434778519">Twoja wyszukiwarka to <ph name="DSE_NAME" />. Zapoznaj się z jej instrukcjami, jeśli chcesz usunąć historię wyszukiwania.</translation>
 <translation id="9008201768610948239">Ignoruj</translation>
 <translation id="9034759925968272072">Nie spowoduje to wylogowania z konta Google. Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -1275,6 +1326,7 @@ Dane zostały zaszyfrowane hasłem <ph name="TIME" />. Podaj hasło, aby korzyst
 <translation id="9157836665414082580">Ukryj okna dialogowe</translation>
 <translation id="9162432979321511934">Włącz autouzupełnianie haseł</translation>
 <translation id="9165320910061267720">Aby otrzymywać alerty o obniżkach cen, musisz włączyć powiadomienia w ustawieniach iOS.</translation>
+<translation id="9172603439892261948">Synchronizuj zakładki, historię i inne dane.</translation>
 <translation id="9177438225260810839">Szukaj w otwartych kartach</translation>
 <translation id="9187853111759024059">Zamknąć 99 lub więcej nieaktywnych kart?</translation>
 <translation id="9188680907066685419">Wyloguj się z konta zarządzanego</translation>
@@ -1287,9 +1339,11 @@ Dane zostały zaszyfrowane hasłem <ph name="TIME" />. Podaj hasło, aby korzyst
 <translation id="952704832371081537">Anuluj</translation>
 <translation id="953008885340860025">Wylogowano z Chrome</translation>
 <translation id="959066944189734975">Obserwujesz kanał <ph name="CHANNEL_NAME" /></translation>
+<translation id="97300214378190234">Używaj Chrome, zawsze gdy klikasz linki w innych aplikacjach.</translation>
 <translation id="973493300226275298">Monitoruj cenę produktu w sklepach internetowych. Gdy cena spadnie, otrzymasz alert.</translation>
 <translation id="981498610235328462">Twoja organizacja pozwala logować się tylko na określone konta. Niedozwolone konta zostały ukryte.</translation>
 <translation id="984509647832111802">Synchronizacja nie działa.</translation>
+<translation id="984879470761322682">Aby wyłączyć tryb blokady w Chrome, wyłącz go na urządzeniu.</translation>
 <translation id="988141524645182168">Inne urządzenia</translation>
 <translation id="989988560359834682">Edytuj adres</translation>
 <translation id="994757059139821576">Proponowanie artykułów</translation>

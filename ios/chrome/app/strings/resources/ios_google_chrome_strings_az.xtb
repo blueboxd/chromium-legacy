@@ -6,11 +6,13 @@
 <translation id="1352919863522755794">Google Parol Meneceri parollarınızı yoxlaya bilmədi. İnternet bağlantınızı yoxlayın.</translation>
 <translation id="1462727070346936664">Chrome'dan maksimum yararlanmaq üçün daxil olun.</translation>
 <translation id="1479202195792305274">Google Hesabınız ilə daxil olduqda Chrome parollarınızı yoxlaya bilər.</translation>
+<translation id="1491435845014430217">"Chrome-u bağladıqda anonim tabları kilidləyin" seçimini aktiv edin.</translation>
 <translation id="1493827051843127077">Tablar, parollar və ödəniş məlumatlarınızı bütün cihazlarınızda sinxronlaşdırmaq üçün defolt olaraq Chrome'u ayarlayın</translation>
 <translation id="1504372625950710826">Chrome güncəlləmələri yoxlaya bilmədi. İnternet bağlantınızı yoxlayın.</translation>
 <translation id="1511320244449497906"><ph name="DOMAIN" /> tərəfindən idarə olunan hesaba daxil olmusunuz və onunla datanızı sinxronizasiya edirsiniz. Bu hesabın administratoru indi Chrome'un davranışını dəyişə biləcək həmin hesaba xas istifadəçi siyasətlərini ayarlaya bilər.</translation>
 <translation id="1554731936187952550">Zərərli vebsaytlara qarşı Chrome'un ən güclü təhlükəsizliyinə sahibsiniz</translation>
 <translation id="1682483655351012182">Chrome Datasını Sinxronizasiya Edin</translation>
+<translation id="1733654336159102143">Chrome-dan çıxdıqda və ya başqa tətbiqə keçdikdə anonim tabları kilidləyin.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Mesaj, sənəd və digər tətbiqlərdə keçidlərə toxunduqda Chrome avtomatik istifadə edilsin.</translation>
 <translation id="1917964099031477364">Bu hesab və bütün saxlanmamış data Chrome'dan və bu cihazdakı digər Google tətbiqlərindən silinəcək.</translation>
@@ -48,6 +50,7 @@
 <translation id="3503014945441706099">Bu Chrome profili üçün də Qabaqcıl Güvənli Baxış əldə edin</translation>
 <translation id="3522659714780527202">Chrome istifadə etdiyiniz hər yerdən tabları görmək üçün sinxronizasiyanı aktiv edin</translation>
 <translation id="3533694711092285624">Yadda saxlanmış parol yoxdur. Parollarınızı yadda saxladıqda Chrome onları yoxlaya bilər.</translation>
+<translation id="3594076341410558780">"Chrome-dan maksimum yararlanın" seçimini gizlədin</translation>
 <translation id="3655656110921623717">Yəni, Chrome hər dəfə masaüstü saytını tələb edəcək.</translation>
 <translation id="3720541637541300822">Chrome bağlandıqda Anonim Tablar kilidlənsin</translation>
 <translation id="3827545470516145620">Bu cihazda standart təhlükəsizlik qoruması əldə edirsiniz</translation>
@@ -66,8 +69,10 @@
 <translation id="4636900170638246267">Bu sayta və Chrome'a daxil olun.</translation>
 <translation id="4698415050768537821">Chrome bütün parolları yoxlaya bilmədi. Sabah yenidən cəhd edin və ya <ph name="BEGIN_LINK" />Google Hesabınızda parolları yoxlayın.<ph name="END_LINK" /></translation>
 <translation id="4819268619367838612">Tətbiqi təkmilləşdirməyə kömək etmək üçün Chrome istifadə və qəza datasını Google'a göndərir. <ph name="BEGIN_LINK" />İdarə edin<ph name="END_LINK" /></translation>
+<translation id="4830799082179398588">Chrome defolt brauzer edilsin?</translation>
 <translation id="484033449593719797">Chrome Beta'da dəstəklənmir</translation>
 <translation id="4840404732697892756">Google Hesabınız ilə daxil olduqda Google Parol Meneceri parollarınızı yoxlaya bilər.</translation>
+<translation id="4903674399067644695">Bu kartda Chrome-dan maksimum yararlanma təklifləri göstərilir.</translation>
 <translation id="5030102366287574140">Chrome sizi data pozuntuları, güvənli olmayan vebsaytlar və digər güvənlik məsələlərindən qoruya bilər.</translation>
 <translation id="5108659628347594808">Chrome'u yaxşılaşdırın</translation>
 <translation id="5119391094379141756">Chrome seçin</translation>
@@ -76,6 +81,7 @@
 <translation id="5395376160638294582">Google Hesabında hər zaman Chrome datasından istifadə edə biləcəyinizdən əmin olun</translation>
 <translation id="5460571915754665838">4. Chrome seçin</translation>
 <translation id="5492504007368565877">Google Parol Meneceri parolları yoxlaya bilmir.</translation>
+<translation id="5527026824954593399">"Chrome-da Google Xəritə ilə baxın" üzərinə toxunun.</translation>
 <translation id="5552137475244467770">Chrome müntəzəm olaraq onlayn yayımlanan siyahılar əsasında parollarınızı yoxlayır. Bunu edərkən, parollar və istifadəçi adları şifrələnir ki, Google daxil olmaqla, heç kim onları oxuya bilməsin.</translation>
 <translation id="5639704535586432836">Kameranı aktiv etmək üçün Ayarlar &gt; Gizlilik &gt; Kamera &gt; Google Chrome bölməsini açın.</translation>
 <translation id="5642200033778930880">Google Chrome kameranızı Bölünmüş Görüntü rejimində istifadə edə bilməz</translation>
@@ -111,10 +117,12 @@
 <translation id="7261678641327190792">Chrome parollarınızı yoxlaya bilmir</translation>
 <translation id="7272930098487145294">Şəkilləri yadda saxlamaq üçün, Ayarlara toxunaraq Chrome'a fotolarınıza əlavə etmək icazəsi verin</translation>
 <translation id="7275945473750112644">Hesabınız <ph name="HOSTED_DOMAIN" /> tərəfindən idarə edildiyinə görə Chrome datanız bu cihazdan silinəcək</translation>
+<translation id="7394108421562933108">Chrome Xəritə</translation>
 <translation id="7400722733683201933">Google Chrome haqqında</translation>
 <translation id="7501046334262221972">Chrome'u defolt brauzeriniz etmək üçün Ayarları açın. Defolt Brauzer Tətbiqinə toxunun və Chrome'u seçin.</translation>
 <translation id="756809126120519699">Chrome datası təmizləndi</translation>
 <translation id="7662994914830945754">Chrome istifadə etdiyiniz hər yerdən tabları görmək üçün daxil olun və sinxronizasiyanı aktiv edin</translation>
+<translation id="7669869107155339016">Chrome ayarlarına keçin.</translation>
 <translation id="7693590760643069321">İndi istənilən vaxt mesajlar, sənədlər və digər tətbiqlərdə keçidlərə toxunduqda Chrome'u istifadə edə bilərsiniz.</translation>
 <translation id="7698568245838009292">Chrome kameraya daxil olmaq istəyir</translation>
 <translation id="7754633291442704733">Təşkilatınızın (<ph name="DOMAIN" />) bu hesabda saxladığınız Chrome datası, əlfəcinlər, tarixçələr, parollar və digər ayarlara girişi olacaq. Hesabdan çıxdığınız zaman datanız bu cihazdan silinəcək.  Bununla belə, datanız idarə olunan Google Hesabınızda saxlanacaq və təşkilatınız üçün əlçatan olacaq. Təşkilatınız həmçinin Chrome'un davranışını dəyişə bilən hesab üçün xüsusi istifadəçi siyasətləri təyin edə bilər.</translation>

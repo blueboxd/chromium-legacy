@@ -303,6 +303,9 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   if (!self.consumer) {
     return;
   }
+  if (IsMagicStackEnabled()) {
+    [self.consumer setMagicStackOrder:[self magicStackOrder]];
+  }
   if (self.returnToRecentTabItem) {
     [self.consumer
         showReturnToRecentTabTileWithConfig:self.returnToRecentTabItem];
@@ -313,7 +316,14 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   if ([self shouldShowSetUpList]) {
     self.setUpList.delegate = self;
     NSArray<SetUpListItemViewData*>* items = [self setUpListItems];
-    [self.consumer showSetUpListWithItems:items];
+    if (IsMagicStackEnabled() && [self.setUpList allItemsComplete]) {
+      SetUpListItemViewData* allSetItem =
+          [[SetUpListItemViewData alloc] initWithType:SetUpListItemType::kAllSet
+                                             complete:NO];
+      [self.consumer showSetUpListWithItems:@[ allSetItem ]];
+    } else {
+      [self.consumer showSetUpListWithItems:items];
+    }
     [self.contentSuggestionsMetricsRecorder recordSetUpListShown];
     for (SetUpListItemViewData* item in items) {
       [self.contentSuggestionsMetricsRecorder
@@ -327,9 +337,6 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   if (![self shouldHideShortcuts] &&
       (IsMagicStackEnabled() || ![self shouldShowSetUpList])) {
     [self.consumer setShortcutTilesWithConfigs:self.actionButtonItems];
-  }
-  if (IsMagicStackEnabled()) {
-    [self.consumer setMagicStackOrder:[self magicStackOrder]];
   }
 }
 
@@ -655,9 +662,54 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
   if ([self shouldHideMVTTiles]) {
     return;
   }
+
+  if (IsMagicStackEnabled()) {
+    const base::Value::List& oldMostVisitedSites =
+        _localState->GetList(prefs::kIosLatestMostVisitedSites);
+    base::Value::List freshMostVisitedSites;
+    for (ContentSuggestionsMostVisitedItem* item in self
+             .freshMostVisitedItems) {
+      freshMostVisitedSites.Append(item.URL.spec());
+    }
+    // Don't check for a change in the Most Visited Sites if the device doesn't
+    // have any saved sites to begin with. This will not log for users with no
+    // top sites that have a new top site, but the benefit of not logging for
+    // new installs outweighs it.
+    if (!oldMostVisitedSites.empty()) {
+      [self lookForNewMostVisitedSite:freshMostVisitedSites
+                  oldMostVisitedSites:oldMostVisitedSites];
+    }
+    _localState->SetList(prefs::kIosLatestMostVisitedSites,
+                         std::move(freshMostVisitedSites));
+  }
+
   self.mostVisitedItems = self.freshMostVisitedItems;
   [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
   [self.feedDelegate contentSuggestionsWasUpdated];
+}
+
+// Logs a User Action if `freshMostVisitedSites` has at least one site that
+// isn't in `oldMostVisitedSites`.
+- (void)
+    lookForNewMostVisitedSite:(const base::Value::List&)freshMostVisitedSites
+          oldMostVisitedSites:(const base::Value::List&)oldMostVisitedSites {
+  for (auto const& freshSiteURLValue : freshMostVisitedSites) {
+    BOOL freshSiteInOldList = NO;
+    for (auto const& oldSiteURLValue : oldMostVisitedSites) {
+      if (freshSiteURLValue.GetString() == oldSiteURLValue.GetString()) {
+        freshSiteInOldList = YES;
+        break;
+      }
+    }
+    if (!freshSiteInOldList) {
+      // Reset impressions since freshness.
+      _localState->SetInteger(
+          prefs::kIosMagicStackSegmentationMVTImpressionsSinceFreshness, 0);
+      base::RecordAction(
+          base::UserMetricsAction("IOSMostVisitedTopSitesChanged"));
+      return;
+    }
+  }
 }
 
 // Opens the `URL` in a new tab `incognito` or not. `originPoint` is the origin
@@ -822,9 +874,15 @@ bool CredentialProviderPromoDismissed(PrefService* local_state) {
       [magicStackModules
           addObject:@(int(ContentSuggestionsModuleType::kCompactedSetUpList))];
     } else {
-      for (SetUpListItem* model in self.setUpList.items) {
+      if ([self.setUpList allItemsComplete]) {
         [magicStackModules
-            addObject:@(int(SetUpListModuleTypeForSetUpListType(model.type)))];
+            addObject:@(int(ContentSuggestionsModuleType::kSetUpListAllSet))];
+      } else {
+        for (SetUpListItem* model in self.setUpList.items) {
+          [magicStackModules
+              addObject:@(int(
+                            SetUpListModuleTypeForSetUpListType(model.type)))];
+        }
       }
     }
   }

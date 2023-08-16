@@ -111,22 +111,21 @@ CSSValue* ConvertFontPaletteToCSSValue(const blink::FontPalette* palette) {
       }
       result->Append(*color_space_css_value_list);
 
-      CSSValue* start = ConvertFontPaletteToCSSValue(palette->GetStart().get());
-      result->Append(*start);
-
-      CSSValueList* end_palette_with_percentage =
+      CSSValueList* start_palette_with_percentage =
           CSSValueList::CreateSpaceSeparated();
+      CSSValue* start = ConvertFontPaletteToCSSValue(palette->GetStart().get());
+      start_palette_with_percentage->Append(*start);
+      CSSValue* param = CSSNumericLiteralValue::Create(
+          (1.0 - palette->GetPercentage()) * 100,
+          CSSPrimitiveValue::UnitType::kPercentage);
+      start_palette_with_percentage->Append(*param);
+      result->Append(*start_palette_with_percentage);
+
       CSSValue* end = ConvertFontPaletteToCSSValue(palette->GetEnd().get());
       if (*start == *end) {
         return start;
       }
-      end_palette_with_percentage->Append(*end);
-
-      CSSValue* param = CSSNumericLiteralValue::Create(
-          palette->GetPercentage() * 100,
-          CSSPrimitiveValue::UnitType::kPercentage);
-      end_palette_with_percentage->Append(*param);
-      result->Append(*end_palette_with_percentage);
+      result->Append(*end);
 
       return result;
     }
@@ -1132,8 +1131,6 @@ CSSValue* ComputedStyleUtils::ValueForFontVariantAlternates(
     return CSSIdentifierValue::Create(CSSValueID::kNormal);
   }
 
-  DCHECK(RuntimeEnabledFeatures::FontVariantAlternatesEnabled());
-
   auto make_single_ident_list = [](const AtomicString& alias) {
     CSSValueList* aliases_list = CSSValueList::CreateCommaSeparated();
     aliases_list->Append(*MakeGarbageCollected<CSSCustomIdentValue>(alias));
@@ -1412,11 +1409,9 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
       !base::ValuesEquivalent(variation_settings,
                               static_cast<CSSValue*>(CSSIdentifierValue::Create(
                                   CSSValueID::kNormal))) ||
-      (RuntimeEnabledFeatures::FontVariantAlternatesEnabled() &&
-       !base::ValuesEquivalent(
-           variant_alternative,
-           static_cast<CSSValue*>(
-               CSSIdentifierValue::Create(CSSValueID::kNormal))))) {
+      !base::ValuesEquivalent(variant_alternative,
+                              static_cast<CSSValue*>(CSSIdentifierValue::Create(
+                                  CSSValueID::kNormal)))) {
     return nullptr;
   }
 
@@ -2567,15 +2562,11 @@ CSSValue* ComputedStyleUtils::ValueForAnimationTimelineList(
 
 CSSValue* ComputedStyleUtils::SingleValueForTimelineShorthand(
     const ScopedCSSName* name,
-    TimelineAxis axis,
-    TimelineAttachment attachment) {
+    TimelineAxis axis) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*ValueForCustomIdentOrNone(name));
   if (axis != TimelineAxis::kBlock) {
     list->Append(*CSSIdentifierValue::Create(axis));
-  }
-  if (attachment != TimelineAttachment::kLocal) {
-    list->Append(*CSSIdentifierValue::Create(attachment));
   }
   return list;
 }
@@ -3840,21 +3831,21 @@ const CSSValue* ComputedStyleUtils::ValueForStyleAutoColor(
 
 CSSValue* ComputedStyleUtils::ValueForIntrinsicLength(
     const ComputedStyle& style,
-    const absl::optional<StyleIntrinsicLength>& intrinsic_length) {
-  CSSValue* length = nullptr;
-  if (intrinsic_length) {
-    length = ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-        intrinsic_length->GetLength(), style);
-  }
-
-  if (!intrinsic_length) {
+    const StyleIntrinsicLength& intrinsic_length) {
+  if (intrinsic_length.IsNoOp()) {
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
+
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (intrinsic_length->HasAuto()) {
+  if (intrinsic_length.HasAuto()) {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
   }
-  list->Append(*length);
+
+  if (const absl::optional<LayoutUnit>& length = intrinsic_length.GetLength()) {
+    list->Append(*ZoomAdjustedPixelValue(*length, style));
+  } else {
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
+  }
   return list;
 }
 

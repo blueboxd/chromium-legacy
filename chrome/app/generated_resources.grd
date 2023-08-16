@@ -784,6 +784,9 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFOR" desc="The name of the Search the Web for “string” command in the content area context menu">
             &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for “<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>”
           </message>
+          <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB" desc="The name of the Search the Web for “string” in New Tab command in the content area context menu">
+            &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for “<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>” in new tab
+          </message>
           <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE" desc="The name of the Search For Image command in the content area context menu">
             &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for image
           </message>
@@ -1067,6 +1070,9 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFOR" desc="In Title Case: The name of the Search the Web for “string” command in the content area context menu">
             &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for “<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>”
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB" desc="In Title Case: The name of the Search the Web for “string” in New Tab command in the content area context menu">
+            &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for “<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>” in New Tab
           </message>
           <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE" desc="In Title Case: The name of the Search For Image command in the content area context menu">
             &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for Image
@@ -3651,7 +3657,7 @@ You can send it to Google to check if it's unsafe. Scans usually take a few seco
       </message>
       <!-- TODO(crbug.com/1433644): Add final string. -->
       <message name="IDS_STORAGE_ACCESS_PERMISSION_BUBBLE_MESSAGE" desc="Text displayed in the omnibox bubble for the StorageAccess permission." translateable="false">
-        These embedded sites can use info they’ve saved about you as you browse <ph name="HOST">$1<ex>example.com</ex></ph>.
+        These sites can use info they’ve saved about you as you browse <ph name="HOST">$1<ex>example.com</ex></ph>.
       </message>
 
 
@@ -6382,10 +6388,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE" desc="The title text used in the passwords bubble after the user has saved a password.">
         Password saved
       </message>
-      <!-- TODO(crbug.com/1345766): Add final string and make it translateable. -->
-      <message name="IDS_PASSWORD_WEAKNESS_INDICATOR" translateable="false" desc="Autofill dropdown text describing password strength.">
-        Weak password entered
-      </message>
 
       <if expr="not use_titlecase">
         <message name="IDS_PASSWORD_GENERATION_SUGGESTION_GPM" desc="Text shown next to a generated password describing it as a suggestion.">
@@ -7813,6 +7815,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_SIDE_PANEL_SELECTOR" is_accessibility_with_no_ui="true" desc="Screen reader announcement when the side panel header combobox is focused.">
         Side Panel Selector
       </message>
+      <message name="IDS_ACCNAME_SIDE_PANEL_COMPANION_SHOW" desc="Screen reader announcement when the toolbar super G icon is focused and Google Search side panel is closed.">
+        Open Google Search side panel
+      </message>
+      <message name="IDS_ACCNAME_SIDE_PANEL_COMPANION_HIDE" desc="Screen reader announcement when the toolbar super G icon is focused and Google Search side panel is open.">
+        Close Google Search side panel
+      </message>
       <message name="IDS_SIDE_PANEL_COMPANION_TITLE" desc="The name of the companion feature in the side panel combo box.">
         Search
       </message>
@@ -7821,6 +7829,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_SIDE_PANEL_COMPANION_PROMO" desc="Text shown on promotional UI appearing next to the pinned companion button, which excourages users to try the feature.">
         Get additional useful info as you explore this page
+      </message>
+      <message name="IDS_SIDE_PANEL_COMPANION_ERROR_PAGE_FIRST_LINE" desc="Text shown on the side panel for the companion feature when there is a network or other navigation error. The texts informs the user the panel can not be loaded.">
+        Can't load this panel right now
+      </message>
+      <message name="IDS_SIDE_PANEL_COMPANION_ERROR_PAGE_SECOND_LINE" desc="Text shown on the side panel for the companion feature when there is a network or other navigation error. The text suggests trying again later.">
+        Please try again later
       </message>
       <message name="IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE" desc="The name of the Customize Chrome feature in the side panel combo box.">
         Customize Chrome
@@ -8737,6 +8751,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Password Manager Tutorial Strings -->
+      <message name="IDS_TUTORIAL_PASSWORD_MANAGER_OPEN_MENU" desc="The description of the 'open menu' step in password manager tutorial">
+        Open the menu
+      </message>
       <message name="IDS_TUTORIAL_PASSWORD_MANAGER_SELECT_SETTINGS" desc="The description of the 'select settings' step in password manager tutorial">
         Click “Settings”
       </message>
@@ -13284,7 +13301,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Inactive tab
       </message>
       <message name="IDS_TAB_AX_MEMORY_SAVINGS" desc="Accessibility label text of how much memory was saved by the inactive tab'">
-        <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Saved <ph name="MEMORY_VALUE">$2<ex>175MB</ex></ph>
+        <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - <ph name="MEMORY_VALUE">$2<ex>175MB</ex></ph> freed up
       </message>
       <message name="IDS_TAB_AX_MEMORY_USAGE" desc="Accessibility label text of how much memory is used by the tab'">
         <ph name="WINDOW_TITLE">$1<ex>Google Hangouts</ex></ph> - Memory usage - <ph name="MEMORY_VALUE">$2<ex>175MB</ex></ph>

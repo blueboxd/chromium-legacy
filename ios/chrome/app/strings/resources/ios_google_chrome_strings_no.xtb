@@ -6,11 +6,13 @@
 <translation id="1352919863522755794">Google Passordlagring kunne ikke sjekke passordene dine. Se om du er koblet til internett.</translation>
 <translation id="1462727070346936664">Logg på for å få mest mulig ut av Chrome.</translation>
 <translation id="1479202195792305274">Chrome kan sjekke passordene dine når du logger på med Google-kontoen din.</translation>
-<translation id="1493827051843127077">Angi Chrome som standard for å synkronisere fanene, passordene og betalingsopplysningene dine på alle enhetene dine</translation>
+<translation id="1491435845014430217">Slå på «Lås inkognitofaner når du lukker Chrome».</translation>
+<translation id="1493827051843127077">Angi Chrome som standard for å synkronisere faner, passord og betalingsopplysninger på alle enhetene dine</translation>
 <translation id="1504372625950710826">Chrome kunne ikke se etter oppdateringer. Se om du er koblet til internett.</translation>
 <translation id="1511320244449497906">Du er pålogget og synkroniserer dataene dine med en konto som er administrert av <ph name="DOMAIN" />, hvor administratoren nå kan angi brukerinnstillinger spesifikt for denne kontoen for å endre virkemåten til Chrome.</translation>
 <translation id="1554731936187952550">Du har den sterkeste sikkerheten i Chrome mot skadelige nettsteder</translation>
 <translation id="1682483655351012182">Synkroniser Chrome-dataene dine</translation>
+<translation id="1733654336159102143">Lås inkognitomodus når du går ut av Chrome eller bytter til en annen app.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Bruk Chrome automatisk når du trykker på linker i meldinger, dokumenter og andre apper.</translation>
 <translation id="1917964099031477364">Denne kontoen og eventuelle ulagrede data blir fjernet fra Chrome og andre Google-apper på enheten.</translation>
@@ -48,6 +50,7 @@
 <translation id="3503014945441706099">Få Safe Browsing med økt beskyttelse for denne Chrome-profilen også</translation>
 <translation id="3522659714780527202">For å se fanene dine overalt hvor du bruker Chrome, slå på synkronisering</translation>
 <translation id="3533694711092285624">Ingen lagrede passord. Chrome kan sjekke passordene dine når du lagrer dem.</translation>
+<translation id="3594076341410558780">Skjul «Få mest mulig ut av Chrome»</translation>
 <translation id="3655656110921623717">Dette betyr at Chrome kommer til å forespørre mobilnettstedet hver gang.</translation>
 <translation id="3720541637541300822">Lås inkognitofaner når du lukker Chrome</translation>
 <translation id="3827545470516145620">Du får standard sikkerhetsbeskyttelse på denne enheten</translation>
@@ -66,8 +69,10 @@
 <translation id="4636900170638246267">Logg på dette nettstedet og Chrome.</translation>
 <translation id="4698415050768537821">Chrome kunne ikke sjekke alle passordene. Prøv på nytt i morgen, eller <ph name="BEGIN_LINK" />sjekk passordene i Google-kontoen din<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">For å bidra til å gjøre appen bedre sender Chrome bruks- og krasjrelaterte data til Google. <ph name="BEGIN_LINK" />Administrer<ph name="END_LINK" /></translation>
+<translation id="4830799082179398588">Vil du gjøre Chrome til standardnettleseren din?</translation>
 <translation id="484033449593719797">Støttes ikke i Chrome Beta</translation>
 <translation id="4840404732697892756">Google Passordlagring kan sjekke passordene dine når du logger på med Google-kontoen din.</translation>
+<translation id="4903674399067644695">På dette kortet ser du forslag til hvordan du får mest mulig ut av Chrome.</translation>
 <translation id="5030102366287574140">Chrome kan beskytte deg mot databrudd, utrygge nettsteder med mer.</translation>
 <translation id="5108659628347594808">Gjør Chrome bedre</translation>
 <translation id="5119391094379141756">Velg Chrome</translation>
@@ -76,6 +81,7 @@
 <translation id="5395376160638294582">Sørg for at du alltid kan bruke Chrome-dataene i Google-kontoen din</translation>
 <translation id="5460571915754665838">4. Velg Chrome</translation>
 <translation id="5492504007368565877">Google Passordlagring kan ikke sjekke passordene dine.</translation>
+<translation id="5527026824954593399">Trykk på «Se med Google Maps i Chrome».</translation>
 <translation id="5552137475244467770">Chrome sjekker passordene dine regelmessig mot lister som er lagt ut på nett. Når dette gjøres, er passordene og brukernavnene dine kryptert. Det betyr at ingen kan lese dem, ikke engang Google.</translation>
 <translation id="5639704535586432836">Åpne Innstillinger &gt; Personvern &gt; Kamera &gt; Google Chrome, og slå på kameraet.</translation>
 <translation id="5642200033778930880">Google Chrome kan ikke bruke kameraet i modus for delt visning</translation>
@@ -111,10 +117,12 @@
 <translation id="7261678641327190792">Chrome kan ikke sjekke passordene dine</translation>
 <translation id="7272930098487145294">For å lagre bilder, trykk på Innstillinger for å la Chrome legge dem til i bildene dine</translation>
 <translation id="7275945473750112644">Kontoen din administreres av <ph name="HOSTED_DOMAIN" />, så Chrome-dataene dine blir slettet fra denne enheten</translation>
+<translation id="7394108421562933108">Maps i Chrome</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
 <translation id="7501046334262221972">For å gjøre Chrome til standardnettleseren din, åpne Innstillinger. Trykk på Standard nettleserapp, og velg Chrome.</translation>
 <translation id="756809126120519699">Chrome-dataene er slettet</translation>
 <translation id="7662994914830945754">For å se fanene dine overalt hvor du bruker Chrome, logg på og slå på synkronisering</translation>
+<translation id="7669869107155339016">Gå til Chrome-innstillingene.</translation>
 <translation id="7693590760643069321">Nå kan du bruke Chrome hver gang du trykker på linker i meldinger, dokumenter og andre apper.</translation>
 <translation id="7698568245838009292">Chrome vil ha tilgang til kameraet</translation>
 <translation id="7754633291442704733">Organisasjonen din, <ph name="DOMAIN" />, får tilgang til data, bokmerker, logg, passord og andre innstillinger for Chrome som du lagrer i denne kontoen. Når du logger av, slettes dataene dine fra denne enheten.  Dataene forblir imidlertid lagret i den administrerte Google-kontoen og er tilgjengelige for organisasjonen din. Organisasjonen din kan også angi spesifikke brukerinnstillinger for den aktuelle kontoen. Disse kan endre virkemåten til Chrome.</translation>

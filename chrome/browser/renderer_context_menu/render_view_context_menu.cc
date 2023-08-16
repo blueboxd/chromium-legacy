@@ -42,6 +42,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -479,13 +480,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB, 130},
        {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS, 131},
        {IDC_CONTENT_CONTEXT_COPYVIDEOFRAME, 132},
+       {IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB, 135},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 133}});
+       {0, 136}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -519,13 +521,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_ADD_A_NOTE, 26},
        {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB, 27},
        {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS, 28},
+       {IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB, 29},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the ContextMenuOptionDesktop enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 29}});
+       {0, 30}});
 
   return *(type == UmaEnumIdLookupType::GeneralEnumId ? kGeneralMap
                                                       : kSpecificMap);
@@ -1542,27 +1545,32 @@ void RenderViewContextMenu::AppendLinkItems() {
   if (!params_.link_url.is_empty()) {
     const bool in_app = IsInProgressiveWebApp();
 
+    bool show_open_in_new_tab = true;
     bool show_open_in_new_window = true;
     bool show_open_link_off_the_record = true;
+
+    if (in_app) {
+      show_open_in_new_window = false;
+    }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     Profile* profile = GetProfile();
     absl::optional<ash::SystemWebAppType> link_system_app_type =
         GetLinkSystemAppType(profile, params_.link_url);
+
     // Links to system web app can't be opened in incognito / off-the-record.
     show_open_link_off_the_record = !link_system_app_type;
 
     if (system_app_ && link_system_app_type) {
-      // Show "Open in new tab" if this link points to the current app, and the
-      // app has a tab strip.
+      // We don't show "Open in new tab" if the current app doesn't have a tab
+      // strip.
       //
-      // We don't show "open in tab" for links to a different SWA, because two
-      // SWAs can't share the same browser window.
-      if (system_app_->GetType() == link_system_app_type &&
-          system_app_->ShouldHaveTabStrip()) {
-        menu_model_.AddItemWithStringId(
-            IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-            IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP);
+      // Even if the app has a tab strip, we don't show the item for
+      // links to a different SWA, because two SWAs can't share the same browser
+      // window.
+      if (!system_app_->ShouldHaveTabStrip() ||
+          system_app_->GetType() != link_system_app_type) {
+        show_open_in_new_tab = false;
       }
 
       // Don't show "open in new window", this is instead handled below in
@@ -1571,15 +1579,16 @@ void RenderViewContextMenu::AppendLinkItems() {
     }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    if (show_open_in_new_window) {
+    if (show_open_in_new_tab) {
       menu_model_.AddItemWithStringId(
           IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
           in_app ? IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP
                  : IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
-      if (!in_app) {
-        menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
-                                        IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
-      }
+    }
+
+    if (show_open_in_new_window) {
+      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
+                                      IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
     }
 
     if (params_.link_url.is_valid()) {
@@ -1895,8 +1904,11 @@ void RenderViewContextMenu::AppendVideoItems() {
                                   IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
                                   IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYVIDEOFRAME,
-                                  IDS_CONTENT_CONTEXT_COPYVIDEOFRAME);
+  if (base::FeatureList::IsEnabled(media::kContextMenuCopyVideoFrame)) {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYVIDEOFRAME,
+                                    IDS_CONTENT_CONTEXT_COPYVIDEOFRAME);
+    menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
+  }
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
   menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_PICTUREINPICTURE,
@@ -2137,6 +2149,19 @@ void RenderViewContextMenu::AppendSearchProvider() {
                                      printable_selection_text));
       if (companion::IsSearchWebInCompanionSidePanelSupported(GetBrowser())) {
         menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
+        // Add an "in new tab" item performing the non-side panel behavior.
+        if (base::FeatureList::IsEnabled(
+                companion::features::
+                    kCompanionEnableSearchWebInNewTabContextMenuItem) &&
+            selection_navigation_url_ != params_.link_url &&
+            ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
+                selection_navigation_url_.scheme())) {
+          menu_model_.AddItem(
+              IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB,
+              l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB,
+                                         default_provider->short_name(),
+                                         printable_selection_text));
+        }
       }
     }
   } else {
@@ -2634,6 +2659,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return IsPrintPreviewEnabled();
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
+    case IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB:
     case IDC_CONTENT_CONTEXT_GOTOURL:
       return IsOpenLinkAllowedByDlp(selection_navigation_url_);
 
@@ -3132,6 +3158,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       }
       ABSL_FALLTHROUGH_INTENDED;
     }
+    case IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB:
     case IDC_CONTENT_CONTEXT_GOTOURL: {
       auto disposition = ui::DispositionFromEventFlags(
           event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB);

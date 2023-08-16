@@ -41,14 +41,18 @@ int AccountSelectionView::GetBrandIconIdealSize() {
 FedCmAccountSelectionView::FedCmAccountSelectionView(
     AccountSelectionView::Delegate* delegate)
     : AccountSelectionView(delegate),
-      content::WebContentsObserver(delegate->GetWebContents()) {}
+      content::WebContentsObserver(delegate->GetWebContents()),
+      is_web_contents_visible_(delegate->GetWebContents()->GetVisibility() ==
+                               content::Visibility::VISIBLE) {}
 
 FedCmAccountSelectionView::~FedCmAccountSelectionView() {
   notify_delegate_of_dismiss_ = false;
-  should_show_bubble_widget_ = false;
+  is_modal_closed_but_accounts_fetch_pending_ = false;
   should_destroy_bubble_widget_ = false;
   Close();
 
+  // We use this boolean to record metrics in Close(), reset it after Close().
+  is_mismatch_continue_clicked_ = false;
   TabStripModelObserver::StopObservingAll(this);
 }
 
@@ -62,6 +66,8 @@ void FedCmAccountSelectionView::Show(
   // If IDP sign-in modal dialog is open, we delay the showing of the accounts
   // dialog until the modal dialog is destroyed.
   if (idp_signin_modal_dialog_) {
+    popup_window_state_ =
+        PopupWindowResult::kAccountsReceivedAndPopupNotClosedByIdp;
     show_accounts_dialog_callback_ = base::BindOnce(
         &FedCmAccountSelectionView::Show, weak_ptr_factory_.GetWeakPtr(),
         top_frame_etld_plus_one, iframe_etld_plus_one,
@@ -132,21 +138,27 @@ void FedCmAccountSelectionView::Show(
     GetBubbleView()->ShowMultiAccountPicker(idp_display_data_list_);
   }
 
-  if (create_bubble || should_show_bubble_widget_) {
-    input_protector_->VisibilityChanged(true);
-    bubble_widget_->Show();
-    should_show_bubble_widget_ = false;
+  if (create_bubble || is_modal_closed_but_accounts_fetch_pending_) {
+    is_modal_closed_but_accounts_fetch_pending_ = false;
+    if (is_web_contents_visible_) {
+      input_protector_->VisibilityChanged(true);
+      bubble_widget_->Show();
+    }
   }
   // Else:
   // Do not force show the bubble. The bubble may be purposefully hidden if the
   // WebContents are hidden.
 
   if (!idp_close_popup_time_.is_null()) {
+    popup_window_state_ =
+        PopupWindowResult::kAccountsReceivedAndPopupClosedByIdp;
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "Blink.FedCm.IdpSigninStatus."
         "IdpClosePopupToBrowserShowAccountsDuration",
         base::TimeTicks::Now() - idp_close_popup_time_);
   }
+
+  accounts_dialog_shown_time_ = base::TimeTicks::Now();
 }
 
 void FedCmAccountSelectionView::ShowFailureDialog(
@@ -183,13 +195,16 @@ void FedCmAccountSelectionView::ShowFailureDialog(
       base::UTF8ToUTF16(top_frame_etld_plus_one), iframe_etld_plus_one_u16,
       base::UTF8ToUTF16(idp_etld_plus_one), idp_metadata);
 
-  if (create_bubble || should_show_bubble_widget_) {
+  if ((create_bubble || is_modal_closed_but_accounts_fetch_pending_) &&
+      is_web_contents_visible_) {
     bubble_widget_->Show();
     input_protector_->VisibilityChanged(true);
   }
   // Else:
   // The bubble is not guaranteed to be shown. The bubble will be hidden if the
   // associated web contents are hidden.
+
+  mismatch_dialog_shown_time_ = base::TimeTicks::Now();
 }
 
 std::string FedCmAccountSelectionView::GetTitle() const {
@@ -202,11 +217,12 @@ absl::optional<std::string> FedCmAccountSelectionView::GetSubtitle() const {
 
 void FedCmAccountSelectionView::OnVisibilityChanged(
     content::Visibility visibility) {
+  is_web_contents_visible_ = visibility == content::Visibility::VISIBLE;
   if (!bubble_widget_ || idp_signin_modal_dialog_) {
     return;
   }
 
-  if (visibility == content::Visibility::VISIBLE) {
+  if (is_web_contents_visible_) {
     bubble_widget_->Show();
     bubble_widget_->widget_delegate()->SetCanActivate(true);
     // This will protect against potentially unintentional inputs that happen
@@ -382,8 +398,23 @@ void FedCmAccountSelectionView::OnCloseButtonClicked(const ui::Event& event) {
 void FedCmAccountSelectionView::OnSigninToIdP() {
   delegate_->OnSigninToIdP();
   is_mismatch_continue_clicked_ = true;
+  popup_window_state_ =
+      PopupWindowResult::kAccountsNotReceivedAndPopupNotClosedByIdp;
   UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.IdpSigninStatus.MismatchDialogResult",
                             MismatchDialogResult::kContinued);
+
+  // Samples are at most 10 minutes. This metric is used to determine a
+  // reasonable minimum duration for the mismatch dialog to be shown to prevent
+  // abuse through flashing UI. When users trigger the IDP sign-in flow, the
+  // mismatch dialog is hidden so we record this metric upon user triggering the
+  // flow.
+  if (mismatch_dialog_shown_time_.has_value()) {
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Blink.FedCm.Timing.MismatchDialogShownDuration",
+        base::TimeTicks::Now() - mismatch_dialog_shown_time_.value(),
+        base::Milliseconds(1), base::Minutes(10), 50);
+    mismatch_dialog_shown_time_ = absl::nullopt;
+  }
 }
 
 content::WebContents* FedCmAccountSelectionView::ShowModalDialog(
@@ -403,14 +434,18 @@ void FedCmAccountSelectionView::CloseModalDialog() {
   if (idp_signin_modal_dialog_) {
     idp_signin_modal_dialog_->ClosePopupWindow();
     idp_signin_modal_dialog_.reset();
-    should_show_bubble_widget_ = true;
+    is_modal_closed_but_accounts_fetch_pending_ = true;
     idp_close_popup_time_ = base::TimeTicks::Now();
+    popup_window_state_ =
+        PopupWindowResult::kAccountsNotReceivedAndPopupClosedByIdp;
   }
 
   if (show_accounts_dialog_callback_) {
     std::move(show_accounts_dialog_callback_).Run();
-    input_protector_->VisibilityChanged(true);
-    bubble_widget_->Show();
+    if (is_web_contents_visible_) {
+      input_protector_->VisibilityChanged(true);
+      bubble_widget_->Show();
+    }
   }
 }
 
@@ -478,13 +513,6 @@ void FedCmAccountSelectionView::OnDismiss(DismissReason dismiss_reason) {
   if (!bubble_widget_)
     return;
 
-  bubble_widget_->RemoveObserver(this);
-  bubble_widget_.reset();
-  input_protector_.reset();
-
-  if (notify_delegate_of_dismiss_)
-    delegate_->OnDismiss(dismiss_reason);
-
   // Check is_mismatch_continue_clicked_ to ensure we don't record this metric
   // after MismatchDialogResult::kContinued has been recorded.
   if (state_ == State::IDP_SIGNIN_STATUS_MISMATCH &&
@@ -494,5 +522,41 @@ void FedCmAccountSelectionView::OnDismiss(DismissReason dismiss_reason) {
         dismiss_reason == DismissReason::kCloseButton
             ? MismatchDialogResult::kDismissedByCloseIcon
             : MismatchDialogResult::kDismissedForOtherReasons);
+  }
+
+  // Pop-up window can only be opened through clicking the "Continue" button on
+  // the mismatch dialog. Hence, we record the outcome only after the dialog is
+  // closed.
+  if (is_mismatch_continue_clicked_) {
+    UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.IdpSigninStatus.PopupWindowResult",
+                              popup_window_state_);
+  }
+
+  if (accounts_dialog_shown_time_.has_value()) {
+    // Samples are at most 10 minutes. This metric is used to determine a
+    // reasonable minimum duration for the accounts dialog to be shown to
+    // prevent abuse through flashing UI.
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Blink.FedCm.Timing.AccountsDialogShownDuration",
+        base::TimeTicks::Now() - accounts_dialog_shown_time_.value(),
+        base::Milliseconds(1), base::Minutes(10), 50);
+  }
+
+  if (mismatch_dialog_shown_time_.has_value()) {
+    // Samples are at most 10 minutes. This metric is used to determine a
+    // reasonable minimum duration for the mismatch dialog to be shown to
+    // prevent abuse through flashing UI.
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Blink.FedCm.Timing.MismatchDialogShownDuration",
+        base::TimeTicks::Now() - mismatch_dialog_shown_time_.value(),
+        base::Milliseconds(1), base::Minutes(10), 50);
+  }
+
+  bubble_widget_->RemoveObserver(this);
+  bubble_widget_.reset();
+  input_protector_.reset();
+
+  if (notify_delegate_of_dismiss_) {
+    delegate_->OnDismiss(dismiss_reason);
   }
 }

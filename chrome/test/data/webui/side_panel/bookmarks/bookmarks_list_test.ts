@@ -69,11 +69,13 @@ suite('SidePanelBookmarksListTest', () => {
     bookmarkId: BigInt(3),
     info: {
       title: 'Product Foo',
+      clusterTitle: 'Product Cluster Foo',
       domain: 'foo.com',
       imageUrl: {url: 'https://foo.com/image'},
       productUrl: {url: 'https://foo.com/product'},
       currentPrice: '$12',
       previousPrice: '$34',
+      clusterId: BigInt(12345),
     },
   }];
 

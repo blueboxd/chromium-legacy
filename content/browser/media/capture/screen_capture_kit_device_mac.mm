@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "content/browser/media/capture/io_surface_capture_device_base_mac.h"
+#include "content/browser/media/capture/screen_capture_kit_fullscreen_module.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -132,7 +133,8 @@ namespace content {
 namespace {
 
 class API_AVAILABLE(macos(12.3)) ScreenCaptureKitDeviceMac
-    : public IOSurfaceCaptureDeviceBase {
+    : public IOSurfaceCaptureDeviceBase,
+      public ScreenCaptureKitResetStreamInterface {
  public:
   ScreenCaptureKitDeviceMac(const DesktopMediaID& source)
       : source_(source),
@@ -185,6 +187,10 @@ class API_AVAILABLE(macos(12.3)) ScreenCaptureKitDeviceMac
                 initWithDesktopIndependentWindow:window]);
             CGRect frame = [window frame];
             stream_config_content_size_ = gfx::Size(frame.size);
+            if (!fullscreen_module_) {
+              fullscreen_module_ = MaybeCreateScreenCaptureKitFullscreenModule(
+                  device_task_runner_, *this, window);
+            }
             break;
           }
         }
@@ -249,6 +255,10 @@ class API_AVAILABLE(macos(12.3)) ScreenCaptureKitDeviceMac
       return;
     }
     client()->OnStarted();
+
+    if (fullscreen_module_) {
+      fullscreen_module_->Start();
+    }
   }
   void OnStreamStopped(bool error) {
     if (error) {
@@ -332,8 +342,21 @@ class API_AVAILABLE(macos(12.3)) ScreenCaptureKitDeviceMac
         visible_rect.value_or(gfx::Rect(actual_capture_format_.frame_size)));
   }
   void OnStreamError() {
-    client()->OnError(media::VideoCaptureError::kScreenCaptureKitStreamError,
-                      FROM_HERE, "Stream delegate called didStopWithError");
+    if (is_resetting_ || (fullscreen_module_ &&
+                          fullscreen_module_->is_fullscreen_window_active())) {
+      // Clear `is_resetting_` because the completion handler in ResetStreamTo()
+      // may not be called if there's an error.
+      is_resetting_ = false;
+
+      // The stream_ is no longer valid. Restart the stream from scratch.
+      if (fullscreen_module_) {
+        fullscreen_module_->Reset();
+      }
+      OnStart();
+    } else {
+      client()->OnError(media::VideoCaptureError::kScreenCaptureKitStreamError,
+                        FROM_HERE, "Stream delegate called didStopWithError");
+    }
   }
 
   // IOSurfaceCaptureDeviceBase:
@@ -373,6 +396,32 @@ class API_AVAILABLE(macos(12.3)) ScreenCaptureKitDeviceMac
     stream_.reset();
   }
 
+  // ScreenCaptureKitResetStreamInterface.
+  void ResetStreamTo(SCWindow* window) override {
+    if (!window || is_resetting_) {
+      client()->OnError(
+          media::VideoCaptureError::kScreenCaptureKitResetStreamError,
+          FROM_HERE, "Error on ResetStreamTo.");
+      return;
+    }
+
+    is_resetting_ = true;
+    base::scoped_nsobject<SCContentFilter> filter;
+    filter.reset(
+        [[SCContentFilter alloc] initWithDesktopIndependentWindow:window]);
+
+    [stream_ updateContentFilter:filter
+               completionHandler:^(NSError* _Nullable error) {
+                 is_resetting_ = false;
+                 if (error) {
+                   client()->OnError(
+                       media::VideoCaptureError::kScreenCaptureKitStreamError,
+                       FROM_HERE,
+                       "Error on updateContentFilter (fullscreen window).");
+                 }
+               }];
+  }
+
  private:
   const DesktopMediaID source_;
   const scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
@@ -390,46 +439,42 @@ class API_AVAILABLE(macos(12.3)) ScreenCaptureKitDeviceMac
   // Helper class that acts as output and delegate for `stream_`.
   base::scoped_nsobject<ScreenCaptureKitDeviceHelper> helper_;
 
+  // This is used to detect when a captured presentation enters fullscreen mode.
+  // If this happens, the module will call the ResetStreamTo function.
+  std::unique_ptr<ScreenCaptureKitFullscreenModule> fullscreen_module_;
+
+  bool is_resetting_ = false;
+
   // The stream that does the capturing.
   base::scoped_nsobject<SCStream> stream_;
 
   base::WeakPtrFactory<ScreenCaptureKitDeviceMac> weak_factory_{this};
 };
 
-// Desktop capture is not working in macOS < 13, see https:://crbug.com/1352441.
-bool IsScreenCaptureKitDesktopWorking(void) {
-  if (@available(macOS 13.0, *)) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
 }  // namespace
 
 std::unique_ptr<media::VideoCaptureDevice> CreateScreenCaptureKitDeviceMac(
     const DesktopMediaID& source) {
-  switch (source.type) {
-    case DesktopMediaID::TYPE_SCREEN:
-      if (!IsScreenCaptureKitDesktopWorking())
+  // Although ScreenCaptureKit is available in 12.3 there were some bugs that
+  // were not fixed until 13.2.
+  if (@available(macOS 13.2, *)) {
+    switch (source.type) {
+      case DesktopMediaID::TYPE_SCREEN:
+        // ScreenCaptureKitDeviceMac only supports a single display at a time.
+        // It will not stitch desktops together. https://crbug.com/1178360
+        if (source.id == webrtc::kFullDesktopScreenId ||
+            source.id == webrtc::kInvalidScreenId) {
+          return nullptr;
+        }
+        break;
+      case DesktopMediaID::TYPE_WINDOW:
+        break;
+      default:
+        // ScreenCaptureKitDeviceMac supports only TYPE_SCREEN and TYPE_WINDOW.
+        // https://crbug.com/1176900
         return nullptr;
-      // ScreenCaptureKitDeviceMac only supports a single display at a time. It
-      // will not stitch desktops together.
-      // https://crbug.com/1178360
-      if (source.id == webrtc::kFullDesktopScreenId ||
-          source.id == webrtc::kInvalidScreenId) {
-        return nullptr;
-      }
-      break;
-    case DesktopMediaID::TYPE_WINDOW:
-      break;
-    default:
-      // ScreenCaptureKitDeviceMac supports only TYPE_SCREEN and TYPE_WINDOW.
-      // https://crbug.com/1176900
-      return nullptr;
-  }
+    }
 
-  if (@available(macOS 12.3, *)) {
     IncrementDesktopCaptureCounter(SCREEN_CAPTURER_CREATED);
     IncrementDesktopCaptureCounter(source.audio_share
                                        ? SCREEN_CAPTURER_CREATED_WITH_AUDIO

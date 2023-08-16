@@ -6,11 +6,13 @@
 <translation id="1352919863522755794">Menedżerowi haseł Google nie udało się sprawdzić haseł. Sprawdź połączenie z internetem.</translation>
 <translation id="1462727070346936664">Zaloguj się, aby w pełni wykorzystać możliwości Chrome.</translation>
 <translation id="1479202195792305274">Chrome może sprawdzić Twoje hasła, gdy zalogujesz się na swoje konto Google.</translation>
+<translation id="1491435845014430217">Włącz „Po zamknięciu Chrome blokuj karty incognito”.</translation>
 <translation id="1493827051843127077">Ustaw Chrome jako przeglądarkę domyślną, aby synchronizować karty, hasła i dane kart płatniczych na wszystkich urządzeniach</translation>
 <translation id="1504372625950710826">Chrome nie udało się sprawdzić dostępności aktualizacji. Sprawdź połączenie z internetem.</translation>
 <translation id="1511320244449497906">Jesteś zalogowany(-a) i synchronizujesz dane z kontem zarządzanym przez <ph name="DOMAIN" />. Administrator może teraz ustawiać specjalnie dla tego konta zasady dotyczące użytkowników, które mogą zmieniać działanie Chrome.</translation>
 <translation id="1554731936187952550">Korzystasz z najlepszych zabezpieczeń Chrome przed szkodliwymi stronami</translation>
 <translation id="1682483655351012182">Synchronizuj dane Chrome</translation>
+<translation id="1733654336159102143">Po zamknięciu Chrome lub przełączeniu się na inną aplikację zablokuj tryb incognito.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Automatycznie używaj Chrome, gdy klikasz linki w wiadomościach, dokumentach i innych aplikacjach.</translation>
 <translation id="1917964099031477364">To konto razem z wszelkimi niezapisanymi danymi zostanie usunięte z Chrome i innych aplikacji Google na tym urządzeniu.</translation>
@@ -48,6 +50,7 @@
 <translation id="3503014945441706099">Włącz też Ulepszone Bezpieczne przeglądanie na tym profilu Chrome</translation>
 <translation id="3522659714780527202">Aby widzieć swoje karty zawsze, kiedy korzystasz z Chrome, włącz synchronizację</translation>
 <translation id="3533694711092285624">Brak zapisanych haseł. Chrome może sprawdzać Twoje hasła, gdy je zapiszesz.</translation>
+<translation id="3594076341410558780">Ukryj „W pełni wykorzystuj potencjał Chrome”</translation>
 <translation id="3655656110921623717">Oznacza to, że Chrome będzie za każdym razem wyświetlać witrynę mobilną.</translation>
 <translation id="3720541637541300822">Po zamknięciu Chrome blokuj karty incognito</translation>
 <translation id="3827545470516145620">Na tym urządzeniu korzystasz ze standardowej ochrony</translation>
@@ -66,8 +69,10 @@
 <translation id="4636900170638246267">Zaloguj się w na tej stronie i w Chrome.</translation>
 <translation id="4698415050768537821">Przeglądarce Chrome nie udało się sprawdzić wszystkich haseł. Spróbuj ponownie jutro lub <ph name="BEGIN_LINK" />sprawdź hasła na koncie Google<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Aby pomóc nam ulepszać aplikację, Chrome wysyła do Google dane o użytkowaniu i awariach. <ph name="BEGIN_LINK" />Zarządzaj<ph name="END_LINK" /></translation>
+<translation id="4830799082179398588">Ustawić Chrome jako przeglądarkę domyślną?</translation>
 <translation id="484033449593719797">Nieobsługiwane w Chrome Beta</translation>
 <translation id="4840404732697892756">Menedżer haseł Google może sprawdzać Twoje hasła, gdy zalogujesz się na konto Google.</translation>
+<translation id="4903674399067644695">Ta karta zawiera sugestie, które pomogą Ci w pełni wykorzystać możliwości Chrome.</translation>
 <translation id="5030102366287574140">Chrome pomaga chronić Cię przed naruszeniami bezpieczeństwa danych, niebezpiecznymi stronami internetowymi i innymi zagrożeniami.</translation>
 <translation id="5108659628347594808">Ulepszaj Chrome</translation>
 <translation id="5119391094379141756">Wybierz Chrome.</translation>
@@ -76,6 +81,7 @@
 <translation id="5395376160638294582">Upewnij się, że zawsze możesz używać danych Chrome na swoim koncie Google</translation>
 <translation id="5460571915754665838">4. Wybierz Chrome.</translation>
 <translation id="5492504007368565877">Menedżer haseł Google nie może sprawdzić Twoich haseł.</translation>
+<translation id="5527026824954593399">Kliknij „Zobacz w Mapach Google w Chrome”.</translation>
 <translation id="5552137475244467770">Co jakiś czas Chrome sprawdza, czy Twoje hasła nie pojawiły się na listach opublikowanych w internecie. Aby nikt (nawet Google) nie mógł odczytać haseł ani nazw użytkowników, podczas sprawdzania są one zaszyfrowane.</translation>
 <translation id="5639704535586432836">Wybierz Ustawienia &gt; Prywatność &gt; Aparat &gt; Google Chrome i włącz aparat.</translation>
 <translation id="5642200033778930880">Google Chrome nie może używać aparatu w trybie widoku dzielonego</translation>
@@ -111,10 +117,12 @@
 <translation id="7261678641327190792">Chrome nie może sprawdzić Twoich haseł</translation>
 <translation id="7272930098487145294">Aby zapisać obrazy, kliknij Ustawienia i pozwól Chrome na dodanie ich do Twoich zdjęć</translation>
 <translation id="7275945473750112644">Twoim kontem zarządza <ph name="HOSTED_DOMAIN" />, więc Twoje dane z Chrome zostaną usunięte z tego urządzenia</translation>
+<translation id="7394108421562933108">Mapy w Chrome</translation>
 <translation id="7400722733683201933">Google Chrome – informacje</translation>
-<translation id="7501046334262221972">Aby ustawić Chrome jako przeglądarkę domyślną, otwórz Ustawienia. Kliknij Domyślna przeglądarka i wybierz Chrome.</translation>
+<translation id="7501046334262221972">Aby ustawić Chrome jako przeglądarkę domyślną, otwórz Ustawienia, kliknij Domyślna przeglądarka i wybierz Chrome.</translation>
 <translation id="756809126120519699">Wyczyszczono dane Chrome</translation>
 <translation id="7662994914830945754">Aby widzieć swoje karty zawsze, kiedy korzystasz z Chrome, zaloguj się i włącz synchronizację</translation>
+<translation id="7669869107155339016">Otwórz ustawienia Chrome.</translation>
 <translation id="7693590760643069321">Teraz możesz używać Chrome za każdym razem, gdy klikniesz link w wiadomościach, dokumentach i w innych aplikacjach.</translation>
 <translation id="7698568245838009292">Chrome chce mieć dostęp do kamery</translation>
 <translation id="7754633291442704733">Twoja organizacja (<ph name="DOMAIN" />) będzie miała dostęp do danych, zakładek, historii, haseł i innych ustawień Chrome, które przechowujesz na tym koncie. Gdy się wylogujesz, dane zostaną usunięte z tego urządzenia.  Pozostaną one jednak zapisane na zarządzanym koncie Google i organizacja będzie miała do nich dostęp. Organizacja może też ustawiać na tym koncie zasady dotyczące użytkowników, które mogą zmieniać działanie Chrome.</translation>

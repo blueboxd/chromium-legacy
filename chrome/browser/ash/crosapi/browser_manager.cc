@@ -86,6 +86,7 @@
 #include "chromeos/startup/startup_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/crash/core/app/crashpad.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -632,6 +633,10 @@ BrowserManager::BrowserManager(
     CHECK_IS_TEST();
   }
 
+  if (user_manager::UserManager::IsInitialized()) {
+    user_manager_observation_.Observe(user_manager::UserManager::Get());
+  }
+
   std::string socket_path =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           ash::switches::kLacrosMojoSocketForTesting);
@@ -761,12 +766,60 @@ void BrowserManager::CreateBrowserWithRestoredData(
       first_non_pinned_tab_index, app_name, restore_window_id));
 }
 
-void BrowserManager::InitializeAndStartIfNeeded() {
-  // If we already tried to load Lacros but for some reason it wasn't available
-  // (for example, in some tests), then we should return here to avoid failure.
-  if (state_ == State::UNAVAILABLE) {
-    return;
+bool BrowserManager::EnsureLaunch() {
+  // This method can only ensure Lacros's launch if the user profile is already
+  // initialized.
+  auto* user = user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!user || !user->is_profile_created()) {
+    return false;
   }
+
+  switch (state_) {
+    case State::NOT_INITIALIZED:
+    case State::RELOADING:
+      LOG(WARNING) << "Ensuring Lacros launch: initialize and start";
+      InitializeAndStartIfNeeded();
+      return true;
+
+    case State::PRE_LAUNCHED:
+      LOG(WARNING) << "Ensuring Lacros launch: resume pre-launched instance";
+      ResumeLaunch();
+      return true;
+
+    case State::RUNNING:
+      LOG(WARNING) << "Ensuring Lacros launch: already running";
+      return true;
+
+    case State::STOPPED:
+      if (IsKeepAliveEnabled() || !pending_actions_.IsEmpty()) {
+        LOG(WARNING) << "Ensuring Lacros launch: currently stopped, but will "
+                        "be restarted";
+      } else {
+        LOG(WARNING) << "Ensuring Lacros launch: currently stopped, starting";
+        StartIfNeeded();
+      }
+      return true;
+
+    case State::MOUNTING:
+    case State::CREATING_LOG_FILE:
+    case State::STARTING:
+      LOG(WARNING)
+          << "Ensuring Lacros launch: already in the process of starting";
+      return true;
+
+    case State::TERMINATING:
+      LOG(WARNING)
+          << "Ensuring Lacros launch: currently terminating, enqueueing launch";
+      PerformOrEnqueue(BrowserAction::GetActionForSessionStart());
+      return true;
+
+    case State::UNAVAILABLE:
+      LOG(WARNING) << "Can't ensure Lacros launch: unavailable";
+      return false;
+  }
+}
+
+void BrowserManager::InitializeAndStartIfNeeded() {
   DCHECK(state_ == State::NOT_INITIALIZED || state_ == State::RELOADING);
 
   // Ensure this isn't run multiple times.
@@ -1164,8 +1217,6 @@ void BrowserManager::StartWithLogFile(bool launching_at_login_screen,
     }
 
     argv.push_back(std::string("--vmodule=")
-                   // TODO(crbug.com/1423163): Remove after fix.
-                   + "command_storage_backend=1,session_service_commands=1"
                    // TODO(crbug.com/1371493): Remove after fix.
                    + ",wayland_window_drag_controller=1,wayland_data_source=1" +
                    ",tab_drag_controller=1");
@@ -1470,7 +1521,7 @@ void BrowserManager::OnSessionStateChanged() {
   if (state_ == State::PRE_LAUNCHED) {
     // Resume Lacros launch after login, if it was pre-launched.
     ResumeLaunch();
-  } else {
+  } else if (state_ == State::NOT_INITIALIZED) {
     // Otherwise, just start Lacros normally, if appropriate.
     InitializeAndStartIfNeeded();
   }
@@ -1530,6 +1581,19 @@ void BrowserManager::OnRefreshSchedulerDestruction(
   scheduler->RemoveObserver(this);
 }
 
+void BrowserManager::OnUserProfileCreated(const user_manager::User& user) {
+  if (!user_manager::UserManager::Get()->IsPrimaryUser(&user)) {
+    return;
+  }
+
+  // Check if Lacros is enabled for crash reporting. This must happen after the
+  // primary user has been set as priamry user state is used in when evaluating
+  // the correct value for IsLacrosEnabled().
+  constexpr char kLacrosEnabledDataKey[] = "lacros-enabled";
+  static crash_reporter::CrashKeyString<4> key(kLacrosEnabledDataKey);
+  key.Set(crosapi::browser_util::IsLacrosEnabled() ? "yes" : "no");
+}
+
 void BrowserManager::OnLoadComplete(bool launching_at_login_screen,
                                     const base::FilePath& path,
                                     LacrosSelection selection,
@@ -1567,10 +1631,8 @@ void BrowserManager::ResumeLaunch() {
   // executed in |InitializeAndStartIfNeeded| (we call |PrelaunchAtLoginScreen|
   // instead) and |StartWithLogFile|, because they required the user to be
   // logged in.
-  DCHECK_EQ(session_manager::SessionManager::Get()->session_state(),
-            session_manager::SessionState::ACTIVE);
-  DCHECK(user_manager::UserManager::Get()->IsUserLoggedIn());
   DCHECK_EQ(state_, State::PRE_LAUNCHED);
+  DCHECK(user_manager::UserManager::Get()->IsUserLoggedIn());
 
   // Ensure this isn't run multiple times.
   ash::SessionManagerClient::Get()->RemoveObserver(this);

@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 
 namespace feature_engagement {
@@ -29,7 +30,7 @@ BASE_FEATURE(kIPHBatterySaverModeFeature,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHCompanionSidePanelFeature,
              "IPH_CompanionSidePanel",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHCompanionSidePanelRegionSearchFeature,
              "IPH_CompanionSidePanelRegionSearch",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -84,6 +85,9 @@ BASE_FEATURE(kIPHPerformanceNewBadgeFeature,
 BASE_FEATURE(kIPHPowerBookmarksSidePanelFeature,
              "IPH_PowerBookmarksSidePanel",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHPriceInsightsPageActionIconLabelFeature,
+             "IPH_PriceInsightsPageActionIconLabelFeature",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHPriceTrackingChipFeature,
              "IPH_PriceTrackingChipFeature",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -429,9 +433,6 @@ BASE_FEATURE(kIPHBottomToolbarTipFeature,
 BASE_FEATURE(kIPHLongPressToolbarTipFeature,
              "IPH_LongPressToolbarTip",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kIPHNewTabTipFeature,
-             "IPH_NewTabTip",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHNewIncognitoTabTipFeature,
              "IPH_NewIncognitoTabTip",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -501,6 +502,9 @@ BASE_FEATURE(kIPHiOSShareToolbarItemFeature,
 BASE_FEATURE(kIPHiOSDefaultBrowserVideoPromoTriggerFeature,
              "IPH_iOSDefaultBrowserVideoPromoTrigger",
              base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHiOSPromoPostRestoreDefaultBrowserFeature,
+             "IPH_iOSPromoPostRestoreDefaultBrowser",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
@@ -523,5 +527,11 @@ BASE_FEATURE(kIPHLauncherSearchHelpUiFeature,
              "IPH_LauncherSearchHelpUi",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
+
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+BASE_FEATURE(kIPHiOSPasswordPromoDesktopFeature,
+             "IPH_iOSPasswordPromoDesktop",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 }  // namespace feature_engagement

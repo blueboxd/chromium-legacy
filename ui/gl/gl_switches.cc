@@ -209,7 +209,7 @@ const base::FeatureParam<int> kVerifyDrawOffsetY{
 // that DWM power optimization can be turned on.
 BASE_FEATURE(kDirectCompositionLetterboxVideoOptimization,
              "DirectCompositionLetterboxVideoOptimization",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allow dual GPU rendering through EGL where supported, i.e., allow a WebGL
 // or WebGPU context to be on the high performance GPU if preferred and Chrome
@@ -221,7 +221,7 @@ BASE_FEATURE(kEGLDualGPURendering,
 // Allow overlay swapchain to use Intel video processor for super resolution.
 BASE_FEATURE(kIntelVpSuperResolution,
              "IntelVpSuperResolution",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allow overlay swapchain to use NVIDIA video processor for super resolution.
 BASE_FEATURE(kNvidiaVpSuperResolution,

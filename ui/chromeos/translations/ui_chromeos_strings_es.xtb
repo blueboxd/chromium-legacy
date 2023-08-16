@@ -107,7 +107,7 @@
 <translation id="1838709767668011582">Sitio de Google</translation>
 <translation id="1853795129690976061">Esta carpeta se comparte con Linux</translation>
 <translation id="1864756863218646478">No se ha podido encontrar el archivo.</translation>
-<translation id="1877377730633446520">Se requieren unos <ph name="REQUIRED_SPACE" /> de espacio disponible. Actualmente tienes <ph name="FREE_SPACE" /> de espacio disponible.</translation>
+<translation id="1877377730633446520">Se requiere un espacio disponible de <ph name="REQUIRED_SPACE" />. Actualmente tienes <ph name="FREE_SPACE" /> de espacio disponible.</translation>
 <translation id="1884013283844450420">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, conectar</translation>
 <translation id="1920670151694390848">Malayalam (transliteración)</translation>
 <translation id="1920798810075583923">Sandía</translation>
@@ -358,6 +358,7 @@
 <translation id="3943857333388298514">Pegar</translation>
 <translation id="3952872973865944257">Telugu (fonético)</translation>
 <translation id="3958548648197196644">Kiwi</translation>
+<translation id="397105322502079400">Calculando...</translation>
 <translation id="3971140002794351170">Descargar perfil móvil, red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Inglés (Reino Unido)</translation>
 <translation id="3975895378829046965">Bengalí (fonético)</translation>

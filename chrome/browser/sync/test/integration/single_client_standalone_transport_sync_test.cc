@@ -20,6 +20,7 @@
 #include "components/sync/service/glue/sync_transport_data_prefs.h"
 #include "components/sync/service/sync_service_impl.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_launcher.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
@@ -309,11 +310,13 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
 
-  // With `kReplaceSyncPromosWithSignInPromos`, both HISTORY and
-  // HISTORY_DELETE_DIRECTIVES should be enabled in transport mode.
+  // With `kReplaceSyncPromosWithSignInPromos`, all the history-related types
+  // should be enabled in transport mode.
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::HISTORY));
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
       syncer::HISTORY_DELETE_DIRECTIVES));
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::SESSIONS));
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::USER_EVENTS));
 
   // With `kReplaceSyncPromosWithSignInPromos`, both PREFERENCES and
   // PRIORITY_PREFERENCES should be enabled in transport mode.
@@ -357,12 +360,14 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
 
-  // Without `kReplaceSyncPromosWithSignInPromos`, neither HISTORY nor
-  // HISTORY_DELETE_DIRECTIVES should be enabled in transport mode (even if the
-  // user has opted in).
+  // Without `kReplaceSyncPromosWithSignInPromos`, none of the history-related
+  // types should be enabled in transport mode (even if the user has opted in).
   EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::HISTORY));
   EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(
       syncer::HISTORY_DELETE_DIRECTIVES));
+  EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::SESSIONS));
+  EXPECT_FALSE(
+      GetSyncService(0)->GetActiveDataTypes().Has(syncer::USER_EVENTS));
 
   // Without `kReplaceSyncPromosWithSignInPromos`, neither PREFERENCES nor
   // PRIORITY_PREFERENCES should be enabled in transport mode (even if the user
@@ -371,6 +376,60 @@ IN_PROC_BROWSER_TEST_F(
       GetSyncService(0)->GetActiveDataTypes().Has(syncer::PREFERENCES));
   EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(
       syncer::PRIORITY_PREFERENCES));
+}
+
+// A test fixture to cover migration behavior: In PRE_ tests, the
+// kReplaceSyncPromosWithSignInPromos is *dis*abled, in non-PRE_ tests it is
+// *en*abled.
+class SingleClientStandaloneTransportReplaceSyncWithSigninMigrationSyncTest
+    : public SingleClientStandaloneTransportSyncTest {
+ public:
+  SingleClientStandaloneTransportReplaceSyncWithSigninMigrationSyncTest() {
+    override_features_.InitWithFeatureState(
+        syncer::kReplaceSyncPromosWithSignInPromos, !content::IsPreTest());
+  }
+  ~SingleClientStandaloneTransportReplaceSyncWithSigninMigrationSyncTest()
+      override = default;
+
+ private:
+  base::test::ScopedFeatureList override_features_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientStandaloneTransportReplaceSyncWithSigninMigrationSyncTest,
+    PRE_MigratesSignedInUser) {
+  ASSERT_TRUE(SetupClients());
+  // Sign in, without turning on Sync-the-feature.
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+
+  // E.g. Preferences and Passwords are enabled by default.
+  ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->GetSelectedTypes().Has(
+      syncer::UserSelectableType::kPreferences));
+  ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->GetSelectedTypes().Has(
+      syncer::UserSelectableType::kPasswords));
+
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientStandaloneTransportReplaceSyncWithSigninMigrationSyncTest,
+    MigratesSignedInUser) {
+  ASSERT_TRUE(SetupClients());
+
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+
+  // Passwords is still enabled, but Preferences should've been disabled by the
+  // migration.
+  EXPECT_TRUE(GetSyncService(0)->GetUserSettings()->GetSelectedTypes().Has(
+      syncer::UserSelectableType::kPasswords));
+  EXPECT_FALSE(GetSyncService(0)->GetUserSettings()->GetSelectedTypes().Has(
+      syncer::UserSelectableType::kPreferences));
 }
 
 }  // namespace

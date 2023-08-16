@@ -178,10 +178,6 @@ enum class PresentedState {
   return self;
 }
 
-- (void)dealloc {
-  CHECK(!_browserState);
-}
-
 - (void)stop {
   [_mediator disconnect];
   _mediator = nil;

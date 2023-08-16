@@ -38,6 +38,7 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/client_hints/client_hints_factory.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
+#include "chrome/browser/companion/visual_search/visual_search_suggestions_service_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/content_index/content_index_provider_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -211,7 +212,6 @@
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/supervised_user/core/common/buildflags.h"
-#include "components/variations/service/google_groups_updater_service.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/base/media_switches.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -612,6 +612,8 @@ void ChromeBrowserMainExtraPartsProfiles::
   ClipboardRestrictionServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
   ClosedTabCacheServiceFactory::GetInstance();
+  companion::visual_search::VisualSearchSuggestionsServiceFactory::
+      GetInstance();
 #endif
   ConsentAuditorFactory::GetInstance();
   ContentIndexProviderFactory::GetInstance();
@@ -686,9 +688,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   GalleryWatchManager::EnsureFactoryBuilt();
   GlobalErrorServiceFactory::GetInstance();
 #endif
-  if (base::FeatureList::IsEnabled(kVariationsGoogleGroupFiltering)) {
-    GoogleGroupsUpdaterServiceFactory::GetInstance();
-  }
+  GoogleGroupsUpdaterServiceFactory::GetInstance();
   HeavyAdServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
   HidChooserContextFactory::GetInstance();

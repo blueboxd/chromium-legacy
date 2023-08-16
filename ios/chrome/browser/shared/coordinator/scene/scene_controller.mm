@@ -327,6 +327,9 @@ void InjectNTP(Browser* browser) {
 @property(nonatomic, strong)
     IncognitoInterstitialCoordinator* incognitoInterstitialCoordinator;
 
+// YES if the Settings view is being dismissed.
+@property(nonatomic, assign) BOOL dismissingSettings;
+
 @end
 
 @implementation SceneController
@@ -585,17 +588,6 @@ void InjectNTP(Browser* browser) {
                                 sceneState.currentOrigin);
 }
 
-- (BOOL)presentSignInAccountsViewControllerIfNecessary {
-  ChromeBrowserState* browserState = self.currentInterface.browserState;
-  DCHECK(browserState);
-  if ([SignedInAccountsViewController
-          shouldBePresentedForBrowserState:browserState]) {
-    [self presentSignedInAccountsViewControllerForBrowserState:browserState];
-    return YES;
-  }
-  return NO;
-}
-
 - (void)sceneState:(SceneState*)sceneState
     hasPendingURLs:(NSSet<UIOpenURLContext*>*)URLContexts {
   DCHECK(URLContexts);
@@ -824,6 +816,19 @@ void InjectNTP(Browser* browser) {
       }));
 }
 
+// Present the sign-in accounts view if the accounts have changed while in
+// background.
+- (BOOL)presentSignInAccountsViewControllerIfNecessary {
+  ChromeBrowserState* browserState = self.currentInterface.browserState;
+  DCHECK(browserState);
+  if ([SignedInAccountsViewController
+          shouldBePresentedForBrowserState:browserState]) {
+    [self presentSignedInAccountsViewControllerForBrowserState:browserState];
+    return YES;
+  }
+  return NO;
+}
+
 - (void)initializeUI {
   if (self.sceneState.UIEnabled) {
     return;
@@ -858,9 +863,7 @@ void InjectNTP(Browser* browser) {
   DefaultBrowserPromoSceneAgent* defaultBrowserAgent =
       [[DefaultBrowserPromoSceneAgent alloc]
           initWithCommandDispatcher:mainCommandDispatcher];
-  if (IsDefaultBrowserInPromoManagerEnabled()) {
-    defaultBrowserAgent.promosManager = promosManager;
-  }
+  defaultBrowserAgent.promosManager = promosManager;
   [self.sceneState addAgent:defaultBrowserAgent];
   [self.sceneState
       addAgent:[[NonModalDefaultBrowserPromoSchedulerSceneAgent alloc] init]];
@@ -1216,10 +1219,6 @@ void InjectNTP(Browser* browser) {
   [self.sceneState.appState removeObserver:self];
 }
 
-- (void)dealloc {
-  CHECK(!self.sceneState.UIEnabled);
-}
-
 // Formats string for display on iPadOS application switcher with the
 // domain of the foreground tab and the tab count. Assumes the scene is
 // visible. Will return nil if there are no tabs.
@@ -1525,6 +1524,21 @@ void InjectNTP(Browser* browser) {
                                  completion:nil];
 }
 
+- (void)showPrivacySettingsFromViewController:
+    (UIViewController*)baseViewController {
+  if (self.settingsNavigationController) {
+    return;
+  }
+
+  Browser* browser = self.mainInterface.browser;
+  self.settingsNavigationController =
+      [SettingsNavigationController privacyControllerForBrowser:browser
+                                                       delegate:self];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
+}
+
 - (void)showReportAnIssueFromViewController:
             (UIViewController*)baseViewController
                                      sender:(UserFeedbackSender)sender {
@@ -1680,13 +1694,25 @@ void InjectNTP(Browser* browser) {
   Browser* mainBrowser = self.mainInterface.browser;
 
   switch (command.operation) {
-    case AuthenticationOperationReauthenticate:
+    case AuthenticationOperationPrimaryAccountReauth:
       self.signinCoordinator = [SigninCoordinator
-          reAuthenticationCoordinatorWithBaseViewController:baseViewController
-                                                    browser:mainBrowser
-                                                accessPoint:command.accessPoint
-                                                promoAction:command
-                                                                .promoAction];
+          primaryAccountReauthCoordinatorWithBaseViewController:
+              baseViewController
+                                                        browser:mainBrowser
+                                                    accessPoint:command
+                                                                    .accessPoint
+                                                    promoAction:
+                                                        command.promoAction];
+      break;
+    case AuthenticationOperationSigninAndSyncReauth:
+      self.signinCoordinator = [SigninCoordinator
+          signinAndSyncReauthCoordinatorWithBaseViewController:
+              baseViewController
+                                                       browser:mainBrowser
+                                                   accessPoint:command
+                                                                   .accessPoint
+                                                   promoAction:
+                                                       command.promoAction];
       break;
     case AuthenticationOperationSigninAndSync:
       self.signinCoordinator = [SigninCoordinator
@@ -1783,9 +1809,10 @@ void InjectNTP(Browser* browser) {
   // Copy the URL so it can be safely captured in the block.
   GURL copiedURL = url;
 
-  [self startSigninCoordinatorWithCompletion:^(BOOL success) {
+  [self startSigninCoordinatorWithCompletion:^(SigninCoordinatorResult result) {
     // If the sign-in is not successful or the scene controller is shut down do
     // not load the continuation URL.
+    BOOL success = result == SigninCoordinatorResultSuccess;
     if (!success || !weakSelf) {
       return;
     }
@@ -2103,7 +2130,8 @@ void InjectNTP(Browser* browser) {
 
   self.settingsNavigationController =
       [SettingsNavigationController defaultBrowserControllerForBrowser:browser
-                                                              delegate:self];
+                                                              delegate:self
+                                                          sourceForUMA:source];
   [baseViewController presentViewController:self.settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -2982,19 +3010,17 @@ void InjectNTP(Browser* browser) {
     strongSelf.dismissingSigninPromptFromExternalTrigger = NO;
   };
 
-  if (self.settingsNavigationController) {
-    __weak SettingsNavigationController* settingsNavigationController =
-        self.settingsNavigationController;
-    self.settingsNavigationController = nil;
+  if (self.settingsNavigationController && !self.dismissingSettings) {
+    self.dismissingSettings = YES;
     // Store a reference to the presentingViewController in case the user
     // is dismissing the Signin screen and then dismisses Settings before
     // the Signin screen is done animating, which will delay the execution of
     // the `dismissSettings` block stopping the code from accessing
     // the `presentingViewController` property.
     __weak UIViewController* weakPresentingViewController =
-        [settingsNavigationController presentingViewController];
+        [self.settingsNavigationController presentingViewController];
     ProceduralBlock dismissSettings = ^() {
-      [settingsNavigationController cleanUpSettings];
+      [weakSelf.settingsNavigationController cleanUpSettings];
       UIViewController* strongPresentingViewController =
           weakPresentingViewController;
       if (strongPresentingViewController) {
@@ -3005,6 +3031,8 @@ void InjectNTP(Browser* browser) {
         // The view is already dismissed. Completion should still be called.
         completion();
       }
+      weakSelf.settingsNavigationController = nil;
+      weakSelf.dismissingSettings = NO;
     };
     // `self.signinCoordinator` can be presented on top of the settings, to
     // present the Trusted Vault reauthentication `self.signinCoordinator` has
@@ -3048,7 +3076,7 @@ void InjectNTP(Browser* browser) {
 
 // Starts the sign-in coordinator with a default cleanup completion.
 - (void)startSigninCoordinatorWithCompletion:
-    (signin_ui::CompletionCallback)completion {
+    (ShowSigninCommandCompletionCallback)completion {
   DCHECK(self.signinCoordinator);
   AuthenticationService* authenticationService =
       AuthenticationServiceFactory::GetForBrowserState(
@@ -3058,7 +3086,7 @@ void InjectNTP(Browser* browser) {
   switch (statusService) {
     case AuthenticationService::ServiceStatus::SigninDisabledByPolicy: {
       if (completion) {
-        completion(/*success=*/NO);
+        completion(SigninCoordinatorResultDisabled);
       }
       [self.signinCoordinator stop];
       id<PolicyChangeCommands> handler = HandlerForProtocol(
@@ -3096,7 +3124,7 @@ void InjectNTP(Browser* browser) {
         uiBlocker.reset();
 
         if (completion) {
-          completion(result == SigninCoordinatorResultSuccess);
+          completion(result);
         }
 
         if (!weakSelf.dismissingSigninPromptFromExternalTrigger) {

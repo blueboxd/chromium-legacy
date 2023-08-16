@@ -4,12 +4,15 @@
 
 #import "ios/chrome/browser/ui/whats_new/whats_new_mediator.h"
 
+#import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/notreached.h"
+#import "base/strings/strcat.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/ui/whats_new/data_source/whats_new_data_source.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_mediator_consumer.h"
+#import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/public/provider/chrome/browser/password_auto_fill/password_auto_fill_api.h"
@@ -51,20 +54,31 @@
 #pragma mark - WhatsNewDetailViewActionHandler
 
 - (void)didTapActionButton:(WhatsNewType)type {
+  const char* type_str = WhatsNewTypeToString(type);
+  if (!type_str) {
+    return;
+  }
+
+  std::string metric =
+      base::StrCat({"WhatsNew.", type_str, ".PrimaryActionTapped"});
+  base::RecordAction(base::UserMetricsAction(metric.c_str()));
+
   switch (type) {
-    case WhatsNewType::kAddPasswordManually:
-      base::RecordAction(base::UserMetricsAction(
-          "WhatsNew.AddPasswordManually.PrimaryActionTapped"));
-      [self.handler showSettingsFromViewController:self.baseViewController];
-      break;
     case WhatsNewType::kUseChromeByDefault:
-      base::RecordAction(base::UserMetricsAction(
-          "WhatsNew.UseChromeByDefault.PrimaryActionTapped"));
+      // Handles actions that open iOS Settings.
       [self openSettingsURLString];
       break;
+    case WhatsNewType::kIncognitoTabsFromOtherApps:
+    case WhatsNewType::kIncognitoLock:
+      [self.handler
+          showPrivacySettingsFromViewController:self.baseViewController];
+      break;
+    case WhatsNewType::kAddPasswordManually:
+      // Handles actions that open Chrome Settings.
+      [self.handler showSettingsFromViewController:self.baseViewController];
+      break;
     case WhatsNewType::kPasswordsInOtherApps:
-      base::RecordAction(base::UserMetricsAction(
-          "WhatsNew.PasswordsInOtherApps.PrimaryActionTapped"));
+      // Handles actions that open Passwords in iOS Settings.
       ios::provider::PasswordsInOtherAppsOpensSettings();
       break;
     default:
@@ -81,39 +95,29 @@
   [self recordLearnMoreInteraction:type];
 }
 
+- (void)didTapInstructions:(WhatsNewType)type {
+  const char* type_str = WhatsNewTypeToStringM116(type);
+  if (!type_str) {
+    return;
+  }
+
+  std::string metric =
+      base::StrCat({"WhatsNew.", type_str, ".InstructionsTapped"});
+  base::RecordAction(base::UserMetricsAction(metric.c_str()));
+  base::UmaHistogramEnumeration("IOS.WhatsNew.InstructionsShown", type);
+}
+
 #pragma mark - WhatsNewTableViewActionHandler
 
 - (void)recordWhatsNewInteraction:(WhatsNewItem*)item {
-  switch (item.type) {
-    case WhatsNewType::kSearchTabs:
-      base::RecordAction(base::UserMetricsAction("WhatsNew.SearchTabs"));
-      break;
-    case WhatsNewType::kNewOverflowMenu:
-      base::RecordAction(base::UserMetricsAction("WhatsNew.NewOverflowMenu"));
-      break;
-    case WhatsNewType::kSharedHighlighting:
-      base::RecordAction(
-          base::UserMetricsAction("WhatsNew.SharedHighlighting"));
-      break;
-    case WhatsNewType::kAddPasswordManually:
-      base::RecordAction(
-          base::UserMetricsAction("WhatsNew.AddPasswordManually"));
-      break;
-    case WhatsNewType::kUseChromeByDefault:
-      base::RecordAction(
-          base::UserMetricsAction("WhatsNew.UseChromeByDefault"));
-      break;
-    case WhatsNewType::kPasswordsInOtherApps:
-      base::RecordAction(
-          base::UserMetricsAction("WhatsNew.PasswordsInOtherApps"));
-      break;
-    case WhatsNewType::kAutofill:
-      base::RecordAction(base::UserMetricsAction("WhatsNew.Autofill"));
-      break;
-    default:
-      NOTREACHED();
-      break;
-  };
+  const char* type = WhatsNewTypeToString(item.type);
+  if (!type) {
+    return;
+  }
+
+  std::string metric = base::StrCat({"WhatsNew.", type});
+  base::RecordAction(base::UserMetricsAction(metric.c_str()));
+  base::UmaHistogramEnumeration("IOS.WhatsNew.Shown", item.type);
 }
 
 #pragma mark - Properties
@@ -130,8 +134,9 @@
 // it will be the `WhatsNewType::kUseChromeByDefault` otherwise it will choose a
 // random chrome tip.
 - (WhatsNewItem*)whatsNewChromeTipItem {
-  // Return a random chrome tip if chrome is already the default browser.
-  if (IsChromeLikelyDefaultBrowser()) {
+  // Return a random chrome tip if chrome is already the default browser or if
+  // What's New M116 is enabled.
+  if (IsChromeLikelyDefaultBrowser() || IsWhatsNewM116Enabled()) {
     int entryIndex = arc4random_uniform(self.chromeTipEntries.count);
     return self.chromeTipEntries[entryIndex];
   }
@@ -160,36 +165,14 @@
 
 // Record when a user tap on learn more.
 - (void)recordLearnMoreInteraction:(WhatsNewType)type {
-  switch (type) {
-    case WhatsNewType::kSearchTabs:
-      base::RecordAction(
-          base::UserMetricsAction("WhatsNew.SearchTabs.LearnMoreTapped"));
-      break;
-    case WhatsNewType::kSharedHighlighting:
-      base::RecordAction(base::UserMetricsAction(
-          "WhatsNew.SharedHighlighting.LearnMoreTapped"));
-      break;
-    case WhatsNewType::kAddPasswordManually:
-      base::RecordAction(base::UserMetricsAction(
-          "WhatsNew.AddPasswordManually.LearnMoreTapped"));
-      break;
-    case WhatsNewType::kUseChromeByDefault:
-      base::RecordAction(base::UserMetricsAction(
-          "WhatsNew.UseChromeByDefault.LearnMoreTapped"));
-      break;
-    case WhatsNewType::kPasswordsInOtherApps:
-      base::RecordAction(base::UserMetricsAction(
-          "WhatsNew.PasswordsInOtherApps.LearnMoreTapped"));
-      break;
-    case WhatsNewType::kAutofill:
-      base::RecordAction(
-          base::UserMetricsAction("WhatsNew.Autofill.LearnMoreTapped"));
-      break;
-    case WhatsNewType::kNewOverflowMenu:
-    default:
-      NOTREACHED();
-      break;
-  };
+  const char* type_str = WhatsNewTypeToString(type);
+  if (!type_str) {
+    return;
+  }
+
+  std::string metric =
+      base::StrCat({"WhatsNew.", type_str, ".LearnMoreTapped"});
+  base::RecordAction(base::UserMetricsAction(metric.c_str()));
 }
 
 @end

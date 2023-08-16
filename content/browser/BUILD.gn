@@ -97,7 +97,6 @@ source_set("browser") {
     "//components/payments/content/icon",
     "//components/payments/mojom",
     "//components/power_monitor",
-    "//components/power_scheduler",
     "//components/services/filesystem:lib",
     "//components/services/quarantine:quarantine",
     "//components/services/screen_ai/buildflags",
@@ -2711,6 +2710,8 @@ source_set("browser") {
         "media/capture/mouse_cursor_overlay_controller_mac.mm",
         "media/capture/screen_capture_kit_device_mac.h",
         "media/capture/screen_capture_kit_device_mac.mm",
+        "media/capture/screen_capture_kit_fullscreen_module.h",
+        "media/capture/screen_capture_kit_fullscreen_module.mm",
         "media/capture/views_widget_video_capture_device_mac.cc",
         "media/capture/views_widget_video_capture_device_mac.h",
       ]
@@ -2812,7 +2813,7 @@ source_set("browser") {
     ]
   }
 
-  if (is_android || is_linux || is_chromeos) {
+  if (is_android || is_linux) {
     deps += [ "//content/browser/system_dns_resolution" ]
   }
 
@@ -2975,6 +2976,8 @@ source_set("browser") {
       "accessibility/captioning_controller.h",
       "accessibility/web_contents_accessibility_android.cc",
       "accessibility/web_contents_accessibility_android.h",
+      "android/additional_navigation_params_utils.cc",
+      "android/additional_navigation_params_utils.h",
       "android/android_overlay_provider_impl.cc",
       "android/android_overlay_provider_impl.h",
       "android/app_web_message_port.cc",
@@ -3007,8 +3010,6 @@ source_set("browser") {
       "android/gpu_process_callback.cc",
       "android/ime_adapter_android.cc",
       "android/ime_adapter_android.h",
-      "android/impression_utils.cc",
-      "android/impression_utils.h",
       "android/java/gin_java_bound_object.cc",
       "android/java/gin_java_bound_object.h",
       "android/java/gin_java_bound_object_delegate.cc",
@@ -3234,6 +3235,8 @@ source_set("browser") {
       "webauth/virtual_fido_discovery_factory.h",
 
       # The Document Picture-in-Picture API is not implemented on Android.
+      "picture_in_picture/document_picture_in_picture_navigation_throttle.cc",
+      "picture_in_picture/document_picture_in_picture_navigation_throttle.h",
       "picture_in_picture/document_picture_in_picture_window_controller_impl.cc",
       "picture_in_picture/document_picture_in_picture_window_controller_impl.h",
     ]

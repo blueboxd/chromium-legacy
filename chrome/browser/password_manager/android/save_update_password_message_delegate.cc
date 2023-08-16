@@ -93,17 +93,20 @@ bool UPMExploratoryStringsEnabledWithSupportedParam() {
 }
 
 void TryToShowPasswordMigrationWarning(
-    base::RepeatingCallback<void(gfx::NativeWindow, Profile*)> callback,
+    base::RepeatingCallback<
+        void(gfx::NativeWindow,
+             Profile*,
+             password_manager::metrics_util::PasswordMigrationWarningTriggers)>
+        callback,
     raw_ptr<content::WebContents> web_contents) {
   if (base::FeatureList::IsEnabled(
           password_manager::features::
               kUnifiedPasswordManagerLocalPasswordsMigrationWarning)) {
-    // TODO(crbug.com/1439853): Check if the bottom sheet was shown a month ago
-    // or more.
-
     callback.Run(
         web_contents->GetTopLevelNativeWindow(),
-        Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+        Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+        password_manager::metrics_util::PasswordMigrationWarningTriggers::
+            kPasswordSaveUpdateMessage);
   }
 }
 
@@ -112,11 +115,14 @@ void TryToShowPasswordMigrationWarning(
 SaveUpdatePasswordMessageDelegate::SaveUpdatePasswordMessageDelegate()
     : SaveUpdatePasswordMessageDelegate(
           base::BindRepeating(PasswordEditDialogBridge::Create),
-          base::BindRepeating(&password_manager::ShowWarning)) {}
+          base::BindRepeating(&local_password_migration::ShowWarning)) {}
 
 SaveUpdatePasswordMessageDelegate::SaveUpdatePasswordMessageDelegate(
     PasswordEditDialogFactory password_edit_dialog_factory,
-    base::RepeatingCallback<void(gfx::NativeWindow, Profile*)>
+    base::RepeatingCallback<
+        void(gfx::NativeWindow,
+             Profile*,
+             password_manager::metrics_util::PasswordMigrationWarningTriggers)>
         create_migration_warning_callback)
     : password_edit_dialog_factory_(std::move(password_edit_dialog_factory)),
       create_migration_warning_callback_(
@@ -484,8 +490,10 @@ void SaveUpdatePasswordMessageDelegate::HandleMessageDismissed(
         GetSaveUpdatePasswordMessageDismissReason(dismiss_reason));
   }
 
-  TryToShowPasswordMigrationWarning(create_migration_warning_callback_,
-                                    web_contents_);
+  if (dismiss_reason == messages::DismissReason::PRIMARY_ACTION) {
+    TryToShowPasswordMigrationWarning(create_migration_warning_callback_,
+                                      web_contents_);
+  }
   ClearState();
 }
 

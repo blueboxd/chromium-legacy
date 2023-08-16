@@ -801,6 +801,8 @@ EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError>::ToMojom(
     case media::VideoCaptureError::kVideoCaptureDeviceFactorySecondCreateDenied:
       return media::mojom::VideoCaptureError::
           kVideoCaptureDeviceFactorySecondCreateDenied;
+    case media::VideoCaptureError::kScreenCaptureKitResetStreamError:
+      return media::mojom::VideoCaptureError::kScreenCaptureKitResetStreamError;
   }
   NOTREACHED_NORETURN();
 }
@@ -1453,6 +1455,9 @@ bool EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError>::
       *output = media::VideoCaptureError::
           kVideoCaptureDeviceFactorySecondCreateDenied;
       return true;
+    case media::mojom::VideoCaptureError::kScreenCaptureKitResetStreamError:
+      *output = media::VideoCaptureError::kScreenCaptureKitResetStreamError;
+      return true;
   }
   NOTREACHED_NORETURN();
 }
@@ -1820,8 +1825,8 @@ media::mojom::VideoCaptureTransportType EnumTraits<
     media::VideoCaptureTransportType>::ToMojom(media::VideoCaptureTransportType
                                                    input) {
   switch (input) {
-    case media::VideoCaptureTransportType::MACOSX_USB_OR_BUILT_IN:
-      return media::mojom::VideoCaptureTransportType::MACOSX_USB_OR_BUILT_IN;
+    case media::VideoCaptureTransportType::APPLE_USB_OR_BUILT_IN:
+      return media::mojom::VideoCaptureTransportType::APPLE_USB_OR_BUILT_IN;
     case media::VideoCaptureTransportType::OTHER_TRANSPORT:
       return media::mojom::VideoCaptureTransportType::OTHER_TRANSPORT;
   }
@@ -1834,8 +1839,8 @@ bool EnumTraits<media::mojom::VideoCaptureTransportType,
     FromMojom(media::mojom::VideoCaptureTransportType input,
               media::VideoCaptureTransportType* output) {
   switch (input) {
-    case media::mojom::VideoCaptureTransportType::MACOSX_USB_OR_BUILT_IN:
-      *output = media::VideoCaptureTransportType::MACOSX_USB_OR_BUILT_IN;
+    case media::mojom::VideoCaptureTransportType::APPLE_USB_OR_BUILT_IN:
+      *output = media::VideoCaptureTransportType::APPLE_USB_OR_BUILT_IN;
       return true;
     case media::mojom::VideoCaptureTransportType::OTHER_TRANSPORT:
       *output = media::VideoCaptureTransportType::OTHER_TRANSPORT;

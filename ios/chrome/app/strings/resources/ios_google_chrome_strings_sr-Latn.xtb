@@ -6,11 +6,13 @@
 <translation id="1352919863522755794">Google menadžer lozinki nije uspeo da vam proveri lozinke. Proverite internet vezu.</translation>
 <translation id="1462727070346936664">Prijavite se da biste iskoristili Chrome na najbolji način.</translation>
 <translation id="1479202195792305274">Chrome može da vam proverava lozinke kada se prijavite pomoću Google naloga.</translation>
+<translation id="1491435845014430217">Uključite Zaključaj kartice bez arhiviranja posle zatvaranja Chrome-a.</translation>
 <translation id="1493827051843127077">Podesite Chrome kao podrazumevanu aplikaciju za sinhronizovanje kartica, lozinki i informacija o plaćanju na svim uređajima</translation>
 <translation id="1504372625950710826">Chrome ne može da traži ažuriranja. Proverite internet vezu.</translation>
 <translation id="1511320244449497906">Prijavljeni ste i sinhronizujete podatke sa nalogom kojim upravlja <ph name="DOMAIN" />, pri čemu njegov administrator sada može da podešava posebne smernice za korisnike za taj nalog koje mogu da promene ponašanje Chrome-a.</translation>
 <translation id="1554731936187952550">Imate najjaču Chrome zaštitu od štetnih veb-sajtova</translation>
 <translation id="1682483655351012182">Sinhronizujte Chrome podatke</translation>
+<translation id="1733654336159102143">Zaključajte režim bez arhiviranja kada napustite Chrome ili pređete na drugu aplikaciju.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Automatski koristite Chrome kada dodirnete linkove u porukama, dokumentima i drugim aplikacijama.</translation>
 <translation id="1917964099031477364">Ovaj nalog i svi nesačuvani podaci ukloniće se iz Chrome-a i drugih Google aplikacija na ovom uređaju.</translation>
@@ -48,6 +50,7 @@
 <translation id="3503014945441706099">Nabavite poboljšano bezbedno pregledanje i za ovaj Chrome profil</translation>
 <translation id="3522659714780527202">Da biste videli kartice na bilo kojem uređaju na kom koristite Chrome, uključite sinhronizaciju</translation>
 <translation id="3533694711092285624">Nema sačuvanih lozinki. Chrome može da proverava lozinke kada ih sačuvate.</translation>
+<translation id="3594076341410558780">Sakrijte „Iskoristite Chrome na najbolji način“</translation>
 <translation id="3655656110921623717">To znači da će Chrome svaki put zahtevati mobilni sajt.</translation>
 <translation id="3720541637541300822">Zaključajte kartice bez arhiviranja posle zatvaranja Chrome-a</translation>
 <translation id="3827545470516145620">Dobijate standardnu bezbednosnu zaštitu na ovom uređaju</translation>
@@ -66,8 +69,10 @@
 <translation id="4636900170638246267">Prijavite se na ovaj sajt i u Chrome.</translation>
 <translation id="4698415050768537821">Chrome nije uspeo da proveri sve lozinke. Probajte ponovo sutra ili <ph name="BEGIN_LINK" />proverite lozinke na Google nalogu.<ph name="END_LINK" /></translation>
 <translation id="4819268619367838612">Chrome šalje Google-u podatke o korišćenju i otkazivanju radi poboljšanja aplikacije. <ph name="BEGIN_LINK" />Upravljajte<ph name="END_LINK" /></translation>
+<translation id="4830799082179398588">Želite da podesite Chrome za podrazumevani pregledač?</translation>
 <translation id="484033449593719797">Nije podržano u verziji Chrome beta</translation>
 <translation id="4840404732697892756">Google menadžer lozinki može da vam proverava lozinke kada se prijavite pomoću Google naloga.</translation>
+<translation id="4903674399067644695">Ova kartica vam prikazuje predloge o tome kako da iskoristite Chrome na najbolji način.</translation>
 <translation id="5030102366287574140">Chrome može da vas štiti od upada u podatke, nebezbednih veb-sajtova i drugih stvari.</translation>
 <translation id="5108659628347594808">Poboljšajte Chrome</translation>
 <translation id="5119391094379141756">Izaberite Chrome</translation>
@@ -76,6 +81,7 @@
 <translation id="5395376160638294582">Uverite se da uvek možete da koristite Chrome podatke na Google nalogu</translation>
 <translation id="5460571915754665838">4. Izaberite Chrome</translation>
 <translation id="5492504007368565877">Google menadžer lozinki ne može da vam proverava lozinke.</translation>
+<translation id="5527026824954593399">Dodirnite Prikaži pomoću Google mapa u Chrome-u.</translation>
 <translation id="5552137475244467770">Chrome povremeno upoređuje vaše lozinke sa listama koje su objavljene onlajn. Dok to radi, vaše lozinke i korisnička imena su šifrovani, pa niko ne može da ih pročita, uključujući Google.</translation>
 <translation id="5639704535586432836">Otvorite Podešavanja &gt; Privatnost &gt; Kamera &gt; Google Chrome i uključite kameru.</translation>
 <translation id="5642200033778930880">Google Chrome ne može da koristi kameru u režimu podeljenog prikaza</translation>
@@ -111,10 +117,12 @@
 <translation id="7261678641327190792">Chrome ne može da vam proverava lozinke</translation>
 <translation id="7272930098487145294">Da biste sačuvali slike, dodirnite Podešavanja da biste omogućili Chrome-u da dodaje slike</translation>
 <translation id="7275945473750112644">Nalogom upravlja <ph name="HOSTED_DOMAIN" />, pa će se Chrome podaci obrisati sa ovog uređaja</translation>
+<translation id="7394108421562933108">Mape u Chrome-u</translation>
 <translation id="7400722733683201933">O programu Google Chrome</translation>
 <translation id="7501046334262221972">Da biste postavili Chrome za podrazumevani pregledač, otvorite podešavanja. Dodirnite podrazumevanu aplikaciju za pregledanje, pa izaberite Chrome.</translation>
 <translation id="756809126120519699">Chrome podaci su obrisani</translation>
 <translation id="7662994914830945754">Da biste videli kartice na bilo kojem uređaju na kom koristite Chrome, prijavite se i uključite sinhronizaciju</translation>
+<translation id="7669869107155339016">Idite u podešavanja Chrome-a.</translation>
 <translation id="7693590760643069321">Sada možete da koristite Chrome svaki put kada dodirnete linkove u porukama, dokumentima i drugim aplikacijama.</translation>
 <translation id="7698568245838009292">Chrome želi da pristupi kameri</translation>
 <translation id="7754633291442704733">Organizacija <ph name="DOMAIN" /> će imati pristup Chrome podacima, obeleživačima, istoriji, lozinkama i drugim podešavanjima koja čuvate na ovom nalogu. Kada se odjavite, podaci će se obrisati sa ovog uređaja.  Međutim, podaci će se i dalje čuvati na Google nalogu kojim se upravlja i biće dostupni vašoj organizaciji. Organizacija može da podešava posebne smernice za korisnike za taj nalog koje mogu da promene ponašanje Chrome-a.</translation>

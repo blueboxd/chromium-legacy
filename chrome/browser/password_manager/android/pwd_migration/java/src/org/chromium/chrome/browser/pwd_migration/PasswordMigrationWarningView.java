@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.pwd_migration;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -14,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import org.chromium.base.Callback;
@@ -24,13 +26,12 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
-import org.chromium.components.version_info.VersionInfo;
 
 /**
  * This class is responsible for rendering the bottom sheet that shows the passwords
  * migration warning.
  */
-class PasswordMigrationWarningView implements BottomSheetContent {
+public class PasswordMigrationWarningView implements BottomSheetContent {
     private final BottomSheetController mBottomSheetController;
     private Callback<Integer> mDismissHandler;
     private PasswordMigrationWarningOnClickHandler mOnClickHandler;
@@ -38,8 +39,10 @@ class PasswordMigrationWarningView implements BottomSheetContent {
     private final RelativeLayout mContentView;
     private Context mContext;
     private String mAccountDisplayName;
-
     private @ScreenType int mScreenType = ScreenType.NONE;
+    private boolean mShouldOfferSync;
+
+    private Runnable mOnResumeExportFlowCallback;
 
     private final BottomSheetObserver mBottomSheetObserver = new EmptyBottomSheetObserver() {
         @Override
@@ -79,9 +82,11 @@ class PasswordMigrationWarningView implements BottomSheetContent {
         }
     };
 
-    PasswordMigrationWarningView(Context context, BottomSheetController bottomSheetController) {
+    PasswordMigrationWarningView(Context context, BottomSheetController bottomSheetController,
+            Runnable onResumeExportFlowCallback) {
         mContext = context;
         mBottomSheetController = bottomSheetController;
+        mOnResumeExportFlowCallback = onResumeExportFlowCallback;
         mContentView = (RelativeLayout) LayoutInflater.from(context).inflate(
                 R.layout.pwd_migration_warning, null);
         ImageView sheetHeaderImage =
@@ -120,24 +125,34 @@ class PasswordMigrationWarningView implements BottomSheetContent {
         mBottomSheetController.expandSheet();
     }
 
+    void setShouldOfferSync(boolean shouldOfferSync) {
+        mShouldOfferSync = shouldOfferSync;
+    }
     private void setFragment() {
         assert mScreenType != ScreenType.NONE;
         if (mScreenType == ScreenType.INTRO_SCREEN) {
+            String introScreenSubtitle =
+                    mContext.getString(R.string.password_migration_warning_subtitle)
+                            .replace("%1$s", PasswordMigrationWarningUtil.getChannelString());
             PasswordMigrationWarningIntroFragment introFragment =
-                    new PasswordMigrationWarningIntroFragment(mContext,
+                    new PasswordMigrationWarningIntroFragment(introScreenSubtitle,
                             ()
                                     -> mOnClickHandler.onAcknowledge(mBottomSheetController),
-                            () -> mOnClickHandler.onMoreOptions(), getChannelString());
+                            () -> mOnClickHandler.onMoreOptions());
             mFragmentManager.beginTransaction()
                     .setReorderingAllowed(true)
                     .replace(R.id.fragment_container_view, introFragment)
                     .commit();
         } else if (mScreenType == ScreenType.OPTIONS_SCREEN) {
+            String exportOptionSubtitle =
+                    mContext.getString(R.string.password_migration_warning_password_export_subtitle)
+                            .replace("%1$s", PasswordMigrationWarningUtil.getChannelString());
             PasswordMigrationWarningOptionsFragment optionsFragment =
-                    new PasswordMigrationWarningOptionsFragment(mContext, mOnClickHandler::onNext,
+                    new PasswordMigrationWarningOptionsFragment(exportOptionSubtitle,
+                            mShouldOfferSync, mOnClickHandler,
                             ()
                                     -> mOnClickHandler.onCancel(mBottomSheetController),
-                            getChannelString(), mAccountDisplayName);
+                            mAccountDisplayName, mFragmentManager, mOnResumeExportFlowCallback);
             mFragmentManager.beginTransaction()
                     .setReorderingAllowed(true)
                     .replace(R.id.fragment_container_view, optionsFragment)
@@ -145,22 +160,15 @@ class PasswordMigrationWarningView implements BottomSheetContent {
         }
     }
 
-    void setAccountDisplayName(String accountDisplayName) {
-        mAccountDisplayName = accountDisplayName;
+    void runCreateFileOnDiskIntent(Intent intent) {
+        Fragment fragment = mFragmentManager.findFragmentById(R.id.fragment_container_view);
+        assert fragment instanceof PasswordMigrationWarningOptionsFragment;
+
+        ((PasswordMigrationWarningOptionsFragment) fragment).runCreateFileOnDiskIntent(intent);
     }
 
-    private String getChannelString() {
-        if (VersionInfo.isCanaryBuild()) {
-            return "Canary";
-        }
-        if (VersionInfo.isDevBuild()) {
-            return "Dev";
-        }
-        if (VersionInfo.isBetaBuild()) {
-            return "Beta";
-        }
-        assert !VersionInfo.isStableBuild();
-        return "";
+    void setAccountDisplayName(String accountDisplayName) {
+        mAccountDisplayName = accountDisplayName;
     }
 
     private @Px int getDesiredSheetHeightPx() {

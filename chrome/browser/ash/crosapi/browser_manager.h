@@ -42,6 +42,7 @@
 #include "components/policy/core/common/values_util.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/tab_groups/tab_group_info.h"
+#include "components/user_manager/user_manager.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ui_base_types.h"
@@ -99,7 +100,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
                        public policy::CloudPolicyCore::Observer,
                        public policy::CloudPolicyStore::Observer,
                        public policy::ComponentCloudPolicyServiceObserver,
-                       public policy::CloudPolicyRefreshSchedulerObserver {
+                       public policy::CloudPolicyRefreshSchedulerObserver,
+                       public user_manager::UserManager::Observer {
  public:
   // Static getter of BrowserManager instance. In real use cases,
   // BrowserManager instance should be unique in the process.
@@ -235,13 +237,13 @@ class BrowserManager : public session_manager::SessionManagerObserver,
       const std::string& app_name,
       int32_t restore_window_id);
 
-  // Initialize resources and start Lacros. This class provides two approaches
-  // to fulfill different requirements.
-  // - For most sessions, Lacros will be started automatically once
-  // `SessionState` is changed to active.
-  // - For Kiosk sessions, Lacros needs to be started earlier because all
-  // extensions and browser window should be well prepared before the user
-  // enters the session. This method should be called at the appropriate time.
+  // Ensures Lacros launches.
+  // Returns true if Lacros could be launched, resumed, or is already in the
+  // process of launching. Returns false if Lacros could not be launched.
+  // NOTE: this method requires the user profile to be already initialized.
+  bool EnsureLaunch();
+
+  // Initialize resources and start Lacros.
   //
   // NOTE: If InitializeAndStartIfNeeded finds Lacros disabled, it unloads
   // Lacros via BrowserLoader::Unload, which also deletes the user data
@@ -655,6 +657,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   void OnRefreshSchedulerDestruction(
       policy::CloudPolicyRefreshScheduler* scheduler) override;
 
+  // user_manager::UserManager::Observer:
+  void OnUserProfileCreated(const user_manager::User& user) override;
+
   // crosapi::BrowserManagerObserver:
   void OnLoadComplete(bool launching_at_login_screen,
                       const base::FilePath& path,
@@ -795,6 +800,10 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // deciding if Lacros should be used or not.
   absl::optional<LacrosLaunchMode> lacros_mode_;
   absl::optional<LacrosLaunchModeAndSource> lacros_mode_and_source_;
+
+  base::ScopedObservation<user_manager::UserManager,
+                          user_manager::UserManager::Observer>
+      user_manager_observation_{this};
 
   base::WeakPtrFactory<BrowserManager> weak_factory_{this};
 };

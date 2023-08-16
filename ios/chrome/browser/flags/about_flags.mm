@@ -76,6 +76,7 @@
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #import "ios/chrome/browser/follow/follow_features.h"
+#import "ios/chrome/browser/iph_for_new_chrome_user/features.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_constants.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_switch.h"
@@ -228,6 +229,17 @@ const FeatureEntry::FeatureVariation kDefaultBrowserVideoPromoVariations[] = {
      std::size(kDefaultBrowserVideoPromoHalfscreen), nullptr},
     {"Show full screen ui", kDefaultBrowserVideoPromoFullscreen,
      std::size(kDefaultBrowserVideoPromoFullscreen), nullptr},
+};
+
+const FeatureEntry::FeatureParam
+    kDefaultBrowserTriggerCriteriaExperimentParamOptions[] = {
+        {kDefaultBrowserTriggerOnOmniboxCopyPaste, "true"}};
+const FeatureEntry::FeatureVariation
+    kDefaultBrowserTriggerCriteriaExperimentParams[] = {
+        {"Trigger on omnibox copy-paste",
+         kDefaultBrowserTriggerCriteriaExperimentParamOptions,
+         std::size(kDefaultBrowserTriggerCriteriaExperimentParamOptions),
+         nullptr},
 };
 
 const FeatureEntry::FeatureParam
@@ -637,9 +649,13 @@ const FeatureEntry::FeatureVariation
 
 const FeatureEntry::FeatureParam kIOSEditMenuPartialTranslateNoIncognito[] = {
     {kIOSEditMenuPartialTranslateNoIncognitoParam, "true"}};
+const FeatureEntry::FeatureParam kIOSEditMenuPartialTranslateWithIncognito[] = {
+    {kIOSEditMenuPartialTranslateNoIncognitoParam, "false"}};
 const FeatureEntry::FeatureVariation kIOSEditMenuPartialTranslateVariations[] =
     {{"Disable on incognito", kIOSEditMenuPartialTranslateNoIncognito,
-      std::size(kIOSEditMenuPartialTranslateNoIncognito), nullptr}};
+      std::size(kIOSEditMenuPartialTranslateNoIncognito), nullptr},
+     {"Enable on incognito", kIOSEditMenuPartialTranslateWithIncognito,
+      std::size(kIOSEditMenuPartialTranslateWithIncognito), nullptr}};
 
 const FeatureEntry::FeatureParam kAddToHomeScreenDisableIncognito[] = {
     {kAddToHomeScreenDisableIncognitoParam, "true"}};
@@ -688,11 +704,16 @@ const FeatureEntry::Choice kReplaceSyncPromosWithSignInPromosChoices[] = {
     {"Base only", "enable-features", "ReplaceSyncPromosWithSignInPromos"},
     {"Everything (bookmarks, reading list, etc)", "enable-features",
      "ReplaceSyncPromosWithSignInPromos,"
+     "SyncEnableContactInfoDataType,"
      "SyncEnableContactInfoDataTypeInTransportMode,"
      "EnablePasswordsAccountStorage,"
      "EnableBookmarksAccountStorage,"
+     "EnablePreferencesAccountStorage,"
      "ReadingListEnableDualReadingListModel,"
-     "ReadingListEnableSyncTransportModeUponSignIn"},
+     "ReadingListEnableSyncTransportModeUponSignIn,"
+     "ConsistencyNewAccountInterface,"
+     "AutofillAccountProfileStorage,"
+     "SyncEnableHistoryDataType"},
 };
 
 // To add a new entry, add to the end of kFeatureEntries. There are four
@@ -1217,6 +1238,14 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDefaultBrowserPromoForceShowPromoDescription,
      flags_ui::kOsIos,
      MULTI_VALUE_TYPE(kDefaultBrowserPromoForceShowPromoChoices)},
+    {"default-browser-promo-trigger-criteria-experiment",
+     flag_descriptions::kDefaultBrowserTriggerCriteriaExperimentName,
+     flag_descriptions::kDefaultBrowserTriggerCriteriaExperimentDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         kDefaultBrowserTriggerCriteriaExperiment,
+         kDefaultBrowserTriggerCriteriaExperimentParams,
+         "DefaultBrowserTriggerCriteriaExperimentParams")},
 #if BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
     {"feed-background-refresh-ios",
      flag_descriptions::kFeedBackgroundRefreshName,
@@ -1602,7 +1631,18 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReplaceSyncPromosWithSignInPromosName,
      flag_descriptions::kReplaceSyncPromosWithSignInPromosDescription,
      flags_ui::kOsIos,
-     MULTI_VALUE_TYPE(kReplaceSyncPromosWithSignInPromosChoices)}};
+     MULTI_VALUE_TYPE(kReplaceSyncPromosWithSignInPromosChoices)},
+    {"toolbar-theme-color", flag_descriptions::kThemeColorInToolbarName,
+     flag_descriptions::kThemeColorInToolbarDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kThemeColorInToolbar)},
+    {"tab-grid-refactoring", flag_descriptions::kTabGridRefactoringName,
+     flag_descriptions::kTabGridRefactoringDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kTabGridRefactoring)},
+    {"ios-iph-for-safari-switcher",
+     flag_descriptions::kIPHForSafariSwitcherName,
+     flag_descriptions::kIPHForSafariSwitcherDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIPHForSafariSwitcher)},
+};
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
   return false;

@@ -212,7 +212,9 @@ CSSValue* ConsumeImageOrNone(CSSParserTokenRange&, const CSSParserContext&);
 
 CSSValue* ConsumeAxis(CSSParserTokenRange&, const CSSParserContext& context);
 
-// Syntax: none | <length> | auto && <length>
+// Syntax: none | <length> | auto && <length> | auto && none
+// If this returns a CSSIdentifierValue then it is "none"
+// Otherwise, this returns a list of 1 or 2 elements for the rest of the syntax
 CSSValue* ConsumeIntrinsicSizeLonghand(CSSParserTokenRange&,
                                        const CSSParserContext&);
 
@@ -335,7 +337,6 @@ bool ConsumeAnimationShorthand(
     const CSSParserContext&,
     bool use_legacy_parsing);
 
-CSSValue* ConsumeSingleTimelineAttachment(CSSParserTokenRange&);
 CSSValue* ConsumeSingleTimelineAxis(CSSParserTokenRange&);
 CSSValue* ConsumeSingleTimelineName(CSSParserTokenRange&,
                                     const CSSParserContext&);
@@ -426,6 +427,9 @@ CSSValue* ConsumeLineHeight(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeMathDepth(CSSParserTokenRange& range,
                            const CSSParserContext& context);
 
+CSSValue* ConsumeFontPalette(CSSParserTokenRange&, const CSSParserContext&);
+CSSValue* ConsumePaletteMixFunction(CSSParserTokenRange&,
+                                    const CSSParserContext&);
 CSSValueList* ConsumeFontFamily(CSSParserTokenRange&);
 CSSValue* ConsumeGenericFamily(CSSParserTokenRange&);
 CSSValue* ConsumeFamilyName(CSSParserTokenRange&);

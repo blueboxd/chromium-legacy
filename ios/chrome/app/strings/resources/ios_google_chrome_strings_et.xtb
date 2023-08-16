@@ -6,11 +6,13 @@
 <translation id="1352919863522755794">Google'i paroolihalduril ei õnnestunud teie paroole kontrollida. Kontrollige internetiühendust.</translation>
 <translation id="1462727070346936664">Chrome'i parimal moel kasutamiseks logige sisse.</translation>
 <translation id="1479202195792305274">Chrome saab teie paroole kontrollida siis, kui logite sisse oma Google'i kontoga.</translation>
+<translation id="1491435845014430217">Lülitage sisse valik „Lukusta Chrome'i sulgemisel inkognito vahelehed“.</translation>
 <translation id="1493827051843127077">Määrake Chrome vaikebrauseriks, et sünkroonida kõikides oma seadetes vahelehti, paroole ja makseteavet</translation>
 <translation id="1504372625950710826">Chrome ei saanud värskendusi otsida. Kontrollige internetiühendust.</translation>
 <translation id="1511320244449497906">Olete sisse logitud ja andmed sünkroonitakse kontoga, mida haldab <ph name="DOMAIN" />, kus selle administraator saab nüüd määrata konto kasutajareegleid, millega saab Chrome'i käitumist muuta.</translation>
 <translation id="1554731936187952550">Teil on Chrome'i tugevaim kaitse ohtlike veebisaitide vastu</translation>
 <translation id="1682483655351012182">Chrome'i andmete sünkroonimine</translation>
+<translation id="1733654336159102143">Lukustage Chrome’ist väljumisel või muu rakenduse aktiveerimisel oma inkognito vahelehed.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Kasutage automaatselt Chrome'i, kui avate linke sõnumites, dokumentides ja muudes rakendustes.</translation>
 <translation id="1917964099031477364">See konto ja kõik salvestamata andmed eemaldatakse Chrome'ist ja muudest selles seadmes olevatest Google'i rakendustest.</translation>
@@ -48,6 +50,7 @@
 <translation id="3503014945441706099">Hankige ka sellele Chrome'i profiilile täiustatud ohutu sirvimise funktsioon</translation>
 <translation id="3522659714780527202">Selleks et näha vahelehti kõikjalt, kus Chrome'i kasutate, lülitage sisse sünkroonimine</translation>
 <translation id="3533694711092285624">Salvestatud paroole ei ole. Chrome saab teie paroole kontrollida, kui olete need salvestanud.</translation>
+<translation id="3594076341410558780">Valiku „Kasutage Chrome'i parimal moel” peitmine</translation>
 <translation id="3655656110921623717">See tähendab, et Chrome taotleb iga kord mobiilisaiti.</translation>
 <translation id="3720541637541300822">Chrome'i sulgemisel inkognito vahelehtede lukustamine</translation>
 <translation id="3827545470516145620">Saate selles seadmes standardse turvakaitse</translation>
@@ -66,8 +69,10 @@
 <translation id="4636900170638246267">Logige sellele saidile ja Chrome'i sisse.</translation>
 <translation id="4698415050768537821">Chrome'il ei õnnestunud kõiki paroole kontrollida. Proovige homme uuesti või <ph name="BEGIN_LINK" />kontrollige oma Google'i kontol paroole<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Rakenduse täiustamiseks saadab Chrome Google'ile kasutus- ja krahhiandmeid. <ph name="BEGIN_LINK" />Haldamine<ph name="END_LINK" /></translation>
+<translation id="4830799082179398588">Kas soovite Chrome'i vaikebrauseriks määrata?</translation>
 <translation id="484033449593719797">Ei toetata Chrome'i beetaversioonis</translation>
 <translation id="4840404732697892756">Google'i paroolihaldur saab teie paroole kontrollida siis, kui logite sisse oma Google'i kontoga.</translation>
+<translation id="4903674399067644695">Sellel kaardil kuvatakse soovitusi selle kohta, kuidas Chrome'i parimal moel kasutada.</translation>
 <translation id="5030102366287574140">Chrome aitab teid kaitsta andmetega seotud rikkumiste, ebaturvaliste veebisaitide ja muu eest.</translation>
 <translation id="5108659628347594808">Chrome'i täiustamine</translation>
 <translation id="5119391094379141756">Valige Chrome</translation>
@@ -76,6 +81,7 @@
 <translation id="5395376160638294582">Veenduge, et saaksite alati kasutada oma Google'i kontol Chrome'i andmeid</translation>
 <translation id="5460571915754665838">4. Valige Chrome</translation>
 <translation id="5492504007368565877">Google'i paroolihaldur ei saa teie paroole kontrollida.</translation>
+<translation id="5527026824954593399">Puudutage valikut „Kuva Google Mapsi abil Chrome'is“.</translation>
 <translation id="5552137475244467770">Chrome võrdleb teie paroole regulaarselt veebis avaldatud loenditega. Selle käigus on teie paroolid ja kasutajanimed krüpteeritud, et mitte keegi (sh Google) ei saaks neid lugeda.</translation>
 <translation id="5639704535586432836">Tehke valikud Seaded &gt; Privaatsus &gt; Kaamera &gt; Google Chrome ja lülitage kaamera sisse.</translation>
 <translation id="5642200033778930880">Google Chrome ei saa kaamerat poolitatud vaate režiimis kasutada</translation>
@@ -111,10 +117,12 @@
 <translation id="7261678641327190792">Chrome'ile ei õnnestu teie paroole kontrollida</translation>
 <translation id="7272930098487145294">Piltide salvestamiseks puudutage valikut Seaded, et lubada Chrome'il fotode lisamine</translation>
 <translation id="7275945473750112644">Teie kontot haldab <ph name="HOSTED_DOMAIN" />, seega kustutatakse teie Chrome'i andmed sellest seadmest</translation>
+<translation id="7394108421562933108">Maps Chrome'is</translation>
 <translation id="7400722733683201933">Google Chrome'i kohta</translation>
 <translation id="7501046334262221972">Chrome'i vaikebrauseriks määramiseks avage jaotis Seaded. Puudutage valikut Vaikebrauserirakendus ja seejärel valige Chrome.</translation>
 <translation id="756809126120519699">Chrome'i andmed kustutati</translation>
 <translation id="7662994914830945754">Selleks et näha vahelehti kõikjalt, kus Chrome'i kasutate, logige sisse ja lülitage sisse sünkroonimine</translation>
+<translation id="7669869107155339016">Avage Chrome'i seaded.</translation>
 <translation id="7693590760643069321">Nüüd saate kasutada Chrome'i iga kord, kui puudutate linke sõnumites, dokumentides ja muudes rakendustes.</translation>
 <translation id="7698568245838009292">Chrome soovib juurdepääsu kaamerale</translation>
 <translation id="7754633291442704733">Teie organisatsioon <ph name="DOMAIN" /> saab juurdepääsu teie Chrome'i andmetele, järjehoidjatele, ajaloole, paroolidele ja muudele seadetele, mille sellele kontole salvestate. Kui välja logite, kustutatakse teie andmed sellest seadmest.  Teie andmed jäävad teie hallatud Google'i kontole siiski alles ja need on teie organisatsiooni jaoks saadaval. Teie organisatsioon saab määrata ka konto kasutajareegleid, millega saab Chrome'i käitumist muuta.</translation>

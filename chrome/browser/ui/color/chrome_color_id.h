@@ -395,6 +395,8 @@
   E_CPONLY(kColorSidePanelDialogSecondaryForeground) \
   E_CPONLY(kColorSidePanelDivider) \
   E_CPONLY(kColorSidePanelEditFooterBorder) \
+  E_CPONLY(kColorSidePanelEntryIcon) \
+  E_CPONLY(kColorSidePanelEntryTitle) \
   E_CPONLY(kColorSidePanelFilterChipBorder) \
   E_CPONLY(kColorSidePanelFilterChipForeground) \
   E_CPONLY(kColorSidePanelFilterChipForegroundSelected) \
@@ -402,11 +404,14 @@
   E_CPONLY(kColorSidePanelFilterChipIconSelected) \
   E_CPONLY(kColorSidePanelFilterChipBackgroundHover) \
   E_CPONLY(kColorSidePanelFilterChipBackgroundSelected) \
+  E_CPONLY(kColorSidePanelHeaderButtonIcon) \
+  E_CPONLY(kColorSidePanelHeaderButtonIconDisabled) \
   E_CPONLY(kColorSidePanelMenuBackground) \
   E_CPONLY(kColorSidePanelMenuDisabled) \
   E_CPONLY(kColorSidePanelMenuDivider) \
   E_CPONLY(kColorSidePanelMenuForeground) \
   E_CPONLY(kColorSidePanelMenuIcon) \
+  E_CPONLY(kColorSidePanelResizeAreaHandle) \
   E_CPONLY(kColorSidePanelScrollbarThumb) \
   E_CPONLY(kColorSidePanelTextfieldBorder) \
   /* Status bubble colors. */ \
@@ -415,7 +420,7 @@
   E_CPONLY(kColorStatusBubbleForegroundFrameActive) \
   E_CPONLY(kColorStatusBubbleForegroundFrameInactive) \
   E_CPONLY(kColorStatusBubbleShadow) \
-  /* Tab alert colors. */ \
+  /* Tab alert colors in tab strip. */ \
   E_CPONLY(kColorTabAlertAudioPlayingActiveFrameActive) \
   E_CPONLY(kColorTabAlertAudioPlayingActiveFrameInactive) \
   E_CPONLY(kColorTabAlertAudioPlayingInactiveFrameActive) \
@@ -428,6 +433,10 @@
   E_CPONLY(kColorTabAlertPipPlayingActiveFrameInactive) \
   E_CPONLY(kColorTabAlertPipPlayingInactiveFrameActive) \
   E_CPONLY(kColorTabAlertPipPlayingInactiveFrameInactive) \
+  /* Tab alert colors in hover cards */ \
+  E_CPONLY(kColorTabAlertMediaRecordingIcon) \
+  E_CPONLY(kColorTabAlertPipPlayingIcon) \
+  E_CPONLY(kColorTabAlertAudioPlayingIcon) \
   /* Tab colors. */ \
   E_CPONLY(kColorTabBackgroundActiveFrameActive) \
   E_CPONLY(kColorTabBackgroundActiveFrameInactive) \

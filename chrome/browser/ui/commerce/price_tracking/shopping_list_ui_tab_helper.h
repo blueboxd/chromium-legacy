@@ -90,7 +90,12 @@ class ShoppingListUiTabHelper
   virtual void SetPriceTrackingState(bool enable,
                                      bool is_new_bookmark,
                                      base::OnceCallback<void(bool)> callback);
-  void ShowShoppingInsightsSidePanel();
+  void OnPriceInsightsIconClicked();
+
+  // Return the PriceInsightsInfo for the last fetched product URL. A reference
+  // to this object should not be kept directly, if one is needed, a copy should
+  // be made.
+  virtual const absl::optional<PriceInsightsInfo>& GetPriceInsightsInfo();
 
  protected:
   ShoppingListUiTabHelper(content::WebContents* contents,
@@ -109,12 +114,18 @@ class ShoppingListUiTabHelper
   void HandleProductInfoResponse(const GURL& url,
                                  const absl::optional<ProductInfo>& info);
 
+  void HandlePriceInsightsInfoResponse(
+      const GURL& url,
+      const absl::optional<PriceInsightsInfo>& info);
+
   void HandleImageFetcherResponse(
       const GURL image_url,
       const gfx::Image& image,
       const image_fetcher::RequestMetadata& request_metadata);
 
   void UpdatePriceTrackingIconView();
+
+  void UpdatePriceInsightsIconView();
 
   // Update the flag tracking the price tracking state of the product from
   // subscriptions.
@@ -138,6 +149,8 @@ class ShoppingListUiTabHelper
   void MakeShoppingInsightsSidePanelUnavailable();
 
   SidePanelUI* GetSidePanelUI() const;
+
+  void DelayUpdateForIconView();
 
   // The shopping service is tied to the lifetime of the browser context
   // which will always outlive this tab helper.
@@ -176,10 +189,8 @@ class ShoppingListUiTabHelper
   // empty if this is the first navigation for this tab or post-restart.
   GURL previous_main_frame_url_;
 
-  // TODO(b/286291891): Cache the insight info instead of a bool variable, so so
-  // we know the price low/high/typical information. Whether the committed url
-  // has price insights info.
-  bool has_price_insights_info_{false};
+  // The PriceInsightsInfo associated with the last committed URL.
+  absl::optional<PriceInsightsInfo> price_insights_info_;
 
   // Automatically remove this observer from its host when destroyed.
   base::ScopedObservation<ShoppingService, SubscriptionsObserver>

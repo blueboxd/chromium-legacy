@@ -136,9 +136,6 @@ extern const char kEnableBenchmarkingDescription[];
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];
 
-extern const char kGaiaIdCacheInAccountManagerFacadeName[];
-extern const char kGaiaIdCacheInAccountManagerFacadeDescription[];
-
 extern const char kGainmapHdrImagesName[];
 extern const char kGainmapHdrImagesDescription[];
 
@@ -193,6 +190,9 @@ extern const char kSupervisedPrefsControlledBySupervisedStoreDescription[];
 
 extern const char kEnableManagedByParentUiName[];
 extern const char kEnableManagedByParentUiDescription[];
+
+extern const char kClearingCookiesKeepsSupervisedUsersSignedInName[];
+extern const char kClearingCookiesKeepsSupervisedUsersSignedInDescription[];
 #endif  // ENABLE_SUPERVISED_USERS
 
 extern const char kUpcomingFollowFeaturesName[];
@@ -243,6 +243,9 @@ extern const char
 
 extern const char kAutofillEnableCardArtImageName[];
 extern const char kAutofillEnableCardArtImageDescription[];
+
+extern const char kAutofillEnableCardArtServerSideStretchingName[];
+extern const char kAutofillEnableCardArtServerSideStretchingDescription[];
 
 extern const char kAutofillEnableCardProductNameName[];
 extern const char kAutofillEnableCardProductNameDescription[];
@@ -914,6 +917,9 @@ extern const char kFedCmRpContextDescription[];
 extern const char kFedCmUserInfoName[];
 extern const char kFedCmUserInfoDescription[];
 
+extern const char kFedCmIdpSigninStatusName[];
+extern const char kFedCmIdpSigninStatusDescription[];
+
 extern const char kFedCmWithoutThirdPartyCookiesName[];
 extern const char kFedCmWithoutThirdPartyCookiesDescription[];
 
@@ -1519,9 +1525,6 @@ extern const char kPasswordGenerationExperimentDescription[];
 extern const char kPasswordsImportM2Name[];
 extern const char kPasswordsImportM2Description[];
 
-extern const char kPasswordStrengthIndicatorName[];
-extern const char kPasswordStrengthIndicatorDescription[];
-
 extern const char kForceEnableFastCheckoutCapabilitiesName[];
 extern const char kForceEnableFastCheckoutCapabilitiesDescription[];
 
@@ -1587,6 +1590,9 @@ extern const char kPrivacyGuideAndroidDescription[];
 
 extern const char kPrivacySandboxAdsAPIsOverrideName[];
 extern const char kPrivacySandboxAdsAPIsOverrideDescription[];
+
+extern const char kPrivacySandboxEnrollmentOverridesName[];
+extern const char kPrivacySandboxEnrollmentOverridesDescription[];
 
 extern const char kPrivacySandboxSettings4Name[];
 extern const char kPrivacySandboxSettings4Description[];
@@ -1822,6 +1828,9 @@ extern const char kTabGroupsContinuationAndroidDescription[];
 
 extern const char kTabGroupsSaveName[];
 extern const char kTabGroupsSaveDescription[];
+
+extern const char kTabHoverCardImageSettingsName[];
+extern const char kTabHoverCardImageSettingsDescription[];
 
 extern const char kTabHoverCardImagesName[];
 extern const char kTabHoverCardImagesDescription[];
@@ -2583,6 +2592,9 @@ extern const char kAppManagementAppDetailsDescription[];
 
 extern const char kAllowAllSitesToInitiateMirroringName[];
 extern const char kAllowAllSitesToInitiateMirroringDescription[];
+
+extern const char kDialMediaRouteProviderName[];
+extern const char kDialMediaRouteProviderDescription[];
 
 extern const char kMediaRouterOtrInstanceName[];
 extern const char kMediaRouterOtrInstanceDescription[];
@@ -3769,6 +3781,9 @@ extern const char kShowTouchHudDescription[];
 
 extern const char kSnoopingProtectionName[];
 extern const char kSnoopingProtectionDescription[];
+
+extern const char kSpeakOnMuteOptInNudgePrefsResetName[];
+extern const char kSpeakOnMuteOptInNudgePrefsResetDescription[];
 
 extern const char kSpectreVariant2MitigationName[];
 extern const char kSpectreVariant2MitigationDescription[];

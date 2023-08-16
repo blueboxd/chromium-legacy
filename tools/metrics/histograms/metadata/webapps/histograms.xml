@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="AppBanners.BeforeInstallEvent"
-    enum="AppBannersBeforeInstallEvent" expires_after="2023-10-15">
+    enum="AppBannersBeforeInstallEvent" expires_after="2023-12-17">
   <owner>dominickn@chromium.org</owner>
   <owner>pjmclachlan@google.com</owner>
   <owner>desktop-pwas-team@google.com</owner>
@@ -387,6 +387,44 @@ chromium-metrics-reviews@google.com.
     whenever the database is written to, which can happen on large events like
     installing a web app, as well as small events like changing a the user
     display preference for a web app.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.DedupeInstallUrls.AppsDeduped" units="apps"
+    expires_after="2023-11-01">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    The number of web apps deduped *for each install URL* that had more than one
+    web app associated with it. Recorded at the end of each
+    DedupeInstallUrlsCommand scan, about 3 times at start up (once per external
+    web app install source) and once whenever web app policy changes.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.DedupeInstallUrls.InstallUrlsDeduped"
+    units="install URLs" expires_after="2023-11-01">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    The number of install URLs that had multiple web apps associated with it
+    during a run of DedupeInstallUrlsCommand. Recorded at the end of each
+    DedupeInstallUrlsCommand scan, about 3 times at start up (once per external
+    web app install source) and once whenever web app policy changes.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.DedupeInstallUrls.SessionRunCount" units="runs"
+    expires_after="2023-11-01">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    The number of times the DedupeInstallUrlsCommand ran in a single browser
+    profile session. Note that because this is recorded for each run, if it is
+    run 3 times the client will emit 1, 2 and 3 in succession. Recorded at the
+    start of each DedupeInstallUrlsCommand scan, about 3 times at start up (once
+    per external web app install source) and once whenever web app policy
+    changes.
   </summary>
 </histogram>
 
@@ -982,7 +1020,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.LaunchContainer" enum="AppLaunchContainer"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>phillis@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -1009,6 +1047,35 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of times web apps are launched, grouped by apps::LaunchSource.
     The equivalent histogram on Android is called Launch.HomeScreenSource.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.MlInstall.DialogResponse"
+    enum="WebAppMlInstallUserResponse" expires_after="2024-09-10">
+  <owner>dmurph@chromium.org</owner>
+  <owner>desktop-pwa-team@google.com</owner>
+  <summary>
+    Records the user's response to an install dialog, but only if the dialog was
+    triggered by the ML promotion prediction system, or if the dialog was
+    already showing when the ML prediction system returned a result. Note that
+    in the second case, the ML prediction could have been anything, but in the
+    first case, the prediction is always to show the installation UX. The ML
+    prediction always happens after a page is loaded, relevant UKM metrics are
+    gathered, and 3 seconds have gone past. If the result is 'blocked by
+    guardrails', then that can only occur if there wasn't install UX showing
+    when ML finished the prediction, and the programatic guardrails applied.
+    This is reported irrespective of the ML result.
+  </summary>
+</histogram>
+
+<histogram name="WebApp.MlInstall.InstallSource" enum="WebappInstallSource"
+    expires_after="2024-09-10">
+  <owner>dmurph@chromium.org</owner>
+  <owner>desktop-pwa-team@google.com</owner>
+  <summary>
+    Recorded when a result occurs on an installation dialog that was either
+    triggered via ML or was showing through another means when ML returned a
+    classification result for the web contents.
   </summary>
 </histogram>
 

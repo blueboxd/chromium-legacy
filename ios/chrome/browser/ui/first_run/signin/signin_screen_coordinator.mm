@@ -123,7 +123,7 @@
                         accessPoint:_accessPoint
                         promoAction:_promoAction];
   self.mediator.consumer = self.viewController;
-  if (self.mediator.firstRun) {
+  if (self.mediator.ignoreDismissGesture) {
     self.viewController.modalInPresentation = YES;
   }
   BOOL animated = self.baseNavigationController.topViewController != nil;
@@ -140,10 +140,6 @@
   self.accountManagerService = nil;
   self.authenticationService = nil;
   [super stop];
-}
-
-- (void)dealloc {
-  CHECK(!self.authenticationService);
 }
 
 #pragma mark - Private

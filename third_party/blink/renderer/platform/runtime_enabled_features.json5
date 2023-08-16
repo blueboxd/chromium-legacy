@@ -178,6 +178,9 @@
 
     // browser_process_read_access indicates the runtime feature state should be
     // readable in the browserprocess via RuntimeFeatureStateReadContext.
+    // TODO(crbug.com/1377000): this feature does not support origin trial
+    // tokens provided in HTTP headers. Any tokens provided via HTTP header will
+    // be dropped.
     browser_process_read_access: {
       default: false,
       value_type: "bool",
@@ -185,6 +188,9 @@
 
     // browser_process_read_write_access indicates the runtime feature state
     // should be writable in the browserprocess via RuntimeFeatureStateContext.
+    // TODO(crbug.com/1377000): this feature does not support origin trial
+    // tokens provided in HTTP headers. Any tokens provided via HTTP header will
+    // be dropped.
     browser_process_read_write_access: {
       default: false,
       value_type: "bool",
@@ -806,6 +812,10 @@
       status: "experimental",
       base_feature: "none",
     },
+    {
+      name: "CSSContainIntrinsicSizeAutoNone",
+      status: "experimental",
+    },
     // Ablation study to try to measure very roughly memory savings from not saving
     // pretokenized strings in CSS custom properties.
     {
@@ -814,7 +824,7 @@
     },
     {
       name: "CSSDisplayAnimation",
-      status: "experimental",
+      status: "stable",
     },
     {
       // crbug.com/995106
@@ -851,11 +861,6 @@
       // @font-face Font property descriptors auto range.
       // https://www.w3.org/TR/css-fonts-4/#font-prop-desc
       name: "CSSFontFaceAutoVariableRange",
-      status: "stable",
-      base_feature: "none",
-    },
-    {
-      name: "CSSFontFaceSrcTechParsing",
       status: "stable",
       base_feature: "none",
     },
@@ -977,38 +982,31 @@
     },
     {
       name: "CSSOffsetPathBasicShapesCircleAndEllipse",
-      status: "experimental",
-      base_feature: "none",
+      status: "stable",
     },
     {
       name: "CSSOffsetPathBasicShapesRectanglesAndPolygon",
-      status: "experimental",
-      base_feature: "none",
+      status: "stable",
     },
     {
       name: "CSSOffsetPathCoordBox",
-      status: "experimental",
-      base_feature: "none",
+      status: "stable",
     },
     {
       name: "CSSOffsetPathRay",
-      status: "experimental",
-      base_feature: "none",
+      status: "stable",
     },
     {
       name: "CSSOffsetPathRayContain",
-      status: "experimental",
-      base_feature: "none",
+      status: "stable",
     },
     {
       name: "CSSOffsetPathUrl",
-      status: "experimental",
-      base_feature: "none",
+      status: "stable",
     },
     {
       name: "CSSOffsetPositionAnchor",
-      status: "experimental",
-      base_feature: "none",
+      status: "stable",
     },
     {
       name: "CSSOverflowForReplacedElements",
@@ -1069,11 +1067,10 @@
       // https://drafts.csswg.org/css-cascade-6/#scoped-styles
       name: "CSSScope",
       status: "experimental",
-      base_feature: "none",
     },
     {
       // https://drafts.csswg.org/css-scroll-snap-2
-      name: "CSSScrollSnap2",
+      name: "CSSScrollStart",
       status: "test",
     },
     {
@@ -1811,11 +1808,6 @@
       // a Chromium level feature.
     },
     {
-      name: "FontVariantAlternates",
-      status: "stable",
-      base_feature: "none",
-    },
-    {
       name: "FontVariantPosition",
       status: "experimental",
       base_feature: "none",
@@ -1957,7 +1949,7 @@
     },
     {
       name: "HighlightInheritance",
-      status: "experimental",
+      status: "test",
       base_feature: "none",
     },
     {
@@ -2082,6 +2074,11 @@
       "name": "IntersectionOptimization",
     },
     {
+      name: "JavaScriptCompileHintsMagicRuntime",
+      status: "experimental",
+      origin_trial_feature_name: "JavaScriptCompileHintsMagic",
+    },
+    {
       name: "KeyboardAccessibleTooltip",
       status: "experimental",
       base_feature: "none",
@@ -2123,8 +2120,13 @@
     {
       // crbug.com/1353190
       name: "LayoutNGNoCopyBack",
-      depends_on: ["RemoveConvertToLayerCoords", "ScrollableAreaNoSnapping"],
+      depends_on: ["LayoutNGNoLocation", "RemoveConvertToLayerCoords", "ScrollableAreaNoSnapping"],
       status: "test",
+    },
+    {
+      // crbug.com/1353190
+      name: "LayoutNGNoLocation",
+      status: "stable",
     },
     {
       name: "LayoutNGShapeCache",
@@ -2177,13 +2179,15 @@
       // frames. Can be used for UKM or for the perofrmance API.
       name: "LongAnimationFrameMonitoring",
       implied_by: ["LongAnimationFrameTiming", "LongAnimationFrameUKM", "LongTaskFromLongAnimationFrame"],
-      status: "experimental"
+      status: "experimental",
+      origin_trial_feature_name: "LongAnimationFrameTiming"
     },
     {
       // Enables long aniamtion frames as a performance API (the
       // "long-animation-frame" timeline entry)
       name: "LongAnimationFrameTiming",
-      status: "experimental"
+      status: "experimental",
+      origin_trial_feature_name: "LongAnimationFrameTiming"
     },
     {
       // Enables long aniamtion frame logging to UKM
@@ -3130,19 +3134,6 @@
       implied_by: ["AnimationWorklet", "ScrollTimelineCurrentTime"]
     },
     {
-      // Support for scroll/view-timeline-attachment.
-      //
-      // This feature was intially specified in scroll-animations-1,
-      // but was since removed by a resolution in Issue 7759.
-      //
-      // The properties will remain available behind this flag until
-      // all WPTs are adjusted to the new API (see feature TimelineScope).
-      //
-      // https://github.com/w3c/csswg-drafts/issues/7759
-      // https://crbug.com/1446702
-      name: "ScrollTimelineAttachment"
-    },
-    {
       // Separate flag for crbug.com/1426506 (getCurrentTime API change) which
       // is expected to land after the initial launch of ScrollTimeline.
       name: "ScrollTimelineCurrentTime",
@@ -3150,7 +3141,7 @@
     },
     {
       name: "ScrollTimelineOnCompositor",
-      status: "test"
+      status: "stable"
     },
     // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
     // as per the spec, matching other Web engines.
@@ -3197,7 +3188,7 @@
     },
     {
       name: "SendMouseEventsDisabledFormControls",
-      status: "experimental",
+      status: "stable",
       public: true,
     },
     {
@@ -3235,6 +3226,7 @@
     {
       name: "ServiceWorkerStaticRouter",
       base_feature: "none",
+      origin_trial_feature_name: "ServiceWorkerStaticRouter",
       public: true,
     },
     {
@@ -3316,7 +3308,13 @@
       origin_trial_feature_name: "SoftNavigationHeuristics",
     },
     {
+      name: "SoftNavigationHeuristicsExposeFPAndFCP",
+    },
+    {
       name: "SolidColorLayers",
+    },
+    {
+      name: "SparseObjectPaintProperties",
     },
     // An origin trial feature name is required for this, even though it's
     // actually enabled by the more specific trial. Having these as separate
@@ -3447,11 +3445,6 @@
     },
     {
       name: "StylusHandwriting",
-      base_feature: "none",
-    },
-    {
-      name: "SupportsFontFormatTech",
-      status: "stable",
       base_feature: "none",
     },
     {
@@ -3719,6 +3712,10 @@
       implied_by: ["ViewTransitionOnNavigation"],
     },
     {
+      name: "ViewTransitionLayoutObjectVisualOverflow",
+      status: "stable",
+    },
+    {
       // If enabled, ViewTransition API is supported for navigations including
       // cross-document transitions.
       // See https://drafts.csswg.org/css-view-transitions-1/.
@@ -3970,10 +3967,9 @@
     },
     {
       name: "WebGPUWebCodecs",
-      base_feature: "none",
-      origin_trial_feature_name: "WebGPUWebCodecs",
+      status: "stable",
       public: true,
-      // Make the WebGPUDeveloperFeatures also enabled this OT feature.
+      // Make the WebGPUDeveloperFeatures also enabled this feature.
       implied_by: ["WebGPUDeveloperFeatures"],
     },
     {

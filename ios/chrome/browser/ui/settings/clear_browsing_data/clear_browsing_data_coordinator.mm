@@ -67,10 +67,6 @@
   [super stop];
 }
 
-- (void)dealloc {
-  CHECK(!self.viewController);
-}
-
 #pragma mark - ClearBrowsingDataUIDelegate
 
 - (void)openURL:(const GURL&)URL {

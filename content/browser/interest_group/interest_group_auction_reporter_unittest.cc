@@ -4,6 +4,7 @@
 
 #include "content/browser/interest_group/interest_group_auction_reporter.h"
 
+#include <limits>
 #include <map>
 #include <memory>
 #include <string>
@@ -32,7 +33,9 @@
 #include "content/browser/interest_group/test_interest_group_private_aggregation_manager.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_utils.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
+#include "content/test/test_content_browser_client.h"
 #include "mojo/public/cpp/system/functions.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -84,6 +87,16 @@ auto ElementsAreRequests(Ts&... requests) {
   // Need to use `std::ref` as `mojo::StructPtr`s are move-only.
   return testing::UnorderedElementsAre(testing::Eq(std::ref(requests))...);
 }
+
+class EventReportingAttestationBrowserClient : public TestContentBrowserClient {
+ public:
+  bool IsPrivacySandboxReportingDestinationAttested(
+      content::BrowserContext* browser_context,
+      const url::Origin& destination_origin,
+      content::PrivacySandboxInvokingAPI invoking_api) override {
+    return true;
+  }
+};
 
 // These tests cover the InterestGroupAuctionReporter state machine with respect
 // to auction worklets and sending reports. All tests use mock auction worklets.
@@ -213,7 +226,8 @@ class InterestGroupAuctionReporterTest
     interest_group_auction_reporter_ =
         std::make_unique<InterestGroupAuctionReporter>(
             interest_group_manager_impl_.get(), &auction_worklet_manager_,
-            /*attribution_manager=*/nullptr, &private_aggregation_manager_,
+            /*browser_context=*/browser_context(),
+            &private_aggregation_manager_,
             private_aggregation_manager_
                 .GetLogPrivateAggregationRequestsCallback(),
             std::move(auction_config_), kTopFrameOrigin, kFrameOrigin,
@@ -385,6 +399,9 @@ class InterestGroupAuctionReporterTest
   }
 
   base::test::ScopedFeatureList feature_list_;
+
+  EventReportingAttestationBrowserClient browser_client_;
+  ScopedContentBrowserClientSetting browser_client_setting_{&browser_client_};
 
   const url::Origin kTopFrameOrigin =
       url::Origin::Create(GURL("https://top_frame_origin.test/"));
@@ -1923,6 +1940,45 @@ TEST(InterestGroupAuctionReporterStochasticRounding, IsNonDeterministic) {
         InterestGroupAuctionReporter::RoundStochasticallyToKBits(kInput, 8);
     EXPECT_THAT(result, testing::AnyOf(0.298828125, 0.30078125));
     seen.insert(result);
+  }
+}
+
+TEST(InterestGroupAuctionReporterStochasticRounding, RoundsUpAndDown) {
+  const double inputs[] = {129.3, 129.8};
+  for (auto input : inputs) {
+    SCOPED_TRACE(input);
+    base::flat_set<double> seen;
+    while (seen.size() < 2) {
+      double result =
+          InterestGroupAuctionReporter::RoundStochasticallyToKBits(input, 8);
+      ASSERT_THAT(result, testing::AnyOf(129.0, 130.0));
+      seen.insert(result);
+    }
+  }
+}
+
+TEST(InterestGroupAuctionReporterStochasticRounding, HandlesOverflow) {
+  double max_value =
+      std::ldexp(0.998046875, std::numeric_limits<int8_t>::max());
+  double expected_value =
+      std::ldexp(0.99609375, std::numeric_limits<int8_t>::max());
+  const double inputs[] = {
+      max_value,
+      -max_value,
+  };
+  for (auto input : inputs) {
+    SCOPED_TRACE(input);
+    base::flat_set<double> seen;
+    while (seen.size() < 2) {
+      double result =
+          InterestGroupAuctionReporter::RoundStochasticallyToKBits(input, 8);
+      ASSERT_THAT(
+          result,
+          testing::AnyOf(
+              std::copysign(expected_value, input),
+              std::copysign(std::numeric_limits<double>::infinity(), input)));
+      seen.insert(result);
+    }
   }
 }
 

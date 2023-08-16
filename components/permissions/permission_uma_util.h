@@ -265,14 +265,20 @@ enum class OneTimePermissionEvent {
 
   // Recorded when a one time grant expires because all tabs are either closed
   // or discarded.
-
   ALL_TABS_CLOSED_OR_DISCARDED = 2,
 
   // Recorded when a one time grant expires because the permission was unused in
   // the background.
   EXPIRED_IN_BACKGROUND = 3,
 
-  kMaxValue = EXPIRED_IN_BACKGROUND
+  // Revoked because of the maximum one time permission lifetime
+  // `kOneTimePermissionMaximumLifetime`
+  EXPIRED_AFTER_MAXIMUM_LIFETIME = 4,
+
+  // Recorded when a one time grant expires because the device was suspended.
+  EXPIRED_ON_SUSPEND = 5,
+
+  kMaxValue = EXPIRED_ON_SUSPEND
 };
 
 enum class PermissionAutoRevocationHistory {

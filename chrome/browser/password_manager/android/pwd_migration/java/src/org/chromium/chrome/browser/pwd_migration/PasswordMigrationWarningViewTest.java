@@ -13,14 +13,19 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 import static org.chromium.base.test.util.CriteriaHelper.pollUiThread;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.ACCOUNT_DISPLAY_NAME;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.CURRENT_SCREEN;
+import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.SHOULD_OFFER_SYNC;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.VISIBLE;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
+
+import android.view.View;
 
 import androidx.test.filters.MediumTest;
 
@@ -87,7 +92,7 @@ public class PasswordMigrationWarningViewTest {
             mModel = PasswordMigrationWarningProperties.createDefaultModel(
                     mDismissCallback, mOnClickHandler);
             mView = new PasswordMigrationWarningView(
-                    mActivityTestRule.getActivity(), mBottomSheetController);
+                    mActivityTestRule.getActivity(), mBottomSheetController, () -> {});
             PropertyModelChangeProcessor.create(mModel, mView,
                     PasswordMigrationWarningViewBinder::bindPasswordMigrationWarningView);
         });
@@ -142,6 +147,8 @@ public class PasswordMigrationWarningViewTest {
     @Test
     @MediumTest
     public void testShowsOptionsScreen() {
+        // Customize the view to display the sync option.
+        runOnUiThreadBlocking(() -> mModel.set(SHOULD_OFFER_SYNC, true));
         // The sheet is shown.
         runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true));
         BottomSheetTestSupport.waitForOpen(mBottomSheetController);
@@ -164,7 +171,39 @@ public class PasswordMigrationWarningViewTest {
 
     @Test
     @MediumTest
+    public void testShowsOptionsScreenNoSync() {
+        // Customize the view to not display the sync option.
+        runOnUiThreadBlocking(() -> mModel.set(SHOULD_OFFER_SYNC, false));
+        // The sheet is shown.
+        runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true));
+        BottomSheetTestSupport.waitForOpen(mBottomSheetController);
+        // Setting the options screen.
+        runOnUiThreadBlocking(() -> mModel.set(CURRENT_SCREEN, ScreenType.OPTIONS_SCREEN));
+        // The test waits for the fragment containing the button to be attached.
+        pollUiThread(()
+                             -> mActivityTestRule.getActivity().findViewById(
+                                        R.id.password_migration_cancel_button)
+                        != null);
+        onView(withId(R.id.radio_button_layout)).check(matches(isDisplayed()));
+        runOnUiThreadBlocking(() -> {
+            RadioButtonWithDescription signInOrSyncButton =
+                    mActivityTestRule.getActivity().findViewById(R.id.radio_sign_in_or_sync);
+            assertEquals(View.GONE, signInOrSyncButton.getVisibility());
+        });
+        runOnUiThreadBlocking(() -> {
+            RadioButtonWithDescription exportButton =
+                    mActivityTestRule.getActivity().findViewById(R.id.radio_password_export);
+            assertTrue(exportButton.isChecked());
+        });
+        onView(withId(R.id.password_migration_next_button)).check(matches(isDisplayed()));
+        onView(withId(R.id.password_migration_cancel_button)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
     public void testNextButtonPropagatesSyncOption() {
+        // Customize the view to display the sync option.
+        runOnUiThreadBlocking(() -> mModel.set(SHOULD_OFFER_SYNC, true));
         // The sheet is shown.
         runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true));
         BottomSheetTestSupport.waitForOpen(mBottomSheetController);
@@ -185,7 +224,9 @@ public class PasswordMigrationWarningViewTest {
         });
 
         onView(withId(R.id.password_migration_next_button)).perform(click());
-        verify(mOnClickHandler).onNext(MigrationOption.SYNC_PASSWORDS);
+        verify(mOnClickHandler)
+                .onNext(eq(MigrationOption.SYNC_PASSWORDS),
+                        eq(mActivityTestRule.getActivity().getSupportFragmentManager()));
     }
 
     @Test
@@ -211,7 +252,9 @@ public class PasswordMigrationWarningViewTest {
         });
 
         onView(withId(R.id.password_migration_next_button)).perform(click());
-        verify(mOnClickHandler).onNext(MigrationOption.EXPORT_AND_DELETE);
+        verify(mOnClickHandler)
+                .onNext(eq(MigrationOption.EXPORT_AND_DELETE),
+                        eq(mActivityTestRule.getActivity().getSupportFragmentManager()));
     }
 
     /**
@@ -239,6 +282,8 @@ public class PasswordMigrationWarningViewTest {
     @Test
     @MediumTest
     public void testAccountNameIsSet() {
+        // Customize the view to display the sync option.
+        runOnUiThreadBlocking(() -> mModel.set(SHOULD_OFFER_SYNC, true));
         // Setting the options screen.
         runOnUiThreadBlocking(() -> mModel.set(CURRENT_SCREEN, ScreenType.OPTIONS_SCREEN));
         // Setting the profile.

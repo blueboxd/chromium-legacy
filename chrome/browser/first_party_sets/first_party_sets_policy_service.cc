@@ -9,14 +9,18 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/types/optional_util.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_constraints.h"
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/first_party_sets_handler.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/features.h"
 #include "net/first_party_sets/first_party_set_entry_override.h"
 #include "net/first_party_sets/first_party_sets_cache_filter.h"
 #include "net/first_party_sets/first_party_sets_context_config.h"
@@ -41,7 +45,11 @@ const base::Value::Dict* GetOverridesPolicyForProfile(
                : nullptr;
 }
 
-bool GetEnabledPolicyForProfile(const PrefService* prefs) {
+bool GetEnabledStateForProfile(const PrefService* prefs) {
+  if (base::FeatureList::IsEnabled(
+          net::features::kForceThirdPartyCookieBlocking)) {
+    return true;
+  }
   return prefs &&
          prefs->GetBoolean(prefs::kPrivacySandboxFirstPartySetsEnabled);
 }
@@ -80,7 +88,7 @@ void FirstPartySetsPolicyService::Init() {
   DCHECK(profile);
 
   PrefService* prefs = profile->GetPrefs();
-  pref_enabled_ = GetEnabledPolicyForProfile(prefs);
+  pref_enabled_ = GetEnabledStateForProfile(prefs);
 
   // If `profile` is a system profile or a guest profile, use an empty config
   // and cache filter.
@@ -163,12 +171,41 @@ void FirstPartySetsPolicyService::AddRemoteAccessDelegate(
 
 void FirstPartySetsPolicyService::OnFirstPartySetsEnabledChanged(bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (base::FeatureList::IsEnabled(
+          net::features::kForceThirdPartyCookieBlocking)) {
+    CHECK(pref_enabled_);
+    return;
+  }
   // TODO(crbug.com/1366846) Add metrics here to track whether the pref is ever
   // enabled before the config is ready to be to be sent to the delegates.
   pref_enabled_ = enabled;
   for (auto& delegate : access_delegates_) {
     delegate->SetEnabled(pref_enabled_);
   }
+
+  // Clear all the existing permission decisions that were made by FPS, since
+  // the enabled/disabled state of FPS has now changed.
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+  ClearContentSettings(profile);
+  for (Profile* otr_profile : profile->GetAllOffTheRecordProfiles()) {
+    ClearContentSettings(otr_profile);
+  }
+}
+
+void FirstPartySetsPolicyService::ClearContentSettings(Profile* profile) const {
+  auto is_nonrestorable =
+      [](const ContentSettingPatternSource& setting) -> bool {
+    return setting.metadata.session_model() ==
+           content_settings::SessionModel::NonRestorableUserSession;
+  };
+
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+
+  host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
+      ContentSettingsType::STORAGE_ACCESS, is_nonrestorable);
+  host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
+      ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS, is_nonrestorable);
 }
 
 void FirstPartySetsPolicyService::RegisterThrottleResumeCallback(

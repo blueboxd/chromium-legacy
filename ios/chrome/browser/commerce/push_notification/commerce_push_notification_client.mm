@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/commerce/push_notification/commerce_push_notification_client.h"
 
 #import "base/metrics/histogram_functions.h"
+#import "base/metrics/user_metrics.h"
 #import "base/run_loop.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/browser/bookmark_node.h"
@@ -68,6 +69,8 @@ void CommercePushNotificationClient::HandleNotificationInteraction(
 UIBackgroundFetchResult
 CommercePushNotificationClient::HandleNotificationReception(
     NSDictionary<NSString*, id>* notification) {
+  base::RecordAction(base::UserMetricsAction(
+      "Commerce.PriceTracking.PushNotification.Received"));
   return UIBackgroundFetchResultNoData;
 }
 
@@ -156,6 +159,13 @@ void CommercePushNotificationClient::HandleNotificationInteraction(
   // Site'.
   if ([action_identifier isEqualToString:kVisitSiteActionIdentifier] ||
       [action_identifier isEqualToString:kDefaultActionIdentifier]) {
+    if ([action_identifier isEqualToString:kVisitSiteActionIdentifier]) {
+      base::RecordAction(base::UserMetricsAction(
+          "Commerce.PriceTracking.PushNotification.VisitSiteTapped"));
+    } else if ([action_identifier isEqualToString:kDefaultActionIdentifier]) {
+      base::RecordAction(base::UserMetricsAction(
+          "Commerce.PriceTracking.PushNotification.NotificationTapped"));
+    }
     // TODO(crbug.com/1403190) implement alternate Open URL handler which
     // attempts to find if a Tab with the URL already exists and switch
     // to that Tab.
@@ -171,6 +181,9 @@ void CommercePushNotificationClient::HandleNotificationInteraction(
         GURL(price_drop_notification.destination_url()));
     UrlLoadingBrowserAgent::FromBrowser(browser)->Load(params);
   } else if ([action_identifier isEqualToString:kUntrackPriceIdentifier]) {
+    base::RecordAction(base::UserMetricsAction(
+        "Commerce.PriceTracking.PushNotification.UnTrackProductTapped"));
+
     const bookmarks::BookmarkNode* bookmark =
         GetBookmarkModel()->GetMostRecentlyAddedUserNodeForURL(
             GURL(price_drop_notification.destination_url()));

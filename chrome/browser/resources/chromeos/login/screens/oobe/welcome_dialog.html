@@ -111,6 +111,17 @@ found in the LICENSE file.
     grid-row: 1 / span 2;
   }
 
+  #welcomeAnimationSlot {
+    position: relative;
+  }
+
+  .stacked-animations {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
   #accessibilitySettingsButton,
   #timezoneSettingsButton,
   #enableDebuggingButton {
@@ -120,8 +131,8 @@ found in the LICENSE file.
   #title {
     color: var(--oobe-header-text-color);
     font-family: var(--oobe-header-font-family);
-    font-size: 36px;
-    line-height: 44px;
+    font-size: var(--oobe-welcome-header-font-size);
+    line-height: var(--oobe-welcome-header-line-height);
     margin-bottom: 0;
   }
   :host-context([orientation='horizontal']) #title {
@@ -131,8 +142,8 @@ found in the LICENSE file.
     margin-top: 40px;
   }
   :host-context(.simon-enabled) #title {
-    font-size: 52px;
-    line-height: 60px;
+    font-size: var(--oobe-welcome-header-font-size);
+    line-height: var(--oobe-welcome-header-line-height);
     margin-bottom: 48px;
     margin-top: auto;
   }
@@ -140,8 +151,8 @@ found in the LICENSE file.
   #subtitle {
     color: var(--oobe-subheader-text-color);
     font-family: var(--oobe-header-font-family);
-    font-size: 24px;
-    line-height: 32px;
+    font-size: var(--oobe-welcome-subheader-font-size);
+    line-height: var(--oobe-welcome-subheader-line-height);
     margin-top: 16px;
   }
 
@@ -150,6 +161,13 @@ found in the LICENSE file.
   }
   :host-context([orientation='vertical']) #subtitle {
     margin-bottom: 40px;
+  }
+
+  :host-context(.jelly-enabled) .welcome-left-buttons {
+    --oobe-button-font-family: var(--cros-body-0-font-family);
+    --oobe-button-font-size: var(--cros-body-0-font-size);
+    --oobe-button-font-weight: var(--cros-body-0-font-weight);
+    line-height: var(--cros-body-0-line-height);
   }
 
   .welcome-header-text {
@@ -177,8 +195,9 @@ found in the LICENSE file.
     </div>
   </template>
   <div id="content">
-    <div id="buttons" class="layout vertical">
+    <div id="buttons" class="layout vertical welcome-left-buttons">
       <oobe-icon-button
+        class="bg-transparent"
         id="languageSelectionButton"
         icon1x="oobe-20:welcome-language"
         icon2x="oobe-40:welcome-language"
@@ -189,6 +208,7 @@ found in the LICENSE file.
         <div slot="text">[[currentLanguage]]</div>
       </oobe-icon-button>
       <oobe-icon-button
+        class="bg-transparent"
         id="accessibilitySettingsButton"
         text-key="accessibilityLink"
         icon1x="oobe-20:welcome-accessibility"
@@ -197,6 +217,7 @@ found in the LICENSE file.
       >
       </oobe-icon-button>
       <oobe-icon-button
+        class="bg-transparent"
         id="timezoneSettingsButton"
         text-key="timezoneButtonText"
         icon1x="oobe-32:timezone"
@@ -206,6 +227,7 @@ found in the LICENSE file.
       >
       </oobe-icon-button>
       <oobe-icon-button
+        class="bg-transparent"
         id="enableDebuggingButton"
         text-key="debuggingFeaturesLink"
         icon1x="oobe-32:chromebook"
@@ -236,9 +258,13 @@ found in the LICENSE file.
     <template is="dom-if" if="[[showAnimationSlot()]]">
       <div id="welcomeAnimationSlot">
         <template is="dom-if" if="[[!isMeet_]]">
+          <!-- TODO(b/288071884) - Replace SVG with one that supports dynamic colors -->
+          <img id="welcomeAnimationFirstFrame" src="images/welcome_animation_first_frame.svg"
+            class="oobe-illustration stacked-animations" aria-hidden="true" hidden="[[isOobeLoaded_]]">
           <oobe-cr-lottie
-            id="welcomeAnimation"
+            id="welcomeAnimation" preload
             animation-url="animations/welcome_screen_animation.json"
+            class="stacked-animations"
           >
           </oobe-cr-lottie>
         </template>

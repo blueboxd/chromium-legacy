@@ -71,7 +71,6 @@ LiveTranslateController::LiveTranslateController(
 }
 
 LiveTranslateController::~LiveTranslateController() = default;
-
 // static
 void LiveTranslateController::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {

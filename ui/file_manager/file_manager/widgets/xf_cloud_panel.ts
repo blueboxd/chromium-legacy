@@ -49,18 +49,8 @@ export class XfCloudPanel extends XfBase {
     converter: {
       fromAttribute:
           (value: string) => {
-            let percentage = null;
-            try {
-              percentage = parseInt(value, 10);
-            } catch (e) {
-              return null;
-            }
-            if (util.isNullOrUndefined(percentage) ||
-                Number.isNaN(percentage) || percentage < 0 ||
-                percentage > 100) {
-              return null;
-            }
-            return percentage;
+            const percentage = parseInt(value, 10);
+            return percentage >= 0 && percentage <= 100 ? percentage : null;
           },
       toAttribute: (value: number) => String(value),
     },
@@ -89,6 +79,20 @@ export class XfCloudPanel extends XfBase {
     },
   })
   type?: CloudPanelType;
+
+  @property({
+    type: Number,
+    reflect: true,
+    converter: {
+      fromAttribute:
+          (value: string) => {
+            const seconds = parseInt(value, 10);
+            return seconds >= 0 ? seconds : null;
+          },
+      toAttribute: (value: number) => String(value),
+    },
+  })
+  seconds?: number;
 
   /**
    * The cloud panel uses the `CrActionMenu` to provide the dialog behaviour and
@@ -190,7 +194,12 @@ export class XfCloudPanel extends XfBase {
               value="${this.percentage}">
             ${this.percentage}%
           </progress>
-          <div class="progress-description">3 minutes remaining</div>
+          <div class="progress-description">
+          ${
+        this.seconds && this.seconds > 0 ?
+            util.secondsToRemainingTimeString(this.seconds) :
+            str('DRIVE_BULK_PINNING_CALCULATING')}
+          </div>
         </div>
         <div class="static" id="progress-finished">
           <xf-icon type="${

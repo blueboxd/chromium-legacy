@@ -368,7 +368,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   HistoryClustersTabHelper::CreateForWebContents(web_contents);
   HttpsOnlyModeTabHelper::CreateForWebContents(web_contents);
   webapps::InstallableManager::CreateForWebContents(web_contents);
-  webapps::MLInstallabilityPromoter::CreateForWebContents(web_contents);
   login_detection::LoginDetectionTabHelper::MaybeCreateForWebContents(
       web_contents);
   if (MediaEngagementService::IsEnabled())
@@ -471,6 +470,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // --- Section 2: Platform-specific tab helpers ---
 
 #if BUILDFLAG(IS_ANDROID)
+  webapps::MLInstallabilityPromoter::CreateForWebContents(web_contents);
   {
     // Remove after fixing https://crbug/905919
     TRACE_EVENT0("browser", "AppBannerManagerAndroid::CreateForWebContents");
@@ -490,8 +490,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   PolicyAuditorBridge::CreateForWebContents(web_contents);
   PluginObserverAndroid::CreateForWebContents(web_contents);
 #else
-  if (web_app::AreWebAppsUserInstallable(profile))
+  if (web_app::AreWebAppsUserInstallable(profile)) {
+    webapps::MLInstallabilityPromoter::CreateForWebContents(web_contents);
     webapps::AppBannerManagerDesktop::CreateForWebContents(web_contents);
+  }
   BookmarkTabHelper::CreateForWebContents(web_contents);
   BrowserSyncedTabDelegate::CreateForWebContents(web_contents);
   FocusTabAfterNavigationHelper::CreateForWebContents(web_contents);
@@ -524,8 +526,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     performance_manager::user_tuning::UserPerformanceTuningManager::
         ResourceUsageTabHelper::CreateForWebContents(web_contents);
   }
-  ThumbnailTabHelper::CreateForWebContents(web_contents);
-
+  if (base::FeatureList::IsEnabled(features::kTabHoverCardImages) ||
+      base::FeatureList::IsEnabled(features::kTabHoverCardImageSettings) ||
+      base::FeatureList::IsEnabled(features::kWebUITabStrip)) {
+    ThumbnailTabHelper::CreateForWebContents(web_contents);
+  }
   web_modal::WebContentsModalDialogManager::CreateForWebContents(web_contents);
   if (OmniboxFieldTrial::IsZeroSuggestPrefetchingEnabled()) {
     ZeroSuggestPrefetchTabHelper::CreateForWebContents(web_contents);

@@ -567,11 +567,29 @@ bool AppBannerManagerAndroid::IsMlPromotionBlockedByHistoryGuardrail(
   return false;
 }
 
+void AppBannerManagerAndroid::OnMlInstallPrediction(
+    base::PassKey<MLInstallabilityPromoter>,
+    std::string result_label) {
+  // TODO(https://crbug.com/1449993): Implement.
+}
+
+segmentation_platform::SegmentationPlatformService*
+AppBannerManagerAndroid::GetSegmentationPlatformService() {
+  // TODO(https://crbug.com/1449993): Implement.
+  // Note: By returning a non-nullptr, all of the Ml code (after metrics
+  // gathering) in `MlInstallabilityPromoter` will execute, including requesting
+  // classifiction & eventually calling `OnMlInstallPrediction` above. Make sure
+  // that the contract of that class is being followed appropriately, and the ML
+  // parts are correct.
+  return nullptr;
+}
+
 void AppBannerManagerAndroid::RecordExtraMetricsForInstallEvent(
     AddToHomescreenInstaller::Event event,
     const AddToHomescreenParams& a2hs_params) {}
 
-base::WeakPtr<AppBannerManager> AppBannerManagerAndroid::GetWeakPtr() {
+base::WeakPtr<AppBannerManager>
+AppBannerManagerAndroid::GetWeakPtrForThisNavigation() {
   return weak_factory_.GetWeakPtr();
 }
 
@@ -580,7 +598,7 @@ AppBannerManagerAndroid::GetAndroidWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void AppBannerManagerAndroid::InvalidateWeakPtrs() {
+void AppBannerManagerAndroid::InvalidateWeakPtrsForThisNavigation() {
   weak_factory_.InvalidateWeakPtrs();
 }
 

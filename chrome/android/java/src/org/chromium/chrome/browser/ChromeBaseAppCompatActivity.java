@@ -14,12 +14,10 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
@@ -37,6 +35,7 @@ import com.google.android.material.color.DynamicColors;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.BundleUtils;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -50,6 +49,7 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
+import org.chromium.ui.display.DisplaySwitches;
 import org.chromium.ui.display.DisplayUtil;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
@@ -267,22 +267,12 @@ public class ChromeBaseAppCompatActivity extends AppCompatActivity
     @VisibleForTesting
     static void applyOverridesForAutomotive(Context baseContext, Configuration overrideConfig) {
         if (BuildInfo.getInstance().isAutomotive) {
-            scaleUpUI(baseContext, overrideConfig, DisplayUtil.UI_SCALING_FACTOR_FOR_AUTO);
+            DisplayUtil.scaleUpConfigurationForAutomotive(baseContext, overrideConfig);
+
+            // Enable web ui scaling for automotive devices.
+            CommandLine.getInstance().appendSwitch(
+                    DisplaySwitches.AUTOMOTIVE_WEB_UI_SCALE_UP_ENABLED);
         }
-    }
-
-    private static void scaleUpUI(Context context, Configuration config, float scaleUpFactor) {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        WindowManager windowManager = (WindowManager) context.getSystemService(WINDOW_SERVICE);
-        assert windowManager != null;
-        windowManager.getDefaultDisplay().getRealMetrics(displayMetrics);
-
-        config.densityDpi = (int) (displayMetrics.densityDpi * scaleUpFactor);
-        config.screenWidthDp =
-                (int) (displayMetrics.widthPixels / (displayMetrics.density * scaleUpFactor));
-        config.screenHeightDp =
-                (int) (displayMetrics.heightPixels / (displayMetrics.density * scaleUpFactor));
-        config.smallestScreenWidthDp = Math.min(config.screenWidthDp, config.screenHeightDp);
     }
 
     /**

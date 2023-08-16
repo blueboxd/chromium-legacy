@@ -50,6 +50,10 @@ const char kTimesAttemptedToReenrollToGoogleMobileServices[] =
 
 const char kUserAcknowledgedLocalPasswordsMigrationWarning[] =
     "user_acknowledged_local_passwords_migration_warning";
+const char kLocalPasswordsMigrationWarningShownTimestamp[] =
+    "local_passwords_migration_warning_shown_timestamp";
+const char kLocalPasswordMigrationWarningShownAtStartup[] =
+    "local_passwords_migration_warning_shown_at_startup";
 #endif
 
 #if BUILDFLAG(IS_WIN)

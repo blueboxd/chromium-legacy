@@ -61,6 +61,7 @@ Só uma pessoa com sua senha longa poderá ler os dados criptografados. Essa sen
 <translation id="1283039547216852943">Toque para expandir</translation>
 <translation id="1289059016768036948">Será necessário fazer login na sua Conta do Google</translation>
 <translation id="1291207594882862231">Limpar histórico, cookies, dados do site, cache…</translation>
+<translation id="1293898515599432175">Suas senhas serão excluídas do Gerenciador de senhas do Google para o Chrome <ph name="CHROME_CHANNEL" />. Elas vão estar no arquivo de senhas que você acabou de transferir por download.</translation>
 <translation id="129553762522093515">Fechadas recentemente</translation>
 <translation id="1298077576058087471">Economize até 60% de dados enquanto lê as notícias de hoje</translation>
 <translation id="1303339473099049190">Não foi possível encontrar essa senha. Verifique a ortografia e tente novamente.</translation>
@@ -111,7 +112,7 @@ Ao excluir todo o histórico de navegação ou apenas o de um site específico, 
 <translation id="1513814250881909472">Sincronize para acessar suas guias de outros dispositivos</translation>
 <translation id="1513858653616922153">Excluir senha</translation>
 <translation id="1514552811327923157">Solicitação do Sandbox de privacidade aberta no tamanho máximo</translation>
-<translation id="1521774566618522728">Ativado hoje</translation>
+<translation id="1521774566618522728">Ativo hoje</translation>
 <translation id="1544826120773021464">Para gerenciar sua Conta do Google, toque no botão "Gerenciar conta".</translation>
 <translation id="1549000191223877751">Mover para outra janela</translation>
 <translation id="1553358976309200471">Atualizar o Google Chrome</translation>
@@ -128,7 +129,6 @@ Ao excluir todo o histórico de navegação ou apenas o de um site específico, 
 <translation id="164269334534774161">Você está vendo uma cópia off-line desta página de <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Histórico</translation>
 <translation id="1657932388559784161">A página inferior de insights está fechada</translation>
-<translation id="1668122540633280551">Escolha como as visualizações de vídeo serão reproduzidas automaticamente na página inicial do Chrome.</translation>
 <translation id="1670399744444387456">Básico</translation>
 <translation id="1671236975893690980">Download pendente…</translation>
 <translation id="1672586136351118594">Não mostrar novamente</translation>
@@ -271,7 +271,6 @@ Ao excluir todo o histórico de navegação ou apenas o de um site específico, 
 <translation id="2536728043171574184">Vendo uma cópia off-line desta página</translation>
 <translation id="2546283357679194313">Cookies e dados do site</translation>
 <translation id="2558569818338050235">Seu histórico de navegação afeta os anúncios mostrados a você</translation>
-<translation id="2561519700418191927">Visualizações de vídeo</translation>
 <translation id="2567385386134582609">IMAGEM</translation>
 <translation id="2567545343356994513">Proteção mais rápida e proativa contra sites, extensões e downloads perigosos.</translation>
 <translation id="2569733278091928697">Você vai poder gerenciar com facilidade controles de mídia, sessões de navegação anônima, downloads e muito mais</translation>
@@ -375,6 +374,7 @@ Os tokens de estado particular melhoram a privacidade na Web e não podem ser us
 <translation id="3027644380269727216">Com base na sua atividade em um site. Esta configuração está ativada.</translation>
 <translation id="3029276696788198026">Sem pré-carregamento</translation>
 <translation id="3029704984691124060">As senhas não correspondem</translation>
+<translation id="303514781271618814">O Chrome está explorando novos recursos que permitem que os sites ofereçam a mesma experiência de navegação usando menos dados</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Receber ajuda<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Monitorando preço</translation>
 <translation id="3037517125981011456">Mostra solicitações para fazer login no Chrome</translation>
@@ -465,7 +465,7 @@ Os tokens de estado particular melhoram a privacidade na Web e não podem ser us
 <translation id="3513704683820682405">Realidade aumentada</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
 <translation id="3522247891732774234">Atualização disponível. Mais opções</translation>
-<translation id="3524138585025253783">IU do desenvolvedor</translation>
+<translation id="3524138585025253783">interface do desenvolvedor</translation>
 <translation id="3524334353996115845">Deixe o <ph name="ORIGIN" /> confirmar sua identidade</translation>
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3542235761944717775">Disponíveis: <ph name="KILOBYTES" /> KB</translation>
@@ -510,9 +510,9 @@ Os tokens de estado particular melhoram a privacidade na Web e não podem ser us
 <translation id="3775705724665058594">Enviar para seus dispositivos</translation>
 <translation id="3791957072666773229">{TAB_COUNT,plural, =1{1 guia}one{# guia}other{# guias}}</translation>
 <translation id="3795154175078851242">Copiar imagem com link</translation>
-<translation id="3803784507854318295">Gerenciar a reprodução automática</translation>
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3810973564298564668">Gerenciar</translation>
+<translation id="381861209280417772">Excluir senhas</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads excluídos</translation>
 <translation id="3819183753496523827">Você está off-line. Verifique sua conexão de Internet e tente novamente.</translation>
 <translation id="3830886834687455630">Atualize o Google Play Services para verificar suas senhas</translation>
@@ -563,7 +563,6 @@ Os tokens de estado particular melhoram a privacidade na Web e não podem ser us
 <translation id="4095146165863963773">Excluir dados de apps?</translation>
 <translation id="4096227151372679484">Fluxo para adicionar aos favoritos aberto na metade da altura</translation>
 <translation id="4101475238162928417">Sincronize para acessar seus favoritos, senhas e muito mais em outros dispositivos</translation>
-<translation id="410351446219883937">Reprodução automática</translation>
 <translation id="4106587138345390261">O Chrome está explorando novos recursos para permitir que os sites ofereçam a mesma experiência de navegação atual usando menos informações pessoais</translation>
 <translation id="4108314971463891922">Seguir</translation>
 <translation id="4108998448622696017">Detecta e avisa você sobre eventos perigosos quando eles acontecerem.</translation>
@@ -598,6 +597,7 @@ Os tokens de estado particular melhoram a privacidade na Web e não podem ser us
 <translation id="4249955472157341256">Ordenar por mais recentes</translation>
 <translation id="4250229828105606438">Captura de tela</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
+<translation id="4257230861809842349">Excluir senhas do Gerenciador de senhas do Google?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Quais dados são usados<ph name="END_BOLD" />: seu histórico de navegação, um registro de sites visitados usando o Chrome neste dispositivo.</translation>
 <translation id="4269820728363426813">Copiar endereço do link</translation>
 <translation id="4283102315569707115">Solicitar sites para computador por padrão?</translation>
@@ -634,7 +634,6 @@ Os tokens de estado particular melhoram a privacidade na Web e não podem ser us
 <translation id="4484496141267039529">Sem conexão. Tente novamente mais tarde.</translation>
 <translation id="4487967297491345095">Todos os dados de app Chrome serão excluídos permanentemente. Isso inclui todos os arquivos, configurações, contas, bancos de dados etc.</translation>
 <translation id="449126573531210296">Criptografar as senhas sincronizadas com sua Conta do Google</translation>
-<translation id="4504667196171871375">Com Wi-Fi e dados móveis</translation>
 <translation id="4508528996305412043">O menu do card do feed está aberto</translation>
 <translation id="4509501256689523862">Enquanto você navega, a personalização de um anúncio depende desta configuração, dos <ph name="BEGIN_LINK_1" />tópicos de anúncios<ph name="END_LINK_1" />, das <ph name="BEGIN_LINK_2" />configurações de cookies<ph name="END_LINK_2" /> e se o site aberto personaliza os anúncios</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# dia atrás}one{# dias atrás}other{# dias atrás}}</translation>
@@ -854,7 +853,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="562289928968387744">Gerenciar reações</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5628604359369369630">Não lidas. Disponíveis off-line</translation>
-<translation id="5635091213277904818">O Chrome exclui automaticamente sites que estão na lista há mais de 30 dias. Se você visitar um site novamente, ele poderá reaparecer na lista. Você também pode bloquear um site para que ele não sugira anúncios.</translation>
 <translation id="5641456720590409793">O <ph name="BEGIN_LINK1" />histórico de pesquisa<ph name="END_LINK1" /> e <ph name="BEGIN_LINK2" />outras formas de atividade<ph name="END_LINK2" /> podem ser salvos na sua Conta do Google.</translation>
 <translation id="564667659802381754">Guia de privacidade <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="5648166631817621825">Últimos sete dias</translation>
@@ -864,6 +862,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5665379678064389456">Criar evento no <ph name="APP_NAME" /></translation>
 <translation id="5683547024293500885">O Chrome não pode verificar se há atualizações</translation>
 <translation id="5686790454216892815">Nome do arquivo muito longo</translation>
+<translation id="5687606994963670306">O Chrome exclui automaticamente sites que estão na lista há mais de 30 dias. Um site que você visitar novamente pode reaparecer na lista. Você também pode bloquear um site para que ele não sugira anúncios. Saiba mais sobre <ph name="BEGIN_LINK" />como gerenciar a privacidade de anúncios no Chrome<ph name="END_LINK" />.</translation>
 <translation id="569435661099256888">Você pode consultar ou apagar as páginas visitadas do histórico</translation>
 <translation id="569536719314091526">Traduza esta página para qualquer idioma com o botão "Mais opções"</translation>
 <translation id="5696597120588531049">O Chrome pode ajudar a proteger você de violações de dados, sites perigosos e muito mais</translation>
@@ -908,7 +907,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5876496397064130037">Tarefa retomada</translation>
 <translation id="587735546353481577">Para seguir um site, acesse-o, abra o menu do Google Chrome e toque em "Seguir".</translation>
 <translation id="5879072387416556377">Receba sugestões melhores</translation>
-<translation id="5916664084637901428">Ativado</translation>
+<translation id="5916664084637901428">Ativada</translation>
 <translation id="5919204609460789179">Atualize <ph name="PRODUCT_NAME" /> para iniciar a sincronização</translation>
 <translation id="5938820472109305350">Adicionar <ph name="INTEREST" /></translation>
 <translation id="5942872142862698679">Usando o Google para pesquisar</translation>
@@ -1043,7 +1042,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="6590471736817333463">Economize até 60% de dados</translation>
 <translation id="6590680911007613645">A senha que você está salvando precisa ser igual à usada em <ph name="SITE" /></translation>
 <translation id="6593061639179217415">Para computador</translation>
-<translation id="6594121454516132231">Veja como o Chrome pretende proteger você contra mecanismos de rastreamento entre sites ao mesmo tempo em que preserva uma Internet livre</translation>
 <translation id="6594347733515723558">Ordenar e mostrar opções</translation>
 <translation id="6595046016124923392">As imagens são enviadas para o Google e, assim, podemos melhorar as descrições para você.</translation>
 <translation id="6600954340915313787">Copiado no Chrome</translation>
@@ -1178,6 +1176,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7260367682327802201">Seu dispositivo Android pode incluir uma configuração semelhante. Se a medição de anúncios estiver ativada no Chrome e no dispositivo Android, a empresa poderá medir a eficácia de um anúncio nos sites que você acessa e nos apps que usa.</translation>
 <translation id="727288900855680735">Enviar <ph name="ONE_TIME_CODE" /> para <ph name="ORIGIN" />?</translation>
 <translation id="7274013316676448362">Site bloqueado</translation>
+<translation id="7276100255011548441">O Chrome exclui automaticamente os temas que estão na lista há mais de quatro semanas. Enquanto você navega, um tema pode reaparecer na lista. Você também pode bloquear temas que não quer que o Chrome compartilhe com sites. Saiba mais sobre <ph name="BEGIN_LINK" />como gerenciar a privacidade de anúncios no Chrome<ph name="END_LINK" />.</translation>
 <translation id="7286703216224610554">Compartilhar apenas a reação</translation>
 <translation id="7290209999329137901">Ação de renomear indisponível</translation>
 <translation id="7291910923717764901">Descrições de imagens adicionadas a esta página</translation>
@@ -1314,7 +1313,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7944772052836377867">A sincronização precisa confirmar sua identidade</translation>
 <translation id="7947953824732555851">Aceitar/fazer login</translation>
 <translation id="7957413488482743710">O cartão virtual oculta o real para proteger você contra possíveis tentativas de fraude. <ph name="BEGIN_LINK1" />Saiba mais sobre os cartões virtuais<ph name="END_LINK1" /></translation>
-<translation id="7961015016161918242">Nunca</translation>
 <translation id="7961926449547174351">Você desativou o acesso ao armazenamento. Acesse as Configurações para reativá-lo.</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
 <translation id="7965838025086216108">Você pode usar as senhas salvas em qualquer dispositivo. Elas são armazenadas no Gerenciador de senhas do Google da conta <ph name="ACCOUNT" />.</translation>
@@ -1521,7 +1519,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="8968085728801125376">{TAB_COUNT,plural, =1{<ph name="INCOGNITO_TAB_COUNT" /> guia anônima e <ph name="TAB_COUNT_ONE" /> outra serão fechadas}one{<ph name="INCOGNITO_TAB_COUNT" /> guia anônima e <ph name="TAB_COUNT_MANY" /> outra serão fechadas}other{<ph name="INCOGNITO_TAB_COUNT" /> guia anônima e <ph name="TAB_COUNT_MANY" /> outras serão fechadas}}</translation>
 <translation id="8970887620466824814">Algo deu errado.</translation>
 <translation id="8972098258593396643">Fazer o download para a pasta padrão?</translation>
-<translation id="8987641763863173640">Gerenciar configurações de prévia de vídeos</translation>
 <translation id="8987736167266086032">Recomece de onde você parou</translation>
 <translation id="8989968390305463310">Seu histórico de navegação afeta os anúncios que você vê e os interesses estimados abaixo. Para proteger sua privacidade, o Chrome exclui automaticamente seus interesses mais antigos do que um mês. Os interesses podem ser atualizados, a menos que você os remova.</translation>
 <translation id="8993760627012879038">Abrir uma nova guia no modo de navegação anônima</translation>

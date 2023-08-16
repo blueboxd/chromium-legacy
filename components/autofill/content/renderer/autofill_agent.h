@@ -107,6 +107,9 @@ class AutofillAgent : public content::RenderFrameObserver,
       const std::vector<FormDataPredictions>& forms) override;
   void ClearSection() override;
   void ClearPreviewedForm() override;
+  void TriggerSuggestions(
+      FieldRendererId field_id,
+      AutofillSuggestionTriggerSource trigger_source) override;
   void FillFieldWithValue(FieldRendererId field_id,
                           const std::u16string& value) override;
   void PreviewFieldWithValue(FieldRendererId field_id,
@@ -115,8 +118,6 @@ class AutofillAgent : public content::RenderFrameObserver,
                                  const mojom::AutofillState state) override;
   void AcceptDataListSuggestion(FieldRendererId field_id,
                                 const std::u16string& suggested_value) override;
-  void FillPasswordSuggestion(const std::u16string& username,
-                              const std::u16string& password) override;
   void PreviewPasswordSuggestion(const std::u16string& username,
                                  const std::u16string& password) override;
   void PreviewPasswordGenerationSuggestion(

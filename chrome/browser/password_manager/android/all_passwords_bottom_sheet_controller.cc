@@ -64,7 +64,7 @@ AllPasswordsBottomSheetController::AllPasswordsBottomSheetController(
       dismissal_callback_(std::move(dismissal_callback)),
       focused_field_type_(focused_field_type),
       show_migration_warning_callback_(
-          base::BindRepeating(&password_manager::ShowWarning)) {
+          base::BindRepeating(&local_password_migration::ShowWarning)) {
   DCHECK(web_contents_);
   DCHECK(store_);
   DCHECK(dismissal_callback_);
@@ -143,7 +143,9 @@ void AllPasswordsBottomSheetController::OnCredentialSelected(
               kUnifiedPasswordManagerLocalPasswordsMigrationWarning)) {
     show_migration_warning_callback_.Run(
         web_contents_->GetTopLevelNativeWindow(),
-        Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+        Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
+        password_manager::metrics_util::PasswordMigrationWarningTriggers::
+            kAllPasswords);
   }
 
   // Consumes the dismissal callback to destroy the native controller and java

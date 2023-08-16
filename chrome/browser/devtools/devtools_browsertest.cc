@@ -42,6 +42,7 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -3112,6 +3113,80 @@ IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, OpenBlockedDevTools) {
   }
   window = DevToolsWindow::FindDevToolsWindow(agent.get());
   ASSERT_EQ(nullptr, window);
+}
+
+class DevToolsExtensionHostsPolicyTest : public DevToolsExtensionTest {
+ protected:
+  DevToolsExtensionHostsPolicyTest() {
+    provider_.SetDefaultReturns(
+        /*is_initialization_complete_return=*/true,
+        /*is_first_policy_load_complete_return=*/true);
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+  }
+  void SetUpInProcessBrowserTestFixture() override {
+    DevToolsExtensionTest::SetUpInProcessBrowserTestFixture();
+
+    base::Value::Dict settings;
+    settings.Set(
+        "*", base::Value::Dict()
+                 .Set(extensions::schema_constants::kPolicyBlockedHosts,
+                      base::Value::List().Append("*://*.example.com"))
+                 .Set(extensions::schema_constants::kPolicyAllowedHosts,
+                      base::Value::List().Append("*://public.example.com")));
+
+    policy::PolicyMap policies;
+    policies.Set(policy::key::kExtensionSettings,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD, base::Value(std::move(settings)),
+                 nullptr);
+    provider_.UpdateChromePolicy(policies);
+  }
+
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionHostsPolicyTest,
+                       CantInspectBlockedHost) {
+  GURL url(embedded_test_server()->GetURL("example.com", kArbitraryPage));
+  LoadExtension("can_inspect_url");
+  RunTest("waitForTestResultsAsMessage",
+          base::StrCat({kArbitraryPage, "#", url.spec()}));
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionHostsPolicyTest,
+                       CantInspectBlockedSubdomainHost) {
+  GURL url(embedded_test_server()->GetURL("foo.example.com", kArbitraryPage));
+  LoadExtension("can_inspect_url");
+  RunTest("waitForTestResultsAsMessage",
+          base::StrCat({kArbitraryPage, "#", url.spec()}));
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionHostsPolicyTest,
+                       CanInspectAllowedHttpHost) {
+  GURL url(
+      embedded_test_server()->GetURL("public.example.com", kArbitraryPage));
+  extensions::TestExtensionDir dir;
+
+  dir.WriteManifest(
+      BuildExtensionManifest("Runtime Hosts Policy", "devtools.html"));
+  dir.WriteFile(
+      FILE_PATH_LITERAL("devtools.html"),
+      "<html><head><script src='devtools.js'></script></head></html>");
+  dir.WriteFile(FILE_PATH_LITERAL("devtools.js"),
+                R"(
+        chrome.devtools.network.getHAR((result) => {
+          setInterval(() => {
+            top.postMessage(
+              {testOutput: ('entries' in result) ? 'PASS' : 'FAIL'},
+              '*'
+            );
+          }, 10);
+        });)");
+
+  const Extension* extension = LoadExtensionFromPath(dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  RunTest("waitForTestResultsAsMessage", url.spec());
 }
 
 // Times out. See https://crbug.com/819285.

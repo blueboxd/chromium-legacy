@@ -263,7 +263,6 @@
 #include "ui/accessibility/ax_action_handler_registry.h"
 #include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_tree_update.h"
-#include "ui/base/ime/text_input_client.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
@@ -1130,16 +1129,10 @@ bool CoopSuppressOpener(const RenderFrameHostImpl* opener) {
   switch (opener->GetMainFrame()->cross_origin_opener_policy().value) {
     case network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone:
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups:
-      return false;
-
-    // TODO(https://crbug.com/1385827): Ideally, we'd like to have support
-    // for cross-origin iframes in COOP: restrict-properties pages opening
-    // popups. This is somewhat complex, because it would break some COOP
-    // invariants and other changes need to happen first. See the bug for
-    // details. For now, set no-opener.
     case network::mojom::CrossOriginOpenerPolicyValue::kRestrictProperties:
     case network::mojom::CrossOriginOpenerPolicyValue::
         kRestrictPropertiesPlusCoep:
+      return false;
 
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin:
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep:
@@ -3005,7 +2998,8 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
             parent_policies.cross_origin_embedder_policy,
             network::mojom::WebSandboxFlags::kNone,
             /*is_credentialless=*/false,
-            /*can_navigate_top_without_user_gesture=*/true)));
+            /*can_navigate_top_without_user_gesture=*/true,
+            parent_policies.allow_cross_origin_isolation)));
   } else if (owner_->GetOpener()) {
     // During a `window.open(...)` without `noopener`, a new popup is created
     // and always starts from the initial empty document. The opener has
@@ -3015,6 +3009,13 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
                                ->current_frame_host()
                                ->policy_container_host()
                                ->Clone());
+    const absl::optional<url::Origin>& coop_origin =
+        policy_container_host_->cross_origin_opener_policy().origin;
+    policy_container_host_->SetAllowCrossOriginIsolation(
+        !coop_origin.has_value() ||
+        coop_origin->IsSameOriginWith(owner_->GetOpener()
+                                          ->current_frame_host()
+                                          ->GetLastCommittedOrigin()));
   } else {
     // In all the other cases, there is no environment to inherit policies
     // from. This is "probably" a new top-level about:blank document created by
@@ -4510,20 +4511,6 @@ void RenderFrameHostImpl::DidFocusFrame() {
 
   DCHECK(owner_);  // See `owner_` invariants about `IsActive()`.
   owner_->SetFocusedFrame(GetSiteInstance()->group());
-
-#if BUILDFLAG(IS_WIN)
-  // If the frame has a url, notify the view to allow it to supply the Url to
-  // any interested IME (e.g. Windows 11's TSF uses this information).
-  if (!last_committed_url_.is_empty()) {
-    RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
-    if (view) {
-      ui::TextInputClient* input_client = view->GetTextInputClient();
-      if (input_client) {
-        input_client->OnFrameFocusChanged();
-      }
-    }
-  }
-#endif  // BUILDFLAG(IS_WIN)
 }
 
 void RenderFrameHostImpl::DidCallFocus() {
@@ -8008,6 +7995,7 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   bool wait_for_debugger =
       devtools_instrumentation::ShouldWaitForDebuggerInWindowOpen();
+
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New(
       new_main_rfh->GetFrameToken(), new_main_rfh->GetRoutingID(),
       std::move(pending_frame_receiver), std::move(widget_params),
@@ -8305,10 +8293,8 @@ void RenderFrameHostImpl::MaybeSendFencedFrameReportingBeacon(
   // Treat the automatic beacon as if it's being sent by the document that
   // initiated the top-level navigation. (You can think of it like a
   // reportEvent call from that document.)
-  // TODO(crbug.com/1450281): initiator_rfh may be null for some navigations on
-  // Android.
   RenderFrameHostImpl* initiator_rfh = RenderFrameHostImpl::FromFrameToken(
-      navigation_request.GetInitiatorProcessID(),
+      navigation_request.GetInitiatorProcessId(),
       navigation_request.GetInitiatorFrameToken().value());
   if (!initiator_rfh) {
     return;
@@ -8329,7 +8315,9 @@ void RenderFrameHostImpl::MaybeSendFencedFrameReportingBeacon(
   if (navigation_request.GetNavigationInitiatorActivationAndAdStatus() ==
           blink::mojom::NavigationInitiatorActivationAndAdStatus::
               kDidNotStartWithTransientActivation &&
-      !initiator_rfh->HasTransientUserActivation()) {
+      !initiator_rfh->HasTransientUserActivation() &&
+      navigation_request.commit_params().was_activated !=
+          blink::mojom::WasActivatedOption::kYes) {
     return;
   }
 
@@ -8365,6 +8353,9 @@ void RenderFrameHostImpl::MaybeSendFencedFrameReportingBeacon(
         /*from_renderer=*/false, info->attribution_reporting_runtime_features,
         GetFrameTreeNodeId(), navigation_request.GetNavigationId());
   }
+
+  initiator_rfh->frame_tree_node()
+      ->MaybeResetFencedFrameAutomaticBeaconReportEventData();
 }
 
 void RenderFrameHostImpl::SendFencedFrameReportingBeaconInternal(
@@ -8444,7 +8435,8 @@ void RenderFrameHostImpl::SetFencedFrameAutomaticBeaconReportEventData(
     const std::string& event_data,
     const std::vector<blink::FencedFrame::ReportingDestination>& destinations,
     network::AttributionReportingRuntimeFeatures
-        attribution_reporting_runtime_features) {
+        attribution_reporting_runtime_features,
+    bool once) {
   if (event_data.length() > blink::kFencedFrameMaxBeaconLength) {
     mojo::ReportBadMessage(
         "The data provided to SetFencedFrameAutomaticBeaconReportEventData() "
@@ -8465,7 +8457,7 @@ void RenderFrameHostImpl::SetFencedFrameAutomaticBeaconReportEventData(
   CHECK(owner_);  // See `owner_` invariants about `IsActive()`.
 
   owner_->SetFencedFrameAutomaticBeaconReportEventData(
-      event_data, destinations, attribution_reporting_runtime_features);
+      event_data, destinations, attribution_reporting_runtime_features, once);
 }
 
 void RenderFrameHostImpl::OnViewTransitionOptInChanged(
@@ -12770,11 +12762,14 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   TakeNewDocumentPropertiesFromNavigation(navigation_request);
 
   // Set embedded documents' cross-origin-opener-policy from their top level:
-  //  - Use top level's policy if they are same-origin.
-  //  - Use the default policy if they are cross-origin.
+  //  - Use top level's policy if they are same-origin or the policy is
+  //    restrict-properties
+  //  - Use the default policy otherwise.
   // This COOP value is not used to enforce anything on this frame, but will be
   // inherited to every local-scheme document created from them.
   // It will also be inherited by the initial empty document from its opener.
+  // TODO(https://crbug.com/1442535): Always inherit COOP since it's now tied
+  // to an origin that set it.
 
   // TODO(https://crbug.com/888079) Computing and assigning the
   // cross-origin-opener-policy of an embedded frame should be done in
@@ -12785,13 +12780,17 @@ void RenderFrameHostImpl::DidCommitNewDocument(
 
   // TODO(https://crbug.com/1385827): See if the above is possible after we
   // bundle the COOP origin.
-  // TODO(https://crbug.com/1442535): Make cross-origin iframes inherit
-  // Cross-Origin-Opener-Policy: same-origin-allow-popups.
   if (parent_) {
+    const network::CrossOriginOpenerPolicy& top_level_coop =
+        GetMainFrame()->cross_origin_opener_policy();
     if (GetMainFrame()->GetLastCommittedOrigin().IsSameOriginWith(
-            params.origin)) {
-      policy_container_host_->set_cross_origin_opener_policy(
-          GetMainFrame()->cross_origin_opener_policy());
+            params.origin) ||
+        network::IsRelatedToCoopRestrictProperties(top_level_coop.value) ||
+        (top_level_coop.value ==
+             network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone &&
+         network::IsRelatedToCoopRestrictProperties(
+             top_level_coop.report_only_value))) {
+      policy_container_host_->set_cross_origin_opener_policy(top_level_coop);
     } else {
       policy_container_host_->set_cross_origin_opener_policy(
           network::CrossOriginOpenerPolicy());

@@ -602,6 +602,8 @@ UIImage* GetBrandedGoogleServicesSymbol() {
                     authService:AuthenticationServiceFactory::
                                     GetForBrowserState(_browserState)
                     prefService:_browserState->GetPrefs()
+                    syncService:SyncServiceFactory::GetForBrowserState(
+                                    _browserState)
                     accessPoint:signin_metrics::AccessPoint::
                                     ACCESS_POINT_SETTINGS
                       presenter:self
@@ -1643,8 +1645,9 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 }
 
 // Shows Safety Check Screen.
+// TODO(crbug.com/1464966): Make sure there aren't mutiple active
+// `_safetyCheckCoordinator`s at once.
 - (void)showSafetyCheck {
-  DCHECK(!_safetyCheckCoordinator);
   _safetyCheckCoordinator = [[SafetyCheckCoordinator alloc]
       initWithBaseNavigationController:self.navigationController
                                browser:_browser];
@@ -1956,9 +1959,10 @@ UIImage* GetBrandedGoogleServicesSymbol() {
                identity:identity
             accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
             promoAction:promoAction
-               callback:^(BOOL success) {
+               callback:^(SigninCoordinatorResult result) {
+                 BOOL success = result == SigninCoordinatorResultSuccess;
                  if (completion)
-                   completion(success);
+                   completion(result);
                  [weakSelf didFinishSignin:success];
                }];
   [self.applicationCommandsHandler showSignin:command baseViewController:self];
@@ -2053,6 +2057,10 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   _syncObserverBridge.reset();
   _identityObserverBridge.reset();
   _accountManagerServiceObserver.reset();
+
+  // Remove PrefObserverDelegates.
+  _notificationsObserver.delegate = nil;
+  _notificationsObserver = nil;
 
   // Clear C++ ivars.
   _voiceLocaleCode.Destroy();

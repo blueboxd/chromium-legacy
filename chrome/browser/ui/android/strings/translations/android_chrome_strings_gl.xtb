@@ -61,6 +61,7 @@ Só pode ler os datos encriptados alguén que coñeza a túa frase de acceso. A 
 <translation id="1283039547216852943">Toca para despregar</translation>
 <translation id="1289059016768036948">Pediráseche que inicies sesión na túa Conta de Google</translation>
 <translation id="1291207594882862231">Borrar o historial, as cookies, os datos dos sitios, a memoria caché…</translation>
+<translation id="1293898515599432175">Os contrasinais eliminaranse do xestor de contrasinais de Google para Chrome <ph name="CHROME_CHANNEL" />. Manterás o ficheiro de contrasinais que acabas de descargar.</translation>
 <translation id="129553762522093515">Pechado recentemente</translation>
 <translation id="1298077576058087471">Le as noticias do día e aforra ata un 60 % de datos</translation>
 <translation id="1303339473099049190">Non se puido atopar o contrasinal. Comproba a ortografía e téntao de novo.</translation>
@@ -128,7 +129,6 @@ Cando eliminas o teu historial de navegación (completo ou dun sitio en concreto
 <translation id="164269334534774161">Estás vendo unha copia sen conexión desta páxina creada o <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="1657932388559784161">O panel inferior de estatísticas da páxina está pechado</translation>
-<translation id="1668122540633280551">Escolle como se reproducirán automaticamente as vistas previas dos vídeos na páxina de inicio de Chrome.</translation>
 <translation id="1670399744444387456">Opcións básicas</translation>
 <translation id="1671236975893690980">Descarga pendente…</translation>
 <translation id="1672586136351118594">Non mostrar outra vez</translation>
@@ -271,7 +271,6 @@ Cando eliminas o teu historial de navegación (completo ou dun sitio en concreto
 <translation id="2536728043171574184">Visualización dunha copia sen conexión desta páxina</translation>
 <translation id="2546283357679194313">Cookies e datos dos sitios</translation>
 <translation id="2558569818338050235">O teu historial de navegación aféctalles aos anuncios que se che mostran</translation>
-<translation id="2561519700418191927">Vistas previas de vídeos</translation>
 <translation id="2567385386134582609">IMAXE</translation>
 <translation id="2567545343356994513">Unha protección máis rápida e proactiva contra sitios web, descargas e extensións perigosos</translation>
 <translation id="2569733278091928697">Poderás xestionar con facilidade os controis multimedia, as sesións do modo de incógnito, as descargas e moito máis</translation>
@@ -375,6 +374,7 @@ Os tokens de estado privado melloran a privacidade na Web e non se poden usar pa
 <translation id="3027644380269727216">En función da túa actividade nun sitio. Esta opción de configuración está activada.</translation>
 <translation id="3029276696788198026">Sen precarga</translation>
 <translation id="3029704984691124060">Os contrasinais non coinciden</translation>
+<translation id="303514781271618814">Chrome está explorando novas funcións que lles permiten aos sitios ofrecer a mesma experiencia de navegación usando menos datos</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obter axuda<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Estase facendo un seguimento do prezo</translation>
 <translation id="3037517125981011456">Mostra solicitudes para iniciar sesión en Chrome</translation>
@@ -510,9 +510,9 @@ Os tokens de estado privado melloran a privacidade na Web e non se poden usar pa
 <translation id="3775705724665058594">Enviar contido aos teus dispositivos</translation>
 <translation id="3791957072666773229">{TAB_COUNT,plural, =1{1 pestana}other{# pestanas}}</translation>
 <translation id="3795154175078851242">Copiar imaxe con ligazón</translation>
-<translation id="3803784507854318295">Xestionar reprodución automática</translation>
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3810973564298564668">Xestionar</translation>
+<translation id="381861209280417772">Eliminar contrasinais</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descargas eliminadas</translation>
 <translation id="3819183753496523827">Estás sen conexión. Comproba a conexión a Internet e téntao de novo.</translation>
 <translation id="3830886834687455630">Actualiza os servizos de Google Play para comprobar os contrasinais</translation>
@@ -563,7 +563,6 @@ Os tokens de estado privado melloran a privacidade na Web e non se poden usar pa
 <translation id="4095146165863963773">Queres eliminar os datos da aplicación?</translation>
 <translation id="4096227151372679484">Fluxo para gardar marcadores aberto a media pantalla</translation>
 <translation id="4101475238162928417">Sincroniza os datos para ter todos os teus contrasinais, marcadores e máis nos teus outros dispositivos</translation>
-<translation id="410351446219883937">Reprodución automática</translation>
 <translation id="4106587138345390261">Chrome está probando novas funcións que lles permitan aos sitios ofrecer a mesma experiencia de navegación usando menos información túa</translation>
 <translation id="4108314971463891922">Seguir</translation>
 <translation id="4108998448622696017">Móstrache unha advertencia cando detecta eventos perigosos.</translation>
@@ -598,6 +597,7 @@ Os tokens de estado privado melloran a privacidade na Web e non se poden usar pa
 <translation id="4249955472157341256">Ordenar por máis recente</translation>
 <translation id="4250229828105606438">Captura de pantalla</translation>
 <translation id="4256782883801055595">Licenzas de código aberto</translation>
+<translation id="4257230861809842349">Queres eliminar contrasinais do xestor de contrasinais de Google?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Que datos se usan?<ph name="END_BOLD" /> O teu historial de navegación e un rexistro dos sitios que visitases usando Chrome neste dispositivo.</translation>
 <translation id="4269820728363426813">Copiar enderezo da ligazón</translation>
 <translation id="4283102315569707115">Queres solicitar sitios para ordenadores de forma predeterminada?</translation>
@@ -634,7 +634,6 @@ Os tokens de estado privado melloran a privacidade na Web e non se poden usar pa
 <translation id="4484496141267039529">Sen conexión. Téntao de novo máis tarde.</translation>
 <translation id="4487967297491345095">Eliminaranse permanentemente todos os datos da aplicación Chrome, mesmo os ficheiros, a configuración, as contas, as bases de datos  etc.</translation>
 <translation id="449126573531210296">Cifrar contrasinais sincronizados coa túa Conta de Google</translation>
-<translation id="4504667196171871375">Con wifi e con datos móbiles</translation>
 <translation id="4508528996305412043">Menú da tarxeta do feed aberto</translation>
 <translation id="4509501256689523862">A medida que navegues pola Web, os anuncios que vexas personalizaranse en función desta opción de configuración, da opción <ph name="BEGIN_LINK_1" />Temas de anuncios<ph name="END_LINK_1" />, da <ph name="BEGIN_LINK_2" />configuración de cookies<ph name="END_LINK_2" /> e de se o sitio que esteas visitando personaliza os anuncios</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Hai # día}other{Hai # días}}</translation>
@@ -853,7 +852,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="562289928968387744">Xestionar reaccións</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5628604359369369630">Sen ler: dispoñibles sen conexión</translation>
-<translation id="5635091213277904818">Chrome elimina automaticamente os sitios que teñan máis de 30 días de antigüidade. Se volves visitar un sitio, é posible que apareza na lista outra vez. Tamén podes impedir que un sitio che suxira anuncios.</translation>
 <translation id="5641456720590409793">O <ph name="BEGIN_LINK1" />historial de busca<ph name="END_LINK1" /> e <ph name="BEGIN_LINK2" />outros tipos de actividade<ph name="END_LINK2" /> poden gardarse na túa Conta de Google</translation>
 <translation id="564667659802381754">Guía de privacidade <ph name="BEGIN_NEW" />Novidade<ph name="END_NEW" /></translation>
 <translation id="5648166631817621825">Últimos 7 días</translation>
@@ -863,6 +861,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5665379678064389456">Crea un evento en <ph name="APP_NAME" /></translation>
 <translation id="5683547024293500885">Chrome non puido buscar actualizacións</translation>
 <translation id="5686790454216892815">O nome do ficheiro é demasiado longo</translation>
+<translation id="5687606994963670306">Chrome elimina automaticamente os sitios que teñan máis de 30 días de antigüidade. Se volves visitar un sitio, é posible que apareza na lista outra vez. Tamén podes impedir que un sitio che suxira anuncios. Máis información sobre <ph name="BEGIN_LINK" />como xestionar a privacidade nos anuncios en Chrome<ph name="END_LINK" />.</translation>
 <translation id="569435661099256888">Podes ver as páxinas que visitaches ou borralas do teu historial</translation>
 <translation id="569536719314091526">Traduce esta páxina a calquera idioma desde o botón Máis opcións</translation>
 <translation id="5696597120588531049">Chrome pode protexerte contra violacións da seguranza dos datos, sitios web que non son seguros e moito máis</translation>
@@ -1042,7 +1041,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6590471736817333463">Aforra ata un 60 % de datos</translation>
 <translation id="6590680911007613645">Asegúrate de que o contrasinal que gardas coincida co de <ph name="SITE" /></translation>
 <translation id="6593061639179217415">Sitio para ordenadores</translation>
-<translation id="6594121454516132231">Mira como planea protexerte Chrome contra os mecanismos de seguimento en varios sitios mentres axuda a que a Web siga sendo un espazo aberto</translation>
 <translation id="6594347733515723558">Ordenar e ver opcións</translation>
 <translation id="6595046016124923392">As imaxes envíanse a Google coa finalidade de mellorar as descricións para ti.</translation>
 <translation id="6600954340915313787">Copiouse en Chrome</translation>
@@ -1177,6 +1175,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7260367682327802201">O teu dispositivo Android pode incluír unha opción de configuración similar. Se activas a medición de anuncios en Chrome e no teu dispositivo Android, as empresas poderán medir a eficacia dos anuncios nos sitios web que visites e nas aplicacións que uses.</translation>
 <translation id="727288900855680735">Queres enviar <ph name="ONE_TIME_CODE" /> a <ph name="ORIGIN" />?</translation>
 <translation id="7274013316676448362">Bloqueouse o sitio</translation>
+<translation id="7276100255011548441">Chrome elimina automaticamente os temas que leven máis de 4 semanas na lista. Algúns poderían aparecer outra vez na lista ao seguires navegando. Tamén podes bloquear os temas que non queiras que Chrome comparta cos sitios. Máis información sobre <ph name="BEGIN_LINK" />como xestionar a privacidade nos anuncios en Chrome<ph name="END_LINK" />.</translation>
 <translation id="7286703216224610554">Compártese só a reacción</translation>
 <translation id="7290209999329137901">Non está dispoñible a opción de cambiar o nome</translation>
 <translation id="7291910923717764901">Engadíronse descricións de imaxes para esta páxina</translation>
@@ -1313,7 +1312,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7944772052836377867">A sincronización necesita verificar a túa identidade</translation>
 <translation id="7947953824732555851">Acep. e iniciar ses.</translation>
 <translation id="7957413488482743710">As tarxetas virtuais ocultan as tarxetas reais para protexerte de posibles fraudes. <ph name="BEGIN_LINK1" />Máis información sobre as tarxetas virtuais<ph name="END_LINK1" /></translation>
-<translation id="7961015016161918242">Nunca</translation>
 <translation id="7961926449547174351">Desactivaches o acceso ao almacenamento. Actívao en Configuración.</translation>
 <translation id="7963646190083259054">Vendedor:</translation>
 <translation id="7965838025086216108">Podes usar os contrasinais gardados en calquera dispositivo. Estes gárdanse no xestor de contrasinais de Google asociado a <ph name="ACCOUNT" />.</translation>
@@ -1520,7 +1518,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8968085728801125376">{TAB_COUNT,plural, =1{Pecharanse <ph name="INCOGNITO_TAB_COUNT" /> pestanas de incógnito e <ph name="TAB_COUNT_ONE" /> pestana máis}other{Pecharanse <ph name="INCOGNITO_TAB_COUNT" /> pestanas de incógnito e <ph name="TAB_COUNT_MANY" /> pestanas máis}}</translation>
 <translation id="8970887620466824814">Produciuse un erro.</translation>
 <translation id="8972098258593396643">Queres gardar a descarga no cartafol predeterminado?</translation>
-<translation id="8987641763863173640">Xestionar configuración da vista previa dos vídeos</translation>
 <translation id="8987736167266086032">Continúa onde o deixaches</translation>
 <translation id="8989968390305463310">O teu historial de navegación aféctalles aos anuncios que se che mostran e aos intereses estimados que se indican abaixo. Para protexer a túa privacidade, Chrome elimina automaticamente os teus intereses cada mes. A menos que os quites, os intereses poden actualizarse.</translation>
 <translation id="8993760627012879038">Abrir unha nova pestana no modo de incógnito</translation>

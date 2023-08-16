@@ -81,6 +81,10 @@
         [[PrimaryToolbarCoordinator alloc] initWithBrowser:browser];
     _secondaryToolbarCoordinator =
         [[SecondaryToolbarCoordinator alloc] initWithBrowser:browser];
+
+    [self.browser->GetCommandDispatcher()
+        startDispatchingToTarget:self
+                     forProtocol:@protocol(ToolbarCommands)];
   }
   return self;
 }
@@ -94,9 +98,6 @@
   _omniboxPosition = ToolbarType::kPrimary;
 
   Browser* browser = self.browser;
-  [browser->GetCommandDispatcher()
-      startDispatchingToTarget:self
-                   forProtocol:@protocol(ToolbarCommands)];
   [browser->GetCommandDispatcher()
       startDispatchingToTarget:self
                    forProtocol:@protocol(FakeboxFocuser)];
@@ -268,7 +269,10 @@
 - (CGFloat)collapsedPrimaryToolbarHeight {
   if (_omniboxPosition == ToolbarType::kSecondary) {
     CHECK(IsBottomOmniboxSteadyStateEnabled());
-    return 0.0;
+    // TODO(crbug.com/1455030): Return 0 here once overlay message is fixed.
+    // Currently, it's in a infinite loop when we try to show a message with a
+    // non-expanded primary toolbar.
+    return self.expandedPrimaryToolbarHeight;
   }
 
   return ToolbarCollapsedHeight(
@@ -278,7 +282,9 @@
 - (CGFloat)expandedPrimaryToolbarHeight {
   if (_omniboxPosition == ToolbarType::kSecondary) {
     CHECK(IsBottomOmniboxSteadyStateEnabled());
-    return 0.0;
+    // TODO(crbug.com/1455030): Return 0 here once overlay message is fixed.
+    // Currently, it's in a infinite loop when we try to show a message with a
+    // non-expanded primary toolbar.
   }
 
   CGFloat height =
@@ -442,6 +448,18 @@
 - (void)triggerToolbarSlideInAnimation {
   for (id<ToolbarCommands> coordinator in self.coordinators) {
     [coordinator triggerToolbarSlideInAnimation];
+  }
+}
+
+- (void)setTabGridButtonIPHHighlighted:(BOOL)iphHighlighted {
+  for (id<ToolbarCommands> coordinator in self.coordinators) {
+    [coordinator setTabGridButtonIPHHighlighted:iphHighlighted];
+  }
+}
+
+- (void)setNewTabButtonIPHHighlighted:(BOOL)iphHighlighted {
+  for (id<ToolbarCommands> coordinator in self.coordinators) {
+    [coordinator setNewTabButtonIPHHighlighted:iphHighlighted];
   }
 }
 

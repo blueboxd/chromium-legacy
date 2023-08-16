@@ -196,7 +196,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Android.GetColorSpaceError" enum="BooleanError"
-    expires_after="2023-06-25">
+    expires_after="2023-12-25">
   <owner>vasilyt@chromium.org</owner>
   <owner>liberato@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
@@ -640,7 +640,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Audio.InputVolumeStartsAtZeroWin"
-    enum="BooleanVolumeZero" expires_after="2023-10-15">
+    enum="BooleanVolumeZero" expires_after="2023-12-17">
   <owner>henrika@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -1271,7 +1271,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.AudioCapturerAudioGlitches" enum="AudioGlitchResult"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>olka@chromium.org</owner>
   <owner>gustaf@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -2988,7 +2988,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.GetDisplayMedia.Constraints.SystemAudio"
-    enum="GetDisplayMediaIncludeExcludeConstraint" expires_after="2023-10-15">
+    enum="GetDisplayMediaIncludeExcludeConstraint" expires_after="2023-12-17">
   <owner>eladalon@chromium.org</owner>
   <owner>fbeaufort@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -4846,6 +4846,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Media.ScreenCaptureKit.FullscreenModuleMode"
+    enum="ScreenCaptureKitFullscreenModuleMode" expires_after="2023-10-10">
+  <owner>kron@chromium.org</owner>
+  <owner>webrtc-video@google.com</owner>
+  <summary>
+    Records the mode that is used in the ScreenCaptureKit Fullscreen module if
+    the selected window to capture belongs to a supported application. The mode
+    is reported once per captured window when the fullscreen module is created.
+  </summary>
+</histogram>
+
 <histogram name="Media.Session.ActiveTime" units="ms"
     expires_after="2023-01-22">
   <owner>steimel@chromium.org</owner>
@@ -5303,8 +5314,30 @@ chromium-metrics-reviews@google.com.
     purposes. In case of a unknown/invalid USB ID, 0 is logged. This is done
     when the CreateDevice method is called on the corresponding
     VideoCaptureDeviceFactory class based on the operating system. For example,
-    on MacOS, this happens when VideoCaptureDeviceFactoryMac::CreateDevice is
+    on MacOS, this happens when VideoCaptureDeviceFactoryApple::CreateDevice is
     called.
+  </summary>
+</histogram>
+
+<histogram name="Media.VideoCapture.Device.Opened.PixelFormat"
+    enum="VideoPixelFormatUnion" expires_after="2024-06-28">
+  <owner>atadres@chromium.org</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    This metric records the pixel format of the active camera video feed at
+    start, and everytime the pixel format changes.
+  </summary>
+</histogram>
+
+<histogram name="Media.VideoCapture.Device.Opened.Resolution"
+    units="resolution" expires_after="2024-06-28">
+  <owner>atadres@chromium.org</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    This metric records the resolution of the active camera video feed at start,
+    and everytime the resolution changes. The metric combines the width and
+    height into a single uint32_t value, with the width stored in the first 16
+    bits and the height stored in the last 16 bits.
   </summary>
 </histogram>
 

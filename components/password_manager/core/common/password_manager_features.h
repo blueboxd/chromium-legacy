@@ -69,7 +69,6 @@ BASE_DECLARE_FEATURE(kPasswordGenerationExperiment);
 #endif
 BASE_DECLARE_FEATURE(kPasswordsGrouping);
 BASE_DECLARE_FEATURE(kPasswordsImportM2);
-BASE_DECLARE_FEATURE(kPasswordStrengthIndicator);
 BASE_DECLARE_FEATURE(kRecoverFromNeverSaveAndroid);
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
 BASE_DECLARE_FEATURE(kRevampedPasswordManagementBubble);
@@ -134,13 +133,6 @@ inline constexpr base::FeatureParam<PasswordGenerationVariation>
         &kPasswordGenerationExperimentVariationOption};
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
-// If true, then password strength indicator will display a minimized state for
-// passwords with more than 5 characters as long as they are weak. Otherwise,
-// the full dropdown will be displayed as long as the password is weak.
-inline constexpr base::FeatureParam<bool>
-    kPasswordStrengthIndicatorWithMinimizedState = {
-        &kPasswordStrengthIndicator, "strength_indicator_minimized", false};
-
 #if BUILDFLAG(IS_ANDROID)
 
 inline constexpr base::FeatureParam<UpmExperimentVariation>::Option
@@ -157,6 +149,12 @@ inline constexpr base::FeatureParam<UpmExperimentVariation>
                                  &kUpmExperimentVariationOption};
 
 extern const base::FeatureParam<int> kSaveUpdatePromptSyncingStringVersion;
+
+// Whether to ignore the 1 month timeout in between migration warning prompts.
+// Used for manual testing.
+inline constexpr base::FeatureParam<bool> kIgnoreMigrationWarningTimeout = {
+    &kUnifiedPasswordManagerLocalPasswordsMigrationWarning,
+    "ignore_migration_warning_timeout", false};
 #endif
 
 // Field trial and corresponding parameters.

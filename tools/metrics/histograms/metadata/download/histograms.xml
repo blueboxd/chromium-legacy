@@ -63,7 +63,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Download.ApiFunctions" enum="DownloadFunctions"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>dtrainor@chromium.org</owner>
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
@@ -96,6 +96,16 @@ chromium-metrics-reviews@google.com.
     and so will not take into account the time costs of activities that occur
     after file write is completed (e.g. safe browsing scanning). The maximum
     bucket range is 200Mbps.
+  </summary>
+</histogram>
+
+<histogram name="Download.Bubble.DownloadCompletionToPartialViewShownLatency"
+    units="ms" expires_after="2024-06-01">
+  <owner>kerenzhu@chromium.org</owner>
+  <summary>
+    Measures the time (in ms) from a successful download completion to when
+    Download Bubble partial view becomes visible. Recorded only for Desktop
+    platforms, where Download Bubble is enabled.
   </summary>
 </histogram>
 

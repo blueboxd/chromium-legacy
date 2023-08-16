@@ -22,6 +22,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
+import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -57,6 +58,8 @@ import java.util.Map;
 import java.util.Set;
 
 class MultiInstanceManagerApi31 extends MultiInstanceManager implements ActivityStateListener {
+    private static final String TAG = "MIMApi31";
+
     public static final int INVALID_INSTANCE_ID = MultiWindowUtils.INVALID_INSTANCE_ID;
     public static final int INVALID_TASK_ID = MultiWindowUtils.INVALID_TASK_ID;
 
@@ -122,7 +125,8 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
                 (instanceInfo) -> moveTabAction(instanceInfo, tab), getInstanceInfo());
     }
 
-    private void moveTabAction(InstanceInfo info, Tab tab) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    void moveTabAction(InstanceInfo info, Tab tab) {
         Activity targetActivity = getActivityById(info.instanceId);
         if (targetActivity != null) {
             reparentTabToRunningActivity((ChromeTabbedActivity) targetActivity, tab);
@@ -712,7 +716,60 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
     public void moveTabToNewWindow(Tab tab) {
         if (!ChromeFeatureList.sTabDragDropAndroid.isEnabled()) return;
 
-        moveAndReparentTabToNewWindow(tab, INVALID_INSTANCE_ID, /*preferNew=*/true,
-                /*openAdjacently=*/false, /*addTrustedIntentExtras=*/true);
+        // Check if the new Chrome instance can be opened.
+        if (MultiWindowUtils.getInstanceCount() < mMaxInstances) {
+            moveAndReparentTabToNewWindow(tab, INVALID_INSTANCE_ID, /*preferNew=*/true,
+                    /*openAdjacently=*/false, /*addTrustedIntentExtras=*/true);
+        } else {
+            // Just try to launch a Chrome window to inform user that maximum number of instances
+            // limit is exceeded. This will pop up a toast message and the tab will not be removed
+            // from the exiting window.
+            openNewWindow("Android.WindowManager.NewWindow");
+        }
+    }
+
+    /**
+     * Move the specified tab to the current instance of the ChromeTabbedActivity window.
+     * @param activity Activity of the Chrome Window in which the tab is to be moved.
+     * @param tab Tab that is to be moved to the current instance.
+     */
+    @Override
+    public void moveTabToWindow(Activity activity, Tab tab) {
+        if (!ChromeFeatureList.sTabDragDropAndroid.isEnabled()) return;
+
+        // Get the current instance and move tab there.
+        InstanceInfo info = getInstanceInfoFor(activity);
+        if (info != null) {
+            moveTabAction(info, tab);
+        } else {
+            Log.w(TAG, "DnD: InstanceInfo of Chrome Window not found.");
+        }
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    InstanceInfo getInstanceInfoFor(Activity activity) {
+        // Loop thru all instances to determine if the destination activity is present.
+        int destinationWindowTaskId = INVALID_TASK_ID;
+        for (int i = 0; i < mMaxInstances; ++i) {
+            if (!instanceEntryExists(i)) continue;
+            Activity activityById = getActivityById(i);
+            if (activityById != null) {
+                // The task for the activity must match the one found in our mapping.
+                assert getTaskFromMap(i) == activityById.getTaskId();
+                if (activityById == activity) {
+                    destinationWindowTaskId = activityById.getTaskId();
+                    break;
+                }
+            }
+        }
+        if (destinationWindowTaskId == INVALID_TASK_ID) return null;
+
+        List<InstanceInfo> allInstances = getInstanceInfo();
+        for (InstanceInfo instanceInfo : allInstances) {
+            if (instanceInfo.taskId == destinationWindowTaskId) {
+                return instanceInfo;
+            }
+        }
+        return null;
     }
 }

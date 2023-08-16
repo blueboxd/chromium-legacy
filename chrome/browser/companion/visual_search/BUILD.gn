@@ -2,17 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+assert(!is_android, "Visual Search is for desktop platforms only")
+
 source_set("visual_search") {
   sources = [
-    "features.cc",
-    "features.h",
     "visual_search_classifier_host.cc",
     "visual_search_classifier_host.h",
     "visual_search_suggestions_service.cc",
     "visual_search_suggestions_service.h",
   ]
   deps = [
+    ":flags",
     "//base",
+    "//chrome/browser/companion/core",
     "//chrome/browser/profiles:profile",
     "//chrome/common/companion:mojo_bindings",
     "//components/optimization_guide/core",
@@ -20,6 +22,14 @@ source_set("visual_search") {
     "//content/public/browser:browser",
     "//third_party/blink/public/common:headers",
   ]
+}
+
+source_set("flags") {
+  sources = [
+    "features.cc",
+    "features.h",
+  ]
+  deps = [ "//base" ]
 }
 
 source_set("unit_tests") {
@@ -33,8 +43,30 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//chrome/browser",
+    "//chrome/browser/companion/core",
+    "//chrome/browser/companion/visual_search:flags",
     "//chrome/common",
     "//chrome/common/companion:mojo_bindings",
+    "//chrome/test:test_support",
+    "//components/optimization_guide/core:test_support",
+    "//components/optimization_guide/proto:optimization_guide_proto",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
+source_set("browser_tests") {
+  testonly = true
+  sources = [ "visual_search_suggestions_service_browsertest.cc" ]
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+  deps = [
+    ":visual_search",
+    "//base",
+    "//base/test:test_support",
+    "//chrome/browser",
+    "//chrome/browser/companion/core",
+    "//chrome/browser/companion/visual_search:flags",
+    "//chrome/common",
     "//chrome/test:test_support",
     "//components/optimization_guide/core:test_support",
     "//components/optimization_guide/proto:optimization_guide_proto",

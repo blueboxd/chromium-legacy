@@ -155,7 +155,8 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
     mediator_.webStateList = browser_.get()->GetWebStateList();
     mediator_.webState = fake_web_state_.get();
 
-    metrics_recorder_ = [[ContentSuggestionsMetricsRecorder alloc] init];
+    metrics_recorder_ = [[ContentSuggestionsMetricsRecorder alloc]
+        initWithLocalState:chrome_browser_state_.get()->GetPrefs()];
     mediator_.contentSuggestionsMetricsRecorder = metrics_recorder_;
 
     promos_manager_ = std::make_unique<MockPromosManager>();
@@ -316,6 +317,7 @@ TEST_F(ContentSuggestionsMediatorTest, TestMagicStackConsumerCall) {
   OCMExpect([consumer_ setMagicStackOrder:[OCMArg any]]);
   OCMExpect([consumer_ showSetUpListWithItems:[OCMArg any]]);
   OCMExpect([consumer_ setShortcutTilesWithConfigs:[OCMArg any]]);
+  [consumer_ setExpectationOrderMatters:YES];
   mediator_.consumer = consumer_;
   EXPECT_OCMOCK_VERIFY(consumer_);
 }

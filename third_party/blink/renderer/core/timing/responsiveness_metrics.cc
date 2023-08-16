@@ -10,6 +10,7 @@
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_id_helper.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/responsiveness_metrics/user_interaction_latency.h"
@@ -55,16 +56,31 @@ const char kHistogramKeyboard[] = ".Keyboard";
 const char kHistogramTapOrClick[] = ".TapOrClick";
 const char kHistogramDrag[] = ".Drag";
 
-base::TimeDelta MaxEventDuration(
-    const WTF::Vector<ResponsivenessMetrics::EventTimestamps>& timestamps) {
-  DCHECK(timestamps.size());
-  base::TimeDelta max_duration =
-      timestamps[0].end_time - timestamps[0].start_time;
-  for (WTF::wtf_size_t i = 1; i < timestamps.size(); ++i) {
-    max_duration = std::max(max_duration,
-                            timestamps[i].end_time - timestamps[i].start_time);
-  }
-  return max_duration;
+constexpr char kSlowInteractionToNextPaintTraceEventCategory[] = "latency";
+constexpr char kSlowInteractionToNextPaintTraceEventName[] =
+    "SlowInteractionToNextPaint";
+
+void EmitSlowInteractionToNextPaintTraceEvent(
+    const ResponsivenessMetrics::EventTimestamps& event) {
+  uint64_t trace_id = base::trace_event::GetNextGlobalTraceId();
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+      kSlowInteractionToNextPaintTraceEventCategory,
+      kSlowInteractionToNextPaintTraceEventName, trace_id, event.start_time);
+  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+      kSlowInteractionToNextPaintTraceEventCategory,
+      kSlowInteractionToNextPaintTraceEventName, trace_id, event.end_time);
+}
+
+// Returns the longest event in `timestamps`.
+ResponsivenessMetrics::EventTimestamps LongestEvent(
+    const WTF::Vector<ResponsivenessMetrics::EventTimestamps>& events) {
+  DCHECK(events.size());
+  return *std::max_element(
+      events.begin(), events.end(),
+      [](const ResponsivenessMetrics::EventTimestamps& left,
+         const ResponsivenessMetrics::EventTimestamps& right) {
+        return left.duration() < right.duration();
+      });
 }
 
 base::TimeDelta TotalEventDuration(
@@ -152,7 +168,8 @@ void ResponsivenessMetrics::RecordUserInteractionUKM(
     }
   }
 
-  base::TimeDelta max_event_duration = MaxEventDuration(timestamps);
+  EventTimestamps longest_event = LongestEvent(timestamps);
+  base::TimeDelta max_event_duration = longest_event.duration();
   base::TimeDelta total_event_duration = TotalEventDuration(timestamps);
   // We found some negative values in the data. Before figuring out the root
   // cause, we need this check to avoid sending nonsensical data.
@@ -165,6 +182,14 @@ void ResponsivenessMetrics::RecordUserInteractionUKM(
                UserInteractionTraceData(max_event_duration,
                                         total_event_duration, interaction_type),
                "frame", GetFrameIdForTracing(window->GetFrame()));
+
+  // Emit a trace event when "interaction to next paint" is considered "slow"
+  // according to RAIL guidelines (web.dev/rail).
+  constexpr base::TimeDelta kSlowInteractionToNextPaintThreshold =
+      base::Milliseconds(100);
+  if (longest_event.duration() > kSlowInteractionToNextPaintThreshold) {
+    EmitSlowInteractionToNextPaintTraceEvent(longest_event);
+  }
 
   LogResponsivenessHistogram(max_event_duration, kHistogramAllTypes);
   switch (interaction_type) {

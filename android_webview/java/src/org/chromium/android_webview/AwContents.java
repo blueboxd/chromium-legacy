@@ -3405,10 +3405,8 @@ public class AwContents implements SmartClipProvider {
                 return;
             }
 
-            // Nothing to do.
-            if (mDrawFunctor == null) return;
-
-            if (AwFeatureMap.isEnabled(AwFeatures.WEBVIEW_CLEAR_FUNCTOR_IN_BACKGROUND)) {
+            if (AwFeatureMap.isEnabled(AwFeatures.WEBVIEW_CLEAR_FUNCTOR_IN_BACKGROUND)
+                    && mDrawFunctor != null) {
                 // Clear the functor. This causes native-side resources to be freed. The functor
                 // will be re-created at the next draw.
                 setFunctor(null);
@@ -4119,7 +4117,7 @@ public class AwContents implements SmartClipProvider {
                 if (isDestroyed(NO_WARN)) return;
                 // Post the task in the case where we would have cleared the functor if the feature
                 // was enabled, so that the two experiment arms have the same number of samples.
-                if (level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND && mDrawFunctor != null) {
+                if (level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND) {
                     postDelayedTaskWithOverride(
                             this::maybeRecordMemory, METRICS_COLLECTION_DELAY_MS);
                 }

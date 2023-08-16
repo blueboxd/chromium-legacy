@@ -358,6 +358,7 @@
 <translation id="3943857333388298514">Paste</translation>
 <translation id="3952872973865944257">Telugu phonetic</translation>
 <translation id="3958548648197196644">Kiwi</translation>
+<translation id="397105322502079400">Calculating...</translation>
 <translation id="3971140002794351170">Download mobile profile, network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">English (UK)</translation>
 <translation id="3975895378829046965">Bangla phonetic</translation>
@@ -890,7 +891,7 @@
 <translation id="7972920761225148017">French (Switzerland)</translation>
 <translation id="7973962044839454485">PPP authentication failed due to an incorrect username or password</translation>
 <translation id="7980421588063892270">English (US) with Colemak keyboard</translation>
-<translation id="7985008041109611710">Syncing <ph name="NUMBER_OF_FILES_SYNCING" /> file(s)</translation>
+<translation id="7985008041109611710">Syncing <ph name="NUMBER_OF_FILES_SYNCING" /> files</translation>
 <translation id="8000066093800657092">No network</translation>
 <translation id="8008366997883261463">Jack Russell Terrier</translation>
 <translation id="8028993641010258682">Size</translation>

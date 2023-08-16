@@ -10,6 +10,7 @@
 #include "chrome/browser/companion/core/companion_url_builder.h"
 #include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/companion/core/promo_handler.h"
+#include "chrome/browser/companion/core/utils.h"
 #include "chrome/browser/companion/text_finder/text_finder_manager.h"
 #include "chrome/browser/companion/text_finder/text_highlighter_manager.h"
 #include "chrome/browser/companion/visual_search/features.h"
@@ -32,6 +33,7 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/lens/buildflags.h"
+#include "components/lens/lens_url_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service.h"
@@ -165,15 +167,35 @@ void CompanionPageHandler::DidFinishLoad(
   }
 }
 
-void CompanionPageHandler::HandleVisualSearchResult(
+void CompanionPageHandler::SendVisualSearchResult(
     std::vector<std::string> results) {
   std::vector<side_panel::mojom::VisualSearchResultPtr> final_results;
   for (const auto& result : results) {
     final_results.emplace_back(
         side_panel::mojom::VisualSearchResult::New(result));
   }
-  if (!final_results.empty()) {
-    page_->OnDeviceVisualClassificationResult(std::move(final_results));
+  page_->OnDeviceVisualClassificationResult(std::move(final_results));
+}
+
+void CompanionPageHandler::HandleVisualSearchResult(
+    std::vector<std::string> results,
+    const VisualSuggestionsMetrics& metrics) {
+  SendVisualSearchResult(results);
+  metrics_logger_->OnVisualSuggestionsResult(metrics);
+}
+
+void CompanionPageHandler::OnLoadingState(
+    side_panel::mojom::LoadingState loading_state) {
+  // We mainly use the OnLoadingState function to re-send the last result to
+  // the WebUI to handle cases where we obtain the |VisualSearchResult| before
+  // the UI is ready to render it.
+  if (visual_search_host_ &&
+      loading_state == side_panel::mojom::LoadingState::kStartedLoading) {
+    const auto& visual_result =
+        visual_search_host_->GetVisualResult(web_contents()->GetURL());
+    if (visual_result) {
+      SendVisualSearchResult(visual_result.value().second);
+    }
   }
 }
 
@@ -205,9 +227,9 @@ void CompanionPageHandler::ShowUI() {
     // Register a modal dialog manager to show permissions dialog like those
     // requested from the feedback UI.
     RegisterModalDialogManager(browser);
-    std::string initial_text_query = helper->GetTextQuery();
-    if (!initial_text_query.empty()) {
-      OnSearchTextQuery(initial_text_query);
+
+    // If searching the text query succeeds, then early return.
+    if (OnSearchTextQuery()) {
       return;
     }
 
@@ -219,10 +241,26 @@ void CompanionPageHandler::ShowUI() {
     }
 
     NotifyURLChanged(/*is_full_reload=*/true);
+    if (visual_search_host_) {
+      visual_search::VisualSearchClassifierHost::ResultCallback callback =
+          base::BindOnce(&CompanionPageHandler::HandleVisualSearchResult,
+                         weak_ptr_factory_.GetWeakPtr());
+      visual_search_host_->StartClassification(
+          web_contents()->GetPrimaryMainFrame(), web_contents()->GetURL(),
+          std::move(callback));
+    }
   }
 }
 
-void CompanionPageHandler::OnSearchTextQuery(const std::string& query) {
+bool CompanionPageHandler::OnSearchTextQuery() {
+  CHECK(web_contents());
+  auto* helper = companion::CompanionTabHelper::FromWebContents(web_contents());
+  CHECK(helper);
+  const std::string query = helper->GetTextQuery();
+  if (query.empty()) {
+    return false;
+  }
+
   // Only notify the companion UI the page changed if we can share
   // information about the page by user consent.
   GURL page_url;
@@ -232,18 +270,30 @@ void CompanionPageHandler::OnSearchTextQuery(const std::string& query) {
 
   GURL companion_url = url_builder_->BuildCompanionURL(page_url, query);
   page_->LoadCompanionPage(companion_url);
+  return true;
 }
 
 void CompanionPageHandler::NotifyURLChanged(bool is_full_reload) {
   if (is_full_reload) {
     GURL companion_url =
         url_builder_->BuildCompanionURL(web_contents()->GetVisibleURL());
+    full_load_start_time_ = base::TimeTicks::Now();
     page_->LoadCompanionPage(companion_url);
   } else {
     auto companion_update_proto = url_builder_->BuildCompanionUrlParamProto(
         web_contents()->GetVisibleURL());
+    reload_start_time_ = base::TimeTicks::Now();
     page_->UpdateCompanionPage(companion_update_proto);
   }
+  if (visual_search_host_) {
+    visual_search_host_->CancelClassification(web_contents()->GetVisibleURL());
+  }
+}
+
+void CompanionPageHandler::NotifyLinkOpened(
+    GURL opened_url,
+    side_panel::mojom::LinkOpenMetadataPtr metadata) {
+  page_->NotifyLinkOpen(opened_url, std::move(metadata));
 }
 
 void CompanionPageHandler::OnImageQuery(
@@ -251,6 +301,13 @@ void CompanionPageHandler::OnImageQuery(
   GURL modified_upload_url = url_builder_->AppendCompanionParamsToURL(
       image_query.upload_url, web_contents()->GetVisibleURL(),
       /*text_query=*/"");
+  // Image queries should have the viewport size set in the url params.
+  modified_upload_url = lens::AppendOrReplaceViewportSizeForRequest(
+      modified_upload_url, companion_untrusted_ui_->web_ui()
+                               ->GetWebContents()
+                               ->GetViewBounds()
+                               .size());
+
   image_query.upload_url = modified_upload_url;
   page_->OnImageQuery(image_query.Clone());
 }
@@ -276,8 +333,6 @@ void CompanionPageHandler::OnRegionSearchClicked() {
   auto* helper = companion::CompanionTabHelper::FromWebContents(web_contents());
   CHECK(helper);
   helper->StartRegionSearch(web_contents(), /*use_fullscreen_capture=*/false);
-  metrics_logger_->RecordUiSurfaceClicked(
-      side_panel::mojom::UiSurface::kRegionSearch, kInvalidPosition);
   feature_engagement::TrackerFactory::GetForBrowserContext(GetProfile())
       ->NotifyEvent("companion_side_panel_region_search_button_clicked");
 }
@@ -301,9 +356,19 @@ void CompanionPageHandler::OnOpenInNewTabButtonURLChanged(
 
 void CompanionPageHandler::RecordUiSurfaceShown(
     side_panel::mojom::UiSurface ui_surface,
-    uint32_t ui_surface_position,
-    uint32_t child_element_available_count,
-    uint32_t child_element_shown_count) {
+    int32_t ui_surface_position,
+    int32_t child_element_available_count,
+    int32_t child_element_shown_count) {
+  if (full_load_start_time_) {
+    base::UmaHistogramTimes("Companion.FullLoad.Latency",
+                            base::TimeTicks::Now() - *full_load_start_time_);
+    full_load_start_time_.reset();
+  }
+  if (reload_start_time_) {
+    base::UmaHistogramTimes("Companion.NavigationLoad.Latency",
+                            base::TimeTicks::Now() - *reload_start_time_);
+    reload_start_time_.reset();
+  }
   metrics_logger_->RecordUiSurfaceShown(ui_surface, ui_surface_position,
                                         child_element_available_count,
                                         child_element_shown_count);
@@ -346,7 +411,15 @@ void CompanionPageHandler::OpenUrlInBrowser(
     return;
   }
 
+  // Verify the string coming from the server is safe to open.
+  if (!IsSafeURLFromCompanion(url_to_open.value())) {
+    return;
+  }
   signin_delegate_->OpenUrlInBrowser(url_to_open.value(), use_new_tab);
+}
+
+void CompanionPageHandler::OnNavigationError() {
+  page_->OnNavigationError();
 }
 
 Browser* CompanionPageHandler::GetBrowser() {

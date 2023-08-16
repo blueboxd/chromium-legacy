@@ -163,7 +163,10 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
       base::WeakPtr<AutofillExternalDelegate> external_delegate,
       content::WebContents* web_contents,
       const gfx::RectF& element_bounds,
-      base::RepeatingCallback<void(gfx::NativeWindow, Profile*)>
+      base::RepeatingCallback<void(
+          gfx::NativeWindow,
+          Profile*,
+          password_manager::metrics_util::PasswordMigrationWarningTriggers)>
           show_pwd_migration_warning_callback)
       : AutofillPopupControllerImpl(
             external_delegate,
@@ -320,7 +323,10 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
   NiceMock<MockAddressAccessoryController> mock_address_controller_;
   NiceMock<MockCreditCardAccessoryController> mock_cc_controller_;
-  base::MockCallback<base::RepeatingCallback<void(gfx::NativeWindow, Profile*)>>
+  base::MockCallback<base::RepeatingCallback<void(
+      gfx::NativeWindow,
+      Profile*,
+      password_manager::metrics_util::PasswordMigrationWarningTriggers)>>
       show_pwd_migration_warning_callback_;
 #endif
   raw_ptr<NiceMock<TestAutofillPopupController>, DanglingUntriaged>
@@ -571,6 +577,7 @@ TEST_F(AutofillPopupControllerUnitTest, SelectInvalidSuggestion) {
 }
 
 TEST_F(AutofillPopupControllerUnitTest, AcceptSuggestionRespectsTimeout) {
+  base::HistogramTester histogram_tester;
   ShowSuggestions({PopupItemId::kAddressEntry});
 
   // Calls before the threshold are ignored.
@@ -582,18 +589,25 @@ TEST_F(AutofillPopupControllerUnitTest, AcceptSuggestionRespectsTimeout) {
   EXPECT_CALL(*delegate(), DidAcceptSuggestion);
   task_environment()->FastForwardBy(base::Milliseconds(400));
   popup_controller().AcceptSuggestion(0);
+
+  histogram_tester.ExpectTotalCount(
+      "Autofill.Popup.AcceptanceDelayThresholdNotMet", 2);
 }
 
 TEST_F(AutofillPopupControllerUnitTest, AcceptSuggestionWithoutThreshold) {
+  base::HistogramTester histogram_tester;
   ShowSuggestions({PopupItemId::kAddressEntry});
 
   // Calls are accepted immediately.
   EXPECT_CALL(*delegate(), DidAcceptSuggestion).Times(1);
   popup_controller().AcceptSuggestionWithoutThreshold(0);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.Popup.AcceptanceDelayThresholdNotMet", 0);
 }
 
 TEST_F(AutofillPopupControllerUnitTest,
        AcceptSuggestionTimeoutIsUpdatedOnPopupMove) {
+  base::HistogramTester histogram_tester;
   ShowSuggestions({PopupItemId::kAddressEntry});
 
   // Calls before the threshold are ignored.
@@ -602,6 +616,8 @@ TEST_F(AutofillPopupControllerUnitTest,
   task_environment()->FastForwardBy(base::Milliseconds(100));
   popup_controller().AcceptSuggestion(0);
 
+  histogram_tester.ExpectTotalCount(
+      "Autofill.Popup.AcceptanceDelayThresholdNotMet", 2);
   task_environment()->FastForwardBy(base::Milliseconds(400));
   // Show the suggestions again (simulating, e.g., a click somewhere slightly
   // different).
@@ -609,11 +625,15 @@ TEST_F(AutofillPopupControllerUnitTest,
 
   EXPECT_CALL(*delegate(), DidAcceptSuggestion).Times(0);
   popup_controller().AcceptSuggestion(0);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.Popup.AcceptanceDelayThresholdNotMet", 3);
 
   EXPECT_CALL(*delegate(), DidAcceptSuggestion);
   // After waiting, suggestions are accepted again.
   task_environment()->FastForwardBy(base::Milliseconds(500));
   popup_controller().AcceptSuggestion(0);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.Popup.AcceptanceDelayThresholdNotMet", 3);
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -626,7 +646,10 @@ TEST_F(AutofillPopupControllerUnitTest,
 
   // Calls are accepted immediately.
   EXPECT_CALL(*delegate(), DidAcceptSuggestion).Times(1);
-  EXPECT_CALL(show_pwd_migration_warning_callback_, Run);
+  EXPECT_CALL(show_pwd_migration_warning_callback_,
+              Run(_, _,
+                  password_manager::metrics_util::
+                      PasswordMigrationWarningTriggers::kKeyboardAcessoryBar));
   popup_controller().AcceptSuggestionWithoutThreshold(0);
 }
 

@@ -54,6 +54,10 @@ CGFloat const kTableViewWidthMultiplier = 0.65;
 
 // Scroll view's bottom anchor constant.
 CGFloat const kScrollViewBottomAnchorConstant = 10;
+
+// Initial height's extra bottom height padding so it does not crop the cell.
+CGFloat const kInitialHeightPadding = 5;
+
 }  // namespace
 
 @interface PasswordSuggestionBottomSheetViewController () <
@@ -223,6 +227,9 @@ CGFloat const kScrollViewBottomAnchorConstant = 10;
   if (_tableViewIsMinimized) {
     _tableViewIsMinimized = NO;
     [_tableView cellForRowAtIndexPath:indexPath].accessoryView = nil;
+    // Make separator visible on first cell.
+    [_tableView cellForRowAtIndexPath:indexPath].separatorInset =
+        UIEdgeInsetsMake(0.f, kTableViewHorizontalSpacing, 0.f, 0.f);
     [self addSuggestionsToTableView];
 
     // Update table view height.
@@ -499,7 +506,7 @@ CGFloat const kScrollViewBottomAnchorConstant = 10;
 - (CGFloat)initialHeight {
   CGFloat bottomSheetHeight = [self bottomSheetHeight];
   if (bottomSheetHeight > 0) {
-    return bottomSheetHeight;
+    return bottomSheetHeight + kInitialHeightPadding;
   }
   // Return an estimated height if we can't calculate the actual height.
   return kEstimatedBaseHeightForBottomSheet + kTableViewEstimatedRowHeight;
@@ -535,8 +542,12 @@ CGFloat const kScrollViewBottomAnchorConstant = 10;
   UISheetPresentationController* presentationController =
       self.sheetPresentationController;
   if (@available(iOS 16, *)) {
-    // Update the bottom anchor constant value.
-    [self changeScrollViewBottomAnchorConstant:kScrollViewBottomAnchorConstant];
+    // Update the bottom anchor constant value only for iPhone.
+    if ([UIDevice currentDevice].userInterfaceIdiom ==
+        UIUserInterfaceIdiomPhone) {
+      [self
+          changeScrollViewBottomAnchorConstant:kScrollViewBottomAnchorConstant];
+    }
 
     // Expand to custom size (only available for iOS 16+).
     CGFloat fullHeight = [self fullHeight];

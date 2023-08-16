@@ -19,7 +19,6 @@ import android.view.View;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
@@ -32,7 +31,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
@@ -40,7 +38,6 @@ import org.chromium.chrome.browser.password_manager.PasswordCheckReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningCoordinator;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ProfileDependentSetting;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
@@ -68,9 +65,9 @@ import java.util.Locale;
  * to view saved passwords (just the username and URL), and to delete saved passwords.
  */
 public class PasswordSettings extends PreferenceFragmentCompat
-        implements PasswordManagerHandler.PasswordListObserver,
-                   Preference.OnPreferenceClickListener, SyncService.SyncStateChangedListener,
-                   FragmentHelpAndFeedbackLauncher, ProfileDependentSetting {
+        implements PasswordListObserver, Preference.OnPreferenceClickListener,
+                   SyncService.SyncStateChangedListener, FragmentHelpAndFeedbackLauncher,
+                   ProfileDependentSetting {
     @IntDef({TrustedVaultBannerState.NOT_SHOWN, TrustedVaultBannerState.OFFER_OPT_IN,
             TrustedVaultBannerState.OPTED_IN})
     @Retention(RetentionPolicy.SOURCE)
@@ -96,8 +93,6 @@ public class PasswordSettings extends PreferenceFragmentCompat
     public static final String PREF_CHECK_PASSWORDS = "check_passwords";
     public static final String PREF_TRUSTED_VAULT_BANNER = "trusted_vault_banner";
     public static final String PREF_KEY_MANAGE_ACCOUNT_LINK = "manage_account_link";
-    public static final String PASSWORD_EXPORT_EVENT_HISTOGRAM =
-            "PasswordManager.PasswordExport.Event";
 
     private static final String PREF_KEY_CATEGORY_SAVED_PASSWORDS = "saved_passwords";
     private static final String PREF_KEY_CATEGORY_EXCEPTIONS = "exceptions";
@@ -115,6 +110,12 @@ public class PasswordSettings extends PreferenceFragmentCompat
     // This request code is not actually consumed today in onActivityResult() but is defined here to
     // avoid bugs in the future if the request code is reused.
     private static final int REQUEST_CODE_TRUSTED_VAULT_OPT_IN = 1;
+
+    // Unique request code for the password exporting activity.
+    private static final int PASSWORD_EXPORT_INTENT_REQUEST_CODE = 3485764;
+
+    // The prefix for the histograms, which will be used log the export flow metrics.
+    private static final String EXPORT_METRICS_ID = "PasswordManager.Settings.Export";
 
     private boolean mNoPasswords;
     private boolean mNoPasswordExceptions;
@@ -160,7 +161,12 @@ public class PasswordSettings extends PreferenceFragmentCompat
             public int getViewId() {
                 return getView().getId();
             }
-        });
+
+            @Override
+            public void runCreateFileOnDiskIntent(Intent intent) {
+                startActivityForResult(intent, PASSWORD_EXPORT_INTENT_REQUEST_CODE);
+            }
+        }, EXPORT_METRICS_ID);
         getActivity().setTitle(R.string.password_settings_title);
         setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getStyledContext()));
         PasswordManagerHandlerProvider.getInstance().addObserver(this);
@@ -233,7 +239,7 @@ public class PasswordSettings extends PreferenceFragmentCompat
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.export_passwords) {
-            RecordHistogram.recordEnumeratedHistogram(PASSWORD_EXPORT_EVENT_HISTOGRAM,
+            RecordHistogram.recordEnumeratedHistogram(mExportFlow.getExportEventHistogramName(),
                     ExportFlow.PasswordExportEvent.EXPORT_OPTION_SELECTED,
                     ExportFlow.PasswordExportEvent.COUNT);
             mExportFlow.startExporting();
@@ -402,12 +408,10 @@ public class PasswordSettings extends PreferenceFragmentCompat
             }
         }
 
-        if (!mNoPasswords
-                && ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING)) {
-            PasswordMigrationWarningCoordinator passwordMigrationWarningCoordinator =
-                    new PasswordMigrationWarningCoordinator(getContext(), mBottomSheetController);
-            passwordMigrationWarningCoordinator.showWarning(mProfile);
+        if (!mNoPasswords) {
+            PasswordManagerHandlerProvider.getInstance()
+                    .getPasswordManagerHandler()
+                    .showMigrationWarning(getActivity(), mBottomSheetController);
         }
     }
 
@@ -465,6 +469,16 @@ public class PasswordSettings extends PreferenceFragmentCompat
         super.onResume();
         mExportFlow.onResume();
         rebuildPasswordLists();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        if (requestCode != PASSWORD_EXPORT_INTENT_REQUEST_CODE) return;
+        if (resultCode != Activity.RESULT_OK) return;
+        if (intent == null || intent.getData() == null) return;
+
+        mExportFlow.savePasswordsToDownloads(intent.getData());
     }
 
     @Override
@@ -703,12 +717,10 @@ public class PasswordSettings extends PreferenceFragmentCompat
         mBottomSheetController = bottomSheetController;
     }
 
-    @VisibleForTesting
     Menu getMenuForTesting() {
         return mMenu;
     }
 
-    @VisibleForTesting
     Toolbar getToolbarForTesting() {
         return getActivity().findViewById(R.id.action_bar);
     }

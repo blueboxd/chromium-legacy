@@ -261,11 +261,48 @@ public class TabSwitcherTabletTest {
         // Assert the grid tab switcher is shown automatically, since there is no next tab.
         onView(withId(R.id.tab_switcher_view_holder))
                 .check(matches(withEffectiveVisibility(VISIBLE)));
+    }
 
-        TestThreadUtils.runOnUiThreadBlocking(()
-                                                      -> sActivityTestRule.getActivity()
-                                                                 .findViewById(R.id.new_tab_button)
-                                                                 .performClick());
+    @Test
+    @MediumTest
+    public void testGridTabSwitcherOnCloseAllTabs() throws ExecutionException {
+        // Assert the grid tab switcher is not yet showing.
+        onView(withId(R.id.tab_switcher_view_holder)).check(matches(withEffectiveVisibility(GONE)));
+
+        // Close all tabs.
+        ChromeTabUtils.closeAllTabs(InstrumentationRegistry.getInstrumentation(),
+                sActivityTestRule.getActivity().getTabModelSelectorSupplier());
+
+        // Assert the grid tab switcher is shown automatically, since there is no next tab.
+        onView(withId(R.id.tab_switcher_view_holder))
+                .check(matches(withEffectiveVisibility(VISIBLE)));
+    }
+
+    @Test
+    @MediumTest
+    public void testGridTabSwitcherToggleIncognitoWithNoRegularTab() throws ExecutionException {
+        // Close all the regular tabs.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            sActivityTestRule.getActivity().getCurrentTabModel().closeTab(
+                    sActivityTestRule.getActivity().getActivityTab());
+        });
+        assertEquals("Expected to be 0 tabs in regular model", 0,
+                sActivityTestRule.getActivity()
+                        .getTabModelSelectorSupplier()
+                        .get()
+                        .getModel(false)
+                        .getCount());
+        // Open an incognito tab.
+        prepareTabs(0, 1);
+        assertTrue("Expected to be in Incognito model",
+                sActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
+        // Assert the grid tab switcher is not yet showing.
+        onView(withId(R.id.tab_switcher_view_holder)).check(matches(withEffectiveVisibility(GONE)));
+        // Toggle to normal switcher.
+        clickIncognitoToggleButton();
+        // Assert the grid tab switcher is shown automatically, since there is no regular tab.
+        onView(withId(R.id.tab_switcher_view_holder))
+                .check(matches(withEffectiveVisibility(VISIBLE)));
     }
 
     @Test

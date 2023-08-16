@@ -11,12 +11,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
-#include "components/feature_engagement/public/feature_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 
@@ -25,6 +22,8 @@ namespace companion {
 bool IsCompanionFeatureEnabled() {
   return base::FeatureList::IsEnabled(
              features::internal::kSidePanelCompanion) ||
+         base::FeatureList::IsEnabled(
+             features::internal::kSidePanelCompanion2) ||
          base::FeatureList::IsEnabled(
              features::internal::kCompanionEnabledByObservingExpsNavigations);
 }
@@ -40,7 +39,8 @@ bool IsCompanionAvailableForCurrentActiveTab(const Browser* browser) {
 
 bool IsCompanionAvailableForURL(const GURL& url) {
   // Companion should not be available for any chrome UI pages.
-  return !url.is_empty() && !url.SchemeIs(content::kChromeUIScheme);
+  return !url.is_empty() && !url.SchemeIs(content::kChromeUIScheme) &&
+         url.SchemeIsHTTPOrHTTPS();
 }
 
 bool IsCompanionFeatureEnabledByPolicy(PrefService* pref_service) {
@@ -69,10 +69,11 @@ bool IsSearchInCompanionSidePanelSupportedForProfile(Profile* profile) {
     return false;
   }
 
-  // If `kSidePanelCompanion` is disabled, then
+  // If `kSidePanelCompanion` and `kSidePanelCompanion2` are disabled, then
   // `kCompanionEnabledByObservingExpsNavigations` must be enabled and pref must
   // be set to true.
-  if (!base::FeatureList::IsEnabled(features::internal::kSidePanelCompanion)) {
+  if (!base::FeatureList::IsEnabled(features::internal::kSidePanelCompanion) &&
+      !base::FeatureList::IsEnabled(features::internal::kSidePanelCompanion2)) {
     CHECK(base::FeatureList::IsEnabled(
         features::internal::kCompanionEnabledByObservingExpsNavigations));
     base::UmaHistogramBoolean(
@@ -128,26 +129,6 @@ void UpdateCompanionDefaultPinnedToToolbarState(PrefService* pref_service) {
   pref_service->SetDefaultPrefValue(
       prefs::kSidePanelCompanionEntryPinnedToToolbar,
       base::Value(companion_should_be_default_pinned));
-}
-
-void MaybeTriggerCompanionFeaturePromo(content::WebContents* web_contents) {
-  if (!web_contents) {
-    return;
-  }
-  Browser* const browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (ShouldTriggerCompanionFeaturePromo(web_contents->GetLastCommittedURL(),
-                                         browser->profile()->GetPrefs())) {
-    browser->window()->MaybeShowFeaturePromo(
-        feature_engagement::kIPHCompanionSidePanelFeature);
-  }
-}
-
-bool ShouldTriggerCompanionFeaturePromo(const GURL& url,
-                                        PrefService* pref_service) {
-  return IsCompanionAvailableForURL(url) && IsCompanionFeatureEnabled() &&
-         pref_service &&
-         pref_service->GetBoolean(
-             prefs::kSidePanelCompanionEntryPinnedToToolbar);
 }
 
 }  // namespace companion

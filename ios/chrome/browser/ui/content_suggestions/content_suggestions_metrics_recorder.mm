@@ -12,27 +12,79 @@
 #import "components/ntp_tiles/metrics.h"
 #import "components/ntp_tiles/ntp_tile_impression.h"
 #import "components/ntp_tiles/tile_visual_type.h"
+#import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/ntp/set_up_list_item_type.h"
 #import "ios/chrome/browser/ntp/set_up_list_metrics.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_constants.h"
+#import "ios/chrome/browser/ui/content_suggestions/set_up_list/utils.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_with_payload.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@implementation ContentSuggestionsMetricsRecorder
+@implementation ContentSuggestionsMetricsRecorder {
+  PrefService* _localState;
+}
+
+- (instancetype)initWithLocalState:(PrefService*)localState {
+  if (self = [super init]) {
+    _localState = localState;
+  }
+  return self;
+}
+
+- (void)disconnect {
+  _localState = nullptr;
+}
 
 #pragma mark - Public
+
+- (void)recordMagicStackTopModuleImpressionForType:
+    (ContentSuggestionsModuleType)type {
+  switch (type) {
+    case ContentSuggestionsModuleType::kMostVisited: {
+      if (_localState) {
+        // Increment freshness pref since it is an impression of
+        // the latest Most Visited Sites as the top module.
+        int freshness_impression_count = _localState->GetInteger(
+            prefs::kIosMagicStackSegmentationMVTImpressionsSinceFreshness);
+        _localState->SetInteger(
+            prefs::kIosMagicStackSegmentationMVTImpressionsSinceFreshness,
+            freshness_impression_count + 1);
+      }
+      break;
+    }
+    case ContentSuggestionsModuleType::kShortcuts:
+    case ContentSuggestionsModuleType::kSetUpListSync:
+    case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
+    case ContentSuggestionsModuleType::kSetUpListAutofill:
+    case ContentSuggestionsModuleType::kCompactedSetUpList:
+    case ContentSuggestionsModuleType::kSetUpListAllSet:
+      break;
+  }
+  UMA_HISTOGRAM_ENUMERATION(kMagicStackTopModuleImpressionHistogram, type);
+}
+
+- (void)recordMagicStackModuleEngagementForType:
+    (ContentSuggestionsModuleType)type {
+  UMA_HISTOGRAM_ENUMERATION(kMagicStackModuleEngagementHistogram, type);
+}
 
 - (void)recordReturnToRecentTabTileShown {
   base::RecordAction(base::UserMetricsAction(kShowReturnToRecentTabTileAction));
 }
 
 - (void)recordShortcutTileTapped:(NTPCollectionShortcutType)shortcutType {
+  if (IsMagicStackEnabled()) {
+    [self recordMagicStackModuleEngagementForType:ContentSuggestionsModuleType::
+                                                      kShortcuts];
+  }
   switch (shortcutType) {
     case NTPCollectionShortcutTypeBookmark:
       base::RecordAction(base::UserMetricsAction(kShowBookmarksAction));
@@ -88,6 +140,11 @@
 
   new_tab_page_uma::RecordAction(
       false, webState, new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY);
+
+  if (ShouldPutMostVisitedSitesInMagicStack()) {
+    [self recordMagicStackModuleEngagementForType:ContentSuggestionsModuleType::
+                                                      kMostVisited];
+  }
 }
 
 - (void)recordMostVisitedTileRemoved {
@@ -103,6 +160,15 @@
 }
 
 - (void)recordSetUpListItemSelected:(SetUpListItemType)type {
+  if (IsMagicStackEnabled()) {
+    if (set_up_list_utils::ShouldShowCompactedSetUpListModule()) {
+      [self recordMagicStackModuleEngagementForType:
+                ContentSuggestionsModuleType::kCompactedSetUpList];
+    } else {
+      [self recordMagicStackModuleEngagementForType:
+                SetUpListModuleTypeForSetUpListType(type)];
+    }
+  }
   set_up_list_metrics::RecordItemSelected(type);
 }
 

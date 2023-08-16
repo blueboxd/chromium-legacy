@@ -94,10 +94,6 @@
   _syncSetupService = nil;
 }
 
-- (void)dealloc {
-  CHECK(!_authenticationService);
-}
-
 - (void)startSyncWithConfirmationID:(const int)confirmationID
                            consentIDs:(NSArray<NSNumber*>*)consentIDs
                    authenticationFlow:(AuthenticationFlow*)authenticationFlow

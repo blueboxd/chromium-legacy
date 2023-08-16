@@ -1776,7 +1776,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.Import.DesktopInteractions"
-    enum="PasswordsImportDesktopInteractions" expires_after="2023-10-15">
+    enum="PasswordsImportDesktopInteractions" expires_after="2023-12-17">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -1910,7 +1910,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ImportFileSize" units="bytes"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>eliaskh@chromium.org</owner>
   <owner>natiahlyi@google.com</owner>
   <summary>
@@ -2297,7 +2297,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.OpenedAsShortcut" enum="Boolean"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>vasilii@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -2492,17 +2492,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="PasswordManager.PasswordExport.Event"
-    enum="PasswordExportEvent" expires_after="2023-11-19">
-  <owner>ioanap@chromium.org</owner>
-  <owner>kazinova@google.com</owner>
-  <summary>
-    Measures the frequency of various password export events in settings menu.
-    Recorded when the user interacts with the password export menu item or
-    dialog. Curently logged only on Android.
-  </summary>
-</histogram>
-
 <histogram name="PasswordManager.PasswordManagementBubble.UserAction"
     enum="PasswordManagementBubbleInteractions" expires_after="2023-11-19">
   <owner>mamir@chromium.org</owner>
@@ -2511,6 +2500,52 @@ chromium-metrics-reviews@google.com.
     This metrics shows how user interacted with the password management native
     bubble triggered from the key icon in the omnibox. Recorded during the
     interaction with the bubble.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.PasswordMigrationWarning.Export.Event"
+    enum="PasswordExportEvent" expires_after="2024-04-19">
+  <owner>ioanap@chromium.org</owner>
+  <owner>atsvirchkova@google.com</owner>
+  <summary>
+    Measures the frequency of various password export events. Recorded when the
+    user chooses the option to export passwords in the password migration
+    warning. Logged only on Android.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.PasswordMigrationWarning.Export.Result"
+    enum="HistogramExportResult" expires_after="2024-04-19">
+  <owner>ioanap@chromium.org</owner>
+  <owner>atsvirchkova@google.com</owner>
+  <summary>
+    Records whether the export flow finished successfully or the type of error
+    for passwords export started from local passwords migration warning.
+    Recorded when the export flow finishes. Logged only on Android.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.PasswordMigrationWarning.Trigger"
+    enum="PasswordMigrationWarningTriggers" expires_after="2024-01-29">
+  <owner>izuzic@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    This histogram logs the UI surface that led to showing the local passwords
+    migration warning. Recorded when the warning sheet is shown. Android only.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.PasswordMigrationWarning.UserAction"
+    enum="PasswordMigrationWarningUserActions" expires_after="2024-01-29">
+  <owner>izuzic@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    This histograms logs the action that the user performed in the local
+    password migration warning sheet. For the export and sync options, this is
+    recorded when the user taps &quot;Next&quot; after selecting the
+    corresponding radio button. All other actions are recorded when tapping on
+    the corresponding buttons/dismissing the sheet. Multiple buckets can be
+    recorded for the same sheet. Android only.
   </summary>
 </histogram>
 
@@ -3209,7 +3244,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.RequirementsSpecFetcher.NetErrorCode"
-    enum="NetErrorCodes" expires_after="2023-10-15">
+    enum="NetErrorCodes" expires_after="2023-12-17">
   <owner>kazinova@google.com</owner>
   <owner>battre@chromium.org</owner>
   <summary>
@@ -3269,7 +3304,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ReusedPasswordType" enum="ReusedPasswordType"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -3395,6 +3430,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.Settings.Export.Event"
+    enum="PasswordExportEvent" expires_after="2023-11-19">
+  <owner>ioanap@chromium.org</owner>
+  <owner>atsvirchkova@google.com</owner>
+  <summary>
+    Measures the frequency of various password export events in settings menu.
+    Recorded when the user interacts with the password export menu item or
+    dialog. Curently logged only on Android.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.Settings.Export.Result"
+    enum="HistogramExportResult" expires_after="2023-11-19">
+  <owner>ioanap@chromium.org</owner>
+  <owner>atsvirchkova@google.com</owner>
+  <summary>
+    Records whether the export flow finished successfully or the type of error
+    for passwords export in settings menu. Recorded when the export flow
+    finishes. Logged only on Android.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.Settings.ToggleAutoSignIn"
     enum="BooleanEnabled" expires_after="2023-12-04">
   <owner>ioanap@chromium.org</owner>
@@ -3418,7 +3475,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.ShortcutMetric"
-    enum="PasswordManagerShortcutMetric" expires_after="2023-10-15">
+    enum="PasswordManagerShortcutMetric" expires_after="2023-12-17">
   <owner>vasilii@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -3895,7 +3952,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.WeakCheck.CheckedPasswords" units="passwords"
-    expires_after="2023-09-01">
+    expires_after="2023-12-17">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>

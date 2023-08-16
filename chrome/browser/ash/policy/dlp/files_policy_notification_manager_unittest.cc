@@ -136,10 +136,11 @@ class FilesPolicyNotificationManagerTest : public testing::Test {
  protected:
   std::unique_ptr<FilesPolicyNotificationManager> fpnm_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
-  raw_ptr<file_manager::io_task::IOTaskController> io_task_controller_;
+  raw_ptr<file_manager::io_task::IOTaskController, DanglingUntriaged>
+      io_task_controller_;
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
-  raw_ptr<TestingProfile> profile_;
+  raw_ptr<TestingProfile, DanglingUntriaged> profile_;
   base::ScopedTempDir temp_dir_;
   const blink::StorageKey kTestStorageKey =
       blink::StorageKey::CreateFromStringForTesting("chrome://abc");
@@ -457,7 +458,7 @@ TEST_F(FilesPolicyNotificationManagerTest, WarningResumed) {
   // Warning callback is run with should_proceed set to true when the task is
   // resumed.
   EXPECT_CALL(mock_cb, Run(/*should_proceed=*/true)).Times(1);
-  fpnm_->ResumeIOTask(task_id);
+  fpnm_->OnIOTaskResumed(task_id);
 }
 
 class FPNMPausedStatusNotification

@@ -147,6 +147,11 @@
       },
     },
   },
+  'android_browsertests_no_fieldtrial': {
+    'remove_from': [
+      'android-12l-x64-fyi-dbg',
+    ],
+  },
   'android_sync_integration_tests': {
    'modifications': {
       'android-12-x64-rel': {
@@ -3298,23 +3303,6 @@
       },
     },
   },
-  'monochrome_public_test_ar_apk': {
-    'modifications': {
-      # We need to match the Playstore version as well because AR tests fail on
-      # old versions of the Playstore.
-      'Oreo Phone Tester': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'OPR3.170623.008',
-              'device_type': 'marlin',
-              'os': 'Android',
-            },
-          ],
-        },
-      },
-    },
-  },
   'nacl_loader_unittests': {
     # If you change this, make similar changes in ppapi_unittests
     'remove_from': [
@@ -3723,28 +3711,21 @@
     ],
   },
   'sandbox_linux_unittests': {
-    'modifications': {
-      # If you change this, make similar changes in android-x86-code-coverage below
-      'android-nougat-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter',
-        ]
-      },
-      'android-pie-x86-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter',
-        ]
-      },
-      # Keep this same as android-nougat-x86-rel above
-      'android-x86-code-coverage': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter',
-        ]
-      },
-    },
     'remove_from': [
       'android-asan',  # https://crbug.com/962650
     ],
+    'modifications': {
+      'linux-ubsan-vptr': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              # TODO(crbug.com/1456464): Move this test to jammy.
+              'os': 'Ubuntu-18.04',
+            },
+          ],
+        },
+      },
+    },
   },
   'screenshot_sync_passthrough_tests': {
     'modifications': {
@@ -4657,12 +4638,6 @@
       'Dawn Android arm64 Release (Pixel 6)',
     ],
     'modifications': {
-      # Increase the timeout with ASAN (crbug.com/1208253)
-      'Dawn Win10 x64 ASAN Release': {
-        'args': [
-          '--timeout-ms=48000',
-        ],
-      },
       # These tests must run with a GPU.
       'linux-code-coverage': {
         'swarming': {

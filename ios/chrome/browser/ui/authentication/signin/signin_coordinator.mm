@@ -125,21 +125,39 @@ using signin_metrics::PromoAction;
                          browser:browser
                      accessPoint:accessPoint
                      promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO
-                    signinIntent:AddAccountSigninIntentAddSecondaryAccount];
+                    signinIntent:AddAccountSigninIntent::kAddNewAccount];
 }
 
 + (instancetype)
-    reAuthenticationCoordinatorWithBaseViewController:
+    primaryAccountReauthCoordinatorWithBaseViewController:
         (UIViewController*)viewController
-                                              browser:(Browser*)browser
-                                          accessPoint:(AccessPoint)accessPoint
-                                          promoAction:(PromoAction)promoAction {
+                                                  browser:(Browser*)browser
+                                              accessPoint:
+                                                  (AccessPoint)accessPoint
+                                              promoAction:
+                                                  (PromoAction)promoAction {
   return [[AddAccountSigninCoordinator alloc]
       initWithBaseViewController:viewController
                          browser:browser
                      accessPoint:accessPoint
                      promoAction:promoAction
-                    signinIntent:AddAccountSigninIntentReauthPrimaryAccount];
+                    signinIntent:AddAccountSigninIntent::kPrimaryAccountReauth];
+}
+
++ (instancetype)
+    signinAndSyncReauthCoordinatorWithBaseViewController:
+        (UIViewController*)viewController
+                                                 browser:(Browser*)browser
+                                             accessPoint:
+                                                 (AccessPoint)accessPoint
+                                             promoAction:
+                                                 (PromoAction)promoAction {
+  return [[AddAccountSigninCoordinator alloc]
+      initWithBaseViewController:viewController
+                         browser:browser
+                     accessPoint:accessPoint
+                     promoAction:promoAction
+                    signinIntent:AddAccountSigninIntent::kSigninAndSyncReauth];
 }
 
 + (instancetype)
@@ -172,8 +190,10 @@ using signin_metrics::PromoAction;
   ChromeBrowserState* browserState = browser->GetBrowserState();
   ChromeAccountManagerService* accountManagerService =
       ChromeAccountManagerServiceFactory::GetForBrowserState(browserState);
-  if (!IsConsistencyNewAccountInterfaceEnabled() &&
-      !accountManagerService->HasIdentities()) {
+  BOOL canShowWithZeroIdentities =
+      accessPoint != signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN &&
+      IsConsistencyNewAccountInterfaceEnabled();
+  if (!accountManagerService->HasIdentities() && !canShowWithZeroIdentities) {
     RecordConsistencyPromoUserAction(
         signin_metrics::AccountConsistencyPromoAction::SUPPRESSED_NO_ACCOUNTS,
         accessPoint);

@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
@@ -114,6 +115,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
                                       chrome_browser_state_.get())
                   authService:GetAuthenticationService()
                   prefService:chrome_browser_state_.get()->GetPrefs()
+                  syncService:GetSyncService()
                   accessPoint:access_point
                     presenter:nil
            baseViewController:nil];
@@ -142,6 +144,10 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   AuthenticationService* GetAuthenticationService() {
     return AuthenticationServiceFactory::GetForBrowserState(
         chrome_browser_state_.get());
+  }
+
+  syncer::SyncService* GetSyncService() {
+    return SyncServiceFactory::GetForBrowserState(chrome_browser_state_.get());
   }
 
   // Creates the default identity and adds it into the ChromeIdentityService.
@@ -475,6 +481,7 @@ TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateSignedin) {
                            signin_metrics::PromoAction::
                                PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT
                         completion:completion_arg]);
+  OCMExpect([consumer_ promoProgressStateDidChange]);
   ExpectConfiguratorNotification(NO /* identity changed */);
   [mediator_ signinPromoViewDidTapSigninWithNewAccount:signin_promo_view_];
   EXPECT_TRUE(mediator_.signinInProgress);
@@ -482,9 +489,10 @@ TEST_F(SigninPromoViewMediatorTest, SigninPromoViewStateSignedin) {
             mediator_.signinPromoViewState);
   EXPECT_NE(nil, (id)completion);
   // Stop sign-in.
+  OCMExpect([consumer_ promoProgressStateDidChange]);
   OCMExpect([consumer_ signinDidFinish]);
   ExpectConfiguratorNotification(NO /* identity changed */);
-  completion(YES);
+  completion(SigninCoordinatorResultSuccess);
   EXPECT_FALSE(mediator_.signinInProgress);
   EXPECT_EQ(ios::SigninPromoViewState::UsedAtLeastOnce,
             mediator_.signinPromoViewState);
@@ -509,6 +517,7 @@ TEST_F(SigninPromoViewMediatorTest,
                            signin_metrics::PromoAction::
                                PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT
                         completion:completion_arg]);
+  OCMExpect([consumer_ promoProgressStateDidChange]);
   ExpectConfiguratorNotification(NO /* identity changed */);
   // Starts sign-in without identity.
   [mediator_ signinPromoViewDidTapSigninWithNewAccount:signin_promo_view_];
@@ -517,9 +526,10 @@ TEST_F(SigninPromoViewMediatorTest,
   // No consumer notification should be expected.
   fake_system_identity_manager()->WaitForServiceCallbacksToComplete();
   // Finishs the sign-in.
+  OCMExpect([consumer_ promoProgressStateDidChange]);
   OCMExpect([consumer_ signinDidFinish]);
   ExpectConfiguratorNotification(NO /* identity changed */);
-  completion(YES);
+  completion(SigninCoordinatorResultSuccess);
 }
 
 // Tests that no update notification is sent by the mediator to its consumer,
@@ -540,6 +550,7 @@ TEST_F(SigninPromoViewMediatorTest,
                                    promoAction:signin_metrics::PromoAction::
                                                    PROMO_ACTION_WITH_DEFAULT
                                     completion:completion_arg]);
+  OCMExpect([consumer_ promoProgressStateDidChange]);
   ExpectConfiguratorNotification(NO /* identity changed */);
   // Starts sign-in with an identity.
   [mediator_ signinPromoViewDidTapSigninWithDefaultAccount:signin_promo_view_];
@@ -552,9 +563,10 @@ TEST_F(SigninPromoViewMediatorTest,
   // Spins the run loop to wait for the profile image update.
   fake_system_identity_manager()->WaitForServiceCallbacksToComplete();
   // Finishs the sign-in.
+  OCMExpect([consumer_ promoProgressStateDidChange]);
   OCMExpect([consumer_ signinDidFinish]);
   ExpectConfiguratorNotification(NO /* identity changed */);
-  completion(YES);
+  completion(SigninCoordinatorResultSuccess);
 }
 
 // Tests that promos aren't shown if browser sign-in is disabled by policy
@@ -614,6 +626,7 @@ TEST_F(SigninPromoViewMediatorTest,
                                    promoAction:signin_metrics::PromoAction::
                                                    PROMO_ACTION_WITH_DEFAULT
                                     completion:completion_arg]);
+  OCMExpect([consumer_ promoProgressStateDidChange]);
   ExpectConfiguratorNotification(NO /* identity changed */);
   // Start sign-in with an identity.
   [mediator_ signinPromoViewDidTapSigninWithDefaultAccount:signin_promo_view_];
@@ -625,7 +638,7 @@ TEST_F(SigninPromoViewMediatorTest,
   EXPECT_EQ(weak_mediator, nil);
   // Finish the sign-in.
   OCMExpect([consumer_ signinDidFinish]);
-  completion(YES);
+  completion(SigninCoordinatorResultSuccess);
 }
 
 // Tests that the sign-in promo view being removed, and tests the consumer is
@@ -646,6 +659,7 @@ TEST_F(SigninPromoViewMediatorTest, RemoveSigninPromoWhileSignedIn) {
                                    promoAction:signin_metrics::PromoAction::
                                                    PROMO_ACTION_WITH_DEFAULT
                                     completion:completion_arg]);
+  OCMExpect([consumer_ promoProgressStateDidChange]);
   ExpectConfiguratorNotification(NO /* identity changed */);
   // Start sign-in with an identity.
   [mediator_ signinPromoViewDidTapSigninWithDefaultAccount:signin_promo_view_];
@@ -654,7 +668,7 @@ TEST_F(SigninPromoViewMediatorTest, RemoveSigninPromoWhileSignedIn) {
   EXPECT_EQ(ios::SigninPromoViewState::Invalid, mediator_.signinPromoViewState);
   // Finish the sign-in.
   OCMExpect([consumer_ signinDidFinish]);
-  completion(YES);
+  completion(SigninCoordinatorResultSuccess);
   // Set mediator_ to nil to avoid the TearDown doesn't call
   // -[mediator_ disconnect] again.
   mediator_ = nil;

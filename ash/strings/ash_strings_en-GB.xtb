@@ -69,7 +69,6 @@ Here are some things that you can try to get started.</translation>
 <translation id="1247519845643687288">Recent apps</translation>
 <translation id="1252999807265626933">Charging from <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">What's the weather?</translation>
-<translation id="1267032506238418139">Shortcut change</translation>
 <translation id="1269405891096105529">Peripheral not supported in Guest Mode</translation>
 <translation id="1270290102613614947">On-screen keyboard disabled</translation>
 <translation id="1272079795634619415">Stop</translation>
@@ -140,7 +139,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="1550406609415860283">Devices available</translation>
 <translation id="1550523713251050646">Click for more options</translation>
 <translation id="1555130319947370107">Blue</translation>
-<translation id="1576511610858879060">Your Chromebook or Bluetooth device is using an older version of Bluetooth. Use another input source for better audio quality.</translation>
+<translation id="1557622599341396706">Show desk name</translation>
 <translation id="1576623706766186887">Zoom out when magnifier is on</translation>
 <translation id="1586324912145647027">Go to desk 1 to 8</translation>
 <translation id="1589090746204042747">Access all your activity in this session</translation>
@@ -217,7 +216,6 @@ Here are some things that you can try to get started.</translation>
 <translation id="1908992311423394684">New install</translation>
 <translation id="1915307458270490472">Hang up</translation>
 <translation id="1918022425394817322">Camera snapped to the top-right corner</translation>
-<translation id="1919743966458266018">The shortcut to open the task manager has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatic clicks</translation>
 <translation id="1928739107511554905">To get the update, use the touchscreen to restart your Chromebook with the keyboard attached.</translation>
 <translation id="1948405482892809935">Switch to next user</translation>
@@ -300,6 +298,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="2318576281648121272">Today <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" /> , search result category</translation>
 <translation id="2322173485024759474">Back by letter</translation>
+<translation id="2335091074961603075">Your Chromebook or Bluetooth device is using an older version of Bluetooth. Use the internal microphone for better audio quality.</translation>
 <translation id="2339073806695260576">Tap the stylus button on the shelf to take a note, screenshot, use the laser pointer or magnifying glass.</translation>
 <translation id="2341729377289034582">Locked to vertical</translation>
 <translation id="2345226652884463045">Press enter or search + space to select the text for editing.</translation>
@@ -396,6 +395,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="2750941250130734256">Active window undocked.</translation>
 <translation id="2761723519669354964">Open highlighted item from shelf</translation>
 <translation id="2774348302533424868"><ph name="MODIFIER" /><ph name="DELIMITER" /><ph name="KEY_ONE" /> to <ph name="KEY_TWO" /></translation>
+<translation id="2778197796481941784">ctrl+search+s</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> managed by <ph name="MANAGER" /></translation>
 <translation id="2782591952652094792">Exit capture mode</translation>
 <translation id="2785499565474703580">One device connected</translation>
@@ -459,6 +459,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="3062298103034426069">Not supported</translation>
 <translation id="3068622547379332530">Version <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Shelf on left</translation>
+<translation id="3070639127620815135">search+esc</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Expand menu</translation>
 <translation id="3087734570205094154">Bottom</translation>
@@ -472,6 +473,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="3120421559657122717">Shut down device?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Restart to update</translation>
+<translation id="3139188263101386725">Use the updated shortcut</translation>
 <translation id="3139942575505304791">Desk 1</translation>
 <translation id="315116470104423982">Mobile data</translation>
 <translation id="3151786313568798007">Orientation</translation>
@@ -929,6 +931,7 @@ Connect your device to power.</translation>
 <translation id="504465286040788597">Previous paragraph</translation>
 <translation id="5045550434625856497">Incorrect password</translation>
 <translation id="5062496344832867502">ram</translation>
+<translation id="5068762093486106012">You'll get notified if you talk while muted. Audio never leaves your device.</translation>
 <translation id="5078796286268621944">Incorrect PIN</translation>
 <translation id="5083553833479578423">Unlock more Assistant features.</translation>
 <translation id="5092436659250499817">Turn on/off keyboard backlight</translation>
@@ -959,6 +962,7 @@ Connect your device to power.</translation>
 <translation id="5207949376430453814">Highlight text caret</translation>
 <translation id="5208059991603368177">On</translation>
 <translation id="5216991270656129561">Off until <ph name="TIME" /></translation>
+<translation id="5221423477036820198">Quickly send or reply to your phone's messages using Phone Hub.</translation>
 <translation id="5222676887888702881">Sign out</translation>
 <translation id="5229343007215035173">Turn on/off Privacy Screen</translation>
 <translation id="5234764350956374838">Dismiss</translation>
@@ -982,10 +986,12 @@ Connect your device to power.</translation>
 <translation id="5308380583665731573">Connect</translation>
 <translation id="5313326810920013265">Bluetooth settings</translation>
 <translation id="5314219114274263156">Screen recording taken</translation>
+<translation id="5314489738835854379">Cycle backward through windows</translation>
 <translation id="5316716239522500219">Mirror monitors</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5319712128756744240">Pair new device</translation>
 <translation id="5322611492012084517">Can't find your phone</translation>
+<translation id="5323994101633366939">Hide desk name</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5329548388331921293">Connecting…</translation>
 <translation id="5331975486040154427">USB-C device (left side back port)</translation>
@@ -1128,6 +1134,7 @@ Connect your device to power.</translation>
 <translation id="5958529069007801266">Supervised user</translation>
 <translation id="5961960957587052807">Light</translation>
 <translation id="5965524703725988602">Toggle Dark theme. <ph name="STATE_TEXT" />.</translation>
+<translation id="5975235751479998104">Cycle forward through windows</translation>
 <translation id="5976112937189445008">Press enter to record window</translation>
 <translation id="5978382165065462689">Sharing control of your screen via Remote Assistance.</translation>
 <translation id="5980301590375426705">Exit guest</translation>
@@ -1167,6 +1174,7 @@ Connect your device to power.</translation>
 <translation id="6103838137565245112">system</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> speech files downloaded</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
+<translation id="6119972796024789243">Colour correction</translation>
 <translation id="6121838516699723042">Confirm download <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">The Google Assistant is not available in a guest session.</translation>
 <translation id="6129953537138746214">Space</translation>
@@ -1196,6 +1204,7 @@ Connect your device to power.</translation>
 <translation id="6231419273573514727">Peripheral performance may be limited</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> is currently using your camera and microphone</translation>
 <translation id="6237231532760393653">1X</translation>
+<translation id="6244986124527896815">Open the Task manager app with '<ph name="NEW_SHORTCUT" />'.</translation>
 <translation id="6247728804802644171">Open notifications</translation>
 <translation id="6254629735336163724">Locked to horizontal</translation>
 <translation id="6259254695169772643">Use your stylus to select</translation>
@@ -1246,6 +1255,7 @@ Connect your device to power.</translation>
 <translation id="6497418457565568043">Do Not Disturb is on</translation>
 <translation id="6500896621837555595">Update</translation>
 <translation id="6501401484702599040">Casting screen to <ph name="RECEIVER_NAME" /></translation>
+<translation id="6507042703812908515">Open the Key shortcuts app with '<ph name="NEW_SHORTCUT" />'.</translation>
 <translation id="6507618042428827377">Switch to next available input method</translation>
 <translation id="6508923215158854599">Make sure that your Chromebook is on the same Wi-Fi network as your Chromecast device.</translation>
 <translation id="6515727200518652613">Camera lost; trying to reconnect.</translation>
@@ -1338,6 +1348,7 @@ New install</translation>
 <translation id="6891721121089053234">View your phone's recent photos, media and apps on your <ph name="DEVICE_TYPE" /></translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6901883536534621389">Try gestures to navigate</translation>
+<translation id="6912841030378044227">Focus on address bar</translation>
 <translation id="6919251195245069855">Couldn’t recognise your smart card. Try again.</translation>
 <translation id="6920245099716267363">Toggle hotspot. Hotspot is on, 1 device connected.</translation>
 <translation id="6931576957638141829">Save to</translation>
@@ -1620,7 +1631,7 @@ To shut down the device, press and hold the power button on the device again.</t
 <translation id="8185090165691050712">Turn on/off menu to resize lock mode</translation>
 <translation id="8192202700944119416">Notifications are hidden.</translation>
 <translation id="8196787716797768628">Use gestures to quickly switch between apps and interact with your Chromebook in tablet mode.</translation>
-<translation id="8198456017687137612">Cast tab</translation>
+<translation id="8198456017687137612">Casting tab</translation>
 <translation id="8200772114523450471">Resume</translation>
 <translation id="8203795194971602413">Right click</translation>
 <translation id="8209010265547628927">Reset</translation>
@@ -1634,6 +1645,7 @@ To shut down the device, press and hold the power button on the device again.</t
 <translation id="8247998213073982446"><ph name="APP_NAME" />, app</translation>
 <translation id="8255234195843591763">Reset to update</translation>
 <translation id="8261506727792406068">Delete</translation>
+<translation id="8262312463845990408">Toggle -playback</translation>
 <translation id="8270450402312105425">{0,plural, =1{Change device to previous version within an hour}other{Change device to previous version within # hours}}</translation>
 <translation id="8277261673056602147">Highlight text on your screen</translation>
 <translation id="8284362522226889623">Swipe left with four fingers to switch to the previous desk</translation>
@@ -1687,6 +1699,7 @@ To shut down the device, press and hold the power button on the device again.</t
 <translation id="8513108775083588393">Auto-rotate</translation>
 <translation id="851458219935658693">Show windows from the current desk, radio button selected</translation>
 <translation id="8517041960877371778">Your <ph name="DEVICE_TYPE" /> may not charge while it is turned on.</translation>
+<translation id="852060496139946719">{NUM_APPS,plural, =1{Mic input controlled by <ph name="APP_NAME" />}other{Mic input controlled by # apps}}</translation>
 <translation id="8535393432370007982">Undo sort order by colour</translation>
 <translation id="8541078764854166027">Camera framing</translation>
 <translation id="8542053257095774575">No saved desks or templates</translation>
@@ -1750,7 +1763,6 @@ To shut down the device, press and hold the power button on the device again.</t
 <translation id="8834539327799336565">Currently connected</translation>
 <translation id="8841375032071747811">Back button</translation>
 <translation id="8843682306134542540">Toggle rotation lock. <ph name="STATE_TEXT" /></translation>
-<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8853703225951107899">Your PIN or password still couldn't be verified. Note: If you recently changed your password, use your old password. Your new password will be applied once you've signed out.</translation>
 <translation id="8855885154700222542">Full-screen key</translation>
 <translation id="8858369206579825206">Privacy controls</translation>

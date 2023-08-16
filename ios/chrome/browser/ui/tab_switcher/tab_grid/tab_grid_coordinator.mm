@@ -111,7 +111,7 @@ namespace {
 // active in the current web state of `browser`, this returns true. Otherwise,
 // returns false.
 bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
-  if (!ios::provider::IsNativeFindInPageWithSystemFindPanel()) {
+  if (!ios::provider::IsNativeFindInPageWithSystemFindPanel() || !browser) {
     return false;
   }
 
@@ -1036,10 +1036,6 @@ bool FindNavigatorShouldBePresentedInBrowser(Browser* browser) {
 
   [_bookmarksCoordinator stop];
   _bookmarksCoordinator = nil;
-}
-
-- (void)dealloc {
-  CHECK(!_recentTabsContextMenuHelper);
 }
 
 #pragma mark - TabPresentationDelegate

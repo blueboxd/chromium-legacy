@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.13 Mac10.14 Mac10.15 Mac11 Mac11-arm64 Mac12 Mac12-arm64 Mac13 Mac13-arm64 Win Win10.20h2 Win11 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.13 Mac10.14 Mac10.15 Mac11 Mac11-arm64 Mac12 Mac12-arm64 Mac13 Mac13-arm64 Win Win10.20h2 Win11 Win11-arm64 ]
 # tags: [ Release Debug ]
 # results: [ Slow ]
 
@@ -322,7 +322,6 @@ crbug.com/1081534 virtual/oopr-canvas2d/fast/canvas/canvas-composite-image.html 
 crbug.com/1081534 [ Mac10.15 Release ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-shadow-part4.html [ Slow ]
 crbug.com/1081534 [ Mac11 Release ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-shadow-part4.html [ Slow ]
 crbug.com/1081534 [ Mac12 ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-shadow-part4.html [ Slow ]
-crbug.com/1081534 [ Mac10.13 Release ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-transformclip.html [ Slow ]
 crbug.com/1081534 [ Mac10.15 Release ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-transformclip.html [ Slow ]
 crbug.com/1081534 [ Mac11 Release ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-transformclip.html [ Slow ]
 crbug.com/1081534 [ Mac12 ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-transformclip.html [ Slow ]
@@ -555,7 +554,6 @@ crbug.com/874695 fast/forms/color/* [ Slow ]
 crbug.com/874695 fast/forms/color-scheme/* [ Slow ]
 crbug.com/874695 [ Release ] fast/forms/number/number-spinbutton-gets-disabled-or-readonly.html [ Slow ]
 crbug.com/874695 fast/forms/select/input-select-after-resize.html [ Slow ]
-crbug.com/874695 fast/history/history-back-twice-with-subframes-assert.html [ Slow ]
 crbug.com/874695 fast/media/mq-color-gamut-picture.html [ Slow ]
 crbug.com/874695 [ Linux ] fast/peerconnection/RTCPeerConnection-many.html [ Slow ]
 crbug.com/874695 [ Mac10.15 Release ] fast/peerconnection/RTCPeerConnection-many.html [ Slow ]
@@ -1428,6 +1426,7 @@ crbug.com/1410608 http/tests/inspector-protocol/storage/dom-storage-set-items-by
 crbug.com/1372747 [ Win ] http/tests/uri/css-href.php [ Slow ]
 
 crbug.com/1376679 [ Mac12 Release ] virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-dynamic.tentative.html [ Slow ]
+crbug.com/1450858 virtual/threaded/external/wpt/scroll-animations/css/animation-timeline-view-functional-notation.tentative.html [ Slow ]
 
 crbug.com/1366717 http/tests/inspector-protocol/storage/indexed-db-set-items-by-storage-key.js [ Slow ]
 

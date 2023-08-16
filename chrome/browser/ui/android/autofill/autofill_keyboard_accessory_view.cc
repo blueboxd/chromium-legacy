@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/android/autofill/autofill_keyboard_accessory_view.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -13,12 +15,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/types/cxx23_to_underlying.h"
-#include "chrome/android/features/keyboard_accessory/jni_headers/AutofillKeyboardAccessoryViewBridge_jni.h"
+#include "chrome/android/features/keyboard_accessory/internal/jni/AutofillKeyboardAccessoryViewBridge_jni.h"
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/autofill/autofill_popup_controller_utils.h"
 #include "chrome/browser/ui/android/autofill/autofill_accessibility_utils.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
@@ -130,7 +133,12 @@ void AutofillKeyboardAccessoryView::SuggestionSelected(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint list_index) {
-  controller_->AcceptSuggestionWithoutThreshold(list_index);
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillKeyboardAccessoryAcceptanceDelayThreshold)) {
+    controller_->AcceptSuggestion(list_index);
+  } else {
+    controller_->AcceptSuggestionWithoutThreshold(list_index);
+  }
 }
 
 void AutofillKeyboardAccessoryView::DeletionRequested(

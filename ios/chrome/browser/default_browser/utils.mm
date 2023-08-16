@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/settings/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/signin/signin_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -465,6 +466,16 @@ DefaultPromoType ForceDefaultPromoType() {
   return DefaultPromoType::DefaultPromoTypeGeneral;
 }
 
+bool IsDefaultBrowserTriggerCriteraExperimentEnabled() {
+  return base::FeatureList::IsEnabled(kDefaultBrowserTriggerCriteriaExperiment);
+}
+
+bool ShouldTriggerDefaultBrowserPromoOnOmniboxCopyPaste() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kDefaultBrowserTriggerCriteriaExperiment,
+      kDefaultBrowserTriggerOnOmniboxCopyPaste, false);
+}
+
 bool IsDefaultBrowserVideoPromoHalfscreenEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
       kDefaultBrowserVideoPromo, "default_browser_video_promo_halfscreen",
@@ -710,6 +721,11 @@ bool IsVideoPromoEligibleUser(feature_engagement::Tracker* tracker) {
   }
 
   return true;
+}
+
+bool IsPostRestoreDefaultBrowserEligibleUser() {
+  return IsFirstSessionAfterDeviceRestore() == signin::Tribool::kTrue &&
+         IsChromeLikelyDefaultBrowser();
 }
 
 void CleanupUnusedStorage() {

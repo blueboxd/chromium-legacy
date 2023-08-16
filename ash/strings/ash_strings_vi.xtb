@@ -69,7 +69,6 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="1247519845643687288">Ứng dụng gần đây</translation>
 <translation id="1252999807265626933">Đang sạc từ <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Tình hình thời tiết thế nào?</translation>
-<translation id="1267032506238418139">Thay đổi phím tắt</translation>
 <translation id="1269405891096105529">Chế độ khách không hỗ trợ thiết bị ngoại vi</translation>
 <translation id="1270290102613614947">Đã tắt bàn phím ảo</translation>
 <translation id="1272079795634619415">Dừng</translation>
@@ -140,7 +139,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="1550406609415860283">Có sẵn thiết bị</translation>
 <translation id="1550523713251050646">Nhấp để xem các tùy chọn khác</translation>
 <translation id="1555130319947370107">Xanh lam</translation>
-<translation id="1576511610858879060">Chromebook hoặc thiết bị Bluetooth của bạn đang dùng phiên bản Bluetooth cũ. Sử dụng nguồn đầu vào khác để có chất lượng âm thanh tốt hơn.</translation>
+<translation id="1557622599341396706">Hiện tên không gian làm việc</translation>
 <translation id="1576623706766186887">Thu nhỏ khi kính lúp đang bật</translation>
 <translation id="1586324912145647027">Chuyển đến không gian làm việc từ 1 đến 8</translation>
 <translation id="1589090746204042747">Truy cập vào tất cả hoạt động của bạn trong phiên này</translation>
@@ -217,7 +216,6 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="1908992311423394684">Mới cài đặt</translation>
 <translation id="1915307458270490472">Kết thúc</translation>
 <translation id="1918022425394817322">Máy ảnh đang bám theo góc trên bên phải</translation>
-<translation id="1919743966458266018">Phím tắt để mở trình quản lý tác vụ đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Nhấp chuột tự động</translation>
 <translation id="1928739107511554905">Để cập nhật, hãy dùng màn hình cảm ứng để khởi động lại Chromebook bằng bàn phím đã kết nối.</translation>
 <translation id="1948405482892809935">Chuyển sang người dùng tiếp theo</translation>
@@ -300,6 +298,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="2318576281648121272">Hôm nay <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" /> , danh mục kết quả tìm kiếm</translation>
 <translation id="2322173485024759474">Lùi một ký tự</translation>
+<translation id="2335091074961603075">Chromebook hoặc thiết bị Bluetooth của bạn đang dùng phiên bản Bluetooth cũ. Sử dụng micrô gắn trong để có chất lượng âm thanh tốt hơn.</translation>
 <translation id="2339073806695260576">Hãy nhấn vào nút bút cảm ứng trên giá để ghi chú, chụp ảnh màn hình, sử dụng con trỏ laser hoặc kính lúp.</translation>
 <translation id="2341729377289034582">Đã khóa theo chiều dọc</translation>
 <translation id="2345226652884463045">Nhấn phím Enter hoặc Tìm kiếm + Phím cách để chọn văn bản cần chỉnh sửa.</translation>
@@ -396,6 +395,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="2750941250130734256">Đã gỡ cửa sổ đang hoạt động.</translation>
 <translation id="2761723519669354964">Mở mục được đánh dấu trên kệ</translation>
 <translation id="2774348302533424868"><ph name="MODIFIER" /><ph name="DELIMITER" /><ph name="KEY_ONE" /> rồi đến <ph name="KEY_TWO" /></translation>
+<translation id="2778197796481941784">ctrl+tìm kiếm+s</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> này do <ph name="MANAGER" /> quản lý</translation>
 <translation id="2782591952652094792">Thoát khỏi chế độ chụp</translation>
 <translation id="2785499565474703580">1 thiết bị đã kết nối</translation>
@@ -459,6 +459,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="3062298103034426069">Không được hỗ trợ</translation>
 <translation id="3068622547379332530">Phiên bản <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Giá ở bên trái</translation>
+<translation id="3070639127620815135">tìm kiếm+esc</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Mở rộng menu</translation>
 <translation id="3087734570205094154">Bên dưới</translation>
@@ -472,6 +473,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="3120421559657122717">Tắt thiết bị?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Khởi động lại để cập nhật</translation>
+<translation id="3139188263101386725">Sử dụng phím tắt mới</translation>
 <translation id="3139942575505304791">Không gian làm việc 1</translation>
 <translation id="315116470104423982">Dữ liệu di động</translation>
 <translation id="3151786313568798007">Hướng</translation>
@@ -929,6 +931,7 @@ Hãy sạc thiết bị.</translation>
 <translation id="504465286040788597">Đoạn trước</translation>
 <translation id="5045550434625856497">Mật khẩu sai</translation>
 <translation id="5062496344832867502">ram</translation>
+<translation id="5068762093486106012">Bạn sẽ nhận được thông báo nếu bạn nói trong khi tắt tiếng. Thiết bị của bạn sẽ không truyền âm thanh đi.</translation>
 <translation id="5078796286268621944">Mã PIN không chính xác</translation>
 <translation id="5083553833479578423">Mở khóa các tính năng khác của Trợ lý.</translation>
 <translation id="5092436659250499817">Bật/tắt đèn nền bàn phím</translation>
@@ -959,6 +962,7 @@ Hãy sạc thiết bị.</translation>
 <translation id="5207949376430453814">Đánh dấu điểm chèn văn bản</translation>
 <translation id="5208059991603368177">Bật</translation>
 <translation id="5216991270656129561">Tắt cho đến <ph name="TIME" /></translation>
+<translation id="5221423477036820198">Nhanh chóng gửi hoặc trả lời tin nhắn trên điện thoại của bạn bằng Trung tâm điều khiển điện thoại.</translation>
 <translation id="5222676887888702881">Đăng xuất</translation>
 <translation id="5229343007215035173">Bật/tắt màn hình bảo vệ quyền riêng tư</translation>
 <translation id="5234764350956374838">Bỏ qua</translation>
@@ -982,10 +986,12 @@ Hãy sạc thiết bị.</translation>
 <translation id="5308380583665731573">Kết nối</translation>
 <translation id="5313326810920013265">Cài đặt Bluetooth</translation>
 <translation id="5314219114274263156">Đã ghi màn hình</translation>
+<translation id="5314489738835854379">Di chuyển lùi lại qua các cửa sổ</translation>
 <translation id="5316716239522500219">Phản chiếu màn hình</translation>
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="5319712128756744240">Ghép nối thiết bị mới</translation>
 <translation id="5322611492012084517">Không tìm được điện thoại của bạn</translation>
+<translation id="5323994101633366939">Ẩn tên không gian làm việc</translation>
 <translation id="5327248766486351172">Tên</translation>
 <translation id="5329548388331921293">Đang kết nối...</translation>
 <translation id="5331975486040154427">Thiết bị USB-C (cổng phía sau, bên trái)</translation>
@@ -1128,6 +1134,7 @@ Hãy sạc thiết bị.</translation>
 <translation id="5958529069007801266">Người dùng được giám sát</translation>
 <translation id="5961960957587052807">Hơi mờ</translation>
 <translation id="5965524703725988602">Bật/tắt Giao diện tối. <ph name="STATE_TEXT" />.</translation>
+<translation id="5975235751479998104">Di chuyển tiến lên qua các cửa sổ</translation>
 <translation id="5976112937189445008">Nhấn phím Enter để ghi màn hình trong cửa sổ</translation>
 <translation id="5978382165065462689">Chia sẻ quyền kiểm soát màn hình của bạn qua Trợ giúp từ xa.</translation>
 <translation id="5980301590375426705">Thoát phiên khách</translation>
@@ -1167,6 +1174,7 @@ Hãy sạc thiết bị.</translation>
 <translation id="6103838137565245112">hệ thống</translation>
 <translation id="6114505516289286752">Đã tải tệp mã chuyển lời nói thành văn bản <ph name="LANGUAGE" /> xuống</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
+<translation id="6119972796024789243">Chỉnh màu</translation>
 <translation id="6121838516699723042">Xác nhận tải <ph name="FILENAME" /> xuống</translation>
 <translation id="612734058257491180">Bạn không thể dùng Trợ lý Google trong phiên khách.</translation>
 <translation id="6129953537138746214">Dấu cách</translation>
@@ -1196,6 +1204,7 @@ Hãy sạc thiết bị.</translation>
 <translation id="6231419273573514727">Hiệu suất của thiết bị ngoại vi có thể bị hạn chế</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> hiện đang sử dụng máy ảnh và micrô của bạn</translation>
 <translation id="6237231532760393653">1X</translation>
+<translation id="6244986124527896815">Mở ứng dụng Trình quản lý tác vụ bằng "<ph name="NEW_SHORTCUT" />".</translation>
 <translation id="6247728804802644171">Mở thông báo</translation>
 <translation id="6254629735336163724">Đã khóa theo chiều ngang</translation>
 <translation id="6259254695169772643">Sử dụng bút cảm ứng để chọn</translation>
@@ -1246,6 +1255,7 @@ Hãy sạc thiết bị.</translation>
 <translation id="6497418457565568043">Tính năng Không làm phiền đang bật</translation>
 <translation id="6500896621837555595">Cập nhật</translation>
 <translation id="6501401484702599040">Đang truyền màn hình tới <ph name="RECEIVER_NAME" /></translation>
+<translation id="6507042703812908515">Mở ứng dụng Phím tắt bằng "<ph name="NEW_SHORTCUT" />".</translation>
 <translation id="6507618042428827377">Chuyển sang phương thức nhập hiện có tiếp theo</translation>
 <translation id="6508923215158854599">Đảm bảo Chromebook kết nối với cùng một mạng Wi-Fi như thiết bị Chromecast.</translation>
 <translation id="6515727200518652613">Máy ảnh bị mất kết nối, đang cố gắng kết nối lại.</translation>
@@ -1338,6 +1348,7 @@ Mới cài đặt</translation>
 <translation id="6891721121089053234">Xem ứng dụng, nội dung nghe nhìn và ảnh gần đây của điện thoại trên<ph name="DEVICE_TYPE" /></translation>
 <translation id="6896758677409633944">Sao chép</translation>
 <translation id="6901883536534621389">Thử một số cử chỉ để thao tác</translation>
+<translation id="6912841030378044227">Tập trung vào thanh địa chỉ</translation>
 <translation id="6919251195245069855">Không nhận dạng được thẻ thông minh của bạn. Vui lòng thử lại.</translation>
 <translation id="6920245099716267363">Bật/tắt điểm phát sóng. Điểm phát sóng đang bật, có 1 thiết bị đã kết nối.</translation>
 <translation id="6931576957638141829">Lưu vào</translation>
@@ -1476,7 +1487,7 @@ Mới cài đặt</translation>
 <translation id="7579778809502851308">Chụp ảnh màn hình</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
 <translation id="7600875258240007829">Xem tất cả thông báo</translation>
-<translation id="7601417191446344542">Bật thông báo nhắc bật tiếng?</translation>
+<translation id="7601417191446344542">Bật lời nhắc về micrô bị tắt?</translation>
 <translation id="7607002721634913082">Đã tạm dừng</translation>
 <translation id="7609951632080598826">Chế độ xem lịch, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Đã kết nối lại với máy ảnh.</translation>
@@ -1634,6 +1645,7 @@ Mới cài đặt</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, Ứng dụng</translation>
 <translation id="8255234195843591763">Hãy đặt lại để cập nhật</translation>
 <translation id="8261506727792406068">Xoá</translation>
+<translation id="8262312463845990408">Phát hoặc dừng phát</translation>
 <translation id="8270450402312105425">{0,plural, =1{Hạ cấp hệ điều hành trên thiết bị về phiên bản trước trong vòng 1 giờ}other{Hạ cấp hệ điều hành trên thiết bị về phiên bản trước trong vòng # giờ}}</translation>
 <translation id="8277261673056602147">Đánh dấu văn bản trên màn hình</translation>
 <translation id="8284362522226889623">Hãy vuốt sang trái bằng 4 ngón tay để chuyển sang không gian làm việc trước</translation>
@@ -1687,6 +1699,7 @@ Mới cài đặt</translation>
 <translation id="8513108775083588393">Tự động xoay</translation>
 <translation id="851458219935658693">Hiển thị cửa sổ từ không gian làm việc hiện tại, đã chọn nút chọn</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> của bạn có thể không sạc khi được bật.</translation>
+<translation id="852060496139946719">{NUM_APPS,plural, =1{Cổng vào micrô do <ph name="APP_NAME" /> kiểm soát}other{Cổng vào micrô do # ứng dụng kiểm soát}}</translation>
 <translation id="8535393432370007982">Huỷ thứ tự sắp xếp theo màu</translation>
 <translation id="8541078764854166027">Lấy khung hình</translation>
 <translation id="8542053257095774575">Bạn chưa lưu không gian làm việc hoặc mẫu nào</translation>
@@ -1750,7 +1763,6 @@ Mới cài đặt</translation>
 <translation id="8834539327799336565">Hiện đang kết nối</translation>
 <translation id="8841375032071747811">Nút quay lại</translation>
 <translation id="8843682306134542540">Bật/tắt khóa xoay. <ph name="STATE_TEXT" /></translation>
-<translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8853703225951107899">Hệ thống vẫn chưa xác minh được mã PIN hoặc mật khẩu của bạn. Lưu ý: Nếu bạn đổi mật khẩu gần đây, hãy dùng mật khẩu cũ. Bạn có thể dùng mật khẩu mới sau khi đăng xuất.</translation>
 <translation id="8855885154700222542">Phím toàn màn hình</translation>
 <translation id="8858369206579825206">Chế độ kiểm soát quyền riêng tư</translation>

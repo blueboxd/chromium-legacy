@@ -8,9 +8,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 
 import android.app.Activity;
+import android.app.PendingIntent;
+import android.net.Uri;
 import android.os.Build;
 
 import androidx.test.filters.SmallTest;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import org.junit.Assert;
 import org.junit.Assume;
@@ -30,7 +35,9 @@ import org.chromium.base.test.util.JniMocker;
 import org.chromium.blink.mojom.AuthenticatorStatus;
 import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
+import org.chromium.blink.mojom.ResidentKeyRequirement;
 import org.chromium.components.webauthn.AuthenticatorImpl;
+import org.chromium.components.webauthn.Fido2ApiCallHelper;
 import org.chromium.components.webauthn.Fido2ApiTestHelper;
 import org.chromium.components.webauthn.Fido2CredentialRequest;
 import org.chromium.components.webauthn.WebAuthnBrowserBridge;
@@ -44,7 +51,10 @@ import org.chromium.net.GURLUtilsJni;
 import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RunWith(BaseRobolectricTestRunner.class)
 public class Fido2CredentialRequestRobolectricTest {
@@ -52,13 +62,15 @@ public class Fido2CredentialRequestRobolectricTest {
         private int mOnCredManConditionalRequestPendingCallCount;
         private int mCleanupRequestCallCount;
         private int mOnCredManClosedCallCount;
+        private HashMap<String, String> mOnPasswordCredentialReceivedCall;
         private Callback<Boolean> mCredManGetAssertionCallback;
 
-        void reset() {
+        MockBrowserBridge() {
             mOnCredManConditionalRequestPendingCallCount = 0;
             mCleanupRequestCallCount = 0;
             mOnCredManClosedCallCount = 0;
             mCredManGetAssertionCallback = null;
+            mOnPasswordCredentialReceivedCall = new HashMap<>();
         }
 
         @Override
@@ -78,6 +90,13 @@ public class Fido2CredentialRequestRobolectricTest {
             mOnCredManClosedCallCount += 1;
         }
 
+        @Override
+        public void onPasswordCredentialReceived(
+                RenderFrameHost frameHost, String username, String password) {
+            mOnPasswordCredentialReceivedCall.put("username", username);
+            mOnPasswordCredentialReceivedCall.put("password", password);
+        }
+
         int getOnCredManConditionalRequestPendingCallCount() {
             return mOnCredManConditionalRequestPendingCallCount;
         }
@@ -93,6 +112,10 @@ public class Fido2CredentialRequestRobolectricTest {
         int getOnCredManClosedCallCount() {
             return mOnCredManClosedCallCount;
         }
+
+        Map<String, String> getOnPasswordCredentialReceivedCall() {
+            return mOnPasswordCredentialReceivedCall;
+        }
     }
 
     private FakeAndroidCredentialManager mCredentialManager;
@@ -102,6 +125,7 @@ public class Fido2CredentialRequestRobolectricTest {
     private Fido2ApiTestHelper.AuthenticatorCallback mCallback;
     private Origin mOrigin;
     private MockBrowserBridge mMockBrowserBridge;
+    private FakeFido2ApiCallHelper mFido2ApiCallHelper;
 
     @Mock
     private RenderFrameHost mFrameHost;
@@ -139,6 +163,9 @@ public class Fido2CredentialRequestRobolectricTest {
                 .thenReturn("https://subdomain.example.test:443");
 
         mCreationOptions = Fido2ApiTestHelper.createDefaultMakeCredentialOptions();
+        // Set rk=required on the assumption that most test cases care about exercising the passkeys
+        // case.
+        mCreationOptions.authenticatorSelection.residentKey = ResidentKeyRequirement.REQUIRED;
         mRequestOptions = Fido2ApiTestHelper.createDefaultGetAssertionOptions();
 
         mRequest = new Fido2CredentialRequest(
@@ -172,7 +199,9 @@ public class Fido2CredentialRequestRobolectricTest {
 
         mMockBrowserBridge = new MockBrowserBridge();
         mRequest.overrideBrowserBridgeForTesting(mMockBrowserBridge);
-        mMockBrowserBridge.reset();
+
+        mFido2ApiCallHelper = new FakeFido2ApiCallHelper();
+        Fido2ApiCallHelper.overrideInstanceForTesting(mFido2ApiCallHelper);
     }
 
     @Test
@@ -198,6 +227,21 @@ public class Fido2CredentialRequestRobolectricTest {
         Assert.assertTrue(
                 credManRequest.getCandidateQueryData().containsKey("com.android.chrome.CHANNEL"));
         Assert.assertEquals(mCallback.getStatus(), Integer.valueOf(AuthenticatorStatus.SUCCESS));
+        Assert.assertFalse(mFido2ApiCallHelper.mMakeCredentialCalled);
+    }
+
+    @Test
+    @SmallTest
+    public void testMakeCredential_rkDiscouraged_goesToPlayServices() {
+        // Calls to `context.getMainExecutor()` require API level 28 or higher.
+        Assume.assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P);
+
+        mCreationOptions.authenticatorSelection.residentKey = ResidentKeyRequirement.DISCOURAGED;
+        mRequest.handleMakeCredentialRequest(mCreationOptions, mFrameHost, mOrigin,
+                (responseStatus, response)
+                        -> mCallback.onRegisterResponse(responseStatus, response),
+                errorStatus -> mCallback.onError(errorStatus));
+        Assert.assertTrue(mFido2ApiCallHelper.mMakeCredentialCalled);
     }
 
     @Test
@@ -395,7 +439,10 @@ public class Fido2CredentialRequestRobolectricTest {
         Assert.assertNotNull(credManRequest);
         Assert.assertEquals(credManRequest.getCredentialOptions().size(), 1);
 
-        mCredentialManager.setCredManGetResponseCredential(new FakeAndroidPasswordCredential());
+        String username = "coolUserName";
+        String password = "38kay5er1sp0r38";
+        mCredentialManager.setCredManGetResponseCredential(
+                new FakeAndroidPasswordCredential(username, password));
         mMockBrowserBridge.getCredManGetAssertionCallback().onResult(true);
 
         credManRequest = mCredentialManager.getGetRequest();
@@ -407,8 +454,39 @@ public class Fido2CredentialRequestRobolectricTest {
         Assert.assertEquals(
                 credentialOptions.get(1).getType(), "android.credentials.TYPE_PASSWORD_CREDENTIAL");
 
-        Assert.assertEquals(mMockBrowserBridge.getOnCredManClosedCallCount(), 1);
+        Assert.assertEquals(mMockBrowserBridge.getOnCredManClosedCallCount(), 0);
         // A password is selected, the callback will not be signed.
         Assert.assertEquals(mCallback.getStatus(), null);
+
+        Assert.assertEquals(
+                mMockBrowserBridge.getOnPasswordCredentialReceivedCall().get("username"), username);
+        Assert.assertEquals(
+                mMockBrowserBridge.getOnPasswordCredentialReceivedCall().get("password"), password);
+    }
+
+    static class FakeFido2ApiCallHelper extends Fido2ApiCallHelper {
+        public boolean mMakeCredentialCalled;
+        public boolean mGetAssertionCalled;
+
+        @Override
+        public boolean arePlayServicesAvailable() {
+            return true;
+        }
+
+        @Override
+        public void invokeFido2MakeCredential(PublicKeyCredentialCreationOptions options, Uri uri,
+                byte[] clientDataHash, OnSuccessListener<PendingIntent> successCallback,
+                OnFailureListener failureCallback) throws NoSuchAlgorithmException {
+            mMakeCredentialCalled = true;
+            // Don't make any actual calls to Play Services.
+        }
+
+        @Override
+        public void invokeFido2GetAssertion(PublicKeyCredentialRequestOptions options, Uri uri,
+                byte[] clientDataHash, OnSuccessListener<PendingIntent> successCallback,
+                OnFailureListener failureCallback) {
+            mGetAssertionCalled = true;
+            // Don't make any actual calls to Play Services.
+        }
     }
 }

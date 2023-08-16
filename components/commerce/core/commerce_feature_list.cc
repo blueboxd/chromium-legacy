@@ -168,6 +168,17 @@ BASE_FEATURE(kPriceInsights,
 BASE_FEATURE(kPriceInsightsRegionLaunched,
              "PriceInsightsRegionLaunched",
              base::FEATURE_DISABLED_BY_DEFAULT);
+const char kPriceInsightsDelayChipParam[] = "price-inishgts-delay-chip";
+const base::FeatureParam<bool> kPriceInsightsDelayChip{
+    &commerce::kPriceInsights, kPriceInsightsDelayChipParam, false};
+const char kPriceInsightsChipLabelExpandOnHighPriceParam[] =
+    "chip-expand-on-high-price";
+const base::FeatureParam<bool> kPriceInsightsChipLabelExpandOnHighPrice{
+    &commerce::kPriceInsights, kPriceInsightsChipLabelExpandOnHighPriceParam,
+    false};
+const char kPriceInsightsShowFeedbackParam[] = "price-insights-show-feedback";
+const base::FeatureParam<bool> kPriceInsightsShowFeedback{
+    &commerce::kPriceInsights, kPriceInsightsShowFeedbackParam, false};
 
 const base::FeatureParam<bool> kDeleteAllMerchantsOnClearBrowsingHistory{
     &kCommerceMerchantViewer, "delete_all_merchants_on_clear_history", false};

@@ -2261,9 +2261,6 @@ void WizardController::PerformPostNetworkScreenActions() {
   DelayNetworkCall(ServicesCustomizationDocument::GetInstance()
                        ->EnsureCustomizationAppliedClosure());
   GetAutoEnrollmentController()->Start();
-
-  // Triggers DLC installation here to ensure network availability
-  cros_healthd::internal::TriggerDlcInstall();
 }
 
 void WizardController::PerformOOBECompletedActions() {
@@ -2275,6 +2272,9 @@ void WizardController::PerformOOBECompletedActions() {
 
   StartupUtils::MarkOobeCompleted();
   oobe_marked_completed_ = true;
+
+  // Triggers DLC installation once OOBE is complete.
+  cros_healthd::internal::TriggerDlcInstall();
 }
 
 void WizardController::SetCurrentScreen(BaseScreen* new_current) {
@@ -2282,6 +2282,16 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
           << (new_current ? new_current->screen_id().name : "null");
 
   if (new_current && new_current->MaybeSkip(*wizard_context_)) {
+    // choobe_flow_controller_ lives only while CHOOBE flow is active, metrics
+    // regarding screens shown while CHOOBE is active is handled by
+    // choobe_flow_controller_.
+    if (features::IsOobeChoobeEnabled()) {
+      if (ChoobeFlowController::IsOptionalScreen(new_current->screen_id()) &&
+          choobe_flow_controller_) {
+        return;
+      }
+    }
+
     RecordUMAHistogramForOOBEStepShownStatus(new_current->screen_id(),
                                              ScreenShownStatus::kSkipped);
     return;

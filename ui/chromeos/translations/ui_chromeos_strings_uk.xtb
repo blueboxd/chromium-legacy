@@ -358,6 +358,7 @@
 <translation id="3943857333388298514">Вставити</translation>
 <translation id="3952872973865944257">Телугу, фонетична розкладка</translation>
 <translation id="3958548648197196644">Ківі</translation>
+<translation id="397105322502079400">Обчислення...</translation>
 <translation id="3971140002794351170">Завантажити мобільний профіль, мережа <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, "<ph name="NETWORK_NAME" />", <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Англійська (Велика Британія)</translation>
 <translation id="3975895378829046965">Бенгальська, фонетична розкладка</translation>
@@ -697,7 +698,7 @@
 <translation id="6499681088828539489">Заборонити проксі-сервери для спільних мереж</translation>
 <translation id="6503285896705205014">Адміністратор заборонив копіювати файли (<ph name="COUNT" />)</translation>
 <translation id="6509122719576673235">Норвезька</translation>
-<translation id="6528513914570774834">Надіти іншим користувачам цього пристрою доступ до цієї мережі</translation>
+<translation id="6528513914570774834">Надати іншим користувачам цього пристрою доступ до цієї мережі</translation>
 <translation id="653019979737152879">Синхронізація файлу <ph name="FILE_NAME" />…</translation>
 <translation id="6549689063733911810">Останні</translation>
 <translation id="6558280019477628686">Сталася помилка. Можливо, не всі елементи було видалено.</translation>

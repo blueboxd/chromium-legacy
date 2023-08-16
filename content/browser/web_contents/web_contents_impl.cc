@@ -46,9 +46,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/download/public/common/download_stats.h"
-#include "components/power_scheduler/power_mode.h"
-#include "components/power_scheduler/power_mode_arbiter.h"
-#include "components/power_scheduler/power_mode_voter.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -1028,10 +1025,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
           std::make_unique<MediaWebContentsObserver>(this)),
       is_overlay_content_(false),
       showing_context_menu_(false),
-      prerender_host_registry_(std::make_unique<PrerenderHostRegistry>(*this)),
-      audible_power_mode_voter_(
-          power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
-              "PowerModeVoter.Audible")) {
+      prerender_host_registry_(std::make_unique<PrerenderHostRegistry>(*this)) {
   TRACE_EVENT0("content", "WebContentsImpl::WebContentsImpl");
   WebContentsOfBrowserContext::Attach(*this);
 #if BUILDFLAG(ENABLE_PPAPI)
@@ -2412,10 +2406,6 @@ void WebContentsImpl::OnAudioStateChanged() {
   is_currently_audible_ = is_currently_audible;
   was_ever_audible_ = was_ever_audible_ || is_currently_audible_;
 
-  audible_power_mode_voter_->VoteFor(is_currently_audible_
-                                         ? power_scheduler::PowerMode::kAudible
-                                         : power_scheduler::PowerMode::kIdle);
-
   ExecutePageBroadcastMethod(base::BindRepeating(
       [](bool is_currently_audible, RenderViewHostImpl* rvh) {
         if (auto& broadcast = rvh->GetAssociatedPageBroadcast())
@@ -2922,10 +2912,17 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
       !command_line.HasSwitch(blink::switches::kDisableThreadedScrolling);
 
 #if BUILDFLAG(IS_ANDROID)
+  constexpr int kTabletWidthThreshold = 600;
+  // TODO(crbug.com/1469720): GetPrimaryDisplay() won't be correct for
+  // externally connected displays. Get the display where Chrome is opened
+  // instead.
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  float screen_width_in_dp =
+      display.GetSizeInPixel().width() / display.device_scale_factor();
   if (prefs.viewport_enabled &&
       base::FeatureList::IsEnabled(
           blink::features::kDefaultViewportIsDeviceWidth) &&
-      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+      screen_width_in_dp >= kTabletWidthThreshold) {
     prefs.viewport_style = blink::mojom::ViewportStyle::kDefault;
   }
 #endif
@@ -2987,7 +2984,6 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
     prefs.media_controls_enabled = false;
 
 #if BUILDFLAG(IS_ANDROID)
-  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   gfx::Size size = display.GetSizeInPixel();
   int min_width = size.width() < size.height() ? size.width() : size.height();
   prefs.device_scale_adjustment = GetDeviceScaleAdjustment(

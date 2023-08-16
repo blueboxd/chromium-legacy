@@ -14,9 +14,11 @@
 <translation id="1617663976202781617">Podaci iz Chromium sinhronizacije</translation>
 <translation id="1722370509450468186">Lozinka se čuva na vašem nalogu (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Chromium podaci su obrisani</translation>
+<translation id="1758508597843173586">Zaključajte režim bez arhiviranja kada napustite Chromium ili pređete na drugu aplikaciju.</translation>
 <translation id="1838412507805038478">Chromium je potvrdio da je <ph name="ISSUER" /> izdao sertifikat ovog veb-sajta.</translation>
 <translation id="1843424232666537147">Chromium ima funkcije koje vam pomažu da upravljate internet podacima i brzinom učitavanja veb-stranica.
 <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
+<translation id="1847960401032164406">Mape u Chromium-u</translation>
 <translation id="1867772173333403444">4. Izaberite Chromium</translation>
 <translation id="2006345422933397527">Chromium ne može da traži ažuriranja. Proverite internet vezu.</translation>
 <translation id="2052320862053429062">Chromium povremeno upoređuje vaše lozinke sa listama koje su objavljene onlajn. Dok to radi, vaše lozinke i korisnička imena su šifrovani, pa niko ne može da ih pročita, uključujući Google.</translation>
@@ -40,9 +42,11 @@
 <translation id="2942241131342758843">Podrazumevano koristite Chromium da biste otvarali linkove, pretraživali iz vidžeta i automatski popunjavali lozinke u drugim aplikacijama</translation>
 <translation id="2977470724722393594">Chromium je ažuriran</translation>
 <translation id="3102849287235003384">Da biste se odjavili sa Google naloga na svim veb-sajtovima, <ph name="BEGIN_LINK" />odjavite se iz Chromium-a<ph name="END_LINK" />.</translation>
+<translation id="3115956258722352278">Želite da podesite Chromium za podrazumevani pregledač?</translation>
 <translation id="3256316712990552818">Kopirana u Chromium</translation>
 <translation id="3344973607274501920">Chromium nije uspeo da vam proveri lozinke. Proverite internet vezu.</translation>
 <translation id="3472200483164753384">Nije podržano u verziji Chromium Canary</translation>
+<translation id="3478750326643748149">Sakrijte „Iskoristite Chromium na najbolji način“</translation>
 <translation id="3567399274263440288">Da biste koristili Chromium na najbolji način, prijavite se na Chromium pomoću Google naloga.</translation>
 <translation id="3639997914391704523">Chromium može da vam proverava lozinke kada se prijavite pomoću Google naloga.</translation>
 <translation id="3650632991272923014">Korisnik <ph name="USER_EMAIL1" /> je koristio Chromium i ostavio obeleživače, lozinke i druga podešavanja na ovom uređaju.</translation>
@@ -65,6 +69,7 @@
 <translation id="4985291216379576555">Oflajn ste. Chromium ne može da traži ažuriranja.</translation>
 <translation id="4996471330284142407">Uradite više pomoću još jednostavnijeg, bezbednijeg i bržeg Chromium-a.</translation>
 <translation id="4999538639245140991">Odjavljujete se sa naloga kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />, što će izbrisati Chromium podatke sa ovog uređaja. Podaci će ostati na Google nalogu.</translation>
+<translation id="5042011327527167688">Dodirnite Prikaži pomoću Google mapa u Chromium-u.</translation>
 <translation id="5048795749726991615">Da biste lako pristupali sačuvanim lozinkama u drugim aplikacijama, koristite Chromium za automatsko popunjavanje</translation>
 <translation id="5171868502429358653">Prijavite se u Chromium</translation>
 <translation id="5224391634244552924">Nema sačuvanih lozinki. Chromium može da proverava lozinke kada ih sačuvate.</translation>
@@ -74,6 +79,7 @@
 <translation id="5521125884468363740">Da biste videli kartice na bilo kojem uređaju na kom koristite Chromium, prijavite se i uključite sinhronizaciju</translation>
 <translation id="5522297504975449419">Neke Chromium funkcije više neće biti dostupne.</translation>
 <translation id="5573014823074921752">Savet za Chromium. Ako želite više opcija za kartice, dodirnite i zadržite dugme Prikaži kartice na traci s alatkama, koja se nalazi u dnu ili vrhu ekrana.</translation>
+<translation id="5688047395118852662">Ova kartica vam prikazuje predloge o tome kako da iskoristite Chromium-a na najbolji način.</translation>
 <translation id="5700709190537129682">Chromium ne može da vam proverava lozinke</translation>
 <translation id="5777187867430702742">Chromium stranica</translation>
 <translation id="5945387852661427312">Prijavljujete se pomoću naloga kojim upravlja <ph name="DOMAIN" /> i dajete njegovom administratoru kontrolu nad svojim Chromium podacima. Podaci će postati trajno povezani sa tim nalogom. Odjavljivanjem iz Chromium-a ćete izbrisati podatke sa ovog uređaja, ali će oni ostati sačuvani na Google nalogu.</translation>
@@ -108,6 +114,7 @@
 <translation id="7357211569052832586">Izabrani podaci su uklonjeni iz Chromium-a i sa sinhronizovanih uređaja. Google nalog možda ima druge oblike istorije pregledanja, poput pretraga i aktivnosti u drugim Google uslugama na history.google.com.</translation>
 <translation id="7395825497086981028">Lozinka se čuva u Menadžeru lozinki za <ph name="EMAIL" /></translation>
 <translation id="7400689562045506105">Koristite Chromium svuda</translation>
+<translation id="7523464085759699266">Uključite Zaključaj kartice bez arhiviranja posle zatvaranja Chromium-a.</translation>
 <translation id="7674213385180944843">Otvorite Podešavanja &gt; Privatnost &gt; Kamera &gt; Chromium i uključite kameru.</translation>
 <translation id="7746854981345936341">Savet za Chromium. Neka dugmad se sada nalaze u dnu ekrana, poput dugmadi Nazad, Napred i Pretraži.</translation>
 <translation id="7763454117143368771">Koristite Chromium kao podrazumevani pregledač da biste se odbranili od opasnih sajtova i zaštitili lozinke</translation>
@@ -119,6 +126,7 @@
 <translation id="7931842119211730154">Zaključajte kartice bez arhiviranja posle zatvaranja Chromium-a</translation>
 <translation id="7980860476903281594">Chromium deli lokaciju sa sajtovima koje dozvolite.</translation>
 <translation id="8013573822802650211">Da biste videli kartice na bilo kojem uređaju na kom koristite Chromium, prijavite se na svim uređajima</translation>
+<translation id="8071041515667087705">Idite u Chromium podešavanja.</translation>
 <translation id="8073677936375100957">Želite li da obrišete Chromium podatke sa ovog uređaja?</translation>
 <translation id="8240981428553046115">Chromium ne može da traži ažuriranja. Probajte ponovo kasnije.</translation>
 <translation id="8409374867500149834">Imate najjaču Chromium zaštitu od štetnih veb-sajtova</translation>

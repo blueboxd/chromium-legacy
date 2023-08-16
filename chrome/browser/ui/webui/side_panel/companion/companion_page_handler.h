@@ -7,7 +7,9 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/scoped_observation.h"
+#include "chrome/browser/companion/core/companion_metrics_logger.h"
 #include "chrome/browser/companion/core/constants.h"
 #include "chrome/browser/companion/core/mojom/companion.mojom.h"
 #include "chrome/browser/companion/visual_search/visual_search_classifier_host.h"
@@ -54,9 +56,9 @@ class CompanionPageHandler
   void OnExpsOptInStatusAvailable(bool is_exps_opted_in) override;
   void OnOpenInNewTabButtonURLChanged(const GURL& url_to_open) override;
   void RecordUiSurfaceShown(side_panel::mojom::UiSurface ui_surface,
-                            uint32_t ui_surface_position,
-                            uint32_t child_element_available_count,
-                            uint32_t child_element_shown_count) override;
+                            int32_t ui_surface_position,
+                            int32_t child_element_available_count,
+                            int32_t child_element_shown_count) override;
   void RecordUiSurfaceClicked(side_panel::mojom::UiSurface ui_surface,
                               int32_t click_position) override;
   void OnCqCandidatesAvailable(
@@ -65,10 +67,13 @@ class CompanionPageHandler
   void OnCqJumptagClicked(const std::string& text_directive) override;
   void OpenUrlInBrowser(const absl::optional<GURL>& url_to_open,
                         bool use_new_tab) override;
+  void OnLoadingState(side_panel::mojom::LoadingState loading_state) override;
 
   // content::WebContentsObserver overrides.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
 
   // IdentityManager::Observer overrides.
   void OnPrimaryAccountChanged(
@@ -76,18 +81,26 @@ class CompanionPageHandler
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info,
       const GoogleServiceAuthError& error) override;
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
 
   // UrlKeyedDataCollectionConsentHelper::Observer overrides.
   void OnUrlKeyedDataCollectionConsentStateChanged(
       unified_consent::UrlKeyedDataCollectionConsentHelper* consent_helper)
       override;
 
-  // Informs the page handler that a new text query to initialize / reload the
-  // page with was sent from client.
-  void OnSearchTextQuery(const std::string& text_query);
+  // Attempts to retrieve a search query string and initiate a search if
+  // available. If it does not load a companion page, returns false.
+  bool OnSearchTextQuery();
   void OnImageQuery(side_panel::mojom::ImageQuery image_query);
+
+  // Informs the page handler that the WebUI has detected a navigation that
+  // resulted in an error page.
+  void OnNavigationError();
+
+  // Notifies the companion side panel about a link click that happened in
+  // the side panel that maybe was handled by the browser (either new tab or
+  // same tab).
+  void NotifyLinkOpened(GURL opened_url,
+                        side_panel::mojom::LinkOpenMetadataPtr metadata);
 
  private:
   // Notifies the companion side panel about the URL of the main frame. Based on
@@ -113,7 +126,11 @@ class CompanionPageHandler
 
   // This method is used as the callback that handles visual search results.
   // Its role is to perform some checks and do a mojom IPC to side panel.
-  void HandleVisualSearchResult(std::vector<std::string> results);
+  void HandleVisualSearchResult(std::vector<std::string> results,
+                                const VisualSuggestionsMetrics& stats);
+
+  // Method responsible for binding and sending VQS results to panel.
+  void SendVisualSearchResult(std::vector<std::string> results);
 
   mojo::Receiver<side_panel::mojom::CompanionPageHandler> receiver_;
   mojo::Remote<side_panel::mojom::CompanionPage> page_;
@@ -142,6 +159,9 @@ class CompanionPageHandler
       unified_consent::UrlKeyedDataCollectionConsentHelper,
       unified_consent::UrlKeyedDataCollectionConsentHelper::Observer>
       consent_helper_observation_{this};
+
+  absl::optional<base::TimeTicks> full_load_start_time_;
+  absl::optional<base::TimeTicks> reload_start_time_;
 
   base::WeakPtrFactory<CompanionPageHandler> weak_ptr_factory_{this};
 };

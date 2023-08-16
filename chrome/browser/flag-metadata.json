@@ -500,6 +500,11 @@
     "expiry_milestone": 120
   },
   {
+    "name": "autofill-enable-card-art-server-side-stretching",
+    "owners": ["vishwasuppoor@google.com", "alexandertekle@google.com"],
+    "expiry_milestone": 122
+  },
+  {
     "name": "autofill-enable-card-product-name",
     "owners": [ "vishwasuppoor", "siyua" ],
     "expiry_milestone": 120
@@ -1474,6 +1479,11 @@
     "expiry_milestone": 130
   },
   {
+    "name": "default-browser-promo-trigger-criteria-experiment",
+    "owners": [ "gayane@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 121
+  },
+  {
     "name": "default-browser-refactoring-promo-manager",
     "owners": [ "cheickcisse@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 120
@@ -1699,7 +1709,7 @@
   {
     "name": "disruptive-notification-permission-revocation",
     "owners": [ "engedy", "ravjit", "andypaicu", "hkamila", "elklm" ],
-    "expiry_milestone": 115
+    "expiry_milestone": 125
   },
   {
     "name": "dns-over-https-with-identifiers-reuse-old-policy",
@@ -2407,7 +2417,7 @@
   {
     "name": "enable-disco-feed-endpoint",
     "owners": [ "tinazwang", "sczs" ],
-    "expiry_milestone": 116
+    "expiry_milestone": 120
   },
   {
     "name": "enable-discount-consent-v2",
@@ -3423,6 +3433,14 @@
     "expiry_milestone": 102
   },
   {
+    "name": "enable-supervised-users-remain-signed-in",
+    "owners": [
+      "ljjlee",
+      "chrome-kids-eng@google.com"
+    ],
+    "expiry_milestone": 117
+  },
+  {
     "name": "enable-surface-control",
     "owners": [ "vikassoni", "vasilyt" ],
     "expiry_milestone": 118
@@ -3440,7 +3458,7 @@
   {
     "name": "enable-sync-history-datatype",
     "owners": [ "treib", "chrome-sync-dev@google.com" ],
-    "expiry_milestone": 116
+    "expiry_milestone": 117
   },
   {
     "name": "enable-system-notifications",
@@ -3806,7 +3824,7 @@
   {
     "name": "enable-webusb-device-detection",
     "owners": [ "reillyg", "deviceapi-team@google.com" ],
-    "expiry_milestone": 116
+    "expiry_milestone": 128
   },
   {
     "name": "enable-webview-tag-mparch-behavior",
@@ -4049,6 +4067,11 @@
   {
     "name": "fedcm-idp-registration",
     "owners": [ "goto", "web-identity-eng@google.com"],
+    "expiry_milestone": 120
+  },
+  {
+    "name": "fedcm-idp-signin-status-api",
+    "owners": [ "cbiesinger", "web-identity-eng@google.com"],
     "expiry_milestone": 120
   },
   {
@@ -4740,12 +4763,12 @@
   {
     "name": "intents-on-email",
     "owners": [ "djean@google.com", "erahmaoui@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 116
+    "expiry_milestone": 118
   },
   {
     "name": "intents-on-phone-number",
     "owners": [ "djean@google.com", "erahmaoui@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 116
+    "expiry_milestone": 118
   },
   {
     "name": "interest-feed-v1-clicks-and-views-cond-upload",
@@ -4803,6 +4826,11 @@
     "name": "ios-force-translate-enabled",
     "owners": [ "olivierrobin@chromium.org", "bling-flags@google.com" ],
     "expiry_milestone": 120
+  },
+  {
+    "name": "ios-iph-for-safari-switcher",
+    "owners": [ "huitingyu", "bling-flags@google.com" ],
+    "expiry_milestone": 121
   },
   {
     "name": "ios-new-tab-page-retention",
@@ -5136,6 +5164,11 @@
     "expiry_milestone": 120
   },
   {
+    "name": "media-route-dial-provider",
+    "owners": [ "sunggch@microsoft.com" ],
+    "expiry_milestone": 124
+  },
+  {
     "name": "media-router-cast-allow-all-ips",
     "owners": [ "mfoltz" ],
     // This flag is used by users with unusual network configurations to allow
@@ -5358,7 +5391,7 @@
   {
     "name": "new-overflow-menu-share-chrome-action",
     "owners": [ "scottyoder@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 116
+    "expiry_milestone": 118
   },
   {
     "name": "new-shortcut-mapping",
@@ -6001,8 +6034,8 @@
   },
   {
     "name": "one-tap-experience-maps",
-    "owners": [ "djean@google.com", "erahmaoui@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 116
+    "owners": [ "djean@google.com", "olivierrobin@chromium.org", "bling-flags@google.com" ],
+    "expiry_milestone": 119
   },
   {
     "name": "one-time-permission",
@@ -6250,11 +6283,6 @@
     "expiry_milestone": 118
   },
   {
-    "name": "password-strength-indicator",
-    "owners": ["mtimbur@google.com", "rgod@google.com", "mamir@chromium.org"],
-    "expiry_milestone": 110
-  },
-  {
     "name": "passwords-grouping",
     "owners": ["vsemeniuk@google.com", "vasilii"],
     "expiry_milestone": 117
@@ -6471,6 +6499,13 @@
     "expiry_milestone": 116
   },
   {
+    "name": "privacy-sandbox-enrollment-overrides",
+    "owners": [
+      "lbrady",
+      "shivanisha"],
+    "expiry_milestone": 119
+  },
+  {
     "name": "privacy-sandbox-settings-4",
     "owners": [
       "sauski",
@@ -6492,8 +6527,8 @@
   },
   {
     "name": "private-network-access-respect-preflight-results",
-    "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 116
+    "owners": [ "titouan", "lyf", "phao", "chrome-security-owp-team@google.com" ],
+    "expiry_milestone": 120
   },
   {
     "name": "private-state-tokens",
@@ -7229,6 +7264,14 @@
     "expiry_milestone": -1
   },
   {
+    "name": "speak-on-mute-opt-in-nudge-prefs-reset",
+    "owners": [
+      "kradtke",
+      "cros-status-area-eng@google.com"
+    ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "spectre-v2-mitigation",
     "owners": [
       "chromeos-security@google.com"
@@ -7417,8 +7460,18 @@
     "expiry_milestone": 120
   },
   {
+    "name": "tab-grid-refactoring",
+    "owners": [ "alionadangla", "lpromero", "pakzhygitov", "bling-flags@google.com" ],
+    "expiry_milestone": 125
+  },
+  {
     "name": "tab-groups-save",
     "owners": [ "chrome-desktop-ui-sea@google.com", "dpenning" ],
+    "expiry_milestone": 120
+  },
+  {
+    "name": "tab-hover-card-image-settings",
+    "owners": [ "charlesmeng", "estalin" ],
     "expiry_milestone": 120
   },
   {
@@ -7505,6 +7558,14 @@
     // This flag is used for QA & development on ChromeOS, which has no way to
     // customize switches.
     "expiry_milestone": -1
+  },
+  {
+    "name": "toolbar-theme-color",
+    "owners": [
+      "bling-flags@google.com",
+      "gambard"
+    ],
+    "expiry_milestone": 118
   },
   {
     "name": "top-chrome-touch-ui",

@@ -63,6 +63,7 @@ source_set("flags") {
     "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/find_in_page:features",
     "//ios/chrome/browser/follow:feature_flags",
+    "//ios/chrome/browser/iph_for_new_chrome_user",
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/policy",
     "//ios/chrome/browser/policy:constants",
@@ -119,8 +120,8 @@ source_set("client_side") {
     "//components/metrics",
     "//components/variations",
     "//ios/chrome/app:tests_hook",
-    "//ios/chrome/browser/shared/model/paths",
     "//ios/chrome/browser/shared/model/application_context",
+    "//ios/chrome/browser/shared/model/paths",
     "//ios/chrome/browser/ui/first_run:field_trial",
     "//ios/chrome/browser/ui/ntp:field_trial",
   ]

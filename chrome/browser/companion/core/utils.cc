@@ -4,22 +4,37 @@
 
 #include "chrome/browser/companion/core/utils.h"
 
+#include "base/containers/fixed_flat_set.h"
 #include "chrome/browser/companion/core/constants.h"
 #include "chrome/browser/companion/core/features.h"
+#include "net/base/url_util.h"
 
 namespace companion {
+
+namespace {
+const base::Feature* GetFeatureToUse() {
+  if (base::FeatureList::IsEnabled(features::internal::kSidePanelCompanion)) {
+    return &features::internal::kSidePanelCompanion;
+  }
+
+  if (base::FeatureList::IsEnabled(features::internal::kSidePanelCompanion2)) {
+    return &features::internal::kSidePanelCompanion2;
+  }
+
+  if (base::FeatureList::IsEnabled(
+          features::internal::kCompanionEnabledByObservingExpsNavigations)) {
+    return &features::internal::kCompanionEnabledByObservingExpsNavigations;
+  }
+  NOTREACHED();
+  return &features::internal::kSidePanelCompanion;
+}
+}  // namespace
 
 std::string GetHomepageURLForCompanion() {
   // Allow multiple field trials to control the value. This is needed because
   // companion may be enabled by any of the field trials.
   std::string url = base::GetFieldTrialParamValueByFeature(
-      features::internal::kSidePanelCompanion, "companion-homepage-url");
-
-  if (url.empty()) {
-    url = base::GetFieldTrialParamValueByFeature(
-        features::internal::kCompanionEnabledByObservingExpsNavigations,
-        "companion-homepage-url");
-  }
+      *GetFeatureToUse(), "companion-homepage-url");
   if (url.empty()) {
     return std::string("https://lens.google.com/companion");
   }
@@ -30,14 +45,9 @@ std::string GetImageUploadURLForCompanion() {
   // Allow multiple field trials to control the value. This is needed because
   // companion may be enabled by any of the field trials.
   std::string url = base::GetFieldTrialParamValueByFeature(
-      features::internal::kSidePanelCompanion, "companion-image-upload-url");
+      *GetFeatureToUse(), "companion-image-upload-url");
   if (url.empty()) {
-    url = base::GetFieldTrialParamValueByFeature(
-        features::internal::kCompanionEnabledByObservingExpsNavigations,
-        "companion-image-upload-url");
-  }
-  if (url.empty()) {
-    return std::string("https://lens.google.com/upload");
+    return std::string("https://lens.google.com/v3/upload");
   }
   return url;
 }
@@ -45,63 +55,77 @@ std::string GetImageUploadURLForCompanion() {
 bool ShouldEnableOpenCompanionForImageSearch() {
   // Allow multiple field trials to control the value. This is needed because
   // companion may be enabled by any of the field trials.
-  if (base::FeatureList::IsEnabled(features::internal::kSidePanelCompanion)) {
-    return base::GetFieldTrialParamByFeatureAsBool(
-        features::internal::kSidePanelCompanion,
-        "open-companion-for-image-search", true);
-  }
-
-  if (base::FeatureList::IsEnabled(
-          features::internal::kCompanionEnabledByObservingExpsNavigations)) {
-    return base::GetFieldTrialParamByFeatureAsBool(
-        features::internal::kCompanionEnabledByObservingExpsNavigations,
-        "open-companion-for-image-search", true);
-  }
-  NOTREACHED();
-  return false;
+  return base::GetFieldTrialParamByFeatureAsBool(
+      *GetFeatureToUse(), "open-companion-for-image-search", true);
 }
 
 bool ShouldEnableOpenCompanionForWebSearch() {
   // Allow multiple field trials to control the value. This is needed because
   // companion may be enabled by any of the field trials.
-  if (base::FeatureList::IsEnabled(features::internal::kSidePanelCompanion)) {
-    return base::GetFieldTrialParamByFeatureAsBool(
-        features::internal::kSidePanelCompanion,
-        "open-companion-for-web-search", true);
-  }
 
-  if (base::FeatureList::IsEnabled(
-          features::internal::kCompanionEnabledByObservingExpsNavigations)) {
-    return base::GetFieldTrialParamByFeatureAsBool(
-        features::internal::kCompanionEnabledByObservingExpsNavigations,
-        "open-companion-for-web-search", true);
-  }
-  NOTREACHED();
-  return false;
+  return base::GetFieldTrialParamByFeatureAsBool(
+      *GetFeatureToUse(), "open-companion-for-web-search", true);
 }
 bool ShouldOpenLinksInCurrentTab() {
   // Allow multiple field trials to control the value. This is needed because
   // companion may be enabled by any of the field trials.
-  if (base::FeatureList::IsEnabled(features::internal::kSidePanelCompanion)) {
-    return base::GetFieldTrialParamByFeatureAsBool(
-        features::internal::kSidePanelCompanion, "open-links-in-current-tab",
-        true);
-  }
-
-  if (base::FeatureList::IsEnabled(
-          features::internal::kCompanionEnabledByObservingExpsNavigations)) {
-    return base::GetFieldTrialParamByFeatureAsBool(
-        features::internal::kCompanionEnabledByObservingExpsNavigations,
-        "open-links-in-current-tab", true);
-  }
-  NOTREACHED();
-  return false;
+  return base::GetFieldTrialParamByFeatureAsBool(
+      *GetFeatureToUse(), "open-links-in-current-tab", true);
 }
 
 std::string GetExpsRegistrationSuccessPageURLs() {
   return base::GetFieldTrialParamValueByFeature(
       features::internal::kCompanionEnabledByObservingExpsNavigations,
       "exps-registration-success-page-urls");
+}
+
+// Checks to see if the page url is safe to open in Chrome.
+bool IsSafeURLFromCompanion(const GURL& url) {
+  if (!url.is_valid()) {
+    return false;
+  }
+
+  static constexpr auto chrome_domain_allowlists =
+      base::MakeFixedFlatSet<base::StringPiece>(
+          {"chrome://settings/syncSetup"});
+  base::StringPiece url_string(url.spec());
+
+  if (!url.SchemeIsHTTPOrHTTPS() &&
+      !chrome_domain_allowlists.contains(url_string)) {
+    return false;
+  }
+
+  return true;
+}
+
+std::string GetCompanionIPHBlocklistedPageURLs() {
+  return base::GetFieldTrialParamValueByFeature(
+      features::internal::kCompanionEnabledByObservingExpsNavigations,
+      "companion-iph-blocklisted-page-urls");
+}
+
+// Checks to see if the page url is a valid one to be sent to companion.
+bool IsValidPageURLForCompanion(const GURL& url) {
+  if (!url.is_valid()) {
+    return false;
+  }
+
+  if (!url.has_host()) {
+    return false;
+  }
+  if (net::IsLocalhost(url)) {
+    return false;
+  }
+  if (url.HostIsIPAddress()) {
+    return false;
+  }
+  if (!url.SchemeIsHTTPOrHTTPS()) {
+    return false;
+  }
+  if (url.has_username() || url.has_password()) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace companion

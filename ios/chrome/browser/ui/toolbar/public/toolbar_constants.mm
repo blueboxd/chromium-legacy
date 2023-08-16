@@ -15,7 +15,7 @@ const CGFloat kIncognitoToolbarBackgroundColor = 0x505050;
 const CGFloat kNTPBackgroundColorBrightnessIncognito = 34.0 / 255.0;
 
 const CGFloat kTopButtonsBottomMargin = 3.0f;
-const CGFloat kBottomButtonsBottomMargin = 0.0f;
+const CGFloat kBottomButtonsTopMargin = 0.0f;
 const CGFloat kAdaptiveToolbarMargin = 10.0f;
 const CGFloat kAdaptiveToolbarStackViewSpacing = 11.0f;
 
@@ -40,10 +40,13 @@ const CGFloat kDimmedToolbarSpotlightAlpha = 0.14;
 const CGFloat kExpandedLocationBarHorizontalMargin = 10;
 const CGFloat kContractedLocationBarHorizontalMargin = 15;
 
-const CGFloat kAdaptiveLocationBarBackgroundAlpha = 0.09;
-const CGFloat kAdaptiveLocationBarBackgroundAlphaIncognito = 0.12;
 const CGFloat kAdaptiveLocationBarVerticalMargin = 10.0f;
 const CGFloat kAdaptiveLocationBarVerticalMarginFullscreen = 3.0f;
+
+const CGFloat kBottomAdaptiveLocationBarTopMargin = 8.0;
+const CGFloat kBottomAdaptiveLocationBarBottomMargin = 6.0;
+const CGFloat kBottomAdaptiveLocationBarVerticalMarginFullscreen = 10.0f;
+
 const CGFloat kLocationBarVerticalMarginDynamicType = -1.0f;
 
 const CGFloat kTopToolbarUnsplitMargin = 6;

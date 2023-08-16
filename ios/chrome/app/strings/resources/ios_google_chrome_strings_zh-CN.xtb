@@ -6,11 +6,13 @@
 <translation id="1352919863522755794">Google 密码管理工具无法检查您的密码。请尝试检查您的互联网连接。</translation>
 <translation id="1462727070346936664">登录即可充分利用 Chrome。</translation>
 <translation id="1479202195792305274">您需要先登录 Google 帐号才能使用 Chrome 的密码检查功能。</translation>
+<translation id="1491435845014430217">开启“在您关闭 Chrome 时锁定无痕式标签页”。</translation>
 <translation id="1493827051843127077">将 Chrome 设为默认同步您所有设备上的标签页、密码和付款信息</translation>
 <translation id="1504372625950710826">Chrome 无法检查是否有更新。请尝试检查您的互联网连接。</translation>
 <translation id="1511320244449497906">您已登录，且正在将您的数据同步到由 <ph name="DOMAIN" /> 管理的帐号。此网域的管理员现在可以专门针对该帐号设置用户规范，这可能会改变 Chrome 的行为。</translation>
 <translation id="1554731936187952550">Chrome 正在为您提供极强大的安全保护，帮助您防范有害网站</translation>
 <translation id="1682483655351012182">同步 Chrome 数据</translation>
+<translation id="1733654336159102143">在您退出 Chrome 或切换到别的应用时锁定您的无痕式标签页。</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">当您点按消息、文档和其他应用内的链接时，系统会自动使用 Chrome 打开链接。</translation>
 <translation id="1917964099031477364">系统会从该设备上的 Chrome 和其他 Google 应用中移除此帐号以及所有未保存的数据。</translation>
@@ -48,6 +50,7 @@
 <translation id="3503014945441706099">同时也为这份 Chrome 个人资料启用“增强型安全浏览”功能</translation>
 <translation id="3522659714780527202">要查看您在其他设备上用 Chrome 打开的标签页，请开启同步功能</translation>
 <translation id="3533694711092285624">尚未保存任何密码。您需要先保存密码才能使用 Chrome 的密码检查功能。</translation>
+<translation id="3594076341410558780">隐藏“充分利用 Chrome”</translation>
 <translation id="3655656110921623717">这意味着 Chrome 每次都会对移动网站发出请求。</translation>
 <translation id="3720541637541300822">在您关闭 Chrome 时锁定无痕式标签页</translation>
 <translation id="3827545470516145620">此设备正在为您提供标准安全保护</translation>
@@ -66,8 +69,10 @@
 <translation id="4636900170638246267">登录此网站和 Chrome。</translation>
 <translation id="4698415050768537821">Chrome 无法检查所有密码。请明天再试，或者<ph name="BEGIN_LINK" />检查您的 Google 帐号中的密码<ph name="END_LINK" />。</translation>
 <translation id="4819268619367838612">为帮助改进该应用，Chrome 会向 Google 发送使用情况统计信息和崩溃数据。<ph name="BEGIN_LINK" />管理<ph name="END_LINK" /></translation>
+<translation id="4830799082179398588">将 Chrome 设为默认浏览器？</translation>
 <translation id="484033449593719797">在 Chrome Beta 版中不受支持</translation>
 <translation id="4840404732697892756">您需要先登录 Google 帐号，然后才能使用 Google 密码管理工具的密码检查功能。</translation>
+<translation id="4903674399067644695">此卡片会为您提供一些建议，帮助您充分利用 Chrome。</translation>
 <translation id="5030102366287574140">Chrome 有助于保护您免受数据泄露、不安全网站等问题的影响。</translation>
 <translation id="5108659628347594808">帮助改善 Chrome</translation>
 <translation id="5119391094379141756">选择“Chrome”</translation>
@@ -76,6 +81,7 @@
 <translation id="5395376160638294582">请确保您可以一直使用 Google 帐号中的 Chrome 数据</translation>
 <translation id="5460571915754665838">4. 选择“Chrome”</translation>
 <translation id="5492504007368565877">Google 密码管理工具无法检查您的密码。</translation>
+<translation id="5527026824954593399">点按“在 Chrome 上通过 Google 地图查看”。</translation>
 <translation id="5552137475244467770">Chrome 会定期检查您的密码是否已被列在网上发布的外泄密码列表内。当 Chrome 进行这项检查时，您的密码和用户名都会被加密，所以绝不会被任何人员/任何一方（包括 Google）读取。</translation>
 <translation id="5639704535586432836">打开“设置”&gt;“隐私”&gt;“相机”&gt;“Google Chrome”，然后开启相机。</translation>
 <translation id="5642200033778930880">Google Chrome 无法在分割视图模式下使用您的相机</translation>
@@ -111,10 +117,12 @@
 <translation id="7261678641327190792">Chrome 无法检查您的密码</translation>
 <translation id="7272930098487145294">若要保存图片，请点按“设置”并允许 Chrome 添加照片</translation>
 <translation id="7275945473750112644">您的帐号是由 <ph name="HOSTED_DOMAIN" /> 管理，所以您在此设备上存储的 Chrome 数据将会被清除</translation>
+<translation id="7394108421562933108">Chrome 中的地图</translation>
 <translation id="7400722733683201933">关于Google Chrome</translation>
 <translation id="7501046334262221972">若要将 Chrome 设为默认浏览器，请打开“设置”，点按“默认浏览器应用”，然后选择“Chrome”。</translation>
 <translation id="756809126120519699">已清除 Chrome 数据</translation>
 <translation id="7662994914830945754">要查看您在其他设备上用 Chrome 打开的标签页，请登录帐号并开启同步功能</translation>
+<translation id="7669869107155339016">前往 Chrome 设置。</translation>
 <translation id="7693590760643069321">现在，每当点按消息、文档和其他应用中的链接时，您都可以使用 Chrome 打开链接。</translation>
 <translation id="7698568245838009292">Chrome 想要访问相机</translation>
 <translation id="7754633291442704733">贵组织 (<ph name="DOMAIN" />) 将能够访问您在此帐号中存储的 Chrome 数据、书签、历史记录、密码和其他设置。当您退出帐号时，系统将从这部设备上清除您的数据。不过，您的数据仍会存储在您名下受管理的 Google 帐号中，且可供贵组织访问。贵组织也可专门针对上述帐号设置用户规范，这可能会改变 Chrome 的行为。</translation>
@@ -136,7 +144,7 @@
   3. 选择“Chrome”。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8603022514504485810">Google 密码管理工具无法检查所有密码。请明天再试，或者<ph name="BEGIN_LINK" />检查您的 Google 帐号中的密码<ph name="END_LINK" />。</translation>
-<translation id="8736550665979974340">Google Chrome 可确保您始终处于保护之下</translation>
+<translation id="8736550665979974340">Google Chrome 为您保驾护航</translation>
 <translation id="8765470054473112089">当您在地址栏或搜索框中输入内容时，Chrome 会将您输入的内容发送给默认搜索引擎，以便为您提供更好的建议。在无痕模式下，此设置处于关闭状态。</translation>
 <translation id="8772179140489533211">显示意在引导用户登录 Chrome 的提示。</translation>
 <translation id="8788269841521769222">您不需要记住此密码。系统会将它保存到 <ph name="EMAIL" /> 的 Google 密码管理器中</translation>

@@ -28,6 +28,7 @@
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/field_filler.h"
+#include "components/autofill/core/browser/form_autofill_history.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/address_form_event_logger.h"
@@ -268,7 +269,7 @@ class BrowserAutofillManager : public AutofillManager,
   // SingleFieldFormFiller::SuggestionsHandler:
   void OnSuggestionsReturned(
       FieldGlobalId field_id,
-      AutoselectFirstSuggestion autoselect_first_suggestion,
+      AutofillSuggestionTriggerSource trigger_source,
       const std::vector<Suggestion>& suggestions) override;
 
   // Returns true if either Profile or CreditCard Autofill is enabled.
@@ -765,6 +766,10 @@ class BrowserAutofillManager : public AutofillManager,
 
   // Used to help fill data into fields.
   FieldFiller field_filler_;
+
+  // Container holding the history of Autofill filling operations. Used to undo
+  // some of the filling operations.
+  FormAutofillHistory form_autofill_history_;
 
   base::circular_deque<std::string> autofilled_form_signatures_;
 

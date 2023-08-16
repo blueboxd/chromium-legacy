@@ -1643,9 +1643,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "OPR3.170623.008",
+              "device_os": "OPM4.171019.021.P2",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
-              "device_type": "marlin",
+              "device_type": "walleye",
               "os": "Android"
             }
           ],
@@ -1693,9 +1694,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "OPR3.170623.008",
+              "device_os": "OPM4.171019.021.P2",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
-              "device_type": "marlin",
+              "device_type": "walleye",
               "os": "Android"
             }
           ],
@@ -1741,9 +1743,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "OPR3.170623.008",
+              "device_os": "OPM4.171019.021.P2",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
-              "device_type": "marlin",
+              "device_type": "walleye",
               "os": "Android"
             }
           ],
@@ -1796,9 +1799,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "OPR3.170623.008",
+              "device_os": "OPM4.171019.021.P2",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
-              "device_type": "marlin",
+              "device_type": "walleye",
               "os": "Android"
             }
           ],
@@ -1847,9 +1851,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "OPR3.170623.008",
+              "device_os": "OPM4.171019.021.P2",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
-              "device_type": "marlin",
+              "device_type": "walleye",
               "os": "Android"
             }
           ],
@@ -1896,9 +1901,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "OPR3.170623.008",
+              "device_os": "OPM4.171019.021.P2",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
-              "device_type": "marlin",
+              "device_type": "walleye",
               "os": "Android"
             }
           ],
@@ -1939,9 +1945,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "OPR3.170623.008",
+              "device_os": "OPM4.171019.021.P2",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
-              "device_type": "marlin",
+              "device_type": "walleye",
               "os": "Android"
             }
           ],
@@ -1982,9 +1989,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "OPR3.170623.008",
+              "device_os": "OPM4.171019.021.P2",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
-              "device_type": "marlin",
+              "device_type": "walleye",
               "os": "Android"
             }
           ],
@@ -2025,9 +2033,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "OPR3.170623.008",
+              "device_os": "OPM4.171019.021.P2",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
-              "device_type": "marlin",
+              "device_type": "walleye",
               "os": "Android"
             }
           ],
@@ -2068,9 +2077,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "OPR3.170623.008",
+              "device_os": "OPM4.171019.021.P2",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
-              "device_type": "marlin",
+              "device_type": "walleye",
               "os": "Android"
             }
           ],
@@ -2112,9 +2122,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "OPR3.170623.008",
+              "device_os": "OPM4.171019.021.P2",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
-              "device_type": "marlin",
+              "device_type": "walleye",
               "os": "Android"
             }
           ],
@@ -10777,7 +10788,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "webview_trichrome_64_cts_tests",
         "test_id_prefix": "ninja://android_webview/test:webview_trichrome_64_cts_tests/",
@@ -11206,6 +11217,69 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
+        },
+        "test": "android_browsertests",
+        "test_id_prefix": "ninja://chrome/test:android_browsertests/"
+      },
+      {
+        "args": [
+          "--disable-field-trial-config",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android32_foldable.textpb"
+        ],
+        "ci_only": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "android_browsertests_no_fieldtrial"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "name": "android_browsertests_no_fieldtrial",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "8",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-22.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android32_foldable",
+              "path": ".android_emulator/generic_android32_foldable"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android32_foldable"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 3
         },
         "test": "android_browsertests",
         "test_id_prefix": "ninja://chrome/test:android_browsertests/"
@@ -29661,8 +29735,7 @@
           "--use-persistent-shell",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android24.textpb",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter"
+          "--avd-config=../../tools/android/avd/proto/generic_android24.textpb"
         ],
         "isolate_profile_data": true,
         "merge": {
@@ -35987,8 +36060,7 @@
         "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.sandbox_linux_unittests.filter"
+          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
         ],
         "merge": {
           "args": [

@@ -287,6 +287,10 @@
 #include "components/user_notes/user_notes_prefs.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chrome/browser/promos/promos_utils.h"
+#endif  // !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/apps/intent_helper/supported_links_infobar_prefs_service.h"
 #include "chrome/browser/chromeos/extensions/echo_private/echo_private_api.h"
@@ -891,6 +895,11 @@ const char kShouldShowSidePanelBookmarkTab[] =
     "should_show_side_panel_bookmark_tab";
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+// Deprecated 07/2023
+#if !BUILDFLAG(IS_ANDROID)
+const char kLegacyHoverCardImagesEnabled[] = "browser.hovercard_images_enabled";
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(ENABLE_FEED_V2)
 const char kVideoPreviewsType[] = "ntp_snippets.video_previews_type";
 #endif  // BUILDFLAG(ENABLE_FEED_V2)
@@ -1020,6 +1029,11 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kSupervisedUserNeedPasswordUpdate);
   registry->RegisterDictionaryPref(kSupervisedUserIncompleteKey);
 #endif
+
+// Deprecated 07/2023
+#if !BUILDFLAG(IS_ANDROID)
+  registry->RegisterBooleanPref(kLegacyHoverCardImagesEnabled, false);
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -1283,7 +1297,6 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterIntegerPref(kVideoPreviewsType, 1);
 #endif  // BUILDFLAG(ENABLE_FEED_V2)
 }
-
 }  // namespace
 
 void RegisterLocalState(PrefRegistrySimple* registry) {
@@ -1615,6 +1628,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   translate::TranslatePrefs::RegisterProfilePrefs(registry);
   omnibox::RegisterProfilePrefs(registry);
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
+
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  promos_utils::RegisterProfilePrefs(registry);
+#endif  // !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   RegisterSessionServiceLogProfilePrefs(registry);
@@ -2076,6 +2093,11 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
 
   local_state->ClearPref(kSupervisedUserNeedPasswordUpdate);
   local_state->ClearPref(kSupervisedUserIncompleteKey);
+#endif
+
+// Added 07/2023.
+#if !BUILDFLAG(IS_ANDROID)
+  local_state->ClearPref(kLegacyHoverCardImagesEnabled);
 #endif
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.

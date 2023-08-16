@@ -84,6 +84,11 @@ class MockAutofillAgent : public mojom::AutofillAgent {
   MOCK_METHOD(void, ClearSection, (), (override));
   MOCK_METHOD(void, ClearPreviewedForm, (), (override));
   MOCK_METHOD(void,
+              TriggerSuggestions,
+              (FieldRendererId field_id,
+               AutofillSuggestionTriggerSource trigger_source),
+              (override));
+  MOCK_METHOD(void,
               FillFieldWithValue,
               (FieldRendererId field, const std::u16string& value),
               (override));
@@ -98,11 +103,6 @@ class MockAutofillAgent : public mojom::AutofillAgent {
   MOCK_METHOD(void,
               AcceptDataListSuggestion,
               (FieldRendererId field, const ::std::u16string& value),
-              (override));
-  MOCK_METHOD(void,
-              FillPasswordSuggestion,
-              (const ::std::u16string& username,
-               const ::std::u16string& password),
               (override));
   MOCK_METHOD(void,
               PreviewPasswordSuggestion,

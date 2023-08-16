@@ -6,11 +6,13 @@
 <translation id="1352919863522755794">Le gestionnaire de mots de passe de Google n'a pas pu vérifier vos mots de passe. Essayez de vérifier votre connexion Internet.</translation>
 <translation id="1462727070346936664">Connectez-vous pour profiter pleinement de Chrome.</translation>
 <translation id="1479202195792305274">Chrome peut vérifier vos mots de passe lorsque vous vous connectez avec votre compte Google.</translation>
+<translation id="1491435845014430217">Activez « Verrouiller les onglets de navigation privée lorsque vous fermez Chrome ».</translation>
 <translation id="1493827051843127077">Définissez Chrome comme navigateur par défaut pour synchroniser vos onglets, vos mots de passe et vos renseignements de paiement sur tous vos appareils</translation>
 <translation id="1504372625950710826">Chrome n'a pas pu vérifier s'il y a des mises à jour. Essayez de vérifier votre connexion Internet.</translation>
 <translation id="1511320244449497906">Vous êtes connecté et vous synchronisez vos données avec un compte géré par <ph name="DOMAIN" />. Son administrateur peut désormais définir des politiques relatives aux utilisateurs propres à ce compte, lesquelles peuvent modifier le comportement de Chrome.</translation>
 <translation id="1554731936187952550">Vous disposez de la sécurité la plus robuste de Chrome contre les sites Web dangereux</translation>
 <translation id="1682483655351012182">Synchroniser vos données Chrome</translation>
+<translation id="1733654336159102143">Verrouillez la navigation privée lorsque vous quittez Chrome ou passez à une autre application.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Utilisez automatiquement Chrome lorsque vous touchez des liens dans des messages, des documents et d'autres applications</translation>
 <translation id="1917964099031477364">Ce compte et toutes les données non enregistrées seront supprimés de Chrome et des autres applications Google sur cet appareil.</translation>
@@ -48,6 +50,7 @@
 <translation id="3503014945441706099">Bénéficiez également de la navigation sécurisée améliorée pour ce profil Chrome</translation>
 <translation id="3522659714780527202">Pour voir vos onglets partout où vous utilisez Chrome, activez la synchronisation</translation>
 <translation id="3533694711092285624">Aucun mot de passe enregistré. Chrome ne peut vérifier vos mots de passe que si vous les enregistrez.</translation>
+<translation id="3594076341410558780">Masquez « Tirez le meilleur parti de Chrome »</translation>
 <translation id="3655656110921623717">Cela signifie que Chrome demandera toujours la version mobile du site.</translation>
 <translation id="3720541637541300822">Verrouiller les onglets de navigation privée lorsque vous fermez Chrome</translation>
 <translation id="3827545470516145620">Vous bénéficiez d'une protection de sécurité standard sur cet appareil</translation>
@@ -66,8 +69,10 @@
 <translation id="4636900170638246267">Connectez-vous à ce site et à Chrome.</translation>
 <translation id="4698415050768537821">Chrome n'a pas pu vérifier tous les mots de passe. Réessayez demain ou <ph name="BEGIN_LINK" />vérifiez les mots de passe dans votre compte Google<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Aux fins d'amélioration de l'application, Chrome envoie des données relatives à l'utilisation et au plantage à Google. <ph name="BEGIN_LINK" />Gérer<ph name="END_LINK" /></translation>
+<translation id="4830799082179398588">Faire de Chrome votre navigateur par défaut?</translation>
 <translation id="484033449593719797">Fonctionnalité non prise en charge par Chrome Beta</translation>
 <translation id="4840404732697892756">Le gestionnaire de mots de passe de Google peut vérifier vos mots de passe lorsque vous vous connectez avec votre compte Google.</translation>
+<translation id="4903674399067644695">Cette carte vous montre des suggestions sur la façon de tirer le meilleur parti de Chrome.</translation>
 <translation id="5030102366287574140">Chrome peut vous aider à vous protéger, entre autres, contre les violations de données et les sites Web non sécuritaires.</translation>
 <translation id="5108659628347594808">Contribuez à améliorer Chrome</translation>
 <translation id="5119391094379141756">Sélectionnez Chrome</translation>
@@ -76,6 +81,7 @@
 <translation id="5395376160638294582">S'assurer de toujours pouvoir utiliser les données Chrome dans votre compte Google</translation>
 <translation id="5460571915754665838">4. Sélectionnez Chrome</translation>
 <translation id="5492504007368565877">Le gestionnaire de mots de passe de Google ne peut pas vérifier vos mots de passe.</translation>
+<translation id="5527026824954593399">Touchez « Afficher avec Google Maps dans Chrome ».</translation>
 <translation id="5552137475244467770">Chrome vérifie régulièrement que vos mots de passe ne figurent pas dans les listes qui ont été publiées en ligne. Lors de cette opération, vos mots de passe et vos noms d'utilisateur sont chiffrés afin que personne ne puisse les consulter, y compris Google.</translation>
 <translation id="5639704535586432836">Ouvrez Paramètres &gt; Confidentialité &gt; Appareil photo &gt; Google Chrome et activez l'appareil photo.</translation>
 <translation id="5642200033778930880">Google Chrome ne peut pas utiliser votre appareil photo en mode Vue partagée</translation>
@@ -111,10 +117,12 @@
 <translation id="7261678641327190792">Chrome ne peut pas vérifier vos mots de passe</translation>
 <translation id="7272930098487145294">Pour enregistrer des images, touchez Paramètres et autorisez Chrome à les ajouter à vos photos</translation>
 <translation id="7275945473750112644">Votre compte est géré par <ph name="HOSTED_DOMAIN" />, donc vos données Chrome seront effacées de cet appareil</translation>
+<translation id="7394108421562933108">Maps dans Chrome</translation>
 <translation id="7400722733683201933">À propos de Google Chrome</translation>
 <translation id="7501046334262221972">Pour définir Chrome comme navigateur par défaut, ouvrez l'application Réglages, touchez Navigateur par défaut, puis sélectionnez Chrome.</translation>
 <translation id="756809126120519699">Données de Chrome effacées</translation>
 <translation id="7662994914830945754">Pour voir vos onglets partout où vous utilisez Chrome, connectez-vous et activez la synchronisation</translation>
+<translation id="7669869107155339016">Accédez aux paramètres de Chrome.</translation>
 <translation id="7693590760643069321">Vous pouvez maintenant utiliser Chrome chaque fois que vous touchez des liens dans des messages, des documents et des applications.</translation>
 <translation id="7698568245838009292">Chrome souhaite accéder à l'appareil photo</translation>
 <translation id="7754633291442704733">Votre organisation <ph name="DOMAIN" /> aura accès à vos données, favoris, historique, mots de passe et autres paramètres Chrome que vous stockez dans ce compte. Lorsque vous vous déconnectez, vos données sont effacées de cet appareil.  Cependant, vos données restent stockées dans votre compte Google géré et sont disponibles pour votre organisation. Votre organisation peut également définir des politiques relatives aux utilisateurs propres à ce compte, lesquelles peuvent modifier le comportement de Chrome.</translation>

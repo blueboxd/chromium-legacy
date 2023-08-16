@@ -296,7 +296,7 @@ void PasswordAccessoryControllerImpl::CreateForWebContents(
             web_contents, credential_cache, nullptr,
             ChromePasswordManagerClient::FromWebContents(web_contents),
             base::BindRepeating(GetPasswordManagerDriver),
-            base::BindRepeating(&password_manager::ShowWarning))));
+            base::BindRepeating(&local_password_migration::ShowWarning))));
   }
 }
 
@@ -630,7 +630,9 @@ void PasswordAccessoryControllerImpl::FillSelection(
               kUnifiedPasswordManagerLocalPasswordsMigrationWarning)) {
     show_migration_warning_callback_.Run(
         GetWebContents().GetTopLevelNativeWindow(),
-        Profile::FromBrowserContext(GetWebContents().GetBrowserContext()));
+        Profile::FromBrowserContext(GetWebContents().GetBrowserContext()),
+        password_manager::metrics_util::PasswordMigrationWarningTriggers::
+            kKeyboardAcessorySheet);
   }
 }
 

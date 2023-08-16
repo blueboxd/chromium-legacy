@@ -25,6 +25,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/media/clear_key_cdm_test_helper.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -32,6 +33,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
@@ -150,6 +152,13 @@ class BrowsingDataRemoverBrowserTest
   void SetUpOnMainThread() override {
     BrowsingDataRemoverBrowserTestBase::SetUpOnMainThread();
     host_resolver()->AddRule(kExampleHost, "127.0.0.1");
+
+    // Explicitly disable session restore. Otherwise tests that restart the
+    // browser can get tab data persisted across sessions when we thought we
+    // deleted it.
+    SessionStartupPref::SetStartupPref(
+        GetProfile()->GetPrefs(),
+        SessionStartupPref(SessionStartupPref::DEFAULT));
   }
   void RemoveAndWait(uint64_t remove_mask) {
     RemoveAndWait(remove_mask, TimeEnum::kDefault, TimeEnum::kMax);
@@ -1488,6 +1497,10 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 
 // Restart after creating the data to ensure that everything was written to
 // disk.
+//
+// This depends on session restore being explicitly disabled by the test harness
+// above. Otherwise, we'll restore the tabs, delete the data on disk, and the
+// still-open tabs can get re-persisted.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        PRE_StorageRemovedFromDisk) {
   EXPECT_EQ(1, GetSiteDataCount());

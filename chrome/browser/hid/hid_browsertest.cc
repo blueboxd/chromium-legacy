@@ -12,6 +12,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/device_notifications/device_pinned_notification_renderer.h"
+#include "chrome/browser/device_notifications/device_status_icon_renderer.h"
 #include "chrome/browser/hid/chrome_hid_delegate.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
@@ -195,8 +197,16 @@ class WebHidExtensionBrowserTest : public extensions::ExtensionBrowserTest {
   void SimulateClickOnSystemTrayIconButton(Browser* browser,
                                            const Extension* extension) {
 #if BUILDFLAG(IS_CHROMEOS)
+    auto* hid_pinned_notification = static_cast<HidPinnedNotification*>(
+        g_browser_process->hid_system_tray_icon());
+
+    auto* device_pinned_notification_renderer =
+        static_cast<DevicePinnedNotificationRenderer*>(
+            hid_pinned_notification->GetIconRendererForTesting());
+
     auto expected_pinned_notification_id =
-        HidPinnedNotification::GetNotificationId(browser->profile());
+        device_pinned_notification_renderer->GetNotificationId(
+            browser->profile());
     auto maybe_indicator_notification =
         display_service_for_system_notification_->GetNotification(
             expected_pinned_notification_id);
@@ -214,15 +224,21 @@ class WebHidExtensionBrowserTest : public extensions::ExtensionBrowserTest {
     auto* hid_status_icon =
         static_cast<HidStatusIcon*>(g_browser_process->hid_system_tray_icon());
 
-    hid_status_icon->ExecuteCommand(IDC_DEVICE_SYSTEM_TRAY_ICON_FIRST, 0);
+    auto* status_icon_renderer = static_cast<DeviceStatusIconRenderer*>(
+        hid_status_icon->GetIconRendererForTesting());
+
+    status_icon_renderer->ExecuteCommandForTesting(
+        IDC_DEVICE_SYSTEM_TRAY_ICON_FIRST, 0);
     EXPECT_EQ(browser->tab_strip_model()->GetActiveWebContents()->GetURL(),
               "https://support.google.com/chrome?p=webhid");
 
-    hid_status_icon->ExecuteCommand(IDC_DEVICE_SYSTEM_TRAY_ICON_FIRST + 1, 0);
+    status_icon_renderer->ExecuteCommandForTesting(
+        IDC_DEVICE_SYSTEM_TRAY_ICON_FIRST + 1, 0);
     EXPECT_EQ(browser->tab_strip_model()->GetActiveWebContents()->GetURL(),
               "chrome://settings/content/hidDevices");
 
-    hid_status_icon->ExecuteCommand(IDC_DEVICE_SYSTEM_TRAY_ICON_FIRST + 2, 0);
+    status_icon_renderer->ExecuteCommandForTesting(
+        IDC_DEVICE_SYSTEM_TRAY_ICON_FIRST + 2, 0);
     EXPECT_EQ(
         browser->tab_strip_model()->GetActiveWebContents()->GetURL(),
         "chrome://settings/content/siteDetails?site=chrome-extension%3A%2F%2F" +
@@ -244,6 +260,16 @@ class WebHidExtensionBrowserTest : public extensions::ExtensionBrowserTest {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
+// Test fixture with kEnableWebHidOnExtensionServiceWorker enabled.
+class WebHidExtensionFeatureEnabledBrowserTest
+    : public WebHidExtensionBrowserTest {
+ public:
+  WebHidExtensionFeatureEnabledBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kEnableWebHidOnExtensionServiceWorker}, {});
+  }
+};
+
 // Test fixture with kEnableWebHidOnExtensionServiceWorker disabled.
 class WebHidExtensionFeatureDisabledBrowserTest
     : public WebHidExtensionBrowserTest {
@@ -253,6 +279,24 @@ class WebHidExtensionFeatureDisabledBrowserTest
         {}, {features::kEnableWebHidOnExtensionServiceWorker});
   }
 };
+
+IN_PROC_BROWSER_TEST_F(WebHidExtensionBrowserTest, FeatureDefaultDisabled) {
+  extensions::TestExtensionDir test_dir;
+
+  constexpr char kBackgroundJs[] = R"(
+    chrome.test.sendMessage("ready", async () => {
+      try {
+        chrome.test.assertEq(navigator.hid, undefined);
+        chrome.test.notifyPass();
+
+      } catch (e) {
+        chrome.test.fail(e.name + ':' + e.message);
+      }
+    });
+  )";
+
+  LoadExtensionAndRunTest(kBackgroundJs);
+}
 
 IN_PROC_BROWSER_TEST_F(WebHidExtensionFeatureDisabledBrowserTest,
                        FeatureDisabled) {
@@ -273,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(WebHidExtensionFeatureDisabledBrowserTest,
   LoadExtensionAndRunTest(kBackgroundJs);
 }
 
-IN_PROC_BROWSER_TEST_F(WebHidExtensionBrowserTest, GetDevices) {
+IN_PROC_BROWSER_TEST_F(WebHidExtensionFeatureEnabledBrowserTest, GetDevices) {
   extensions::TestExtensionDir test_dir;
 
   auto device = CreateTestDeviceWithInputAndOutputReports();
@@ -294,7 +338,8 @@ IN_PROC_BROWSER_TEST_F(WebHidExtensionBrowserTest, GetDevices) {
   LoadExtensionAndRunTest(kBackgroundJs);
 }
 
-IN_PROC_BROWSER_TEST_F(WebHidExtensionBrowserTest, RequestDevice) {
+IN_PROC_BROWSER_TEST_F(WebHidExtensionFeatureEnabledBrowserTest,
+                       RequestDevice) {
   extensions::TestExtensionDir test_dir;
 
   constexpr char kBackgroundJs[] = R"(
@@ -311,7 +356,8 @@ IN_PROC_BROWSER_TEST_F(WebHidExtensionBrowserTest, RequestDevice) {
   LoadExtensionAndRunTest(kBackgroundJs);
 }
 
-IN_PROC_BROWSER_TEST_F(WebHidExtensionBrowserTest, HidConnectionTracker) {
+IN_PROC_BROWSER_TEST_F(WebHidExtensionFeatureEnabledBrowserTest,
+                       HidConnectionTracker) {
   auto device = CreateTestDeviceWithInputAndOutputReports();
   hid_manager()->AddDevice(std::move(device));
 

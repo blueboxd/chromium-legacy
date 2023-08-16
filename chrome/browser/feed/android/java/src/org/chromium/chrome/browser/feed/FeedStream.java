@@ -484,7 +484,8 @@ public class FeedStream implements Stream {
             mSnackManager.showSnackbar(Snackbar.make(text, controller, Snackbar.TYPE_ACTION,
                                                        Snackbar.UMA_FEED_NTP_STREAM)
                                                .setAction(actionLabel, /*actionData=*/null)
-                                               .setDuration(durationMs));
+                                               .setDuration(durationMs)
+                                               .setSingleLine(false));
         }
 
         @Override
@@ -561,6 +562,13 @@ public class FeedStream implements Stream {
                 FeedStreamJni.get().invalidateContentCacheFor(
                         mNativeFeedStream, FeedStream.this, feedKindToInvalidate);
             }
+        }
+
+        @Override
+        public void triggerManualRefresh() {
+            FeedStreamJni.get().reportOtherUserAction(mNativeFeedStream, FeedStream.this,
+                    FeedUserActionType.NON_SWIPE_MANUAL_REFRESH);
+            mStreamsMediator.refreshStream();
         }
     }
 
@@ -880,7 +888,7 @@ public class FeedStream implements Stream {
         dismissSnackbars();
         mInProgressWorkTracker.postTaskAfterWorkComplete(() -> {
             if (mRenderer != null) {
-                mRenderer.onPullToRefreshStarted();
+                mRenderer.onManualRefreshStarted();
             }
             FeedStreamJni.get().manualRefresh(mNativeFeedStream, FeedStream.this, callback);
         });

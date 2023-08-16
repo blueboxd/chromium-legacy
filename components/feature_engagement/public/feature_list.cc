@@ -113,7 +113,6 @@ const base::Feature* const kAllFeatures[] = {
 #if BUILDFLAG(IS_IOS)
     &kIPHBottomToolbarTipFeature,
     &kIPHLongPressToolbarTipFeature,
-    &kIPHNewTabTipFeature,
     &kIPHNewIncognitoTabTipFeature,
     &kIPHBadgedReadingListFeature,
     &kIPHWhatsNewFeature,
@@ -137,6 +136,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHiOSHistoryOnOverflowMenuFeature,
     &kIPHiOSShareToolbarItemFeature,
     &kIPHiOSDefaultBrowserVideoPromoTriggerFeature,
+    &kIPHiOSPromoPostRestoreDefaultBrowserFeature,
 #endif  // BUILDFLAG(IS_IOS)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
@@ -160,6 +160,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHPasswordManagerShortcutFeature,
     &kIPHPerformanceNewBadgeFeature,
     &kIPHPowerBookmarksSidePanelFeature,
+    &kIPHPriceInsightsPageActionIconLabelFeature,
     &kIPHPriceTrackingChipFeature,
     &kIPHPriceTrackingPageActionIconLabelFeature,
     &kIPHReadingListDiscoveryFeature,
@@ -192,6 +193,11 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHGoogleOneOfferNotificationFeature,
     &kIPHLauncherSearchHelpUiFeature,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    &kIPHiOSPasswordPromoDesktopFeature,
+#endif  // !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 };
 }  // namespace
 

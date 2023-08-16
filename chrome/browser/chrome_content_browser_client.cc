@@ -3355,6 +3355,31 @@ bool ChromeContentBrowserClient::IsInterestGroupAPIAllowed(
   return allowed;
 }
 
+bool ChromeContentBrowserClient::IsPrivacySandboxReportingDestinationAttested(
+    content::BrowserContext* browser_context,
+    const url::Origin& destination_origin,
+    content::PrivacySandboxInvokingAPI invoking_api) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto* privacy_sandbox_settings =
+      PrivacySandboxSettingsFactory::GetForProfile(profile);
+  DCHECK(privacy_sandbox_settings);
+
+  privacy_sandbox::PrivacySandboxAttestationsGatedAPI gated_api;
+  switch (invoking_api) {
+    case content::PrivacySandboxInvokingAPI::kProtectedAudience:
+      gated_api = privacy_sandbox::PrivacySandboxAttestationsGatedAPI::
+          kProtectedAudience;
+      break;
+    case content::PrivacySandboxInvokingAPI::kSharedStorage:
+      gated_api =
+          privacy_sandbox::PrivacySandboxAttestationsGatedAPI::kSharedStorage;
+      break;
+  }
+
+  return privacy_sandbox_settings->IsEventReportingDestinationAttested(
+      destination_origin, gated_api);
+}
+
 void ChromeContentBrowserClient::OnAuctionComplete(
     content::RenderFrameHost* render_frame_host,
     content::InterestGroupManager::InterestGroupDataKey winner_data_key) {
@@ -3394,6 +3419,7 @@ bool ChromeContentBrowserClient::IsAttributionReportingOperationAllowed(
       return allowed;
     }
     case AttributionReportingOperation::kSourceVerboseDebugReport:
+    case AttributionReportingOperation::kOsSourceVerboseDebugReport:
       DCHECK(source_origin);
       DCHECK(reporting_origin);
       return privacy_sandbox_settings->IsAttributionReportingAllowed(
@@ -3413,6 +3439,7 @@ bool ChromeContentBrowserClient::IsAttributionReportingOperationAllowed(
       return allowed;
     }
     case AttributionReportingOperation::kTriggerVerboseDebugReport:
+    case AttributionReportingOperation::kOsTriggerVerboseDebugReport:
       DCHECK(destination_origin);
       DCHECK(reporting_origin);
       return privacy_sandbox_settings->IsAttributionReportingAllowed(
@@ -6654,8 +6681,8 @@ bool ChromeContentBrowserClient::HandleWebUI(
 
   if (!ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
           browser_context, *url) &&
-      !content::WebUIConfigMap::GetInstance().GetConfig(
-          browser_context, url::Origin::Create(*url))) {
+      !content::WebUIConfigMap::GetInstance().GetConfig(browser_context,
+                                                        *url)) {
     return false;
   }
 

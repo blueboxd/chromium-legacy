@@ -179,7 +179,7 @@
 <translation id="2240366984605217732">版面配置切換</translation>
 <translation id="225692081236532131">啟用狀態</translation>
 <translation id="2271469253353559191">深色模式時間表</translation>
-<translation id="2276999893457278469">頂端說明內容</translation>
+<translation id="2276999893457278469">熱門說明內容</translation>
 <translation id="2287186687001756809">沒有圖片。如要新增相片，請前往 <ph name="LINK" /></translation>
 <translation id="2307344026739914387">使用目前的金鑰組</translation>
 <translation id="2320295602967756579">啟用淺色主題</translation>
@@ -983,7 +983,7 @@
 <translation id="885704831271383379">調暗鍵盤</translation>
 <translation id="8863170912498892583">啟用深色主題</translation>
 <translation id="8863888432376731307">取得「<ph name="QUERY" />」和其他查詢內容的<ph name="INTENT" /></translation>
-<translation id="8864415976656252616">沒有任何建議內容，請查看頁面頂端的說明內容。</translation>
+<translation id="8864415976656252616">沒有任何建議內容，請查看熱門說明內容。</translation>
 <translation id="8868741746785112895">GUID</translation>
 <translation id="8876270629542503161">裝置類型為平板電腦。</translation>
 <translation id="8881098542468797602">已通過測試</translation>

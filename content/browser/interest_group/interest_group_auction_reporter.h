@@ -43,8 +43,8 @@ struct AuctionConfig;
 
 namespace content {
 
-class AttributionManager;
 class AuctionWorkletManager;
+class BrowserContext;
 class InterestGroupManagerImpl;
 class PrivateAggregationManager;
 
@@ -178,8 +178,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // All passed in raw pointers, including those in *BidInfo fields must outlive
   // the created InterestGroupAuctionReporter.
   //
-  // `attribution_manager` is needed to create `FencedFrameReporter`
-  // and could be null in Incognito mode or in test.
+  // `browser_context` is needed to create `FencedFrameReporter`.
   //
   // `log_private_aggregation_requests_callback` will be passed all private
   //  aggregation requests for logging purposes.
@@ -207,7 +206,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   InterestGroupAuctionReporter(
       InterestGroupManagerImpl* interest_group_manager,
       AuctionWorkletManager* auction_worklet_manager,
-      AttributionManager* attribution_manager,
+      BrowserContext* browser_context,
       PrivateAggregationManager* private_aggregation_manager,
       LogPrivateAggregationRequestsCallback
           log_private_aggregation_requests_callback,
@@ -391,6 +390,14 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // true. It should be called when either of these conditions becomes true.
   void MaybeSendPrivateAggregationReports();
 
+  // Checks that `url` is attested for reporting. On success, returns true. On
+  // failure, return false, and appends an error to `errors_`.
+  bool CheckReportUrl(const GURL& url);
+
+  // For each url in `urls`, erases that url iff CheckReportUrl(url) returns
+  // false.
+  void EnforceAttestationsReportUrls(std::vector<GURL>& urls);
+
   const raw_ptr<InterestGroupManagerImpl> interest_group_manager_;
   const raw_ptr<AuctionWorkletManager> auction_worklet_manager_;
   const raw_ptr<PrivateAggregationManager> private_aggregation_manager_;
@@ -446,6 +453,8 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   std::vector<GURL> pending_report_urls_;
 
   const scoped_refptr<FencedFrameReporter> fenced_frame_reporter_;
+
+  const raw_ptr<BrowserContext> browser_context_;
 
   bool reporting_complete_ = false;
   bool navigated_to_winning_ad_ = false;

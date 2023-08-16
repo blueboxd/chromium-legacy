@@ -1578,7 +1578,7 @@ NavigationRequest::NavigationRequest(
 
   if (GetInitiatorFrameToken().has_value()) {
     RenderFrameHostImpl* initiator_rfh = RenderFrameHostImpl::FromFrameToken(
-        GetInitiatorProcessID(), GetInitiatorFrameToken().value());
+        GetInitiatorProcessId(), GetInitiatorFrameToken().value());
     if (initiator_rfh)
       initiator_document_ = initiator_rfh->GetWeakDocumentPtr();
   }
@@ -4091,6 +4091,8 @@ void NavigationRequest::SelectFrameHostForOnResponseStarted(
     absl::optional<SubresourceLoaderParams> subresource_loader_params) {
   ScopedCrashKeys crash_keys(*this);
 
+  std::string rfh_selected_reason;
+
   // Select an appropriate renderer to commit the navigation.
   if (IsServedFromBackForwardCache()) {
     // If the current navigation is being restarted, it should not try to make
@@ -4126,7 +4128,7 @@ void NavigationRequest::SelectFrameHostForOnResponseStarted(
   } else if (response_should_be_rendered_) {
     if (auto result =
             frame_tree_node_->render_manager()->GetFrameHostForNavigation(
-                this, &browsing_context_group_swap_);
+                this, &browsing_context_group_swap_, &rfh_selected_reason);
         result.has_value()) {
       render_frame_host_ = result.value()->GetSafeRef();
     } else {
@@ -4350,6 +4352,13 @@ void NavigationRequest::SelectFrameHostForOnResponseStarted(
     // has destroyed the NavigationRequest.
     return;
   }
+
+  // TODO(https://crbug.com/1454273): Remove.
+  SCOPED_CRASH_KEY_STRING256(
+      "Bug1454273", "base_host_for_data_url",
+      common_params_->base_url_for_data_url.host_piece());
+  SCOPED_CRASH_KEY_STRING1024("Bug1454273", "rfh_selected_reason",
+                              rfh_selected_reason);
 
   if (HasRenderFrameHost() &&
       !CheckPermissionsPoliciesForFencedFrames(GetOriginToCommit().value())) {
@@ -6295,9 +6304,20 @@ NavigationRequest::CheckCSPEmbeddedEnforcement() {
   const network::mojom::AllowCSPFromHeaderValue* allow_csp_from =
       response() ? response()->parsed_headers->allow_csp_from.get() : nullptr;
 
+  const url::Origin& request_origin =
+      GetParentFrame()->GetLastCommittedOrigin();
+
   if (network::AllowsBlanketEnforcementOfRequiredCSP(
-          GetParentFrame()->GetLastCommittedOrigin(), GetURL(), allow_csp_from,
-          required_csp_)) {
+          request_origin, GetURL(), allow_csp_from, required_csp_)) {
+    if (request_origin.IsSameOriginWith(GetURL()) && response() &&
+        !network::AllowCspFromAllowOrigin(request_origin, allow_csp_from) &&
+        !network::Subsumes(
+            *required_csp_,
+            response()->parsed_headers->content_security_policy)) {
+      GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+          GetParentFrame(),
+          blink::mojom::WebFeature::kCSPEESameOriginBlanketEnforcement);
+    }
     // Enforce the required CSPs on the frame by passing them down to blink.
     policy_container_builder_->AddContentSecurityPolicy(required_csp_->Clone());
     return CSPEmbeddedEnforcementResult::ALLOW_RESPONSE;
@@ -7295,6 +7315,41 @@ NavigationRequest::GetOriginForURLLoaderFactoryAfterResponse() {
   return GetOriginForURLLoaderFactoryAfterResponseWithDebugInfo().first;
 }
 
+// TODO(https://crbug.com/1454273): Remove.
+// Determine the relationship between the initiator and the current frame.
+// `same`: they are the same frame.
+// `ancestor`: the initiator is the ancestor of the navigating frame.
+// `descendant`: the initiator is the descendant of the navigating frame.
+// `other`: any other scenarios.
+std::string DetermineInitiatorRelationship(RenderFrameHost* initiator_frame,
+                                           RenderFrameHost* current_frame) {
+  if (!current_frame || !initiator_frame) {
+    return "other";
+  }
+
+  if (current_frame == initiator_frame) {
+    return "same";
+  }
+
+  RenderFrameHost* rfh = current_frame;
+  while (rfh) {
+    rfh = rfh->GetParent();
+    if (rfh == initiator_frame) {
+      return "ancestor";
+    }
+  }
+
+  rfh = initiator_frame;
+  while (rfh) {
+    rfh = rfh->GetParent();
+    if (rfh == current_frame) {
+      return "descendant";
+    }
+  }
+
+  return "other";
+}
+
 std::pair<absl::optional<url::Origin>, std::string>
 NavigationRequest::GetOriginForURLLoaderFactoryAfterResponseWithDebugInfo() {
   // The origin to commit is not known until we get the final network response.
@@ -7313,6 +7368,45 @@ NavigationRequest::GetOriginForURLLoaderFactoryAfterResponseWithDebugInfo() {
   std::pair<url::Origin, std::string> origin_with_debug_info =
       GetOriginForURLLoaderFactoryBeforeResponseWithDebugInfo(
           SandboxFlagsToCommit());
+
+  // Add the crash keys for debugging navigation crashes with data URL.
+  // TODO(https://crbug.com/1454273): Remove.
+  SCOPED_CRASH_KEY_STRING32("Bug1454273", "calculated_origin",
+                            origin_with_debug_info.first.Serialize());
+  SCOPED_CRASH_KEY_STRING32("Bug1454273", "origin_debug_info",
+                            origin_with_debug_info.second);
+
+  SCOPED_CRASH_KEY_BOOL("Bug1454273", "is_in_main_frame", IsInMainFrame());
+  SCOPED_CRASH_KEY_STRING256("Bug1454273", "current_origin",
+                             frame_tree_node_->current_origin().Serialize());
+  RenderFrameHostImpl* parent = frame_tree_node_->parent();
+  SCOPED_CRASH_KEY_STRING256(
+      "Bug1454273", "parent_origin",
+      parent ? parent->GetLastCommittedOrigin().Serialize() : "");
+  // `outer_doc` is only set when `parent` is null.
+  RenderFrameHostImpl* outer_doc =
+      parent ? nullptr : GetParentFrameOrOuterDocument();
+  SCOPED_CRASH_KEY_STRING256(
+      "Bug1454273", "outer_doc_origin",
+      outer_doc ? outer_doc->GetLastCommittedOrigin().Serialize() : "");
+  // `embedder` is only set when both `parent` and `outer_doc` are null.
+  RenderFrameHostImpl* embedder =
+      (parent || outer_doc)
+          ? nullptr
+          : frame_tree_node()->GetParentOrOuterDocumentOrEmbedder();
+  SCOPED_CRASH_KEY_STRING256(
+      "Bug1454273", "embedder_origin",
+      embedder ? embedder->GetLastCommittedOrigin().Serialize() : "");
+
+  RenderFrameHost* initiator_rfh =
+      initiator_document_.AsRenderFrameHostIfValid();
+  SCOPED_CRASH_KEY_STRING256(
+      "Bug1454273", "initiator_origin",
+      initiator_rfh ? initiator_rfh->GetLastCommittedOrigin().Serialize() : "");
+  SCOPED_CRASH_KEY_STRING32(
+      "Bug1454273", "initiator_relationship",
+      DetermineInitiatorRelationship(initiator_rfh,
+                                     frame_tree_node_->current_frame_host()));
 
   // MHTML documents should commit as an opaque origin. They should not be able
   // to make network request on behalf of the real origin.
@@ -7916,7 +8010,7 @@ NavigationRequest::GetInitiatorFrameToken() {
   return initiator_frame_token_;
 }
 
-int NavigationRequest::GetInitiatorProcessID() {
+int NavigationRequest::GetInitiatorProcessId() {
   return initiator_process_id_;
 }
 
@@ -8581,6 +8675,15 @@ void NavigationRequest::ComputePoliciesToCommit() {
 
   policy_container_builder_->SetCrossOriginEmbedderPolicy(
       ComputeCrossOriginEmbedderPolicy());
+
+  // COOP origins always match after a main frame navigation, so we only need
+  // to check sub frames. The main frame could be about:blank so we still might
+  // inherit `true`.
+  policy_container_builder_->SetAllowCrossOriginIsolation(
+      IsInMainFrame() || GetParentFrame()
+                             ->policy_container_host()
+                             ->policies()
+                             .allow_cross_origin_isolation);
 
   DCHECK(commit_params_);
   DCHECK(!HasCommitted());

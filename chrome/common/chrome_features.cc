@@ -113,10 +113,6 @@ BASE_FEATURE(kChangePictureVideoMode,
              "ChangePictureVideoMode",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kClientStorageAccessContextAuditing,
-             "ClientStorageAccessContextAuditing",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables "usm" service in the list of user services returned by
 // userInfo Gaia message.
@@ -399,7 +395,7 @@ BASE_FEATURE(kEnableRestrictedWebApis,
 // Enable WebHID on extension service workers.
 BASE_FEATURE(kEnableWebHidOnExtensionServiceWorker,
              "EnableWebHidOnExtensionServiceWorker",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Enable WebUSB on extension service workers.
@@ -960,6 +956,12 @@ BASE_FEATURE(kPrerenderFallbackToPreconnect,
 BASE_FEATURE(kPrivacyGuideAndroid,
              "PrivacyGuideAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kPrivacyGuideAndroidPostMVP,
+             "PrivacyGuideAndroidPostMVP",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // Enables or disables push subscriptions keeping Chrome running in the
 // background when closed.

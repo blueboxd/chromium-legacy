@@ -66,6 +66,10 @@ constexpr base::TimeDelta kRecordDownloadStatusTimeout = base::Seconds(30);
 constexpr char kModelTypeReachedUpToDateHistogramPrefix[] =
     "Sync.ModelTypeUpToDateTime";
 
+BASE_FEATURE(kReportPendingDownloadDuringFirstSync,
+             "ReportPendingDownloadDuringFirstSync",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // The initial state of sync, for the Sync.InitialState2 histogram. Even if
 // this value is CAN_START, sync startup might fail for reasons that we may
 // want to consider logging in the future, such as a passphrase needed for
@@ -283,6 +287,11 @@ void SyncServiceImpl::Initialize() {
       sync_client_->GetSyncInvalidationsService()->StartListening();
     }
   }
+
+  // *After* setting up `auth_manager_`, run a prefs migration that depends on
+  // the account state.
+  sync_prefs_.MaybeMigratePrefsForReplacingSyncWithSignin(
+      GetSyncAccountStateForPrefs());
 
   if (!IsLocalSyncEnabled()) {
     const bool account_info_fully_loaded =
@@ -1413,6 +1422,16 @@ ModelTypeSet SyncServiceImpl::GetTypesWithPendingDownloadForInitialSync()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (base::FeatureList::IsEnabled(kReportPendingDownloadDuringFirstSync) &&
+      GetTransportState() == TransportState::INITIALIZING &&
+      engine_->GetBirthday().empty()) {
+    CHECK(!data_type_manager_);
+    // The engine is initializing for the very first sync (usually after
+    // sign-in). In this case all types are reported as pending download,
+    // optimistically assuming datatype preconditions will be met.
+    return GetPreferredDataTypes();
+  }
+
   if (!data_type_manager_) {
     return ModelTypeSet();
   }
@@ -1584,11 +1603,6 @@ void SyncServiceImpl::UpdateDataTypesForInvalidations() {
   // traffic.
   types.Remove(HISTORY);
 #endif
-  if (!(base::FeatureList::IsEnabled(kUseSyncInvalidations) &&
-        base::FeatureList::IsEnabled(kUseSyncInvalidationsForWalletAndOffer))) {
-    types.RemoveAll({AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_OFFER});
-  }
-
   types.RemoveAll(data_type_manager_->GetActiveProxyDataTypes());
 
   sync_client_->GetSyncInvalidationsService()->SetInterestedDataTypes(types);

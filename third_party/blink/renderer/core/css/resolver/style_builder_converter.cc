@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
+#include "third_party/blink/renderer/core/css/css_palette_mix_value.h"
 #include "third_party/blink/renderer/core/css/css_path_value.h"
 #include "third_party/blink/renderer/core/css/css_pending_system_font_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -79,10 +80,12 @@
 #include "third_party/blink/renderer/core/style/shape_offset_path_operation.h"
 #include "third_party/blink/renderer/core/style/style_overflow_clip_margin.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
+#include "third_party/blink/renderer/platform/fonts/font_palette.h"
 #include "third_party/blink/renderer/platform/fonts/opentype/open_type_math_support.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -495,6 +498,42 @@ scoped_refptr<FontPalette> StyleBuilderConverter::ConvertFontPalette(
   return StyleBuilderConverterBase::ConvertFontPalette(value);
 }
 
+scoped_refptr<FontPalette> StyleBuilderConverterBase::ConvertPaletteMix(
+    const CSSValue& value) {
+  DCHECK(RuntimeEnabledFeatures::FontPaletteAnimationEnabled());
+
+  auto* palette_mix_value = DynamicTo<cssvalue::CSSPaletteMixValue>(value);
+  if (palette_mix_value) {
+    scoped_refptr<FontPalette> palette1 =
+        ConvertFontPalette(palette_mix_value->Palette1());
+    if (palette1 == nullptr) {
+      // Use normal palette.
+      palette1 = FontPalette::Create();
+    }
+    scoped_refptr<FontPalette> palette2 =
+        ConvertFontPalette(palette_mix_value->Palette2());
+    if (palette2 == nullptr) {
+      palette2 = FontPalette::Create();
+    }
+
+    Color::ColorSpace color_space =
+        palette_mix_value->ColorInterpolationSpace();
+    Color::HueInterpolationMethod hue_interpolation_method =
+        palette_mix_value->HueInterpolationMethod();
+
+    double alpha_multiplier;
+    double normalized_percentage;
+    if (cssvalue::CSSColorMixValue::NormalizePercentages(
+            palette_mix_value->Percentage1(), palette_mix_value->Percentage2(),
+            normalized_percentage, alpha_multiplier)) {
+      return FontPalette::Mix(palette1, palette2, normalized_percentage,
+                              alpha_multiplier, color_space,
+                              hue_interpolation_method);
+    }
+  }
+  return nullptr;
+}
+
 scoped_refptr<FontPalette> StyleBuilderConverterBase::ConvertFontPalette(
     const CSSValue& value) {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
@@ -517,7 +556,11 @@ scoped_refptr<FontPalette> StyleBuilderConverterBase::ConvertFontPalette(
     return FontPalette::Create(custom_identifier->Value());
   }
 
-  return nullptr;
+  if (RuntimeEnabledFeatures::FontPaletteAnimationEnabled()) {
+    return ConvertPaletteMix(value);
+  } else {
+    return nullptr;
+  }
 }
 
 float MathScriptScaleFactor(StyleResolverState& state) {
@@ -1547,8 +1590,9 @@ uint16_t StyleBuilderConverter::ConvertColumnRuleWidth(
   return StyleBuilderConverter::ConvertLineWidth<uint16_t>(state, value);
 }
 
-LayoutUnit StyleBuilderConverter::ConvertLayoutUnit(StyleResolverState& state,
-                                                    const CSSValue& value) {
+LayoutUnit StyleBuilderConverter::ConvertLayoutUnit(
+    const StyleResolverState& state,
+    const CSSValue& value) {
   return LayoutUnit::Clamp(ConvertComputedLength<float>(state, value));
 }
 
@@ -2832,37 +2876,52 @@ ScopedCSSNameList* StyleBuilderConverter::ConvertContainerName(
   return MakeGarbageCollected<ScopedCSSNameList>(std::move(names));
 }
 
-absl::optional<StyleIntrinsicLength>
-StyleBuilderConverter::ConvertIntrinsicDimension(
+StyleIntrinsicLength StyleBuilderConverter::ConvertIntrinsicDimension(
     const StyleResolverState& state,
     const CSSValue& value) {
-  // If we have a single identifier, it is "none" in either syntax.
+  // The valid grammar for this value is the following:
+  // none | <length> | auto && <length> | auto && none.
+
+  // Handle "none", which is the only case where we get an identifier.
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value) {
     DCHECK(identifier_value->GetValueID() == CSSValueID::kNone);
-    return absl::nullopt;
+    return StyleIntrinsicLength(/*has_auto=*/false, absl::nullopt);
   }
 
-  bool has_auto = false;
-  auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
-  if (!primitive_value) {
-    // Must be new syntax
-    const CSSValueList& list = To<CSSValueList>(value);
+  // Handle "<length> | auto && <length> | auto && none, which will all come
+  // from a list.
+  const CSSValueList* list = DynamicTo<CSSValueList>(value);
+  DCHECK(list);
+  DCHECK_GT(list->length(), 0u);
 
-    identifier_value = DynamicTo<CSSIdentifierValue>(list.Item(0));
-    DCHECK(!identifier_value ||
-           identifier_value->GetValueID() == CSSValueID::kAuto);
-    DCHECK(!identifier_value || list.length() == 2u);
-    has_auto = identifier_value != nullptr;
-    primitive_value = DynamicTo<CSSPrimitiveValue>(list.Item(0));
-    if (!primitive_value) {
-      DCHECK_EQ(list.length(), 2u);
-      primitive_value = DynamicTo<CSSPrimitiveValue>(list.Item(1));
-    }
+  // Handle "<length>".
+  if (auto* primitive_value = DynamicTo<CSSPrimitiveValue>(list->Item(0))) {
+    DCHECK_EQ(list->length(), 1u);
+    return StyleIntrinsicLength(
+        /*has_auto=*/false,
+        ConvertLayoutUnit(state, *primitive_value).ToDouble());
   }
-  DCHECK(primitive_value);
 
-  return StyleIntrinsicLength(has_auto, ConvertLength(state, *primitive_value));
+  // The rest of the syntax will have "auto" as the first keyword.
+  DCHECK_EQ(list->length(), 2u);
+  DCHECK(IsA<CSSIdentifierValue>(list->Item(0)));
+  DCHECK(To<CSSIdentifierValue>(list->Item(0)).GetValueID() ==
+         CSSValueID::kAuto);
+
+  // Handle "auto && <length>"
+  if (auto* primitive_value = DynamicTo<CSSPrimitiveValue>(list->Item(1))) {
+    return StyleIntrinsicLength(
+        /*has_auto=*/true,
+        ConvertLayoutUnit(state, *primitive_value).ToDouble());
+  }
+
+  // The only grammar left is "auto && none".
+  DCHECK(IsA<CSSIdentifierValue>(list->Item(1)));
+  DCHECK(To<CSSIdentifierValue>(list->Item(1)).GetValueID() ==
+         CSSValueID::kNone);
+
+  return StyleIntrinsicLength(/*has_auto=*/true, absl::nullopt);
 }
 
 ColorSchemeFlags StyleBuilderConverter::ExtractColorSchemes(
@@ -3159,17 +3218,6 @@ Vector<TimelineAxis> StyleBuilderConverter::ConvertViewTimelineAxis(
     axes.push_back(To<CSSIdentifierValue>(*item).ConvertTo<TimelineAxis>());
   }
   return axes;
-}
-
-Vector<TimelineAttachment> StyleBuilderConverter::ConvertViewTimelineAttachment(
-    StyleResolverState& state,
-    const CSSValue& value) {
-  Vector<TimelineAttachment> attachments;
-  for (const Member<const CSSValue>& item : To<CSSValueList>(value)) {
-    attachments.push_back(
-        To<CSSIdentifierValue>(*item).ConvertTo<TimelineAttachment>());
-  }
-  return attachments;
 }
 
 TimelineInset StyleBuilderConverter::ConvertSingleTimelineInset(

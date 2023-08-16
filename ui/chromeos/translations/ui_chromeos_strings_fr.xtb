@@ -358,6 +358,7 @@
 <translation id="3943857333388298514">Coller</translation>
 <translation id="3952872973865944257">Télougou (phonétique)</translation>
 <translation id="3958548648197196644">Kiwi</translation>
+<translation id="397105322502079400">Calcul en cours…</translation>
 <translation id="3971140002794351170">Téléchargez le profil mobile, Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Anglais (Royaume-Uni)</translation>
 <translation id="3975895378829046965">Bengali (phonétique)</translation>
@@ -875,7 +876,7 @@
 <translation id="7857117644404132472">Ajouter une exception</translation>
 <translation id="7868774406711971383">Polonais</translation>
 <translation id="7874321682039004450">Philippin</translation>
-<translation id="78946041517601018">Drive d'équipe partagés</translation>
+<translation id="78946041517601018">Drive partagés</translation>
 <translation id="7903984238293908205">Katakana</translation>
 <translation id="7908793776359722643">Le formatage d'une partition entraîne la suppression de toutes les données qui y sont stockées. Cette action est irréversible.</translation>
 <translation id="7911118814695487383">Linux</translation>

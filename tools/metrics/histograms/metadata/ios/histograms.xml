@@ -133,7 +133,8 @@ chromium-metrics-reviews@google.com.
   <owner>bling-get-set-up@google.com</owner>
   <summary>
     The result of prompting the set of tabs for an Android switcher. Recorded
-    after the set of tabs are prompted.
+    after the set of tabs are prompted. Starting M116, this metric would be
+    logged for Android switchers only.
   </summary>
 </histogram>
 
@@ -608,6 +609,31 @@ chromium-metrics-reviews@google.com.
     The action taken by the user in response to the half screen default browser
     video promo.
   </summary>
+</histogram>
+
+<histogram name="IOS.DesktopPasswordPromo.Shown"
+    enum="DesktopIOSPasswordPromoImpression" expires_after="2024-01-31">
+  <owner>nicolasmacbeth@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <summary>
+    The impression of the iOS Password Promo shown to the user on Desktop.
+    Desktop only. This is only recorded for contextual promo appearances, not
+    when the eligibility criteria is override via feature flag.
+  </summary>
+</histogram>
+
+<histogram name="IOS.DesktopPasswordPromo.{Impression}.Action"
+    enum="DesktopIOSPasswordPromoAction" expires_after="2024-01-31">
+  <owner>nicolasmacbeth@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <summary>
+    The action taken by the user when shown the iOS Password Promo on Desktop
+    for the {Impression} impression. Desktop only.
+  </summary>
+  <token key="Impression">
+    <variant name="FirstImpression" summary="first"/>
+    <variant name="SecondImpression" summary="second"/>
+  </token>
 </histogram>
 
 <histogram name="IOS.DistantTab.TimeSinceLastUse" units="ms"
@@ -1148,6 +1174,24 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.MagicStack.Module.Click" enum="IOSMagicStackModuleType"
+    expires_after="2024-07-03">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>scottyoder@chromium.org</owner>
+  <summary>
+    Records a user engagement with a module within the Magic Stack.
+  </summary>
+</histogram>
+
+<histogram name="IOS.MagicStack.Module.TopImpression"
+    enum="IOSMagicStackModuleType" expires_after="2024-07-03">
+  <owner>thegreenfrog@chromium.org</owner>
+  <owner>scottyoder@chromium.org</owner>
+  <summary>
+    Records the first module shown for every Magic Stack impression.
+  </summary>
+</histogram>
+
 <histogram name="IOS.MainFrameNavigationIsInBrowserLockdownMode" enum="Boolean"
     expires_after="2023-11-23">
   <owner>joemerramos@chromium.org</owner>
@@ -1601,7 +1645,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PageLoadCount.LoadingStarted" units="units"
-    expires_after="2023-06-30">
+    expires_after="2024-06-30">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -1757,6 +1801,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Logs media permission requests from websites. (e.g. the microphone
     permission is asked from a website).
+  </summary>
+</histogram>
+
+<histogram name="IOS.PostRestoreDefaultBrowser.ActionOnPrompt"
+    enum="IOSPostRestoreDefaultBrowserActionOnPrompt"
+    expires_after="2024-07-21">
+  <owner>hiramahmood@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <summary>
+    Logs a user's action on the Post Restore Default Browser promo.
   </summary>
 </histogram>
 
@@ -1916,6 +1970,22 @@ chromium-metrics-reviews@google.com.
     power when processing remote notifications, iOS may not always wake up
     Chrome early to process future notifications. Thus, this histogram uses
     processing time as a proxy for iOS' three parameters.
+  </summary>
+</histogram>
+
+<histogram name="IOS.PushNotification.LifecyleEvents"
+    enum="PushNotificationLifecycleEvent" expires_after="2024-07-21">
+  <owner>ajuma@google.com</owner>
+  <owner>danieltwhite@google.com</owner>
+  <summary>
+    Logs various lifecycle stages a push notification can observe on the device.
+    This histogram is logged each time a push notification is received on the
+    device, displayed while Chrome is in the foreground, and tapped by the user.
+    An important stipulation to note is that if Chrome is neither in the
+    foreground nor the background and a push notification is received on the
+    device, iOS will not notify Chrome of this reception and thus will not be
+    represented in the histogram. Therefore, when interpreting this metric, the
+    push notification reception count may be lower than in reality.
   </summary>
 </histogram>
 
@@ -2476,6 +2546,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.TabPickup.TimeSinceLastCrossDeviceSync" units="ms"
+    expires_after="2024-06-20">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <summary>
+    Time spent since the last time another device has been sync. Recorded when
+    the app starts.
+  </summary>
+</histogram>
+
 <histogram name="IOS.TabStrip.DragInteraction" enum="Boolean"
     expires_after="2024-02-08">
   <owner>ewannpv@chromium.org</owner>
@@ -2776,6 +2857,25 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.WhatsNew.InstructionsShown" enum="WhatsNewType"
+    expires_after="2023-12-01">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@google.com</owner>
+  <summary>
+    The action taken by the user in response to seeing the instructions of a
+    What's New feature.
+  </summary>
+</histogram>
+
+<histogram name="IOS.WhatsNew.Shown" enum="WhatsNewType"
+    expires_after="2023-12-01">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@google.com</owner>
+  <summary>
+    The action taken by the user in response to seeing a What's New feature.
+  </summary>
+</histogram>
+
 <histogram name="IOS.WhatsNew.TableViewDidScroll" enum="Boolean"
     expires_after="2023-12-10">
   <owner>cheickcisse@google.com</owner>
@@ -2789,6 +2889,21 @@ chromium-metrics-reviews@google.com.
   <owner>cheickcisse@google.com</owner>
   <owner>sebsg@google.com</owner>
   <summary>Logs the time a user spent on What's New.</summary>
+</histogram>
+
+<histogram name="IOS.WhatsNew.{Type}.TimeSpent" units="ms"
+    expires_after="2023-12-10">
+  <owner>cheickcisse@google.com</owner>
+  <owner>sebsg@google.com</owner>
+  <summary>Logs the time a user spent on each feature of What's New.</summary>
+  <token key="Type">
+    <variant name="CalendarEvent" summary="Calendar Event"/>
+    <variant name="ChromeActions" summary="Chrome Actions"/>
+    <variant name="IncognitoLock" summary="Incognito Lock"/>
+    <variant name="IncognitoTabsFromOtherApps"
+        summary="Incognito Tabs From Other Apps"/>
+    <variant name="MiniMaps" summary="Mini Maps"/>
+  </token>
 </histogram>
 
 <histogram name="IOS.WidgetKit.Action" enum="IOSWidgetKitAction"

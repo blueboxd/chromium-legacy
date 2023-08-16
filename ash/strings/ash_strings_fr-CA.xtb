@@ -69,7 +69,6 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1247519845643687288">Applications récentes</translation>
 <translation id="1252999807265626933">Recharge à partir de <ph name="POWER_SOURCE" /> en cours</translation>
 <translation id="1255033239764210633">Quel temps fait-il?</translation>
-<translation id="1267032506238418139">Modification du raccourci</translation>
 <translation id="1269405891096105529">Le mode Invité ne prend pas en charge votre périphérique</translation>
 <translation id="1270290102613614947">Clavier à l'écran désactivé</translation>
 <translation id="1272079795634619415">Arrêter</translation>
@@ -140,7 +139,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1550406609415860283">Appareils disponibles</translation>
 <translation id="1550523713251050646">Cliquez pour afficher plus d'options</translation>
 <translation id="1555130319947370107">Bleu</translation>
-<translation id="1576511610858879060">Votre Chromebook ou votre appareil Bluetooth utilise une ancienne version de Bluetooth. Utilisez une autre entrée pour une meilleure qualité audio.</translation>
+<translation id="1557622599341396706">Afficher le nom du bureau</translation>
 <translation id="1576623706766186887">Dézoomer lorsque la loupe est activée</translation>
 <translation id="1586324912145647027">Accédez aux bureaux 1 à 8</translation>
 <translation id="1589090746204042747">Accédez à toute l'activité de votre session</translation>
@@ -217,7 +216,6 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="1908992311423394684">Nouvelle installation</translation>
 <translation id="1915307458270490472">Raccrocher</translation>
 <translation id="1918022425394817322">Caméra alignée sur le coin supérieur droit</translation>
-<translation id="1919743966458266018">Le raccourci qui permet d'ouvrir le gestionnaire de tâches a changé. Veuillez utiliser <ph name="NEW_SHORTCUT" /> à la place de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clics automatiques</translation>
 <translation id="1928739107511554905">Pour télécharger la mise à jour, utilisez l'écran tactile pour redémarrer votre Chromebook avec le clavier associé.</translation>
 <translation id="1948405482892809935">Passer à l'utilisateur suivant</translation>
@@ -300,6 +298,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="2318576281648121272">Aujourd'hui le <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" />, catégorie de résultats de recherche</translation>
 <translation id="2322173485024759474">Déplacer une lettre vers l'arrière</translation>
+<translation id="2335091074961603075">Votre Chromebook ou votre appareil Bluetooth utilise une ancienne version de Bluetooth. Utilisez le microphone interne pour une meilleure qualité audio.</translation>
 <translation id="2339073806695260576">Touchez le bouton du stylet sur l'étagère pour créer une note, pour prendre une capture d'écran, ou pour utiliser le pointeur laser ou la loupe.</translation>
 <translation id="2341729377289034582">Verrouillée à la verticale</translation>
 <translation id="2345226652884463045">Appuyez sur Entrée ou Rechercher + Espace pour sélectionner le texte à modifier.</translation>
@@ -356,6 +355,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="256712445991462162">la loupe en mode ancré</translation>
 <translation id="2573588302192866788">Impossible de connecter <ph name="NAME" /></translation>
 <translation id="2575685495496069081">La connexion multicompte a été désactivée</translation>
+<translation id="2579264398927991698">Mises à jour du micrologiciel</translation>
 <translation id="2582112259361606227">Redémarrer pour faire la mise à jour</translation>
 <translation id="2586561057878260610">Appuyer sur Ctrl+W pour combiner avec <ph name="DESK_NAME" />. Appuyer sur Ctrl+W pour fermer le bureau et les fenêtres.</translation>
 <translation id="2595239820337756193">Combien y a-t-il de milles dans 5 km?</translation>
@@ -395,6 +395,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="2750941250130734256">Fenêtre active désancrée.</translation>
 <translation id="2761723519669354964">Ouvrir l'élément en évidence dans l'étagère</translation>
 <translation id="2774348302533424868"><ph name="MODIFIER" /><ph name="DELIMITER" /><ph name="KEY_ONE" /> à <ph name="KEY_TWO" /></translation>
+<translation id="2778197796481941784">ctrl+recherche+s</translation>
 <translation id="2778650143428714839">Ce <ph name="DEVICE_TYPE" /> est géré par <ph name="MANAGER" /></translation>
 <translation id="2782591952652094792">Quitter le mode de capture</translation>
 <translation id="2785499565474703580">1 appareil connecté</translation>
@@ -458,6 +459,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3062298103034426069">Non prise en charge</translation>
 <translation id="3068622547379332530">Version <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Étagère à gauche</translation>
+<translation id="3070639127620815135">recherche+échapp.</translation>
 <translation id="3077734595579995578">majuscule</translation>
 <translation id="3081696990447829002">Développer le menu</translation>
 <translation id="3087734570205094154">Bas</translation>
@@ -471,6 +473,7 @@ Voici quelques exemples de choses que vous pouvez essayer pour commencer.</trans
 <translation id="3120421559657122717">Éteindre l'appareil?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Redémarrer pour faire la mise à jour</translation>
+<translation id="3139188263101386725">Utilisez le raccourci mis à jour</translation>
 <translation id="3139942575505304791">Bureau 1</translation>
 <translation id="315116470104423982">Données mobiles</translation>
 <translation id="3151786313568798007">Orientation</translation>
@@ -687,6 +690,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="4028481283645788203">Le mot de passe est exigé pour plus de sécurité</translation>
 <translation id="4032485810211612751"><ph name="HOURS" /> h <ph name="MINUTES" /> min <ph name="SECONDS" /> s</translation>
 <translation id="4042660782729322247">Vous partagez votre écran</translation>
+<translation id="404437169852192935">Mises à jour terminées</translation>
 <translation id="4049230407053723315">Paramètres rapides</translation>
 <translation id="4057003836560082631">Onglet de navigateur <ph name="INDEX" /> sur <ph name="TOTAL_COUNT" />. <ph name="SITE_TITLE" />, <ph name="SITE_URL" /></translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Désactivées pour une appli}one{Désactivées pour # appli}other{Désactivées pour # applis}}</translation>
@@ -927,6 +931,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="504465286040788597">Paragraphe précédent</translation>
 <translation id="5045550434625856497">Mot de passe incorrect</translation>
 <translation id="5062496344832867502">mémoire vive</translation>
+<translation id="5068762093486106012">Vous serez averti si vous parlez en sourdine. Les données audio ne quittent jamais votre appareil.</translation>
 <translation id="5078796286268621944">NIP incorrect</translation>
 <translation id="5083553833479578423">Déverrouillez davantage de fonctionnalités de l'Assistant Google.</translation>
 <translation id="5092436659250499817">Activer ou désactiver le rétroéclairage du clavier</translation>
@@ -957,6 +962,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="5207949376430453814">Mettre le point d'insertion de texte en surbrillance</translation>
 <translation id="5208059991603368177">Activé</translation>
 <translation id="5216991270656129561">Désactivée jusqu'à <ph name="TIME" /></translation>
+<translation id="5221423477036820198">Envoyez rapidement des messages sur votre téléphone ou répondez aux messages à l'aide de Phone Hub.</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
 <translation id="5229343007215035173">Activer ou désactiver l'écran de confidentialité</translation>
 <translation id="5234764350956374838">Fermer</translation>
@@ -980,10 +986,12 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="5308380583665731573">Connecter</translation>
 <translation id="5313326810920013265">Paramètres Bluetooth</translation>
 <translation id="5314219114274263156">Enregistrement de l'écran effectué</translation>
+<translation id="5314489738835854379">Faire défiler les fenêtres par l'arrière</translation>
 <translation id="5316716239522500219">Mise en miroir des moniteurs</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5319712128756744240">Associer un appareil</translation>
 <translation id="5322611492012084517">Impossible de trouver votre téléphone</translation>
+<translation id="5323994101633366939">Masquer le nom du bureau</translation>
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5329548388331921293">Connexion en cours…</translation>
 <translation id="5331975486040154427">Appareil USB-C (port arrière-gauche)</translation>
@@ -1018,11 +1026,13 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="5482205457807971887"><ph name="MODIFIER_ONE" /><ph name="KEY_ONE" /> ou <ph name="MODIFIER_TWO" /><ph name="MODIFIER_THREE" /><ph name="KEY_TWO" /></translation>
 <translation id="5491186829646618080">Des mises à jour du micrologiciel sont disponibles</translation>
 <translation id="5503884284981862082">Ouvrir/fermer l'Assistant Google</translation>
+<translation id="550391772491508736">Reprendre la diffusion</translation>
 <translation id="5506975627792768506">Activer ou désactiver la loupe</translation>
 <translation id="5512042095225963688">Supprimer le mot précédent</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5520229639206813572">Votre administrateur a retiré tous les profils eSIM. Pour en savoir plus, communiquez avec votre administrateur.</translation>
 <translation id="5523434445161341166">La fonctionnalité <ph name="FEATURE_NAME" /> en train de se connecter.</translation>
+<translation id="5529587891732734495">Interrompre la diffusion</translation>
 <translation id="5532994612895037630">Touchez n'importe où pour enregistrer la totalité de l'écran</translation>
 <translation id="5536723544185013515">Applications récentes, naviguer avec les touches fléchées gauche ou droite pour accéder à toutes les applications récentes</translation>
 <translation id="553675580533261935">Fermeture de la session</translation>
@@ -1124,6 +1134,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="5958529069007801266">Utilis. supervisé</translation>
 <translation id="5961960957587052807">Léger</translation>
 <translation id="5965524703725988602">Activer/désactiver le thème sombre. <ph name="STATE_TEXT" />.</translation>
+<translation id="5975235751479998104">Faire défiler les fenêtres par l'avant</translation>
 <translation id="5976112937189445008">Appuyez sur Entrée pour enregistrer la fenêtre</translation>
 <translation id="5978382165065462689">Partage du contrôle de votre écran au moyen de l’assistance à distance.</translation>
 <translation id="5980301590375426705">Fermer sess. invité</translation>
@@ -1163,6 +1174,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="6103838137565245112">système</translation>
 <translation id="6114505516289286752">Fichiers vocaux en <ph name="LANGUAGE" /> téléchargés</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
+<translation id="6119972796024789243">Correction des couleurs</translation>
 <translation id="6121838516699723042">Confirmer le téléchargement de <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">L'Assistant Google n'est pas accessible dans une session d'invité.</translation>
 <translation id="6129953537138746214">Espace</translation>
@@ -1192,6 +1204,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="6231419273573514727">Les performances du périphérique peuvent être limitées</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> utilise actuellement votre appareil photo et votre microphone</translation>
 <translation id="6237231532760393653">1X</translation>
+<translation id="6244986124527896815">Ouvrez l'application Gestionnaire de tâches avec « <ph name="NEW_SHORTCUT" /> ».</translation>
 <translation id="6247728804802644171">Ouvrir les notifications</translation>
 <translation id="6254629735336163724">Verrouillée à l'horizontale</translation>
 <translation id="6259254695169772643">Utilisez votre stylet pour effectuer une sélection</translation>
@@ -1242,6 +1255,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="6497418457565568043">Mode Ne pas déranger activé</translation>
 <translation id="6500896621837555595">Mettre à jour</translation>
 <translation id="6501401484702599040">Diffusion de l'écran sur <ph name="RECEIVER_NAME" /> en cours</translation>
+<translation id="6507042703812908515">Ouvrez l'application Raccourcis clavier avec « <ph name="NEW_SHORTCUT" /> ».</translation>
 <translation id="6507618042428827377">Passer à la prochaine méthode d'entrée accessible</translation>
 <translation id="6508923215158854599">Assurez-vous que votre Chromebook est sur le même réseau Wi-Fi que votre appareil Chromecast.</translation>
 <translation id="6515727200518652613">Caméra déconnectée; tentative de reconnexion en cours…</translation>
@@ -1334,6 +1348,7 @@ Nouvelle installation</translation>
 <translation id="6891721121089053234">Affichez les photos, les applications et les fichiers multimédias récents de votre téléphone sur votre <ph name="DEVICE_TYPE" /></translation>
 <translation id="6896758677409633944">Copier</translation>
 <translation id="6901883536534621389">Essayez les gestes pour naviguer</translation>
+<translation id="6912841030378044227">Mettre la barre d'adresse en évidence</translation>
 <translation id="6919251195245069855">Votre carte à puce n'a pas été reconnue. Réessayez.</translation>
 <translation id="6920245099716267363">Désactiver le point d'accès sans fil. Point d'accès sans fil activé, 1 appareil connecté.</translation>
 <translation id="6931576957638141829">Enregistrer dans</translation>
@@ -1359,7 +1374,7 @@ Nouvelle installation</translation>
 <translation id="7026338066939101231">Diminuer</translation>
 <translation id="7029814467594812963">Fermer la session</translation>
 <translation id="7032161822340700104">Vous pouvez utiliser jusqu'à six modèles. Retirez un modèle pour en enregistrer un nouveau.</translation>
-<translation id="7034025838182392395"><ph name="APP_NAME" /> souhaite utiliser l'<ph name="DEVICE_NAME" />. Mettez votre <ph name="DEVICE_NAME" /> en fonction à l'aide de l'interrupteur.</translation>
+<translation id="7034025838182392395"><ph name="APP_NAME" /> souhaite utiliser votre <ph name="DEVICE_NAME" />. Mettez votre <ph name="DEVICE_NAME" /> en fonction à l'aide de l'interrupteur.</translation>
 <translation id="703425375924687388"><ph name="QUERY_NAME" />, Assistant Google</translation>
 <translation id="7042322267639375032">Réduire la zone de notifications</translation>
 <translation id="7045033600005038336">Remplacer le modèle?</translation>
@@ -1472,7 +1487,7 @@ Pour éteindre l'appareil, appuyez à nouveau sur le bouton d'alimentation de l'
 <translation id="7579778809502851308">Capture d'écran</translation>
 <translation id="7593891976182323525">Recherche ou Majuscule</translation>
 <translation id="7600875258240007829">Afficher toutes les notifications</translation>
-<translation id="7601417191446344542">Activer la sourdine?</translation>
+<translation id="7601417191446344542">Activer le Rappel de son désactivé?</translation>
 <translation id="7607002721634913082">Interrompu</translation>
 <translation id="7609951632080598826">Vue de l'agenda, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Caméra reconnectée.</translation>
@@ -1630,6 +1645,7 @@ Pour éteindre l'appareil, appuyez à nouveau sur le bouton d'alimentation de l'
 <translation id="8247998213073982446"><ph name="APP_NAME" />, application</translation>
 <translation id="8255234195843591763">Réinitialiser pour mettre à jour</translation>
 <translation id="8261506727792406068">Supprimer</translation>
+<translation id="8262312463845990408">Activer/Désactiver la lecture</translation>
 <translation id="8270450402312105425">{0,plural, =1{Restaurez la version antérieure de l'appareil dans un délai d'une heure}one{Restaurez la version antérieure de l'appareil dans un délai de # heure}other{Restaurez la version antérieure de l'appareil dans un délai de # heures}}</translation>
 <translation id="8277261673056602147">Mettre du texte en évidence sur votre écran</translation>
 <translation id="8284362522226889623">Balayez vers la gauche avec quatre doigts pour passer au bureau précédent</translation>
@@ -1683,6 +1699,7 @@ Pour éteindre l'appareil, appuyez à nouveau sur le bouton d'alimentation de l'
 <translation id="8513108775083588393">Rotation auto</translation>
 <translation id="851458219935658693">Afficher les fenêtres du bureau actuel, bouton radio sélectionné</translation>
 <translation id="8517041960877371778">Il est possible que votre <ph name="DEVICE_TYPE" /> ne se charge pas lorsqu’il est allumé.</translation>
+<translation id="852060496139946719">{NUM_APPS,plural, =1{Entrée de micro contrôlée par <ph name="APP_NAME" />}one{Entrée de micro contrôlée par # application}other{Entrée du micro contrôlée par # applications}}</translation>
 <translation id="8535393432370007982">Annuler l'ordre de tri par couleur</translation>
 <translation id="8541078764854166027">Cadrage photo</translation>
 <translation id="8542053257095774575">Aucun bureau ni modèle enregistré</translation>
@@ -1745,7 +1762,6 @@ Pour éteindre l'appareil, appuyez à nouveau sur le bouton d'alimentation de l'
 <translation id="8834539327799336565">Actuellement connecté</translation>
 <translation id="8841375032071747811">Bouton Précédent</translation>
 <translation id="8843682306134542540">Activer/désactiver le verrouillage de la rotation. <ph name="STATE_TEXT" /></translation>
-<translation id="8850991929411075241">Recherche+Échap</translation>
 <translation id="8853703225951107899">Votre NIP ou votre mot de passe n'a toujours pas pu être vérifié. Remarque : Si vous avez récemment changé votre mot de passe, servez-vous de votre ancien mot de passe. Votre nouveau mot de passe sera appliqué lorsque vous vous déconnecterez.</translation>
 <translation id="8855885154700222542">Touche mode Plein écran</translation>
 <translation id="8858369206579825206">Paramètres de confidentialité</translation>

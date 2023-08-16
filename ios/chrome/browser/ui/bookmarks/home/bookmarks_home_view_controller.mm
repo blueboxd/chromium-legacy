@@ -263,11 +263,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   return self;
 }
 
-- (void)dealloc {
-  CHECK(!_browser);
-}
-
 - (void)shutdown {
+  [self.editingFolderCell stopEdit];
   [self stopFolderChooserCoordinator];
   [self.bookmarksCoordinator stop];
   self.bookmarksCoordinator = nil;

@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/side_panel/search_companion/search_companion_side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_combobox_model.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_content_proxy.h"
@@ -98,13 +99,13 @@ std::unique_ptr<views::ToggleImageButton> CreatePinToggleButton(
 
   int dip_size = ChromeLayoutProvider::Get()->GetDistanceMetric(
       ChromeDistanceMetric::DISTANCE_SIDE_PANEL_HEADER_VECTOR_ICON_SIZE);
-  views::SetImageFromVectorIconWithColorId(button.get(), views::kPinIcon,
-                                           ui::kColorIcon,
-                                           ui::kColorIconDisabled, dip_size);
+  views::SetImageFromVectorIconWithColorId(
+      button.get(), views::kPinIcon, kColorSidePanelHeaderButtonIcon,
+      kColorSidePanelHeaderButtonIconDisabled, dip_size);
   const ui::ImageModel& normal_image = ui::ImageModel::FromVectorIcon(
-      views::kUnpinIcon, ui::kColorIcon, dip_size);
+      views::kUnpinIcon, kColorSidePanelHeaderButtonIcon, dip_size);
   const ui::ImageModel& disabled_image = ui::ImageModel::FromVectorIcon(
-      views::kUnpinIcon, ui::kColorIconDisabled, dip_size);
+      views::kUnpinIcon, kColorSidePanelHeaderButtonIconDisabled, dip_size);
   button->SetToggledImageModel(views::Button::STATE_NORMAL, normal_image);
   button->SetToggledImageModel(views::Button::STATE_DISABLED, disabled_image);
   return button;
@@ -117,8 +118,9 @@ std::unique_ptr<views::ImageButton> CreateControlButton(
     const std::u16string& tooltip_text,
     ui::ElementIdentifier view_id,
     int dip_size) {
-  auto button = views::CreateVectorImageButtonWithNativeTheme(pressed_callback,
-                                                              icon, dip_size);
+  auto button = views::CreateVectorImageButtonWithNativeTheme(
+      pressed_callback, icon, dip_size, kColorSidePanelHeaderButtonIcon,
+      kColorSidePanelHeaderButtonIconDisabled);
   button->SetTooltipText(tooltip_text);
   ConfigureControlButton(button.get());
   button->SetProperty(views::kElementIdentifierKey, view_id);
@@ -357,6 +359,8 @@ void SidePanelCoordinator::UpdatePinState() {
         prefs::kSidePanelCompanionEntryPinnedToToolbar);
     pref_service->SetBoolean(prefs::kSidePanelCompanionEntryPinnedToToolbar,
                              !current_state);
+    SearchCompanionSidePanelCoordinator::SetAccessibleNameForToolbarButton(
+        browser_view_, /*is_open=*/true);
     base::RecordComputedAction(base::StrCat(
         {"SidePanel.Companion.", !current_state ? "Pinned" : "Unpinned",
          ".BySidePanelHeaderButton"}));
@@ -704,6 +708,9 @@ std::unique_ptr<views::Combobox> SidePanelCoordinator::CreateCombobox() {
   combobox->SetMenuSelectionAtCallback(
       base::BindRepeating(&SidePanelCoordinator::OnComboboxChangeTriggered,
                           base::Unretained(this)));
+  on_menu_will_show_subscription_ = combobox->AddMenuWillShowCallback(
+      base::BindRepeating(&SidePanelCoordinator::OnComboboxMenuWillShow,
+                          base::Unretained(this)));
   combobox->SetSelectedIndex(
       combobox_model_->GetIndexForKey((GetLastActiveEntryKey().value_or(
           SidePanelEntry::Key(GetDefaultEntry())))));
@@ -719,7 +726,7 @@ std::unique_ptr<views::Combobox> SidePanelCoordinator::CreateCombobox() {
   combobox->SetBorderColorId(ui::kColorSidePanelComboboxBorder);
   combobox->SetBackgroundColorId(ui::kColorSidePanelComboboxBackground);
   if (features::IsChromeRefresh2023()) {
-    combobox->SetForegroundColorId(ui::kColorSysOnSurface);
+    combobox->SetForegroundColorId(kColorSidePanelEntryTitle);
   }
   combobox->SetEventHighlighting(true);
   combobox->SetSizeToLargestLabel(false);
@@ -732,6 +739,10 @@ bool SidePanelCoordinator::OnComboboxChangeTriggered(size_t index) {
   views::ElementTrackerViews::GetInstance()->NotifyCustomEvent(
       kSidePanelComboboxChangedCustomEventId, header_combobox_);
   return true;
+}
+
+void SidePanelCoordinator::OnComboboxMenuWillShow() {
+  SidePanelUtil::RecordComboboxShown();
 }
 
 void SidePanelCoordinator::SetSelectedEntryInCombobox(

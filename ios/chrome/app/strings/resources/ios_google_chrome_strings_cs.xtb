@@ -6,11 +6,13 @@
 <translation id="1352919863522755794">Správci hesel Google se vaše hesla nepodařilo zkontrolovat. Zkuste zkontrolovat připojení k internetu.</translation>
 <translation id="1462727070346936664">Pokud z Chromu chcete získat maximum, přihlaste se.</translation>
 <translation id="1479202195792305274">Když se přihlásíte k účtu Google, může vám Chrome kontrolovat hesla</translation>
+<translation id="1491435845014430217">Zapněte možnost Při zavření Chromu zamknout anonymní karty.</translation>
 <translation id="1493827051843127077">Nastavte si Chrome jako výchozí prohlížeč a karty, hesla a platební údaje se budou synchronizovat na všechna vaše zařízení</translation>
 <translation id="1504372625950710826">Chrome nemůže vyhledat dostupné aktualizace. Zkuste zkontrolovat připojení k internetu.</translation>
 <translation id="1511320244449497906">Jste přihlášeni a synchronizujete data pomocí účtu spravovaného v doméně <ph name="DOMAIN" />, jejíž administrátor nyní může v tomto konkrétním účtu nastavit zásady pro uživatele, které mohou chování prohlížeče Chrome změnit.</translation>
 <translation id="1554731936187952550">Máte nejsilnější zabezpečení prohlížeče Chrome proti škodlivým webům</translation>
 <translation id="1682483655351012182">Synchronizovat data prohlížeče Chrome</translation>
+<translation id="1733654336159102143">Uzamkněte anonymní okna, když prohlížeč Chrome opustíte nebo přejdete do jiné aplikace.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1843217788865538014">Automaticky použít Chrome, když klepnete na odkazy ve zprávách, dokumentech a ostatních aplikacích</translation>
 <translation id="1917964099031477364">Tento účet a všechna neuložená data budou z Chromu a z ostatních aplikací v tomto zařízení odstraněny.</translation>
@@ -48,6 +50,7 @@
 <translation id="3503014945441706099">Zapněte pro tento profil prohlížeče Chrome také Vylepšené Bezpečné prohlížení</translation>
 <translation id="3522659714780527202">Chcete-li mít své karty k dispozici všude, kde používáte Chrome, zapněte synchronizaci</translation>
 <translation id="3533694711092285624">Nemáte žádná uložená hesla. Chrome může hesla zkontrolovat, pouze když si je uložíte.</translation>
+<translation id="3594076341410558780">Skrýt kartu Využití všech funkcí Chromu</translation>
 <translation id="3655656110921623717">To znamená, že Chrom bude pokaždé odesílat požadavek na mobilní web.</translation>
 <translation id="3720541637541300822">Při zavření Chromu zamknout anonymní karty</translation>
 <translation id="3827545470516145620">Na tomto zařízení máte standardní bezpečnostní ochranu</translation>
@@ -66,8 +69,10 @@
 <translation id="4636900170638246267">Přihlaste se na tento web a do Chromu.</translation>
 <translation id="4698415050768537821">Chromu se nepodařilo zkontrolovat všechna hesla. Zkuste to znovu zítra, případně <ph name="BEGIN_LINK" />hesla zkontrolujte v účtu Google<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Za účelem vylepšování aplikace odesílá Chrome do Googlu údaje o využití a selháních. <ph name="BEGIN_LINK" />Spravovat<ph name="END_LINK" /></translation>
+<translation id="4830799082179398588">Nastavit Chrome jako výchozí prohlížeč?</translation>
 <translation id="484033449593719797">V beta verzi prohlížeče Chrome není podporováno</translation>
 <translation id="4840404732697892756">Pokud chcete, aby Správce hesel Google zkontroloval vaše hesla, přihlaste se pomocí účtu Google.</translation>
+<translation id="4903674399067644695">Tato karta zobrazuje návrhy, jak Chrome využít na maximum.</translation>
 <translation id="5030102366287574140">Chrome vás pomáhá chránit před porušeními zabezpečení údajů, nebezpečnými weby a dalšími hrozbami.</translation>
 <translation id="5108659628347594808">Pomozte s vylepšováním prohlížeče Chrome</translation>
 <translation id="5119391094379141756">Vyberte Chrome.</translation>
@@ -76,6 +81,7 @@
 <translation id="5395376160638294582">Zajistěte, abyste mohli vždy používat data prohlížeče Chrome ve svém účtu Google</translation>
 <translation id="5460571915754665838">4. Vyberte Chrome.</translation>
 <translation id="5492504007368565877">Správce hesel Google vaše hesla nemůže zkontrolovat.</translation>
+<translation id="5527026824954593399">Klepněte na Zobrazit v Mapách Google v Chromu.</translation>
 <translation id="5552137475244467770">Chrome vaše hesla pravidelně porovnává se seznamy hesel, která unikla na internet. Vaše hesla a uživatelská jména jsou při tom šifrována, takže je nemůže nikdo zobrazit (ani Google).</translation>
 <translation id="5639704535586432836">Otevřete Nastavení &gt; Soukromí &gt; Fotoaparát &gt; Google Chrome a zapněte fotoaparát.</translation>
 <translation id="5642200033778930880">Google Chrome nemůže používat fotoaparát v režimu Split View</translation>
@@ -111,10 +117,12 @@
 <translation id="7261678641327190792">Chrome nemůže zkontrolovat hesla</translation>
 <translation id="7272930098487145294">Pokud chcete ukládat obrázky, klepněte na Nastavení a povolte Chromu přidávat obrázky do vašich fotek</translation>
 <translation id="7275945473750112644">Váš účet spravuje doména <ph name="HOSTED_DOMAIN" />, proto budou data prohlížeče Chrome z tohoto zařízení vymazána</translation>
+<translation id="7394108421562933108">Mapy v Chromu</translation>
 <translation id="7400722733683201933">O aplikaci Google Chrome</translation>
 <translation id="7501046334262221972">Pokud chcete Chrome nastavit jako výchozí prohlížeč, otevřete Nastavení. Klepněte na Výchozí prohlížeč a vyberte Chrome.</translation>
 <translation id="756809126120519699">Vymazání údajů Chromu</translation>
 <translation id="7662994914830945754">Chcete-li mít své karty k dispozici všude, kde používáte Chrome, přihlaste se a zapněte synchronizaci</translation>
+<translation id="7669869107155339016">Přejděte do nastavení Chromu</translation>
 <translation id="7693590760643069321">Nyní můžete Chrome použít pokaždé, když klepnete na odkazy ve zprávách, dokumentech a ostatních aplikacích.</translation>
 <translation id="7698568245838009292">Chrome potřebuje přístup k fotoaparátu</translation>
 <translation id="7754633291442704733">Vaše organizace <ph name="DOMAIN" /> bude mít přístup k datům, záložkám, historii, heslům a dalším nastavením prohlížeče Chrome, která uložíte do tohoto účtu. Když se odhlásíte, vaše data budou z tohoto zařízení vymazána.  Ve spravovaném účtu Google nicméně vaše data zůstanou uložena a vaše organizace k nim bude mít přístup. Vaše organizace také může v tomto konkrétním účtu nastavit zásady pro uživatele, které mohou chování prohlížeče Chrome změnit.</translation>

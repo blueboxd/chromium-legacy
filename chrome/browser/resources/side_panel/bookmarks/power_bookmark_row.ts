@@ -166,8 +166,9 @@ export class PowerBookmarkRowElement extends PolymerElement {
    */
   private onRowClicked_(event: MouseEvent) {
     // Ignore clicks on the row when it has an input, to ensure the row doesn't
-    // eat input clicks.
-    if (this.hasInput) {
+    // eat input clicks. Also ignore clicks if the row has no associated
+    // bookmark.
+    if (this.hasInput || !this.bookmark) {
       return;
     }
     event.preventDefault();
@@ -251,6 +252,17 @@ export class PowerBookmarkRowElement extends PolymerElement {
     }
   }
 
+  private createInputChangeEvent_(value: string|null) {
+    return new CustomEvent('input-change', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        bookmark: this.bookmark,
+        value: value,
+      },
+    });
+  }
+
   /**
    * Triggers a custom input change event when the user hits enter or the input
    * loses focus.
@@ -258,16 +270,15 @@ export class PowerBookmarkRowElement extends PolymerElement {
   private onInputChange_(event: Event) {
     event.preventDefault();
     event.stopPropagation();
-    const inputElement: CrInputElement =
-        this.shadowRoot!.querySelector('#input')!;
-    this.dispatchEvent(new CustomEvent('input-change', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        bookmark: this.bookmark,
-        value: inputElement.value,
-      },
-    }));
+    const inputElement =
+        this.shadowRoot!.querySelector<CrInputElement>('#input')!;
+    this.dispatchEvent(this.createInputChangeEvent_(inputElement.value));
+  }
+
+  private onInputBlur_(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dispatchEvent(this.createInputChangeEvent_(null));
   }
 }
 

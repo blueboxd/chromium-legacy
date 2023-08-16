@@ -60,7 +60,10 @@ SkColor GetWallpaperColor(bool is_dark_mode_enabled) {
 }
 
 PrefService* GetUserPrefService(const AccountId& account_id) {
-  DCHECK(account_id.is_valid());
+  if (!account_id.is_valid()) {
+    CHECK_IS_TEST();
+    return nullptr;
+  }
   return Shell::Get()->session_controller()->GetUserPrefServiceForUser(
       account_id);
 }
@@ -278,19 +281,27 @@ class ColorPaletteControllerImpl : public ColorPaletteController,
     }
     PrefService* pref_service = GetUserPrefService(account_id);
     if (pref_service) {
-      return static_cast<ColorScheme>(
-          pref_service->GetInteger(prefs::kDynamicColorColorScheme));
+      const PrefService::Preference* pref =
+          pref_service->FindPreference(prefs::kDynamicColorColorScheme);
+      if (!pref->IsDefaultValue()) {
+        return static_cast<ColorScheme>(pref->GetValue()->GetInt());
+      }
+    } else {
+      CHECK(local_state_);
+      const auto scheme =
+          user_manager::KnownUser(local_state_)
+              .FindIntPath(account_id, prefs::kDynamicColorColorScheme);
+      if (scheme.has_value()) {
+        return static_cast<ColorScheme>(scheme.value());
+      }
     }
-    CHECK(local_state_);
-    const auto scheme =
-        user_manager::KnownUser(local_state_)
-            .FindIntPath(account_id, prefs::kDynamicColorColorScheme);
-    if (scheme.has_value()) {
-      return static_cast<ColorScheme>(scheme.value());
-    }
+
     DVLOG(1) << "No user pref service or local pref service available. "
                 "Returning default color scheme.";
-    return ColorScheme::kTonalSpot;
+    // The preferred default color scheme for the time of day wallpaper instead
+    // of tonal spot.
+    return features::IsTimeOfDayWallpaperEnabled() ? ColorScheme::kNeutral
+                                                   : ColorScheme::kTonalSpot;
   }
 
   absl::optional<SkColor> GetStaticColor(

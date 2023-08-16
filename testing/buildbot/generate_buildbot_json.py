@@ -605,7 +605,7 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     if substituted_array != original_args:
       test_config['args'] = self.maybe_fixup_args_array(substituted_array)
 
-  def dictionary_merge(self, a, b, path=None, update=True):
+  def dictionary_merge(self, a, b, path=None):
     """http://stackoverflow.com/questions/7204805/
         python-dictionaries-of-dictionaries-merge
     merges b into a
@@ -613,44 +613,42 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     if path is None:
       path = []
     for key in b:
-      if key in a:
-        if isinstance(a[key], dict) and isinstance(b[key], dict):
-          self.dictionary_merge(a[key], b[key], path + [str(key)])
-        elif a[key] == b[key]:
-          pass # same leaf value
-        elif isinstance(a[key], list) and isinstance(b[key], list):
-          # Args arrays are lists of strings. Just concatenate them,
-          # and don't sort them, in order to keep some needed
-          # arguments adjacent (like --timeout-ms [arg], etc.)
-          if all(isinstance(x, str)
-                 for x in itertools.chain(a[key], b[key])):
-            a[key] = self.maybe_fixup_args_array(a[key] + b[key])
-          else:
-            # TODO(kbr): this only works properly if the two arrays are
-            # the same length, which is currently always the case in the
-            # swarming dimension_sets that we have to merge. It will fail
-            # to merge / override 'args' arrays which are different
-            # length.
-            for idx in range(len(b[key])):
-              try:
-                a[key][idx] = self.dictionary_merge(a[key][idx], b[key][idx],
-                                                    path + [str(key), str(idx)],
-                                                    update=update)
-              except (IndexError, TypeError) as e:
-                raise BBGenErr('Error merging lists by key "%s" from source %s '
-                               'into target %s at index %s. Verify target list '
-                               'length is equal or greater than source' %
-                               (str(key), str(b), str(a), str(idx))) from e
-        elif update:
-          if b[key] is None:
-            del a[key]
-          else:
-            a[key] = b[key]
+      if key not in a:
+        if b[key] is not None:
+          a[key] = b[key]
+        continue
+
+      if isinstance(a[key], dict) and isinstance(b[key], dict):
+        self.dictionary_merge(a[key], b[key], path + [str(key)])
+      elif a[key] == b[key]:
+        pass  # same leaf value
+      elif isinstance(a[key], list) and isinstance(b[key], list):
+        # Args arrays are lists of strings. Just concatenate them,
+        # and don't sort them, in order to keep some needed
+        # arguments adjacent (like --timeout-ms [arg], etc.)
+        if all(isinstance(x, str) for x in itertools.chain(a[key], b[key])):
+          a[key] = self.maybe_fixup_args_array(a[key] + b[key])
         else:
-          raise BBGenErr('Conflict at %s' % '.'.join(
-            path + [str(key)])) # pragma: no cover
-      elif b[key] is not None:
+          # TODO(kbr): this only works properly if the two arrays are
+          # the same length, which is currently always the case in the
+          # swarming dimension_sets that we have to merge. It will fail
+          # to merge / override 'args' arrays which are different
+          # length.
+          for idx in range(len(b[key])):
+            try:
+              a[key][idx] = self.dictionary_merge(a[key][idx], b[key][idx],
+                                                  path +
+                                                  [str(key), str(idx)])
+            except (IndexError, TypeError) as e:  # pragma: no cover
+              raise BBGenErr('Error merging lists by key "%s" from source %s '
+                             'into target %s at index %s. Verify target list '
+                             'length is equal or greater than source' %
+                             (str(key), str(b), str(a), str(idx))) from e
+      elif b[key] is None:
+        del a[key]
+      else:
         a[key] = b[key]
+
     return a
 
   def initialize_args_for_test(
@@ -1210,80 +1208,51 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
 
     # Each test in a basic test suite will have a definition per variant.
     test_suite = {}
-    for test_name, test_config in basic_test_definition.items():
-      definitions = []
-      for variant in variants:
-        # Unpack the variant from variants.pyl if it's string based.
-        if isinstance(variant, str):
-          variant = self.variants[variant]
+    for variant in variants:
+      # Unpack the variant from variants.pyl if it's string based.
+      if isinstance(variant, str):
+        variant = self.variants[variant]
 
-        # If 'enabled' is set to False, we will not use this variant;
-        # otherwise if the variant doesn't include 'enabled' variable or
-        # 'enabled' is set to True, we will use this variant
-        if not variant.get('enabled', True):
-          continue
-        # Clone a copy of test_config so that we can have a uniquely updated
-        # version of it per variant
-        cloned_config = copy.deepcopy(test_config)
-        # The variant definition needs to be re-used for each test, so we'll
-        # create a clone and work with it as well.
-        cloned_variant = copy.deepcopy(variant)
+      # If 'enabled' is set to False, we will not use this variant; otherwise if
+      # the variant doesn't include 'enabled' variable or 'enabled' is set to
+      # True, we will use this variant
+      if not variant.get('enabled', True):
+        continue
 
-        cloned_config['args'] = (cloned_config.get('args', []) +
-                                 cloned_variant.get('args', []))
-        cloned_config['mixins'] = (cloned_config.get('mixins', []) +
-                                   cloned_variant.get('mixins', []) + mixins)
+      # Make a shallow copy of the variant to remove variant-specific fields,
+      # leaving just mixin fields
+      variant = copy.copy(variant)
+      variant.pop('enabled', None)
+      identifier = variant.pop('identifier')
+      variant_mixins = variant.pop('mixins', [])
+      variant_skylab = variant.pop('skylab', {})
 
-        description = []
-        if cloned_config.get('description'):
-          description.append(cloned_config.get('description'))
-        if cloned_variant.get('description'):
-          description.append(cloned_variant.get('description'))
-        if description:
-          cloned_config['description'] = '\n'.join(description)
-        basic_swarming_def = cloned_config.get('swarming', {})
-        variant_swarming_def = cloned_variant.get('swarming', {})
-        if basic_swarming_def and variant_swarming_def:
-          if ('dimension_sets' in basic_swarming_def and
-              'dimension_sets' in variant_swarming_def):
-            # Retain swarming dimension set merge behavior when both variant and
-            # the basic test configuration both define it
-            self.dictionary_merge(basic_swarming_def, variant_swarming_def)
-            # Remove dimension_sets from the variant definition, so that it does
-            # not replace what's been done by dictionary_merge in the update
-            # call below.
-            del variant_swarming_def['dimension_sets']
+      for test_name, test_config in basic_test_definition.items():
+        new_test = self.apply_mixin(variant, test_config)
 
-        # Update the swarming definition with whatever is defined for swarming
-        # by the variant.
-        basic_swarming_def.update(variant_swarming_def)
-        cloned_config['swarming'] = basic_swarming_def
-
-        # Copy all skylab fields defined by the variant.
-        skylab_config = cloned_variant.get('skylab')
-        if skylab_config:
-          for k, v in skylab_config.items():
-            # cros_chrome_version is the ash chrome version in the cros img
-            # in the variant of cros_board. We don't want to include it in
-            # the final json files; so remove it.
-            if k == 'cros_chrome_version':
-              continue
-            cloned_config[k] = v
+        new_test['mixins'] = (test_config.get('mixins', []) + variant_mixins +
+                              mixins)
 
         # The identifier is used to make the name of the test unique.
         # Generators in the recipe uniquely identify a test by it's name, so we
         # don't want to have the same name for each variant.
-        cloned_config['name'] = self.add_variant_to_test_name(
-            cloned_config.get('name') or test_name,
-            cloned_variant['identifier'])
+        new_test['name'] = self.add_variant_to_test_name(
+            new_test.get('name', test_name), identifier)
 
         # Attach the variant identifier to the test config so downstream
         # generators can make modifications based on the original name. This
         # is mainly used in generate_gpu_telemetry_test().
-        cloned_config['variant_id'] = cloned_variant['identifier']
+        new_test['variant_id'] = identifier
 
-        definitions.append(cloned_config)
-      test_suite[test_name] = definitions
+        # cros_chrome_version is the ash chrome version in the cros img in the
+        # variant of cros_board. We don't want to include it in the final json
+        # files; so remove it.
+        for k, v in variant_skylab.items():
+          if k != 'cros_chrome_version':
+            new_test[k] = v
+
+        test_suite.setdefault(test_name, []).append(new_test)
+
     return test_suite
 
   def resolve_matrix_compound_test_suites(self):
@@ -1423,20 +1392,35 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
     del test['mixins']
     return test
 
-  def apply_mixin(self, mixin, test, builder):
+  def apply_mixin(self, mixin, test, builder=None):
     """Applies a mixin to a test.
 
-    Mixins will not override an existing key. This is to ensure exceptions can
-    override a setting a mixin applies.
-
-    Swarming dimensions are handled in a special way. Instead of specifying
-    'dimension_sets', which is how normal test suites specify their dimensions,
-    you specify a 'dimensions' key, which maps to a dictionary. This dictionary
-    is then applied to every dimension set in the test.
-
+    A mixin is applied by copying all fields from the mixin into the
+    test with the following exceptions:
+    * For the various *args keys, the test's existing value (an empty
+      list if not present) will be extended with the mixin's value.
+    * The sub-keys of the swarming value will be copied to the test's
+      swarming value with the following exceptions:
+      * For the dimension_sets and named_caches sub-keys, the test's
+        existing value (an empty list if not present) will be extended
+        with the mixin's value.
+      * For the dimensions sub-key, after extending the test's
+        dimension_sets as specified above, each dimension set will be
+        updated with the value of the dimensions sub-key. If there are
+        no dimension sets, then one will be added that contains the
+        specified dimensions.
     """
+
     new_test = copy.deepcopy(test)
     mixin = copy.deepcopy(mixin)
+
+    if 'description' in mixin:
+      description = []
+      if 'description' in new_test:
+        description.append(new_test['description'])
+      description.append(mixin.pop('description'))
+      new_test['description'] = '\n'.join(description)
+
     if 'swarming' in mixin:
       swarming_mixin = mixin['swarming']
       new_test.setdefault('swarming', {})
@@ -1458,12 +1442,39 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         for dimension_set in new_test['swarming']['dimension_sets']:
           dimension_set.update(swarming_mixin['dimensions'])
         del swarming_mixin['dimensions']
+      if 'named_caches' in swarming_mixin:
+        new_test['swarming'].setdefault('named_caches', []).extend(
+            swarming_mixin['named_caches'])
+        del swarming_mixin['named_caches']
       # python dict update doesn't do recursion at all. Just hard code the
       # nested update we need (mixin['swarming'] shouldn't clobber
       # test['swarming'], but should update it).
       new_test['swarming'].update(swarming_mixin)
       del mixin['swarming']
 
+    # Array so we can assign to it in a nested scope.
+    args_need_fixup = ['args' in mixin]
+
+    for a in (
+        'args',
+        'precommit_args',
+        'non_precommit_args',
+        'desktop_args',
+        'lacros_args',
+        'linux_args',
+        'android_args',
+        'chromeos_args',
+        'mac_args',
+        'win_args',
+        'win64_args',
+    ):
+      if (value := mixin.pop(a, None)) is None:
+        continue
+      if not isinstance(value, list):
+        raise BBGenErr(f'"{a}" must be a list')
+      new_test.setdefault(a, []).extend(value)
+
+    # TODO(gbeaty) Remove this once all mixins have removed '$mixin_append'
     if '$mixin_append' in mixin:
       # Values specified under $mixin_append should be appended to existing
       # lists, rather than replacing them.
@@ -1491,29 +1502,30 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
               'Cannot apply $mixin_append to non-list "' + key + '".')
         new_test[key].extend(mixin_append[key])
 
-      args = new_test.get('args', [])
-      # Array so we can assign to it in a nested scope.
-      args_need_fixup = [False]
       if 'args' in mixin_append:
         args_need_fixup[0] = True
 
-      def add_conditional_args(key, fn):
-        val = new_test.pop(key, [])
-        if val and fn(builder):
-          args.extend(val)
-          args_need_fixup[0] = True
+    args = new_test.get('args', [])
 
-      add_conditional_args('desktop_args', lambda cfg: not self.is_android(cfg))
-      add_conditional_args('lacros_args', self.is_lacros)
-      add_conditional_args('linux_args', self.is_linux)
-      add_conditional_args('android_args', self.is_android)
-      add_conditional_args('chromeos_args', self.is_chromeos)
-      add_conditional_args('mac_args', self.is_mac)
-      add_conditional_args('win_args', self.is_win)
-      add_conditional_args('win64_args', self.is_win64)
+    def add_conditional_args(key, fn):
+      if builder is None:
+        return
+      val = new_test.pop(key, [])
+      if val and fn(builder):
+        args.extend(val)
+        args_need_fixup[0] = True
 
-      if args_need_fixup[0]:
-        new_test['args'] = self.maybe_fixup_args_array(args)
+    add_conditional_args('desktop_args', lambda cfg: not self.is_android(cfg))
+    add_conditional_args('lacros_args', self.is_lacros)
+    add_conditional_args('linux_args', self.is_linux)
+    add_conditional_args('android_args', self.is_android)
+    add_conditional_args('chromeos_args', self.is_chromeos)
+    add_conditional_args('mac_args', self.is_mac)
+    add_conditional_args('win_args', self.is_win)
+    add_conditional_args('win64_args', self.is_win64)
+
+    if args_need_fixup[0]:
+      new_test['args'] = self.maybe_fixup_args_array(args)
 
     new_test.update(mixin)
     return new_test

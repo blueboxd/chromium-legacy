@@ -137,6 +137,7 @@
 #include "chrome/browser/password_manager/android/password_generation_controller.h"
 #include "chrome/browser/password_manager/android/password_manager_launcher_android.h"
 #include "chrome/browser/password_manager/android/password_manager_ui_util_android.h"
+#include "chrome/browser/password_manager/android/password_migration_warning_startup_launcher.h"
 #include "chrome/browser/touch_to_fill/password_generation/android/touch_to_fill_password_generation_controller.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_controller.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_controller_autofill_delegate.h"
@@ -249,6 +250,11 @@ bool ChromePasswordManagerClient::IsFillingEnabled(const GURL& url) const {
   // Guest profiles don't have PasswordStore at all, so filling should be
   // disabled for them.
   if (!profile || profile->IsGuestSession()) {
+    return false;
+  }
+
+  // Filling is impossible if password store in unavailable.
+  if (!GetProfilePasswordStore()) {
     return false;
   }
 
@@ -413,7 +419,11 @@ void ChromePasswordManagerClient::ShowKeyboardReplacingSurface(
     password_manager::PasswordManagerDriver* driver,
     autofill::mojom::SubmissionReadinessState submission_readiness,
     bool is_webauthn_form) {
-  if (GetOrCreateCredManController()->Show(driver, is_webauthn_form)) {
+  if (GetOrCreateCredManController()->Show(
+          GetWebAuthnCredManDelegateForDriver(driver),
+          std::make_unique<password_manager::PasswordCredentialFillerImpl>(
+              driver->AsWeakPtr(), submission_readiness),
+          is_webauthn_form)) {
     return;
   }
   auto* webauthn_delegate = GetWebAuthnCredentialsDelegateForDriver(driver);
@@ -1097,7 +1107,7 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
           bounds));
   autofill::password_generation::PasswordGenerationUIData ui_data(
       bounds, /*max_length=*/0, /*generation_element=*/std::u16string(),
-      /*user_typed_password=*/std::u16string(), field_renderer_id,
+      field_renderer_id,
       /*is_generation_element_password_type=*/true, base::i18n::TextDirection(),
       password_manager::GetFormWithFrameAndFormMetaData(
           password_generation_driver_receivers_.GetCurrentTargetFrame(),
@@ -1263,7 +1273,7 @@ password_manager::CredManController*
 ChromePasswordManagerClient::GetOrCreateCredManController() {
   if (!cred_man_controller_) {
     cred_man_controller_ =
-        std::make_unique<password_manager::CredManController>(this);
+        std::make_unique<password_manager::CredManController>();
   }
   return cred_man_controller_.get();
 }
@@ -1317,6 +1327,15 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
           base::Unretained(driver_factory_)));
 
   driver_factory_->RequestSendLoggingAvailability();
+#if BUILDFLAG(IS_ANDROID)
+  // `this` is tab-scoped, however the local passwords migration warning
+  // should only be launched on startup.
+  static bool tried_launching_warning_on_startup = false;
+  if (!tried_launching_warning_on_startup) {
+    tried_launching_warning_on_startup = true;
+    TryToShowLocalPasswordMigrationWarning();
+  }
+#endif
 }
 
 void ChromePasswordManagerClient::PrimaryPageChanged(content::Page& page) {
@@ -1498,17 +1517,8 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
       popup_controller_, element_bounds_in_screen_space, ui_data,
       driver->AsWeakPtr(), observer_, web_contents(),
       driver->render_frame_host());
-  popup_controller_->UpdateTypedPassword(ui_data.user_typed_password);
 
-  // TODO(crbug.com/1345766): Add separate flag for calculating strength and use
-  // this one only when UI needs to be displayed.
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordStrengthIndicator)) {
-    popup_controller_->UpdatePopupBasedOnTypedPasswordStrength();
-  } else {
-    popup_controller_->Show(
-        PasswordGenerationPopupController::kOfferGeneration);
-  }
+  popup_controller_->Show(PasswordGenerationPopupController::kOfferGeneration);
 
   driver->SetSuggestionAvailability(
       ui_data.generation_element_id,
@@ -1531,6 +1541,15 @@ gfx::RectF ChromePasswordManagerClient::TransformToRootCoordinates(
 #if BUILDFLAG(IS_ANDROID)
 void ChromePasswordManagerClient::ResetErrorMessageDelegate() {
   password_manager_error_message_delegate_.reset();
+}
+
+void ChromePasswordManagerClient::TryToShowLocalPasswordMigrationWarning() {
+  password_migration_warning_startup_launcher_ =
+      std::make_unique<PasswordMigrationWarningStartupLauncher>(
+          web_contents(), profile_,
+          base::BindOnce(&local_password_migration::ShowWarning));
+  password_migration_warning_startup_launcher_
+      ->MaybeFetchPasswordsAndShowWarning(GetProfilePasswordStore());
 }
 #endif
 

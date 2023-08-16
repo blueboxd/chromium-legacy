@@ -134,6 +134,7 @@ namespace content {
 using ::testing::_;
 
 using blink::mojom::AttestationConveyancePreference;
+using blink::mojom::AuthenticationExtensionsClientInputs;
 using blink::mojom::AuthenticatorSelectionCriteria;
 using blink::mojom::AuthenticatorSelectionCriteriaPtr;
 using blink::mojom::AuthenticatorStatus;
@@ -424,6 +425,7 @@ GetTestPublicKeyCredentialCreationOptions() {
 PublicKeyCredentialRequestOptionsPtr
 GetTestPublicKeyCredentialRequestOptions() {
   auto options = PublicKeyCredentialRequestOptions::New();
+  options->extensions = AuthenticationExtensionsClientInputs::New();
   options->relying_party_id = std::string(kTestRelyingPartyId);
   options->challenge.assign(32, 0x0A);
   options->timeout = base::Minutes(1);
@@ -586,8 +588,6 @@ class AuthenticatorTestBase : public RenderViewHostTestHarness {
     // Disable the Windows WebAuthn API integration by default. Individual tests
     // can modify this.
     fake_win_webauthn_api_.set_available(false);
-    AuthenticatorEnvironment::GetInstance()->SetWinWebAuthnApiForTesting(
-        &fake_win_webauthn_api_);
 #endif
 
     ResetVirtualDevice();
@@ -612,9 +612,6 @@ class AuthenticatorTestBase : public RenderViewHostTestHarness {
     AuthenticatorEnvironment::GetInstance()
         ->ReplaceDefaultDiscoveryFactoryForTesting(
             std::move(virtual_device_factory));
-#if BUILDFLAG(IS_WIN)
-    virtual_device_factory_->set_win_webauthn_api(&fake_win_webauthn_api_);
-#endif
   }
 
   void SetMojoErrorHandler(
@@ -626,6 +623,8 @@ class AuthenticatorTestBase : public RenderViewHostTestHarness {
       virtual_device_factory_;
 #if BUILDFLAG(IS_WIN)
   device::FakeWinWebAuthnApi fake_win_webauthn_api_;
+  device::WinWebAuthnApi::ScopedOverride win_webauthn_api_override_{
+      &fake_win_webauthn_api_};
 #endif
 
  private:
@@ -760,7 +759,7 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();
     options->relying_party_id = origin_url.host();
-    options->appid = appid;
+    options->extensions->appid = appid;
 
     return AuthenticatorGetAssertion(std::move(options)).status;
   }
@@ -1107,7 +1106,7 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
 
     // This AppID won't be used because the RP ID will be tried (successfully)
     // first.
-    options->appid = kTestOrigin1;
+    options->extensions->appid = kTestOrigin1;
 
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
@@ -1124,7 +1123,7 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
     ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         options->allow_credentials[0].id, kTestOrigin1));
 
-    options->appid = kTestOrigin1;
+    options->extensions->appid = kTestOrigin1;
 
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
@@ -1149,7 +1148,7 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
     ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         options->allow_credentials[0].id, kTestOrigin1));
 
-    options->appid = kTestOrigin1;
+    options->extensions->appid = kTestOrigin1;
 
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
@@ -1290,7 +1289,7 @@ TEST_F(AuthenticatorImplTest, NoSilentAuthenticationForCable) {
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();
     options->allow_credentials = GetTestCredentials(/*num_credentials=*/2);
-    options->cable_authentication_data = GetTestCableExtension();
+    options->extensions->cable_authentication_data = GetTestCableExtension();
 
     if (is_cable_device) {
       virtual_device_factory_->SetTransport(
@@ -1521,6 +1520,7 @@ TEST_F(AuthenticatorImplTest, GetAssertionResponseWithAttestedCredentialData) {
 
 #if BUILDFLAG(IS_WIN)
 TEST_F(AuthenticatorImplTest, IsUVPAA) {
+  virtual_device_factory_->set_discover_win_webauthn_api_authenticator(true);
   NavigateAndCommit(GURL(kTestOrigin1));
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
@@ -1560,6 +1560,7 @@ class OffTheRecordAuthenticatorImplTest : public AuthenticatorImplTest {
 // Tests that IsUVPAA returns true if the version of Windows supports an
 // appropriate warning.
 TEST_F(OffTheRecordAuthenticatorImplTest, WinIsUVPAAIncognito) {
+  virtual_device_factory_->set_discover_win_webauthn_api_authenticator(true);
   NavigateAndCommit(GURL(kTestOrigin1));
   fake_win_webauthn_api_.set_available(true);
   fake_win_webauthn_api_.set_is_uvpaa(true);
@@ -3403,8 +3404,9 @@ TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, GetAssertion) {
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();
     options->relying_party_id = test.rp_id;
-    options->remote_desktop_client_override = RemoteDesktopClientOverride::New(
-        url::Origin::Create(GURL(test.remote_origin)), true);
+    options->extensions->remote_desktop_client_override =
+        RemoteDesktopClientOverride::New(
+            url::Origin::Create(GURL(test.remote_origin)), true);
 
     ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         options->allow_credentials[0].id, test.rp_id));
@@ -3496,9 +3498,10 @@ TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, GetAssertionAppid) {
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();
     options->relying_party_id = test.rp_id;
-    options->appid = test.app_id;
-    options->remote_desktop_client_override = RemoteDesktopClientOverride::New(
-        url::Origin::Create(GURL(test.remote_origin)), true);
+    options->extensions->appid = test.app_id;
+    options->extensions->remote_desktop_client_override =
+        RemoteDesktopClientOverride::New(
+            url::Origin::Create(GURL(test.remote_origin)), true);
 
     ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         options->allow_credentials[0].id, test.rp_id));
@@ -4058,7 +4061,7 @@ TEST_F(AuthenticatorImplTest, AllowListWithOnlyOversizedCredentialIds) {
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();
     if (has_app_id) {
-      options->appid = kTestOrigin1;
+      options->extensions->appid = kTestOrigin1;
     }
     options->allow_credentials = {device::PublicKeyCredentialDescriptor(
         device::CredentialType::kPublicKey, cred_id)};
@@ -4596,7 +4599,7 @@ TEST_F(AuthenticatorImplTest, InvalidU2FSignature) {
       GetTestPublicKeyCredentialRequestOptions();
   ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
       options->allow_credentials[0].id, kTestOrigin1));
-  options->appid = kTestOrigin1;
+  options->extensions->appid = kTestOrigin1;
 
   EXPECT_EQ(
       AuthenticatorGetAssertionAndWaitForTimeout(std::move(options)).status,
@@ -4633,7 +4636,7 @@ TEST_F(AuthenticatorImplTest, CredBlob) {
         GetTestPublicKeyCredentialRequestOptions();
     options->allow_credentials[0] = device::PublicKeyCredentialDescriptor(
         device::CredentialType::kPublicKey, std::move(credential_id));
-    options->get_cred_blob = true;
+    options->extensions->get_cred_blob = true;
 
     auto result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
@@ -4735,8 +4738,8 @@ TEST_F(AuthenticatorImplTest, PRFWithoutSupport) {
 
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
-  options->prf = true;
-  options->prf_inputs = std::move(prf_inputs);
+  options->extensions->prf = true;
+  options->extensions->prf_inputs = std::move(prf_inputs);
 
   GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
 
@@ -4857,7 +4860,8 @@ TEST_F(AuthenticatorDevicePublicKeyTest, DevicePublicKeyGetAssertion) {
           options->allow_credentials[0].id, kTestRelyingPartyId));
       credential_injected = true;
     }
-    options->device_public_key = blink::mojom::DevicePublicKeyRequest::New();
+    options->extensions->device_public_key =
+        blink::mojom::DevicePublicKeyRequest::New();
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
 
     ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
@@ -4889,7 +4893,8 @@ TEST_F(AuthenticatorDevicePublicKeyTest,
           options->allow_credentials[0].id, kTestRelyingPartyId));
       credential_injected = true;
     }
-    options->device_public_key = blink::mojom::DevicePublicKeyRequest::New();
+    options->extensions->device_public_key =
+        blink::mojom::DevicePublicKeyRequest::New();
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
 
     if (backup_eligible) {
@@ -4954,7 +4959,7 @@ TEST_F(AuthenticatorDevicePublicKeyTest, DevicePublicKeyBadResponse) {
                   options->allow_credentials[0].id, kTestRelyingPartyId));
           credential_injected = true;
         }
-        options->device_public_key =
+        options->extensions->device_public_key =
             blink::mojom::DevicePublicKeyRequest::New();
         GetAssertionResult result =
             AuthenticatorGetAssertion(std::move(options));
@@ -5192,8 +5197,10 @@ TEST_F(AuthenticatorDevicePublicKeyTest,
           options->allow_credentials[0].id, kTestRelyingPartyId));
       credential_injected = true;
     }
-    options->device_public_key = blink::mojom::DevicePublicKeyRequest::New();
-    options->device_public_key->attestation = test.requested_attestation;
+    options->extensions->device_public_key =
+        blink::mojom::DevicePublicKeyRequest::New();
+    options->extensions->device_public_key->attestation =
+        test.requested_attestation;
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
 
     EXPECT_EQ(result.status == AuthenticatorStatus::SUCCESS, test.ok);
@@ -7679,7 +7686,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobRead) {
     }
 
     PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
-    options->large_blob_read = true;
+    options->extensions->large_blob_read = true;
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
 
     ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
@@ -7746,7 +7753,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobWrite) {
     PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
     options->allow_credentials = {device::PublicKeyCredentialDescriptor(
         device::CredentialType::kPublicKey, cred_id)};
-    options->large_blob_write = large_blob;
+    options->extensions->large_blob_write = large_blob;
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
 
     ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
@@ -7787,7 +7794,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest,
   PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
   options->allow_credentials = {device::PublicKeyCredentialDescriptor(
       device::CredentialType::kPublicKey, cred_id)};
-  options->large_blob_read = true;
+  options->extensions->large_blob_read = true;
   GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
   ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
   EXPECT_TRUE(result.response->echo_large_blob);
@@ -7816,7 +7823,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobExtension) {
     PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
     options->allow_credentials = {device::PublicKeyCredentialDescriptor(
         device::CredentialType::kPublicKey, cred_id)};
-    options->large_blob_read = true;
+    options->extensions->large_blob_read = true;
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
     EXPECT_TRUE(result.response->echo_large_blob);
@@ -7829,7 +7836,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobExtension) {
     PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
     options->allow_credentials = {device::PublicKeyCredentialDescriptor(
         device::CredentialType::kPublicKey, cred_id)};
-    options->large_blob_write = large_blob;
+    options->extensions->large_blob_write = large_blob;
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
     EXPECT_TRUE(result.response->echo_large_blob);
@@ -7842,7 +7849,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobExtension) {
     PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
     options->allow_credentials = {device::PublicKeyCredentialDescriptor(
         device::CredentialType::kPublicKey, cred_id)};
-    options->large_blob_read = true;
+    options->extensions->large_blob_read = true;
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
     EXPECT_TRUE(result.response->echo_large_blob);
@@ -7861,7 +7868,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobExtension) {
     PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
     options->allow_credentials = {device::PublicKeyCredentialDescriptor(
         device::CredentialType::kPublicKey, cred_id)};
-    options->large_blob_read = true;
+    options->extensions->large_blob_read = true;
     GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
     EXPECT_TRUE(result.response->echo_large_blob);
@@ -8216,7 +8223,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WithAppIDExtension) {
   test_client_.delegate_config.expected_accounts = "<invalid>";
 
   PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
-  options->appid = kTestOrigin1;
+  options->extensions->appid = kTestOrigin1;
 
   GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
 
@@ -8230,6 +8237,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WithAppIDExtension) {
 // credProtect.
 TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
   // The canned response returned by the Windows API fake is for acme.com.
+  virtual_device_factory_->set_discover_win_webauthn_api_authenticator(true);
   fake_win_webauthn_api_.set_available(true);
   NavigateAndCommit(GURL("https://acme.com"));
   for (const bool supports_cred_protect : {false, true}) {
@@ -8260,6 +8268,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
 
 // Tests that the incognito flag is plumbed through conditional UI requests.
 TEST_F(ResidentKeyAuthenticatorImplTest, ConditionalUI_Incognito) {
+  virtual_device_factory_->set_discover_win_webauthn_api_authenticator(true);
   fake_win_webauthn_api_.set_available(true);
   fake_win_webauthn_api_.set_version(WEBAUTHN_API_VERSION_4);
   fake_win_webauthn_api_.set_supports_silent_discovery(true);
@@ -8338,8 +8347,8 @@ TEST_F(ResidentKeyAuthenticatorImplTest, PRFNotSupportedWithPinUvAuthToken) {
   prf_value->first = std::vector<uint8_t>(32, 1);
   std::vector<blink::mojom::PRFValuesPtr> inputs;
   inputs.emplace_back(std::move(prf_value));
-  options->prf = true;
-  options->prf_inputs = std::move(inputs);
+  options->extensions->prf = true;
+  options->extensions->prf_inputs = std::move(inputs);
   options->allow_credentials.clear();
   EXPECT_EQ(AuthenticatorGetAssertion(std::move(options)).status,
             AuthenticatorStatus::SUCCESS);
@@ -8399,8 +8408,8 @@ TEST_F(ResidentKeyAuthenticatorImplTest, PRFExtension) {
         -> blink::mojom::PRFValuesPtr {
       PublicKeyCredentialRequestOptionsPtr options =
           GetTestPublicKeyCredentialRequestOptions();
-      options->prf = true;
-      options->prf_inputs = std::move(inputs);
+      options->extensions->prf = true;
+      options->extensions->prf_inputs = std::move(inputs);
       options->allow_credentials.clear();
       options->user_verification = uv;
       if (allow_list_size >= 1) {
@@ -8600,8 +8609,8 @@ TEST_F(ResidentKeyAuthenticatorImplTest,
   std::vector<blink::mojom::PRFValuesPtr> inputs;
   inputs.emplace_back(std::move(prf_value));
 
-  options->prf = true;
-  options->prf_inputs = std::move(inputs);
+  options->extensions->prf = true;
+  options->extensions->prf_inputs = std::move(inputs);
   options->user_verification =
       device::UserVerificationRequirement::kDiscouraged;
   GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
@@ -9796,7 +9805,8 @@ TEST_F(AuthenticatorCableV2AuthenticatorTest, DevicePublicKeyMakeCredential) {
 
 TEST_F(AuthenticatorCableV2AuthenticatorTest, DevicePublicKeyGetAssertion) {
   auto options = GetTestPublicKeyCredentialRequestOptions();
-  options->device_public_key = blink::mojom::DevicePublicKeyRequest::New();
+  options->extensions->device_public_key =
+      blink::mojom::DevicePublicKeyRequest::New();
   options->allow_credentials[0].transports.insert(
       device::FidoTransportProtocol::kHybrid);
   ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
@@ -9849,8 +9859,8 @@ BuildPRFGetAssertion(device::VirtualCtap2Device& virtual_device,
 
   options->allow_credentials[0].transports.insert(
       device::FidoTransportProtocol::kHybrid);
-  options->prf = true;
-  options->prf_inputs = std::move(prf_inputs);
+  options->extensions->prf = true;
+  options->extensions->prf_inputs = std::move(prf_inputs);
   options->user_verification = device::UserVerificationRequirement::kRequired;
 
   return std::make_tuple(std::move(options),
@@ -10120,10 +10130,12 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, GetAssertion) {
   EXPECT_EQ(request_proxy().observations().get_requests.size(), 1u);
 
   auto expected = request->Clone();
-  expected->remote_desktop_client_override = RemoteDesktopClientOverride::New();
-  expected->remote_desktop_client_override->origin =
+  expected->extensions->remote_desktop_client_override =
+      RemoteDesktopClientOverride::New();
+  expected->extensions->remote_desktop_client_override->origin =
       url::Origin::Create(GURL(kTestOrigin1));
-  expected->remote_desktop_client_override->same_origin_with_ancestors = true;
+  expected->extensions->remote_desktop_client_override
+      ->same_origin_with_ancestors = true;
   EXPECT_EQ(request_proxy().observations().get_requests.at(0), expected);
 }
 
@@ -10135,7 +10147,7 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, GetAssertionAlreadyProxied) {
       ->remote_desktop_client_override_origin = url::Origin::Create(origin);
   NavigateAndCommit(origin);
   auto request = GetTestPublicKeyCredentialRequestOptions();
-  request->remote_desktop_client_override =
+  request->extensions->remote_desktop_client_override =
       RemoteDesktopClientOverride::New(url::Origin::Create(origin), true);
   GetAssertionResult result = AuthenticatorGetAssertion(std::move(request));
 

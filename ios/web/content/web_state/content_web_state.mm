@@ -25,6 +25,7 @@
 #import "net/cert/x509_util.h"
 #import "net/cert/x509_util_apple.h"
 #import "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#import "skia/ext/skia_utils_ios.h"
 #import "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -98,8 +99,8 @@ ContentWebState::ContentWebState(const CreateParams& params,
       this, params.browser_state, web_contents_->GetController());
   web_frames_manager_ = std::make_unique<ContentWebFramesManager>(this);
 
-  UIScrollView* web_contents_view =
-      base::mac::ObjCCastStrict<UIScrollView>(web_contents_->GetNativeView());
+  UIScrollView* web_contents_view = base::mac::ObjCCastStrict<UIScrollView>(
+      web_contents_->GetNativeView().Get());
 
   web_view_ = [[CRCWebViewportContainerView alloc] init];
   // Comment this back in to show visual glitches that might be present.
@@ -416,6 +417,14 @@ id ContentWebState::GetActivityItem() {
   return nil;
 }
 
+UIColor* ContentWebState::GetThemeColor() {
+  auto color = web_contents_->GetThemeColor();
+  if (color) {
+    return skia::UIColorFromSkColor(*color);
+  }
+  return nil;
+}
+
 void ContentWebState::AddPolicyDecider(WebStatePolicyDecider* decider) {
   policy_deciders_.AddObserver(decider);
 }
@@ -591,8 +600,8 @@ bool ContentWebState::ShouldAnimateBrowserControlsHeightChanges() {
 
 bool ContentWebState::DoBrowserControlsShrinkRendererSize(
     content::WebContents* web_contents) {
-  UIScrollView* web_contents_view =
-      base::mac::ObjCCastStrict<UIScrollView>(web_contents->GetNativeView());
+  UIScrollView* web_contents_view = base::mac::ObjCCastStrict<UIScrollView>(
+      web_contents->GetNativeView().Get());
   if (web_contents_view.contentInset.top > GetTopControlsMinHeight()) {
     return true;
   }

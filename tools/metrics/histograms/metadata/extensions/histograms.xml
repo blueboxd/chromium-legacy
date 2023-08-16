@@ -660,15 +660,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Extensions.Database.Database.Restore"
-    enum="LevelDBDatabaseCorruptionRestoreValue" expires_after="M85">
-  <owner>cmumford@chromium.org</owner>
-  <summary>
-    The result of an attempt to recover from an attempt to open a database that
-    failed as a result of corruption.
-  </summary>
-</histogram>
-
 <histogram name="Extensions.Database.Open{ExtensionsDatabaseOpen}"
     enum="LevelDBStatus" expires_after="never">
 <!-- expires-never: core storage metric; consumed in separate dashboard (go/chrome-storage-dashboard) -->
@@ -687,14 +678,6 @@ chromium-metrics-reviews@google.com.
     <variant name=".State" summary="State backing stores"/>
     <variant name=".WebAppsLockScreen" summary="Web apps lock screen stores"/>
   </token>
-</histogram>
-
-<histogram name="Extensions.Database.Value.Restore"
-    enum="LevelDBValueCorruptionDeleteValue" expires_after="M85">
-  <owner>cmumford@chromium.org</owner>
-  <summary>
-    The result of an attempt to delete a corrupted value from a database.
-  </summary>
 </histogram>
 
 <histogram name="Extensions.Debugger.UserIsInDeveloperMode"
@@ -2287,7 +2270,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.GuestView.ChangeOwnerWebContentsOnAttach"
-    enum="Boolean" expires_after="2023-10-15">
+    enum="Boolean" expires_after="2023-12-17">
   <owner>mcnee@chromium.org</owner>
   <owner>src/components/guest_view/OWNERS</owner>
   <summary>

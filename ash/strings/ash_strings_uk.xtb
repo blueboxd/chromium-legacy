@@ -69,7 +69,6 @@
 <translation id="1247519845643687288">Нещодавні додатки</translation>
 <translation id="1252999807265626933">Джерело заряджання: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Який прогноз погоди?</translation>
-<translation id="1267032506238418139">Зміна комбінацій клавіш</translation>
 <translation id="1269405891096105529">Периферійні пристрої не підтримуються в режимі гостя</translation>
 <translation id="1270290102613614947">Екранну клавіатуру вимкнено</translation>
 <translation id="1272079795634619415">Зупинити</translation>
@@ -140,7 +139,7 @@
 <translation id="1550406609415860283">Доступні пристрої</translation>
 <translation id="1550523713251050646">Натисніть, щоб побачити більше опцій</translation>
 <translation id="1555130319947370107">Синій</translation>
-<translation id="1576511610858879060">На вашому ноутбуку Chromebook або пристрої з Bluetooth використовується застаріла версія Bluetooth. Щоб покращити якість звуку, використовуйте інше джерело сигналу.</translation>
+<translation id="1557622599341396706">Показувати назву робочого столу</translation>
 <translation id="1576623706766186887">Віддалити, коли лупу ввімкнено</translation>
 <translation id="1586324912145647027">Перейти до 1 з 8 робочих столів</translation>
 <translation id="1589090746204042747">мати доступ до всіх ваших дій у цьому сеансі</translation>
@@ -217,7 +216,6 @@
 <translation id="1908992311423394684">Нещодавно встановлений додаток</translation>
 <translation id="1915307458270490472">Закрити</translation>
 <translation id="1918022425394817322">Зображення з камери закріплено у верхньому правому куті</translation>
-<translation id="1919743966458266018">Комбінація клавіш для запуску Диспетчера завдань змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Автоматичні кліки</translation>
 <translation id="1928739107511554905">Щоб завантажити оновлення, перезапустіть Chromebook із під’єднаною клавіатурою, використовуючи сенсорний екран.</translation>
 <translation id="1948405482892809935">Перейти в наступний профіль користувача</translation>
@@ -300,6 +298,7 @@
 <translation id="2318576281648121272">Сьогодні <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" /> – категорія результатів пошуку</translation>
 <translation id="2322173485024759474">Назад на одну літеру</translation>
+<translation id="2335091074961603075">На вашому ноутбуку Chromebook або пристрої з Bluetooth використовується застаріла версія Bluetooth. Щоб покращити якість звуку, використовуйте вбудований мікрофон.</translation>
 <translation id="2339073806695260576">Щоб робити нотатки та знімки екрана, використовувати лазерний вказівник чи лупу, торкніться кнопки стилуса на полиці.</translation>
 <translation id="2341729377289034582">Заблоковано у вертикальному положенні</translation>
 <translation id="2345226652884463045">Щоб виділити текст для редагування, натисніть клавішу Enter або клавішу пошуку + пробіл.</translation>
@@ -350,7 +349,7 @@
 <translation id="2531025035050312891">пристрій працює повільно</translation>
 <translation id="2531107890083353124">Перетягуючи вкладку, натисніть <ph name="KEY_ONE" /></translation>
 <translation id="254900897760075745">Копіювати вибраний контент у буфер обміну</translation>
-<translation id="2549711466868162843">Покращити освітлення</translation>
+<translation id="2549711466868162843">Покращення освітлення</translation>
 <translation id="2549985041256363841">Почати запис</translation>
 <translation id="255671100581129685">Google Асистент недоступний у сеансі для всіх.</translation>
 <translation id="256712445991462162">закріплену лупу</translation>
@@ -396,6 +395,7 @@
 <translation id="2750941250130734256">Активне вікно відкріплено.</translation>
 <translation id="2761723519669354964">Відкрити виділений елемент на панелі запуску</translation>
 <translation id="2774348302533424868"><ph name="MODIFIER" /><ph name="DELIMITER" /> від <ph name="KEY_ONE" /> до <ph name="KEY_TWO" /></translation>
+<translation id="2778197796481941784">ctrl + пошук + s</translation>
 <translation id="2778650143428714839">Пристроєм <ph name="DEVICE_TYPE" /> керує <ph name="MANAGER" /></translation>
 <translation id="2782591952652094792">Вийти з режиму зйомки</translation>
 <translation id="2785499565474703580">Підключено 1 пристрій</translation>
@@ -459,6 +459,7 @@
 <translation id="3062298103034426069">Не підтримується</translation>
 <translation id="3068622547379332530">Версія <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />), <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Полицю розташовано ліворуч</translation>
+<translation id="3070639127620815135">пошук + esc</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Розгорнути меню</translation>
 <translation id="3087734570205094154">Низ</translation>
@@ -472,6 +473,7 @@
 <translation id="3120421559657122717">Завершити роботу пристрою?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Перезапустіть, щоб оновити</translation>
+<translation id="3139188263101386725">Використовуйте оновлену комбінацію клавіш</translation>
 <translation id="3139942575505304791">Робочий стіл 1</translation>
 <translation id="315116470104423982">Мобільне передавання даних</translation>
 <translation id="3151786313568798007">Орієнтація</translation>
@@ -929,6 +931,7 @@
 <translation id="504465286040788597">Попередній абзац</translation>
 <translation id="5045550434625856497">Неправильний пароль</translation>
 <translation id="5062496344832867502">оперативна пам’ять</translation>
+<translation id="5068762093486106012">Якщо ви говоритимете в режимі "Без звуку", то отримаєте сповіщення. Звук не передаватиметься з вашого пристрою.</translation>
 <translation id="5078796286268621944">Неправильний PIN-код</translation>
 <translation id="5083553833479578423">Розблокуйте інші функції Асистента.</translation>
 <translation id="5092436659250499817">Увімкнути або вимкнути підсвічування клавіатури</translation>
@@ -959,6 +962,7 @@
 <translation id="5207949376430453814">Підсвічувати місце введення тексту</translation>
 <translation id="5208059991603368177">Увімкнено</translation>
 <translation id="5216991270656129561">Вимкнено до <ph name="TIME" /></translation>
+<translation id="5221423477036820198">Швидко надсилайте повідомлення й відповідайте на них із телефона за допомогою функції "Керування телефоном".</translation>
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="5229343007215035173">Увімкнути або вимкнути екран конфіденційності</translation>
 <translation id="5234764350956374838">Закрити</translation>
@@ -982,10 +986,12 @@
 <translation id="5308380583665731573">Під’єднатися</translation>
 <translation id="5313326810920013265">Налаштування Bluetooth</translation>
 <translation id="5314219114274263156">Запис екрана зроблено</translation>
+<translation id="5314489738835854379">Переходити назад між вікнами</translation>
 <translation id="5316716239522500219">Дбулювати зображення на моніторах</translation>
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="5319712128756744240">Підключити новий пристрій</translation>
 <translation id="5322611492012084517">Не вдається знайти телефон</translation>
+<translation id="5323994101633366939">Сховати назву робочого столу</translation>
 <translation id="5327248766486351172">Ім’я</translation>
 <translation id="5329548388331921293">З'єднання…</translation>
 <translation id="5331975486040154427">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
@@ -1128,6 +1134,7 @@
 <translation id="5958529069007801266">Контрольований користувач</translation>
 <translation id="5961960957587052807">Легке</translation>
 <translation id="5965524703725988602">Увімкнути або вимкнути темну тему. <ph name="STATE_TEXT" />.</translation>
+<translation id="5975235751479998104">Переходити вперед між вікнами</translation>
 <translation id="5976112937189445008">Щоб записати вікно, натисніть клавішу Enter</translation>
 <translation id="5978382165065462689">Спільний доступ до екрана через віддалену допомогу.</translation>
 <translation id="5980301590375426705">Закрити сеанс гостя</translation>
@@ -1167,6 +1174,7 @@
 <translation id="6103838137565245112">система</translation>
 <translation id="6114505516289286752">Файли живих субтитрів завантажено (<ph name="LANGUAGE" />)</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
+<translation id="6119972796024789243">Корекція кольору</translation>
 <translation id="6121838516699723042">Підтвердити завантаження файлу <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">Google Асистент недоступний під час сеансу в режимі "Гість".</translation>
 <translation id="6129953537138746214">Пробіл</translation>
@@ -1196,6 +1204,7 @@
 <translation id="6231419273573514727">Ефективність периферійних пристроїв може бути обмежена</translation>
 <translation id="6232891689835436217">Додаток <ph name="APP_NAME" /> використовує ваші камеру та мікрофон</translation>
 <translation id="6237231532760393653">1X</translation>
+<translation id="6244986124527896815">Щоб відкрити додаток Диспетчер завдань, натисніть <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="6247728804802644171">Відкрити сповіщення</translation>
 <translation id="6254629735336163724">Заблоковано в горизонтальному положенні</translation>
 <translation id="6259254695169772643">Вибирайте елементи за допомогою стилуса</translation>
@@ -1207,7 +1216,7 @@
 <translation id="6288235558961782912">Користувача <ph name="USER_EMAIL_ADDRESS" /> можна буде знову додати з дозволу батьків.</translation>
 <translation id="6291221004442998378">Не заряджається</translation>
 <translation id="6309219492973062892">Натиснути значки 1–8 на панелі запуску</translation>
-<translation id="6315170314923504164">Аудіо</translation>
+<translation id="6315170314923504164">Голос</translation>
 <translation id="6330012934079202188">Показано вікна всіх робочих столів. Щоб показати вікна поточного робочого столу, натисніть клавішу зі стрілкою вгору.</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> – сеанс, яким керує <ph name="MANAGER" /></translation>
 <translation id="6344138931392227467">Пристрій <ph name="DEVICE_NAME" /> під’єднано</translation>
@@ -1246,6 +1255,7 @@
 <translation id="6497418457565568043">Режим "Не турбувати" ввімкнено</translation>
 <translation id="6500896621837555595">Оновити</translation>
 <translation id="6501401484702599040">Вміст екрана транслюється на пристрій "<ph name="RECEIVER_NAME" />"</translation>
+<translation id="6507042703812908515">Щоб відкрити додаток Комбінації клавіш, натисніть <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="6507618042428827377">Вибрати наступний доступний метод введення</translation>
 <translation id="6508923215158854599">Переконайтеся, що Chromebook підключено до тієї самої мережі Wi-Fi, що й пристрій Chromecast.</translation>
 <translation id="6515727200518652613">Немає з’єднання з камерою. Триває підключення.</translation>
@@ -1338,6 +1348,7 @@
 <translation id="6891721121089053234">Переглядайте нещодавно додані на телефон фотографії, медіафайли й додатки на пристрої <ph name="DEVICE_TYPE" /></translation>
 <translation id="6896758677409633944">Копіювати</translation>
 <translation id="6901883536534621389">Спробуйте навігацію за допомогою жестів</translation>
+<translation id="6912841030378044227">Виділити адресний рядок</translation>
 <translation id="6919251195245069855">Не вдається розпізнати розумну картку. Повторіть спробу.</translation>
 <translation id="6920245099716267363">Увімкнути/вимкнути точку доступу. Точку доступу ввімкнено. До неї підключено 1 пристрій.</translation>
 <translation id="6931576957638141829">Зберегти в</translation>
@@ -1476,7 +1487,7 @@
 <translation id="7579778809502851308">Знімок екрана</translation>
 <translation id="7593891976182323525">Клавіша пошуку або Shift</translation>
 <translation id="7600875258240007829">Переглянути всі сповіщення</translation>
-<translation id="7601417191446344542">Увімкнути нагадування про використання режиму "Без звуку"?</translation>
+<translation id="7601417191446344542">Увімкнути нагадування про вимкнений мікрофон?</translation>
 <translation id="7607002721634913082">Призупинено</translation>
 <translation id="7609951632080598826">Запис у календарі, <ph name="DATE" /> о <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Камеру знову підключено.</translation>
@@ -1634,6 +1645,7 @@
 <translation id="8247998213073982446"><ph name="APP_NAME" />, додаток</translation>
 <translation id="8255234195843591763">Щоб оновити, скиньте налаштування</translation>
 <translation id="8261506727792406068">Видалити</translation>
+<translation id="8262312463845990408">Увімкнути або вимкнути відтворення</translation>
 <translation id="8270450402312105425">{0,plural, =1{Поверніться до попередньої версії на пристрої протягом години}one{Поверніться до попередньої версії на пристрої протягом # години}few{Поверніться до попередньої версії на пристрої протягом # годин}many{Поверніться до попередньої версії на пристрої протягом # годин}other{Поверніться до попередньої версії на пристрої протягом # години}}</translation>
 <translation id="8277261673056602147">Виділити текст на екрані</translation>
 <translation id="8284362522226889623">Проведіть чотирма пальцями ліворуч, щоб перейти на попередній робочий стіл</translation>
@@ -1687,6 +1699,7 @@
 <translation id="8513108775083588393">Автообертання</translation>
 <translation id="851458219935658693">Показувати вікна з поточного робочого столу, перемикач вибрано</translation>
 <translation id="8517041960877371778">Пристрій <ph name="DEVICE_TYPE" /> може не заряджатися, коли він увімкнений.</translation>
+<translation id="852060496139946719">{NUM_APPS,plural, =1{Входом мікрофона керує додаток <ph name="APP_NAME" />}one{Входом мікрофона керує # додаток}few{Входом мікрофона керують # додатки}many{Входом мікрофона керують # додатків}other{Входом мікрофона керують # додатка}}</translation>
 <translation id="8535393432370007982">Скасувати сортування за кольором</translation>
 <translation id="8541078764854166027">Слідкування</translation>
 <translation id="8542053257095774575">Немає збережених робочих столів або шаблонів</translation>
@@ -1750,7 +1763,6 @@
 <translation id="8834539327799336565">Підключено</translation>
 <translation id="8841375032071747811">Кнопка "Назад"</translation>
 <translation id="8843682306134542540">Заблокувати/розблокувати обертання. <ph name="STATE_TEXT" /></translation>
-<translation id="8850991929411075241">Search (Пошук)+Esc</translation>
 <translation id="8853703225951107899">PIN-код або пароль усе ще не вдається підтвердити. Примітка: якщо ви нещодавно змінювали пароль, введіть старий. Новий пароль буде застосовано, щойно ви вийдете з облікового запису.</translation>
 <translation id="8855885154700222542">Клавіша повноекранного режиму</translation>
 <translation id="8858369206579825206">Налаштування конфіденційності</translation>

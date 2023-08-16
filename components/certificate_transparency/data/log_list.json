@@ -1,6 +1,6 @@
 {
-  "version": "22.16",
-  "log_list_timestamp": "2023-06-18T12:55:32Z",
+  "version": "23.11",
+  "log_list_timestamp": "2023-08-07T12:55:27Z",
   "operators": [
     {
       "name": "Google",
@@ -78,11 +78,9 @@
       "name": "Cloudflare",
       "email": [
         "ct-logs@cloudflare.com",
-        "brendan@cloudflare.com",
-        "nick@cloudflare.com",
-        "pat@cloudflare.com",
-        "zi@cloudflare.com",
-        "ivan@cloudflare.com"
+        "mihir@cloudflare.com",
+        "dkozlov@cloudflare.com",
+        "leland@cloudflare.com"
       ],
       "logs": [
         {

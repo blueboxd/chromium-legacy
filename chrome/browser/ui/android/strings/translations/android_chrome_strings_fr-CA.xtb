@@ -61,6 +61,7 @@ Seule une personne connaissant votre phrase de passe peut lire vos données chif
 <translation id="1283039547216852943">Toucher pour développer</translation>
 <translation id="1289059016768036948">Vous devrez vous connecter à votre compte Google</translation>
 <translation id="1291207594882862231">Effacer l'historique, les témoins, les données de site, le cache…</translation>
+<translation id="1293898515599432175">Vos mots de passe seront supprimés du gestionnaire de mots de passe Google pour Chrome <ph name="CHROME_CHANNEL" />. Vous conserverez le fichier de mots de passe que vous venez de télécharger.</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
 <translation id="1298077576058087471">Économisez jusqu'à 60 % de données, découvrez les actualités du jour</translation>
 <translation id="1303339473099049190">Ce mot de passe est introuvable. Vérifiez l'orthographe et réessayez.</translation>
@@ -128,7 +129,6 @@ Lorsque vous supprimez votre historique de navigation (pour un site en particuli
 <translation id="164269334534774161">Vous consultez une copie hors ligne de cette page qui a été créée le <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Historique</translation>
 <translation id="1657932388559784161">La zone de contenu au bas de l'écran des statistiques de la page est fermée</translation>
-<translation id="1668122540633280551">Choisissez comment les aperçus de vidéos joueront automatiquement dans la page d'accueil de Chrome.</translation>
 <translation id="1670399744444387456">De base</translation>
 <translation id="1671236975893690980">Téléchargement en attente…</translation>
 <translation id="1672586136351118594">Ne plus afficher</translation>
@@ -271,11 +271,11 @@ Lorsque vous supprimez votre historique de navigation (pour un site en particuli
 <translation id="2536728043171574184">Affichage d’une copie hors ligne de cette page en cours</translation>
 <translation id="2546283357679194313">Témoins et données de site</translation>
 <translation id="2558569818338050235">Votre historique de navigation a une incidence sur les annonces que vous voyez</translation>
-<translation id="2561519700418191927">Aperçus de vidéos</translation>
 <translation id="2567385386134582609">IMAGE</translation>
 <translation id="2567545343356994513">Ce mode offre une protection proactive et plus rapide contre les extensions, les sites Web et les téléchargements dangereux</translation>
 <translation id="2569733278091928697">Vous pourrez facilement gérer les commandes multimédias, les sessions de navigation privée, les téléchargements et plus encore</translation>
 <translation id="2571711316400087311">Proposer d'envoyer les pages dans d'autres langues vers Google Traduction</translation>
+<translation id="2571834852878229351">Créer le mien</translation>
 <translation id="2573452357057307036">Découvrez comment définir Chrome par défaut</translation>
 <translation id="257470231920177468">Lorsque cette option est activée, une liste des sites visités qui prennent en considération vos centres d’intérêt apparaît ici.</translation>
 <translation id="2580436639406015883">La réduction des pourriels et de la fraude s'appuie sur des jetons de confiance pour aider les sites à lutter contre la fraude et à distinguer les robots des personnes.
@@ -374,6 +374,7 @@ Les jetons de confiance valides améliorent la confidentialité sur le Web et ne
 <translation id="3027644380269727216">En fonction de votre activité sur un site. Ce paramètre est activé.</translation>
 <translation id="3029276696788198026">Aucun préchargement</translation>
 <translation id="3029704984691124060">Mots de passe multitermes différents</translation>
+<translation id="303514781271618814">Chrome explore de nouvelles fonctionnalités qui permettent aux sites d'offrir la même expérience de navigateur tout en utilisant moins de vos données</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Suivi du prix en cours…</translation>
 <translation id="3037517125981011456">Affiche l'invite de connexion dans Chrome</translation>
@@ -509,9 +510,9 @@ Les jetons de confiance valides améliorent la confidentialité sur le Web et ne
 <translation id="3775705724665058594">Envoyer à vos appareils</translation>
 <translation id="3791957072666773229">{TAB_COUNT,plural, =1{1 onglet}one{# onglet}other{# onglets}}</translation>
 <translation id="3795154175078851242">Copier l'image avec le lien</translation>
-<translation id="3803784507854318295">Gérer la lecture automatique</translation>
 <translation id="3810838688059735925">Vidéo</translation>
 <translation id="3810973564298564668">Gérer</translation>
+<translation id="381861209280417772">Supprimer les mots de passe</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> téléchargements supprimés</translation>
 <translation id="3819183753496523827">Vous êtes hors ligne. Vérifiez votre connexion Internet et réessayez.</translation>
 <translation id="3830886834687455630">Mettez à jour les services Google Play pour vérifier vos mots de passe</translation>
@@ -562,11 +563,11 @@ Les jetons de confiance valides améliorent la confidentialité sur le Web et ne
 <translation id="4095146165863963773">Supprimer les données de l'application?</translation>
 <translation id="4096227151372679484">Flux d'enregistrement des favoris ouvert à mi-hauteur</translation>
 <translation id="4101475238162928417">Synchronisez vos données pour ajouter vos mots de passe, vos favoris et plus sur vos autres appareils</translation>
-<translation id="410351446219883937">Lecture automatique</translation>
 <translation id="4106587138345390261">Chrome explore de nouvelles fonctionnalités qui permettent aux sites d'offrir la même expérience de navigation tout en recourant dans une moindre mesure à vos renseignements personnels</translation>
 <translation id="4108314971463891922">Suivre</translation>
 <translation id="4108998448622696017">Il détecte les événements dangereux et vous en informe lorsqu'ils surviennent.</translation>
 <translation id="4116038641877404294">Téléchargez des pages pour les utiliser hors connexion</translation>
+<translation id="4121654769234887259">Vous n'aurez pas à mémoriser ce mot de passe. Il sera enregistré dans le gestionnaire de mots de passe Google du compte <ph name="USERNAME" />.</translation>
 <translation id="4124152339699379357">Flux d'autorisation des notifications ouvert à pleine hauteur</translation>
 <translation id="4135200667068010335">La liste d'appareils avec lesquels partager un onglet est fermée.</translation>
 <translation id="4137746084635924146">Langue actuelle de l'appareil</translation>
@@ -596,6 +597,7 @@ Les jetons de confiance valides améliorent la confidentialité sur le Web et ne
 <translation id="4249955472157341256">Trier par Plus récents</translation>
 <translation id="4250229828105606438">Saisie d'écran</translation>
 <translation id="4256782883801055595">Licences de logiciels libres</translation>
+<translation id="4257230861809842349">Supprimer les mots de passe du gestionnaire de mots de passe Google?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Quelles données sont utilisées :<ph name="END_BOLD" /> votre historique de navigation et un enregistrement des sites que vous avez visités à l'aide de Chrome sur cet appareil.</translation>
 <translation id="4269820728363426813">Copier l'adresse du lien</translation>
 <translation id="4283102315569707115">Demander des sites pour ordinateurs par défaut?</translation>
@@ -632,7 +634,6 @@ Les jetons de confiance valides améliorent la confidentialité sur le Web et ne
 <translation id="4484496141267039529">Aucune connexion. Réessayez plus tard.</translation>
 <translation id="4487967297491345095">Toutes les données des applications de Chrome seront supprimées de façon définitive. Cela comprend tous les fichiers, les paramètres, les comptes, les bases de données, etc.</translation>
 <translation id="449126573531210296">Chiffrer les mots de passe synchronisés avec votre compte Google</translation>
-<translation id="4504667196171871375">Utiliser le réseau Wi-Fi ou les données cellulaires</translation>
 <translation id="4508528996305412043">Le menu de la carte du flux est ouvert</translation>
 <translation id="4509501256689523862">Lorsque vous naviguez, la personnalisation d’une annonce dépend de ce paramètre, du <ph name="BEGIN_LINK_1" />sujet des annonces<ph name="END_LINK_1" />, des <ph name="BEGIN_LINK_2" />paramètres de vos témoins<ph name="END_LINK_2" />, et du fait que le site que vous consultez personnalise les annonces</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Il y a # jour}one{Il y a # jour}other{Il y a # jours}}</translation>
@@ -779,6 +780,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5171045022955879922">Effectuez une recherche ou entrez une adresse URL</translation>
 <translation id="5174700554036517242">L'onglet est revenu à la hauteur initiale</translation>
 <translation id="5184329579814168207">Ouvrir dans Chrome</translation>
+<translation id="5186634140793586141">Gérez les sujets et les recherches qui vous intéressent</translation>
 <translation id="5191251636205085390">Découvrez les nouvelles technologies qui visent à remplacer les témoins tiers et apprenez à les utiliser.</translation>
 <translation id="5193988420012215838">Copié dans votre presse-papier</translation>
 <translation id="5204967432542742771">Entrez le mot de passe</translation>
@@ -850,7 +852,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="562289928968387744">Gérer les réactions</translation>
 <translation id="5626134646977739690">Nom :</translation>
 <translation id="5628604359369369630">Non lus : accessibles hors ligne</translation>
-<translation id="5635091213277904818">Chrome supprime automatiquement les sites datant de plus de 30 jours. Un site que vous revisitez pourrait réapparaître dans la liste. Vous avez également la possibilité d’empêcher un site de vous suggérer des annonces.</translation>
 <translation id="5641456720590409793"><ph name="BEGIN_LINK1" />L'historique de recherches<ph name="END_LINK1" /> et <ph name="BEGIN_LINK2" />les autres formes d'activité<ph name="END_LINK2" /> peuvent être enregistrées dans votre compte Google</translation>
 <translation id="564667659802381754"><ph name="BEGIN_NEW" />Nouveau<ph name="END_NEW" /> Guide sur la confidentialité</translation>
 <translation id="5648166631817621825">Sept derniers jours</translation>
@@ -860,6 +861,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5665379678064389456">Créer un événement dans <ph name="APP_NAME" /></translation>
 <translation id="5683547024293500885">Chrome ne peut pas vérifier la présence de mises à jour</translation>
 <translation id="5686790454216892815">Nom de fichier trop long</translation>
+<translation id="5687606994963670306">Chrome supprime automatiquement les sites datant de plus de 30 jours. Un site que vous revisitez pourrait réapparaître dans la liste. Vous avez également la possibilité d'empêcher un site de vous suggérer des annonces. Apprenez-en plus sur comment <ph name="BEGIN_LINK" />gérer la confidentialité des annonces dans Chrome<ph name="END_LINK" />.</translation>
 <translation id="569435661099256888">Vous pouvez voir les pages que vous avez visitées ou les effacer de votre historique</translation>
 <translation id="569536719314091526">Utilisez le bouton Plus d'options pour traduire cette page vers n'importe quelle langue</translation>
 <translation id="5696597120588531049">Chrome peut vous aider à vous protéger, entre autres, contre les violations de données et les sites Web non sécuritaires</translation>
@@ -1039,7 +1041,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6590471736817333463">Économisez jusqu'à 60 % de données</translation>
 <translation id="6590680911007613645">Assurez-vous que le mot de passe que vous enregistrez correspond à celui pour <ph name="SITE" /></translation>
 <translation id="6593061639179217415">Version ordinateur</translation>
-<translation id="6594121454516132231">Découvrez comment Chrome planifie de vous protéger du suivi intersites, tout en préservant le caractère ouvert du Web</translation>
 <translation id="6594347733515723558">Options tri et affichage</translation>
 <translation id="6595046016124923392">Les images sont envoyées à Google afin d'améliorer les descriptions pour vous.</translation>
 <translation id="6600954340915313787">Copiée dans Chrome</translation>
@@ -1174,6 +1175,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7260367682327802201">Il est possible que votre appareil Android ait un paramètre similaire. Si la mesure des annonces est activée dans Chrome et sur votre appareil Android, une entreprise peut être capable de mesurer l’efficacité d’une annonce sur les sites Web que vous visitez et dans les applications que vous utilisez.</translation>
 <translation id="727288900855680735">Envoyer un <ph name="ONE_TIME_CODE" /> à <ph name="ORIGIN" />?</translation>
 <translation id="7274013316676448362">Site bloqué</translation>
+<translation id="7276100255011548441">Chrome supprime automatiquement les sujets datant de plus de quatre semaines. Au fil de votre navigation sur le Web, un sujet peut réapparaître dans la liste. Vous pouvez également bloquer les sujets que vous ne souhaitez pas que Chrome partage avec des sites. Apprenez-en plus sur comment <ph name="BEGIN_LINK" />gérer la confidentialité des annonces dans Chrome<ph name="END_LINK" />.</translation>
 <translation id="7286703216224610554">Partager la réaction uniquement</translation>
 <translation id="7290209999329137901">Impossible de renommer l'élément</translation>
 <translation id="7291910923717764901">Les descriptions d'image ont été ajoutées pour cette page</translation>
@@ -1310,7 +1312,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7944772052836377867">La synchronisation doit vérifier qu'il s'agit bien de vous</translation>
 <translation id="7947953824732555851">Accepter et se connecter</translation>
 <translation id="7957413488482743710">Une carte virtuelle masque votre carte réelle pour vous protéger de fraudes potentielles. <ph name="BEGIN_LINK1" />En savoir plus sur les cartes virtuelles<ph name="END_LINK1" /></translation>
-<translation id="7961015016161918242">Jamais</translation>
 <translation id="7961926449547174351">Vous avez désactivé l'accès à l'espace de stockage. Veuillez accéder au menu Paramètres pour l'activer.</translation>
 <translation id="7963646190083259054">Fournisseur :</translation>
 <translation id="7965838025086216108">Vous pouvez utiliser des mots de passe enregistrés sur n'importe quel appareil. Ils sont enregistrés dans le gestionnaire de mots de passe Google du compte <ph name="ACCOUNT" />.</translation>
@@ -1362,6 +1363,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8127542551745560481">Modifier la page d'accueil</translation>
 <translation id="8130309322784422030">Vos données de connexion enregistrées peuvent être obsolètes</translation>
 <translation id="813082847718468539">Afficher l'information sur le site</translation>
+<translation id="8137562778192957619">Vous n'aurez pas à mémoriser ce mot de passe. Il sera enregistré dans le gestionnaire de mots de passe Google.</translation>
 <translation id="8156139159503939589">Quelles langues lisez-vous?</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> fichiers restants</translation>
 <translation id="8189750580333936930">Bac à sable de confidentialité</translation>
@@ -1516,7 +1518,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8968085728801125376">{TAB_COUNT,plural, =1{<ph name="INCOGNITO_TAB_COUNT" /> onglet de navigation privée et <ph name="TAB_COUNT_ONE" /> autre onglet seront fermés}one{<ph name="INCOGNITO_TAB_COUNT" /> onglet de navigation privée et <ph name="TAB_COUNT_MANY" /> autre onglet seront fermés}other{<ph name="INCOGNITO_TAB_COUNT" /> onglet de navigation privée et <ph name="TAB_COUNT_MANY" /> autres onglets seront fermés}}</translation>
 <translation id="8970887620466824814">Une erreur s'est produite.</translation>
 <translation id="8972098258593396643">Télécharger vers le dossier par défaut?</translation>
-<translation id="8987641763863173640">Gérez les paramètres d'aperçu de la vidéo</translation>
 <translation id="8987736167266086032">Reprenez là où vous vous étiez arrêté</translation>
 <translation id="8989968390305463310">Votre historique de navigation a une incidence sur les annonces que vous voyez ainsi que sur les centres d'intérêt tels qu'ils sont estimés ci-dessous. Afin de protéger votre confidentialité, Chrome supprime automatiquement et de façon continue vos centres d'intérêt chaque mois. Les centres d'intérêt peuvent être actualisés à moins que vous ne les retiriez.</translation>
 <translation id="8993760627012879038">Ouvrir un nouvel onglet en mode de nav. privée</translation>

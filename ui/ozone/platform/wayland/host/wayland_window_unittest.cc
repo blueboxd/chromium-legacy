@@ -1554,27 +1554,27 @@ TEST_P(WaylandWindowTest, SetCursorUsesZcrCursorShapesForCommonTypes) {
   // Verify some commonly-used cursors.
   EXPECT_CALL(*mock_cursor_shapes,
               SetCursorShape(ZCR_CURSOR_SHAPES_V1_CURSOR_SHAPE_TYPE_POINTER));
-  auto pointer_cursor = base::MakeRefCounted<BitmapCursor>(
-      mojom::CursorType::kPointer, kDefaultCursorScale);
+  auto pointer_cursor =
+      base::MakeRefCounted<BitmapCursor>(mojom::CursorType::kPointer);
   window_->SetCursor(pointer_cursor.get());
 
   EXPECT_CALL(*mock_cursor_shapes,
               SetCursorShape(ZCR_CURSOR_SHAPES_V1_CURSOR_SHAPE_TYPE_HAND));
-  auto hand_cursor = base::MakeRefCounted<BitmapCursor>(
-      mojom::CursorType::kHand, kDefaultCursorScale);
+  auto hand_cursor =
+      base::MakeRefCounted<BitmapCursor>(mojom::CursorType::kHand);
   window_->SetCursor(hand_cursor.get());
 
   EXPECT_CALL(*mock_cursor_shapes,
               SetCursorShape(ZCR_CURSOR_SHAPES_V1_CURSOR_SHAPE_TYPE_IBEAM));
-  auto ibeam_cursor = base::MakeRefCounted<BitmapCursor>(
-      mojom::CursorType::kIBeam, kDefaultCursorScale);
+  auto ibeam_cursor =
+      base::MakeRefCounted<BitmapCursor>(mojom::CursorType::kIBeam);
   window_->SetCursor(ibeam_cursor.get());
 }
 
 TEST_P(WaylandWindowTest, SetCursorCallsZcrCursorShapesOncePerCursor) {
   MockZcrCursorShapes* mock_cursor_shapes = InstallMockZcrCursorShapes();
-  auto hand_cursor = base::MakeRefCounted<BitmapCursor>(
-      mojom::CursorType::kHand, kDefaultCursorScale);
+  auto hand_cursor =
+      base::MakeRefCounted<BitmapCursor>(mojom::CursorType::kHand);
   // Setting the same cursor twice on the client only calls the server once.
   EXPECT_CALL(*mock_cursor_shapes, SetCursorShape(_)).Times(1);
   window_->SetCursor(hand_cursor.get());
@@ -1584,8 +1584,8 @@ TEST_P(WaylandWindowTest, SetCursorCallsZcrCursorShapesOncePerCursor) {
 TEST_P(WaylandWindowTest, SetCursorDoesNotUseZcrCursorShapesForNoneCursor) {
   MockZcrCursorShapes* mock_cursor_shapes = InstallMockZcrCursorShapes();
   EXPECT_CALL(*mock_cursor_shapes, SetCursorShape(_)).Times(0);
-  auto none_cursor = base::MakeRefCounted<BitmapCursor>(
-      mojom::CursorType::kNone, kDefaultCursorScale);
+  auto none_cursor =
+      base::MakeRefCounted<BitmapCursor>(mojom::CursorType::kNone);
   window_->SetCursor(none_cursor.get());
 }
 
@@ -4699,6 +4699,41 @@ TEST_P(WaylandWindowTest, NoRoundingErrorInDIP) {
       EXPECT_EQ(kBoundsDip, wayland_window->GetBoundsInDIP());
     }
   }
+  VerifyAndClearExpectations();
+}
+
+// Make sure that the window scale change is applied on the latest
+// in_flight_requests.
+TEST_P(WaylandWindowTest, ScaleChangeWhenStateRequestThrottoled) {
+  VerifyAndClearExpectations();
+
+  gfx::Rect bounds_dip;
+  auto* toplevel = static_cast<WaylandToplevelWindow*>(window_.get());
+  for (int i = 300; i <= 600; i++) {
+    bounds_dip = {0, 0, i, 900 - i};
+    toplevel->HandleToplevelConfigure(bounds_dip.width(), bounds_dip.height(),
+                                      {});
+    toplevel->HandleSurfaceConfigure(i);
+  }
+  // latest bounds_dip is throttled, and not applied, scale factor is 1.
+  EXPECT_NE(bounds_dip.size(), toplevel->applied_state().bounds_dip.size());
+  EXPECT_EQ(bounds_dip.size(),
+            delegate_.ConvertRectToPixels(bounds_dip).size());
+
+  // Update to delegate to use the correct scale;
+  constexpr float kScale = display::kDsf_1_777;
+  auto* primary_output =
+      connection_->wayland_output_manager()->GetPrimaryOutput();
+  primary_output->SetScaleFactorForTesting(kScale);
+  toplevel->UpdateWindowScale(true);
+  AdvanceFrameToCurrent(window_.get(), delegate_);
+
+  // bounds_dip advances to be applied, and scaled correctly.
+  EXPECT_EQ(bounds_dip.size(), toplevel->applied_state().bounds_dip.size());
+  EXPECT_NE(bounds_dip.size(),
+            delegate_.ConvertRectToPixels(bounds_dip).size());
+  EXPECT_EQ(window_->applied_state().size_px,
+            delegate_.ConvertRectToPixels(bounds_dip).size());
   VerifyAndClearExpectations();
 }
 

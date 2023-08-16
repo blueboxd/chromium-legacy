@@ -13,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -95,7 +96,7 @@ WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
 #if BUILDFLAG(IS_ANDROID)
   AutofillPopupControllerImpl* controller = new AutofillPopupControllerImpl(
       delegate, web_contents, container_view, element_bounds, text_direction,
-      base::BindRepeating(&password_manager::ShowWarning));
+      base::BindRepeating(&local_password_migration::ShowWarning));
 #else
   AutofillPopupControllerImpl* controller = new AutofillPopupControllerImpl(
       delegate, web_contents, container_view, element_bounds, text_direction,
@@ -111,7 +112,10 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
     gfx::NativeView container_view,
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction,
-    base::RepeatingCallback<void(gfx::NativeWindow, Profile*)>
+    base::RepeatingCallback<
+        void(gfx::NativeWindow,
+             Profile*,
+             password_manager::metrics_util::PasswordMigrationWarningTriggers)>
         show_pwd_migration_warning_callback)
     : controller_common_(element_bounds, text_direction, container_view),
       web_contents_(web_contents),
@@ -293,9 +297,14 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
   // Ignore clicks immediately after the popup was shown. This is to prevent
   // users accidentally accepting suggestions (crbug.com/1279268).
   DCHECK(!time_view_shown_.is_null());
-  if ((base::TimeTicks::Now() - time_view_shown_ <
-       kIgnoreEarlyClicksOnPopupDuration) &&
+  const base::TimeDelta time_elapsed =
+      base::TimeTicks::Now() - time_view_shown_;
+  if ((time_elapsed < kIgnoreEarlyClicksOnPopupDuration) &&
       !disable_threshold_for_testing_) {
+    base::UmaHistogramCustomTimes(
+        "Autofill.Popup.AcceptanceDelayThresholdNotMet", time_elapsed,
+        base::Milliseconds(0), kIgnoreEarlyClicksOnPopupDuration,
+        /*buckets=*/50);
     return;
   }
 
@@ -360,7 +369,9 @@ void AutofillPopupControllerImpl::AcceptSuggestionWithoutThreshold(int index) {
               kUnifiedPasswordManagerLocalPasswordsMigrationWarning)) {
     show_pwd_migration_warning_callback_.Run(
         web_contents_->GetTopLevelNativeWindow(),
-        Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
+        Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
+        password_manager::metrics_util::PasswordMigrationWarningTriggers::
+            kKeyboardAcessoryBar);
   }
 #endif
 }

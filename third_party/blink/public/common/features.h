@@ -412,6 +412,8 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgeConsiderKAnonymity);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgeEnforceKAnonymity);
 
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgePassRecencyToGenerateBid);
+
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kForceWebContentsDarkMode);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<ForceDarkInversionMethod>
     kForceDarkInversionMethodParam;
@@ -1063,6 +1065,9 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kTargetBlankImpliesNoOpener);
 // If the flag is disabled TextCodecICU would be used instead.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kTextCodecCJKEnabled);
 
+// Use Gb18030-2022 for encoding/decoding GB18030.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kGb18030_2022Enabled);
+
 // If enabled, reads and decodes navigation body data off the main thread.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kThreadedBodyLoader);
 
@@ -1150,9 +1155,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcInitializeEncoderOnFirstFrame);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcMetronome);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcMultiplexCodec);
 // Feature flag for batching sending of WebRTC RTP UDP packets.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcSendPacketBatch);
-// Combine WebRTC Network and Worker threads. More info at crbug.com/1373439.
-// TODO(dcheng): This seems likely to be a typo.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcSendPacketBatch);
 // If enabled, the WebRTC_* threads in peerconnection module will use
 // kResourceEfficient thread type.

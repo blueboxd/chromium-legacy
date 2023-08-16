@@ -246,8 +246,8 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_APPLICATION_SHORTCUT_INCOGNITOSEARCH_TITLE" desc="Message when opening a New Incognito Search from springboard force touch static shortcuts. [Length: unlimited] [iOS only]." meaning="3D Touch entry to create a new Incognito tab.">
        Incognito Search
       </message>
-      <message name="IDS_IOS_APPLICATION_SHORTCUT_LENS_TITLE" desc="Message when opening Lens from springboard force touch static shortcuts. [Length: unlimited] [iOS only].">
-        Search with Lens
+      <message name="IDS_IOS_APPLICATION_SHORTCUT_LENS_TITLE" desc="Message when opening Lens from springboard force touch static shortcuts to search with the device camera. [Length: unlimited] [iOS only].">
+        Lens Camera Search
       </message>
       <message name="IDS_IOS_APPLICATION_SHORTCUT_NEWSEARCH_TITLE" desc="Message when opening a New Search from springboard force touch static shortcuts. [Length: unlimited] [iOS only]." meaning="3D Touch entry to create a new tab.">
         New Search
@@ -1301,8 +1301,14 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_IDENTITY_DISC_WITH_EMAIL" desc="The content description for a toolbar button displaying user profile picture. Tapping on this button navigates to 'Sync and Google services' page in settings [iOS only].">
         Signed in as <ph name="USER_EMAIL">$1<ex>peter.parker@gmail.com</ex></ph>. Opens settings.
       </message>
-      <message name="IDS_IOS_IDENTITY_DISC_SIGNED_OUT" desc="The content description for a toolbar button displaying the signed-out avatar. Tapping on this button navigates to 'Turn on Sync' page in settings [iOS only].">
+      <message name="IDS_IOS_IDENTITY_DISC_SIGNED_OUT_ACCESSIBILITY_LABEL_WITH_SYNC" desc="The content description for a toolbar button displaying the signed-out avatar. Tapping on this button navigates to 'Turn on Sync' page in settings [iOS only].">
         Signed out. Opens dialog to sign in and turn on sync.
+      </message>
+      <message name="IDS_IOS_IDENTITY_DISC_SIGNED_OUT_ACCESSIBILITY_LABEL" desc="The content description for a toolbar button displaying the signed-out avatar. Tapping on this button opens the sign-in sheet [iOS only].">
+        Signed out. Opens options to sign in.
+      </message>
+      <message name="IDS_IOS_IDENTITY_DISC_SIGNED_OUT_PROMO_LABEL" desc="Text in the sheet that offers the user to sign-in to Chrome [iOS only].">
+        Get your bookmarks, passwords, and more on all your devices.
       </message>
       <message name="IDS_IOS_INACTIVE_TABS_BUTTON_SUBTITLE" desc="Subtitle of the button in the Tab Grid that opens the grid of Inactive Tabs.">
         Tabs not used for <ph name="THRESHOLD">$1<ex>14</ex></ph> days
@@ -1726,8 +1732,8 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_NEW_ITEM_ACCESSIBILITY_HINT" desc="Accessibility hint spoken by VoiceOver to let the user know there is a new item. This string will be appended to an existing accesibility label when the UI is showing a little blue dot to attract the user's attention. For example, the label 'Default Browser' would become 'Default Browser, new item', which is why the string is not capitalized at its start. [iOS/iPadOS only]">
         new item
       </message>
-      <message name="IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT" desc="Text for the New Tab Tip in-product help promotion, explaining that new tabs can be added and switched between. [iOS only]" meaning="The user has never created a new tab, and a bubble is displayed pointing to the tab switcher to inform users how to create tabs and switch between them.">
-        Add tabs and switch between pages
+      <message name="IDS_IOS_SEE_ALL_OPEN_TABS_IPH_TEXT" desc="Text for the tab grid button's in-product help, explaining that all open tabs can be seen. [iOS only]">
+        See all open tabs
       </message>
       <message name="IDS_IOS_NEW_TAB_LEARN_MORE_ABOUT_SUGGESTED_CONTENT" desc="Text in the footer of the New Tab Page. Part of the text is a link to a help center page where the user can learn more about suggested content.">
         <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph> about suggested content
@@ -1779,6 +1785,9 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_OPEN_IN_FILE_DOWNLOAD_FAILED" desc="The message of the alert informing a user that the download of the file to be opened in another application failed. [Length: 60em] [iOS only]">
         The file could not be downloaded at this time.
+      </message>
+      <message name="IDS_IOS_OPEN_NEW_TAB_IPH_TEXT" desc="Text for the New Tab Tip in-product help promotion, explaining that new tabs can be added. [iOS only]" meaning="The user has never created a new tab, and a bubble is displayed pointing to the tab switcher to inform users how to create tabs and switch between them.">
+        Open a new tab
       </message>
       <message name="IDS_IOS_OPEN_SOURCE_LICENSES" desc="The label to access the open source licenses, displayed in the application settings [Length: 30em] [iOS only]">
         Open Source Licenses
@@ -3750,13 +3759,13 @@ Try to use a unique password for every site.
         Tap Add then Enter Your Info
       </message>
       <message name="IDS_IOS_WHATS_NEW_INCOGNITO_TABS_FROM_OTHER_APPS_TITLE" desc="Open in incognito tabs from other apps title displayed in What's New. [iOS only]">
-        Open Incognito tabs from other apps
+        Open links from other apps in Incognito
       </message>
       <message name="IDS_IOS_WHATS_NEW_INCOGNITO_TABS_FROM_OTHER_APPS_SUBTITLE" desc="Open in incognito tabs from other apps subtitle displayed in What's New. [iOS only]">
-        You can choose to open incoming URLs from other apps in Incognito Mode.
+        You can choose to open incoming URLs from other apps in Incognito.
       </message>
-      <message name="IDS_IOS_WHATS_NEW_GOT_TO_SETTINGS_BUTTON_TITLE" desc="Text of the primary button to open the iOS settings page. [iOS only]">
-        Go to Settings
+      <message name="IDS_IOS_WHATS_NEW_GOT_TO_SETTINGS_BUTTON_TITLE" desc="Text of the primary button to open the chrome settings page. [iOS only]">
+        Open Settings
       </message>
       <message name="IDS_IOS_WHATS_NEW_INCOGNITO_TABS_FROM_OTHER_APPS_SCREENSHOT_TEXT_OPEN_IN_INCOGNITO" desc="Text in image asking the user to open a url in incognito. [iOS only]">
         Open in Incognito?
@@ -3765,16 +3774,16 @@ Try to use a unique password for every site.
         https://www.amazon.com/Wife-Gifts/s?k=for+Wife+Gifts
       </message>
       <message name="IDS_IOS_WHATS_NEW_INCOGNITO_TABS_FROM_OTHER_APPS_STEP_2" desc="Text of the row indicating the second step of opening in incognito tabs from other apps. [iOS only]">
-        Tap Privacy &amp; Security
+        Tap “Privacy &amp; Security.”
       </message>
       <message name="IDS_IOS_WHATS_NEW_INCOGNITO_TABS_FROM_OTHER_APPS_STEP_3" desc="Text of the row indicating the third step of opening in incognito tabs from other apps. [iOS only]">
-        Toggle on open links in Incognito
+        Turn on "Ask to Open Links from Other Apps in Incognito."
       </message>
       <message name="IDS_IOS_WHATS_NEW_CHROME_ACTIONS_TITLE" desc="Chrome Actions title displayed in What's New. [iOS only]">
-        Chrome Actions
+        Use Chrome Actions on iOS
       </message>
       <message name="IDS_IOS_WHATS_NEW_CHROME_ACTIONS_SUBTITLE" desc="Chrome Actions subtitle displayed in What's New. [iOS only]">
-        Shortcuts in the Omnibox that enable quick access to helpful settings and actions.
+        Shortcuts to quickly modify settings and use features from the address bar.
       </message>
       <message name="IDS_IOS_WHATS_NEW_CHROME_ACTIONS_SCREENSHOT_TEXT_MANAGE_PASSWORDS" desc="Text in image displaying the result of Chrome Actions query. [iOS only]">
         Manage Passwords
@@ -3789,13 +3798,13 @@ Try to use a unique password for every site.
         Passwords
       </message>
       <message name="IDS_IOS_WHATS_NEW_CHROME_ACTIONS_STEP_1" desc="Text of the row indicating the first step of Chrome Actions. [iOS only]">
-        In the address bar, enter a task like “clear my history” or “edit passwords”.
+        In the address bar, enter a task like “clear my history” or “edit passwords.”
       </message>
       <message name="IDS_IOS_WHATS_NEW_CHROME_ACTIONS_STEP_2" desc="Text of the row indicating the second step of Chrome Actions. [iOS only]">
         Tap the shortcut that appears under the address bar.
       </message>
       <message name="IDS_IOS_WHATS_NEW_CHROME_ACTIONS_STEP_3" desc="Text of the row indicating the third step of Chrome Actions. [iOS only]">
-        Complete your task
+        Complete your task.
       </message>
       <message name="IDS_IOS_WHATS_NEW_INCOGNITO_LOCK_TITLE" desc="Incognito Lock title displayed in What's New. [iOS only]">
         Incognito Lock
@@ -3807,10 +3816,13 @@ Try to use a unique password for every site.
         Unlock With Face ID
       </message>
       <message name="IDS_IOS_WHATS_NEW_INCOGNITO_LOCK_STEP_2" desc="Text of the row indicating the second step to turn on Incognito Lock. [iOS only]">
-        Tap “Privacy and Security”.
+        Tap “Privacy &amp; Security.”
       </message>
       <message name="IDS_IOS_WHATS_NEW_CALENDAR_SUBTITLE" desc="Google calendar subtitle displayed in What's New. [iOS only]">
         Create Calendar events directly by clicking on a date in a web page.
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_CALENDAR_TITLE" desc="Google calendar title displayed in What's New. [iOS only]">
+        Create calendar events from dates
       </message>
       <message name="IDS_IOS_WHATS_NEW_CALENDAR_SCREENSHOT_TEXT_CALENDAR" desc="Text in image displaying Google calendar title. [iOS only]">
         Calendar
@@ -3843,13 +3855,28 @@ Try to use a unique password for every site.
         Events
       </message>
       <message name="IDS_IOS_WHATS_NEW_CALENDAR_STEP_1" desc="Text of the row indicating the first step of creating a Google calandar event. [iOS only]">
-        Long press on a date
+        Touch &amp; hold a date.
       </message>
       <message name="IDS_IOS_WHATS_NEW_CALENDAR_STEP_2" desc="Text of the row indicating the second step of creating a Google calandar event. [iOS only]">
-        Select Google or Apple Calendar
+        Select “Add to Google Calendar“ or “Add to Apple Calendar.“
       </message>
       <message name="IDS_IOS_WHATS_NEW_CALENDAR_STEP_3" desc="Text of the row indicating the third step of creating a Google calandar event. [iOS only]">
-        Complete the event and save
+        Edit the event details and tap “Save.“
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_MINI_MAPS_SUBTITLE" desc="Mini Maps subtitle displayed in What's New. [iOS only]">
+        Use addresses on web pages to get local info and directions.
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_MINI_MAPS_STEP_1" desc="Text of the row indicating the first step of of the Mini Maps feature. [iOS only]">
+        Touch &amp; Hold an address.
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_MINI_MAPS_STEP_3" desc="Text of the row indicating the third step of of the Mini Maps feature. [iOS only]">
+        For route options, tap “Get Directions.”
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_MINI_MAPS_SCREENSHOT_TEXT_MAPS" desc="Text in image displaying Google maps title. [iOS only]">
+        Maps
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_MINI_MAPS_SCREENSHOT_TEXT_OPEN_IN_APP" desc="Text in image displaying Open in App. [iOS only]">
+        Open in App…
       </message>
       <message name="IDS_IOS_SIGN_IN_INVALID_ACCOUNT_MESSAGE" desc="Message of the alert displayed when the user sign in with a restricted account.">
         Your organization allows you to sign in only with certain accounts.
@@ -4341,6 +4368,9 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       <message name="IDS_IOS_TOOLS_MENU_QR_SCANNER" desc="The iOS menu item for opening the QR Code Scanner screen, allowing the user to scan QR code.">
         Scan QR Code
       </message>
+      <message name="IDS_IOS_TOOLS_MENU_LENS_CAMERA_SEARCH" desc="The iOS menu item for searching images with the device camera using Google Lens.">
+        Lens Camera Search
+      </message>
       <message name="IDS_IOS_TOOLS_MENU_READING_LIST" desc="The iOS menu item for opening the reading list [iOS only]" meaning="Open the Reading List menu. [Length: Unlimited]">
         Reading List
       </message>
@@ -4639,6 +4669,15 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_WHATS_NEW_TITLE" desc="Title of the What's new Feature">
         What's New
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_NAVIGATION_BACK_BUTTON_TITLE" desc="Title of the What's new navigation back button.">
+        Back
+      </message>
+      <message name="IDS_IOS_WHATS_NEW_SHOW_INSTRUCTIONS_TITLE" desc="Title of a secondary button in What's New to show instructions.">
+        Show instructions
+      </message>
+      <message name="IDS_IOS_WHATS_HOW_TO_ENABLE_TITLE" desc="Title of a section in What's New that show users the instructions to enable the feature.">
+        How do I enable this feature?
       </message>
       <message name="IDS_IOS_WHATS_NEW_LEARN_MORE_ACTION_TITLE" desc="Label of the button for users to learn more about a feature or a chrome tip.">
         Learn More

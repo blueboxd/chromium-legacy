@@ -16,6 +16,7 @@
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/profile_metrics/browser_profile_type.h"
 #import "components/safe_browsing/core/common/features.h"
+#import "components/segmentation_platform/embedder/default_model/device_switcher_result_dispatcher.h"
 #import "components/signin/ios/browser/active_state_manager.h"
 #import "components/translate/core/browser/translate_manager.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
@@ -43,6 +44,7 @@
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/reading_list/reading_list_browser_agent.h"
+#import "ios/chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/shared/coordinator/alert/repost_form_coordinator.h"
 #import "ios/chrome/browser/shared/coordinator/default_browser_promo/non_modal_default_browser_promo_scheduler_scene_agent.h"
@@ -76,6 +78,7 @@
 #import "ios/chrome/browser/shared/public/commands/share_highlight_command.h"
 #import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
 #import "ios/chrome/browser/shared/public/commands/text_zoom_commands.h"
+#import "ios/chrome/browser/shared/public/commands/toolbar_commands.h"
 #import "ios/chrome/browser/shared/public/commands/web_content_commands.h"
 #import "ios/chrome/browser/shared/public/commands/whats_new_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -87,6 +90,7 @@
 #import "ios/chrome/browser/signin/account_consistency_browser_agent.h"
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/sync/sync_error_browser_agent.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
@@ -135,6 +139,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_component_factory.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_container_coordinator.h"
+#import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/page_info/page_info_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/passwords/account_storage_notice/passwords_account_storage_notice_coordinator.h"
@@ -193,6 +198,7 @@
 #import "ios/chrome/browser/webui/net_export_tab_helper_delegate.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/find_in_page/find_in_page_api.h"
+#import "ios/public/provider/chrome/browser/fullscreen/fullscreen_api.h"
 #import "ios/public/provider/chrome/browser/signin/choice_api.h"
 #import "ios/public/provider/chrome/browser/text_zoom/text_zoom_api.h"
 #import "ios/public/provider/chrome/browser/voice_search/voice_search_api.h"
@@ -251,7 +257,8 @@ enum class ToolbarKind {
                                   URLLoadingDelegate,
                                   WebContentCommands,
                                   WebNavigationNTPDelegate,
-                                  BubblePresenterDelegate>
+                                  BubblePresenterDelegate,
+                                  OverscrollActionsControllerDelegate>
 
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
@@ -435,6 +442,9 @@ enum class ToolbarKind {
 // The manager used to display a default browser promo.
 @property(nonatomic, strong)
     DefaultBrowserPromoManager* defaultBrowserPromoManager;
+
+// The webState of the active tab.
+@property(nonatomic, readonly) web::WebState* activeWebState;
 
 @end
 
@@ -759,6 +769,8 @@ enum class ToolbarKind {
   _webNavigationBrowserAgent =
       WebNavigationBrowserAgent::FromBrowser(self.browser);
   _urlLoadingBrowserAgent = UrlLoadingBrowserAgent::FromBrowser(self.browser);
+  _urlLoadingNotifierBrowserAgent =
+      UrlLoadingNotifierBrowserAgent::FromBrowser(self.browser);
 
   _toolbarCoordinator =
       [[ToolbarCoordinator alloc] initWithBrowser:self.browser];
@@ -767,10 +779,42 @@ enum class ToolbarKind {
       feature_engagement::TrackerFactory::GetForBrowserState(browserState);
   HostContentSettingsMap* settingsMap =
       ios::HostContentSettingsMapFactory::GetForBrowserState(browserState);
-  _bubblePresenter =
-      [[BubblePresenter alloc] initWithTracker:engagementTracker
-                        hostContentSettingsMap:settingsMap
-                                  webStateList:self.browser->GetWebStateList()];
+  segmentation_platform::DeviceSwitcherResultDispatcher*
+      deviceSwitcherResultDispatcher = nullptr;
+  if (!browserState->IsOffTheRecord()) {
+    deviceSwitcherResultDispatcher =
+        segmentation_platform::SegmentationPlatformServiceFactory::
+            GetDispatcherForBrowserState(browserState);
+  }
+
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+    if (base::FeatureList::IsEnabled(kModernTabStrip)) {
+      _tabStripCoordinator =
+          [[TabStripCoordinator alloc] initWithBrowser:self.browser];
+    } else {
+      _legacyTabStripCoordinator =
+          [[TabStripLegacyCoordinator alloc] initWithBrowser:self.browser];
+      _legacyTabStripCoordinator.animationWaitDuration =
+          kLegacyFullscreenControllerToolbarAnimationDuration.InSecondsF();
+    }
+  }
+
+  id<TabStripCommands> tabStripCommandsHandler = nil;
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+    // The -startDispatching for TabStripCommands will be called at a later
+    // point for tablet only, so cannot use `HandlerForProtocol`.
+    tabStripCommandsHandler = static_cast<id<TabStripCommands>>(_dispatcher);
+  }
+  _bubblePresenter = [[BubblePresenter alloc]
+      initWithDeviceSwitcherResultDispatcher:deviceSwitcherResultDispatcher
+                      hostContentSettingsMap:settingsMap
+                             loadingNotifier:_urlLoadingNotifierBrowserAgent
+                                  sceneState:SceneStateBrowserAgent::
+                                                 FromBrowser(self.browser)
+                                                     ->GetSceneState()
+                     tabStripCommandsHandler:tabStripCommandsHandler
+                                     tracker:engagementTracker
+                                webStateList:self.browser->GetWebStateList()];
   _bubblePresenter.layoutGuideCenter = _layoutGuideCenter;
   _bubblePresenter.delegate = self;
   [_dispatcher startDispatchingToTarget:_bubblePresenter
@@ -790,9 +834,14 @@ enum class ToolbarKind {
   [_sideSwipeMediator setSnapshotDelegate:self];
   _sideSwipeMediator.toolbarInteractionHandler = _toolbarCoordinator;
   _sideSwipeMediator.primaryToolbarSnapshotProvider =
-      _toolbarCoordinator.primaryToolbarSnapshotProvider;;
+      _toolbarCoordinator.primaryToolbarSnapshotProvider;
   _sideSwipeMediator.secondaryToolbarSnapshotProvider =
       _toolbarCoordinator.secondaryToolbarSnapshotProvider;
+
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET &&
+      !base::FeatureList::IsEnabled(kModernTabStrip)) {
+    [_sideSwipeMediator setTabStripDelegate:_legacyTabStripCoordinator];
+  }
 
   _bookmarksCoordinator =
       [[BookmarksCoordinator alloc] initWithBrowser:self.browser];
@@ -822,20 +871,6 @@ enum class ToolbarKind {
   // behavior but helps command handler setup below.
   [self.popupMenuCoordinator start];
 
-  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-    if (base::FeatureList::IsEnabled(kModernTabStrip)) {
-      _tabStripCoordinator =
-          [[TabStripCoordinator alloc] initWithBrowser:self.browser];
-    } else {
-      _legacyTabStripCoordinator =
-          [[TabStripLegacyCoordinator alloc] initWithBrowser:self.browser];
-      _legacyTabStripCoordinator.animationWaitDuration =
-          kLegacyFullscreenControllerToolbarAnimationDuration.InSecondsF();
-
-      [_sideSwipeMediator setTabStripDelegate:_legacyTabStripCoordinator];
-    }
-  }
-
   _NTPCoordinator = [[NewTabPageCoordinator alloc]
        initWithBrowser:self.browser
       componentFactory:[[NewTabPageComponentFactory alloc] init]];
@@ -844,8 +879,6 @@ enum class ToolbarKind {
   self.tabLifecycleMediator.NTPCoordinator = _NTPCoordinator;
 
   _lensCoordinator = [[LensCoordinator alloc] initWithBrowser:self.browser];
-  _urlLoadingNotifierBrowserAgent =
-      UrlLoadingNotifierBrowserAgent::FromBrowser(self.browser);
   _voiceSearchController =
       ios::provider::CreateVoiceSearchController(self.browser);
 
@@ -870,8 +903,6 @@ enum class ToolbarKind {
       HandlerForProtocol(_dispatcher, PopupMenuCommands);
   _viewControllerDependencies.applicationCommandsHandler =
       HandlerForProtocol(_dispatcher, ApplicationCommands);
-  _viewControllerDependencies.browserCoordinatorCommandsHandler =
-      HandlerForProtocol(_dispatcher, BrowserCoordinatorCommands);
   _viewControllerDependencies.findInPageCommandsHandler =
       HandlerForProtocol(_dispatcher, FindInPageCommands);
   _viewControllerDependencies.isOffTheRecord = browserState->IsOffTheRecord();
@@ -880,8 +911,6 @@ enum class ToolbarKind {
       _urlLoadingNotifierBrowserAgent;
   _viewControllerDependencies.tabUsageRecorderBrowserAgent =
       TabUsageRecorderBrowserAgent::FromBrowser(self.browser);
-  _viewControllerDependencies.webNavigationBrowserAgent =
-      _webNavigationBrowserAgent;
   _viewControllerDependencies.layoutGuideCenter = _layoutGuideCenter;
   _viewControllerDependencies.webStateList =
       self.browser->GetWebStateList()->AsWeakPtr();
@@ -926,6 +955,9 @@ enum class ToolbarKind {
   _legacyTabStripCoordinator.baseViewController = self.viewController;
   _NTPCoordinator.baseViewController = self.viewController;
 
+  _bubblePresenter.toolbarCommandsHandler =
+      HandlerForProtocol(_dispatcher, ToolbarCommands);
+
   [_dispatcher startDispatchingToTarget:self.viewController
                             forProtocol:@protocol(BrowserCommands)];
 }
@@ -947,7 +979,6 @@ enum class ToolbarKind {
   _viewControllerDependencies.helpHandler = nil;
   _viewControllerDependencies.popupMenuCommandsHandler = nil;
   _viewControllerDependencies.applicationCommandsHandler = nil;
-  _viewControllerDependencies.browserCoordinatorCommandsHandler = nil;
   _viewControllerDependencies.findInPageCommandsHandler = nil;
   _viewControllerDependencies.voiceSearchController = nil;
   _viewControllerDependencies.safeAreaProvider = nil;
@@ -1066,7 +1097,7 @@ enum class ToolbarKind {
   self.sadTabCoordinator =
       [[SadTabCoordinator alloc] initWithBaseViewController:self.viewController
                                                     browser:self.browser];
-  [self.sadTabCoordinator setOverscrollDelegate:self.viewController];
+  [self.sadTabCoordinator setOverscrollDelegate:self];
 
   /* SharingCoordinator is created and started by an ActivityServiceCommand */
 
@@ -1277,6 +1308,10 @@ enum class ToolbarKind {
           restorationAgent:sessionRestorationBrowserAgent
               browserState:browserState
            loadingNotifier:_urlLoadingNotifierBrowserAgent];
+  self.tabEventsMediator.primaryToolbarSnapshotProvider =
+      _toolbarCoordinator.primaryToolbarSnapshotProvider;
+  self.tabEventsMediator.secondaryToolbarSnapshotProvider =
+      _toolbarCoordinator.secondaryToolbarSnapshotProvider;
   self.tabEventsMediator.consumer = browserViewController;
 
   browserViewController.reauthHandler =
@@ -1312,8 +1347,14 @@ enum class ToolbarKind {
       TabInsertionBrowserAgent::FromBrowser(browser);
   tabLifecycleMediator.NTPTabHelperDelegate = self;
   tabLifecycleMediator.snapshotGeneratorDelegate = self;
+  tabLifecycleMediator.overscrollActionsDelegate = self;
 
   self.tabLifecycleMediator = tabLifecycleMediator;
+}
+
+- (web::WebState*)activeWebState {
+  WebStateList* webStateList = self.browser->GetWebStateList();
+  return webStateList ? webStateList->GetActiveWebState() : nullptr;
 }
 
 #pragma mark - ActivityServiceCommands
@@ -1492,13 +1533,11 @@ enum class ToolbarKind {
       feature_engagement::TrackerFactory::GetForBrowserState(browserState);
   engagementTracker->NotifyEvent(
       feature_engagement::events::kTriggeredTranslateInfobar);
-
-  web::WebState* currentWebState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-  DCHECK(currentWebState);
+  web::WebState* activeWebState = self.activeWebState;
+  DCHECK(activeWebState);
 
   ChromeIOSTranslateClient* translateClient =
-      ChromeIOSTranslateClient::FromWebState(currentWebState);
+      ChromeIOSTranslateClient::FromWebState(activeWebState);
   if (translateClient) {
     translate::TranslateManager* translateManager =
         translateClient->GetTranslateManager();
@@ -1703,14 +1742,13 @@ enum class ToolbarKind {
 }
 
 - (void)closeFindInPage {
-  web::WebState* currentWebState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-  if (!currentWebState) {
+  web::WebState* activeWebState = self.activeWebState;
+  if (!activeWebState) {
     return;
   }
 
   AbstractFindTabHelper* helper =
-      GetConcreteFindTabHelperFromWebState(currentWebState);
+      GetConcreteFindTabHelperFromWebState(activeWebState);
   DCHECK(helper);
   if (helper->IsFindUIActive()) {
     helper->StopFinding();
@@ -1720,9 +1758,7 @@ enum class ToolbarKind {
 }
 
 - (void)showFindUIIfActive {
-  web::WebState* currentWebState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-  auto* findHelper = GetConcreteFindTabHelperFromWebState(currentWebState);
+  auto* findHelper = GetConcreteFindTabHelperFromWebState(self.activeWebState);
   if (!findHelper || !findHelper->IsFindUIActive()) {
     return;
   }
@@ -1738,10 +1774,9 @@ enum class ToolbarKind {
 
 - (void)hideFindUI {
   if (ios::provider::IsNativeFindInPageWithSystemFindPanel()) {
-    web::WebState* currentWebState =
-        self.browser->GetWebStateList()->GetActiveWebState();
-    DCHECK(currentWebState);
-    auto* helper = FindTabHelper::FromWebState(currentWebState);
+    web::WebState* activeWebState = self.activeWebState;
+    DCHECK(activeWebState);
+    auto* helper = FindTabHelper::FromWebState(activeWebState);
     helper->DismissFindNavigator();
   } else {
     [self.findBarCoordinator stop];
@@ -1759,10 +1794,9 @@ enum class ToolbarKind {
 }
 
 - (void)searchFindInPage {
-  web::WebState* currentWebState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-  DCHECK(currentWebState);
-  auto* helper = GetConcreteFindTabHelperFromWebState(currentWebState);
+  web::WebState* activeWebState = self.activeWebState;
+  DCHECK(activeWebState);
+  auto* helper = GetConcreteFindTabHelperFromWebState(activeWebState);
   helper->StartFinding([self.findBarCoordinator.findBarController searchTerm]);
 
   if (!self.browser->GetBrowserState()->IsOffTheRecord())
@@ -1770,30 +1804,27 @@ enum class ToolbarKind {
 }
 
 - (void)findNextStringInPage {
-  web::WebState* currentWebState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-  DCHECK(currentWebState);
+  web::WebState* activeWebState = self.activeWebState;
+  DCHECK(activeWebState);
   // TODO(crbug.com/603524): Reshow find bar if necessary.
-  GetConcreteFindTabHelperFromWebState(currentWebState)
+  GetConcreteFindTabHelperFromWebState(activeWebState)
       ->ContinueFinding(JavaScriptFindTabHelper::FORWARD);
 }
 
 - (void)findPreviousStringInPage {
-  web::WebState* currentWebState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-  DCHECK(currentWebState);
+  web::WebState* activeWebState = self.activeWebState;
+  DCHECK(activeWebState);
   // TODO(crbug.com/603524): Reshow find bar if necessary.
-  GetConcreteFindTabHelperFromWebState(currentWebState)
+  GetConcreteFindTabHelperFromWebState(activeWebState)
       ->ContinueFinding(JavaScriptFindTabHelper::REVERSE);
 }
 
 #pragma mark - FindInPageCommands Helpers
 
 - (void)showSystemFindPanel {
-  web::WebState* currentWebState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-  DCHECK(currentWebState);
-  auto* helper = FindTabHelper::FromWebState(currentWebState);
+  web::WebState* activeWebState = self.activeWebState;
+  DCHECK(activeWebState);
+  auto* helper = FindTabHelper::FromWebState(activeWebState);
 
   if (!helper->IsFindUIActive()) {
     // Hide the Omnibox if possible, so as not to confuse the user as to what
@@ -1820,13 +1851,12 @@ enum class ToolbarKind {
 }
 
 - (BOOL)canShowFindBar {
-  web::WebState* currentWebState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-  if (!currentWebState) {
+  web::WebState* activeWebState = self.activeWebState;
+  if (!activeWebState) {
     return NO;
   }
 
-  auto* helper = GetConcreteFindTabHelperFromWebState(currentWebState);
+  auto* helper = GetConcreteFindTabHelperFromWebState(activeWebState);
   return (helper && helper->CurrentPageSupportsFindInPage() &&
           !helper->IsFindUIActive());
 }
@@ -2008,11 +2038,10 @@ enum class ToolbarKind {
 #pragma mark - TextZoomCommands
 
 - (void)openTextZoom {
-  web::WebState* currentWebState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-  DCHECK(currentWebState);
+  web::WebState* activeWebState = self.activeWebState;
+  DCHECK(activeWebState);
   AbstractFindTabHelper* findTabHelper =
-      GetConcreteFindTabHelperFromWebState(currentWebState);
+      GetConcreteFindTabHelperFromWebState(activeWebState);
   DCHECK(findTabHelper);
   if (findTabHelper->IsFindUIActive()) {
     // If Find UI is active, close Find in Page.
@@ -2036,12 +2065,11 @@ enum class ToolbarKind {
 }
 
 - (void)closeTextZoom {
-  web::WebState* currentWebState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-  if (currentWebState) {
+  web::WebState* activeWebState = self.activeWebState;
+  if (activeWebState) {
     if (ios::provider::IsTextZoomEnabled()) {
       FontSizeTabHelper* fontSizeTabHelper =
-          FontSizeTabHelper::FromWebState(currentWebState);
+          FontSizeTabHelper::FromWebState(activeWebState);
       fontSizeTabHelper->SetTextZoomUIActive(false);
     }
   }
@@ -2049,14 +2077,13 @@ enum class ToolbarKind {
 }
 
 - (void)showTextZoomUIIfActive {
-  web::WebState* currentWebState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-  if (!currentWebState) {
+  web::WebState* activeWebState = self.activeWebState;
+  if (!activeWebState) {
     return;
   }
 
   FontSizeTabHelper* fontSizeTabHelper =
-      FontSizeTabHelper::FromWebState(currentWebState);
+      FontSizeTabHelper::FromWebState(activeWebState);
   if (fontSizeTabHelper && fontSizeTabHelper->IsTextZoomUIActive() &&
       !_toolbarAccessoryPresenter.isPresenting) {
     DCHECK(!self.textZoomCoordinator);
@@ -2380,13 +2407,13 @@ enum class ToolbarKind {
 
 #pragma mark - SyncPresenter (Public)
 
-- (void)showReauthenticateSignin {
+- (void)showPrimaryAccountReauth {
   [HandlerForProtocol(self.dispatcher, ApplicationCommands)
-              showSignin:
-                  [[ShowSigninCommand alloc]
-                      initWithOperation:AuthenticationOperationReauthenticate
-                            accessPoint:signin_metrics::AccessPoint::
-                                            ACCESS_POINT_REAUTH_INFO_BAR]
+              showSignin:[[ShowSigninCommand alloc]
+                             initWithOperation:
+                                 AuthenticationOperationPrimaryAccountReauth
+                                   accessPoint:signin_metrics::AccessPoint::
+                                                   ACCESS_POINT_REAUTH_INFO_BAR]
       baseViewController:self.viewController];
 }
 
@@ -2590,12 +2617,11 @@ enum class ToolbarKind {
 }
 
 - (void)scrollToNTPAfterPresentedStateCleared:(FeedType)feedType {
-  web::WebState* currentWebState =
-      self.browser->GetWebStateList()->GetActiveWebState();
+  web::WebState* activeWebState = self.activeWebState;
 
   // Configure next NTP to be scrolled into `feedType`.
   NewTabPageTabHelper* NTPHelper =
-      NewTabPageTabHelper::FromWebState(currentWebState);
+      NewTabPageTabHelper::FromWebState(activeWebState);
   if (NTPHelper) {
     NTPHelper->SetNextNTPFeedType(feedType);
     // TODO(crbug.com/1329173): Scroll into feed.
@@ -2651,10 +2677,9 @@ enum class ToolbarKind {
 - (void)newTabPageHelperDidChangeVisibility:(NewTabPageTabHelper*)NTPHelper
                                 forWebState:(web::WebState*)webState {
   DCHECK(self.browser);
-  web::WebState* currentWebState =
-      self.browser->GetWebStateList()->GetActiveWebState();
+  web::WebState* activeWebState = self.activeWebState;
 
-  if (webState != currentWebState) {
+  if (webState != activeWebState) {
     // In the instance that a pageload starts while the WebState is not the
     // active WebState anymore, do nothing.
     return;
@@ -2699,6 +2724,84 @@ enum class ToolbarKind {
 - (BOOL)isNTPScrolledToTopForBubblePresenter:(BubblePresenter*)bubblePresenter {
   DCHECK(bubblePresenter == _bubblePresenter);
   return [self.NTPCoordinator isScrolledToTop];
+}
+
+#pragma mark - OverscrollActionsControllerDelegate methods.
+
+- (void)overscrollActionNewTab:(OverscrollActionsController*)controller {
+  id<ApplicationCommands> applicationCommandsHandler =
+      HandlerForProtocol(_dispatcher, ApplicationCommands);
+  [applicationCommandsHandler
+      openURLInNewTab:[OpenNewTabCommand
+                          commandWithIncognito:self.browser->GetBrowserState()
+                                                   ->IsOffTheRecord()]];
+}
+
+- (void)overscrollActionCloseTab:(OverscrollActionsController*)controller {
+  [self closeCurrentTab];
+}
+
+- (void)overscrollActionRefresh:(OverscrollActionsController*)controller {
+  // Instruct the SnapshotTabHelper to ignore the next load event.
+  // Attempting to snapshot while the overscroll "bounce back" animation is
+  // occurring will cut the animation short.
+  web::WebState* activeWebState = self.activeWebState;
+  DCHECK(activeWebState);
+  SnapshotTabHelper::FromWebState(activeWebState)->IgnoreNextLoad();
+  _webNavigationBrowserAgent->Reload();
+}
+
+- (BOOL)shouldAllowOverscrollActionsForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
+  // When screeen size is not regular, overscroll actions should be enabled.
+  return !_toolbarAccessoryPresenter.presenting &&
+         !IsRegularXRegularSizeClass(self.viewController);
+}
+
+- (UIView*)headerViewForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
+  return _toolbarCoordinator.primaryToolbarViewController.view;
+}
+
+- (UIView*)toolbarSnapshotViewForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
+  return [_toolbarCoordinator.primaryToolbarViewController.view
+      snapshotViewAfterScreenUpdates:NO];
+}
+
+- (CGFloat)headerInsetForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
+  // The current WebState can be nil if the Browser's WebStateList is empty
+  // (e.g. after closing the last tab, etc).
+  web::WebState* activeWebState = self.activeWebState;
+  if (!activeWebState) {
+    return 0.0;
+  }
+
+  OverscrollActionsTabHelper* activeTabHelper =
+      OverscrollActionsTabHelper::FromWebState(activeWebState);
+  if (controller == activeTabHelper->GetOverscrollActionsController()) {
+    return self.viewController.headerHeight;
+  } else {
+    return 0.0;
+  }
+}
+
+- (CGFloat)headerHeightForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
+  return self.viewController.headerHeight;
+}
+
+- (CGFloat)initialContentOffsetForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
+  return ios::provider::IsFullscreenSmoothScrollingSupported()
+             ? -[self headerInsetForOverscrollActionsController:controller]
+             : 0.0;
+}
+
+- (FullscreenController*)fullscreenControllerForOverscrollActionsController:
+    (OverscrollActionsController*)controller {
+  return _fullscreenController;
 }
 
 @end

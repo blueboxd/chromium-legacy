@@ -317,6 +317,15 @@ class WebAppCommandScheduler {
       absl::optional<SynchronizeOsOptions> synchronize_options = absl::nullopt,
       const base::Location& location = FROM_HERE);
 
+  // Finds web apps that share the same install URLs (possibly across different
+  // install sources) and dedupes the install URL configs into the most
+  // recently installed non-placeholder-like web app.
+  // Placeholder-like web apps are either marked as placeholder or have
+  // their name set to their start URL like a placeholder. This is an erroneous
+  // state some web apps have gotten into, see https://crbug.com/1427340.
+  void ScheduleDedupeInstallUrls(base::OnceClosure callback,
+                                 const base::Location& location = FROM_HERE);
+
   // TODO(https://crbug.com/1298130): expose all commands for web app
   // operations.
 
@@ -346,6 +355,12 @@ class WebAppCommandScheduler {
   // TODO(http://b/262606416): Remove this when fully transitioned to
   // WebContentsManager.
   std::unique_ptr<WebAppUrlLoader> url_loader_;
+
+  // Track how many times ScheduleDedupeInstallUrls() is invoked for metrics to
+  // check that it's not happening excessively.
+  // TODO(crbug.com/1434692): Remove once validating that the numbers look okay
+  // out in the wild.
+  size_t dedupe_install_urls_run_count_ = 0;
 
   base::WeakPtrFactory<WebAppCommandScheduler> weak_ptr_factory_{this};
 };

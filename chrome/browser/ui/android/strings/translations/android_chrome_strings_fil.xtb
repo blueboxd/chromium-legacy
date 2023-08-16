@@ -61,6 +61,7 @@ Ang sinumang may passphrase mo lang ang makakapagbasa sa iyong naka-encrypt na d
 <translation id="1283039547216852943">I-tap upang palawakin</translation>
 <translation id="1289059016768036948">Hihilingin sa iyong mag-sign in sa Google Account mo.</translation>
 <translation id="1291207594882862231">I-clear ang history, cookies, site data, cache…</translation>
+<translation id="1293898515599432175">Made-delete ang iyong mga password mula sa Google Password Manager para sa Chrome <ph name="CHROME_CHANNEL" />. Maitatabi mo ang file ng mga password na kaka-download mo lang.</translation>
 <translation id="129553762522093515">Kamakailang isinara</translation>
 <translation id="1298077576058087471">Magtipid ng hanggang 60% data, basahin ang balita ngayong araw</translation>
 <translation id="1303339473099049190">Hindi mahanap ang password na iyon. Tingnan ang iyong spelling at subukan ulit.</translation>
@@ -128,7 +129,6 @@ Kapag na-delete mo ang iyong history ng pag-browse — lahat o para sa isang par
 <translation id="164269334534774161">Tinitingnan mo ang offline na kopya ng page na ito mula sa <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="1657932388559784161">Nakasara ang bottom sheet ng mga insight ng page</translation>
-<translation id="1668122540633280551">Piliin kung paano awtomatikong magpe-play ang mga preview ng video sa homepage ng Chrome.</translation>
 <translation id="1670399744444387456">Pangunahin</translation>
 <translation id="1671236975893690980">Nakabinbin ang pag-download...</translation>
 <translation id="1672586136351118594">Huwag ipakitang muli</translation>
@@ -271,7 +271,6 @@ Kapag na-delete mo ang iyong history ng pag-browse — lahat o para sa isang par
 <translation id="2536728043171574184">Tinitingnan ang isang offline na kopya ng page na ito</translation>
 <translation id="2546283357679194313">Cookies at data ng site</translation>
 <translation id="2558569818338050235">Naaapektuhan ng iyong history ng pag-browse ang mga ad na nakikita mo</translation>
-<translation id="2561519700418191927">Mga preview ng video</translation>
 <translation id="2567385386134582609">LARAWAN</translation>
 <translation id="2567545343356994513">Mas mabilis at proactive na proteksyon laban sa mga mapanganib na website, download, at extension</translation>
 <translation id="2569733278091928697">Madali mong mapapamahalaan ang mga kontrol ng media, Incognito session, download, at higit pa</translation>
@@ -375,6 +374,7 @@ Pinapahusay ng mga private state token ang privacy sa web at hindi magagamit ang
 <translation id="3027644380269727216">Batay sa iyong aktibidad sa isang site. Naka-on ang setting na ito.</translation>
 <translation id="3029276696788198026">Walang pag-preload</translation>
 <translation id="3029704984691124060">Hindi nagtutugma ang mga passphrase</translation>
+<translation id="303514781271618814">Nag-e-explore ang Chrome ng mga bagong feature na nagbibigay-daan sa mga site na ihatid ang parehong karanasan sa pag-browse nang hindi gaanong gumagamit ng iyong data</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Humingi ng tulong<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Sinusubaybayan ang presyo</translation>
 <translation id="3037517125981011456">Nagpapakita ng mga prompt na mag-sign in sa Chrome</translation>
@@ -510,9 +510,9 @@ Pinapahusay ng mga private state token ang privacy sa web at hindi magagamit ang
 <translation id="3775705724665058594">Ipadala sa iyong mga device</translation>
 <translation id="3791957072666773229">{TAB_COUNT,plural, =1{1 tab}one{# tab}other{# na tab}}</translation>
 <translation id="3795154175078851242">Kopyahin ang larawan nang may link</translation>
-<translation id="3803784507854318295">Pamahalaan ang autoplay</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Pamahalaan</translation>
+<translation id="381861209280417772">I-delete ang mga password</translation>
 <translation id="3819178904835489326">Na-delete ang <ph name="NUMBER_OF_DOWNLOADS" /> (na) pag-download</translation>
 <translation id="3819183753496523827">Offline ka. Suriin ang iyong koneksyon sa internet at subukan ulit.</translation>
 <translation id="3830886834687455630">I-update ang mga serbisyo ng Google Play para tingnan ang iyong mga password</translation>
@@ -563,7 +563,6 @@ Pinapahusay ng mga private state token ang privacy sa web at hindi magagamit ang
 <translation id="4095146165863963773">I-delete ang data ng app?</translation>
 <translation id="4096227151372679484">Nakabukas nang kalahati ang proseso ng pag-save ng bookmark</translation>
 <translation id="4101475238162928417">Mag-sync para makuha ang iyong mga password, bookmark, at higit pa sa iba mo pang device</translation>
-<translation id="410351446219883937">I-autoplay</translation>
 <translation id="4106587138345390261">Nag-e-explore ang Chrome ng mga bagong feature na nagbibigay-daan sa mga site na ihatid ang parehong karanasan sa pag-browse nang hindi gaanong gumagamit ng iyong impormasyon</translation>
 <translation id="4108314971463891922">Subaybayan</translation>
 <translation id="4108998448622696017">Nagde-detect ng mga mapanganib na event at nagbibigay sa iyo ng babala tungkol sa mga ito kapag nangyari ang mga ito.</translation>
@@ -598,6 +597,7 @@ Pinapahusay ng mga private state token ang privacy sa web at hindi magagamit ang
 <translation id="4249955472157341256">Pagbukud-bukurin ayon sa Pinakabago</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4256782883801055595">Mga lisensya ng open source</translation>
+<translation id="4257230861809842349">Mag-delete ng mga password mula sa Google Password Manager?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Anong data ang ginagamit:<ph name="END_BOLD" /> Iyong history ng pag-browse, record ng mga site na binisita mo gamit ang Chrome sa device na ito.</translation>
 <translation id="4269820728363426813">Kopyahin ang address ng link</translation>
 <translation id="4283102315569707115">Humiling ng mga pang-desktop na site bilang default?</translation>
@@ -634,7 +634,6 @@ Pinapahusay ng mga private state token ang privacy sa web at hindi magagamit ang
 <translation id="4484496141267039529">Walang koneksyon. Subukan ulit sa ibang pagkakataon.</translation>
 <translation id="4487967297491345095">Permanenteng ide-delete ang lahat ng data ng app ng Chrome. Kabilang dito ang lahat ng file, setting, account, database, atbp.</translation>
 <translation id="449126573531210296">I-encrypt ang mga naka-sync na password gamit ang iyong Google Account</translation>
-<translation id="4504667196171871375">Sa Wi-Fi at mobile data</translation>
 <translation id="4508528996305412043">Nakabukas ang menu ng feed card</translation>
 <translation id="4509501256689523862">Habang nagba-browse ka, posibleng naka-personalize ang isang ad na nakikita mo depende sa setting na ito, <ph name="BEGIN_LINK_1" />mga paksa ng Ad<ph name="END_LINK_1" />, iyong <ph name="BEGIN_LINK_2" />mga setting ng cookie<ph name="END_LINK_2" />, at kung nagpe-personalize ng mga ad ang site na tinitingnan mo</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# araw ang nakalipas}one{# araw ang nakalipas}other{# na araw ang nakalipas}}</translation>
@@ -853,7 +852,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="562289928968387744">Pamahalaan ang mga reaksyon</translation>
 <translation id="5626134646977739690">Pangalan:</translation>
 <translation id="5628604359369369630">Hindi pa nabasa - Available offline</translation>
-<translation id="5635091213277904818">Awtomatikong dine-delete ng Chrome ang mga site na mahigi sa 30 araw na. Posibleng lumabas ulit sa listahan ang site na binisita mo ulit. O puwede mong i-block ang isang site mula sa pagmumungkahi ng mga ad para sa iyo.</translation>
 <translation id="5641456720590409793">Posibleng naka-save sa iyong Google Account ang <ph name="BEGIN_LINK1" />history ng paghahanap<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />iba pang anyo ng aktibidad<ph name="END_LINK2" /></translation>
 <translation id="564667659802381754">Gabay sa Privacy <ph name="BEGIN_NEW" />Bago<ph name="END_NEW" /></translation>
 <translation id="5648166631817621825">Nakalipas na 7 araw</translation>
@@ -863,6 +861,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5665379678064389456">Gumawa ng event sa <ph name="APP_NAME" /></translation>
 <translation id="5683547024293500885">Hindi matingnan ng Chrome kung may mga update</translation>
 <translation id="5686790454216892815">Masyadong mahaba ang pangalan ng file</translation>
+<translation id="5687606994963670306">Awtomatikong dine-delete ng Chrome ang mga site na mahigit 30 araw na. Posibleng makita ulit sa listahan ang site na binalikan mo. O puwede kang mag-block ng site sa pagmumungkahi ng mga ad para sa iyo. Matuto pa tungkol sa <ph name="BEGIN_LINK" />pamamahala ng iyong privacy sa ad sa Chrome.<ph name="END_LINK" /></translation>
 <translation id="569435661099256888">Makikita mo ang mga page na binisita mo o maki-clear mo ang mga ito sa iyong history</translation>
 <translation id="569536719314091526">Isalin ang page na ito sa anumang wika mula sa button na Higit pang opsyon</translation>
 <translation id="5696597120588531049">Makakatulong ang Chrome na panatilihin kang ligtas laban sa mga paglabag sa data, hindi ligtas na website, at higit pa</translation>
@@ -1042,7 +1041,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6590471736817333463">Magtipid ng hanggang 60% data</translation>
 <translation id="6590680911007613645">Tiyaking tumutugma ang password na sine-save mo sa iyong password para sa <ph name="SITE" /></translation>
 <translation id="6593061639179217415">Desktop site</translation>
-<translation id="6594121454516132231">Makita kung paano ka planong bantayan ng Chrome mula sa cross-site na pagsubaybay habang pinapanatili ang bukas na web</translation>
 <translation id="6594347733515723558">Mga pag-sort at pag-view</translation>
 <translation id="6595046016124923392">Ipinapadala sa Google ang mga larawan para mapahusay ang mga paglalarawan para sa iyo.</translation>
 <translation id="6600954340915313787">Kinopya sa Chrome</translation>
@@ -1177,6 +1175,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7260367682327802201">Posibleng may kasamang katulad na setting ang iyong Android device. Kung naka-on ang pagsukat ng Ad sa Chrome at sa iyong Android device, posibleng masukat ng kumpanya ang pagiging epektibo ng isang ad sa lahat ng binibisita mong web site at ginagamit mong app.</translation>
 <translation id="727288900855680735">Isumite ang <ph name="ONE_TIME_CODE" /> sa <ph name="ORIGIN" />?</translation>
 <translation id="7274013316676448362">Naka-block na site</translation>
+<translation id="7276100255011548441">Awtomatikong dine-delete ng Chrome ang mga paksang mahigit 4 na linggo na. Habang patuloy kang nagba-browse, posibleng makita ulit ang isang paksa sa listahan. O puwede mong i-block ang mga paksang ayaw mong i-share ng Chrome sa mga site. Matuto pa tungkol sa <ph name="BEGIN_LINK" />pamamahala ng iyong privacy sa ad sa Chrome.<ph name="END_LINK" /></translation>
 <translation id="7286703216224610554">Ibahagi lang ang reaksyon</translation>
 <translation id="7290209999329137901">Hindi available ang pag-rename</translation>
 <translation id="7291910923717764901">Nagdagdag ng mga paglalarawan ng larawan para sa page na ito</translation>
@@ -1313,7 +1312,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7944772052836377867">Kailangang ma-verify ng pag-sync na ikaw ito</translation>
 <translation id="7947953824732555851">I-accept, mag-sign in</translation>
 <translation id="7957413488482743710">Itinatago ng virtual card ang iyong aktwal na card para makatulong na protektahan ka laban sa potensyal na panloloko. <ph name="BEGIN_LINK1" />Matuto pa tungkol sa mga virtual na card<ph name="END_LINK1" /></translation>
-<translation id="7961015016161918242">Hindi Kailanman</translation>
 <translation id="7961926449547174351">Na-disable mo ang access sa Storage, pumunta sa Mga Setting para i-enable ito.</translation>
 <translation id="7963646190083259054">Vendor:</translation>
 <translation id="7965838025086216108">Puwede mong gamitin ang mga naka-save na password sa anumang device. Sine-save ang mga ito sa Google Password Manager para sa <ph name="ACCOUNT" />.</translation>
@@ -1520,7 +1518,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8968085728801125376">{TAB_COUNT,plural, =1{Isasara ang <ph name="INCOGNITO_TAB_COUNT" /> tab na incognito at <ph name="TAB_COUNT_ONE" /> pang tab}one{Isasara ang <ph name="INCOGNITO_TAB_COUNT" /> tab na incognito at <ph name="TAB_COUNT_MANY" /> pang tab}other{Isasara ang <ph name="INCOGNITO_TAB_COUNT" /> na tab na incognito at <ph name="TAB_COUNT_MANY" /> pang tab}}</translation>
 <translation id="8970887620466824814">Nagkaproblema.</translation>
 <translation id="8972098258593396643">I-download sa default na folder?</translation>
-<translation id="8987641763863173640">Pamahalaan ang Mga Setting ng Preview ng Video</translation>
 <translation id="8987736167266086032">Bumalik kung saan ka tumigil</translation>
 <translation id="8989968390305463310">Naaapektuhan ng iyong history ng pag-browse ang mga ad na nakikita mo at mga interes tulad ng tinatantya sa ibaba. Para protektahan ang iyong privacy, awtomatikong ide-delete ng Chrome ang mga interes mo sa rolling na paraan bawat buwan. Puwedeng ma-refresh ang mga interes maliban na lang kung alisin mo ang mga ito.</translation>
 <translation id="8993760627012879038">Magbukas ng bagong tab sa Incognito mode</translation>

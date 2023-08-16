@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <limits>
 #include <map>
 #include <memory>
@@ -685,9 +684,10 @@ void BrowserAutofillManager::RefetchCardsAndUpdatePopup(
   auto cards =
       GetCreditCardSuggestions(field_data, type, should_display_gpay_logo);
   DCHECK(!cards.empty());
-  external_delegate_->OnSuggestionsReturned(field_data.global_id(), cards,
-                                            AutoselectFirstSuggestion(false),
-                                            should_display_gpay_logo);
+  external_delegate_->OnSuggestionsReturned(
+      field_data.global_id(), cards,
+      AutofillSuggestionTriggerSource::kShowCardsFromAccount,
+      should_display_gpay_logo);
 }
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
@@ -1104,9 +1104,6 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
   SuggestionsContext context;
   GetAvailableSuggestions(form, field, &suggestions, &context);
 
-  const AutoselectFirstSuggestion autoselect_first_suggestion(
-      trigger_source ==
-      AutofillSuggestionTriggerSource::kTextFieldDidReceiveKeyDown);
   const bool form_element_was_clicked =
       trigger_source ==
       AutofillSuggestionTriggerSource::kFormControlElementClicked;
@@ -1118,8 +1115,8 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
 
       case SuppressReason::kAblation:
         single_field_form_fill_router_->CancelPendingQueries(this);
-        external_delegate_->OnSuggestionsReturned(
-            field.global_id(), suggestions, autoselect_first_suggestion);
+        external_delegate_->OnSuggestionsReturned(field.global_id(),
+                                                  suggestions, trigger_source);
         LOG_AF(log_manager())
             << LoggingScope::kFilling << LogMessage::kSuggestionSuppressed
             << " Reason: Ablation experiment";
@@ -1221,8 +1218,8 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
       // will handle sending the results back to the renderer.
       bool handled_by_single_field_form_filler =
           single_field_form_fill_router_->OnGetSingleFieldSuggestions(
-              autoselect_first_suggestion, field, *client(),
-              weak_ptr_factory_.GetWeakPtr(), context);
+              trigger_source, field, *client(), weak_ptr_factory_.GetWeakPtr(),
+              context);
       if (handled_by_single_field_form_filler) {
         return false;
       }
@@ -1256,7 +1253,7 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
   if (show_suggestion) {
     // Send Autofill suggestions (could be an empty list).
     external_delegate_->OnSuggestionsReturned(field.global_id(), suggestions,
-                                              autoselect_first_suggestion,
+                                              trigger_source,
                                               context.should_display_gpay_logo);
   }
 }
@@ -1932,10 +1929,10 @@ bool BrowserAutofillManager::ShouldUploadForm(const FormStructure& form) {
 // AutocompleteHistoryManager::SuggestionsHandler implementation
 void BrowserAutofillManager::OnSuggestionsReturned(
     FieldGlobalId field_id,
-    AutoselectFirstSuggestion autoselect_first_suggestion,
+    AutofillSuggestionTriggerSource trigger_source,
     const std::vector<Suggestion>& suggestions) {
   external_delegate_->OnSuggestionsReturned(field_id, suggestions,
-                                            autoselect_first_suggestion);
+                                            trigger_source);
 }
 
 void BrowserAutofillManager::StoreUploadVotesAndLogQualityCallback(
@@ -2098,6 +2095,7 @@ void BrowserAutofillManager::Reset() {
     touch_to_fill_delegate_->Reset();
   }
   filling_context_.clear();
+  form_autofill_history_.Reset();
   form_submitted_timestamp_ = TimeTicks();
 }
 
@@ -2486,10 +2484,18 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
       driver()->FillOrPreviewForm(action, result, field.origin, field_types);
   client()->DidFillOrPreviewForm(action, trigger_source, is_refill);
 
+  // This will hold the fields (and corresponding autofill fields) in the
+  // intersection of safe_fields and newly_filled_fields.
+  std::vector<std::pair<const FormFieldData*, const AutofillField*>>
+      safe_newly_filled_fields;
+
   // Report the fields that were not filled due to the iframe security policy.
   for (FieldGlobalId field_global_id : newly_filled_fields) {
     if (base::Contains(safe_fields, field_global_id)) {
       // A safe field was filled.
+      safe_newly_filled_fields.emplace_back(
+          form.FindFieldByGlobalId(field_global_id),
+          form_structure->GetFieldById(field_global_id));
       continue;
     }
     // Find and report index of fields that were not filled.
@@ -2503,6 +2509,13 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
                         "security policy.";
     }
   }
+
+  // Save filling history to support undoing it later if needed.
+  if (action == mojom::RendererFormDataAction::kFill) {
+    form_autofill_history_.AddFormFillEntry(safe_newly_filled_fields,
+                                            field.origin, is_refill);
+  }
+
   LOG_AF(buffer) << CTag{"table"};
   LOG_AF(log_manager()) << LoggingScope::kFilling
                         << LogMessage::kSendFillingData << Br{}

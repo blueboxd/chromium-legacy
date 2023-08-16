@@ -29,6 +29,7 @@
 #include "chromeos/ash/components/drivefs/drivefs_host_observer.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/ash/components/drivefs/mojom/pin_manager_types.mojom.h"
+#include "chromeos/ash/components/file_manager/speedometer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/drive/file_errors.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -120,6 +121,9 @@ struct COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) Progress {
 
   // High watermark of the number of active queries.
   int max_active_queries = 0;
+
+  // Estimated number of seconds remaining to pin all `bytes_to_pin`.
+  double remaining_seconds = 0;
 
   // Stage of the setup process.
   Stage stage = Stage::kStopped;
@@ -259,6 +263,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
 
   // Check for free space.
   void CheckFreeSpace();
+
+  // Whether `path` is parented at a path that is untracked (e.g. a shortcut
+  // directory residing outside of My drive).
+  bool IsUntrackedPath(const Path& path);
 
  private:
   // Progress of a file being synced or to be synced.
@@ -443,7 +451,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
       true;
 
   // `spaced` daemon client.
-  ash::SpacedClient* spaced_ GUARDED_BY_CONTEXT(sequence_checker_) = nullptr;
+  raw_ptr<ash::SpacedClient, ExperimentalAsh> spaced_
+      GUARDED_BY_CONTEXT(sequence_checker_) = nullptr;
 
   SpaceGetter space_getter_ GUARDED_BY_CONTEXT(sequence_checker_);
   CompletionCallback completion_callback_ GUARDED_BY_CONTEXT(sequence_checker_);
@@ -467,6 +476,14 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   // contains all the files, either pinned or not, that are not completely
   // cached yet.
   Files files_to_track_ GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Tracks the remaining seconds for the current syncing operation to complete.
+  std::unique_ptr<file_manager::Speedometer> speedometer_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Shortcut paths where the target path resides outside the users My drive.
+  std::unordered_set<Path> untracked_shortcut_paths_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   base::WeakPtrFactory<PinManager> weak_ptr_factory_{this};
 

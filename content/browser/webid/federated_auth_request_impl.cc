@@ -270,8 +270,14 @@ std::string FormatUrlWithDomain(const GURL& url, bool for_display) {
         GURL(url.scheme() + "://" + formatted_url_str),
         url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
   }
-  return base::UTF16ToUTF8(
-      url_formatter::FormatUrl(GURL(url.scheme() + "://" + formatted_url_str)));
+  // We want defaults but we need to keep the scheme.
+  url_formatter::FormatUrlTypes types =
+      url_formatter::kFormatUrlOmitDefaults &
+      ~(url_formatter::kFormatUrlOmitHTTP | url_formatter::kFormatUrlOmitHTTPS |
+        url_formatter::kFormatUrlOmitFileScheme);
+  return base::UTF16ToUTF8(url_formatter::FormatUrl(
+      GURL(url.scheme() + "://" + formatted_url_str), types,
+      base::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
 }
 
 std::string FormatOriginForDisplay(const url::Origin& origin) {
@@ -1604,8 +1610,12 @@ void FederatedAuthRequestImpl::ShowModalDialog(const GURL& url) {
   WebContents* web_contents = request_dialog_controller_->ShowModalDialog(
       url, base::BindOnce(&FederatedAuthRequestImpl::OnDialogDismissed,
                           weak_ptr_factory_.GetWeakPtr()));
-  IdentityRegistry::CreateForWebContents(web_contents, this,
-                                         url::Origin::Create(url));
+  // This may be null on Android, as the method cannot return the WebContents of
+  // the CCT that will be created.
+  if (web_contents) {
+    IdentityRegistry::CreateForWebContents(
+        web_contents, weak_ptr_factory_.GetWeakPtr(), url::Origin::Create(url));
+  }
 }
 
 void FederatedAuthRequestImpl::OnContinueOnResponseReceived(

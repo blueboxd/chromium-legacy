@@ -43,9 +43,11 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
+#import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/named_guide.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
@@ -125,9 +127,13 @@ const CGFloat kAutoscrollDecrementWidth = 10.0;
 
 // The size of the new tab button.
 const CGFloat kNewTabButtonWidth = 44;
+const CGFloat kNewTabButtonSpotlightViewCornerRadius = 7;
 
-// Default image insets for the new tab button.
+// Default image insets for the new tab button. The negative value for leading
+// inset is shifting the image view to the left from the center.
 const CGFloat kNewTabButtonLeadingImageInset = -10.0;
+// The negative value for bottom inset is shifting the image view to the bottom
+// from the center.
 const CGFloat kNewTabButtonBottomImageInset = -2.0;
 
 // Identifier of the action that displays the UIMenu.
@@ -200,8 +206,14 @@ const CGFloat kSymbolSize = 18;
   TabStripContainerView* _view;
   TabStripView* _tabStripView;
   UIButton* _buttonNewTab;
+  // The spotlight view contained in the new tab button, serving for the
+  // highlighted effect.
+  UIView* _buttonNewTabSpotlightView;
 
   TabStripStyle _style;
+
+  // Layout guide center to reference the New Tab button.
+  LayoutGuideCenter* _layoutGuideCenter;
 
   // Array of TabViews.  There is a one-to-one correspondence between this array
   // and the set of Tabs in the WebStateList.
@@ -450,7 +462,9 @@ const CGFloat kSymbolSize = 18;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
                                    browser:(Browser*)browser
-                                     style:(TabStripStyle)style {
+                                     style:(TabStripStyle)style
+                         layoutGuideCenter:
+                             (LayoutGuideCenter*)layoutGuideCenter {
   if ((self = [super init])) {
     _tabArray = [[NSMutableArray alloc] initWithCapacity:10];
     _closingTabs = [[NSMutableSet alloc] initWithCapacity:5];
@@ -469,6 +483,9 @@ const CGFloat kSymbolSize = 18;
         std::make_unique<AllWebStateObservationForwarder>(
             _webStateList, _webStateObserver.get());
     _style = style;
+
+    CHECK(layoutGuideCenter);
+    _layoutGuideCenter = layoutGuideCenter;
 
     // `self.view` setup.
     _useTabStacking = [self shouldUseTabStacking];
@@ -499,6 +516,9 @@ const CGFloat kSymbolSize = 18;
     CGRect buttonNewTabFrame = tabStripFrame;
     buttonNewTabFrame.size.width = kNewTabButtonWidth;
     _buttonNewTab = [[UIButton alloc] initWithFrame:buttonNewTabFrame];
+    [_layoutGuideCenter referenceView:_buttonNewTab
+                            underName:kNewTabButtonGuide];
+
     _isIncognito = _browser->GetBrowserState()->IsOffTheRecord();
     // TODO(crbug.com/600829): Rewrite layout code and convert these masks to
     // to trailing and leading margins rather than right and bottom.
@@ -530,6 +550,24 @@ const CGFloat kSymbolSize = 18;
       [_buttonNewTab setImage:buttonNewTabImage forState:UIControlStateNormal];
       [_buttonNewTab.imageView setTintColor:[UIColor colorNamed:kGrey500Color]];
     }
+
+    _buttonNewTabSpotlightView = [[UIView alloc] init];
+    _buttonNewTabSpotlightView.hidden = YES;
+    _buttonNewTabSpotlightView.userInteractionEnabled = NO;
+    _buttonNewTabSpotlightView.layer.cornerRadius =
+        kNewTabButtonSpotlightViewCornerRadius;
+    // Position the spotlight view so that the image view is in its center.
+    // Cannot use the button's `backgroundColor` because the image view is not
+    // centered in the button by kNewTabButtonLeadingImageInset and
+    // kNewTabButtonBottomImageInset.
+    [_buttonNewTabSpotlightView
+        setFrame:CGRectMake(0, -kNewTabButtonBottomImageInset,
+                            kNewTabButtonWidth + kNewTabButtonLeadingImageInset,
+                            kTabStripHeight + kNewTabButtonBottomImageInset)];
+    // Make sure that the spotlightView is below the image to avoid changing the
+    // color of the image.
+    [_buttonNewTab insertSubview:_buttonNewTabSpotlightView
+                    belowSubview:_buttonNewTab.imageView];
 
     SetA11yLabelAndUiAutomationName(
         _buttonNewTab,
@@ -622,6 +660,23 @@ const CGFloat kSymbolSize = 18;
   [self.view addGestureRecognizer:panGestureRecognizer];
 
   self.panGestureRecognizer = panGestureRecognizer;
+}
+
+#pragma mark - TabStripCommands
+
+- (void)setNewTabButtonOnTabStripIPHHighlighted:(BOOL)IPHHighlighted {
+  if (IsUIButtonConfigurationEnabled()) {
+    _buttonNewTab.tintColor = IPHHighlighted
+                                  ? [UIColor colorNamed:kSolidWhiteColor]
+                                  : [UIColor colorNamed:kGrey500Color];
+  } else {
+    _buttonNewTab.imageView.tintColor =
+        IPHHighlighted ? [UIColor colorNamed:kSolidWhiteColor]
+                       : [UIColor colorNamed:kGrey500Color];
+  }
+  _buttonNewTabSpotlightView.backgroundColor =
+      IPHHighlighted ? [UIColor colorNamed:kBlueColor] : nil;
+  _buttonNewTabSpotlightView.hidden = !IPHHighlighted;
 }
 
 #pragma mark - Private

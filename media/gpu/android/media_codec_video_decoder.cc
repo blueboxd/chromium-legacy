@@ -137,14 +137,15 @@ std::string SelectMediaCodec(const VideoDecoderConfig& config,
       continue;
     }
 
-    if (config.level() != kNoVideoCodecLevel && config.level() > info.level) {
+    if (config.level() != kNoVideoCodecLevel &&
+        info.level != kNoVideoCodecLevel && config.level() > info.level) {
       continue;
     }
 
     if (config.coded_size().width() < info.coded_size_min.width() ||
         config.coded_size().height() < info.coded_size_min.height() ||
         config.coded_size().width() > info.coded_size_max.width() ||
-        config.coded_size().height() > info.coded_size_max.width()) {
+        config.coded_size().height() > info.coded_size_max.height()) {
       continue;
     }
 

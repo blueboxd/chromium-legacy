@@ -317,6 +317,7 @@ source_set("browser_sources") {
     "presentation_request.h",
     "presentation_screen_availability_listener.h",
     "presentation_service_delegate.h",
+    "privacy_sandbox_invoking_api.h",
     "private_aggregation_data_model.cc",
     "private_aggregation_data_model.h",
     "process_visibility_util.h",
@@ -589,6 +590,7 @@ source_set("browser_sources") {
       "//ui/android",
     ]
     sources += [
+      "android/additional_navigation_params_android.h",
       "android/android_overlay_provider.h",
       "android/browser_context_handle.h",
       "android/child_process_importance.h",

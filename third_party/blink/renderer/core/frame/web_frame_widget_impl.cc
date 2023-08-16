@@ -316,9 +316,10 @@ WebFrameWidgetImpl::~WebFrameWidgetImpl() {
 
 void WebFrameWidgetImpl::BindLocalRoot(WebLocalFrame& local_root) {
   local_root_ = To<WebLocalFrameImpl>(local_root);
-  if (RuntimeEnabledFeatures::LongAnimationFrameMonitoringEnabled() &&
+  CHECK(local_root_ && local_root_->GetFrame());
+  if (RuntimeEnabledFeatures::LongAnimationFrameMonitoringEnabled(
+          local_root_->GetFrame()->DomWindow()) &&
       !IsHidden()) {
-    DCHECK(local_root_->GetFrame());
     animation_frame_timing_monitor_ =
         MakeGarbageCollected<AnimationFrameTimingMonitor>(
             *this, local_root_->GetFrame()->GetProbeSink());
@@ -2297,16 +2298,6 @@ void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
       ->GetFrame()
       ->GetEventHandler()
       .RecomputeMouseHoverStateIfNeeded();
-
-  ForEachLocalFrameControlledByWidget(
-      LocalRootImpl()->GetFrame(), [](WebLocalFrameImpl* local_frame) {
-        // A frame in the frame tree is fully attached and must always have a
-        // view.
-        LocalFrameView* view = local_frame->GetFrameView();
-        DCHECK(view);
-        if (FragmentAnchor* anchor = view->GetFragmentAnchor())
-          anchor->PerformScriptableActions();
-      });
 
   absl::optional<LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer> ukm_timer;
   if (WidgetBase::ShouldRecordBeginMainFrameMetrics()) {
@@ -4387,9 +4378,10 @@ void WebFrameWidgetImpl::WasShown(bool was_evicted) {
         &RemoteFrame::ResendVisualProperties);
   }
 
+  CHECK(local_root_ && local_root_->GetFrame());
   if (!animation_frame_timing_monitor_ &&
-      RuntimeEnabledFeatures::LongAnimationFrameTimingEnabled()) {
-    DCHECK(local_root_->GetFrame());
+      RuntimeEnabledFeatures::LongAnimationFrameMonitoringEnabled(
+          local_root_->GetFrame()->DomWindow())) {
     animation_frame_timing_monitor_ =
         MakeGarbageCollected<AnimationFrameTimingMonitor>(
             *this, local_root_->GetFrame()->GetProbeSink());

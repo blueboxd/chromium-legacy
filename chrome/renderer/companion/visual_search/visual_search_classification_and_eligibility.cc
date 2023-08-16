@@ -18,6 +18,9 @@ namespace companion::visual_search {
 
 namespace {
 using ::tflite::task::vision::ImageClassifier;
+constexpr char kPosition[] = "position";
+constexpr char kStatic[] = "static";
+constexpr char kZIndex[] = "z-index";
 
 // TODO(b/284645622): This info should be contained in the image metadata. See
 // if we can get it out.
@@ -31,17 +34,48 @@ bool OrOfThresholdingRuleLooksGood(const OrOfThresholdingRules& rules) {
         rule.feature_name() == FeatureLibrary::IMAGE_LEVEL_UNSPECIFIED) {
       return false;
     }
-    if (rule.has_normalizing_feature_name() &&
-        rule.normalizing_feature_name() ==
-            FeatureLibrary::PAGE_LEVEL_UNSPECIFIED) {
+    if (rule.has_normalizing_op() &&
+        rule.normalizing_op() == FeatureLibrary::NORMALIZE_UNSPECIFIED) {
       return false;
     }
-    if (!rule.has_op() ||
-        rule.op() == FeatureLibrary::THRESHOLDING_UNSPECIFIED) {
+    if (!rule.has_thresholding_op() ||
+        rule.thresholding_op() == FeatureLibrary::THRESHOLDING_UNSPECIFIED) {
       return false;
     }
   }
   return true;
+}
+
+ClassificationMetrics CalculateClassificatonMetrics(
+    EligibilityModule& eligibility_module,
+    const std::vector<ImageId>& first_pass_images,
+    const std::vector<ImageId>& second_pass_images) {
+  ClassificationMetrics metrics;
+  uint32_t shoppy_count = 0, sensitive_count = 0, shoppy_nonsensitive_count = 0;
+  for (const auto& eligible_image_id : first_pass_images) {
+    const bool is_shoppy =
+        eligibility_module.IsImageShoppyForMetrics(eligible_image_id);
+    const bool is_sensitive =
+        eligibility_module.IsImageSensitiveForMetrics(eligible_image_id);
+
+    if (is_shoppy) {
+      ++shoppy_count;
+    }
+    if (is_sensitive) {
+      ++sensitive_count;
+    }
+
+    if (is_shoppy && !is_sensitive) {
+      ++shoppy_nonsensitive_count;
+    }
+  }
+  // Store important metrics needed for logging.
+  metrics.eligible_count = first_pass_images.size();
+  metrics.shoppy_count = shoppy_count;
+  metrics.sensitive_count = sensitive_count;
+  metrics.shoppy_nonsensitive_count = shoppy_nonsensitive_count;
+  metrics.result_count = second_pass_images.size();
+  return metrics;
 }
 
 // TODO(b/284645622): this really belongs in the eligibility module code.
@@ -192,12 +226,26 @@ double GetScoreOfFirstClassThatDoesNotHaveName(
 
 SingleImageGeometryFeatures
 VisualClassificationAndEligibility::ExtractFeaturesForEligibility(
-    const std::string& image_identifier,
+    const ImageId& image_identifier,
     blink::WebElement& element) {
   SingleImageGeometryFeatures geometry_features;
   geometry_features.image_identifier = image_identifier;
   geometry_features.original_image_size = element.GetImageSize();
   geometry_features.onpage_rect = element.BoundsInWidget();
+  const auto position_value = element.GetComputedValue(kPosition);
+  // The z index does not have an effect when the position is static,
+  // which is the default value.
+  if (!position_value.IsNull() && position_value.Ascii() != kStatic) {
+    const auto z_index_value = element.GetComputedValue(kZIndex);
+    if (!z_index_value.IsNull()) {
+      int z_index;
+      if (absl::SimpleAtoi(z_index_value.Ascii(), &z_index)) {
+        geometry_features.z_index = z_index;
+      } else {
+        geometry_features.z_index = 0;
+      }
+    }
+  }
   return geometry_features;
 }
 
@@ -253,8 +301,12 @@ VisualClassificationAndEligibility::RunClassificationAndEligibility(
     sens_classifier_scores[eligible_image_id] = sens_score;
   }
 
-  return eligibility_module_->RunSecondPassPostClassificationEligibility(
-      shopping_classifier_scores, sens_classifier_scores);
+  auto second_pass_eligible =
+      eligibility_module_->RunSecondPassPostClassificationEligibility(
+          shopping_classifier_scores, sens_classifier_scores);
+  metrics_ = CalculateClassificatonMetrics(
+      *eligibility_module_, first_pass_eligible, second_pass_eligible);
+  return second_pass_eligible;
 }
 
 VisualClassificationAndEligibility::~VisualClassificationAndEligibility() =

@@ -78,7 +78,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_field_trial.h"
-#import "ios/chrome/browser/ui/ntp/synced_segments_field_trial.h"
 #import "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/web/common/features.h"
@@ -150,7 +149,6 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   new_tab_page_field_trial::RegisterLocalStatePrefs(registry);
-  synced_segments_field_trial::RegisterLocalStatePrefs(registry);
   component_updater::RegisterComponentUpdateServicePrefs(registry);
   component_updater::AutofillStatesComponentInstallerPolicy::RegisterPrefs(
       registry);
@@ -253,6 +251,15 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterIntegerPref(prefs::kIosSyncSegmentsNewTabPageDisplayCount,
                                 0);
+
+  // Pref used to store the latest Most Visited Sites to detect changes
+  // to the top Most Visited Sites.
+  registry->RegisterListPref(prefs::kIosLatestMostVisitedSites,
+                             PrefRegistry::LOSSY_PREF);
+  // Pref used to store the number of impressions of the Most Visited Sites
+  // since a freshness signal of the Most Visited Sites.
+  registry->RegisterIntegerPref(
+      prefs::kIosMagicStackSegmentationMVTImpressionsSinceFreshness, -1);
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {

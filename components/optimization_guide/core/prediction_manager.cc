@@ -175,7 +175,10 @@ bool IsModelMetadataTypeOnServerAllowlist(const proto::Any& model_metadata) {
          model_metadata.type_url() ==
              "type.googleapis.com/"
              "google.internal.chrome.optimizationguide.v1."
-             "ClientSidePhishingModelMetadata";
+             "ClientSidePhishingModelMetadata" ||
+         model_metadata.type_url() ==
+             "type.googleapis.com/"
+             "lens.prime.csc.VisualSearchModelMetadata";
 }
 
 void RecordModelAvailableAtRegistration(
@@ -363,7 +366,7 @@ void PredictionManager::FetchModels(bool is_first_model_fetch) {
   proto::ModelInfo base_model_info;
   // There should only be one supported model engine version at a time.
   base_model_info.add_supported_model_engine_versions(
-      proto::MODEL_ENGINE_VERSION_TFLITE_2_14);
+      proto::MODEL_ENGINE_VERSION_TFLITE_2_14_1);
   // This histogram is used for integration tests. Do not remove.
   // Update this to be 10000 if/when we exceed 100 model engine versions.
   LOCAL_HISTOGRAM_COUNTS_100(

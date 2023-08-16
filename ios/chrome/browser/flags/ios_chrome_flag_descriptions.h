@@ -243,6 +243,15 @@ extern const char kDefaultBrowserRefactoringPromoManagerDescription[];
 extern const char kDefaultBrowserPromoForceShowPromoName[];
 extern const char kDefaultBrowserPromoForceShowPromoDescription[];
 
+// Title and description for default browser promo trigger criteria experiment.
+extern const char kDefaultBrowserTriggerCriteriaExperimentName[];
+extern const char kDefaultBrowserTriggerCriteriaExperimentDescription[];
+
+// Title and description for default browser promo trigger criteria experiment
+// param.
+extern const char kDefaultBrowserTriggerOnOmniboxCopyPasteName[];
+extern const char kDefaultBrowserTriggerOnOmniboxCopyPasteDescription[];
+
 // Title and description for the flag to enable the flag that skips the
 // triggering criteria default browser promo skip.
 extern const char kDefaultBrowserVideoPromoName[];
@@ -557,6 +566,10 @@ extern const char kIOSSharedHighlightingAmpDescription[];
 // the text fragments UI.
 extern const char kIOSSharedHighlightingV2Name[];
 extern const char kIOSSharedHighlightingV2Description[];
+
+// Title and description for the flag to enable IPH for safari switcher.
+extern const char kIPHForSafariSwitcherName[];
+extern const char kIPHForSafariSwitcherDescription[];
 
 // Title and description for the flag to lock the bottom toolbar into place.
 extern const char kLockBottomToolbarName[];
@@ -894,10 +907,10 @@ extern const char kTFLiteLanguageDetectionDescription[];
 extern const char kTFLiteLanguageDetectionIgnoreName[];
 extern const char kTFLiteLanguageDetectionIgnoreDescription[];
 
-// Title and description for the flag to enable the toolbar container
-// implementation.
-extern const char kToolbarContainerName[];
-extern const char kToolbarContainerDescription[];
+// Title and description for the flag to use the page's theme color in the
+// toolbar.
+extern const char kThemeColorInToolbarName[];
+extern const char kThemeColorInToolbarDescription[];
 
 // Title and description for the flag to enable using Lens to search using
 // the device camera from the home screen widget.
@@ -936,6 +949,10 @@ extern const char kSFSymbolsFollowUpDescription[];
 // Title and description for the flag to sort the tab by recency in the TabGrid.
 extern const char kTabGridRecencySortName[];
 extern const char kTabGridRecencySortDescription[];
+
+// Title and description for the tab grid refactoring flag.
+extern const char kTabGridRefactoringName[];
+extern const char kTabGridRefactoringDescription[];
 
 // Title and description for the flag to enable the new transitions in the
 // TabGrid.

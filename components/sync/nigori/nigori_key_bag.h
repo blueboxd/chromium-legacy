@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "components/sync/engine/nigori/public_private_key_pair.h"
+#include "components/sync/engine/nigori/cross_user_sharing_public_private_key_pair.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 
 namespace sync_pb {
@@ -63,11 +63,12 @@ class NigoriKeyBag {
   void AddAllUnknownKeysFrom(const NigoriKeyBag& other);
 
   // Adds a Public-private key-pair to the keybag associated with |version|.
-  void AddKeyPair(PublicPrivateKeyPair key_pair, uint32_t version);
+  void AddKeyPair(CrossUserSharingPublicPrivateKeyPair key_pair,
+                  uint32_t version);
 
   // Similar to AddKeyPair, but reads the private-key material from a proto and
   // derives the public-key from the private-key.
-  bool AddKeyPairFromProto(const sync_pb::PrivateKey& key);
+  bool AddKeyPairFromProto(const sync_pb::CrossUserSharingPrivateKey& key);
 
   // Encryption of strings (possibly binary). Returns true if success.
   // |key_name| must be known. |encrypted_output| must not be null.
@@ -90,7 +91,7 @@ class NigoriKeyBag {
   std::map<std::string, std::unique_ptr<const Nigori>> nigori_map_;
 
   // Public-private key-pairs we know about, mapped by version.
-  std::map<uint32_t, const PublicPrivateKeyPair> key_pairs_map_;
+  std::map<uint32_t, const CrossUserSharingPublicPrivateKeyPair> key_pairs_map_;
 };
 
 }  // namespace syncer

@@ -249,7 +249,7 @@
         ],
         'mixins': [
           'chrome-swarming-pool',
-          'linux-bionic',
+          'linux-jammy-or-bionic',
         ],
         'test_suites': {
           'isolated_scripts': 'chrome_linux_isolated_script_tests',
@@ -438,9 +438,6 @@
         ],
       },
       'linux-lacros-archive-rel': {
-        'mixins': [
-          'linux-bionic',
-        ],
         'additional_compile_targets': [
           'chrome',
         ],
@@ -660,21 +657,14 @@
         'os_type': 'android',
       },
       'Oreo Phone Tester': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'OPR3.170623.008',
-              'device_type': 'marlin',
-              'os': 'Android',
-            },
-          ],
-        },
         'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'android_oreo_gtests',
         },
         'mixins': [
           'has_native_resultdb_integration',
+          'oreo_fleet',
+          'walleye',
         ],
       },
       'android-10-arm64-rel': {
@@ -1073,7 +1063,7 @@
           '12-x64-emulator',
           'emulator-8-cores',
           'has_native_resultdb_integration',
-          'linux-bionic',
+          'linux-jammy',
           'x86-64',
         ],
         'os_type': 'android',
@@ -1086,7 +1076,7 @@
           '12-x64-emulator',
           'emulator-8-cores',
           'has_native_resultdb_integration',
-          'linux-bionic',
+          'linux-jammy',
           'x86-64',
         ],
         'os_type': 'android',
@@ -1131,7 +1121,7 @@
           'has_native_resultdb_integration',
           'pie-x86-emulator',
           'emulator-8-cores',
-          'linux-bionic',
+          'linux-jammy',
           'x86-64',
         ],
         'test_suites': {
@@ -1144,7 +1134,7 @@
           'marshmallow-x86-emulator',
           'emulator-4-cores',
           'has_native_resultdb_integration',
-          'linux-bionic',
+          'linux-jammy',
           'x86-64',
         ],
         'additional_compile_targets': [
@@ -1161,7 +1151,7 @@
           '12-x64-emulator',
           'emulator-8-cores',
           'has_native_resultdb_integration',
-          'linux-bionic',
+          'linux-jammy',
           'x86-64',
         ],
         'os_type': 'android',
@@ -1174,7 +1164,7 @@
           '13-x64-emulator',
           'emulator-8-cores',
           'has_native_resultdb_integration',
-          'linux-bionic',
+          'linux-jammy',
           'x86-64',
         ],
         'os_type': 'android',
@@ -1187,7 +1177,7 @@
           'has_native_resultdb_integration',
           'pie-x86-emulator',
           'emulator-8-cores',
-          'linux-bionic',
+          'linux-jammy',
           'x86-64',
         ],
         'test_suites': {
@@ -2539,12 +2529,24 @@
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
       },
-      'Dawn Win10 x64 ASAN Release': {
+      'Dawn Win10 x64 ASAN Builder': {},
+      'Dawn Win10 x64 ASAN Release (Intel)': {
         'os_type': 'win',
         'browser_config': 'release_x64',
         'mixins': [
-          'win10_nvidia_gtx_1660_stable_dimension_set',
-          'win10_intel_uhd_630_stable_dimension_set',
+          'win10_intel_uhd_630_stable',
+        ],
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_dawn_webgpu_cts_asan',
+          'gtest_tests': 'gpu_dawn_integration_asan_gtests_passthrough',
+          'isolated_scripts': 'gpu_dawn_asan_isolated_scripts',
+        },
+      },
+      'Dawn Win10 x64 ASAN Release (NVIDIA)': {
+        'os_type': 'win',
+        'browser_config': 'release_x64',
+        'mixins': [
+          'win10_nvidia_gtx_1660_stable',
         ],
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_dawn_webgpu_cts_asan',
@@ -3240,7 +3242,7 @@
         ],
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'fieldtrial_android_tests',
+          'gtest_tests': 'android_finch_fieldtrial_tests',
         },
       },
 
@@ -5250,7 +5252,7 @@
       'linux-lacros-asan-lsan-rel': {
         'mixins': [
           'isolate_profile_data',
-          'linux-bionic',
+          'linux-jammy',
         ],
         'additional_compile_targets': [
           'chrome',
@@ -5267,7 +5269,7 @@
       },
       'linux-ubsan-vptr': {
         'mixins': [
-          'linux-bionic',
+          'linux-jammy',
         ],
         'test_suites': {
           # no "_and_gl":gl_unittests doesn't pass yet,
@@ -5601,7 +5603,7 @@
           'rust_build_tests',
         ],
         'mixins': [
-          'linux-bionic'
+          'linux-jammy'
         ],
         'test_suites': {
           'gtest_tests': 'rust_host_gtests',
@@ -5616,7 +5618,7 @@
           'rust_build_tests',
         ],
         'mixins': [
-          'linux-bionic'
+          'linux-jammy'
         ],
         'test_suites': {
           'gtest_tests': 'rust_host_gtests',
@@ -6555,7 +6557,7 @@
       'android-nougat-x86-finch-smoke-chrome': {
         'mixins': [
           'chrome-finch-swarming-pool',
-          'linux-bionic',
+          'linux-jammy-or-bionic',
           'nougat-x86-emulator',
         ],
         'test_suites': {
@@ -6587,7 +6589,7 @@
       'linux-finch-smoke-chrome': {
         'mixins': [
           'chrome-finch-swarming-pool',
-          'linux-bionic',
+          'linux-jammy-or-bionic',
         ],
         'test_suites': {
           'isolated_scripts': 'chrome_finch_smoke_tests',

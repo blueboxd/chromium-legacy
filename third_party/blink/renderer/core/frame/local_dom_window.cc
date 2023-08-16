@@ -2375,7 +2375,8 @@ void LocalDOMWindow::Trace(Visitor* visitor) const {
 bool LocalDOMWindow::CrossOriginIsolatedCapability() const {
   return Agent::IsCrossOriginIsolated() &&
          IsFeatureEnabled(
-             mojom::blink::PermissionsPolicyFeature::kCrossOriginIsolated);
+             mojom::blink::PermissionsPolicyFeature::kCrossOriginIsolated) &&
+         GetPolicyContainer()->GetPolicies().allow_cross_origin_isolation;
 }
 
 bool LocalDOMWindow::IsIsolatedContext() const {

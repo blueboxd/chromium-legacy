@@ -182,10 +182,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
 
 [['AboutPage', 'os_about_page_tests.js'],
  ['ApnDetailDialog', 'apn_detail_dialog_tests.js'],
- [
-   'ApnSubpage', 'apn_subpage_tests.js',
-   {enabled: ['ash::features::kApnRevamp']}
- ],
+ // TODO(crbug.com/1455866): Enable the ApnSubpage test.
+ // [
+ //   'ApnSubpage', 'apn_subpage_tests.js',
+ //   {enabled: ['ash::features::kApnRevamp']}
+ // ],
  ['AppsPage', 'apps_page_test.js'],
  ['AppNotificationsSubpage', 'app_notifications_subpage_tests.js'],
  ['AppManagementFileHandlingItem', 'app_management/file_handling_item_test.js'],
@@ -215,6 +216,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  [
    'DevicePageInputDeviceMojoInterfaceProvider',
    'device_page/input_device_mojo_interface_provider_test.js',
+   {enabled: ['ash::features::kInputDeviceSettingsSplit']}
+ ],
+ [
+   'DevicePageKeyboardSixPackKeyRow',
+   'device_page/keyboard_six_pack_key_row_test.js',
    {enabled: ['ash::features::kInputDeviceSettingsSplit']}
  ],
  [
@@ -636,6 +642,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  [
    'OsSettingsUiPageVisibility',
    'os_settings_ui/os_settings_ui_page_visibility_test.js',
+ ],
+ [
+   'OsSettingsUiScrollRestoration',
+   'os_settings_ui/scroll_restoration_test.js',
  ],
  ['OsSettingsUiToolbar', 'os_settings_ui/os_settings_ui_toolbar_test.js'],
  [

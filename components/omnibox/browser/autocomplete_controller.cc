@@ -1015,6 +1015,49 @@ void AutocompleteController::UpdateResult(
     default_match_to_preserve = last_default_match;
   }
 
+  // Autocomplete passes can be sync or async.
+  // There can be 1 or multiple passes per input.
+  // The typical flow is:
+  //   1) A sync pass.
+  //   2) 1 or more intermediate async passes.
+  //   3) 1 last async pass.
+  // Another common flow is:
+  //   4) A single sync pass.
+  // There're other flows, e.g. when expiring transferring matches, but these 2
+  // are most common.
+
+  // (1) should:
+  //   - deduplicate/sort/cull
+  //   - transfer
+  //   - deduplicate/sort/cull
+  //   - annotate
+  //   - notify immediately
+  // (2) should:
+  //   - deduplicate/sort/cull
+  //   - transfer
+  //   - deduplicate/sort/cull
+  //   - annotate
+  //   - notify debounced
+  // (3) should:
+  //   - deduplicate/sort/cull
+  //   - annotate
+  //   - notify immediately
+  // (3) with ML scoring enabled should:
+  //   - deduplicate
+  //   - [if `ml_url_scoring_rerank_final_matches_only` is true] sort/cull
+  //   - deduplicate/sort/cull
+  //   - annotate
+  //   - notify immediately
+  // (4) should:
+  //   - deduplicate/sort/cull
+  //   - annotate
+  //   - notify immediately
+  // There are more steps,e.g. culling tail suggestions, preserving default,
+  // demoting entities, grouping, etc, but this is an overview.
+
+  // TODO(manukh): Rewrite this code so the flow is obvious and this comment
+  //  becomes unnecessary.
+
   if (!done_) {
     // Conditionally skip the first call to `SortAndCull()` before the old and
     // new matches are merged.
@@ -1028,7 +1071,7 @@ void AutocompleteController::UpdateResult(
     // If not all providers are done, merge the old and new matches before
     // sorting.
     result_.TransferOldMatches(input_, &old_matches_to_reuse);
-  } else if (OmniboxFieldTrial::IsMlUrlScoringEnabled() &&
+  } else if (sync_pass_done_ && OmniboxFieldTrial::IsMlUrlScoringEnabled() &&
              provider_client_->GetAutocompleteScoringModelService()) {
     // The async scoring model is only run once all the providers are done.
 
@@ -1738,8 +1781,21 @@ void AutocompleteController::OnUrlScoringModelDone(
     // score to the match with the highest respective model prediction score.
     if (!OmniboxFieldTrial::IsMlUrlScoringCounterfactual()) {
       auto match_itr = prediction_and_match_itr_heap.top().second;
-      match_itr->RecordAdditionalInfo("legacy_relevance", match_itr->relevance);
+      match_itr->RecordAdditionalInfo("ml_legacy_relevance",
+                                      match_itr->relevance);
       match_itr->relevance = relevance_heap.top();
+
+      // Fuzzy matches use the scoring signals for history and bookmark
+      // providers with the "corrected" input. This leads to an artificially
+      // high confidence from the model. Correct for this by re-applying the
+      // penalty from the history fuzzy provider.
+      if (match_itr->provider && match_itr->provider->type() ==
+                                     AutocompleteProvider::TYPE_HISTORY_FUZZY) {
+        match_itr->RecordAdditionalInfo("ml_relevance_before_penalty",
+                                        match_itr->relevance);
+        HistoryFuzzyProvider::ApplyRelevancePenalty(
+            *match_itr, match_itr->fuzzy_match_penalty);
+      }
     }
     relevance_heap.pop();
     prediction_and_match_itr_heap.pop();

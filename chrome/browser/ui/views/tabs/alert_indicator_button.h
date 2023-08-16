@@ -43,6 +43,9 @@ class AlertIndicatorButton : public views::ImageButton,
   static ui::ImageModel GetTabAlertIndicatorImage(TabAlertState alert_state,
                                                   ui::ColorId button_color);
 
+  static ui::ImageModel GetTabAlertIndicatorImageForHoverCard(
+      TabAlertState alert_state);
+
   // Returns the current TabAlertState except, while the indicator image is
   // fading out, returns the prior TabAlertState.
   absl::optional<TabAlertState> showing_alert_state() const {
@@ -93,7 +96,7 @@ class AlertIndicatorButton : public views::ImageButton,
 
   // Resets the images to display on the button to reflect |state| and the
   // parent tab's button color.  Should be called when either of these changes.
-  void ResetImages(TabAlertState state);
+  void UpdateIconForAlertState(TabAlertState state);
 
   const raw_ptr<Tab> parent_tab_;
 

@@ -202,10 +202,6 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   return self;
 }
 
-- (void)dealloc {
-  CHECK(!self.signinPromoViewMediator);
-}
-
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.view.accessibilityIdentifier =
@@ -721,6 +717,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
                   authService:AuthenticationServiceFactory::GetForBrowserState(
                                   self.browserState)
                   prefService:self.browserState->GetPrefs()
+                  syncService:self.syncService
                   accessPoint:signin_metrics::AccessPoint::
                                   ACCESS_POINT_RECENT_TABS
                     presenter:self
@@ -1749,12 +1746,12 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 
 #pragma mark - SyncPresenter
 
-- (void)showReauthenticateSignin {
-  [self.handler showSignin:
-                    [[ShowSigninCommand alloc]
-                        initWithOperation:AuthenticationOperationReauthenticate
-                              accessPoint:signin_metrics::AccessPoint::
-                                              ACCESS_POINT_RECENT_TABS]
+- (void)showPrimaryAccountReauth {
+  [self.handler showSignin:[[ShowSigninCommand alloc]
+                               initWithOperation:
+                                   AuthenticationOperationPrimaryAccountReauth
+                                     accessPoint:signin_metrics::AccessPoint::
+                                                     ACCESS_POINT_RECENT_TABS]
         baseViewController:self];
 }
 
@@ -1843,7 +1840,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   syncer::SyncService::UserActionableError error =
       syncService->GetUserActionableError();
   if (error == syncer::SyncService::UserActionableError::kSignInNeedsUpdate) {
-    [self showReauthenticateSignin];
+    [self showPrimaryAccountReauth];
   } else if (ShouldShowSyncSettings(error)) {
     [self showSyncManagerSettings];
   } else if (error ==

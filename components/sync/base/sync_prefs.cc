@@ -79,7 +79,8 @@ void SyncPrefs::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::internal::kSyncAllOsTypes, true);
   registry->RegisterBooleanPref(prefs::internal::kSyncOsApps, false);
   registry->RegisterBooleanPref(prefs::internal::kSyncOsPreferences, false);
-  // The pref for Wi-Fi configurations is registered in the loop above.
+  registry->RegisterBooleanPref(prefs::internal::kSyncWifiConfigurations,
+                                false);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -165,6 +166,10 @@ UserSelectableTypeSet SyncPrefs::GetSelectedTypes(
       for (UserSelectableType type : UserSelectableTypeSet::All()) {
         const char* pref_name = GetPrefNameForType(type);
         DCHECK(pref_name);
+        // TODO(crbug.com/1455963): Find a better solution than manually
+        // overriding the prefs' default values.
+        // TODO(crbug.com/1455963): This should return true by default only if
+        // a given type can actually run in transport mode.
         if (pref_service_->GetBoolean(pref_name) ||
             pref_service_->FindPreference(pref_name)->IsDefaultValue()) {
           // In transport-mode, individual types are considered enabled by
@@ -404,8 +409,6 @@ const char* SyncPrefs::GetPrefNameForType(UserSelectableType type) {
       return prefs::internal::kSyncReadingList;
     case UserSelectableType::kTabs:
       return prefs::internal::kSyncTabs;
-    case UserSelectableType::kWifiConfigurations:
-      return prefs::internal::kSyncWifiConfigurations;
     case UserSelectableType::kSavedTabGroups:
       return prefs::internal::kSyncSavedTabGroups;
   }
@@ -488,12 +491,16 @@ void SyncPrefs::MaybeMigratePrefsForReplacingSyncWithSignin(
       pref_service_->SetBoolean(
           GetPrefNameForType(UserSelectableType::kPreferences), false);
 
-      // Addresses remains enabled only if passwords is enabled (i.e. the user
-      // didn't opt out for passwords).
-      // TODO(crbug.com/1447020): Verify whether this is the intended behavior,
-      // and then add tests for it.
-      if (!pref_service_->GetBoolean(
-              GetPrefNameForType(UserSelectableType::kPasswords))) {
+      // Addresses remains enabled only if the user didn't opt out for
+      // passwords. Note that the pref being its default value (not explicitly
+      // set) is treated as "not opted out"; see similar logic in
+      // GetSelectedTypes().
+      // TODO(crbug.com/1455963): Find a better solution than manually
+      // overriding the pref's default value.
+      const char* kPasswordsPref =
+          GetPrefNameForType(UserSelectableType::kPasswords);
+      if (!pref_service_->GetBoolean(kPasswordsPref) &&
+          !pref_service_->FindPreference(kPasswordsPref)->IsDefaultValue()) {
         pref_service_->SetBoolean(
             GetPrefNameForType(UserSelectableType::kAutofill), false);
       }

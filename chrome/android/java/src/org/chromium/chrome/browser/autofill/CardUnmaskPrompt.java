@@ -186,9 +186,9 @@ public class CardUnmaskPrompt implements EmptyTextWatcher, OnClickListener,
                     R.dimen.card_unmask_dialog_credit_card_icon_end_margin,
                     /* cardNameAndNumberTextAppearance= */ R.style.TextAppearance_TextLarge_Primary,
                     /* cardLabelTextAppearance= */ R.style.TextAppearance_TextMedium_Secondary,
-                    /* showCustomIcon= */ isVirtualCard
-                            || ChromeFeatureList.isEnabled(
-                                    ChromeFeatureList.AUTOFILL_ENABLE_CARD_ART_IMAGE));
+                    /* showCustomIcon= */
+                    AutofillUiUtils.shouldShowCustomIcon(
+                            cardArtUrl, /* isVirtualCard= */ isVirtualCard));
         } else {
             mMainView = inflater.inflate(R.layout.autofill_card_unmask_prompt, null);
         }

@@ -1601,7 +1601,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveInlineSyncStatusParentFolderProgressEvents")
             .EnableInlineSyncStatusProgressEvents(),
         TestCase("driveFolderShouldShowOfflineTickWhenBulkPinningEnabled")
-            .EnableBulkPinning(),
+            .EnableBulkPinning()
+            .EnableInlineSyncStatus(),
         TestCase("driveFoldersRetainPinnedPropertyWhenBulkPinningEnabled")
             .EnableBulkPinning(),
         TestCase("drivePinToggleIsEnabledInSharedWithMeWhenBulkPinningEnabled")
@@ -1610,9 +1611,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableBulkPinning()
             .EnableJellybean(),
         TestCase("driveCantPinItemsShouldHaveClassNameAndGetUpdatedWhenCanPin")
-            .EnableBulkPinning(),
-        TestCase("driveItemsOutOfViewportShouldUpdateTheirSyncStatus")
-            .EnableInlineSyncStatusProgressEvents()
+            .EnableBulkPinning()
         // TODO(b/189173190): Enable
         // TestCase("driveEnableDocsOfflineDialog"),
         // TODO(b/189173190): Enable

@@ -162,12 +162,6 @@ const char kForceStartupSigninPromoDescription[] =
     "If enabled, the full screen signin promo will be forced to show up at "
     "Chrome start-up.";
 
-const char kGaiaIdCacheInAccountManagerFacadeName[] =
-    "Gaia Id In AccountManagerFacade (AMF)";
-const char kGaiaIdCacheInAccountManagerFacadeDescription[] =
-    "If enabled, starts fetching gaia id from android accounts in "
-    "AccountManagerFacade (AMF)";
-
 const char kGainmapHdrImagesName[] = "Gainmap HDR image rendering";
 const char kGainmapHdrImagesDescription[] =
     "If enabled, renders images that include an gainmap in HDR";
@@ -289,6 +283,14 @@ const char kEnableManagedByParentUiDescription[] =
     "Enables UI indicating if a Profile is managed by Family Link parental "
     "controls."
     "The enable-family-link-supervision flag must also be enabled.";
+
+const char kClearingCookiesKeepsSupervisedUsersSignedInName[] =
+    "Clearing cookies keep supervised users signed in";
+const char kClearingCookiesKeepsSupervisedUsersSignedInDescription[] =
+    "Supervised users will remain signed in when cookies are cleared. Display "
+    "UI is updated accordingly"
+    "The enable-family-link-supervision flag must also be enabled.";
+
 #endif  // ENABLE_SUPERVISED_USERS
 
 const char kUpcomingFollowFeaturesName[] = "Enable upcoming follow features.";
@@ -411,6 +413,13 @@ const char kAutofillEnableCardArtImageName[] = "Enable showing card art images";
 const char kAutofillEnableCardArtImageDescription[] =
     "When enabled, card product images (instead of network icons) will be "
     "shown in Payments Autofill UI.";
+
+const char kAutofillEnableCardArtServerSideStretchingName[] =
+    "Enable server side stretching of card art images";
+const char kAutofillEnableCardArtServerSideStretchingDescription[] =
+    "When enabled, the server will stretch (if necessary) and return card art "
+    "images of the exact required dimensions. The client side resizing of "
+    "images will not be required.";
 
 const char kAutofillEnableCardProductNameName[] =
     "Enable showing card product name";
@@ -551,11 +560,10 @@ const char kAutofillHighlightOnlyChangedValuesInPreviewModeDescription[] =
     "not be highlighted.";
 
 const char kAutofillMoveLegalTermsAndIconForNewCardEnrollmentName[] =
-    "Move legal terms and icon for new card enrollment";
+    "Move legal terms for new card enrollment";
 const char kAutofillMoveLegalTermsAndIconForNewCardEnrollmentDescription[] =
-    "When enabled, legal terms will be moved before action buttons and GPay "
-    "icon will be moved after the title in autofill save card and virtual "
-    "card enrollment bubbles and dialogs.";
+    "When enabled, legal terms will be moved before action buttons in autofill "
+    "save card and virtual card enrollment bubbles and dialogs.";
 
 const char kAutofillOfferToSaveCardWithSameLastFourName[] =
     "Offer credit card save for cards with same last-4 but different "
@@ -1638,6 +1646,11 @@ const char kFedCmRpContextDescription[] =
     "Allows relying parties to describe which context (e.g. sign-up vs "
     "sign-in) the FedCM is executing on.";
 
+const char kFedCmIdpSigninStatusName[] = "FedCmIdpSigninStatus";
+const char kFedCmIdpSigninStatusDescription[] =
+    "Enables the FedCM IDP sign-in status API that allows IDPs to notify the "
+    "browser about the user's sign-in status.";
+
 const char kWebIdentityMDocsName[] = "MDocs";
 const char kWebIdentityMDocsDescription[] =
     "Allows relying parties to request the presentation of ISO mdocs.";
@@ -2707,11 +2720,6 @@ const char kPasswordsImportM2Description[] =
     "Extends passwords import flow in password settings with conflict "
     "resolution functionality.";
 
-const char kPasswordStrengthIndicatorName[] = "Password strength indicator";
-const char kPasswordStrengthIndicatorDescription[] =
-    "Enables password strength indicator when typing a password during a "
-    "sign-up and password change flows.";
-
 const char kForceEnableFastCheckoutCapabilitiesName[] =
     "Force enable fast checkout capabilities";
 const char kForceEnableFastCheckoutCapabilitiesDescription[] =
@@ -2833,6 +2841,13 @@ const char kPrivacySandboxAdsAPIsOverrideDescription[] =
     "Enables Privacy Sandbox APIs: Attribution Reporting, Fledge, Topics, "
     "Fenced Frames, Shared Storage, Private Aggregation, and their associated "
     "features.";
+
+const char kPrivacySandboxEnrollmentOverridesName[] =
+    "Privacy Sandbox Enrollment Overrides";
+const char kPrivacySandboxEnrollmentOverridesDescription[] =
+    "Allows a list of sites to use Privacy Sandbox features without them being "
+    "enrolled and attested into the Privacy Sandbox experiment. See: "
+    "https://developer.chrome.com/en/docs/privacy-sandbox/enroll/";
 
 const char kPrivacySandboxSettings4Name[] = "Privacy Sandbox Settings V4";
 const char kPrivacySandboxSettings4Description[] =
@@ -3209,6 +3224,11 @@ const char kTabGroupsContinuationAndroidDescription[] =
 const char kTabGroupsSaveName[] = "Tab Groups Save";
 const char kTabGroupsSaveDescription[] =
     "Enables users to explicitly save and recall tab groups.";
+
+const char kTabHoverCardImageSettingsName[] = "Tab Hover Card Image Setting";
+const char kTabHoverCardImageSettingsDescription[] =
+    "Show a toggle in appearance settings to control if tab hover card preview "
+    "images are shown.";
 
 const char kTabHoverCardImagesName[] = "Tab Hover Card Images";
 const char kTabHoverCardImagesDescription[] =
@@ -4515,6 +4535,12 @@ const char kAllowAllSitesToInitiateMirroringDescription[] =
     "When enabled, allows all websites to request to initiate tab mirroring "
     "via Presentation API. Requires #cast-media-route-provider to also be "
     "enabled";
+
+const char kDialMediaRouteProviderName[] =
+    "Allow cast device discovery with DIAL protocol";
+const char kDialMediaRouteProviderDescription[] =
+    "Enable/Disable the browser discovery of the DIAL support cast device."
+    "It sends a discovery SSDP message every 120 seconds";
 
 const char kMediaRouterOtrInstanceName[] =
     "Create a separate Media Router instance for off-the-record "
@@ -6578,6 +6604,13 @@ const char kShowTouchHudDescription[] =
     "Shows a trail of colored dots for the last few touch points. Pressing "
     "Ctrl-Alt-I shows a heads-up display view in the top-left corner. Helps "
     "debug hardware issues that generate spurious touch events.";
+
+const char kSpeakOnMuteOptInNudgePrefsResetName[] =
+    "Reset Speak-on-mute detection opt-in nudge prefs";
+const char kSpeakOnMuteOptInNudgePrefsResetDescription[] =
+    "Resets the prefs that prevent the speak-on-mute opt-in nudge from "
+    "showing, so it can be shown again for debugging purposes. With this flag "
+    "enabled, the speak-on-mute nudge will show after every login.";
 
 const char kSpectreVariant2MitigationName[] = "Spectre variant 2 mitigation";
 const char kSpectreVariant2MitigationDescription[] =

@@ -61,6 +61,7 @@
 <translation id="1283039547216852943">輕觸即可展開</translation>
 <translation id="1289059016768036948">系統會要求你登入 Google 帳戶</translation>
 <translation id="1291207594882862231">清除歷史記錄、Cookie、網站資料、快取…</translation>
+<translation id="1293898515599432175">密碼將從 Chrome <ph name="CHROME_CHANNEL" />的 Google 密碼管理工具中刪除。你可以保留剛剛下載的密碼檔案。</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
 <translation id="1298077576058087471">節省高達 60% 的數據用量，閱讀今日新聞</translation>
 <translation id="1303339473099049190">找不到指定密碼。請檢查你輸入的內容，然後再試一次。</translation>
@@ -129,7 +130,6 @@
 <translation id="164269334534774161">您目前瀏覽的是這個網頁的離線複本 (建立時間：<ph name="CREATION_TIME" />)</translation>
 <translation id="1644574205037202324">歷史記錄</translation>
 <translation id="1657932388559784161">已關閉網頁洞察資訊底部功能表</translation>
-<translation id="1668122540633280551">選擇 Chrome 首頁自動播放預覽影片的方式。</translation>
 <translation id="1670399744444387456">基本</translation>
 <translation id="1671236975893690980">正在等候下載…</translation>
 <translation id="1672586136351118594">不要再顯示</translation>
@@ -272,7 +272,6 @@
 <translation id="2536728043171574184">目前瀏覽的是這個網頁的離線複本</translation>
 <translation id="2546283357679194313">Cookie 和網站資料</translation>
 <translation id="2558569818338050235">你的瀏覽記錄會影響系統向你顯示的廣告</translation>
-<translation id="2561519700418191927">影片預覽</translation>
 <translation id="2567385386134582609">圖片</translation>
 <translation id="2567545343356994513">針對不安全的網站、下載內容和擴充功能提供更快速的主動式防護機制</translation>
 <translation id="2569733278091928697">你將能輕鬆管理媒體控制項、無痕模式工作階段、下載項目等等</translation>
@@ -376,6 +375,7 @@
 <translation id="3027644380269727216">以你的網站活動做為依據。這項設定已開啟。</translation>
 <translation id="3029276696788198026">不使用預先載入模式</translation>
 <translation id="3029704984691124060">通關密語不符</translation>
+<translation id="303514781271618814">Chrome 團隊正在研究新功能，設法讓網站減少存取個人資訊的情況，同時讓使用者享有相同的瀏覽體驗</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">追蹤價格</translation>
 <translation id="3037517125981011456">顯示登入 Chrome 的提示</translation>
@@ -511,9 +511,9 @@
 <translation id="3775705724665058594">傳送至你的裝置</translation>
 <translation id="3791957072666773229">{TAB_COUNT,plural, =1{1 個分頁}other{# 個分頁}}</translation>
 <translation id="3795154175078851242">複製圖片和連結</translation>
-<translation id="3803784507854318295">管理自動播放方式</translation>
 <translation id="3810838688059735925">影片</translation>
 <translation id="3810973564298564668">管理</translation>
+<translation id="381861209280417772">刪除密碼</translation>
 <translation id="3819178904835489326">已刪除 <ph name="NUMBER_OF_DOWNLOADS" /> 個下載項目</translation>
 <translation id="3819183753496523827">你已經離線，請檢查網際網路連線，然後再試一次。</translation>
 <translation id="3830886834687455630">必須更新 Google Play 服務才能檢查密碼</translation>
@@ -564,7 +564,6 @@
 <translation id="4095146165863963773">要刪除應用程式資料嗎？</translation>
 <translation id="4096227151372679484">書籤儲存流程已開啟，目前顯示半個版面的內容</translation>
 <translation id="4101475238162928417">進行同步處理，取得你在其他裝置上的密碼、書籤和其他資料</translation>
-<translation id="410351446219883937">自動播放</translation>
 <translation id="4106587138345390261">Chrome 團隊正在研究新功能，設法讓網站減少存取個人資訊的情況，同時讓使用者享有相同的瀏覽體驗。</translation>
 <translation id="4108314971463891922">追蹤</translation>
 <translation id="4108998448622696017">可偵測不安全事件，並在這類事件發生時顯示警告訊息。</translation>
@@ -597,6 +596,7 @@
 <translation id="4249955472157341256">依最新時間排序</translation>
 <translation id="4250229828105606438">螢幕截圖</translation>
 <translation id="4256782883801055595">開放原始碼授權</translation>
+<translation id="4257230861809842349">要從 Google 密碼管理工具中刪除密碼嗎？</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />我們會使用哪些資料：<ph name="END_BOLD" />你的瀏覽記錄，以及在這部裝置上透過 Chrome 造訪的網站記錄。</translation>
 <translation id="4269820728363426813">複製連結網址</translation>
 <translation id="4283102315569707115">要讓系統預設顯示電腦版網站嗎？</translation>
@@ -633,7 +633,6 @@
 <translation id="4484496141267039529">沒有網路連線，請稍後再試。</translation>
 <translation id="4487967297491345095">Chrome 的應用程式資料會全部遭到永久刪除，包括所有檔案、設定、帳戶、資料庫等等。</translation>
 <translation id="449126573531210296">使用你的 Google 帳戶對已同步處理的密碼進行加密</translation>
-<translation id="4504667196171871375">使用 Wi-Fi 或行動數據時</translation>
 <translation id="4508528996305412043">已開啟動態消息資訊卡選單</translation>
 <translation id="4509501256689523862">上網時是否會看到個人化廣告，取決於這項設定、<ph name="BEGIN_LINK_1" />廣告主題<ph name="END_LINK_1" />、<ph name="BEGIN_LINK_2" />Cookie 設定<ph name="END_LINK_2" />、網站是否顯示個人化廣告</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# 天前}other{# 天前}}</translation>
@@ -852,7 +851,6 @@
 <translation id="562289928968387744">管理回應</translation>
 <translation id="5626134646977739690">名稱：</translation>
 <translation id="5628604359369369630">尚未閱讀 - 可離線閱讀</translation>
-<translation id="5635091213277904818">Chrome 會自動刪除 30 天前的網站，你再次造訪的網站可能會重新顯示在清單中。你也可以封鎖網站，讓該網站無法為你提供建議廣告。</translation>
 <translation id="5641456720590409793"><ph name="BEGIN_LINK1" />搜尋記錄<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />其他形式的活動<ph name="END_LINK2" />可能會儲存至你的 Google 帳戶</translation>
 <translation id="564667659802381754">隱私權指南 <ph name="BEGIN_NEW" />新功能<ph name="END_NEW" /></translation>
 <translation id="5648166631817621825">過去 7 天</translation>
@@ -862,6 +860,7 @@
 <translation id="5665379678064389456">在「<ph name="APP_NAME" />」中建立活動</translation>
 <translation id="5683547024293500885">Chrome 無法檢查更新</translation>
 <translation id="5686790454216892815">檔案名稱過長</translation>
+<translation id="5687606994963670306">Chrome 會自動刪除 30 天前的網站，你再次造訪的網站可能會重新顯示在清單中。你也可以封鎖網站，讓該網站無法為你提供建議廣告。進一步瞭解如何<ph name="BEGIN_LINK" />在 Chrome 中管理廣告隱私權<ph name="END_LINK" />。</translation>
 <translation id="569435661099256888">系統會顯示造訪過的網頁，你也可以從歷史記錄中清除這些網頁</translation>
 <translation id="569536719314091526">透過 [更多選項] 按鈕將這個網頁翻譯成任何語言</translation>
 <translation id="5696597120588531049">Chrome 可確保安全性，例如防範資料侵害事件或封鎖不安全的網站等等</translation>
@@ -1041,7 +1040,6 @@
 <translation id="6590471736817333463">節省高達 60% 的數據用量</translation>
 <translation id="6590680911007613645">請確認你要儲存的密碼與 <ph name="SITE" /> 上的密碼相符</translation>
 <translation id="6593061639179217415">電腦版網站</translation>
-<translation id="6594121454516132231">瞭解 Chrome 打算採取哪些具體計畫，防止有心人士透過跨網站追蹤機制取得你的資料，同時保護開放網路</translation>
 <translation id="6594347733515723558">排序和檢視選項</translation>
 <translation id="6595046016124923392">系統會將圖片傳送到 Google，為你提供更完善的圖片說明。</translation>
 <translation id="6600954340915313787">已複製到 Chrome</translation>
@@ -1176,6 +1174,7 @@
 <translation id="7260367682327802201">Android 裝置可能會有類似的設定。如果 Chrome 和 Android 裝置開啟了廣告評估設定，廣告技術公司或許就能在你造訪的網站和使用的應用程式上評估廣告成效。</translation>
 <translation id="727288900855680735">要將 <ph name="ONE_TIME_CODE" /> 提交至 <ph name="ORIGIN" /> 嗎？</translation>
 <translation id="7274013316676448362">已封鎖網站</translation>
+<translation id="7276100255011548441">Chrome 會自動刪除 4 週前的主題，隨著你持續瀏覽內容，清單中可能會再次出現特定主題。你也可以封鎖不希望 Chrome 提供給網站的主題。進一步瞭解如何<ph name="BEGIN_LINK" />在 Chrome 中管理廣告隱私權<ph name="END_LINK" />。</translation>
 <translation id="7286703216224610554">僅分享回應內容</translation>
 <translation id="7290209999329137901">無法重新命名</translation>
 <translation id="7291910923717764901">已新增這個頁面的圖片說明</translation>
@@ -1312,7 +1311,6 @@
 <translation id="7944772052836377867">同步功能需要驗證你的身分</translation>
 <translation id="7947953824732555851">接受並登入</translation>
 <translation id="7957413488482743710">虛擬卡片可隱藏真正的卡片，協助防範潛在詐欺活動。<ph name="BEGIN_LINK1" />進一步瞭解虛擬卡片<ph name="END_LINK1" /></translation>
-<translation id="7961015016161918242">一律不要</translation>
 <translation id="7961926449547174351">你已停用儲存空間存取權，請前往「設定」頁面啟用這項權限。</translation>
 <translation id="7963646190083259054">供應商：</translation>
 <translation id="7965838025086216108">你可以在任何裝置上使用儲存的密碼，系統會將密碼儲存至 <ph name="ACCOUNT" /> 的 Google 密碼管理工具。</translation>
@@ -1519,7 +1517,6 @@
 <translation id="8968085728801125376">{TAB_COUNT,plural, =1{即將關閉 <ph name="INCOGNITO_TAB_COUNT" /> 個無痕分頁和另外 <ph name="TAB_COUNT_ONE" /> 個分頁}other{即將關閉 <ph name="INCOGNITO_TAB_COUNT" /> 個無痕分頁和另外 <ph name="TAB_COUNT_MANY" /> 個分頁}}</translation>
 <translation id="8970887620466824814">發生錯誤。</translation>
 <translation id="8972098258593396643">要下載至預設資料夾嗎？</translation>
-<translation id="8987641763863173640">管理影片預覽設定</translation>
 <translation id="8987736167266086032">接續上次進度</translation>
 <translation id="8989968390305463310">你的瀏覽記錄會影響你所看到的廣告，以及系統推測的下列興趣喜好。為保護個人隱私，Chrome 每個月都會自動刪除你的興趣喜好。系統會重新整理這項資訊，除非你自行予以移除。</translation>
 <translation id="8993760627012879038">在無痕模式下開啟新分頁</translation>

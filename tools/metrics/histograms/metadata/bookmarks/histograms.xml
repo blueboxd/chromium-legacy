@@ -50,7 +50,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BookmarkManager.ResultsRenderedTime" units="ms"
-    expires_after="2023-10-15">
+    expires_after="2023-12-17">
   <owner>johntlee@chromium.org</owner>
   <owner>dbeam@chromium.org</owner>
   <summary>
@@ -748,6 +748,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     The total number of bookmarks that have been opened. Recorded on profile
     load.
+  </summary>
+</histogram>
+
+<histogram name="Bookmarks.UtilizationPerBookmark.OnProfileLoad.DaysSinceUsed"
+    units="Days" expires_after="2024-01-31">
+  <owner>emshack@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <component>UI&gt;Browser&gt;Bookmarks</component>
+  <summary>
+    For each bookmark, the number of days since the bookmark was last used.
+    Recorded on profile load.
   </summary>
 </histogram>
 

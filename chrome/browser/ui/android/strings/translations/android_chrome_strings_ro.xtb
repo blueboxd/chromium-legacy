@@ -61,6 +61,7 @@ Numai un utilizator care deține expresia ta de acces îți poate citi datele cr
 <translation id="1283039547216852943">Atinge pentru a extinde</translation>
 <translation id="1289059016768036948">Ți se va solicita să te conectezi la Contul Google</translation>
 <translation id="1291207594882862231">Șterge istoricul, cookie-urile, datele privind site-urile și memoria cache…</translation>
+<translation id="1293898515599432175">Parolele vor fi șterse din Managerul de parole Google pentru Chrome <ph name="CHROME_CHANNEL" />. Vei păstra fișierul cu parole pe care tocmai l-ai descărcat.</translation>
 <translation id="129553762522093515">Închise recent</translation>
 <translation id="1298077576058087471">Economisește până la 60 % din date, citește știrile de azi</translation>
 <translation id="1303339473099049190">Parola nu a fost găsită. Verifică dacă ai scris-o corect și încearcă din nou.</translation>
@@ -128,7 +129,6 @@ Când ștergi istoricul de navigare (în întregime sau pentru un anumit site), 
 <translation id="164269334534774161">Se afișează o versiune offline a acestei pagini de pe <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Istoric</translation>
 <translation id="1657932388559784161">Foaia paginii Statistici din partea de jos este închisă</translation>
-<translation id="1668122540633280551">Alege cum se vor reda automat previzualizările videoclipului pe pagina de pornire Chrome.</translation>
 <translation id="1670399744444387456">De bază</translation>
 <translation id="1671236975893690980">Descărcare în așteptare…</translation>
 <translation id="1672586136351118594">Nu mai afișa</translation>
@@ -271,7 +271,6 @@ Când ștergi istoricul de navigare (în întregime sau pentru un anumit site), 
 <translation id="2536728043171574184">Se afișează o versiune offline a acestei pagini</translation>
 <translation id="2546283357679194313">Cookie-uri și date privind site-ul</translation>
 <translation id="2558569818338050235">Istoricul tău de navigare influențează anunțurile pe care le vezi</translation>
-<translation id="2561519700418191927">Previzualizările videoclipului</translation>
 <translation id="2567385386134582609">IMAGINE</translation>
 <translation id="2567545343356994513">Protecție proactivă mai rapidă împotriva site-urilor, descărcărilor și extensiilor periculoase</translation>
 <translation id="2569733278091928697">Vei putea să gestionezi cu ușurință comenzile media, sesiunile incognito, descărcările și altele</translation>
@@ -375,6 +374,7 @@ Indicativele de stare private îmbunătățesc confidențialitatea pe web și nu
 <translation id="3027644380269727216">Pe baza activității tale pe un site. Setarea este activată.</translation>
 <translation id="3029276696788198026">Fără preîncărcare</translation>
 <translation id="3029704984691124060">Expresiile de acces nu corespund</translation>
+<translation id="303514781271618814">Chrome explorează noi funcții care le dau site-urilor posibilitatea să ofere aceeași experiență de navigare, folosind mai puține date despre tine</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obține ajutor<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Se urmărește prețul</translation>
 <translation id="3037517125981011456">Afișează solicitări pentru conectarea la Chrome</translation>
@@ -510,9 +510,9 @@ Indicativele de stare private îmbunătățesc confidențialitatea pe web și nu
 <translation id="3775705724665058594">Trimite pe dispozitivele tale</translation>
 <translation id="3791957072666773229">{TAB_COUNT,plural, =1{O filă}few{# file}other{# de file}}</translation>
 <translation id="3795154175078851242">Copiază imaginea cu linkul</translation>
-<translation id="3803784507854318295">Gestionează redarea automată</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Gestionează</translation>
+<translation id="381861209280417772">Șterge parolele</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descărcări șterse</translation>
 <translation id="3819183753496523827">Ești offline. Verifică starea conexiunii la internet și încearcă din nou.</translation>
 <translation id="3830886834687455630">Actualizează serviciile Google Play pentru a verifica parolele</translation>
@@ -563,7 +563,6 @@ Indicativele de stare private îmbunătățesc confidențialitatea pe web și nu
 <translation id="4095146165863963773">Ștergi datele aplicației?</translation>
 <translation id="4096227151372679484">Fluxul de salvare a marcajului deschis la jumătate din înălțime</translation>
 <translation id="4101475238162928417">Sincronizează pentru a accesa parolele, marcajele și altele pe celelalte dispozitive</translation>
-<translation id="410351446219883937">Redare automată</translation>
 <translation id="4106587138345390261">Chrome explorează noi funcții care le dau site-urilor posibilitatea să ofere aceeași experiență de navigare, folosind mai puține informații despre tine</translation>
 <translation id="4108314971463891922">Urmărește</translation>
 <translation id="4108998448622696017">Detectează și te avertizează cu privire la evenimentele periculoase atunci când au loc.</translation>
@@ -598,6 +597,7 @@ Indicativele de stare private îmbunătățesc confidențialitatea pe web și nu
 <translation id="4249955472157341256">Sortează după cele mai recente</translation>
 <translation id="4250229828105606438">Captură de ecran</translation>
 <translation id="4256782883801055595">Licențe open source</translation>
+<translation id="4257230861809842349">Ștergi parolele din Managerul de parole Google?</translation>
 <translation id="4262915912852657291"><ph name="BEGIN_BOLD" />Ce date sunt folosite:<ph name="END_BOLD" /> istoricul tău de navigare, o evidență a site-urilor pe care le-ai accesat folosind Chrome pe acest dispozitiv.</translation>
 <translation id="4269820728363426813">Copiază adresa linkului</translation>
 <translation id="4283102315569707115">Soliciți în mod prestabilit versiunea site-urilor pentru computer?</translation>
@@ -634,7 +634,6 @@ Indicativele de stare private îmbunătățesc confidențialitatea pe web și nu
 <translation id="4484496141267039529">Nu există conexiune. Încearcă din nou mai târziu.</translation>
 <translation id="4487967297491345095">Toate datele aplicației Chrome vor fi șterse definitiv. Sunt incluse toate fișierele, setările, conturile, bazele de date etc.</translation>
 <translation id="449126573531210296">Criptează parolele sincronizate folosind Contul Google</translation>
-<translation id="4504667196171871375">Pe Wi-Fi și date mobile</translation>
 <translation id="4508528996305412043">Meniul cardului din feed este deschis</translation>
 <translation id="4509501256689523862">În timp ce navighezi, personalizarea anunțurilor se bazează pe această setare, pe <ph name="BEGIN_LINK_1" />Subiectele anunțurilor<ph name="END_LINK_1" />, pe <ph name="BEGIN_LINK_2" />setările pentru cookie-uri<ph name="END_LINK_2" /> și pe capacitatea site-ului pe care îl accesezi de a personaliza anunțurile</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Acum # zi}few{Acum # zile}other{Acum # de zile}}</translation>
@@ -672,7 +671,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="4678082183394354975">Tema întunecată pentru site-uri este activată în Chrome</translation>
 <translation id="4684427112815847243">Sincronizează tot</translation>
 <translation id="4685741273709472646">Selectează din lista drop-down</translation>
-<translation id="4687718960473379118">anunțurile sugerate de site-uri,</translation>
+<translation id="4687718960473379118">Anunțurile sugerate de site-uri</translation>
 <translation id="4689792375321623175">Caută imaginea cu Google <ph name="BEGIN_NEW" />Nou<ph name="END_NEW" /></translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 și încă <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4699172675775169585">Imaginile și fișierele memorate în cache</translation>
@@ -853,7 +852,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="562289928968387744">Gestionează reacțiile</translation>
 <translation id="5626134646977739690">Nume:</translation>
 <translation id="5628604359369369630">Necitită – Disponibilă offline</translation>
-<translation id="5635091213277904818">Chrome șterge automat site-urile mai vechi de 30 de zile. Un site pe care îl accesezi din nou poate să reapară în listă. Sau poți să nu permiți unui site să îți sugereze anunțuri.</translation>
 <translation id="5641456720590409793"><ph name="BEGIN_LINK1" />Istoricul căutărilor<ph name="END_LINK1" /> și <ph name="BEGIN_LINK2" />alte tipuri de activități<ph name="END_LINK2" /> pot fi salvate în Contul tău Google</translation>
 <translation id="564667659802381754">Ghid privind confidențialitatea <ph name="BEGIN_NEW" />Nou<ph name="END_NEW" /></translation>
 <translation id="5648166631817621825">Ultimele 7 zile</translation>
@@ -863,6 +861,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5665379678064389456">Creează un eveniment în <ph name="APP_NAME" /></translation>
 <translation id="5683547024293500885">Chrome nu poate căuta actualizări</translation>
 <translation id="5686790454216892815">Numele fișierului este prea lung</translation>
+<translation id="5687606994963670306">Chrome șterge automat site-urile mai vechi de 30 de zile. Un site pe care îl accesezi din nou poate să reapară în listă. Sau poți să nu permiți unui site să îți sugereze anunțuri. Află mai multe despre <ph name="BEGIN_LINK" />gestionarea confidențialității anunțurilor în Chrome<ph name="END_LINK" />.</translation>
 <translation id="569435661099256888">Vezi paginile pe care le-ai accesat sau șterge-le din istoric</translation>
 <translation id="569536719314091526">Tradu această pagină în orice limbă folosind butonul Mai multe opțiuni</translation>
 <translation id="5696597120588531049">Chrome te protejează împotriva încălcării securității datelor, a site-urilor nesigure și nu numai</translation>
@@ -1042,7 +1041,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6590471736817333463">Economisește până la 60 % din date</translation>
 <translation id="6590680911007613645">Asigură-te că parola pe care o salvezi este aceeași cu parola pentru <ph name="SITE" /></translation>
 <translation id="6593061639179217415">Versiune site desktop</translation>
-<translation id="6594121454516132231">Vezi cum plănuiește Chrome să te protejeze de mecanismele de urmărire pe mai multe site-uri, păstrând un web deschis</translation>
 <translation id="6594347733515723558">Opțiuni de sortare și afișare</translation>
 <translation id="6595046016124923392">Imaginile sunt trimise la Google pentru îmbunătățirea descrierilor.</translation>
 <translation id="6600954340915313787">Copiat în Chrome</translation>
@@ -1177,6 +1175,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7260367682327802201">Dispozitivul tău Android poate avea o setare similară. În cazul în care cuantificarea anunțurilor este activată în Chrome și pe dispozitivul Android, o companie poate măsura eficiența unui anunț pe site-urile pe care le accesezi și în aplicațiile pe care le folosești.</translation>
 <translation id="727288900855680735">Trimiți <ph name="ONE_TIME_CODE" /> către <ph name="ORIGIN" />?</translation>
 <translation id="7274013316676448362">Site blocat</translation>
+<translation id="7276100255011548441">Chrome șterge automat subiectele mai vechi de patru săptămâni. Pe măsură ce navighezi, un subiect poate să reapară în listă. Sau poți bloca subiectele pe care nu vrei să le trimită Chrome la site-uri. Află mai multe despre <ph name="BEGIN_LINK" />gestionarea confidențialității anunțurilor în Chrome<ph name="END_LINK" />.</translation>
 <translation id="7286703216224610554">Trimite numai reacția</translation>
 <translation id="7290209999329137901">Nu se poate redenumi</translation>
 <translation id="7291910923717764901">Descrieri ale imaginilor adăugate pentru această pagină</translation>
@@ -1313,7 +1312,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7944772052836377867">Sincronizarea trebuie să-ți confirme identitatea</translation>
 <translation id="7947953824732555851">Accept și conectare</translation>
 <translation id="7957413488482743710">Cardul virtual îți ascunde cardul fizic pentru a te proteja împotriva fraudelor. <ph name="BEGIN_LINK1" />Află mai multe despre cardurile virtuale<ph name="END_LINK1" /></translation>
-<translation id="7961015016161918242">Niciodată</translation>
 <translation id="7961926449547174351">Ai dezactivat accesul la stocare. Accesează Setările pentru a-l activa.</translation>
 <translation id="7963646190083259054">Producător:</translation>
 <translation id="7965838025086216108">Poți folosi parolele salvate pe orice dispozitiv. Acestea sunt salvate în Managerul de parole Google pentru <ph name="ACCOUNT" />.</translation>
@@ -1520,7 +1518,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8968085728801125376">{TAB_COUNT,plural, =1{<ph name="INCOGNITO_TAB_COUNT" /> filă incognito și încă <ph name="TAB_COUNT_ONE" /> filă vor fi închise}few{<ph name="INCOGNITO_TAB_COUNT" /> filă incognito și încă <ph name="TAB_COUNT_MANY" /> file vor fi închise}other{<ph name="INCOGNITO_TAB_COUNT" /> filă incognito și încă <ph name="TAB_COUNT_MANY" /> de file vor fi închise}}</translation>
 <translation id="8970887620466824814">A apărut o eroare.</translation>
 <translation id="8972098258593396643">Descarci în dosarul prestabilit?</translation>
-<translation id="8987641763863173640">Gestionează setările pentru previzualizarea videoclipurilor</translation>
 <translation id="8987736167266086032">Reia de unde ai rămas</translation>
 <translation id="8989968390305463310">Istoricul tău de navigare influențează anunțurile pe care le vezi și categoriile de interese estimate de mai jos. Pentru a-ți proteja confidențialitatea, Chrome șterge automat categoriile de interese în permanență, în fiecare lună. Categoriile de interese se pot actualiza dacă nu le elimini.</translation>
 <translation id="8993760627012879038">Deschide o filă nouă în modul incognito</translation>

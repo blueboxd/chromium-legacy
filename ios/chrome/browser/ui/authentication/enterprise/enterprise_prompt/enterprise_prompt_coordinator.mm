@@ -79,10 +79,6 @@ constexpr CGFloat kHalfSheetCornerRadius = 20;
   [super stop];
 }
 
-- (void)dealloc {
-  CHECK(!self.viewController);
-}
-
 #pragma mark - ConfirmationAlertActionHandler
 
 - (void)confirmationAlertPrimaryAction {

@@ -136,8 +136,7 @@ bool GetSettingManagedByUser(const GURL& url,
         url, url, net::CookieSettingOverrides(), &source);
   } else {
     SettingInfo info;
-    const base::Value value = map->GetWebsiteSetting(url, url, type, &info);
-    setting = content_settings::ValueToContentSetting(value);
+    setting = map->GetContentSetting(url, url, type, &info);
     source = info.source;
   }
 
@@ -944,6 +943,12 @@ ContentSettingMediaStreamBubbleModel::~ContentSettingMediaStreamBubbleModel() =
     default;
 
 void ContentSettingMediaStreamBubbleModel::CommitChanges() {
+  PageSpecificContentSettings* content_settings =
+      PageSpecificContentSettings::GetForFrame(&GetPage().GetMainDocument());
+  if (content_settings->media_stream_access_origin().is_empty()) {
+    return;
+  }
+
   for (const auto& media_menu : bubble_content().media_menus) {
     const MediaMenu& menu = media_menu.second;
     if (menu.selected_device.id != menu.default_device.id)
@@ -968,6 +973,8 @@ void ContentSettingMediaStreamBubbleModel::OnManageButtonClicked() {
   DCHECK(CameraAccessed() || MicrophoneAccessed());
   if (!delegate())
     return;
+
+  CommitChanges();
 
   if (MicrophoneAccessed() && CameraAccessed()) {
     delegate()->ShowMediaSettingsPage();
@@ -1016,12 +1023,15 @@ bool ContentSettingMediaStreamBubbleModel::CameraBlocked() const {
 
 void ContentSettingMediaStreamBubbleModel::SetIsUserModifiable() {
   DCHECK(CameraAccessed() || MicrophoneAccessed());
+  PageSpecificContentSettings* page_content_settings =
+      PageSpecificContentSettings::GetForFrame(&GetPage().GetMainDocument());
+
   bool is_camera_modifiable = GetSettingManagedByUser(
-      web_contents()->GetURL(), ContentSettingsType::MEDIASTREAM_CAMERA,
-      GetProfile(), nullptr);
+      page_content_settings->media_stream_access_origin(),
+      ContentSettingsType::MEDIASTREAM_CAMERA, GetProfile(), nullptr);
   bool is_mic_modifiable = GetSettingManagedByUser(
-      web_contents()->GetURL(), ContentSettingsType::MEDIASTREAM_MIC,
-      GetProfile(), nullptr);
+      page_content_settings->media_stream_access_origin(),
+      ContentSettingsType::MEDIASTREAM_MIC, GetProfile(), nullptr);
 
   set_is_user_modifiable((MicrophoneAccessed() && is_mic_modifiable) ||
                          (CameraAccessed() && is_camera_modifiable));

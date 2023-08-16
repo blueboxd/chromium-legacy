@@ -8540,6 +8540,7 @@ domain Page
       ErrorDocument
       FencedFramesEmbedder
       CookieDisabled
+      HTTPAuthRequired
       #Blocklisted features
       WebSocket
       WebTransport

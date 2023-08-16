@@ -79,10 +79,6 @@
   [super stop];
 }
 
-- (void)dealloc {
-  CHECK(!self.unifiedConsentMediator);
-}
-
 - (void)scrollToBottom {
   [self.unifiedConsentViewController scrollToBottom];
 }

@@ -287,6 +287,7 @@
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
+#include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/overscroll_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scroll_state_callback.h"
@@ -2503,6 +2504,14 @@ void Document::ApplyScrollRestorationLogic() {
   base::AutoReset<bool> applying_scroll_restoration_logic_scope(
       &applying_scroll_restoration_logic_, true);
 
+  if (AnnotationAgentContainerImpl* container =
+          AnnotationAgentContainerImpl::FromIfExists(*this)) {
+    // Check for cleanliness since that'll also account for parsing state.
+    if (container->IsLifecycleCleanForAttachment()) {
+      container->PerformInitialAttachments();
+    }
+  }
+
   // If we're restoring a scroll position from history, that takes precedence
   // over scrolling to the anchor in the URL.
   View()->InvokeFragmentAnchor();
@@ -3926,7 +3935,6 @@ bool Document::CheckCompletedInternal() {
     GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
         SchedulingPolicy::Feature::kDocumentLoaded,
         {SchedulingPolicy::DisableBackForwardCache()});
-    GetFrame()->GetFrameScheduler()->OnLoad();
 
     DetectJavascriptFrameworksOnLoad(*this);
     // Only load the dictionary after the full document load completes.
@@ -5579,6 +5587,12 @@ void Document::NotifyUpdateCharacterData(CharacterData* character_data,
 void Document::NotifyChangeChildren(
     const ContainerNode& container,
     const ContainerNode::ChildrenChange& change) {
+  if (LocalFrameView* frame_view = View()) {
+    if (FragmentAnchor* anchor = frame_view->GetFragmentAnchor()) {
+      anchor->NewContentMayBeAvailable();
+    }
+  }
+
   synchronous_mutation_observer_set_.ForEachObserver(
       [&](SynchronousMutationObserver* observer) {
         observer->DidChangeChildren(container, change);
@@ -5589,6 +5603,18 @@ void Document::NotifyAttributeChanged(const Element& element,
                                       const QualifiedName& name,
                                       const AtomicString& old_value,
                                       const AtomicString& new_value) {
+  if (LocalFrameView* frame_view = View()) {
+    if (FragmentAnchor* anchor = frame_view->GetFragmentAnchor()) {
+      // There are other attributes (not to mention style changes) that could
+      // potentially make more content available to to the fragment anchor but
+      // this is a best effort heuristic, based on commonly seen patterns in the
+      // wild, so isn't meant to be comprehensive.
+      if (name == html_names::kHiddenAttr) {
+        anchor->NewContentMayBeAvailable();
+      }
+    }
+  }
+
   synchronous_mutation_observer_set_.ForEachObserver(
       [&](SynchronousMutationObserver* observer) {
         observer->AttributeChanged(element, name, old_value, new_value);
@@ -6246,8 +6272,9 @@ ScriptPromise Document::hasStorageAccess(ScriptState* script_state) {
       return true;
     }
 
-    // #9: return global's `has storage access`.
-    return dom_window_->HasStorageAccess();
+    // #9 & #10: checks unpartitioned cookie availability with global's `has
+    // storage access`.
+    return CookiesEnabled();
   }());
   return promise;
 }
@@ -7477,11 +7504,6 @@ void Document::FinishedParsing() {
   if (document_timing_.DomContentLoadedEventEnd().is_null())
     document_timing_.MarkDomContentLoadedEventEnd();
   SetParsingState(kFinishedParsing);
-
-  if (AnnotationAgentContainerImpl* container =
-          Supplement<Document>::From<AnnotationAgentContainerImpl>(*this)) {
-    container->FinishedParsing();
-  }
 
   // Ensure Custom Element callbacks are drained before DOMContentLoaded.
   // FIXME: Remove this ad-hoc checkpoint when DOMContentLoaded is dispatched in

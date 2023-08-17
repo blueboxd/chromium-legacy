@@ -248,7 +248,7 @@ bool CanShare() {
   BOOL isMail = [[service name] isEqual:NSSharingServiceNameComposeEmail];
   NSString* keyEquivalent = isMail ? [self keyEquivalentForMail] : @"";
   NSString* title = isMail ? l10n_util::GetNSString(IDS_EMAIL_LINK_MAC)
-                           : service.menuItemTitle;
+                           : @available(macOS 10.9,*)?service.menuItemTitle:service.title;
   NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:title
                                                 action:@selector(performShare:)
                                          keyEquivalent:keyEquivalent];

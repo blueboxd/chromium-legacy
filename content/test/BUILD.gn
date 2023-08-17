@@ -3137,8 +3137,8 @@ test("content_unittests") {
     ]
     weak_frameworks = [
       "AuthenticationServices.framework",
+       "ScreenCaptureKit.framework"  # macOS 12.3
     ]
-    weak_frameworks = [ "ScreenCaptureKit.framework" ]  # macOS 12.3
   }
   if (is_chromeos_ash) {
     sources += [

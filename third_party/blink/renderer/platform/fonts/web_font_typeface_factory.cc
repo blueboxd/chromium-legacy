@@ -77,8 +77,9 @@ bool WebFontTypefaceFactory::CreateTypeface(sk_sp<SkData> data,
   // is not natively supported.
   if (format_check.IsCff2OutlineFont()) {
     typeface = MakeTypefaceFreeType(data);
-    if (typeface)
+    if (typeface) {
       ReportInstantiationResult(InstantiationResult::kSuccessCff2Font);
+    }
     return typeface.get();
   }
 
@@ -91,8 +92,9 @@ bool WebFontTypefaceFactory::CreateTypeface(sk_sp<SkData> data,
   // COLRv0 before variations.
   if (format_check.IsVariableFont() && format_check.IsColrCpalColorFontV0()) {
     typeface = MakeColrV0VariationsTypeface(data);
-    if (typeface)
+    if (typeface) {
       ReportInstantiationResult(InstantiationResult::kSuccessColrCpalFont);
+    }
     return typeface.get();
   }
 
@@ -130,7 +132,11 @@ sk_sp<SkTypeface> WebFontTypefaceFactory::MakeTypefaceDefaultFontMgr(
 #if BUILDFLAG(IS_WIN)
   font_manager = FontCache::Get().FontManager();
 #else
-  font_manager = SkFontMgr::RefDefault();
+  if (!CoreTextVersionSupportsVariations()) {
+    font_manager = sk_sp<SkFontMgr>(SkFontMgr_New_Custom_Empty());
+  } else {
+    font_manager = SkFontMgr::RefDefault();
+  }
 #endif
   return font_manager->makeFromData(data, 0);
 }

@@ -14,6 +14,7 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {Cart} from '../../../cart.mojom-webui.js';
 import {Cluster, InteractionState} from '../../../history_cluster_types.mojom-webui.js';
+import {LayoutType} from '../../../history_clusters_layout_type.mojom-webui.js';
 import {I18nMixin, loadTimeData} from '../../../i18n_setup.js';
 import {NewTabPageProxy} from '../../../new_tab_page_proxy.js';
 import {InfoDialogElement} from '../../info_dialog';
@@ -64,7 +65,6 @@ export class HistoryClustersModuleElement extends I18nMixin
 
       imagesEnabled_: {
         type: Boolean,
-        value: true,
         computed: `computeImagesEnabled_(cart)`,
         reflectToAttribute: true,
       },
@@ -114,6 +114,14 @@ export class HistoryClustersModuleElement extends I18nMixin
     }
   }
 
+  override ready() {
+    super.ready();
+
+    HistoryClustersProxyImpl.getInstance().handler.recordLayoutTypeShown(
+        this.imagesEnabled_ ? LayoutType.kImages : LayoutType.kTextOnly,
+        this.cluster.id);
+  }
+
   private onDisableButtonClick_() {
     const disableEvent = new CustomEvent('disable-module', {
       composed: true,
@@ -145,11 +153,30 @@ export class HistoryClustersModuleElement extends I18nMixin
     }));
   }
 
+  private onDoneButtonClick_() {
+    HistoryClustersProxyImpl.getInstance()
+        .handler.updateClusterVisitsInteractionState(
+            this.cluster.visits, InteractionState.kDone);
+    this.dispatchEvent(new CustomEvent('dismiss-module-instance', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        message: loadTimeData.getStringF(
+            'dismissModuleToastMessage', this.cluster.label),
+        restoreCallback: () => {
+          HistoryClustersProxyImpl.getInstance()
+              .handler.updateClusterVisitsInteractionState(
+                  this.cluster.visits, InteractionState.kDefault);
+        },
+      },
+    }));
+  }
+
   private onInfoButtonClick_() {
     this.$.infoDialogRender.get().showModal();
   }
 
-  private onShowAllClick_() {
+  private onShowAllButtonClick_() {
     assert(this.cluster.label.length >= 2);
     HistoryClustersProxyImpl.getInstance().handler.showJourneysSidePanel(
         this.cluster.label.substring(1, this.cluster.label.length - 1));

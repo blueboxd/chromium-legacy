@@ -25,6 +25,7 @@
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "content/browser/devtools/shared_storage_worklet_devtools_manager.h"
 #include "content/browser/devtools/shared_worker_devtools_agent_host.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/devtools/web_contents_devtools_agent_host.h"
@@ -128,6 +129,8 @@ const char DevToolsAgentHost::kTypeFrame[] = "iframe";
 const char DevToolsAgentHost::kTypeDedicatedWorker[] = "worker";
 const char DevToolsAgentHost::kTypeSharedWorker[] = "shared_worker";
 const char DevToolsAgentHost::kTypeServiceWorker[] = "service_worker";
+const char DevToolsAgentHost::kTypeSharedStorageWorklet[] =
+    "shared_storage_worklet";
 const char DevToolsAgentHost::kTypeBrowser[] = "browser";
 const char DevToolsAgentHost::kTypeGuest[] = "webview";
 const char DevToolsAgentHost::kTypeOther[] = "other";
@@ -170,6 +173,8 @@ DevToolsAgentHost::List DevToolsAgentHost::GetOrCreateAll() {
   ServiceWorkerDevToolsManager::GetInstance()->AddAllAgentHosts(&service_list);
   for (const auto& host : service_list)
     result.push_back(host);
+
+  SharedStorageWorkletDevToolsManager::GetInstance()->AddAllAgentHosts(&result);
 
   // TODO(dgozman): we should add dedicated workers here, but clients are not
   // ready.

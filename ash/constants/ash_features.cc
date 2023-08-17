@@ -23,9 +23,6 @@ BASE_FEATURE(kInstantTetheringBackgroundAdvertisementSupport,
              "InstantTetheringBackgroundAdvertisementSupport",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-constexpr char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
-constexpr char kTestImageRelease[] = "testimage-channel";
-
 }  // namespace
 
 // Enables the UI and logic that minimizes the amount of time the device spends
@@ -213,11 +210,6 @@ BASE_FEATURE(kAsynchronousScannerDiscovery,
 // Enables warning in the quick settings when NBS device is in use.
 BASE_FEATURE(kAudioHFPNbsWarning,
              "AudioHFPNbsWarning",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables Peripheral volume change by hardware reported steps
-BASE_FEATURE(kAudioPeripheralVolumeGranularity,
-             "AudioPeripheralVolumeGranularity",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the AudioSourceFetcher resamples the audio for speech
@@ -620,6 +612,11 @@ BASE_FEATURE(kDesksTemplates,
 BASE_FEATURE(kDiacriticsOnPhysicalKeyboardLongpress,
              "DiacriticsOnPhysicalKeyboardLongpress",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables diacritics on longpress on the physical keyboard by default.
+BASE_FEATURE(kDiacriticsOnPhysicalKeyboardLongpressDefaultOn,
+             "DiacriticsOnPhysicalKeyboardLongpressDefaultOn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, diacritics on longpress will use |ReplaceSurroundingText| API,
 // which is atomic and compatible with more apps.
@@ -2517,7 +2514,7 @@ BASE_FEATURE(kUseAuthFactors,
 // QuickUnlockStorage to store authenticated UserContext.
 BASE_FEATURE(kUseAuthSessionStorage,
              "UseAuthSessionStorage",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, the login shelf view is placed in its own widget instead of
 // sharing the shelf widget with other components.
@@ -3082,10 +3079,6 @@ bool IsEapGtcWifiAuthenticationEnabled() {
   return base::FeatureList::IsEnabled(kEapGtcWifiAuthentication);
 }
 
-bool IsAudioPeripheralVolumeGranularityEnabled() {
-  return base::FeatureList::IsEnabled(kAudioPeripheralVolumeGranularity);
-}
-
 bool IsAudioSourceFetcherResamplingEnabled() {
   // TODO(b/245617354): Once ready, enable this feature under
   // kProjectorBleedingEdgeExperience flag as well.
@@ -3449,16 +3442,7 @@ bool IsEducationEnrollmentOobeFlowEnabled() {
 }
 
 bool IsGameDashboardEnabled() {
-  if (!base::FeatureList::IsEnabled(kGameDashboard)) {
-    return false;
-  }
-  if (!base::SysInfo::IsRunningOnChromeOS()) {
-    return true;
-  }
-  // Only allow the dashboard on test images until further in development.
-  std::string track;
-  return base::SysInfo::GetLsbReleaseValue(kChromeOSReleaseTrack, &track) &&
-         track.find(kTestImageRelease) != std::string::npos;
+  return base::FeatureList::IsEnabled(kGameDashboard);
 }
 
 bool IsLockScreenInlineReplyEnabled() {

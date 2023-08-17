@@ -665,18 +665,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.HistoryClusters.ExhaustedEligibleClusters"
-    enum="Boolean" expires_after="2023-10-08">
-  <owner>sophiechang@chromium.org</owner>
-  <owner>tiborg@chromium.org</owner>
-  <owner>chrome-desktop-ntp@google.com</owner>
-  <summary>
-    Records whether all eligible clusters for the requested time period were
-    candidates for being shown in the history clusters module. Only logged on
-    the 1P NTP and the history clusters module is enabled.
-  </summary>
-</histogram>
-
 <histogram name="NewTabPage.HistoryClusters.HasCartForTopCluster"
     enum="Boolean" expires_after="2024-02-11">
   <owner>yuezhanggg@chromium.org</owner>
@@ -1246,6 +1234,19 @@ chromium-metrics-reviews@google.com.
     header. Only logged on the 1P NTP. Note that even if the user has Google as
     their default search engine, Incognito and Guest mode NTPs are not
     considered 1P and don't log this histogram.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Modules.InstanceCount" units="count"
+    expires_after="2024-01-14">
+  <owner>danpeng@google.com</owner>
+  <owner>romanarora@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    The number of rendered module instances on the NTP. Only logged on the 1P
+    NTP. Note that even if the user has Google as their default search engine,
+    Incognito and Guest mode NTPs are not considered 1P and don't log this
+    histogram.
   </summary>
 </histogram>
 

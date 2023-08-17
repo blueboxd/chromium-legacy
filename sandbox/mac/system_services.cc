@@ -8,7 +8,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <dlfcn.h>
 
-#include "base/mac/mac_logging.h"
+#include "base/apple/osstatus_logging.h"
 
 extern "C" {
 OSStatus SetApplicationIsDaemon(Boolean isDaemon);

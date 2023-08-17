@@ -41,8 +41,8 @@
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) &&
 
 #if BUILDFLAG(IS_APPLE)
+#include "base/apple/scoped_nsautorelease_pool.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "remoting/host/desktop_capturer_checker.h"
 #include "remoting/host/mac/permission_utils.h"
 #endif  // BUILDFLAG(IS_APPLE)
@@ -97,7 +97,7 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
 
 #if BUILDFLAG(IS_APPLE)
   // Needed so we don't leak objects when threads are created.
-  base::mac::ScopedNSAutoreleasePool pool;
+  base::apple::ScopedNSAutoreleasePool pool;
 #endif  // BUILDFLAG(IS_APPLE)
 
 #if defined(REMOTING_ENABLE_BREAKPAD)

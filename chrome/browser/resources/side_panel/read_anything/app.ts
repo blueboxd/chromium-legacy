@@ -407,7 +407,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     });
   }
 
-  updateLetterSpacing(newLetterSpacing: string) {
+  updateLetterSpacing(newLetterSpacing: number) {
     this.updateStyles({
       '--letter-spacing': newLetterSpacing + 'em',
     });
@@ -427,6 +427,13 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     if (toolbar) {
       toolbar.style.fontFamily = validatedFontName;
     }
+  }
+
+  updateFontSize(increase: boolean) {
+    chrome.readingMode.onFontSizeChanged(increase);
+    this.updateStyles({
+      '--font-size': chrome.readingMode.fontSize + 'em',
+    });
   }
 
   // TODO(crbug.com/1465029): This method should be renamed to updateTheme()

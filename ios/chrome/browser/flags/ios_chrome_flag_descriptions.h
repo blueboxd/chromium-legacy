@@ -91,15 +91,6 @@ extern const char kAutofillEnableSupportForLandmarkDescription[];
 extern const char kAutofillEnableCardProductNameName[];
 extern const char kAutofillEnableCardProductNameDescription[];
 
-// Title and description for flag to enforce delays between offering Autofill
-// opportunities.
-extern const char kAutofillEnforceDelaysInStrikeDatabaseName[];
-extern const char kAutofillEnforceDelaysInStrikeDatabaseDescription[];
-
-// Title and description for the flag to fill promo code fields with Autofill.
-extern const char kAutofillFillMerchantPromoCodeFieldsName[];
-extern const char kAutofillFillMerchantPromoCodeFieldsDescription[];
-
 // Title and description for the flag to control the autofill delay.
 extern const char kAutofillIOSDelayBetweenFieldsName[];
 extern const char kAutofillIOSDelayBetweenFieldsDescription[];
@@ -109,10 +100,6 @@ extern const char kAutofillIOSDelayBetweenFieldsDescription[];
 // dates.
 extern const char kAutofillOfferToSaveCardWithSameLastFourName[];
 extern const char kAutofillOfferToSaveCardWithSameLastFourDescription[];
-
-// Title and description for the flag to parse IBAN fields in Autofill.
-extern const char kAutofillParseIBANFieldsName[];
-extern const char kAutofillParseIBANFieldsDescription[];
 
 // Title and description for the flag to parse standalone CVC fields for VCN
 // card on file in Autofill.
@@ -544,6 +531,10 @@ extern const char kIOSPasswordBottomSheetDescription[];
 // Title and description for the flag to enable payments bottom sheet on IOS.
 extern const char kIOSPaymentsBottomSheetName[];
 extern const char kIOSPaymentsBottomSheetDescription[];
+
+// Title and description for the flag to enable the Save to Photos feature.
+extern const char kIOSSaveToPhotosName[];
+extern const char kIOSSaveToPhotosDescription[];
 
 // Title and description of the flag to enable client side new tab page
 // experiments aimed at improving user retention.

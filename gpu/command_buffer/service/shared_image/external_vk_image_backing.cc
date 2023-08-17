@@ -119,10 +119,9 @@ bool UseSeparateGLTexture(SharedContextState* context_state,
   return true;
 }
 
-bool UseTexStorage2D(SharedContextState* context_state) {
-  auto* gl_context = context_state->real_context();
-  const auto* version_info = gl_context->GetVersionInfo();
-  const auto& ext = gl_context->GetCurrentGL()->Driver->ext;
+bool UseTexStorage2D() {
+  const auto* version_info = gl::g_current_gl_version;
+  const auto& ext = gl::g_current_gl_driver->ext;
   return ext.b_GL_EXT_texture_storage || ext.b_GL_ARB_texture_storage ||
          version_info->is_es3 || version_info->IsAtLeastGL(4, 2);
 }
@@ -261,7 +260,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage) {
+    uint32_t usage,
+    absl::optional<gfx::BufferUsage> buffer_usage) {
   if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size,
                                                      ToBufferFormat(format))) {
     DLOG(ERROR) << "Invalid image size for format.";
@@ -294,7 +294,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
       base::PassKey<ExternalVkImageBacking>(), mailbox, format, size,
       color_space, surface_origin, alpha_type, usage, estimated_size,
       std::move(context_state), std::move(textures), command_pool,
-      use_separate_gl_texture, std::move(handle));
+      use_separate_gl_texture, std::move(handle), std::move(buffer_usage));
   backing->SetCleared();
   return backing;
 }
@@ -357,7 +357,8 @@ ExternalVkImageBacking::ExternalVkImageBacking(
     std::vector<TextureHolderVk> vk_textures,
     VulkanCommandPool* command_pool,
     bool use_separate_gl_texture,
-    gfx::GpuMemoryBufferHandle handle)
+    gfx::GpuMemoryBufferHandle handle,
+    absl::optional<gfx::BufferUsage> buffer_usage)
     : ClearTrackingSharedImageBacking(mailbox,
                                       format,
                                       size,
@@ -366,7 +367,8 @@ ExternalVkImageBacking::ExternalVkImageBacking(
                                       alpha_type,
                                       usage,
                                       estimated_size_bytes,
-                                      /*is_thread_safe=*/false),
+                                      /*is_thread_safe=*/false,
+                                      std::move(buffer_usage)),
       context_state_(std::move(context_state)),
       vk_textures_(std::move(vk_textures)),
       command_pool_(command_pool),
@@ -778,7 +780,7 @@ bool ExternalVkImageBacking::CreateGLTexture(bool is_passthrough,
 
   if (use_separate_gl_texture()) {
     DCHECK(!memory_object);
-    if (UseTexStorage2D(context_state_.get())) {
+    if (UseTexStorage2D()) {
       api->glTexStorage2DEXTFn(GL_TEXTURE_2D, 1,
                                format_desc.storage_internal_format,
                                plane_size.width(), plane_size.height());

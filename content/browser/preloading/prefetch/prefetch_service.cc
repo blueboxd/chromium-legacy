@@ -1115,8 +1115,8 @@ void PrefetchService::MakePrefetchRequest(
 
   std::unique_ptr<PrefetchStreamingURLLoader> streaming_loader =
       std::make_unique<PrefetchStreamingURLLoader>(
-          GetURLLoaderFactoryForCurrentPrefetch(prefetch_container),
-          std::move(request), traffic_annotation, PrefetchTimeoutDuration(),
+          GetURLLoaderFactoryForCurrentPrefetch(prefetch_container), *request,
+          traffic_annotation, PrefetchTimeoutDuration(),
           base::BindOnce(&PrefetchService::OnPrefetchResponseStarted,
                          base::Unretained(this), prefetch_container),
           base::BindOnce(&PrefetchService::OnPrefetchResponseCompleted,
@@ -1332,19 +1332,15 @@ void PrefetchService::OnPrefetchResponseCompleted(
     RecordPrefetchProxyPrefetchMainframeBodyLength(body_length);
   }
 
-  if (prefetch_container->GetLastStreamingURLLoader()) {
+  if (!prefetch_container->IsPrefetchServable(PrefetchCacheableDuration())) {
     // If the prefetch from the streaming URL loader cannot be served at this
     // point, then it can be discarded.
-    if (!prefetch_container->GetLastStreamingURLLoader()->Servable(
-            PrefetchCacheableDuration())) {
-      prefetch_container->ResetAllStreamingURLLoaders();
-    } else {
-      PrefetchDocumentManager* prefetch_document_manager =
-          prefetch_container->GetPrefetchDocumentManager();
-      if (prefetch_document_manager) {
-        prefetch_document_manager->OnPrefetchSuccessful(
-            prefetch_container.get());
-      }
+    prefetch_container->ResetAllStreamingURLLoaders();
+  } else {
+    PrefetchDocumentManager* prefetch_document_manager =
+        prefetch_container->GetPrefetchDocumentManager();
+    if (prefetch_document_manager) {
+      prefetch_document_manager->OnPrefetchSuccessful(prefetch_container.get());
     }
   }
 

@@ -212,14 +212,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanvasFreeMemoryWhenHidden);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanChangeToUrlForHistoryApiUpdate);
 
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCheckOfflineCapability);
-enum class CheckOfflineCapabilityMode {
-  kWarnOnly,
-  kEnforce,
-};
-BLINK_COMMON_EXPORT extern const base::FeatureParam<CheckOfflineCapabilityMode>
-    kCheckOfflineCapabilityParam;
-
 // If enabled, the HTMLDocumentParser will only check its budget after parsing a
 // commonly slow token or for one out of 10 fast tokens. Note that this feature
 // is a no-op if kTimedHTMLParserBudget is disabled.
@@ -344,6 +336,14 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // enabled in the browser process too).
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kDisableThirdPartyStoragePartitioningDeprecationTrial);
+
+// These values are used to implement a browser intervention: if a cross-origin
+// iframe has moved more than {param:distance} screen pixels (manhattan
+// distance) within its embedding page's viewport within the last
+// {param:time_ms} milliseconds, most input events targeting the iframe will be
+// quietly discarded.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kDiscardInputEventsToRecentlyMovedFrames);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDispatchBeforeUnloadOnFreeze);
 

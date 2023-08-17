@@ -2634,7 +2634,7 @@ if (!is_android) {
       sources += [ "../browser/ui/views/device_signals_consent/consent_dialog_browsertest.cc" ]
     }
 
-    if (!is_fuchsia) {
+    if (!is_fuchsia && enable_nacl) {
       sources += [ "../browser/chrome_browser_main_extra_parts_nacl_deprecation_browsertest.cc" ]
     }
 
@@ -3319,6 +3319,7 @@ if (!is_android) {
         "../browser/extensions/api/test/apitest_apitest.cc",
         "../browser/extensions/api/top_sites/top_sites_apitest.cc",
         "../browser/extensions/api/usb/chrome_usb_apitest.cc",
+        "../browser/extensions/api/user_scripts/user_scripts_apitest.cc",
         "../browser/extensions/api/web_accessible_resources_apitest.cc",
         "../browser/extensions/api/web_navigation/web_navigation_apitest.cc",
         "../browser/extensions/api/web_request/web_request_apitest.cc",
@@ -8084,7 +8085,7 @@ test("unit_tests") {
       "../browser/ui/webui/ash/edu_account_login_handler_unittest.cc",
       "../browser/ui/webui/ash/emoji/emoji_ui_unittest.cc",
       "../browser/ui/webui/ash/emoji/gif_tenor_api_fetcher_unittest.cc",
-      "../browser/ui/webui/ash/status_area_tester/status_area_tester_handler_unittest.cc",
+      "../browser/ui/webui/ash/status_area_internals/status_area_internals_handler_unittest.cc",
       "../browser/ui/webui/ash/sync/os_sync_handler_unittest.cc",
       "../browser/ui/webui/help/version_updater_chromeos_unittest.cc",
       "../browser/ui/webui/signin/ash/user_cloud_signin_restriction_policy_fetcher_unittest.cc",
@@ -9785,6 +9786,8 @@ if (!is_android) {
       "../browser/ui/views/autofill/payments/card_unmask_prompt_view_tester_views.h",
       "../browser/ui/views/autofill/payments/offer_notification_bubble_views_test_base.cc",
       "../browser/ui/views/autofill/payments/offer_notification_bubble_views_test_base.h",
+      "../browser/ui/views/create_application_shortcut_view_test_support.cc",
+      "../browser/ui/views/create_application_shortcut_view_test_support.h",
       "../browser/ui/views/tabs/tab_hover_card_test_util.cc",
       "../browser/ui/views/tabs/tab_hover_card_test_util.h",
       "../browser/ui/views/web_apps/web_app_integration_test_driver.cc",

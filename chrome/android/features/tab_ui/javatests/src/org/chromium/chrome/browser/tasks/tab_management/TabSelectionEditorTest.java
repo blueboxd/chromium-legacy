@@ -28,7 +28,6 @@ import static org.mockito.Mockito.verify;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_LOW_END_DEVICE;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_ANDROID;
-import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_FOR_TABLETS;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_TO_GTS_ANIMATION;
 
 import android.content.Intent;
@@ -108,8 +107,7 @@ import java.util.Map;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "force-fieldtrials=Study/Group",
         "force-fieldtrial-params=Study.Group:enable_launch_polish/true"})
-@EnableFeatures({TAB_GROUPS_ANDROID + "<Study",
-        TAB_GROUPS_FOR_TABLETS})
+@EnableFeatures({TAB_GROUPS_ANDROID + "<Study"})
 @DisableFeatures(TAB_TO_GTS_ANIMATION)
 @Batch(Batch.PER_CLASS)
 public class TabSelectionEditorTest {
@@ -356,7 +354,7 @@ public class TabSelectionEditorTest {
 
     @Test
     @MediumTest
-    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void testUndoToolbarGroup() {
         ChromeTabbedActivity cta = sActivityTestRule.getActivity();
         prepareBlankTab(2, false);
@@ -1314,7 +1312,7 @@ public class TabSelectionEditorTest {
     @MediumTest
     @Feature({"RenderTest"})
     @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
-    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_LOW_END_DEVICE})
     public void testListViewAppearance() throws IOException {
         prepareBlankTab(2, false);
@@ -1339,7 +1337,7 @@ public class TabSelectionEditorTest {
     @MediumTest
     @Feature({"RenderTest"})
     @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
-    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_LOW_END_DEVICE})
     public void testListViewV2Shows() throws IOException {
         prepareBlankTab(2, false);
@@ -1354,7 +1352,7 @@ public class TabSelectionEditorTest {
     @MediumTest
     @Feature({"RenderTest"})
     @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
-    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_LOW_END_DEVICE})
     public void testListViewAppearance_oneSelectedTab() throws IOException {
         prepareBlankTab(2, false);
@@ -1380,7 +1378,7 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)
-    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
+    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_LOW_END_DEVICE})
     public void testListView_select() throws IOException {
         prepareBlankTab(2, false);
@@ -1403,7 +1401,7 @@ public class TabSelectionEditorTest {
 
     @Test
     @MediumTest
-    @DisableFeatures({TAB_GROUPS_ANDROID})
+    @DisableFeatures(TAB_GROUPS_ANDROID)
     public void testTabSelectionEditorLayoutCanBeGarbageCollected() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTabSelectionEditorCoordinator.destroy();

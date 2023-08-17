@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/common/buildflags.h"
+#include "content/public/common/dips_utils.h"
 
 namespace features {
 
@@ -298,6 +299,65 @@ BASE_FEATURE(kDigitalGoodsApi,
 #endif
 );
 
+// Enables the DIPS (Detect Incidental Party State) feature.
+// On by default to allow for collecting metrics. All potentially dangerous
+// behavior (database persistence, DIPS deletion) will be gated by params.
+BASE_FEATURE(kDIPS, "DIPS", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Set whether DIPS persists its database to disk.
+const base::FeatureParam<bool> kDIPSPersistedDatabaseEnabled{
+    &kDIPS, "persist_database", true};
+
+// Set whether DIPS performs deletion.
+const base::FeatureParam<bool> kDIPSDeletionEnabled{&kDIPS, "delete", false};
+
+// Set the time period that Chrome will wait for before clearing storage for a
+// site after it performs some action (e.g. bouncing the user or using storage)
+// without user interaction.
+const base::FeatureParam<base::TimeDelta> kDIPSGracePeriod{
+    &kDIPS, "grace_period", base::Hours(1)};
+
+// Set the cadence at which Chrome will attempt to clear incidental state
+// repeatedly.
+const base::FeatureParam<base::TimeDelta> kDIPSTimerDelay{&kDIPS, "timer_delay",
+                                                          base::Hours(1)};
+
+// Sets how long DIPS maintains interactions and Web Authn Assertions (WAA) for
+// a site.
+//
+// If a site in the DIPS database has an interaction or WAA within the grace
+// period a DIPS-triggering action, then that action and all ensuing actions are
+// protected from DIPS clearing until the interaction and WAA "expire" as set
+// by this param.
+// NOTE: Updating this param name (to reflect WAA) is deemed unnecessary as far
+// as readability is concerned.
+const base::FeatureParam<base::TimeDelta> kDIPSInteractionTtl{
+    &kDIPS, "interaction_ttl", base::Days(45)};
+
+constexpr base::FeatureParam<content::DIPSTriggeringAction>::Option
+    kDIPSTriggeringActionOptions[] = {
+        {content::DIPSTriggeringAction::kNone, "none"},
+        {content::DIPSTriggeringAction::kStorage, "storage"},
+        {content::DIPSTriggeringAction::kBounce, "bounce"},
+        {content::DIPSTriggeringAction::kStatefulBounce, "stateful_bounce"}};
+
+// Sets the actions which will trigger DIPS clearing for a site. The default is
+// to set to kBounce, but can be overridden by Finch experiment groups,
+// command-line flags, or chrome flags.
+//
+// Note: Maintain a matching nomenclature of the options with the feature flag
+// entries at about_flags.cc.
+const base::FeatureParam<content::DIPSTriggeringAction> kDIPSTriggeringAction{
+    &kDIPS, "triggering_action", content::DIPSTriggeringAction::kNone,
+    &kDIPSTriggeringActionOptions};
+
+// Denotes the length of a time interval within which any client-side redirect
+// is viewed as a bounce (provided all other criteria are equally met). The
+// interval starts every time a page finishes a navigation (a.k.a. a commit is
+// registered).
+const base::FeatureParam<base::TimeDelta> kDIPSClientBounceDetectionTimeout{
+    &kDIPS, "client_bounce_detection_timeout", base::Seconds(10)};
+
 // Enable document policy for configuring and restricting feature behavior.
 BASE_FEATURE(kDocumentPolicy,
              "DocumentPolicy",
@@ -426,6 +486,11 @@ BASE_FEATURE(kFedCmIdpSigninStatusEnabled,
 // Enables bypassing the well-known file enforcement.
 BASE_FEATURE(kFedCmWithoutWellKnownEnforcement,
              "FedCmWithoutWellKnownEnforcement",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables browser-side focus verification when crossing fenced boundaries.
+BASE_FEATURE(kFencedFramesEnforceFocus,
+             "FencedFramesEnforceFocus",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the MDocs API in the IdentityCredential.
@@ -734,6 +799,11 @@ BASE_FEATURE(kOriginIsolationHeader,
 BASE_FEATURE(kOverscrollHistoryNavigation,
              "OverscrollHistoryNavigation",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Setting to control overscroll history navigation.
+BASE_FEATURE(kOverscrollHistoryNavigationSetting,
+             "OverscrollHistoryNavigationSetting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Whether web apps can run periodic tasks upon network connectivity.
 BASE_FEATURE(kPeriodicBackgroundSync,

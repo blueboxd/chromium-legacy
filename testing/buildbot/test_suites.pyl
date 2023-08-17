@@ -137,11 +137,8 @@
         ],
         'mixins': [
           'skia_gold_test',
+          'has_native_resultdb_integration',
         ],
-        'resultdb': {
-          'enable': True,
-          'result_format': 'single'
-        },
       },
     },
 
@@ -392,23 +389,21 @@
     'chrome_android_finch_smoke_tests': {
       'variations_android_smoke_tests': {
         'isolate_name': 'variations_desktop_smoke_tests',
+        'mixins': [
+          'has_native_resultdb_integration'
+        ],
         'args': [
           '--target-platform=android',
         ],
-        'resultdb': {
-          'enable': True,
-          'result_format': 'single'
-        },
       },
       'variations_webview_smoke_tests': {
         'isolate_name': 'variations_desktop_smoke_tests',
         'args': [
           '--target-platform=webview',
         ],
-        'resultdb': {
-          'enable': True,
-          'result_format': 'single'
-        },
+        'mixins': [
+          'has_native_resultdb_integration'
+        ],
       },
     },
     'chrome_finch_smoke_tests': {
@@ -7240,6 +7235,16 @@
           'CROS_JACUZZI_RELEASE_CHROME_FROM_TLS_ASH_LKGM',
         ]
       },
+      'chromeos_chrome_criticalstaging_tast_tests': {
+        'variants': [
+          'CROS_JACUZZI_RELEASE_CHROME_FROM_TLS_ASH_LKGM',
+        ]
+      },
+      'chromeos_chrome_disabled_tast_tests': {
+        'variants': [
+          'CROS_JACUZZI_RELEASE_CHROME_FROM_TLS_ASH_LKGM',
+        ]
+      },
     },
 
     'chromeos_octopus_skylab_tests': {
@@ -7260,6 +7265,16 @@
 
     'chromeos_volteer_skylab_tests': {
       'chromeos_chrome_all_tast_tests': {
+        'variants': [
+          'CROS_VOLTEER_RELEASE_ASH_LKGM',
+        ]
+      },
+      'chromeos_chrome_criticalstaging_tast_tests': {
+        'variants': [
+          'CROS_VOLTEER_RELEASE_ASH_LKGM',
+        ]
+      },
+      'chromeos_chrome_disabled_tast_tests': {
         'variants': [
           'CROS_VOLTEER_RELEASE_ASH_LKGM',
         ]

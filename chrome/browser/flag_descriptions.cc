@@ -431,13 +431,6 @@ const char kAutofillEnableFpanRiskBasedAuthenticationDescription[] =
     "When enabled, server card retrieval will begin with a risk-based check "
     "instead of jumping straight to CVC or biometric auth.";
 
-const char kAutofillEnableIbanClientSideUrlFilteringName[] =
-    "Enable Autofill IBAN client side URL filtering";
-const char kAutofillEnableIbanClientSideUrlFilteringDescription[] =
-    "When enabled, client side URL filtering will be triggered for the IBAN "
-    "use-case, so that IBAN autofill is not offered on websites that are "
-    "blocked.";
-
 const char kAutofillEnableManualFallbackForVirtualCardsName[] =
     "Show manual fallback for virtual cards";
 const char kAutofillEnableManualFallbackForVirtualCardsDescription[] =
@@ -576,12 +569,6 @@ const char kAutofillEnableVirtualCardMetadataDescription[] =
     "When enabled, Chrome will show metadata together with other card "
     "information when the virtual card is presented to users.";
 
-const char kAutofillFillIbanFieldsName[] =
-    "Enable Autofill of IBAN fields in forms";
-const char kAutofillFillIbanFieldsDescription[] =
-    "When enabled, Autofill will attempt to fill IBAN (International Bank "
-    "Account Number) fields when data is available.";
-
 const char kAutofillHighlightOnlyChangedValuesInPreviewModeName[] =
     "Highlight only changed values in preview mode.";
 const char kAutofillHighlightOnlyChangedValuesInPreviewModeDescription[] =
@@ -602,11 +589,6 @@ const char kAutofillOfferToSaveCardWithSameLastFourDescription[] =
     "Offer credit card save when Chrome detects a card number with the same "
     "last 4 digits as an existing server card, but a different expiration "
     "date.";
-
-const char kAutofillParseIBANFieldsName[] = "Parse IBAN fields in forms";
-const char kAutofillParseIBANFieldsDescription[] =
-    "When enabled, Autofill will attempt to find International Bank Account "
-    "Number (IBAN) fields when parsing forms.";
 
 const char kAutofillParseVcnCardOnFileStandaloneCvcFieldsName[] =
     "Parse standalone CVC fields for VCN card on file in forms";
@@ -2316,6 +2298,11 @@ const char kOmniboxDiscardTemporaryInputOnTabSwitchName[] =
     "Omnibox discard temporary input on tab switch";
 const char kOmniboxDiscardTemporaryInputOnTabSwitchDescription[] =
     "Discards temporary input in the omnibox when switching tabs.";
+
+const char kOmniboxActionsUISimplificationName[] =
+    "Omnibox Actions UI Simplification";
+const char kOmniboxActionsUISimplificationDescription[] =
+    "Simplifies omnibox actions UI design with inlined and separated actions.";
 
 const char kOmniboxDomainSuggestionsName[] = "Omnibox Domain Suggestions";
 const char kOmniboxDomainSuggestionsDescription[] =
@@ -4360,9 +4347,6 @@ const char kSurfacePolishName[] = "Surface Polish";
 const char kSurfacePolishDescription[] =
     "Enable clank home surface polish for Start surface and NTP.";
 
-const char kTabGroupsForTabletsName[] = "Tab groups on tablets";
-const char kTabGroupsForTabletsDescription[] = "Enable tab groups on tablets.";
-
 const char kThumbnailPlaceholderName[] = "Thumbnail placeholder";
 const char kThumbnailPlaceholderDescription[] =
     "Display a placeholder image for missing thumbnails.";
@@ -4710,6 +4694,11 @@ const char kNtpDriveModuleSegmentationName[] = "NTP Drive Module Segmentation";
 const char kNtpDriveModuleSegmentationDescription[] =
     "Uses segmentation data to decide whether to show the Drive module on the "
     "New Tab Page.";
+
+const char kNtpDriveModuleShowSixFilesName[] =
+    "NTP Drive Module Show Six Files";
+const char kNtpDriveModuleShowSixFilesDescription[] =
+    "Shows six files in the NTP Drive module, instead of three.";
 
 #if !defined(OFFICIAL_BUILD)
 const char kNtpDummyModulesName[] = "NTP Dummy Modules";
@@ -5212,6 +5201,12 @@ const char kAllowTouchpadScrollSettingsName[] =
 const char kAllowTouchpadScrollSettingsDescription[] =
     "Shows settings to enable/disable scroll acceleration and to adjust the "
     "sensitivity for scrolling.";
+
+const char kAlmanacGameMigrationName[] =
+    "Use Almanac for games in App Discovery Service";
+const char kAlmanacGameMigrationDescription[] =
+    "Enables App Discovery Service to use the Almanac system for fetching "
+    "games instead of the App Provisioning Component.";
 
 const char kAltClickAndSixPackCustomizationName[] =
     "Allow users to customize Alt-Click and 6-pack key remapping.";
@@ -5801,6 +5796,12 @@ const char kUseHDRTransferFunctionName[] =
 const char kUseHDRTransferFunctionDescription[] =
     "Allows using the HDR transfer functions of any connected monitor that "
     "supports it";
+
+const char kEnableExternalDisplayHdr10Name[] =
+    "Enable HDR10 support on external monitors";
+const char kEnableExternalDisplayHdr10Description[] =
+    "Allows using HDR10 mode on any external monitor that supports it";
+
 const char kDoubleTapToZoomInTabletModeName[] =
     "Double-tap to zoom in tablet mode";
 const char kDoubleTapToZoomInTabletModeDescription[] =
@@ -6006,17 +6007,15 @@ const char kEnableVariableRefreshRateDescription[] =
     "Enable the variable refresh rate (Adaptive Sync) setting for capable "
     "displays.";
 
+const char kEnableVariableRefreshRateAlwaysOnName[] =
+    "Enable Variable Refresh Rate Always On";
+const char kEnableVariableRefreshRateAlwaysOnDescription[] =
+    "Enable the variable refresh (Adaptive Sync) setting for capable displays "
+    "at all times.";
+
 const char kEapGtcWifiAuthenticationName[] = "EAP-GTC WiFi Authentication";
 const char kEapGtcWifiAuthenticationDescription[] =
     "Allows configuration of WiFi networks using EAP-GTC authentication";
-
-const char kAudioPeripheralVolumeGranularityName[] =
-    "Audio Peripheral Volume Granularity";
-const char kAudioPeripheralVolumeGranularityDescription[] =
-    "Change audio peripheral volume granularity as close as peripheral "
-    "reported. "
-    "If the reported volume granularity are too small or too big. use 25 steps "
-    "instead.";
 
 const char kEcheSWAName[] = "Enable Eche feature";
 const char kEcheSWADescription[] = "This is the main flag for enabling Eche.";

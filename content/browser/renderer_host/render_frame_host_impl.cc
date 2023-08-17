@@ -4671,6 +4671,70 @@ void RenderFrameHostImpl::DidFailLoadWithError(const GURL& url,
   delegate_->DidFailLoadWithError(this, validated_url, error_code);
 }
 
+bool RenderFrameHostImpl::TakingFocusWillCrossFencedBoundary(
+    RenderFrameHostImpl* focused_rfh) {
+  if (!focused_rfh) {
+    return false;
+  }
+
+  if (this == focused_rfh) {
+    return false;
+  }
+
+  if (frame_tree() == focused_rfh->frame_tree()) {
+    return false;
+  }
+
+  // We only care if the focus change is ENTERING a fenced frame. Focus is still
+  // allowed to be pulled out of a fenced frame. This is done because an outer
+  // frame should be allowed to re-gain focus from a child frame, and since
+  // gating focus in one direction is enough to prevent a communication channel
+  // from opening.
+  if (!IsNestedWithinFencedFrame()) {
+    return false;
+  }
+
+  return true;
+}
+
+bool RenderFrameHostImpl::VerifyFencedFrameFocusChange(
+    RenderFrameHostImpl* focused_rfh) {
+  if (GetOutermostMainFrameOrEmbedder()
+          ->GetRenderWidgetHost()
+          ->HasLostFocus()) {
+    ActivateFocusSourceUserActivation();
+    return true;
+  }
+
+  if (HasTransientUserActivation() || FocusSourceHasTransientUserActivation()) {
+    return true;
+  }
+
+  if (!TakingFocusWillCrossFencedBoundary(focused_rfh)) {
+    return true;
+  }
+
+  SCOPED_CRASH_KEY_BOOL("FencedFocus", "is_fenced_root", IsFencedFrameRoot());
+
+  // Information about the previously focused frame
+  SCOPED_CRASH_KEY_BOOL("FencedFocus", "current_in_fenced_tree",
+                        focused_rfh->IsNestedWithinFencedFrame());
+  SCOPED_CRASH_KEY_BOOL("FencedFocus", "current_is_fenced_root",
+                        focused_rfh->IsFencedFrameRoot());
+
+  // If none of the other cases were hit, disallow the focus change.
+  // TODO(crbug.com/1458985): We will later badmessage the renderer, but, for
+  // now, we will dump without crashing to monitor if any legitimate cases are
+  // reaching this point.
+  if (base::FeatureList::IsEnabled(features::kFencedFramesEnforceFocus)) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_FOCUS_ACROSS_FENCED_BOUNDARY);
+  } else {
+    base::debug::DumpWithoutCrashing();
+  }
+  return false;
+}
+
 void RenderFrameHostImpl::DidFocusFrame() {
   TRACE_EVENT("navigation", "RenderFrameHostImpl::DidFocusFrame",
               ChromeTrackEvent::kRenderFrameHost, *this,
@@ -4696,6 +4760,9 @@ void RenderFrameHostImpl::DidFocusFrame() {
     }
   }
 #endif  // BUILDFLAG(IS_WIN)
+
+  // The lost focus tracker is cleared out after a focus call.
+  GetOutermostMainFrameOrEmbedder()->GetRenderWidgetHost()->ResetLostFocus();
 }
 
 void RenderFrameHostImpl::DidCallFocus() {
@@ -5809,6 +5876,13 @@ void RenderFrameHostImpl::TakeFocus(bool reverse) {
   if (parent_or_outer_document) {
     RenderFrameProxyHost* proxy_host = GetProxyToOuterDelegate();
     DCHECK(proxy_host);
+
+    if (HasTransientUserActivation() ||
+        FocusSourceHasTransientUserActivation()) {
+      parent_or_outer_document->ActivateFocusSourceUserActivation();
+      focus_source_user_activation_state_.Deactivate();
+    }
+
     parent_or_outer_document->DidFocusFrame();
     parent_or_outer_document->AdvanceFocus(
         reverse ? blink::mojom::FocusType::kBackward
@@ -5871,12 +5945,20 @@ void RenderFrameHostImpl::ActivateUserActivation(
   history_user_activation_state_.Activate();
 }
 
+void RenderFrameHostImpl::ActivateFocusSourceUserActivation() {
+  focus_source_user_activation_state_.Activate();
+}
+
 bool RenderFrameHostImpl::IsHistoryUserActivationActive() const {
   return history_user_activation_state_.IsActive();
 }
 
 void RenderFrameHostImpl::ConsumeHistoryUserActivation() {
   history_user_activation_state_.Consume();
+}
+
+void RenderFrameHostImpl::DeactivateFocusSourceUserActivation() {
+  focus_source_user_activation_state_.Deactivate();
 }
 
 void RenderFrameHostImpl::ClosePage(ClosePageSource source) {
@@ -6453,6 +6535,10 @@ blink::FrameOwnerElementType RenderFrameHostImpl::GetFrameOwnerElementType() {
 
 bool RenderFrameHostImpl::HasTransientUserActivation() {
   return user_activation_state_.IsActive();
+}
+
+bool RenderFrameHostImpl::FocusSourceHasTransientUserActivation() {
+  return focus_source_user_activation_state_.IsActive();
 }
 
 void RenderFrameHostImpl::NotifyUserActivation(
@@ -12357,7 +12443,8 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
 
   if (!bypass_checks_for_error_page &&
       !ValidateURLAndOrigin(params->url, params->origin,
-                            is_same_document_navigation, navigation_request)) {
+                            is_same_document_navigation, navigation_request,
+                            params->origin_calculation_debug_info)) {
     return false;
   }
 
@@ -12475,7 +12562,8 @@ bool RenderFrameHostImpl::ValidateURLAndOrigin(
     const GURL& url,
     const url::Origin& origin,
     bool is_same_document_navigation,
-    NavigationRequest* navigation_request) {
+    NavigationRequest* navigation_request,
+    std::string origin_calculation_debug_info) {
   // file: URLs can be allowed to access any other origin, based on settings.
   if (origin.scheme() == url::kFileScheme) {
     auto prefs = GetOrCreateWebPreferences();
@@ -12529,7 +12617,8 @@ bool RenderFrameHostImpl::ValidateURLAndOrigin(
                   << " lock '" << process->GetProcessLock().ToString() << "'";
       VLOG(1) << "Blocked URL " << url.spec();
       LogCannotCommitUrlCrashKeys(url, is_same_document_navigation,
-                                  navigation_request);
+                                  navigation_request,
+                                  origin_calculation_debug_info);
 
       // Kills the process.
       bad_message::ReceivedBadMessage(process,
@@ -12711,7 +12800,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     // TODO(https://crbug.com/1131832): Make this a CHECK instead once we're
     // sure we never hit this case.
     LogCannotCommitUrlCrashKeys(params->url, is_same_document_navigation,
-                                navigation_request.get());
+                                navigation_request.get(),
+                                params->origin_calculation_debug_info);
     base::debug::DumpWithoutCrashing();
   }
 
@@ -12735,7 +12825,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   if (!navigation_request && !is_synchronous_about_blank_commit &&
       !is_same_document_navigation) {
     LogCannotCommitUrlCrashKeys(params->url, is_same_document_navigation,
-                                navigation_request.get());
+                                navigation_request.get(),
+                                params->origin_calculation_debug_info);
 
     bad_message::ReceivedBadMessage(
         GetProcess(),
@@ -13888,7 +13979,8 @@ void RenderFrameHostImpl::AddMessageToConsoleImpl(
 void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
     const GURL& url,
     bool is_same_document_navigation,
-    NavigationRequest* navigation_request) {
+    NavigationRequest* navigation_request,
+    std::string& origin_calculation_debug_info) {
   LogRendererKillCrashKeys(GetSiteInstance()->GetSiteInfo());
 
   // Temporary instrumentation to debug the root cause of renderer process
@@ -13965,6 +14057,19 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
   base::debug::SetCrashKeyString(
       last_successful_url_origin_key,
       last_successful_url().DeprecatedGetOriginAsURL().spec());
+
+  static auto* const is_on_initial_empty_document_key =
+      base::debug::AllocateCrashKeyString("is_on_initial_empty_doc",
+                                          base::debug::CrashKeySize::Size32);
+  base::debug::SetCrashKeyString(
+      is_on_initial_empty_document_key,
+      bool_to_crash_key(frame_tree_node_->is_on_initial_empty_document()));
+
+  static auto* const origin_calculation_debug_info_key =
+      base::debug::AllocateCrashKeyString("origin_calculation_debug_info",
+                                          base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(origin_calculation_debug_info_key,
+                                 origin_calculation_debug_info);
 
   if (navigation_request && navigation_request->IsNavigationStarted()) {
     static auto* const is_renderer_initiated_key =

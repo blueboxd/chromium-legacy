@@ -81,8 +81,9 @@
     // chain, then work around the issue and set the cursor.
     while (true) {
       NSWindow* parentWindow = [currentWindow parentWindow];
-      if (!parentWindow)
+      if (!parentWindow) {
         break;
+      }
       currentWindow = parentWindow;
       if ([currentWindow isKeyWindow]) {
         [(newCursor ? newCursor : [NSCursor arrowCursor]) set];
@@ -98,13 +99,6 @@
 
 - (void)onSystemColorsChanged:(NSNotification*)notification {
   _parent->OnSystemColorsChanged();
-}
-
-- (void)sheetDidEnd:(NSWindow*)sheet
-         returnCode:(NSInteger)returnCode
-        contextInfo:(void*)contextInfo {
-  [sheet orderOut:nil];
-  _parent->OnWindowWillClose();
 }
 
 // NSWindowDelegate implementation.
@@ -131,8 +125,9 @@
 }
 
 - (NSSize)windowWillResize:(NSWindow*)window toSize:(NSSize)size {
-  if (!_aspectRatio)
+  if (!_aspectRatio) {
     return size;
+  }
 
   if (!_resizingHorizontally) {
     const auto widthDelta = size.width - [window frame].size.width;
@@ -145,8 +140,9 @@
 
   absl::optional<gfx::Size> maxSizeParam;
   gfx::Size maxSize([window maxSize]);
-  if (!maxSize.IsEmpty())
+  if (!maxSize.IsEmpty()) {
     maxSizeParam = maxSize;
+  }
 
   gfx::SizeRectToAspectRatioWithExcludedMargin(
       *_resizingHorizontally ? gfx::ResizeEdge::kRight
@@ -182,8 +178,9 @@
   // message, since it just means that a menu extra (on the "system status bar")
   // was activated; we'll get another |-windowDidResignKey| if we ever really
   // lose key window status.
-  if ([NSApp isActive] && ([NSApp keyWindow] == notification.object))
+  if ([NSApp isActive] && ([NSApp keyWindow] == notification.object)) {
     return;
+  }
   _parent->OnWindowKeyStatusChangedTo(false);
 }
 
@@ -197,20 +194,22 @@
   NSWindow* window = _parent->ns_window();
   if (@available(macOS 10.9, *)) {
     if (NSWindow* sheetParent = [window sheetParent]) {
-      // On no! Something called -[NSWindow close] on a sheet rather than calling
+      // On no! Something called -[NSWindow close] on a sheet rather than
+      // calling
       // -[NSWindow endSheet:] on its parent. If the modal session is not ended
       // then the parent will never be able to show another sheet. But calling
-      // -endSheet: here will block the thread with an animation, so post a task.
-      // Use a block: The argument to -endSheet: must be retained, since it's the
-      // window that is closing and -performSelector: won't retain the argument
-      // (putting |window| on the stack above causes this block to retain it).
+      // -endSheet: here will block the thread with an animation, so post a
+      // task. Use a block: The argument to -endSheet: must be retained, since
+      // it's the window that is closing and -performSelector: won't retain the
+      // argument (putting |window| on the stack above causes this block to
+      // retain it).
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(^{
             [sheetParent endSheet:window];
           }));
     }
   } else {
-    if([(NSWindow*)[notification object] isSheet]) {
+    if ([(NSWindow*)[notification object] isSheet]) {
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(^{
             [NSApp endSheet:window];

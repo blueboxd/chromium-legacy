@@ -116,6 +116,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &shared_highlighting::kPreemptiveLinkToTextGeneration,
     &features::kElasticOverscroll,
     &features::kPrivacyGuideAndroid,
+    &features::kPrivacyGuideAndroid3,
     &features::kPrivacyGuideAndroidPostMVP,
     &features::kPushMessagingDisallowSenderIDs,
     &features::kPwaUpdateDialogForIcon,
@@ -308,7 +309,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTabEngagementReportingAndroid,
     &kTabGroupsAndroid,
     &kTabGroupsContinuationAndroid,
-    &kTabGroupsForTablets,
     &kTabStripRedesign,
     &kTabletToolbarReordering,
     &kTabStripStartupRefactoring,
@@ -1014,8 +1014,8 @@ BASE_FEATURE(kTabGroupsContinuationAndroid,
              "TabGroupsContinuationAndroid",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kTabGroupsForTablets,
-             "TabGroupsForTablets",
+BASE_FEATURE(kTabGridLayoutAndroid,
+             "TabGridLayoutAndroid",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabStripRedesign,

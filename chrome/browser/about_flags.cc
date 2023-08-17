@@ -30,11 +30,11 @@
 #include "build/build_config.h"
 #include "cc/base/features.h"
 #include "cc/base/switches.h"
+#include "chrome/browser/apps/app_discovery_service/app_discovery_service.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/companion/visual_search/features.h"
-#include "chrome/browser/dips/dips_features.h"
 #include "chrome/browser/fast_checkout/fast_checkout_features.h"
 #include "chrome/browser/feature_guide/notifications/feature_notification_guide_service.h"
 #include "chrome/browser/flag_descriptions.h"
@@ -4112,6 +4112,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseHDRTransferFunctionName,
      flag_descriptions::kUseHDRTransferFunctionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(display::features::kUseHDRTransferFunction)},
+    {"enable-external-display-hdr10",
+     flag_descriptions::kEnableExternalDisplayHdr10Name,
+     flag_descriptions::kEnableExternalDisplayHdr10Description, kOsCrOS,
+     FEATURE_VALUE_TYPE(display::features::kEnableExternalDisplayHDR10Mode)},
     {"adaptive-charging", flag_descriptions::kAdaptiveChargingName,
      flag_descriptions::kAdaptiveChargingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kAdaptiveCharging)},
@@ -5772,11 +5776,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEapGtcWifiAuthenticationName,
      flag_descriptions::kEapGtcWifiAuthenticationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEapGtcWifiAuthentication)},
-    {"audio-peripheral-volume-granularity",
-     flag_descriptions::kAudioPeripheralVolumeGranularityName,
-     flag_descriptions::kAudioPeripheralVolumeGranularityDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kAudioPeripheralVolumeGranularity)},
-
     {"eche-swa", flag_descriptions::kEcheSWAName,
      flag_descriptions::kEcheSWADescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEcheSWA)},
@@ -5976,6 +5975,11 @@ const FeatureEntry kFeatureEntries[] = {
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
     BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA)
+    {"omnibox-actions-ui-simplification",
+     flag_descriptions::kOmniboxActionsUISimplificationName,
+     flag_descriptions::kOmniboxActionsUISimplificationDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxActionsUISimplification)},
+
     {"omnibox-domain-suggestions",
      flag_descriptions::kOmniboxDomainSuggestionsName,
      flag_descriptions::kOmniboxDomainSuggestionsDescription, kOsDesktop,
@@ -6604,6 +6608,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpDriveModuleSegmentationDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kNtpDriveModuleSegmentation)},
 
+    {"ntp-drive-module-show-six-files",
+     flag_descriptions::kNtpDriveModuleShowSixFilesName,
+     flag_descriptions::kNtpDriveModuleShowSixFilesDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpDriveModuleShowSixFiles)},
+
 #if !defined(OFFICIAL_BUILD)
     {"ntp-dummy-modules", flag_descriptions::kNtpDummyModulesName,
      flag_descriptions::kNtpDummyModulesDescription, kOsDesktop,
@@ -6744,6 +6753,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"price-insights", commerce::flag_descriptions::kPriceInsightsName,
      commerce::flag_descriptions::kPriceInsightsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(commerce::kPriceInsights)},
+
+    {"shopping-page-types", commerce::flag_descriptions::kShoppingPageTypesName,
+     commerce::flag_descriptions::kShoppingPageTypesDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(commerce::kShoppingPageTypes)},
 
     {"show-discount-on-navigation",
      commerce::flag_descriptions::kShowDiscountOnNavigationName,
@@ -9147,7 +9160,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"bounce-tracking-mitigations", flag_descriptions::kDIPSName,
      flag_descriptions::kDIPSDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(dips::kFeature, kDIPSVariations, "DIPS")},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kDIPS, kDIPSVariations, "DIPS")},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {kBorealisBigGlInternalName, flag_descriptions::kBorealisBigGlName,
@@ -9382,13 +9395,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ui::kLibinputHandleTouchpad)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_ANDROID)
-    {"enable-tab-groups-for-tablets",
-     flag_descriptions::kTabGroupsForTabletsName,
-     flag_descriptions::kTabGroupsForTabletsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kTabGroupsForTablets)},
-#endif  // BUILDFLAG(IS_ANDROID)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-desks-templates", flag_descriptions::kDesksTemplatesName,
      flag_descriptions::kDesksTemplatesDescription, kOsCrOS,
@@ -9580,6 +9586,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableVariableRefreshRateName,
      flag_descriptions::kEnableVariableRefreshRateDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kEnableVariableRefreshRate)},
+
+    {"enable-variable-refresh-rate-always-on",
+     flag_descriptions::kEnableVariableRefreshRateAlwaysOnName,
+     flag_descriptions::kEnableVariableRefreshRateAlwaysOnDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kEnableVariableRefreshRateAlwaysOn)},
 
     {"enable-projector-app-debug", flag_descriptions::kProjectorAppDebugName,
      flag_descriptions::kProjectorAppDebugDescription, kOsCrOS,
@@ -9774,11 +9785,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIgnoreSyncEncryptionKeysLongMissingDescription, kOsAll,
      FEATURE_VALUE_TYPE(syncer::kIgnoreSyncEncryptionKeysLongMissing)},
 
-    {"autofill-parse-iban-fields",
-     flag_descriptions::kAutofillParseIBANFieldsName,
-     flag_descriptions::kAutofillParseIBANFieldsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillParseIBANFields)},
-
 #if BUILDFLAG(IS_ANDROID)
     {"autofill-enable-fido-progress-dialog",
      flag_descriptions::kAutofillEnableFIDOProgressDialogName,
@@ -9890,11 +9896,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaDynamicCgroupDescription, kOsCrOS,
      PLATFORM_FEATURE_NAME_TYPE("CrOSLateBootMediaDynamicCgroup")},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-    {"autofill-fill-iban-fields",
-     flag_descriptions::kAutofillFillIbanFieldsName,
-     flag_descriptions::kAutofillFillIbanFieldsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillFillIbanFields)},
 
     {"autofill-parse-vcn-card-on-file-standalone-cvc-fields",
      flag_descriptions::kAutofillParseVcnCardOnFileStandaloneCvcFieldsName,
@@ -10267,13 +10268,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSurfaceControlMagnifierDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kAndroidSurfaceControlMagnifier)},
 #endif  // BUILDFLAG(IS_ANDROID)
-
-    {"autofill-enable-iban-client-side-url-filtering",
-     flag_descriptions::kAutofillEnableIbanClientSideUrlFilteringName,
-     flag_descriptions::kAutofillEnableIbanClientSideUrlFilteringDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillEnableIbanClientSideUrlFiltering)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"system-live-caption", flag_descriptions::kSystemLiveCaptionName,
@@ -10807,6 +10801,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"floating-workspace-v2", flag_descriptions::kFloatingWorkspaceV2Name,
      flag_descriptions::kFloatingWorkspaceV2Description, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kFloatingWorkspaceV2)},
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"almanac-game-migration", flag_descriptions::kAlmanacGameMigrationName,
+     flag_descriptions::kAlmanacGameMigrationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(apps::kAlmanacGameMigration)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

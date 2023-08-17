@@ -301,8 +301,6 @@ static_library("browser") {
     "commerce/shopping_service_factory.h",
     "complex_tasks/task_tab_helper.cc",
     "complex_tasks/task_tab_helper.h",
-    "component_updater/chrome_client_side_phishing_component_installer.cc",
-    "component_updater/chrome_client_side_phishing_component_installer.h",
     "component_updater/chrome_component_updater_configurator.cc",
     "component_updater/chrome_component_updater_configurator.h",
     "component_updater/chrome_origin_trials_component_installer.cc",
@@ -387,8 +385,6 @@ static_library("browser") {
     "dips/dips_cleanup_service_factory.h",
     "dips/dips_database.cc",
     "dips/dips_database.h",
-    "dips/dips_features.cc",
-    "dips/dips_features.h",
     "dips/dips_redirect_info.cc",
     "dips/dips_redirect_info.h",
     "dips/dips_service.cc",
@@ -4608,6 +4604,8 @@ static_library("browser") {
         "enterprise/remote_commands/cbcm_remote_commands_factory.h",
         "enterprise/remote_commands/clear_browsing_data_job.cc",
         "enterprise/remote_commands/clear_browsing_data_job.h",
+        "enterprise/remote_commands/job_profile_picker.cc",
+        "enterprise/remote_commands/job_profile_picker.h",
         "first_run/upgrade_util.cc",
         "first_run/upgrade_util.h",
         "lifetime/switch_utils.cc",
@@ -5297,7 +5295,6 @@ static_library("browser") {
       "//chromeos/strings",
       "//chromeos/ui/base",
       "//chromeos/ui/vector_icons",
-      "//chromeos/version",
       "//components/account_manager_core",
       "//components/app_constants",
       "//components/app_restore",
@@ -5602,6 +5599,7 @@ static_library("browser") {
       "//chrome/browser/chromeos/extensions/wm",
       "//chrome/browser/chromeos/launcher_search:search_util",
       "//chrome/browser/chromeos/office_web_app",
+      "//chrome/browser/lacros/cros_apps/api/diagnostics",
       "//chrome/common/chromeos/extensions",
       "//chromeos/crosapi/cpp",
       "//chromeos/crosapi/cpp:crosapi_constants",
@@ -5731,6 +5729,7 @@ static_library("browser") {
       "//chromeos/dbus/power",
       "//chromeos/ui/clipboard_history",
       "//chromeos/ui/wm",
+      "//chromeos/version",
       "//components/app_constants",
       "//components/arc/common",
       "//components/arc/common:arc_intent_helper_constants",
@@ -5758,6 +5757,7 @@ static_library("browser") {
   }
   if (is_mac) {
     sources += [
+      "webauthn/chrome_authenticator_request_delegate_mac.mm",
       "webauthn/local_credential_management_mac.cc",
       "webauthn/local_credential_management_mac.h",
     ]

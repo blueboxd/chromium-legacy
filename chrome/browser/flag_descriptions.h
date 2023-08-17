@@ -258,9 +258,6 @@ extern const char kAutofillEnableFIDOProgressDialogDescription[];
 extern const char kAutofillEnableFpanRiskBasedAuthenticationName[];
 extern const char kAutofillEnableFpanRiskBasedAuthenticationDescription[];
 
-extern const char kAutofillEnableIbanClientSideUrlFilteringName[];
-extern const char kAutofillEnableIbanClientSideUrlFilteringDescription[];
-
 extern const char kAutofillEnableManualFallbackForVirtualCardsName[];
 extern const char kAutofillEnableManualFallbackForVirtualCardsDescription[];
 
@@ -327,9 +324,6 @@ extern const char
 extern const char kAutofillEnableVirtualCardMetadataName[];
 extern const char kAutofillEnableVirtualCardMetadataDescription[];
 
-extern const char kAutofillFillIbanFieldsName[];
-extern const char kAutofillFillIbanFieldsDescription[];
-
 extern const char kAutofillHighlightOnlyChangedValuesInPreviewModeName[];
 extern const char kAutofillHighlightOnlyChangedValuesInPreviewModeDescription[];
 
@@ -339,9 +333,6 @@ extern const char
 
 extern const char kAutofillOfferToSaveCardWithSameLastFourName[];
 extern const char kAutofillOfferToSaveCardWithSameLastFourDescription[];
-
-extern const char kAutofillParseIBANFieldsName[];
-extern const char kAutofillParseIBANFieldsDescription[];
 
 extern const char kAutofillParseVcnCardOnFileStandaloneCvcFieldsName[];
 extern const char kAutofillParseVcnCardOnFileStandaloneCvcFieldsDescription[];
@@ -1323,6 +1314,9 @@ extern const char kOmniboxCR23SuggestionHoverFillShapeDescription[];
 
 extern const char kOmniboxDiscardTemporaryInputOnTabSwitchName[];
 extern const char kOmniboxDiscardTemporaryInputOnTabSwitchDescription[];
+
+extern const char kOmniboxActionsUISimplificationName[];
+extern const char kOmniboxActionsUISimplificationDescription[];
 
 extern const char kOmniboxDomainSuggestionsName[];
 extern const char kOmniboxDomainSuggestionsDescription[];
@@ -2726,6 +2720,9 @@ extern const char kNtpDriveModuleDescription[];
 extern const char kNtpDriveModuleSegmentationName[];
 extern const char kNtpDriveModuleSegmentationDescription[];
 
+extern const char kNtpDriveModuleShowSixFilesName[];
+extern const char kNtpDriveModuleShowSixFilesDescription[];
+
 #if !defined(OFFICIAL_BUILD)
 extern const char kNtpDummyModulesName[];
 extern const char kNtpDummyModulesDescription[];
@@ -3015,6 +3012,10 @@ extern const char kAllowScrollSettingsName[];
 extern const char kAllowScrollSettingsDescription[];
 extern const char kAllowTouchpadScrollSettingsName[];
 extern const char kAllowTouchpadScrollSettingsDescription[];
+
+extern const char kAlmanacGameMigrationName[];
+extern const char kAlmanacGameMigrationDescription[];
+
 extern const char kAltClickAndSixPackCustomizationName[];
 extern const char kAltClickAndSixPackCustomizationDescription[];
 extern const char kAlwaysEnableHdcpName[];
@@ -3343,6 +3344,10 @@ extern const char kFrameSinkDesktopCapturerInCrdDescription[];
 
 extern const char kUseHDRTransferFunctionName[];
 extern const char kUseHDRTransferFunctionDescription[];
+
+extern const char kEnableExternalDisplayHdr10Name[];
+extern const char kEnableExternalDisplayHdr10Description[];
+
 extern const char kDoubleTapToZoomInTabletModeName[];
 extern const char kDoubleTapToZoomInTabletModeDescription[];
 
@@ -3451,9 +3456,6 @@ extern const char kEnableSuspendToDiskAllowS4Description[];
 extern const char kEapGtcWifiAuthenticationName[];
 extern const char kEapGtcWifiAuthenticationDescription[];
 
-extern const char kAudioPeripheralVolumeGranularityName[];
-extern const char kAudioPeripheralVolumeGranularityDescription[];
-
 extern const char kEcheSWAName[];
 extern const char kEcheSWADescription[];
 
@@ -3498,6 +3500,9 @@ extern const char kPanelSelfRefresh2Description[];
 
 extern const char kEnableVariableRefreshRateName[];
 extern const char kEnableVariableRefreshRateDescription[];
+
+extern const char kEnableVariableRefreshRateAlwaysOnName[];
+extern const char kEnableVariableRefreshRateAlwaysOnDescription[];
 
 extern const char kEnforceAshExtensionKeeplistName[];
 extern const char kEnforceAshExtensionKeeplistDescription[];

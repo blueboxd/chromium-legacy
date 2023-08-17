@@ -106,19 +106,6 @@ const char kAutofillEnableCardProductNameDescription[] =
     "When enabled, card product name (instead of issuer network) will be shown "
     "in Payments UI.";
 
-const char kAutofillEnforceDelaysInStrikeDatabaseName[] =
-    "Enforce delay between offering Autofill opportunities in the strike "
-    "database";
-const char kAutofillEnforceDelaysInStrikeDatabaseDescription[] =
-    "When enabled, if previous Autofill feature offer was declined, "
-    "Chrome will wait for sometime before showing the offer again.";
-
-const char kAutofillFillMerchantPromoCodeFieldsName[] =
-    "Enable Autofill of promo code fields in forms";
-const char kAutofillFillMerchantPromoCodeFieldsDescription[] =
-    "When enabled, Autofill will attempt to fill merchant promo/coupon/gift "
-    "code fields when data is available.";
-
 const char kAutofillIOSDelayBetweenFieldsName[] = "Autofill delay";
 const char kAutofillIOSDelayBetweenFieldsDescription[] =
     "Delay between the different fields of a form being autofilled. In "
@@ -131,11 +118,6 @@ const char kAutofillOfferToSaveCardWithSameLastFourDescription[] =
     "Offer credit card save when Chrome detects a card number with the same "
     "last 4 digits as an existing server card, but a different expiration "
     "date.";
-
-const char kAutofillParseIBANFieldsName[] = "Parse IBAN fields in forms";
-const char kAutofillParseIBANFieldsDescription[] =
-    "When enabled, Autofill will attempt to find International Bank Account "
-    "Number (IBAN) fields when parsing forms.";
 
 const char kAutofillParseVcnCardOnFileStandaloneCvcFieldsName[] =
     "Parse standalone CVC fields for VCN card on file in forms";
@@ -627,6 +609,10 @@ const char kIOSPasswordUISplitName[] = "Password Manager UI Split";
 const char kIOSPasswordUISplitDescription[] =
     "Splits Password Settings and "
     "Password Manager into two separate UIs.";
+
+const char kIOSSaveToPhotosName[] = "IOS Save to Photos";
+const char kIOSSaveToPhotosDescription[] =
+    "Enables the Save to Photos feature on iOS.";
 
 const char kIOSSetUpListName[] = "IOS Set Up List";
 const char kIOSSetUpListDescription[] =

@@ -362,6 +362,7 @@ public abstract class ChromeFeatureList {
     public static final String PRERENDER2 = "Prerender2";
     public static final String PRECONNECT_ON_TAB_CREATION = "PreconnectOnTabCreation";
     public static final String PRIVACY_GUIDE = "PrivacyGuideAndroid";
+    public static final String PRIVACY_GUIDE_ANDROID_3 = "PrivacyGuideAndroid3";
     public static final String PRIVACY_GUIDE_POST_MVP = "PrivacyGuideAndroidPostMVP";
     public static final String PRIVACY_SANDBOX_FPS_UI = "PrivacySandboxFirstPartySetsUI";
     public static final String PRIVACY_SANDBOX_SETTINGS_3 = "PrivacySandboxSettings3";
@@ -444,7 +445,6 @@ public abstract class ChromeFeatureList {
     public static final String TAB_ENGAGEMENT_REPORTING_ANDROID = "TabEngagementReportingAndroid";
     public static final String TAB_GROUPS_ANDROID = "TabGroupsAndroid";
     public static final String TAB_GROUPS_CONTINUATION_ANDROID = "TabGroupsContinuationAndroid";
-    public static final String TAB_GROUPS_FOR_TABLETS = "TabGroupsForTablets";
     public static final String TAB_STRIP_REDESIGN = "TabStripRedesign";
     public static final String TAB_STRIP_STARTUP_REFACTORING = "TabStripStartupRefactoring";
     public static final String TABLET_TOOLBAR_REORDERING = "TabletToolbarReordering";
@@ -586,8 +586,6 @@ public abstract class ChromeFeatureList {
             TAB_GROUPS_ANDROID, ChromePreferenceKeys.FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED, true);
     public static final CachedFlag sTabGroupsContinuationAndroid =
             new CachedFlag(TAB_GROUPS_CONTINUATION_ANDROID, true);
-    public static final CachedFlag sTabGroupsForTablets =
-            new CachedFlag(TAB_GROUPS_FOR_TABLETS, true);
     public static final CachedFlag sTabStripRedesign = new CachedFlag(TAB_STRIP_REDESIGN, false);
     public static final CachedFlag sTabStripStartupRefactoring =
             new CachedFlag(TAB_STRIP_STARTUP_REFACTORING, false);
@@ -662,7 +660,6 @@ public abstract class ChromeFeatureList {
         sTabDragDropAndroid,
         sTabGroupsAndroid,
         sTabGroupsContinuationAndroid,
-        sTabGroupsForTablets,
         sTabStripRedesign,
         sTabStripStartupRefactoring,
         sTabletToolbarReordering,

@@ -49,7 +49,8 @@ FencedFrameTestHelper::FencedFrameTestHelper() {
        {blink::features::kAdInterestGroupAPI, {}},
        {blink::features::kFledge, {}},
        {blink::features::kFencedFramesAPIChanges, {}},
-       {blink::features::kFencedFramesDefaultMode, {}}},
+       {blink::features::kFencedFramesDefaultMode, {}},
+       {features::kFencedFramesEnforceFocus, {}}},
       {/* disabled_features */});
 }
 
@@ -145,7 +146,7 @@ void FencedFrameTestHelper::NavigateFencedFrameUsingFledge(
         name: 'testAd1',
         owner: page_origin,
         biddingLogicUrl: bidding_url,
-        ads: [{renderURL: $1, bid: 1}],
+        ads: [{renderURL: $1, bid: 1, allowedReportingOrigins: [$1]}],
       };
 
       // Pick an arbitrarily high duration to guarantee that we never leave the
@@ -253,6 +254,18 @@ RenderFrameHost* FencedFrameTestHelper::GetMostRecentlyAddedFencedFrame(
   if (fenced_frames.empty())
     return nullptr;
   return fenced_frames.back()->GetInnerRoot();
+}
+
+// static
+std::vector<RenderFrameHost*> FencedFrameTestHelper::GetChildFencedFrameHosts(
+    RenderFrameHost* rfh) {
+  std::vector<RenderFrameHost*> fenced_hosts;
+  std::vector<FencedFrame*> fenced_frames =
+      static_cast<RenderFrameHostImpl*>(rfh)->GetFencedFrames();
+  for (FencedFrame* frame : fenced_frames) {
+    fenced_hosts.push_back(frame->GetInnerRoot());
+  }
+  return fenced_hosts;
 }
 
 GURL CreateFencedFrameURLMapping(RenderFrameHost* rfh, const GURL& url) {

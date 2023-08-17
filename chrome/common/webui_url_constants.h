@@ -219,6 +219,10 @@ extern const char kChromeUIThemeHost[];
 extern const char kChromeUIThemeURL[];
 extern const char kChromeUITopChromeDomain[];
 extern const char kChromeUITranslateInternalsHost[];
+#if !BUILDFLAG(IS_ANDROID)
+extern const char kChromeUIUntrustedHatsHost[];
+extern const char kChromeUIUntrustedHatsURL[];
+#endif  // !BUILDFLAG(IS_ANDROID)
 extern const char kChromeUIUntrustedImageEditorURL[];
 extern const char kChromeUIUntrustedPrintURL[];
 extern const char kChromeUIUntrustedThemeURL[];
@@ -365,8 +369,8 @@ extern const char kChromeUISmbCredentialsHost[];
 extern const char kChromeUISmbCredentialsURL[];
 extern const char kChromeUISmbShareHost[];
 extern const char kChromeUISmbShareURL[];
-extern const char kChromeUIStatusAreaTesterURL[];
-extern const char kChromeUIStatusAreaTesterHost[];
+extern const char kChromeUIStatusAreaInternalsURL[];
+extern const char kChromeUIStatusAreaInternalsHost[];
 extern const char kChromeUISysInternalsHost[];
 extern const char kChromeUISysInternalsUrl[];
 extern const char kChromeUIUntrustedCroshHost[];

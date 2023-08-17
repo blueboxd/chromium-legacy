@@ -215,9 +215,9 @@
     "META": {"sizes": {"includes": [30]}},
     "includes": [2860],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/status_area_tester/resources.grd": {
-    "META": {"sizes": {"includes": [5]}},
-    "includes": [2870],
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/status_area_internals/resources.grd": {
+    "META": {"sizes": {"includes": [30]}},
+    "includes": [2865],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/vc_tray_tester/resources.grd": {
     "META": {"sizes": {"includes": [5]}},
@@ -642,6 +642,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/enterprise_reporting/resources.grd": {
     "META": {"sizes": {"includes": [20]}},
     "includes": [4960],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/hats/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [4980],
   },
   # END chrome/ WebUI resources section
 

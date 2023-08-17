@@ -338,7 +338,8 @@ void OpenManageDevicesTab(CommandDispatcher* dispatcher) {
 
       __weak __typeof(self) weakSelf = self;
       ShowSigninCommandCompletionCallback callback =
-          ^(SigninCoordinatorResult result) {
+          ^(SigninCoordinatorResult result,
+            SigninCompletionInfo* completionInfo) {
             BOOL succeeded = result == SigninCoordinatorResultSuccess;
             [weakSelf onSigninComplete:succeeded];
           };
@@ -379,11 +380,10 @@ void OpenManageDevicesTab(CommandDispatcher* dispatcher) {
 }
 
 - (absl::optional<send_tab_to_self::EntryPointDisplayReason>)displayReason {
-  ChromeBrowserState* browserState = self.browser->GetBrowserState();
-  return send_tab_to_self::GetEntryPointDisplayReason(
-      _url, SyncServiceFactory::GetForBrowserState(browserState),
-      SendTabToSelfSyncServiceFactory::GetForBrowserState(browserState),
-      browserState->GetPrefs());
+  send_tab_to_self::SendTabToSelfSyncService* service =
+      SendTabToSelfSyncServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+  return service ? service->GetEntryPointDisplayReason(_url) : absl::nullopt;
 }
 
 @end

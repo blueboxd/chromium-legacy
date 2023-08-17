@@ -112,8 +112,12 @@ const CGFloat kAccessorySymbolSize = 22;
                      cellForRowAtIndexPath:indexPath];
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
   cell.userInteractionEnabled = YES;
+  cell.textLabel.numberOfLines = 1;
+  cell.detailTextLabel.numberOfLines = 1;
   if (_recipients[indexPath.row].isEligible) {
-    cell.accessoryView = [[UIImageView alloc] initWithImage:[self circleIcon]];
+    cell.accessoryView = [[UIImageView alloc]
+        initWithImage:cell.isSelected ? [self checkmarkCircleIcon]
+                                      : [self circleIcon]];
   } else {
     UIButton* infoButton = [UIButton buttonWithType:UIButtonTypeInfoLight];
     [infoButton setImage:[self infoCircleIcon] forState:UIControlStateNormal];
@@ -124,6 +128,15 @@ const CGFloat kAccessorySymbolSize = 22;
   }
 
   return cell;
+}
+
+#pragma mark - FamilyPickerConsumer
+
+- (void)setRecipients:(NSArray<RecipientInfoForIOSDisplay*>*)recipients {
+  _recipients = recipients;
+
+  [self loadModel];
+  [self.tableView reloadData];
 }
 
 #pragma mark - Items

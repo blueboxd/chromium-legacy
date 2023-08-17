@@ -926,12 +926,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWaitThresholdMillisecondsForCapabilitiesApiDescription,
      flags_ui::kOsIos,
      MULTI_VALUE_TYPE(kWaitThresholdMillisecondsForCapabilitiesApiChoices)},
-    {"autofill-fill-merchant-promo-code-fields",
-     flag_descriptions::kAutofillFillMerchantPromoCodeFieldsName,
-     flag_descriptions::kAutofillFillMerchantPromoCodeFieldsDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillFillMerchantPromoCodeFields)},
     {"new-overflow-menu", flag_descriptions::kNewOverflowMenuName,
      flag_descriptions::kNewOverflowMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewOverflowMenu)},
@@ -1018,12 +1012,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfSigninPromoName,
      flag_descriptions::kSendTabToSelfSigninPromoDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfSigninPromo)},
-    {"autofill-enforce-delays-in-strike-database",
-     flag_descriptions::kAutofillEnforceDelaysInStrikeDatabaseName,
-     flag_descriptions::kAutofillEnforceDelaysInStrikeDatabaseDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillEnforceDelaysInStrikeDatabase)},
     {"autofill-upstream-allow-additional-email-domains",
      flag_descriptions::kAutofillUpstreamAllowAdditionalEmailDomainsName,
      flag_descriptions::kAutofillUpstreamAllowAdditionalEmailDomainsDescription,
@@ -1155,10 +1143,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIOSPaymentsBottomSheetName,
      flag_descriptions::kIOSPaymentsBottomSheetDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOSPaymentsBottomSheet)},
-    {"autofill-parse-iban-fields",
-     flag_descriptions::kAutofillParseIBANFieldsName,
-     flag_descriptions::kAutofillParseIBANFieldsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillParseIBANFields)},
     {"omnibox-zero-suggest-prefetching",
      flag_descriptions::kOmniboxZeroSuggestPrefetchingName,
      flag_descriptions::kOmniboxZeroSuggestPrefetchingDescription,
@@ -1670,6 +1654,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIOSPasswordAuthOnEntryV2Name,
      flag_descriptions::kIOSPasswordAuthOnEntryV2Description, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kIOSPasswordAuthOnEntryV2)},
+    {"enable-save-to-photos", flag_descriptions::kIOSSaveToPhotosName,
+     flag_descriptions::kIOSSaveToPhotosDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIOSSaveToPhotos)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

@@ -10,8 +10,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/apple/mach_logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/mach_logging.h"
 #include "base/mac/scoped_mach_msg_destroy.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/mac/app_mode_common.h"
@@ -82,7 +82,7 @@ void MachBootstrapAcceptor::HandleRequest() {
       NULL, NULL, NULL, NULL, NULL, &sender_pid, NULL, NULL);
 
   mojo::PlatformChannelEndpoint remote_endpoint(mojo::PlatformHandle(
-      base::mac::ScopedMachSendRight(request.header.msgh_remote_port)));
+      base::apple::ScopedMachSendRight(request.header.msgh_remote_port)));
   if (!remote_endpoint.is_valid()) {
     return;
   }

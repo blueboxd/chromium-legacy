@@ -12,10 +12,10 @@
 #include <memory>
 
 #include "base/apple/dispatch_source_mach.h"
+#include "base/apple/scoped_dispatch_object.h"
 #include "base/files/scoped_file.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
-#include "base/mac/scoped_dispatch_object.h"
 #include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -256,7 +256,7 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables, size_t count) {
 
     kern_return_t kr;
 
-    mac::ScopedMachPortSet port_set;
+    apple::ScopedMachPortSet port_set;
     {
       mach_port_t name;
       kr =

@@ -32,24 +32,13 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 import {FocusConfig} from '../focus_config.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
+import {NetworkPredictionOptions} from '../performance_page/constants.js';
 import {routes} from '../route.js';
 import {Route, RouteObserverMixin, Router} from '../router.js';
 import {ContentSetting, ContentSettingsTypes, CookieControlsMode} from '../site_settings/constants.js';
 import {CookiePrimarySetting} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
 import {getTemplate} from './cookies_page.html.js';
-
-/**
- * Must be kept in sync with the C++ enum of the same name (see
- * chrome/browser/prefetch/prefetch_prefs.h).
- */
-export enum NetworkPredictionOptions {
-  STANDARD = 0,
-  WIFI_ONLY_DEPRECATED = 1,
-  DISABLED = 2,
-  EXTENDED = 3,
-  DEFAULT = 1,
-}
 
 export interface SettingsCookiesPageElement {
   $: {
@@ -102,17 +91,6 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
         value: CookieControlsMode,
       },
 
-      /**
-       * Used for HTML bindings. This is defined as a property rather than
-       * within the ready callback, because the value needs to be available
-       * before local DOM initialization - otherwise, the toggle has unexpected
-       * behavior.
-       */
-      networkPredictionUncheckedValue_: {
-        type: Number,
-        value: NetworkPredictionOptions.DISABLED,
-      },
-
       contentSetting_: {
         type: Object,
         value: ContentSetting,
@@ -149,11 +127,6 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
         type: Boolean,
         value: () => loadTimeData.getBoolean('isPrivacySandboxSettings4'),
       },
-
-      showPreloadingSubPage_: {
-        type: Boolean,
-        value: () => loadTimeData.getBoolean('showPreloadingSubPage'),
-      },
     };
   }
 
@@ -170,7 +143,6 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
   focusConfig: FocusConfig;
   private enableFirstPartySetsUI_: boolean;
   private isPrivacySandboxSettings4_: boolean;
-  private showPreloadingSubPage_: boolean;
 
   private metricsBrowserProxy_: MetricsBrowserProxy =
       MetricsBrowserProxyImpl.getInstance();
@@ -187,17 +159,15 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
         `${routes.SITE_SETTINGS_ALL.path}_${routes.COOKIES.path}`,
         selectSiteDataLinkRow);
 
-    if (this.showPreloadingSubPage_) {
-      const selectPreloadingLinkRow = () => {
-        const toFocus =
-            this.shadowRoot!.querySelector<HTMLElement>('#preloadingLinkRow');
-        assert(toFocus);
-        focusWithoutInk(toFocus);
-      };
-      this.focusConfig.set(
-          `${routes.PRELOADING.path}_${routes.COOKIES.path}`,
-          selectPreloadingLinkRow);
-    }
+    const selectPreloadingLinkRow = () => {
+      const toFocus =
+          this.shadowRoot!.querySelector<HTMLElement>('#preloadingLinkRow');
+      assert(toFocus);
+      focusWithoutInk(toFocus);
+    };
+    this.focusConfig.set(
+        `${routes.PRELOADING.path}_${routes.COOKIES.path}`,
+        selectPreloadingLinkRow);
   }
 
   override currentRouteChanged(route: Route) {
@@ -371,16 +341,6 @@ export class SettingsCookiesPageElement extends SettingsCookiesPageElementBase {
   private onClearOnExitChange_() {
     this.metricsBrowserProxy_.recordSettingsPageHistogram(
         PrivacyElementInteractions.COOKIES_SESSION);
-  }
-
-  /**
-   * Records changes made to the network prediction setting for logging, the
-   * logic of actually changing the setting is taken care of by the
-   * net.network_prediction_options pref.
-   */
-  private onNetworkPredictionChange_() {
-    this.metricsBrowserProxy_.recordSettingsPageHistogram(
-        PrivacyElementInteractions.NETWORK_PREDICTION);
   }
 
   private onPreloadingClick_() {

@@ -65,6 +65,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/runtime_feature_state_controller_impl.h"
 #include "content/browser/renderer_host/transient_allow_popup.h"
+#include "content/browser/renderer_host/transient_focus_source_user_activation.h"
 #include "content/browser/site_instance_group.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -506,6 +507,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       PrepareForInnerWebContentsAttachCallback callback) override;
   blink::FrameOwnerElementType GetFrameOwnerElementType() override;
   bool HasTransientUserActivation() override;
+  bool FocusSourceHasTransientUserActivation();
   void NotifyUserActivation(
       blink::mojom::UserActivationNotificationType notification_type) override;
   bool Reload() override;
@@ -2930,6 +2932,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsHistoryUserActivationActive() const;
   void ConsumeHistoryUserActivation();
 
+  // Sets/resets a temporary UA state used to verify focus transfers that cross
+  // a fenced frame boundary.
+  void ActivateFocusSourceUserActivation();
+  void DeactivateFocusSourceUserActivation();
+
   // Parameter for `ClosePage()` that indicates whether the request comes from
   // the browser or the renderer. This is used to determine whether navigation
   // should prevent the page from closing, since navigations should not prevent
@@ -2987,6 +2994,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindFileBackedBlobFactory(
       mojo::PendingAssociatedReceiver<blink::mojom::FileBackedBlobFactory>
           receiver);
+
+  // Determine if a focus change coming from the renderer was allowed to happen.
+  // This only checks focus calls that crosses a fenced frame boundary. It will
+  // badmessage the renderer that made the focus call if it deems the focus
+  // should've been disallowed. Returns true is the focus change is allowed,
+  // false if it is disallowed.
+  bool VerifyFencedFrameFocusChange(RenderFrameHostImpl* focused_rfh);
+
+  // Returns whether moving focus into this RFH will cross a fenced frame
+  // boundary. A focus is only considered to cross a boundary if it is moving
+  // into a fenced frame, not out of a fenced frame.
+  bool TakingFocusWillCrossFencedBoundary(RenderFrameHostImpl* focused_rfh);
 
  protected:
   friend class RenderFrameHostFactory;
@@ -3646,10 +3665,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Validates whether we can commit |url| and |origin| for a navigation or a
   // document.open() URL update.
   // A return value of true means that the URL & origin can be committed.
-  bool ValidateURLAndOrigin(const GURL& url,
-                            const url::Origin& origin,
-                            bool is_same_document_navigation,
-                            NavigationRequest* navigation_request);
+  bool ValidateURLAndOrigin(
+      const GURL& url,
+      const url::Origin& origin,
+      bool is_same_document_navigation,
+      NavigationRequest* navigation_request,
+      std::string origin_calculation_debug_info = std::string());
 
   // The actual implementation of committing a navigation in the browser
   // process. Called by the DidCommitProvisionalLoad IPC handler.
@@ -3820,7 +3841,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // determines it cannot commit a URL or origin.
   void LogCannotCommitUrlCrashKeys(const GURL& url,
                                    bool is_same_document_navigation,
-                                   NavigationRequest* navigation_request);
+                                   NavigationRequest* navigation_request,
+                                   std::string& origin_calculation_debug_info);
   void LogCannotCommitOriginCrashKeys(const GURL& url,
                                       const url::Origin& origin,
                                       const ProcessLock& process_lock,
@@ -5093,6 +5115,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // navigations (e.g., after canceled history navigations or uses of
   // CloseWatcher).
   blink::HistoryUserActivationState history_user_activation_state_;
+
+  // Manages a transient state tracking mechanism for this frame to verify focus
+  // transfer across a fenced frame boundary. This is essentially tracking focus
+  // capability. When focus is transferred to a new frame, this state is also
+  // passed to the new frame. This can be passed to multiple frames as part of a
+  // single focus event if a frame doesn't have any focusable elements.
+  TransientFocusSourceUserActivation focus_source_user_activation_state_;
 
   // Used to avoid sending AXTreeData to the renderer if the renderer has not
   // been told root ID yet. See UpdateAXTreeData() for more details.

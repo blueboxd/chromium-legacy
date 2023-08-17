@@ -81,6 +81,10 @@ public final class EditUrlSuggestionProcessorUnitTest {
     private static final int ACTION_EDIT = 2;
     private static final GURL SEARCH_URL_1 = JUnitTestGURLs.getGURL(JUnitTestGURLs.SEARCH_URL);
     private static final GURL SEARCH_URL_2 = JUnitTestGURLs.getGURL(JUnitTestGURLs.SEARCH_2_URL);
+    private static final GURL ESCAPED_PATH_URL =
+            JUnitTestGURLs.getGURL(JUnitTestGURLs.ESCAPED_PATH_URL_1);
+    private static final GURL INVALID_ESCAPED_PATH_URL =
+            JUnitTestGURLs.getGURL(JUnitTestGURLs.INVALID_ESCAPED_PATH_URL_1);
 
     /** Used to simulate sad tabs. */
     @Implements(SadTab.class)
@@ -278,6 +282,42 @@ public final class EditUrlSuggestionProcessorUnitTest {
     }
 
     @Test
+    public void editButton_unescapesUrl() {
+        mMatch = new AutocompleteMatchBuilder(OmniboxSuggestionType.URL_WHAT_YOU_TYPED)
+                         .setIsSearch(false)
+                         .setDisplayText("test")
+                         .setDescription(MATCH_TITLE)
+                         .setUrl(ESCAPED_PATH_URL)
+                         .build();
+        doReturn(ESCAPED_PATH_URL).when(mTab).getUrl();
+
+        mProcessor.populateModel(mMatch, mModel, 0);
+        mModel.get(BaseSuggestionViewProperties.ACTION_BUTTONS).get(ACTION_EDIT).callback.run();
+
+        // Expect the decoded content.
+        verify(mUrlBarDelegate).setOmniboxEditingText(JUnitTestGURLs.ESCAPED_PATH_URL_1_STRING);
+        verifyNoMoreInteractions(mSuggestionHost, mUrlBarDelegate);
+    }
+
+    @Test
+    public void editButton_fallsBackToMalformedUrlIfUnsecapeFails() {
+        mMatch = new AutocompleteMatchBuilder(OmniboxSuggestionType.URL_WHAT_YOU_TYPED)
+                         .setIsSearch(false)
+                         .setDisplayText("test")
+                         .setDescription(MATCH_TITLE)
+                         .setUrl(INVALID_ESCAPED_PATH_URL)
+                         .build();
+        doReturn(INVALID_ESCAPED_PATH_URL).when(mTab).getUrl();
+
+        mProcessor.populateModel(mMatch, mModel, 0);
+        mModel.get(BaseSuggestionViewProperties.ACTION_BUTTONS).get(ACTION_EDIT).callback.run();
+
+        // Expect the original content.
+        verify(mUrlBarDelegate).setOmniboxEditingText(JUnitTestGURLs.INVALID_ESCAPED_PATH_URL_1);
+        verifyNoMoreInteractions(mSuggestionHost, mUrlBarDelegate);
+    }
+
+    @Test
     public void shareButton_click() {
         mProcessor.populateModel(mMatch, mModel, 0);
         mModel.get(BaseSuggestionViewProperties.ACTION_BUTTONS).get(ACTION_SHARE).callback.run();
@@ -303,7 +343,7 @@ public final class EditUrlSuggestionProcessorUnitTest {
     }
 
     @Test
-    @DisableFeatures({ChromeFeatureList.OMNIBOX_NOOP_EDIT_URL_SUGGESTION_CLICKS})
+    @DisableFeatures(ChromeFeatureList.OMNIBOX_NOOP_EDIT_URL_SUGGESTION_CLICKS)
     public void suggestionView_clickReloadsPage() {
         assertFalse(OmniboxFeatures.noopEditUrlSuggestionClicks());
         mProcessor.populateModel(mMatch, mModel, 0);
@@ -313,7 +353,7 @@ public final class EditUrlSuggestionProcessorUnitTest {
     }
 
     @Test
-    @EnableFeatures({ChromeFeatureList.OMNIBOX_NOOP_EDIT_URL_SUGGESTION_CLICKS})
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_NOOP_EDIT_URL_SUGGESTION_CLICKS)
     public void suggestionView_clickReturnsToPage() {
         assertTrue(OmniboxFeatures.noopEditUrlSuggestionClicks());
         mProcessor.populateModel(mMatch, mModel, 0);
